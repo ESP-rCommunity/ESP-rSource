@@ -237,9 +237,9 @@ C and change any / to \.
       ELSEIF(INO1.EQ.2)THEN
 
 C DXF creation. Process similar to ecnv filter for VIEWER.
-        write(6,*) 'the pwd command was ',
-     &    pwdinitial(1:lnblnk(pwdinitial))
-        write(6,*) ' pwdtocfg is ',pwdtocfg(1:lnblnk(pwdtocfg))
+C        write(6,*) 'the pwd command was ',
+C     &    pwdinitial(1:lnblnk(pwdinitial))
+C        write(6,*) ' pwdtocfg is ',pwdtocfg(1:lnblnk(pwdtocfg))
         if(pwdtocfg(1:1).eq.'!')then
           write(L144,'(4a)')path(1:lnblnk(path)),fs,
      &      cfgroot(1:lnblnk(cfgroot)),'.DXF'
@@ -321,8 +321,9 @@ C And update radpath. The L144 is for future use of EASKXORGTKF
             modcfg=.true.
           endif
 
-          if(lradcf(1:7).eq.'UNKNOWN')then
-            write(lradcf,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.rcf'
+          if(lradcf(1:7).eq.'UNKNOWN')then  ! setup in form of ../rad/xx
+            write(lradcf,'(6a)') '..',fs,'rad',fs,
+     &        cfgroot(1:lnblnk(cfgroot)),'.rcf'
 C            write(L144,'(8a)')path(1:lnblnk(path)),fs,'..',fs,'rad',
 C     &        fs,cfgroot(1:lnblnk(cfgroot)),'.rcf'
             modcfg=.true.
@@ -959,6 +960,8 @@ C Passed parameters.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
@@ -986,11 +989,14 @@ C      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
       character gh*72,cfgitem*144,exdescr*81,doc*72,head*42
       character cfg*144,cfg_path*84,cfg_root*72,doc_file*96
       character itemlog*144,ilog*144
+      character tmode*12
 
 C Strings for dos version of rootp and upath and a double quote.
       character rootpdos*84,upathdos*72,rootpath*72,modelroot*72
-      character dq*1,fs*1,thecfgis*72,cfgcfg*42
+      character dq*1,fs*1
       character lltmp*144,lguess*144,dguess*144
+      character thecfgis*72,cfgcfg*42 ! cfg file only & cfg/cfg_file
+      character cfgpath*144  ! full path to cfg folder for refocus
       logical XST,unixok
       integer NCOG,ICOG,NCO,ICO,icod ! max items and current menu item
       integer loop  ! for looping
@@ -1022,6 +1028,7 @@ C Make up a double quote and file separator for xcopy.
         dq = char(34)
       endif
       iglib = igraphiclib()  ! find out if GTK.
+      call terminalmode(childterminal,tmode)
 
 C Open the exemplar file. This is also a jump back point in case
 C the user decides to cancel the selection.
@@ -1065,7 +1072,7 @@ C Clear group related help and length of menu.
       inl=0
       igrsel=0
       icod=0
-      cfgcfg='  '
+      cfgcfg='  '; thecfgis='  '; cfgpath='  '
 
  12   CALL STRIPC(iexfil,OUTSTR,0,ND,0,'group id',IER)
       if(ier.ne.0)goto 901
@@ -1235,7 +1242,7 @@ C file for this topic.
       helptopic='exemplar_set_browse'
       call gethelptext(helpinsub,helptopic,nbhelp)
       if(nghelp.gt.0)then
-        do 33 ih=1,nghelp
+        do 33 ih=1,nbhelp
           lex=MIN0(lnblnk(gh(ih)),72)
           write(h(nbhelp+ih),'(a)')gh(ih)(1:lex)
  33     continue
@@ -1358,17 +1365,23 @@ C of the string till a file separator of either DOS or Unix type is reached.
                 ipos=ipos-1
                 if(exemplar(ipos:ipos).eq.fs)then
                   write(thecfgis,'(a)') exemplar(ipos+1:ilexem)
-                  if(itrc.gt.0)then
+                  write(cfgpath,'(a)') exemplar(1:ipos)
+                  if(itrc.ge.1)then
                     call edisp(iuout,'  ')
                     call edisp(iuout,'The model configuration file is:')
                     call edisp(iuout,thecfgis)
+                    call edisp(iuout,'The model cfg folder is:')
+                    call edisp(iuout,cfgpath)
                   endif
                 elseif(exemplar(ipos:ipos).eq.'/')then
                   write(thecfgis,'(a)') exemplar(ipos+1:ilexem)
-                  if(itrc.gt.0)then
+                  write(cfgpath,'(a)') exemplar(1:ipos)
+                  if(itrc.ge.1)then
                     call edisp(iuout,'  ')
                     call edisp(iuout,'The model configuration file is:')
                     call edisp(iuout,thecfgis)
+                    call edisp(iuout,'The model cfg folder is:')
+                    call edisp(iuout,cfgpath)
                   endif
                 else
                   if(ipos.eq.1)then
@@ -1442,15 +1455,23 @@ C folder in the path of the exemplar.
 
 C The balance of the exemplar string after the cfg_root.
                   write(cfgcfg,'(a)') exemplar(ilex+lcfgr:lex)
-                  write(6,*) cfgcfg,' ',ilex+lcfgr,lex
+C                  write(6,*) cfgcfg,' ',ilex+lcfgr,lex
+                  write(thecfgis,'(a)') cfgcfg(6:lnblnk(cfgcfg))
+C                  write(6,*) 'the cfg is ',thecfgis(1:lnblnk(thecfgis))
                   call isunix(unixok)
                   if(unixok)then
 
 C Offer user choice of home folder plus the exemplar root name. In GTK
 C there is a file browser returning folder name via lltmp. If lltmp
 C folder does not exist then need to create it.
-                    write(lguess,'(3a)') upath(1:lnblnk(upath)),fs,
-     &                cfg_root(1:lcfgr)
+C If prj was started in a Models folder prepend to path.
+                    if(pwdinitial(lnpwdi-5:lnpwdi).eq.'Models')then
+                      write(lguess,'(3a)') pwdinitial(1:lnpwdi),fs,
+     &                  cfg_root(1:lcfgr)
+                    else
+                      write(lguess,'(3a)') upath(1:lnblnk(upath)),fs,
+     &                  cfg_root(1:lcfgr)
+                    endif
                     write(dguess,'(3a)') upath(1:lnblnk(upath)),fs,
      &                cfg_root(1:lcfgr)
                     call edisp(iuout,'  ')  ! echo a blank line
@@ -1461,6 +1482,10 @@ C folder does not exist then need to create it.
                     call runit(doit,'-')
                     call pausems(100)
 
+C Add /cfg to lltmp to get the configuration folder
+                    write(cfgpath,'(3a)')lltmp(1:lnblnk(lltmp)),fs,'cfg'
+C                    write(6,*) 'cfgpath=',cfgpath(1:lnblnk(cfgpath))
+
 C Make up the command to copy from the exemplar source folder to the
 C users defined destination. If we add cfgcfg to lltmp we should have
 C the folder where the model cfg file is located.
@@ -1470,7 +1495,8 @@ C the folder where the model cfg file is located.
 
 C Non-unix, if lnblankrp or lnblankup is one then there are no spaces in the 
 C string so double quotes are not required.  Change any '/'
-C in rootp and upath to '\'. 
+C in rootp and upath to '\'. If prj started in folder Models then insert
+C this into the suggested path. 
                     rootpdos=' '
                     upathdos=' '
                     lnrp=lnblnk(rootp)
@@ -1496,8 +1522,13 @@ C model folder so use fdroot to extract this from rootp.
 
 C Offer user choice of home folder plus the exemplar root name. In GTK
 C there is a file browser returning folder name via lltmp.
-                    write(lguess,'(3a)') upath(1:lnblnk(upath)),fs,
-     &                cfg_root(1:lcfgr)
+                    if(pwdinitial(lnpwdi-5:lnpwdi).eq.'Models')then
+                      write(lguess,'(3a)') pwdinitial(1:lnpwdi),fs,
+     &                  cfg_root(1:lcfgr)
+                    else
+                      write(lguess,'(3a)') upath(1:lnblnk(upath)),fs,
+     &                  cfg_root(1:lcfgr)
+                    endif
                     write(dguess,'(3a)') upath(1:lnblnk(upath)),fs,
      &                cfg_root(1:lcfgr)
                     call edisp(iuout,'  ')  ! echo a blank line
@@ -1509,11 +1540,11 @@ C there is a file browser returning folder name via lltmp.
                     call backslashit(lltmp,upathdos)
 
 C Debug.
-C                    write(outs,'(a,2i3,2a)') 'upath = ',lnup,lnblankup,
-C     &                ' ',upath(1:lnup)
-C                    call edisp(iuout,outs)
-C                    write(outs,'(2a)') 'destination = ',upathdos(1:lnup)
-C                    call edisp(iuout,outs)
+                    write(outs,'(a,2i3,2a)') 'upath = ',lnup,lnblankup,
+     &                ' ',upath(1:lnup)
+                    call edisp(iuout,outs)
+                    write(outs,'(2a)') 'destination = ',upathdos(1:lnup)
+                    call edisp(iuout,outs)
 
 C If upathdos folder does not exist then need to create it.
                     if(lnblankup.gt.1)then
@@ -1555,10 +1586,11 @@ C There are no blanks in either source or destination strings.
                   endif  ! of non-unix
 
 C If trace is verbose echo the command.
-                  if(itrc.gt.0)then
+                  if(itrc.ge.0)then
                     call edisp(iuout,
      &                'Copying exemplar to destination folder via:')
                     call edisp248(iuout,doit,100)
+                    call pausems(5000)
                   endif
                   call runit(doit,'-')
                   if(unixok)then
@@ -1574,13 +1606,96 @@ C If Windows based then append cfg & cfg file string to the path to make
 C up the exemplar name (this assumes a standard layout of model).
                     write(exemplar,'(5a)')upathdos(1:lnblnk(upathdos)),
      &                fs,'cfg',fs,thecfgis(1:lnblnk(thecfgis))
+                    write(cfgpath,'(3a)')upathdos(1:lnblnk(upathdos)),
+     &                fs,'cfg'
                   endif
                   call edisp(iuout,'  ')
-                  call edisp(iuout,'The model configuration file is:')
+                  call edisp(iuout,'The full path is:')
                   call edisp(iuout,exemplar)
+                  call edisp(iuout,'The model cfg folder is:')
+                  call edisp(iuout,cfgpath)
+                  call edisp(iuout,'The cfg file is is:')
+                  call edisp(iuout,thecfgis)
                   call tstamp('>','PRJ: owning exemplar')
                   call tstamp('>',exemplar)
                   useraction='ownit   '
+                endif
+
+C Test if we can start a new prj within the model cfg folder.
+                if(unixok)then
+                  h(1)='To provide full functionality prj should'
+                  h(2)='restart in the copied model cfg folder. When'
+                  h(3)='prj has restarted this instance of prj will'
+                  h(4)='quit after a few seconds.'
+                  CALL EASKABC(
+     &            'To provide full functionality prj needs to restart',
+     &            'focused on the model cfg folder','yes restart',
+     &            'continue','abort prj',IRT,4)
+                  if(irt.eq.1)then
+                    call pausems(1000)
+                    call usrmsg('Invoking new prj focused on the model',
+     &              ' and this instance will close.','P')
+                    write(doit,'(5a)') 'cd ',cfgpath(1:lnblnk(cfgpath)),
+     &              '; prj -file ',thecfgis(1:lnblnk(thecfgis)),' &'
+                    call edisp248(iuout,doit,100)
+                    call runit(doit,'-')
+                    call pausems(1000)
+
+C Clear allocatable arrays
+                    CALL DeallocateAllArrays
+                    CALL EPAGEND
+                    STOP
+                  elseif(irt.eq.2)then
+                    continue
+                  elseif(irt.eq.3)then
+                    CALL DeallocateAllArrays
+                    CALL EPAGEND
+                    STOP
+                  endif
+                else
+
+C For Non-unix place a & between the commands and also set the
+C text string tmode='bg' to partially mimic background mode.
+                  call edisp(iuout,'proposed command:')
+                  write(doit,'(4a)') 'cd ',cfgpath(1:lnblnk(cfgpath)),
+     &            ' & prj -file ',thecfgis(1:lnblnk(thecfgis))
+                  call edisp248(iuout,doit,100)
+                  call edisp(iuout,'  ')
+                  call pausems(1000)
+                  h(1)='To provide full functionality prj should'
+                  h(2)='restart in the copied model cfg folder. When'
+                  h(3)='prj has restarted this instance of prj will'
+                  h(4)='persist until you close the DOS cmd window.'
+                  CALL EASKABC(
+     &            'To provide full functionality prj needs to restart',
+     &            'focused on the model cfg folder','yes restart',
+     &            'continue','abort prj',IRT,4)
+                  if(irt.eq.1)then
+
+C Separate two dos cmds with & but do not include & at end to force background
+C mode via runit parameter. The initial prj tends not to close unless the
+C DOS cmd window is Xed.
+                    doit='  '
+                    write(doit,'(4a)') 'cd ',cfgpath(1:lnblnk(cfgpath)),
+     &              ' & prj -file ',thecfgis(1:lnblnk(thecfgis))
+                    call edisp248(iuout,doit,100)
+                    call pausems(1000)
+C << see if we can implement a bg for tmode in esru_lib.F
+                    tmode='bg'
+                    call runit(doit,tmode)
+                    call pausems(1000)
+
+C Clear allocatable arrays
+                    CALL DeallocateAllArrays
+                    CALL EPAGEND
+                    STOP
+                  elseif(irt.eq.2)then
+                    continue
+                  elseif(irt.eq.3)then
+                    CALL DeallocateAllArrays
+                    CALL EPAGEND
+                    STOP
+                  endif
                 endif
               elseif(IW.eq.2)then
 
@@ -1697,6 +1812,7 @@ C << to be done - then name file generated is never cleaned up >>
 
 #include "building.h"
 #include "model.h"
+C UA1 in uncertainty.h
 #include "uncertainty.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -1751,7 +1867,6 @@ C ICLIM,LCLIM (for climate file)
       common/MOIST02/LMOIST(MCOM)
       common/spmfxst/ispmxist,spflnam
       INTEGER :: ispmxist
-      COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       character imgfmt*4  ! GIF XBMP TIF JPG
       character imgfoc*4  ! FZON FNET FCTL FDFS
       character limgfil*72  ! file name (extend to 144 char)
@@ -1766,7 +1881,6 @@ C ICLIM,LCLIM (for climate file)
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
       INTEGER :: ibsimp
 
-      character LUALF*72,LCNG*15,LLOC*15
       character LPNF*72,LMOIST*72
       character*72 LCFD
       character LCMDFL*144,LFIL*72
@@ -2537,13 +2651,16 @@ C If act is g then use GEN bodies.
 
 C Write each surface as a PLA type. Proceed with VIS 0 or 2 depending
 C on if it is transparent. Also mark each with an identity zone:name.
+C Note: does not know quite how to treat CFC and CFC2 so just treats
+C as opaque.
           do J=1,NSUR
             icn=IZSTOCN(newfoc,j)  ! get connection
             lsn=lnblnk(sname(newfoc,j))
             write(zsn,'(3a)') zname(newfoc)(1:lnzname(newfoc)),
      &        ':',sname(newfoc,j)(1:lsn)
             if (SSOTF(icn)(1:4).ne.'OPAQ'.and.
-     &          SSOTF(icn)(1:4).ne.'CFC ') then
+     &          SSOTF(icn)(1:4).ne.'CFC '.and.
+     &          SSOTF(icn)(1:4).ne.'CFC2') then
               write(ioout,'(a)')' VIS '
               write(ioout,'(a)')' 0 '
             else

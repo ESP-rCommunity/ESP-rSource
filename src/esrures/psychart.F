@@ -940,10 +940,14 @@ C Setup and pass in parameters to win3d.
       CALL startbuffer
 
 C Draw the axes of the chart.
-      CALL horaxis(Xmin,Xmax,iigl,iigr,iigb,xadd,XSC,0,'db Temp C')
-      CALL vrtaxis(0.0,0.01,iigl,iigb,iigt,yadd,YSC,0,0,
+      call dintervalf(Xmin,Xmax,ddy1,ny,0)
+      CALL horaxisdd(Xmin,Xmax,iigl,iigr,iigb,xadd,XSC,0,
+     &  ddy1,ny,'db Temp C')
+      call dintervalf(0.0,0.01,DY,NDEC,0)
+      CALL vrtaxisdd(0.0,0.01,iigl,iigb,iigt,yadd,YSC,0,DY,NDEC,0,
      &  'Enthalpy kJ/kg')
-      CALL vrtaxis(Ymin,Ymax,iigr,iigb,iigt,yadd,YSC,0,1,
+      CALL dintervalf(Ymin,Ymax,ddy1,ny,0)
+      CALL vrtaxisdd(Ymin,Ymax,iigr,iigb,iigt,yadd,YSC,0,DY,NDEC,1,
      &  'Moisture g/kg')
 
 C Store the scaling parameters used in drawing the axes

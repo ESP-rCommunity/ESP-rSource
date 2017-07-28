@@ -261,10 +261,12 @@ C views and looking east.
       isky=3; irdoy=92; rtime=10.0; iryear=2007
       angh=60.0; angv=60.
 
-      rvpx=-10.0; rvpy=-10.0; rvpz=10.0
-      vdx=1.0; vdy=0.0; vdz=0.0
+C << and we could set this based on the initial view
+C << type? Find that dialog and insert better options.
+      rvpx=-100.0; rvpy=-100.0; rvpz=100.0 ! to match typical def view
+      vdx=0.647; vdy=0.581; vdz= -0.493    ! to match typical def view
       vux=0.0; vuy=0.0; vuz=1.0
-      azimuth=90.0; elevtn=0.0
+      azimuth=45.0; elevtn=-20.0
       cutfor=0.0; cutaft=0.0
 
 C Initial coords for eyepoint, viewing point, angle of view.
@@ -409,7 +411,7 @@ C All subsequent tstamp messages will be appended to root journal.
 
 C Scan the defaults file for default configuration.
 C Make temporary use of file unit IFIL+1.
- 902  call escdef(IFIL+1,IER)
+ 902  call escdef(IFIL+1,'s',IER)
 
 C Take `c' command line file name, convert to fortran string LCMDFL.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then

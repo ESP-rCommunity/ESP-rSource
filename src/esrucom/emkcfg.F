@@ -38,6 +38,7 @@ C common blocks into the file and unit specified in COMMON/C21.
 #include "geometry.h"
 #include "net_flow.h"
 #include "tdf2.h"
+C UA1 in uncertainty.h
 #include "uncertainty.h"
 #include "MultiYear_simulations.h"
 #include "bc_data.h"
@@ -61,6 +62,7 @@ C ICLIM,LCLIM (for climate file)
 #include "qrun.h"
 #include "plant.h"
 #include "power.h"
+#include "FMI.h"
 
       INTEGER, PARAMETER :: MSTMC=20
       
@@ -189,9 +191,6 @@ C Numbers associated with one climatelist item.
       common/clmlnum/nbclmlhelp
       INTEGER :: nbclmlhelp
 
-C Uncertainty analysis common.
-      COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
-
 C Anchor data in model.h.
 
 C Simulation parameter presets.
@@ -309,10 +308,10 @@ C Zone fluid.
       character GTGEOM*72,LCFD*72,DCNN*72
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,indxcmt*24,DBSN*15
       character*10 wkd1, wkd2
-      character LUALF*72,LCNG*15,LLOC*15,lipvdatf*72
+      character lipvdatf*72
       CHARACTER outs*124
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,spfdescr*8,ltmp*72,louts*144
+      character selres*72,spfdescr*30,ltmp*72,louts*144
       character bidirfile*72,bidirname*12
       character calename*32,calentag*12,calendayname*32,loutc*96
       character LWndSupp*72
@@ -1221,11 +1220,11 @@ C Flag indicating start of multi-year climate record.
             WRITE(IFCFG,'(2I3,1I5,2I3,1I5,2x,2A)',IOSTAT=IOS,ERR=2)
      &        isstday(iss),isstmon(iss),iMY_period_start_years(iss),
      &        isfnday(iss),isfnmon(iss),iMY_period_end_years(iss),
-     &        spfdescr(iss),' # period & name'
+     &        spfdescr(iss)(1:lnblnk(spfdescr(iss))),' # period & name'
           else
             WRITE(IFCFG,'(4I4,2x,2A)',IOSTAT=IOS,ERR=2)isstday(iss),
-     &        isstmon(iss),isfnday(iss),isfnmon(iss),spfdescr(iss),
-     &        ' # period & name'
+     &        isstmon(iss),isfnday(iss),isfnmon(iss),spfdescr(iss)
+     &        (1:lnblnk(spfdescr(iss))),' # period & name'
           endif 
           if(INDCFG.ne.2)WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*sblr ',
      &      sblres(iss)(1:lnblnk(sblres(iss)))
@@ -1547,6 +1546,14 @@ C Plant network information - plant file and model name (if plant only).
      &      modeltitle(1:lnblnk(modeltitle))
         endif
       endif
+
+C <FMI>
+C If FMI is active, write the tag and spec file name.
+      if (is_FMU.and.FMISFL.ne.'UNKNOWN') then
+        write(IFCFG,'(a,a,a)',IOSTAT=IOS,ERR=2)
+     &    '*FMI ',FMISFL(1:lnblnk(FMISFL)),'  # FMI specification file'
+      endif
+C </FMI>
 
 C This is all there is to write so close the files.
  9028 CALL ERPFREE(IFCFG,IOS) ! free the cfg file unit

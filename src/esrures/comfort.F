@@ -22,8 +22,7 @@ C This file contains the following routines:
 C  MOCMFT provides a zone comfort assessment for a
 C         particular 24 hour period.
 
-C scnocup: Scans occupancy in each of the zones of the probem.
-C getocup: 
+C getocup: Determine if zone is occupied at time step, for filtering.
 C DISCOMF: Returns local dicomfort information (PPD).
 C DRAUGHT: PPD due to draughts (nothing calls this yet).
 C OFFSETTEMP: air velocity required to maintain comfort (nothing calls this yet).
@@ -58,7 +57,7 @@ C #include "espriou.h"
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
 C Comfort parameters and hash table.
-      common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
+      common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset
 
 C Pre calculated data (filtered).
       common/MMAFDAT/IFILT,RDFMAX(MCOM,3,MZRL),RDFMIN(MCOM,3,MZRL),
@@ -67,12 +66,14 @@ C Pre calculated data (filtered).
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
 
+      common/recver/izver,ipver,iever
+      common/timfltr/iwkdst,iwkdfn,isatst,isatfn,isunst,isunfn
 
       DIMENSION ID(12),OP(MS),TS(MS),TSO(MS),QV(MS),ITEMS(14)
       character doit*248,tmode*8
       character longtfile*144,longtfiledos*144
       CHARACTER*25 DESC(12)
-      character outs*124,TSTR*24,ZN*12
+      character outs*124,TSTR*24,ZN*12,hold*24
       character xfile*144,ITEMS*25,tg*1,delim*1,act*1
       character*12 ll1,ll2,ll3
       logical ok,dok,concat,unixok
@@ -153,19 +154,46 @@ C << revise for additional casual gain types >>
         write(ll3,'(a)') lodlabel(IZONE,3)
         helptopic='res_comfort_occupied'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        IOT=1
+ 936    IOT=1
         CALL EASKATOG('Which casual gain represents occupancy:',' ',
      &      'Always occupied',ll1,ll2,ll3,'time',' ',' ',IOT,nbhelp)
         if (IOT.gt.1.and.IOT.lt.5) then
-          iocupf=1      
-          iocut=IOT-1
+          if (izver.lt.4) then
+            write(outs,'(2a)')'Occupancy filtering not ',
+     &       'available for legacy results libraries before version 4.'
+            call usrmsg(outs,
+     &   'Please regenerate results library or use time filtering.','W')
+            goto 936
+          else
+            iocupf=1      
+            iocut=IOT-1
+          endif
         elseif(IOT.eq.1)then
           iocut=0
         elseif(IOT.eq.5)then
           iocut=-1
+          write(HOLD,'(a)') '  0  24  '
+          CALL EASKS(HOLD,' ',' Weekday occupancy period: ',
+     &      24,' 0  24 ','wkd occup period',IER,nbhelp)
+          K=0
+          CALL EGETWI(HOLD,K,iwkdst,0,24,'W','iwkdst',IER)
+          CALL EGETWI(HOLD,K,iwkdfn,iwkdst,24,'W','iwkdst',IER)
+
+          write(HOLD,'(a)') '  0  24  '
+          CALL EASKS(HOLD,' ',' First weekend day occupancy period: ',
+     &     24,' 0  24 ','sat occup period',IER,nbhelp)
+          K=0
+          CALL EGETWI(HOLD,K,isatst,0,24,'W','isatst',IER)
+          CALL EGETWI(HOLD,K,isatfn,isatst,24,'W','isatst',IER)
+
+          write(HOLD,'(a)') '  0  24  '
+          CALL EASKS(HOLD,' ',' Second weekend day occupancy period: ',
+     &     24,' 0  24 ','sat occup period',IER,nbhelp)
+          K=0
+          CALL EGETWI(HOLD,K,isunst,0,24,'W','isunst',IER)
+          CALL EGETWI(HOLD,K,isunfn,isunst,24,'W','isunst',IER)
         endif
         iocuset=1
-        call scnocup(iier)
         IFILT=iocut
         return
       endif
@@ -193,7 +221,9 @@ C Begin with high level menu if in verbose mode.
       WRITE(ITEMS(5),'(A,F5.2)')   'd CLO value     : ',CLO
       WRITE(ITEMS(6),'(A,F5.1)')   'e Activity level: ',ACTL
       WRITE(ITEMS(7),'(A,F5.1)')   'f Air velocity  : ',WVEL
-      if(iocut.lt.1)then
+      if(iocut.eq.0)then
+        ITEMS(8) =                 'g Occupancy: always     '
+      elseif(iocut.eq.-1)then      
         ITEMS(8) =                 'g Occupancy: time based '
       else
         WRITE(ITEMS(8),'(A,I1)')   'g Occup = casual type: ',iocut
@@ -303,20 +333,47 @@ C << revise for additional casual gain types >>
         write(ll1,'(a)') lodlabel(IZONE,1)
         write(ll2,'(a)') lodlabel(IZONE,2)
         write(ll3,'(a)') lodlabel(IZONE,3)
-        helptopic='res_comfort_occupancy'
+        helptopic='res_comfort_occupied'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        IOT=1
+ 937    IOT=1
         CALL EASKATOG('Which casual gain represents occupancy:',' ',
      &      'Always occupied',ll1,ll2,ll3,'time',' ',' ',IOT,nbhelp)
         if (IOT.gt.1.and.IOT.lt.5) then
-          iocut=IOT-1
+          if (izver.lt.4) then
+            write(outs,'(2a)')'Occupancy filtering not ',
+     &       'available for legacy results libraries before version 4.'
+            call usrmsg(outs,
+     &   'Please regenerate results library or use time filtering.','W')
+            goto 937
+          else      
+            iocut=IOT-1
+          endif
         elseif(IOT.eq.1)then
           iocut=0
         elseif(IOT.eq.5)then
           iocut=-1
+          write(HOLD,'(a)') '  0  24  '
+          CALL EASKS(HOLD,' ',' Weekday occupancy period: ',
+     &      24,' 0  24 ','wkd occup period',IER,nbhelp)
+          K=0
+          CALL EGETWI(HOLD,K,iwkdst,0,24,'W','iwkdst',IER)
+          CALL EGETWI(HOLD,K,iwkdfn,iwkdst,24,'W','iwkdst',IER)
+
+          write(HOLD,'(a)') '  0  24  '
+          CALL EASKS(HOLD,' ',' First weekend day occupancy period: ',
+     &     24,' 0  24 ','sat occup period',IER,nbhelp)
+          K=0
+          CALL EGETWI(HOLD,K,isatst,0,24,'W','isatst',IER)
+          CALL EGETWI(HOLD,K,isatfn,isatst,24,'W','isatst',IER)
+
+          write(HOLD,'(a)') '  0  24  '
+          CALL EASKS(HOLD,' ',' Second weekend day occupancy period: ',
+     &     24,' 0  24 ','sat occup period',IER,nbhelp)
+          K=0
+          CALL EGETWI(HOLD,K,isunst,0,24,'W','isunst',IER)
+          CALL EGETWI(HOLD,K,isunfn,isunst,24,'W','isunst',IER)
         endif
         call usrmsg(' ',' ','-')
-        call scnocup(iier)
         IFILT=iocut
       elseif(ino.eq.10)then
         goto 78
@@ -428,7 +485,7 @@ C The LET* comfort routines implemented by Cor Pernot, FAGO-TNO.
 C If occupancy is assumed to be equivalent to a non-zero value
 C of one of the casual gain types test here.
         ih=int(TIME+1.)
-        call getocup(izone,iday,ih,ioc,ier)
+        call getocup(izone,iday,JTS,ioc,ier)
         if(ioc.eq.0)ICMFRT=10
 
 C Debug.
@@ -495,183 +552,11 @@ C (to test for occupancy in the next pass).
       endif
       END
 
-C ******** scnocup
-C Scans unaveraged occupancy in each of the zones of the probem. Weekdays are
-C assumed to be in ioucpz(izone,[1-24]), saturdays ioucpz(izone,[25-48]),
-C sundays ioucpz(izone,[49-72]), This hash table will need altering 
-C if sub-hour casual gains definitions are implemented. 
-      subroutine scnocup(ier)
-#include "building.h"
-C #include "schedule.h"
-C #include "espriou.h"
-
-      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      
-      integer ncomp,ncon
-      common/c1/ncomp,ncon
-C      COMMON/OUTIN/IUOUT,IUIN
-      COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
-      common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
-C      common/recver/izver,ipver,iever
-
-      logical close15,close16,close17
-      character hold*24
-C      character outs*124
-
-C For help messages
-      character helpinsub*24 ! subroutine name
-      character helptopic*24 ! string (unique) for topic
-      integer nbhelp     ! number of help lines found (will be non-zero
-                         ! because default message will be created
-      helpinsub='scnocup'  ! set for subroutine
-
-C Find weekday saturday and sunday dates so can extract casual gains
-C for each day type. This should be done for the first 7 days of the
-C current simulation.
-      idays=ISDF-ISDS
-      if(idays.gt.7)then
-        do 41, id = ISDS,ISDS+7
-          CALL EDAYR(ID,IDAYN,IMTHN)
-          CALL EWEEKD(IDAYN,IMTHN,IYEAR,IDWK)
-          if(IDWK.EQ.7)then
-            isun=id
-          elseif(IDWK.EQ.6)then
-            isat=id
-          else
-            imon=id
-          endif
- 41     continue
-      else
-        do 142, id = ISDS,ISDF
-          CALL EDAYR(ID,IDAYN,IMTHN)
-          CALL EWEEKD(IDAYN,IMTHN,IYEAR,IDWK)
-          if(IDWK.EQ.7)then
-            isun=id
-          elseif(IDWK.EQ.6)then
-            isat=id
-          else
-            imon=id
-          endif
- 142    continue
-      endif
-      if(iocut.eq.-1)then
-        helptopic='res_weekday_occup_period'
-        call gethelptext(helpinsub,helptopic,nbhelp)
-        write(HOLD,'(a)') '  0  24  '
-        CALL EASKS(HOLD,' ',' Weekday occupancy period: ',
-     &     24,' 0  24 ','wkd occup period',IER,nbhelp)
-        K=0
-        CALL EGETWI(HOLD,K,iwkdst,0,24,'W','iwkdst',IER)
-        CALL EGETWI(HOLD,K,iwkdfn,iwkdst,24,'W','iwkdst',IER)
-
-        write(HOLD,'(a)') '  0  24  '
-        CALL EASKS(HOLD,' ',' First weekend day occupancy period: ',
-     &     24,' 0  24 ','sat occup period',IER,nbhelp)
-        K=0
-        CALL EGETWI(HOLD,K,isatst,0,24,'W','isatst',IER)
-        CALL EGETWI(HOLD,K,isatfn,isatst,24,'W','isatst',IER)
-
-        write(HOLD,'(a)') '  0  24  '
-        CALL EASKS(HOLD,' ',' Second weekend day occupancy period: ',
-     &     24,' 0  24 ','sat occup period',IER,nbhelp)
-        K=0
-        CALL EGETWI(HOLD,K,isunst,0,24,'W','isunst',IER)
-        CALL EGETWI(HOLD,K,isunfn,isunst,24,'W','isunst',IER)
-      elseif(iocut.eq.0)then
-        iwkdst=0
-        iwkdfn=24
-        isatst=0
-        isatfn=24
-        isunst=0
-        isunfn=24
-      endif
-      do 42, izone = 1,ncomp
-
-C Get periods for weekday, and two weekend days. If no casual gains
-C (occupancy type) at each hour then set ioucpz to zero.  This hash
-C table will need altering if sub-hour casual gains definitions are
-C implemented.
-        if(imon.ne.0)CALL ZCASCF(IZONE,imon,0)
-        do 43, it=1,24
-          if(imon.ne.0)then
-            itt=it*NTS
-            call eclose(VAL3(15,itt),0.0,0.1,close15)
-            call eclose(VAL3(16,itt),0.0,0.1,close16)
-            call eclose(VAL3(17,itt),0.0,0.1,close17)
-            ioucpz(izone,it)=1
-            if(iocut.lt.1)then
-              if(it.lt.iwkdst.or.it.gt.iwkdfn)ioucpz(izone,it)=0
-            elseif(iocut.eq.1)then
-              if(close15)ioucpz(izone,it)=0
-            elseif(iocut.eq.2)then
-              if(close16)ioucpz(izone,it)=0
-            elseif(iocut.eq.3)then
-              if(close17)ioucpz(izone,it)=0
-            endif
-          else
-            ioucpz(izone,it)=0
-          endif
-  43    continue
-        if(isat.ne.0)CALL ZCASCF(IZONE,isat,0)
-        do 44, it=1,24
-          if(isat.ne.0)then
-            itt=it*NTS
-            call eclose(VAL3(15,itt),0.0,0.1,close15)
-            call eclose(VAL3(16,itt),0.0,0.1,close16)
-            call eclose(VAL3(17,itt),0.0,0.1,close17)
-            ioucpz(izone,it+24)=1
-            if(iocut.lt.1)then
-              if(it.lt.isatst.or.it.gt.isatfn)ioucpz(izone,it+24)=0
-            elseif(iocut.eq.1)then
-              if(close15)ioucpz(izone,it+24)=0
-            elseif(iocut.eq.2)then
-              if(close16)ioucpz(izone,it+24)=0
-            elseif(iocut.eq.3)then
-              if(close17)ioucpz(izone,it+24)=0
-            endif
-          else
-            ioucpz(izone,it+24)=0
-          endif
-  44    continue
-        if(isun.ne.0)CALL ZCASCF(IZONE,isun,0)
-        do 45, it=1,24
-          if(isun.ne.0)then
-            itt=it*NTS
-            call eclose(VAL3(15,itt),0.0,0.1,close15)
-            call eclose(VAL3(16,itt),0.0,0.1,close16)
-            call eclose(VAL3(17,itt),0.0,0.1,close17)
-            ioucpz(izone,it+48)=1
-            if(iocut.lt.1)then
-              if(it.lt.isunst.or.it.gt.isunfn)ioucpz(izone,it+48)=0
-            elseif(iocut.eq.1)then
-              if(close15)ioucpz(izone,it+48)=0
-            elseif(iocut.eq.2)then
-              if(close16)ioucpz(izone,it+48)=0
-            elseif(iocut.eq.3)then
-              if(close17)ioucpz(izone,it+48)=0
-            endif
-          else
-            ioucpz(izone,it+48)=0
-          endif
-  45    continue
-
-C Debug.
-C        write(6,*) 'zone:',izone,'  iocut:',iocut,'  iocuset:',iocuset
-C        write(6,*) 'ioucpz (wkd)',(ioucpz(izone,j),j=1,24)
-C        write(6,*) 'ioucpz (sat)',(ioucpz(izone,j),j=25,48)
-C        write(6,*) 'ioucpz (sun)',(ioucpz(izone,j),j=49,72)
-
- 42   continue
-      return
-      end
-
 C ******** getocup
-C Looks up occupancy patterns and returns in ioc for a given zone/day/hour.
+C Looks up occupancy patterns and returns yes or no (1 or 0) in ioc for
+C a given zone/day/time step.
 
-C << todo - use of explicit read of casual gains >>
-
-      subroutine getocup(izone,iday,ih,ioc,ier)
+      subroutine getocup(izone,iday,istep,ioc,ier)
 #include "building.h"
 C #include "geometry.h"
 #include "net_flow.h"
@@ -680,11 +565,12 @@ C #include "geometry.h"
       common/recver/izver,ipver,iever
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-C      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/OUTIN/IUOUT,IUIN
       
       integer ncomp,ncon
       common/c1/ncomp,ncon
-      common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
+      common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset
+      common/timfltr/iwkdst,iwkdfn,isatst,isatfn,isunst,isunfn
 
       character outs*124
       logical found,close15,close16,close17
@@ -696,74 +582,95 @@ C      COMMON/OUTIN/IUOUT,IUIN
       real otherc,otherr,otherl ! average other (future expansion) to write out
       integer theonectld  ! if non-zero the casual gain type that is controlled.
 
+      real ftime
+
+      NDTS=24*NTS
+      ISET=ISIM
+
 C Range testing.
-      if(izone.lt.1.or.izone.gt.ncomp.or.ih.lt.1)then
+      if(izone.lt.1.or.izone.gt.ncomp.or.istep.gt.NDTS)then
         write (outs,'(3(a,i3),a,a)') 
-     &      'zone(',izone,'), day(',iday,'), hour(',ih,').  Assuming',
-     &      ' zone is occupied.'
+     &      'zone(',izone,'), day(',iday,'), time step(',istep,').  ',
+     &      'Assuming zone is occupied.'
         call usrmsg(
-     &      'getocup: out of range zone/day/hour index in:',outs,'W')
+     &      'getocup: out of range zone/day/step index in:',outs,'W')
         ioc=1
         ier=1
         return
       endif
 
-      IEND=24*NTS
-      ISET=ISIM
-
 C If assumption of occupied all hours then return 1.
       if(iocut.eq.0)then
         ioc=1
-        return
-      endif
 
-C Find day of week.
-      CALL EDAYR(iday,IDAYN,IMTHN)
-      CALL EWEEKD(IDAYN,IMTHN,IYEAR,IDWK)
-      if(IDWK.EQ.7)then
-        ioc=ioucpz(izone,ih+48)
-      elseif(IDWK.EQ.6)then
-        ioc=ioucpz(izone,ih+24)
+C Filtered by user-defined times stored in common "timfltr".
+      elseif(iocut.eq.-1)then
+        ftime=istep/NTS
+        write(6,*)istep,ftime
+        CALL EDAYR(iday,IDAYN,IMTHN)
+        CALL EWEEKD(IDAYN,IMTHN,IYEAR,IDWK)
+        if(IDWK.eq.6)then
+          ist=isatst
+          ifn=isatfn
+        elseif(IDWK.eq.7)then
+          ist=isunst
+          ifn=isunfn
+        else
+          ist=iwkdst
+          ifn=iwkdfn
+        endif
+
+        if(ftime.gt.ist.and.ftime.le.ifn)then
+          ioc=1
+        else
+          ioc=0
+        endif
+
+C Filtered by occupancy, associated with one casual gain type.
+C NOTE: this functionality is not available for results libraries of
+C version below 4.
       else
-        ioc=ioucpz(izone,ih)
-      endif
-
-C If izver >= 4 the read the data directly for the exceptional
-C cases of temporal gains.
-      if(izver.ge.4)then
-        found = .false.
-        if(ICASUAL(izone).ne.0)found = .true.  ! if single casual item
-        if(ICASUAL3(izone).ne.0)found = .true. ! if 3 separate casual item
-        if(IACTIV(izone).ne.0)found = .true.   ! if UK activity item
-        if(found)then
-          DO 141, I=1,IEND
-            call getallcas(IDAY,IZONE,ISET,I,QCASR,QCASC,QCASL,FRAC,
+        if(izver.ge.4)then
+          call getallcas(IDAY,IZONE,ISET,ISTEP,QCASR,QCASC,QCASL,FRAC,
      &      perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
      &      perequipr,otherr,perocupl,perlightl,perequipl,otherl,
      &      theonectld)
+c          write(6,*)QCASR,QCASC,QCASL,FRAC,
+c     &      perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
+c     &      perequipr,otherr,perocupl,perlightl,perequipl,otherl,
+c     &      theonectld
+          ioc=0
+          if(iocut.eq.1)then
             call eclose(perocupc,0.0,0.1,close15)
             call eclose(perocupr,0.0,0.1,close16)
             call eclose(perocupl,0.0,0.1,close17)
-            ioc=1
-            if(iocut.eq.1)then
-              if(close15) ioc=0
-            elseif(iocut.eq.2)then
-              if(close16) ioc=0
-            elseif(iocut.eq.3)then
-              if(close17) ioc=0
-            endif
-
-C Debug.
-C            if(ioc.gt.0) write(6,*) '* Found temporal occupancy @',itt
-
-  141     continue
-          return
+          elseif(iocut.eq.2)then
+            call eclose(perlightc,0.0,0.1,close15)
+            call eclose(perlightr,0.0,0.1,close16)
+            call eclose(perlightl,0.0,0.1,close17)
+          elseif(iocut.eq.3)then
+            call eclose(perequipc,0.0,0.1,close15)
+            call eclose(perequipr,0.0,0.1,close16)
+            call eclose(perequipl,0.0,0.1,close17)
+          endif
+          if(.not.close15) ioc=1
+          if(.not.close16) ioc=1
+          if(.not.close17) ioc=1
+        else
+          write(outs,'(2a)')"getocup: occupancy filtering not ",
+     &      "available for legacy results libraries before version 4."
+          call edisp(iuout,outs)
+          write(outs,'(2a)')
+     &      "Please regenerate results library or use time filtering. ",
+     &      "Assuming zone is occupied."
+          call edisp(iuout,outs)
+          ioc=1
+          ier=1
         endif
       endif
 
       return
       end
-
 
 C ************************ LOCOMF ************************
 C LOCOMF: calculate local discomfort.

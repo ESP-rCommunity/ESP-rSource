@@ -238,6 +238,9 @@ C the current applications command window rather than
 C starting up a new xterm (i.e. use '-' rather than 'text')
                 if(IRT.eq.1)then
                   call comissionish(iz,'sr ',ier)
+                  if(ier.ne.0)then
+                    call edisp(iuout,'Possible error in calculations.')
+                  endif
                 else
                   DOK=.TRUE.
                   write(outs,'(3a)') 'Proceed with shading for ',
@@ -245,6 +248,10 @@ C starting up a new xterm (i.e. use '-' rather than 'text')
                   CALL ASKOK(outs,' ',OK,DOK,nbhelp)
                   if(OK)then
                     call comissionish(iz,'ir ',ier)
+                    if(ier.ne.0)then
+                      call edisp(iuout,
+     &                  'Possible error in calculations.')
+                    endif
                   endif
                 endif
               endif
@@ -1117,6 +1124,7 @@ C temporal data to be associated with a model.
 #include "net_flow.h"
 #include "tdf2.h"
 #include "control.h"
+#include "CFC_common.h"
       
       integer lnblnk  ! function definition
 
@@ -1139,7 +1147,7 @@ C TDF related.
       CHARACTER PROMPT1*72, PROMPT2*72
 
       logical MODSIT,browse,OK,dok,unixok
-      logical FOUND,XST
+      logical FOUND,XST,shd_xst
 
       character outs*124,ltmp*72,hold*40
       character fs*1,msgl2*48
@@ -1147,7 +1155,7 @@ C TDF related.
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       character OUTSTR*124,HDR*12
       character*34 ITEMS(7)
-      integer ier
+      integer ier,ian3,ilayer
       integer nitms,irt ! max items and current menu item
       DIMENSION INPK(MNOD)
 
@@ -1171,6 +1179,7 @@ C Set folder separator (fs) to \ or / as required.
       endif
 
 C Default name for temporal file. For all cases generate default name.
+cx << check if name already defined, here??
       if(netpth(1:2).eq.'  '.or.netpth(1:2).eq.'./')then
         WRITE(DLTDF,'(2a)')cfgroot(1:lnblnk(cfgroot)),'_temporal.tdfa'
       else
@@ -1179,7 +1188,7 @@ C Default name for temporal file. For all cases generate default name.
       endif
 
 C Temporal definitions. Initial scan of configuration file would
-C determine if the state of the file:
+C determine the state of the file:
       if(iabs(itdflg).eq.0)then
 C        call edisp(iuout,' ')
 C        call edisp(iuout,'No temporal data has been defined.')
@@ -1346,12 +1355,15 @@ C Begin with high level menu.
   27  continue
       if(IRT.eq.1)then
 
+C Create a new file (itdflg = 0)
+cx ... or view/edit entities (itdflg = 3) ... this seems to create trouble!
 C If browsing do not bother to confim the file name.
         if(browse)then
           write(outs,'(2a)')' Temporal definitions ',LTDFA
           call edisp(iuout,outs)
         else
 
+cx << ask for file again only for itdflg == 0??!
 C If LTDFA is still UNKNOWN set to default name.
           if(LTDFA(1:4).eq.'UNKN') LTDFA=DLTDF
           ltmp=LTDFA
@@ -1377,6 +1389,7 @@ C Go into the tdf editing menu.
         goto 42
       elseif(IRT.eq.2)then
 
+C Select (existing!) temporal file
 C User supplies name of file. Find out its contents (using similar code
 C to ersys) and jump back to the start of this subroutine.
 
@@ -1384,8 +1397,8 @@ C << later add add a file browse function it is probably in the nets
 C << folder in most new models.
         if(LTDFA(1:4).eq.'UNKN') LTDFA=DLTDF
         ltmp=LTDFA
-        CALL EASKS(ltmp,' ','Temporal definitions file?',
-     &    72,DLTDF,'temporal definitions file',IER,nbhelp)
+        CALL EASKS(ltmp,' ','Existing temporal definitions file?',
+     &    72,DLTDF,'existing temporal definitions file',IER,nbhelp)
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
           continue
         else
@@ -1393,7 +1406,7 @@ C << folder in most new models.
         endif
         LTDFA=ltmp
         MODSIT=.true.
-        CALL ERPFREE(IUTDF,ISTAT)
+        CALL ERPFREE(IUTDF,ISTAT) ! (undefined) file unit handle iutdf now free ...
         call FINDFIL(LTDFA,XST)
         if(.NOT.XST)then
           goto 42
@@ -1441,7 +1454,7 @@ C Scan the first record of this file.
             CALL ERPFREE(IUTDF,ISTAT)
             ITDFLG=0
           endif
-        else
+        else ! ier .ne. 0 from EFOPSEQ()
           CALL ERPFREE(IUTDF,ISTAT)
           NWPR=MTABC
           ITWPR=NWPR+1
@@ -1643,6 +1656,7 @@ C Reset itemstd to the item to be edited.
           DBTASK(ITE)=TTYPE(it)
 
 C Depending on the type of the data, ask for associated zone.
+cx << wild mix of "it" and "ite", here???
           if(TTYPE(it)(1:6).eq.'CASUAL'.or.
      &       TTYPE(it)(1:7).eq.'ELECPWR')then
             IC=-1
@@ -2073,7 +2087,181 @@ C Ask which zone is linked to charging schedule
      &      'Related zone','-','Charging schedule for which zone?',ier)
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 356
             write(DBZN(ITE),'(a)') zname(IC)(1:12)
-            DBSN(ITE)='ALL' 
+            DBSN(ITE)='ALL'
+
+cx *************************************************************
+cx **** CFCCTL => Copy from SETPTT ...
+
+          elseif(TTYPE(it)(1:6).eq.'CFCCTL') then
+
+C If there is no control file warn the user to create one first.
+            if(nCFCctlloops.eq.0)then
+              call usrmsg(
+     &        'There are no CFC control loops defined. Please define ',
+     &        'before you create or use a link to temporal data.','W')
+              goto 42
+            endif
+
+C Present a summary of the steps needed to create a temporal-control link.
+cx << new entry for CFCCTL ??!!
+            helptopic='temporal_ctl_setpoints'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL PHELPD('temporal-control popup',nbhelp,'-',0,0,IER)
+
+C Ask the user whether there has already been a control law defined
+C to use the setpoint. If so report on that control loop and offer
+C selected information to alter. Controls with a sensor
+C first item equal to -5 and a control with a type 9
+C control law in the first period.
+            write(outs,'(a,i2,a)')' There are currently ',nCFCctlloops,
+     &        ' CFC control loops.'
+            call edisp(iuout,outs)
+            call edisp(iuout,'  ')
+            found=.false.
+            call edisp(iuout,
+     &  'Controls might be suitable for use with temporal data.')
+            do 78 ijj=1,nCFCctlloops
+              if(iCFCsensor(ijj,1).eq.-5)then
+                found=.true.
+                call LSTCNTL(iuout,0,ijj)
+              endif
+  78        continue
+            if(found) then
+
+C There are possible control loops. If the user selects one of them
+C copy data into cm variables for later editing.
+              irtc=0
+              CALL EASKABC(' CFC control linkage options:',' ',
+     &          'use existing control','create new control','continue',
+     &          IRTC,nbhelp)
+              if(irtc.eq.1)then
+                CALL EASKI(ispl,'Control loop to use tdf data?',
+     &            ' ',1,'F',nCFCctlloops,'F',ijj,
+     &            'cntrl loop for tdf data',IERI,nbhelp)
+                if(ieri.eq.-3) goto 42
+                iCFCsensor(ispl,1)=-5
+                iCFCsensor(ispl,2)=ICFCCTL(ispl) ! <= this should be the tdf entry number
+                iCFCsensor(ispl,3)=0
+                iCFCsensor(ispl,4)=0
+                cm(2)=bmiscd(ispl,1,1,2)
+                cm(3)=bmiscd(ispl,1,1,3)
+cx                cm(4)=bmiscd(ispl,1,1,4)
+cx                cm(5)=bmiscd(ispl,1,1,5)
+              elseif(itrc.eq.2) then
+C              ?? create new??
+
+              elseif(irtc.eq.3)then
+                goto 42
+              endif
+            else ! not found
+
+C No control loop has been defined to associate with this temporal
+C setpoint so create another one, fill in as much information as
+C possible and link back to the temporal item. Increment nCFCctlloops.
+              call edisp(iuout,'No applicable controls found.')
+              irtc=0
+              CALL EASKABC(' CFC control linkage options:',' ',
+     &          'n/a','create new control','cancel',IRTC,nbhelp)
+              if(irtc.eq.1.or.irtc.eq.3)then
+                goto 42
+              endif
+            endif ! check for existing ctl loop linked to tdf
+
+C Add another CFC control loop
+            if(irtc.eq.2)then
+              nCFCctlloops=nCFCctlloops+1
+              ispl=nCFCctlloops
+              iCFCsensor(ispl,1)=-5
+              iCFCsensor(ispl,2)=it ! <= tdf entry number, no??!!
+              iCFCsensor(ispl,3)=0
+              iCFCsensor(ispl,4)=0
+              cm(2)=0.0
+              cm(3)=0.0
+            endif
+
+            if(ispl.le.9)then
+              write(DBZN(ITE),'(a5,i1)') 'loop_',ispl
+            else
+              write(DBZN(ITE),'(a5,i2)') 'loop_',ispl
+            endif
+
+C Confirm which zone and which CFC type to use with this control.
+C Then instanciate all of the usual values for CFC control-temporal links.
+            IC=-1
+            CALL EPMENSV
+ 256        call askzone(ic,izdef,'Related zone for CFC tdf data?',
+     &        'Related zone','-','CFC control requires a zone.',ier)
+            CALL EPMENRC ! ... seems to be good practice ... ??
+            IF(IC.EQ.0.OR.IC.EQ.-1) GOTO 256
+
+C Ask for CFC type in selected zone.   
+  92        call askCFCtype(IC,ian3,IER)
+
+C Check that selected CFC type contains a shading layer.
+            shd_xst=.false.
+            do 1001 ilayer=1,ncfc_el(IC, ian3)
+              if(icfcltp(IC,ian3,ilayer).gt.iGlazing) shd_xst=.true.
+ 1001       continue
+            if(.not.shd_xst)then
+cx              SELECT=.false.
+              CALL USRMSG(' Shading layer not found, ',
+     &                         'please select another CFC type','W')
+              CALL EPMENRC
+              goto 92
+            endif
+            CALL EPMENRC
+
+cx << this block of code seems slightly "random", here ...
+cx << move to "if irtc.eq.2", above?
+            iCFCsensor(ispl,1)=-5
+            iCFCsensor(ispl,2)=it      ! tdf entry number ... (?)
+
+            iCFCactuator(ispl,1)=9
+            iCFCactuator(ispl,2)=IC    ! Zone picked
+            iCFCactuator(ispl,3)=ian3  ! CFC type in zone
+
+            nCFCctldaytypes(ispl)=1
+            iCFCctldatevalid(ispl,1,1)=1;
+            iCFCctldatevalid(ispl,1,2)=365
+            nCFCdayctlperiods(ispl,1)=1
+            CFCctlperiodstart(ispl,1,1)=0.0
+            iCFCctltype(ispl,1,1)=9
+cx            iCFCclaw(ispl,1,1)=9
+            cm(1)=2.0
+            cm(2)=0.0 ! default value on/off (=off)
+            cm(3)=0.0 ! default slat angle (0 deg, aka horizontal)
+
+C Confirm default values.
+  54        WRITE(HOLD,'(2f6.0)') cm(2),cm(3) !,cm(4),cm(5)
+            CALL EASKS(HOLD,
+     &      ' Default ON/OFF state, default slat angle',
+     &      ': ',40,' 0.0 0.0 ',
+     &      ' track another data set',IER,nbhelp)
+            K=0
+            CALL EGETWR(HOLD,K,cm(2),0.,1.,'F','ON/OFF',IER)
+            CALL EGETWR(HOLD,K,cm(3),-90.,90.,'F','Slat angle',IER)
+
+            if(ier.ne.0) goto 54
+
+C Update the control period data.
+            bmiscd(ispl,1,1,1)=cm(1)
+            bmiscd(ispl,1,1,2)=cm(2)
+            bmiscd(ispl,1,1,3)=cm(3)
+
+C Update the control file.
+            ICTLF=IFIL+1
+          call usrmsg('Updating control file for CFC temporal link...',
+     &        ' ','-')
+            CALL CTLWRT(ICTLF,IER)
+            CALL EMKCFG('-',IER)
+            call usrmsg(
+     &        'Updating control file for CFC temporal link...done.',
+     &        ' ','-')
+            DBSN(ITE)='ALL'
+
+cx **** END CFCCTL
+cx ******************************************************************
+
           else
             DBZN(ITE)='ALL'
             DBSN(ITE)='ALL'            
@@ -3784,20 +3972,26 @@ C Setup which ground temperature profile to edit (ifoc).
       END
 
 C ********** EDDSHD **************
-C EDDSHD Sets up shading and insolation files
+C EDDSHD Sets up shading and insolation files. If called
+C with 'site' then force recalcultion of all existing 
+C shading files. If called with 'asci' invoke ish with 
+C the useupdate_silent parameter to convert existing ASCII
+C files if possible.
 
-      SUBROUTINE EDDSHD
+      SUBROUTINE EDDSHD(act)
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+
+      character act*4  ! site or asci
 
       common/OUTIN/IUOUT,IUIN
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      character outs*248
-      logical XST,OK,DOK,unixok
+      character outs*248,shdafile*72
+      logical XST,XSTA,OK,DOK,unixok
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -3812,48 +4006,126 @@ C For help messages
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
-
-      do 42 iz=1,ncomp
-        if(ISI(iz).eq.1)then
-          call FINDFIL(LSHAD(iz),XST)
-          if(XST)then
-            write(outs,'(3a)') 'Shading for ',zname(iz)(1:lnzname(iz)),
-     &        ' is out of date.'
-            call edisp(iuout,outs)
+      if(act.eq.'SITE'.or.act.eq.'site'.or.act.eq.'Site')then
+        do iz=1,ncomp
+          if(ISI(iz).eq.1)then
+            call FINDFIL(LSHAD(iz),XST)
+            if(XST)then
+              write(outs,'(3a)') 'Shading for ',
+     &          zname(iz)(1:lnzname(iz)),' is out of date.'
+              call edisp(iuout,outs)
+            endif
           endif
-        endif
-  42  continue
-      helptopic='reflect_site_change'
-      call gethelptext(helpinsub,helptopic,nbhelp)
-      CALL EASKABC(' Reflect site change in shading options:',' ',
-     &  'recalculate (silent)','recalculate (interactive)','continue',
-     &  IRT,nbhelp)
-      if(IRT.eq.1.or.IRT.eq.2)then
-        if(IRT.eq.1)then
-        endif
-        do 43 iz=1,ncomp
-          if(ISI(iz).eq.0) goto 43
-          call FINDFIL(LSHAD(iz),XST)
+        enddo
+      elseif(act.eq.'ASCI'.or.act.eq.'asci')then
+        do iz=1,ncomp
+          if(ISI(iz).eq.1)then
+            write(shdafile,'(2a)') lshad(iz)(1:lnblnk(lshad(iz))),'a'
+            call FINDFIL(shdafile,XST)
+            if(XST)then
+              write(outs,'(3a)') 'Shading for ',
+     &          zname(iz)(1:lnzname(iz)),' can be imported from ASCII.'
+              call edisp(iuout,outs)
+            endif
+          endif
+        enddo
+      endif
+
+C Proceed to recalculate all shading/insolation to refelect
+C the site change.
+      if(act.eq.'SITE'.or.act.eq.'site'.or.act.eq.'Site')then
+        helptopic='reflect_site_change'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL EASKABC(' Reflect site change in shading options:',' ',
+     &    'recalculate (silent)','recalculate (interactive)','continue',
+     &    IRT,nbhelp)
+        if(IRT.eq.1.or.IRT.eq.2)then
+          do 43 iz=1,ncomp
+            if(ISI(iz).eq.0) goto 43
+            call FINDFIL(LSHAD(iz),XST)
 
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive ish.
 C If user asked for silent recalculation then do each
 C one in forground in an xterm with `-act update_silent`
 C as the command line.
-          if(IRT.eq.1)then
-            call comissionish(iz,'sra',ier)
-          else
-            DOK=.true.
-            write(outs,'(3a)') 'Proceed with shading for ',
-     &        zname(iz)(1:lnzname(iz)),' ?'
-            CALL ASKOK(outs,' ',OK,DOK,nbhelp)
-            if(OK)then
-              call comissionish(iz,'ira',ier)
+            if(IRT.eq.1)then
+              call comissionish(iz,'sra',ier)
+              if(ier.ne.0)then
+                call edisp(iuout,'Possible error in calculations.')
+              endif
+            else
+              DOK=.true.
+              write(outs,'(3a)') 'Proceed with shading for ',
+     &          zname(iz)(1:lnzname(iz)),' ?'
+              CALL ASKOK(outs,' ',OK,DOK,nbhelp)
+              if(OK)then
+                call comissionish(iz,'ira',ier)
+                if(ier.ne.0)then
+                  call edisp(iuout,'Possible error in calculations.')
+                endif
+              endif
             endif
-          endif
-  43    continue
-        call edisp(iuout,
-     &       'Update of zones with shading files complete.')
+  43      continue
+          call edisp(iuout,
+     &      'Update of zones with shading files complete.')
+        endif
+      elseif(act.eq.'ASCI'.or.act.eq.'asci')then
+        helptopic='reflect_site_change'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL EASKABCD(' Shading filling in missing data options:',' ',
+     &    'import from ASCII if available (silent)',
+     &    'recalculate missing (silent)',
+     &    'recalculate (interactive)','continue',IRT,nbhelp)
+        if(IRT.eq.1.or.IRT.eq.2.or.IRT.eq.3)then
+          do iz=1,ncomp
+            if(ISI(iz).gt.0)then
+              call FINDFIL(LSHAD(iz),XST)
+              write(shdafile,'(2a)') lshad(iz)(1:lnblnk(lshad(iz))),'a'
+              call FINDFIL(shdafile,XSTA)
+
+C If ASCII available ask for import otherwise do with
+C an `-act update_silent` as the command line.
+              if(IRT.eq.1)then
+                if(XSTA)then
+                  call comissionish(iz,'sab',ier)
+                  if(ier.ne.0)then
+                    call edisp(iuout,'Possible error in calculations.')
+                  endif
+                else
+                  if(XST)then
+
+C << TODO actually read ISH file and see if syntax is correct >>
+                    continue  ! bin exists so can skip recalculation
+                  else
+                    call comissionish(iz,'sua',ier)
+                    if(ier.ne.0)then
+                      call edisp(iuout,'Possible error in calcs.')
+                    endif
+                  endif
+                endif
+              elseif(IRT.eq.2)then
+                call comissionish(iz,'sra',ier)
+                if(ier.ne.0)then
+                  call edisp(iuout,'Possible error in calculations.')
+                endif
+              elseif(IRT.eq.3)then
+                DOK=.true.
+                write(outs,'(3a)') 'Proceed with shading for ',
+     &            zname(iz)(1:lnzname(iz)),' ?'
+                CALL ASKOK(outs,' ',OK,DOK,nbhelp)
+                if(OK)then
+                  call comissionish(iz,'ira',ier)
+                  if(ier.ne.0)then
+                    call edisp(iuout,'Possible error in calculations.')
+                  endif
+                 endif
+              endif
+            endif
+          enddo
+          call edisp(iuout,
+     &      'Update of zones with shading files complete.')
+        endif
       endif
       return
       end

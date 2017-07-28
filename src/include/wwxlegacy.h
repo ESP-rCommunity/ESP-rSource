@@ -86,9 +86,6 @@ void	espad_(long int* llimit,long int* llimtty,long int* lline);
 void	trackview_(long int* ichar,long int* irx,long int* iry);
 void	ecirarc_(float* x,float* y,float* ths,float* thf,float* r,
 	long int* num,float* di);
-void	horaxishdw_(float* xmn,float* xmx,long int* offl,long int* offr,long int* offb,
-	float* xadd,float* sca,long int* mode,long int* ind,long int* idiv,long int* isjday,
-	char* msg,int mlen);
 void	evwmenu_(char* titleptr,long int* impx,long int* impy,long int* iwth,long int* irpx,
 	long int* irpy,long int* ino,long int* ipflg,long int* uresp,int len_title);
 void	eewmenu_(char* titleptr,long int* impx,long int* impy,long int* iwth,long int* irpx,

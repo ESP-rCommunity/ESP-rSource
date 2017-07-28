@@ -514,7 +514,7 @@ C << and probably also for obs3 ? >>
       DIMENSION XX(MV),YY(MV),ZZ(MV),XT(MV),YT(MV),ZT(MV),TRNS(3)
 
       character ZSN*28
-      character ZN*12,outs*124,material*12,QT*1
+      character ZN*12,outs*124,material*32,QT*1
       character GDESCR*36,DESCRC*25
       CHARACTER OPT*12  ! for optical name of the MLC
       CHARACTER ACT*1,doit*144
@@ -772,7 +772,7 @@ C If TMC has an opaque layer then set gvt to a small number.
 
 C Setup equivalent for default use. 
           WRITE(iglzfil,'(a,a)') 'void glass ',
-     &      mlcname(IM)(1:lnblnk(mlcname(IM)))
+     &      mlcname(IM)(1:lnmlcname(IM))
           WRITE(iglzfil,'(a)') '0 '
           WRITE(iglzfil,'(a)') '0 '
           WRITE(iglzfil,'(a,3F6.2)') '3  ',gvt,gvt,gvt
@@ -788,7 +788,7 @@ C Check for blind shutter control.
                ICN=IZSTOCN(newfoc,isf)
                if(ITMCFL(newfoc,isf).gt.0.AND.
      &            SSMLCN(icn)(1:lnblnk(SSMLCN(icn))).eq.
-     &            mlcname(IM)(1:lnblnk(mlcname(IM))))then
+     &            mlcname(IM)(1:lnmlcname(IM)))then
                 if (IBCMT(newfoc,ITMCFL(newfoc,isf)).gt.0) then
                  VTRAN=TVTR2(newfoc,ITMCFL(newfoc,isf),NABS)
                  if(VTRN.gt.0.02)then
@@ -803,7 +803,7 @@ C Check for blind shutter control.
  111         continue
  100        continue
             WRITE(ita2,'(3a)')'void glass ',
-     &        mlcname(IM)(1:lnblnk(mlcname(IM))),'_sw'
+     &        mlcname(IM)(1:lnmlcname(IM)),'_sw'
             WRITE(ita2,'(a)') '0 '
             WRITE(ita2,'(a)') '0 '
             WRITE(ita2,'(a,3F6.2)') '3  ',gvt,gvt,gvt
@@ -817,17 +817,17 @@ C Check for blind shutter control.
      &        SCENEPURP(ISCENE)(1:8).eq.'Internal') then
             if(iadobe.eq.3)then
               WRITE(imatfil,'(2a)') 'fin_ex plastic rc_ex_',
-     &          mlcname(IM)(1:lnblnk(mlcname(IM)))
+     &          mlcname(IM)(1:lnmlcname(IM))
             elseif(iadobe.eq.2)then
               WRITE(imatfil,'(2a)') 'min_ex plastic rc_ex_',
-     &          mlcname(IM)(1:lnblnk(mlcname(IM)))
+     &          mlcname(IM)(1:lnmlcname(IM))
             elseif(iadobe.eq.1)then
               WRITE(imatfil,'(2a)') 'rin_ex plastic rc_ex_',
-     &          mlcname(IM)(1:lnblnk(mlcname(IM)))
+     &          mlcname(IM)(1:lnmlcname(IM))
             endif
           else
             WRITE(imatfil,'(a,a)') 'void plastic rc_ex_',
-     &        mlcname(IM)(1:lnblnk(mlcname(IM)))
+     &        mlcname(IM)(1:lnmlcname(IM))
           endif
           WRITE(imatfil,'(a)') '0 '
           WRITE(imatfil,'(a)') '0 '
@@ -841,17 +841,17 @@ C Check for blind shutter control.
      &        SCENEPURP(ISCENE)(1:8).eq.'Internal') then
             if(iadobe.eq.3)then
               WRITE(imatfil,'(a,a)') 'fin_in plastic rc_in_',
-     &          mlcname(IM)(1:lnblnk(mlcname(IM)))
+     &          mlcname(IM)(1:lnmlcname(IM))
             elseif(iadobe.eq.2)then
               WRITE(imatfil,'(a,a)') 'min_in plastic rc_in_',
-     &          mlcname(IM)(1:lnblnk(mlcname(IM)))
+     &          mlcname(IM)(1:lnmlcname(IM))
             elseif(iadobe.eq.1)then
               WRITE(imatfil,'(a,a)') 'rin_in plastic rc_in_',
-     &          mlcname(IM)(1:lnblnk(mlcname(IM)))
+     &          mlcname(IM)(1:lnmlcname(IM))
             endif
           else
             WRITE(imatfil,'(a,a)') 'void plastic rc_in_',
-     &        mlcname(IM)(1:lnblnk(mlcname(IM)))
+     &        mlcname(IM)(1:lnmlcname(IM))
           endif
           WRITE(imatfil,'(a)') '0 '
           WRITE(imatfil,'(a)') '0 '
@@ -1296,14 +1296,15 @@ C   All connections: create one surface (no shift).
           endif
 
 C Find the matching mlc index and set the material name.
-
+C Radiance does not yet know what to do with CFC and CFC2.
 C << use call to matchmlcdesc >>
           ICF=-1
           ifict=0
           call matchmlcdesc(SSMLCN(icn),icf)
           if(ICF.eq.-1.or.SSMLCN(icn)(1:4).eq.'UNKN')then
             if (SSOTF(icn)(1:4).ne.'OPAQ'.and.
-     &          SSOTF(icn)(1:4).ne.'CFC ') then
+     &          SSOTF(icn)(1:4).ne.'CFC '.and.
+     &          SSOTF(icn)(1:4).ne.'CFC2') then
               material='unknown_glz'
             else
               material='unknown'
@@ -1328,7 +1329,8 @@ C Aternative glazing descriptions file.
               WRITE(ita2,'(a)') '  '
             endif
           elseif(SSOTF(icn)(1:4).ne.'OPAQ'.and.
-     &           SSOTF(icn)(1:4).ne.'CFC ')then
+     &           SSOTF(icn)(1:4).ne.'CFC '.and.
+     &           SSOTF(icn)(1:4).ne.'CFC2')then
 
 C Create surface based on the following:
 C  Focus zone - create.

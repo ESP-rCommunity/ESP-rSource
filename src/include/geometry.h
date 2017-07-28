@@ -199,7 +199,7 @@ C   'obs ' - standard block (origin, three dimensions, one rotation)
 C   'obs3' - general block (origin, three dimensions, three rotations)
 C   'obsp' - general polygon (six sides formed from 8 vertices)
 C LNBLOCKNAME,LNBLOCKMAT - length of strings.
-      character BLOCKNAME*12,BLOCKMAT*12,BLOCKTYP*4
+      character BLOCKNAME*12,BLOCKMAT*32,BLOCKTYP*4
       common/GS8/BLOCKNAME(MCOM,MB),BLOCKMAT(MCOM,MB),BLOCKTYP(MCOM,MB)
       integer LNBLOCKNAME,LNBLOCKMAT
       common/GS8LN/LNBLOCKNAME(MCOM,MB),LNBLOCKMAT(MCOM,MB)
@@ -229,7 +229,7 @@ C   'vis ' - standard block (origin, three dimensions, one rotation)
 C   'vis3' - general block (origin, three dimensions, three rotations)
 C   'visp' - general polygon (six sides formed from 8 vertices)
 C LNVISNAME,LNVISMAT - length of strings.
-      character VISNAME*12,VISMAT*12,VISTYP*4
+      character VISNAME*12,VISMAT*32,VISTYP*4
       common/GSVN/VISNAME(MCOM,MB),VISMAT(MCOM,MB),VISTYP(MCOM,MB)
       integer LNVISNAME,LNVISMAT
       common/GSVLN/LNVISNAME(MCOM,MB),LNVISMAT(MCOM,MB)

@@ -194,6 +194,13 @@ C SURTM is not used by the simulator, res will graph/list it.
       GTYPES(27)='ELECPWR'
       GMENUS(27)='Real & reactive power: '
 
+      GTYPES(28)='CFCCTL'
+      GMENUS(28)='On/off and slat angle: '
+
+C RAININD is currently only used to pass to external control via FMI.
+      GTYPES(29)='RAININD'
+      GMENUS(29)='Binary rain indicator: '
+
 C If not looking for a specific item then return.
       IF(FOCUS(1:7).EQ.'ALLCLMT')THEN
 
@@ -428,6 +435,24 @@ C Control set point temperature (single) : one data item.
         GMF(1)='REAL,1,0.0,-101.0,101.0'
         MGMA(1)='Set point temperature (C) :     '
         FOUND=.TRUE.
+
+      ELSEIF(FOCUS(1:6).EQ.'CFCCTL')THEN
+
+C Control set point on/off and slat angle : two data items.
+        GAIDE   ='On/off state & slat angle (-, deg)'
+        GHELP(1)='Assign on/off state and slat angle in'
+        GHELP(2)='two columns (-, deg). TDF control (CFCctl??)'
+        GHELP(3)='uses this information for its setpoints.'        
+        GMH='3,2,0,0,2,0,-999.9'
+        GDHDRT(1)='   time  | On/off  |  Slat   '
+        GDHDRT(2)='   of day| state   |  angle  '
+        GDHDRT(3)='On/off state (-) & slat angle (deg):'
+        GMF(1)='INTG,1,0,0,1'
+        MGMA(1)='Slat angle (deg): '
+        GMF(2)='REAL,2,0.0,-90.0,90.0'
+        MGMA(2)='Slat angle (deg): '
+        FOUND=.TRUE.
+
       ELSEIF(FOCUS(1:8).EQ.'HTCLSETP')THEN
 
 C Control state: two data item.
@@ -671,6 +696,20 @@ C Real & reactive power for electrical networks: two data items.
         MGMA(1)='Real power (W): '
         GMF(2)='REAL,2,0.0,0.0,900000.0'
         MGMA(2)='Reactive power (W): '
+        FOUND=.TRUE.
+
+      ELSEIF(FOCUS(1:7).EQ.'RAININD')THEN
+
+C Rain indicator, currently only used for FMI: one data item.
+        GAIDE   ='Binary rain indicator (0 or 1)'
+        GHELP(1)='This is currently not used in simulations, only to'
+        GHELP(2)='pass to external models via FMI.'
+        GMH='2,1,0,0,0,1,-999.0'
+        GDHDRT(1)='   time  | Rain     |'
+        GDHDRT(2)='   of day| indicator|'
+        GDHDRT(3)='Rain indicator (0 or 1):'
+        GMF(1)='INTG,1,0,0,1'
+        MGMA(1)='Indicator value (0 or 1): '
         FOUND=.TRUE.
 
       ELSEIF(FOCUS(1:4).EQ.'ALL ')THEN

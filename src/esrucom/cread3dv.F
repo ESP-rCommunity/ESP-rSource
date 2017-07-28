@@ -331,7 +331,9 @@ C Set line style for this surface. linsty=2 is double width line.
 C Check for hilights. ITHLS=1 is composition, ITHLS=2 trn:opq,
 C ITHLS = 3 partial attributes
         if(ITHLS.eq.1.and.ITHLZ.gt.0)then
-          if(mlcname(ITHLZ)(1:12).eq.SSMLCN(ICC)(1:12))then
+          lnssmlc=lnblnk(SSMLCN(icc))
+          if(mlcname(ITHLZ)(1:lnmlcname(ITHLZ)).eq.
+     &       SSMLCN(ICC)(1:lnssmlc))then
             IPEN= -305
           else
             IPEN= 1

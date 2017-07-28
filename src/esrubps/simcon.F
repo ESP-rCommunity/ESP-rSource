@@ -51,6 +51,7 @@ C      USE H3KSTORE_FC_DATA,ONLY: iCurrent_FCT_OUTPUT_FILE
       include "SOFC.h"
       include "UserSimulationToggles.h"
       include "plant.h"
+      include "FMI.h"
 
       common/filep/ifil
       INTEGER :: ifil
@@ -92,10 +93,11 @@ C Tolerance for iteration of hydrogen flow matrix
       INTEGER :: indcfg
 
 C Uncertainty.
-      COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       COMMON/UA5/IMET,ISIM,NRSIM
       INTEGER :: imet,isim,nrsim
-
+      
+      real SNA
+      COMMON/PREC1/SNA(MCOM,MS)
 
 c Mechanical ventilation system activator
       Integer iMech
@@ -107,11 +109,12 @@ C Simulator parameter.
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical PBYFIL,OK,dok
 
-      character LUALF*72,LCNG*15,LLOC*15,outs*124
+      character outs*124
       
       INTEGER :: i,ier,irep,isimn1,isimn2,istat,iualf,iunit
       INTEGER :: nstep
       REAL :: tstep
+      integer J
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -133,7 +136,23 @@ C Set simulation control.
 C If simulator is in silent running mode, set flag to terminate run      
          if ( autook ) exitok = .true.
          return
-      endif 
+      endif
+
+C <FMI>
+C Read FMI spec file to set FMI commons.
+      if (is_FMU) then
+        IUNIT=IFIL+1
+        CALL ERPFREE(IUNIT,IER)
+        CALL EFOPSEQ(IUNIT,FMISFL,1,IER)
+        call FMI_RDSCFL(IUNIT,IER)
+        CALL ERPFREE(IUNIT,IER)
+        if (IER.eq.1) then
+C If simulator is in silent running mode, set flag to terminate run
+           if ( autook ) exitok = .true.
+           return
+        endif  
+      endif
+C </FMI>          
 
 C Calculate the BASESIMP heat loss factors.
       CALL BSFCCTL
@@ -202,6 +221,7 @@ C Re-scan the model description files silently.
         
 C MZNUMA is effectively a simulation clock.
         CALL MZNUMA
+C        write (36,*) 'after mznuma sna= ',(SNA(1,J),J=1,7)
 
 C Close ascii plant-side boundary data file if last simulation 
 C otherwise rewind for use in next simulation.
@@ -353,6 +373,7 @@ C and information on the saved result set.
       COMMON/SOLOFF/ISOLAR
       COMMON/SKYFLG/ISKYFL
       COMMON/PMSLV/IPMSLV
+      COMMON/PREC1/SNA(MCOM,MS)
 
       COMMON/FFN/IFLWN,ICFFS(MPCON)
       COMMON/MFSINC/MFBSNC
@@ -389,6 +410,7 @@ C Tolerance for iteration of hydrogen flow matrix
       CHARACTER*29 ITEM(18)
       character outs*124
       integer NITMS,INO  ! max items and current menu item
+      integer J
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -1875,6 +1897,7 @@ C prior to each simulation commencing.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC7/ITCNST
 
       COMMON/C6/INDCFG
@@ -1955,15 +1978,15 @@ C The record length of the results file is MS+5 words.
 c Added a 5th computed goto for save level 5
       goto (41,8,9,11,11,41),ISAV1
     8 if(irdact.ne.0)then
-        NWORD=(IDAYS*irdact*NCOMP*24*1+IRECPL)*(MS+5)
+        NWORD=(IDAYS*irdact*NCOMP*24*1+IRECPL)*(MS+12)
       else
-        NWORD=(IDAYS*NTSTEP*NCOMP*24*1+IRECPL)*(MS+5)
+        NWORD=(IDAYS*NTSTEP*NCOMP*24*1+IRECPL)*(MS+12)
       endif
       goto 12
     9 if(irdact.ne.0)then
-        NWORD=(IDAYS*irdact*NCOMP*24*3+IRECPL)*(MS+5)
+        NWORD=(IDAYS*irdact*NCOMP*24*3+IRECPL)*(MS+12)
       else
-        NWORD=(IDAYS*NTSTEP*NCOMP*24*3+IRECPL)*(MS+5)
+        NWORD=(IDAYS*NTSTEP*NCOMP*24*3+IRECPL)*(MS+12)
       endif
       goto 12
    11 NREC=0
@@ -1976,14 +1999,14 @@ c Added a 5th computed goto for save level 5
 
 C << with wider record width is MS+5 still ok for file size prediction ?? >>
       if(irdact.ne.0)then
-        NWORD=(IDAYS*irdact*NREC*24+IRECPL)*(MS+5)
+        NWORD=(IDAYS*irdact*NREC*24+IRECPL)*(MS+12)
       else
-        NWORD=(IDAYS*NTSTEP*NREC*24+IRECPL)*(MS+5)
+        NWORD=(IDAYS*NTSTEP*NREC*24+IRECPL)*(MS+12)
       endif
 
 C There are 4 bytes in a word therefore the number
 C of kilobytes required by the solution file is .....
-   12 BYTE=FLOAT(NWORD)*4.0/1024.0
+   12 BYTE=ABS(FLOAT(NWORD)*4.0/1024.0)
 
 C Determine the number of zone days simulated.
    41 NZTS=(NCOMP*(IDAYS+ITCNST))*NTSTEP*24
@@ -2025,35 +2048,35 @@ c Hot 3000: Added save level 5 zone save level info
       elseif(isave.eq.6)then
         call edisp(icout,' Zone save option     : 6 (No db created)')
       endif
-      write(outs,'(a,I5)') ' No. of warnings      : ',IWARN
+      write(outs,'(a,I6)') ' No. of warnings      : ',IWARN
       call edisp(icout,outs)
       call edisp(icout,' ')
 
       NPTS=NTSTEP*NTSTPP
       TMIN=60.0/NTSTEP
       TMINP=TIMSEC/60.
-      write(outs,'(a,I5,a)')' Simulation period    : ',IDAYS,' day(s)'
+      write(outs,'(a,I6,a)')' Simulation period    : ',IDAYS,' day(s)'
       call edisp(icout,outs)
 
 C Derive string for simulation period.
       CALL EPERSTR(IYEAR,ISDS,1,ISDF,24,1,2,0,PERST1,PERST2,PERST3,IER)
       write(outs,'(16X,A44)')PERST2
       call edisp(icout,outs)
-      write(outs,'(a,I5,a)')' Start-up period      : ',ITCNST,' day(s)'
+      write(outs,'(a,I6,a)')' Start-up period      : ',ITCNST,' day(s)'
       call edisp(icout,outs)
 
       IF(INDCFG.EQ.2)goto 131
       if(irdact.eq.0)then
-        write(outs,'(a,I6,a,F5.2,a)')' Zone time-steps      :',NTSTEP,
+        write(outs,'(a,I7,a,F5.2,a)')' Zone time-steps      :',NTSTEP,
      &    ' / hr ( ',TMIN,' min. intervals saved at each timestep)'
       else
-        write(outs,'(a,I6,a,F5.2,a)')' Zone time-steps      :',NTSTEP,
+        write(outs,'(a,I7,a,F5.2,a)')' Zone time-steps      :',NTSTEP,
      &    ' / hr ( ',TMIN,' min. intervals saved once per hour)'
       endif 
       call edisp(icout,outs)
-      write(outs,'(a,I5)') ' Number of zones      : ',NCOMP
+      write(outs,'(a,I6)') ' Number of zones      : ',NCOMP
       call edisp(icout,outs)
-      write(outs,'(a,I6)') ' Zone-time increments :',NZTS
+      write(outs,'(a,I7)') ' Zone-time increments :',NZTS
       call edisp(icout,outs)
 
       IF(INDCFG.EQ.1)goto 133
@@ -2065,13 +2088,13 @@ C Derive string for simulation period.
       call edisp(icout,    ' Zone results db size : Not applicable')
       goto 135
    42 IF(BYTE.GT.2000.0)goto 14
-      write(outs,'(a,F7.1,a)')' Zone results db size : ',BYTE,' Kbytes'
+      write(outs,'(a,F8.1,a)')' Zone results db size : ',BYTE,' Kbytes'
       if(isave.eq.1.or.isave.eq.2.or.isave.eq.3.or.isave.eq.4)then
         call edisp(icout,outs)
       endif
       goto 135
    14 BYTE=BYTE/1024.0
-      write(outs,'(a,F7.1,a)')' Zone results db size : ',BYTE,' Mbytes'
+      write(outs,'(a,F8.1,a)')' Zone results db size : ',BYTE,' Mbytes'
       if(isave.eq.1.or.isave.eq.2.or.isave.eq.3.or.isave.eq.4)then
         call edisp(icout,outs)
       endif
@@ -2234,7 +2257,9 @@ C Commence simulation.
 
 C If trace is active then write to the file the header 
 C information above to assist in identification.
-      IF(ITC.gt.0.and.ITU.ne.iuout)call mzinfo(ITU)
+      if(ITC.gt.0.and.ITU.ne.iuout)then
+        call mzinfo(ITU)
+      endif
     7 RETURN
       END
 

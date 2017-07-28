@@ -76,6 +76,15 @@ C ITPPSW current view - perspective/plan/south/west
 
 C Pause length during sequentail scan longpause (true=1 sec)
       common/scanpause/longpause
+      
+C Tollerance for surface matching.
+      real ANGCC  ! angle between surfaces tol
+      real CACC   ! tolerance between vertices
+      real DACC   ! tolerance along line
+      real COGCC  ! tolerance between surface COG
+      real SNACC  ! tolerance between surface areas
+      integer IACC ! number of matching corners outside dist tolerance
+      common/matching/ANGCC,CACC,DACC,COGCC,SNACC,IACC
 
       LOGICAL OTHEROK
       logical M0SKP,M1SKP,M2SKP,M3SKP,M4SKP,M5SKP,M6SKP,M7SKP,M8SKP
@@ -92,9 +101,6 @@ C Pause length during sequentail scan longpause (true=1 sec)
       character VERT*50,KEY*1
       integer MITEM,INO ! max items and current menu item
       integer MVERT,IVERT ! max items and current menu item
-      real ANGCC  ! angle between surfaces tol
-      real CACC   ! tolerance between vertices
-      real DACC   ! tolerance along line
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -155,15 +161,6 @@ C failed searches brought to users attention.
       M8SKP=.FALSE.  !  back-to-back in zone assumed to be partitions
       OTHEROK=.TRUE.
       MODIFYVIEW=.FALSE.
-
-C CACC is the tolerance between two vertices. Can be user adjusted.
-C ANGCC angle tolerance between surface normals
-C IACC is the number of corners beyond tolerance which are allowed,
-C DACC is the line degree tolerance for setting of corners.
-      CACC=0.025  ! initial assumptions
-      IACC=0
-      DACC=5.0
-      ANGCC=10.0  ! surface angle tolerance
       DCNN=' '
       bl='  '
 
@@ -341,16 +338,18 @@ C List connections.
    21   CONTINUE
       ELSEIF(INO.EQ.3)THEN
 
-C Set tolerances for vertex comparison.
+C Set tolerances for vertex comparison. Initial values set in prj.F
+C CACC is the tolerance between two vertices. Can be user adjusted.
+C ANGCC angle tolerance between surface normals
+C IACC is the number of corners beyond tolerance which are allowed,
+C DACC is the line degree tolerance for setting of corners.
         call tstamp('>','CFG: enter tolerances')
         helptopic='surface_corner_detect'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        CALL EASKR(CACC,' ',' Tolerance (metres) ? ',
+        CALL EASKR(CACC,' ',' Tolerance (metres) between vertices? ',
      &             0.001,'W',0.2,'W',0.001,'dist tolerance',IER,nbhelp)
-
-        CALL EASKR(DACC,' ',' Corner tolerance (degrees) ?',
+        CALL EASKR(DACC,' ',' Corner tolerance (degrees)?',
      &             0.1,'W',5.0,'W',1.0,'degree tolerance',IER,nbhelp)
-
         CALL EASKI(IACC,' Number of corners which are allowed outside',
      &    ' of the distance tolerance ? ',
      &     0,'F',2,'W',1,'corner tolerance',IER,nbhelp)
@@ -918,7 +917,7 @@ C If tother(JS,2) is a dash then update with IC2 IE2.
             if(TOTHER(JS,2)(1:1).eq.'-')then
               write(TOTHER(JS,1),'(a)') 'ANOTHER'
               write(tother(JS,2),'(i2.2)') IC2(ic)
-              write(tother(JS,3),'(i2.2)') IE2(ic)
+              write(tother(JS,3),'(i3.3)') IE2(ic)
               UPDGEO=.TRUE.
             endif
             goto 110
@@ -1025,7 +1024,7 @@ C surface attribute if it does not match and jump around.
               if(SO(1:7).ne.'SIMILAR')then
                 TOTHER(JS,1)='SIMILAR'
                 write(tother(JS,2),'(i2.2)') IC2(ic)
-                write(tother(JS,3),'(i2.2)') IE2(ic)
+                write(tother(JS,3),'(i3.3)') IE2(ic)
                 UPDGEO=.TRUE.
               endif
               goto 110
@@ -1045,7 +1044,7 @@ C surface attribute if it does not match and jump around.
               if(SO(1:8).ne.'CONSTANT')then
                 TOTHER(JS,1)='CONSTANT'
                 write(tother(JS,2),'(i2.2)') IC2(ic)
-                write(tother(JS,3),'(i2.2)') IE2(ic)
+                write(tother(JS,3),'(i3.3)') IE2(ic)
                 UPDGEO=.TRUE.
               endif
               goto 110
@@ -1065,7 +1064,7 @@ C surface attribute if it does not match and jump around.
               if(SO(1:6).ne.'GROUND')then
                 TOTHER(JS,1)='GROUND'
                 write(tother(JS,2),'(i2.2)') IC2(ic)
-                write(tother(JS,3),'(i2.2)') IE2(ic)
+                write(tother(JS,3),'(i3.3)') IE2(ic)
                 UPDGEO=.TRUE.
               endif
               goto 110
@@ -1085,7 +1084,7 @@ C surface attribute if it does not match and jump around.
               if(SO(1:9).ne.'ADIABATIC')then
                 TOTHER(JS,1)='ADIABATIC'
                 write(tother(JS,2),'(i2.2)') IC2(ic)
-                write(tother(JS,3),'(i2.2)') IE2(ic)
+                write(tother(JS,3),'(i3.3)') IE2(ic)
                 UPDGEO=.TRUE.
               endif
               goto 110
@@ -1105,7 +1104,7 @@ C surface attribute if it does not match and jump around.
               if(SO(1:8).ne.'BASESIMP')then
                 TOTHER(JS,1)='BASESIMP'
                 write(tother(JS,2),'(i2.2)') IC2(ic)
-                write(tother(JS,3),'(i2.2)') IE2(ic)
+                write(tother(JS,3),'(i3.3)') IE2(ic)
                 UPDGEO=.TRUE.
               endif
               goto 110
@@ -1125,7 +1124,7 @@ C surface attribute if it does not match and jump around.
               if(SO(1:9).ne.'IDENT_CEN')then
                 TOTHER(JS,1)='IDENT_CEN'
                 write(tother(JS,2),'(i2.2)') IC2(ic)
-                write(tother(JS,3),'(i2.2)') IE2(ic)
+                write(tother(JS,3),'(i3.3)') IE2(ic)
                 UPDGEO=.TRUE.
               endif
               goto 110
@@ -1143,7 +1142,7 @@ C set connection to exterior and proceed.
                 if(SO(1:8).ne.'EXTERIOR')then
                   TOTHER(JS,1)='EXTERIOR'
                   write(tother(JS,2),'(i2.2)') IC2(ic)
-                  write(tother(JS,3),'(i2.2)') IE2(ic)
+                  write(tother(JS,3),'(i3.3)') IE2(ic)
                   UPDGEO=.TRUE.
                 endif
                 call edisp(iuout,'no match found setting to EXTERIOR.')
@@ -1188,7 +1187,7 @@ C Setup contextural help for boundary conditions.
                   if(SO(1:8).ne.'EXTERIOR')then
                     TOTHER(JS,1)='EXTERIOR'
                     write(tother(JS,2),'(i2.2)') IC2(ic)
-                    write(tother(JS,3),'(i2.2)') IE2(ic)
+                    write(tother(JS,3),'(i3.3)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
                 elseif(IART.eq.2)then
@@ -1200,7 +1199,7 @@ C Setup contextural help for boundary conditions.
                   if(SO(1:7).ne.'SIMILAR')then
                     TOTHER(JS,1)='SIMILAR'
                     write(tother(JS,2),'(i2.2)') IC2(ic)
-                    write(tother(JS,3),'(i2.2)') IE2(ic)
+                    write(tother(JS,3),'(i3.3)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
                 elseif(IART.eq.3)then
@@ -1217,7 +1216,7 @@ C Setup contextural help for boundary conditions.
                   if(SO(1:8).ne.'CONSTANT')then
                     TOTHER(JS,1)='CONSTANT'
                     write(tother(JS,2),'(i2.2)') IC2(ic)
-                    write(tother(JS,3),'(i2.2)') IE2(ic)
+                    write(tother(JS,3),'(i3.3)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
                 elseif(IART.eq.4)then
@@ -1251,7 +1250,7 @@ C profile has not been defined.
                     if(SO(1:6).ne.'GROUND')then
                       TOTHER(JS,1)='GROUND'
                       write(tother(JS,2),'(i2.2)') IC2(ic)
-                      write(tother(JS,3),'(i2.2)') IE2(ic)
+                      write(tother(JS,3),'(i3.3)') IE2(ic)
                       UPDGEO=.TRUE.
                     endif
                   ELSE
@@ -1283,7 +1282,7 @@ C profile has not been defined.
                     if(SO(1:6).ne.'GROUND')then
                       TOTHER(JS,1)='GROUND'
                       write(tother(JS,2),'(i2.2)') IC2(ic)
-                      write(tother(JS,3),'(i2.2)') IE2(ic)
+                      write(tother(JS,3),'(i3.3)') IE2(ic)
                       UPDGEO=.TRUE.
                     endif
                   else
@@ -1302,7 +1301,7 @@ C Link to a 3D conduction model..
                   if(SO(1:6).ne.'GROUND')then
                     TOTHER(IE1(JS),1)='GROUND'
                     write(tother(JS,2),'(i2.2)') IC2(ic)
-                    write(tother(JS,3),'(i2.2)') IE2(ic)
+                    write(tother(JS,3),'(i3.3)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
                 elseif(IART.eq.7)then
@@ -1314,7 +1313,7 @@ C Link to a 3D conduction model..
                   if(SO(1:9).ne.'ADIABATIC')then
                     TOTHER(JS,1)='ADIABATIC'
                     write(tother(JS,2),'(i2.2)') IC2(ic)
-                    write(tother(JS,3),'(i2.2)') IE2(ic)
+                    write(tother(JS,3),'(i3.3)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
                 elseif(iart.eq.8)then 
@@ -1342,7 +1341,7 @@ C attribute to the surface under consideration.
                   if(SO(1:8).ne.'BASESIMP')then
                     TOTHER(IE1(JS),1)='BASESIMP'
                     write(tother(JS,2),'(i2.2)') IC2(ic)
-                    write(tother(JS,3),'(i2.2)') IE2(ic)
+                    write(tother(JS,3),'(i3.3)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
 C BASESIMP end.
@@ -1355,7 +1354,7 @@ C BASESIMP end.
                   if(SO(1:7).ne.'IDENT_CEN')then
                     TOTHER(JS,1)='IDENT_CEN'
                     write(tother(JS,2),'(i2.2)') IC2(ic)
-                    write(tother(JS,3),'(i2.2)') IE2(ic)
+                    write(tother(JS,3),'(i3.3)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
 
@@ -1369,7 +1368,7 @@ C CEN 13791 partition end.
                   if(SO(1:7).ne.'UNKNOWN')then
                     TOTHER(JS,1)='UNKNOWN'
                     write(tother(JS,2),'(i2.2)') IC2(ic)
-                    write(tother(JS,3),'(i2.2)') IE2(ic)
+                    write(tother(JS,3),'(i3.3)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
                 endif
@@ -1425,7 +1424,7 @@ C update the attributes.
             if(.NOT.selfcheck)then
               write(TOTHER(JS,1),'(a)') 'ANOTHER'
               write(tother(JS,2),'(i2.2)') IC2(ic)
-              write(tother(JS,3),'(i2.2)') IE2(ic)
+              write(tother(JS,3),'(i3.3)') IE2(ic)
               UPDGEO=.TRUE.
               ICN=IZSTOCN(II,JJ)
               SN=SSNAME(icn)
@@ -1441,7 +1440,7 @@ C make it a partition without bothering to ask the user.
               if(M8SKP)then
                 write(TOTHER(JS,1),'(a)') 'ANOTHER'
                 write(tother(JS,2),'(i2.2)') IC2(ic)
-                write(tother(JS,3),'(i2.2)') IE2(ic)
+                write(tother(JS,3),'(i3.3)') IE2(ic)
                 UPDGEO=.TRUE.
                 ICN=IZSTOCN(II,JJ)
                 SN=SSNAME(icn)
@@ -1456,7 +1455,7 @@ C make it a partition without bothering to ask the user.
                 if(IRTA.eq.1)then
                   write(TOTHER(JS,1),'(a)') 'ANOTHER'
                   write(tother(JS,2),'(i2.2)') IC2(ic)
-                  write(tother(JS,3),'(i2.2)') IE2(ic)
+                  write(tother(JS,3),'(i3.3)') IE2(ic)
                   UPDGEO=.TRUE.
                   ICN=IZSTOCN(II,JJ)
                   SN=SSNAME(icn)
@@ -1471,7 +1470,7 @@ C make it a partition without bothering to ask the user.
                   IC2(IC)=0
                   TOTHER(JS,1)='ADIABATIC'
                   write(tother(JS,2),'(i2.2)') IC2(ic)
-                  write(tother(JS,3),'(i2.2)') IE2(ic)
+                  write(tother(JS,3),'(i3.3)') IE2(ic)
                   UPDGEO=.TRUE.
                 elseif(IRTA.eq.3)then
                   IC1(IC)=IZ
@@ -1481,7 +1480,7 @@ C make it a partition without bothering to ask the user.
                   IC2(IC)=0
                   TOTHER(JS,1)='UNKNOWN'
                   write(tother(JS,2),'(i2.2)') IC2(ic)
-                  write(tother(JS,3),'(i2.2)') IE2(ic)
+                  write(tother(JS,3),'(i3.3)') IE2(ic)
                   UPDGEO=.TRUE.
                 elseif(IRTA.eq.4)then
                   IC1(IC)=IZ
@@ -1492,7 +1491,7 @@ C make it a partition without bothering to ask the user.
                   if(SO(1:8).ne.'EXTERIOR')then
                     TOTHER(JS,1)='EXTERIOR'
                     write(tother(JS,2),'(i2.2)') IC2(ic)
-                    write(tother(JS,3),'(i2.2)') IE2(ic)
+                    write(tother(JS,3),'(i3.3)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
                 endif
@@ -1604,7 +1603,7 @@ C the view on it and calculate the angle of view to that box.
 C Update surface attributes and then restore the view points.
                 write(TOTHER(JS,1),'(a)') 'ANOTHER'
                 write(tother(JS,2),'(i2.2)') IC2(ic)
-                write(tother(JS,3),'(i2.2)') IE2(ic)
+                write(tother(JS,3),'(i3.3)') IE2(ic)
                 UPDGEO=.TRUE.
                 if(MMOD.eq.8)call recoview
                 ITBND=1
@@ -1638,7 +1637,7 @@ C If reached this point then no surface selected.
               IC2(IC)=0
               TOTHER(JS,1)='UNKNOWN'
               write(tother(JS,2),'(i2.2)') IC2(ic)
-              write(tother(JS,3),'(i2.2)') IE2(ic)
+              write(tother(JS,3),'(i3.3)') IE2(ic)
               UPDGEO=.TRUE.
             elseif(irta.eq.3)then
               IC1(IC)=IZ
@@ -1648,7 +1647,7 @@ C If reached this point then no surface selected.
               IC2(IC)=0
               TOTHER(JS,1)='EXTERIOR'
               write(tother(JS,2),'(i2.2)') IC2(ic)
-              write(tother(JS,3),'(i2.2)') IE2(ic)
+              write(tother(JS,3),'(i3.3)') IE2(ic)
               UPDGEO=.TRUE.
             elseif(irta.eq.4)then
               IC1(IC)=IZ
@@ -1658,7 +1657,7 @@ C If reached this point then no surface selected.
               IC2(IC)=0
               TOTHER(JS,1)='SIMILAR'
               write(tother(JS,2),'(i2.2)') IC2(ic)
-              write(tother(JS,3),'(i2.2)') IE2(ic)
+              write(tother(JS,3),'(i3.3)') IE2(ic)
               UPDGEO=.TRUE.
             elseif(irta.eq.5)then
               IC1(IC)=IZ
@@ -1668,7 +1667,7 @@ C If reached this point then no surface selected.
               IC2(IC)=0
               TOTHER(JS,1)='ADIABATIC'
               write(tother(JS,2),'(i2.2)') IC2(ic)
-              write(tother(JS,3),'(i2.2)') IE2(ic)
+              write(tother(JS,3),'(i3.3)') IE2(ic)
               UPDGEO=.TRUE.
             elseif(irta.eq.6)then
               ICNT=0
@@ -2162,7 +2161,7 @@ C Anchor commons defined in model.h.
       character ZN*12,SN*12
       character AL*12
       character LTMP*72
-      logical found,ok,dok,foundone,okd
+      logical found,ok,dok,foundone,okd,modmlc
       integer MVERT,IVERT ! max items and current menu item
       dimension IVALS(MCOM)
 
@@ -2288,8 +2287,13 @@ C via selection one at a time.
         if(ins9.eq.1)then
 
 C Search for matching constructions (similar to logic in serchrpl).
-          CALL EPKMLC(ISEL,'Select a construction to SEARCH for',
+          if(mlcver.eq.0)then
+            CALL EPKMLC(ISEL,'Select a construction to SEARCH for',
      &      'or -Exit',IER)
+          else
+            call edisp(iuout,'Select a construction to SEARCH for')
+            CALL EDMLDB2(modmlc,'-',ISEL,IER)
+          endif
           if(ISEL.eq.0) goto 92
 
           INPIC=NCOMP
@@ -2318,7 +2322,9 @@ C Remind user of surface attributes.
 C Loop through surfaces in the zone and report on which ones match.
               do 91 i=1,nsur
                 icc=izstocn(ivals(iz),i)
-                if(SSMLCN(icc)(1:12).eq.mlcname(ISEL)(1:12))then
+                lnssmlc=lnblnk(SSMLCN(icc))
+                if(SSMLCN(icc)(1:lnssmlc).eq.
+     &             mlcname(ISEL)(1:lnmlcname(ISEL)))then
                   write(sn,'(a)') SSNAME(icc)
                   WRITE(outs,'(2a,F7.2,F5.0,F5.0,1X,A,
      &              1X,A,1X,A,1X,A)') 'Match: ',sn,SSNA(icc),
@@ -2925,6 +2931,7 @@ C of non-symetric constructions.
       logical showother ! true if partition true if other zone
       logical updoth ! true if other zone needs construction updated
       integer iissmlci ! for use in testing adjacent MLC
+      logical modmlc   ! and for selecting MLC
 
       dimension IVALS(MCOM)
 C     dimension SNA(MS),PAZI(MS),PELV(MS)
@@ -2962,11 +2969,21 @@ C For help messages
         if(ins9.eq.1)then
 
 C Search and replace by finding matching constructions.
-          CALL EPKMLC(ISEL,'Select a construction to SEARCH for',
+          if(mlcver.eq.0)then
+            CALL EPKMLC(ISEL,'Select a construction to SEARCH for',
      &      'or -Exit',IER)
+          else
+            call edisp(iuout,'Select a construction to SEARCH for')
+            CALL EDMLDB2(modmlc,'-',ISEL,IER)
+          endif
           if(ISEL.eq.0)return
-          CALL EPKMLC(ISELR,'Select a construction to REPLACE it',
+          if(mlcver.eq.0)then
+            CALL EPKMLC(ISELR,'Select a construction to REPLACE it',
      &      'with or -Exit',IER)
+          else
+            call edisp(iuout,'Select a construction to REPLACE it')
+            CALL EDMLDB2(modmlc,'-',ISELR,IER)
+          endif
           if(ISELR.eq.0)return
 
           INPIC=NCOMP
@@ -2997,7 +3014,9 @@ C Loop through surfaces in the zone and report on which ones match.
 C icc is the connection number of the current surface.
               do 91 i=1,nsur
                 icc=izstocn(ivals(iz),i)
-                if(SSMLCN(icc)(1:12).eq.mlcname(ISEL)(1:12))then
+                lnssmlc=lnblnk(SSMLCN(icc))
+                if(SSMLCN(icc)(1:lnssmlc).eq.
+     &             mlcname(ISEL)(1:lnmlcname(ISEL)))then
                   write(sn,'(a)') SSNAME(icc)
                   WRITE(outs,'(2a,F7.2,F5.0,F5.0,1X,A,1X,A,
      &              1X,A,1X,A)')'Match: ',sn,SSNA(icc),
@@ -3020,8 +3039,8 @@ C If the user agrees update the construction attributes.
                       showother=.false.
                       icoth=0
                     endif
-                    WRITE(SSMLCN(ioc),'(A12)') mlcname(ISELR)(1:12)
-                    WRITE(SMLCN(i),'(A12)') mlcname(ISELR)(1:12)
+                    WRITE(SSMLCN(ioc),'(A)') mlcname(ISELR)
+                    WRITE(SMLCN(i),'(A)') mlcname(ISELR)
                     ssmlcindex(ioc)=ISELR       ! update array
 
 C Update the optical name.
@@ -3029,6 +3048,8 @@ C Update the optical name.
                       SOTF(i)='OPAQUE'; SSOTF(ioc)='OPAQUE'
                     ELSEIF(mlctype(ISELR)(1:4).EQ.'CFC ')then
                       SOTF(i)='CFC '; SSOTF(ioc)='CFC '
+                    ELSEIF(mlctype(ISELR)(1:4).EQ.'CFC2')then
+                      SOTF(i)='CFC2'; SSOTF(ioc)='CFC2'
                     ELSE
                       WRITE(SOTF(i),'(A)') mlcoptical(ISELR)
                       WRITE(SSOTF(ioc),'(A)') mlcoptical(ISELR)
@@ -3053,8 +3074,9 @@ C the other side construction is also dealt with if required.
                       ii=ssmlcindex(ioc)
                       updoth=.false.
                       if(mlcsymetric(ii)(1:9).EQ.'SYMMETRIC')then
-                        if(SSMLCN(icoth)(1:12).eq.
-     &                     mlcname(ii)(1:12))then
+                        lnssmlc=lnblnk(SSMLCN(icoth))
+                        if(SSMLCN(icoth)(1:lnssmlc).eq.
+     &                     mlcname(ii)(1:lnmlcname(ii)))then
                           TOSMLCN= mlcname(ii)
                           write(TOOPT,'(a)') mlcoptical(ii)
                         elseif(SSMLCN(icoth)(1:4).eq.'UNKN')then
@@ -3072,13 +3094,16 @@ C the other side construction is also dealt with if required.
 
 C If the current construction is nonsymmetric then it should not be
 C used for a partition (and db does not have a linked MLC - inform the user.
+                        lnsmlcn=lnblnk(SSMLCN(ioc))
                         write(outs,'(5a)') 'Surface ',SN(1:lnblnk(SN)),
      &                    ' has a nonsymmetric construction ',
-     &                    SSMLCN(ioc)(1:lnblnk(SSMLCN(ioc))),'.'
+     &                    SSMLCN(ioc)(1:lnsmlcn),'.'
                         call edisp(iuout,outs)
+                        lnsmlcn=lnblnk(SSMLCN(icoth))
                         write(outs,'(5a)') 'It faces ',
      &                    SSNAME(icoth),' which is composed of ',
-     &                    SSMLCN(icoth)(1:12),' (which may not match).'
+     &                    SSMLCN(icoth)(1:lnsmlcn),
+     &                    ' (which may not match).'
                         call edisp(iuout,outs)
                         call edisp(iuout,
      &            'Please check that one construction has inverted')
@@ -3097,12 +3122,13 @@ C used for a partition (and db does not have a linked MLC - inform the user.
 
 C We have a non-symmetric MLC which does point to a reversed version
 C so check to see if the name of the other MLC matches mlcsymetric.
+                        lnsmlcn=lnblnk(SSMLCN(icoth))
                         if(SSMLCN(icoth)(1:4).eq.'UNKN')then
                           TOSMLCN= mlcsymetric(ii)
                           write(TOOPT,'(a)') mlcoptical(ii)
                           updoth=.true.
-                        elseif(SSMLCN(icoth)(1:12).eq.
-     &                         mlcsymetric(ii)(1:12))then
+                        elseif(SSMLCN(icoth)(1:lnsmlcn).eq.
+     &                         mlcsymetric(ii)(1:lnsmlcn))then
                           TOSMLCN= mlcsymetric(ii)
                           write(TOOPT,'(a)') mlcoptical(ii)
                         else
@@ -3219,8 +3245,13 @@ C Anchor point substitution.
               ltype=ltype+5
             endif
           endif
-          CALL EPKMLC(ISELR,'Select a construction to use with this',
+          if(mlcver.eq.0)then
+            CALL EPKMLC(ISELR,'Select a construction to use with this',
      &      'surface list or -Exit',IER)
+          else
+            call edisp(iuout,'Select a construction to use with list')
+            CALL EDMLDB2(modmlc,'-',ISELR,IER)
+          endif
           if(ISELR.eq.0)return
           dok=.true.
           CALL ASKOK('Apply this construction?',' ',OK,dok,nbhelp)
@@ -3234,13 +3265,14 @@ C Anchor point substitution.
             icc=izstocn(iz,is)
             LTMP=LGEOM(IZ)
             call georead(IUF,LTMP,IZ,1,iuout,IER)
-            WRITE(SSMLCN(icc),'(A12)') mlcname(ISELR)(1:12)
+            WRITE(SSMLCN(icc),'(A)') mlcname(ISELR)
 
 C << this is a place to update ssmlcindex? >>
 
             IF(mlctype(ISELR)(1:4).NE.'OPAQ')SSOTF(icc)='TRAN'
             IF(mlctype(ISELR)(1:4).EQ.'OPAQ')SSOTF(icc)='OPAQUE'
             IF(mlctype(ISELR)(1:4).EQ.'CFC ')SSOTF(icc)='CFC '
+            IF(mlctype(ISELR)(1:4).EQ.'CFC2')SSOTF(icc)='CFC2'
             call eclose(gversion(IZ),1.1,0.01,newgeo)
             if(igupgrade.eq.2.and.(.NOT.newgeo))then
               gversion(iz) =1.1
@@ -3269,8 +3301,14 @@ C << this is a place to update ssmlcindex? >>
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('global attributions',nbhelp,'-',0,0,IER)
 
-        CALL EPKMLC(ISEL,'Select construction for matching surfaces',
+        if(mlcver.eq.0)then
+          CALL EPKMLC(ISEL,'Select construction for matching surfaces',
      &    'or -Exit',IER)
+        else
+          call edisp(iuout,
+     &    'Select a construction for matching surfaces.')
+          CALL EDMLDB2(modmlc,'-',ISEL,IER)
+        endif
         if(ISEL.eq.0)return
 
         CALL EASKABCD(' First filter--surface opacity:',' ',
@@ -3326,7 +3364,8 @@ C << this is a place to update ssmlcindex? >>
               icc=izstocn(ivals(iz),i)
               apply=.true.
               if(ins1.eq.1.and.SSOTF(icc)(1:4).ne.'OPAQ'.and.
-     &            SSOTF(icc)(1:4).ne.'CFC ')apply=.false.
+     &            SSOTF(icc)(1:4).ne.'CFC '.and.
+     &            SSOTF(icc)(1:4).ne.'CFC2')apply=.false.
               if(ins1.eq.2.and.SSOTF(icc)(1:4).eq.'OPAQ')apply=.false.
 
 C Determine the match in the system topology. 
@@ -3367,10 +3406,11 @@ C 'any horizontal','any orien.','cancel'.
 
               if(apply)then
                 write(sn,'(a)') SSNAME(icc)
-                WRITE(outs,'(a7,I3,1X,F7.2,F5.0,F5.0,1X,A12,1X,A4,
-     &            1X,A4,1X,A12,1X,A13)')'Match: ',I,SSNA(icc),
+                lnsmlcn=lnblnk(SSMLCN(icc))
+                WRITE(outs,'(a7,I3,1X,F7.2,F5.0,F5.0,1X,A,1X,A,
+     &            1X,A,1X,A,1X,A)')'Match: ',I,SSNA(icc),
      &            SSPAZI(icc),SSPELV(icc),SN,SSOTF(icc)(1:4),
-     &            SSVFC(icc),SSMLCN(icc)(1:12),SSOTHER(icc,1)(1:13)
+     &            SSVFC(icc),SSMLCN(icc)(1:lnsmlcn),SSOTHER(icc,1)(1:13)
                 call edisp(iuout,outs)
                 write(outs,'(5a)') ' Apply construction to ',
      &            zn(1:lnblnk(zn)),':',sn(1:lnblnk(sn)),'?'
@@ -3378,13 +3418,14 @@ C 'any horizontal','any orien.','cancel'.
                 CALL ASKOK(' ',outs,OK,dok,nbhelp)
                 IF(OK)then
                   ioc=IZSTOCN(IVALS(IZ),i)
-                  WRITE(SSMLCN(ioc),'(A12)') mlcname(ISEL)(1:12)
+                  WRITE(SSMLCN(ioc),'(A)') mlcname(ISEL)
 
 C << this is a place to update ssmlcindex? >>
 
                   IF(mlctype(ISEL)(1:4).NE.'OPAQ')SSOTF(ioc)='TRAN'
                   IF(mlctype(ISEL)(1:4).EQ.'OPAQ')SSOTF(ioc)='OPAQ'
                   IF(mlctype(ISEL)(1:4).EQ.'CFC ')SSOTF(ioc)='CFC '
+                  IF(mlctype(ISEL)(1:4).EQ.'CFC2')SSOTF(ioc)='CFC2'
                 endif
               endif
  11         continue

@@ -48,7 +48,7 @@ C Commom for the optimim start/stop simulation.
 
       CHARACTER*72 MODELCFG,BFILE,TDFUD,RSFIL,BREPT
       CHARACTER*124 DOIT,OUTS
-      character spfdescr*8,MSIM*4
+      character spfdescr*30,MSIM*4
       INTEGER SENMAP
 
 C Simulation for optimum start stop.

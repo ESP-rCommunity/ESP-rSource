@@ -102,6 +102,7 @@ C Trace output
 
 C Initialize pointers to inter-connection(s) ICON, and node(s) INOD
 C Define connection number
+      Cd=0.0  ! initial value
       ICON1=ICONDX(IPCOMP,2,1)
       ICON2=ICONDX(IPCOMP,3,1)
 
@@ -496,7 +497,7 @@ C no thermal capacitance term in this component
 
 C Establish matrix equation coefficients
 
- 10   CALL PP52(IPCOMP,ISTATS,R1,R2)
+      CALL PP52(IPCOMP,ISTATS,R1,R2)
 
       COUT(1)=A(52,1)
       COUT(2)=A(52,2)
@@ -576,8 +577,6 @@ C     CDATA: none
       COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
      &             ICONDX(MPCOM,MNODEC,MPCONC)
 
-      PARAMETER (SMALL=1.0E-20)
-
       REAL      COUT(MPCOE)
 
       COMMON/PCDAT/PCDATF(MPCOM,MPCDAT),PCDATP(MPCOM,MPCDAT)
@@ -630,7 +629,7 @@ C no thermal capacitance term in this component
 
 C Establish matrix equation coefficients
 
- 10   CALL PP52(IPCOMP,ISTATS,R1,R2)
+      CALL PP52(IPCOMP,ISTATS,R1,R2)
       COUT(1)=A(52,1)
       COUT(2)=A(52,2)
       COUT(3)=B(52,1)
@@ -1334,7 +1333,7 @@ C for solid node s3
         TCs1=(RMs3*Cs3)/(hi*Ai)
 C for water node w1
         TCw2=RMw*Cpw1/(Rmw1*Cpw1)
- 10     CALL TIMCONST(TCs1,TCw2,TC(IPCOMP))
+        CALL TIMCONST(TCs1,TCw2,TC(IPCOMP))
 
 C Set up implicit/explicit weighting factor ALPHA (1 = fully implicit)
         IF(IMPEXP.EQ.1) THEN
@@ -1507,6 +1506,7 @@ C Trace output
 
 C Initialize pointers to inter-connection(s) ICON, and node(s) INOD
 C Define connection number
+      CdP = 0.0  ! initial value
       ICON1=ICONDX(IPCOMP,3,1)
 
 C Define location of sub-matrix template
@@ -2238,7 +2238,6 @@ C     CDATA: none
       COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
      &             ICONDX(MPCOM,MNODEC,MPCONC)
 
-      PARAMETER (SMALL=1.0E-20)
       PARAMETER (QSMALL=1.0E-6)
 
       REAL      COUT(MPCOE)
@@ -2428,8 +2427,6 @@ C     CDATA: none
       COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
      &             ICONDX(MPCOM,MNODEC,MPCONC)
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha
-
-      PARAMETER (SMALL=1.0E-15)
 
       REAL      COUT(MPCOE)
       logical closea,close
@@ -2622,8 +2619,6 @@ C     CDATA: none
       COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
      &             ICONDX(MPCOM,MNODEC,MPCONC)
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha
-
-      PARAMETER (SMALL=1.0E-15)
 
       REAL      COUT(MPCOE)
       logical closea,close
@@ -2818,8 +2813,6 @@ C     CDATA: none
      &             ICONDX(MPCOM,MNODEC,MPCONC)
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha
 
-      PARAMETER (SMALL=1.0E-15)
-
       REAL      COUT(MPCOE)
       logical closeb,closec
 
@@ -2885,7 +2878,7 @@ C no thermal capacitance term in this component
 
 C Establish matrix equation coefficients
 
- 10      CALL PP61(IPCOMP,ISTATS,Ca1,Ca2,Ca3)
+         CALL PP61(IPCOMP,ISTATS,Ca1,Ca2,Ca3)
 
          COUT(1)=A(61,1)
          COUT(2)=A(61,2)

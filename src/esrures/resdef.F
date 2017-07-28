@@ -480,7 +480,7 @@ C Read result-set start address.
           TNAME=' '
           READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)NST1,NST2,TNAME
           if (izver.eq.0) TNAME=' Undefined '
-          write(RSNAME(I),'(a40)') TNAME(1:40)
+          write(RSNAME(I),'(a)') TNAME(1:40)
   
 C In the case of factorial uncertainty analysis decode result set name.
           if (IMET.eq.2) then
@@ -503,7 +503,7 @@ C Read simulation start and finish days and control name.
      &                                      ISAVE,IDAVER,itcnst,
      &                                      iSlr_half_hr_flg,TNAME
           call edisp(iuout,outs)
-  711     format(I3,1X,A12,I3,',',I2,I4,',',I2,I8,I7,I8,I5,2X,I5,2X,A40)
+  711     format(I3,1X,A,I3,',',I2,I4,',',I2,I8,I7,I8,I5,2X,I5,2X,A)
    99   CONTINUE
 
 C There is more than one result set therefore check to see if ISAVE is the 
@@ -521,7 +521,7 @@ C same for all sets.
      &              ISDS,ISDF,NTS,ISAVE,SCNAME,IDAVER,itcnst,
      &              iSlr_half_hr_flg
           if(I.eq.1) ISVO=ISAVE
-          if(ISAVE.ne.ISVO) NS=0
+          if(ISAVE.ne.ISVO) NS=0  ! if different reset NS to zero
    10   CONTINUE
         IREC=ITMP
         if(NS.ne.0) then
@@ -607,7 +607,7 @@ C no.| name     | day  | day  |steps/hr|option| Flag  |sim|
       write(outs,7)ISIM,SCNAME,ID1,IM1,ID2,IM2,NTS,
      &  ISAVE,IDAVER,itcnst,iSlr_half_hr_flg,TNAME
       call edisp(iuout,outs)
-    7 format(I3,1X,A12,I3,',',I2,I4,',',I2,I8,I7,I8,I5,2X,I5,2X,A40)
+    7 format(I3,1X,A,I3,',',I2,I4,',',I2,I8,I7,I8,I5,2X,I5,2X,A)
       IREC=IREC+1
       NCF=0
       IF(SCNAME(1:5).NE.'NONE ') THEN
@@ -654,8 +654,7 @@ C ******************** MOOPER
 C MOOPER allows user-definition of the output recovery
 C period, the output time-step increment and whether or
 C not the results should be averaged across the output
-C interval. It also decides whether a pre-scan of the
-C records to gather statistics is warranted.
+C interval.
 
 C Common block variables are:
 C IOD1, IOM1  - start day, month and hour numbers.
@@ -686,17 +685,13 @@ C               the output interval if NOUT > 1 (IAV=1 yes; IAV=0 no)
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
-      common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
+      common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset
 
       common/MMAFDAT/IFILT,RDFMAX(MCOM,3,MZRL),RDFMIN(MCOM,3,MZRL),
      &    RDFAVE(MCOM,3,MZRL),RDTFMAX(MCOM,3,MZRL),RDTFMIN(MCOM,3,MZRL)
 
-C Signal that pre-scan has been used.
-      logical didprescan
-      common/MMAPRE/didprescan
-
       character outs*124,PDESCR*60
-      logical ok,dok,doprescan
+      logical ok,dok
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -706,8 +701,7 @@ C For help messages
       helpinsub='MOOPER'  ! set for subroutine
 
 C Default set-up: output results for whole of simulation period at same 
-C timestep as simulation, assume that any filtering will be on type 1 
-C casual gains (usually occupancy).
+C timestep as simulation, assume no filtering.
       IF(IDEFLT.EQ.1)then
         IOH1=1
         IOD1=ID1
@@ -719,32 +713,12 @@ C casual gains (usually occupancy).
         IODF=ISDF
         NOUT=1
         IAV=0
+        iocut=0
         CALL HDDATE(PDESCR)
         write(outs,'(1x,a)') PDESCR
         call edisp(iuout,outs)
         call edisp(iuout,' Output time-step interval = 1')
-
-C Only pre-scan library if there is a zone library involved.
-        if(indcfg.eq.1.or.indcfg.eq.3)then
-
-C This version disables the prescan.
-          didprescan=.false.  ! no pre-scan done
-          doprescan=.false.  ! in text mode skip prescan
-
-          if(.NOT.doprescan)then
-            iocut=1  ! signal always occupied
-            IFILT=1
-            call usrmsg('Pre-scanning occupancy... ','  ','-')
-            call scnocup(iier)
-            iocut=0  ! signal not always occupied
-            call scnocup(iier)
-            call usrmsg('Pre-scanning occupancy...done. ','  ','P')
-            didprescan=.false.  ! no pre-scan done
-            return
-          endif
-        else
-          didprescan=.false.  ! no pre-scan done
-        endif
+        return
       endif
 
       call edisp(iuout,' Output period and interval definition')
@@ -779,21 +753,6 @@ C Output time-step increment ?
           IAV=1
         else
           IAV=0
-        endif
-      endif
-
-C Prescan occupancy patterns.
-      if(indcfg.eq.1.or.indcfg.eq.3)then
-        if(MMOD.ne.8)then
-          iocut=1  ! signal always occupied
-          IFILT=1
-          call usrmsg('Pre-scanning occupancy... ','  ','-')
-          call scnocup(iier)
-          iocut=0  ! signal not always occupied
-          call scnocup(iier)
-          call usrmsg('Pre-scanning occupancy...done. ','  ','P')
-          didprescan=.false.  ! no pre-scan done
-          return
         endif
       endif
 

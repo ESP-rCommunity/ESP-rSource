@@ -46,9 +46,18 @@ C Radiance processor cores.
       integer radcores
       common/radcor/radcores
 
+C Tollerance for surface matching.
+      real ANGCC  ! angle between surfaces tolerance
+      real CACC   ! tolerance between vertices
+      real DACC   ! angle tolerance along line
+      real COGCC  ! tolerance between surface COG
+      real SNACC  ! tolerance between surface areas
+      integer IACC ! number of matching corners outside dist tolerance
+      common/matching/ANGCC,CACC,DACC,COGCC,SNACC,IACC
+
       logical OK,DOK,MODSIT,browse,defview,unixok
       logical closea,closeb,closec,closed,concat
-      dimension ITEMS1(15)
+      dimension ITEMS1(16)
       character LFIL*96,longtfile*144,llitem*144,longtfiledos*144
       character ITEMS1*47,doit*248,tedlbl*20,teditor*20
       character tmode*8,hold32*32
@@ -126,13 +135,14 @@ C Display of time of day.
       endif
       ITEMS1(12)  ='* test button (esp-r meta file scan)          '
       ITEMS1(13)  ='r cores available to Radiance                 '
-      ITEMS1(14)  ='? help                                        '
-      ITEMS1(15)  ='- exit this menu                              '
+      ITEMS1(14)  ='s surface match tollerance                    '
+      ITEMS1(15)  ='? help                                        '
+      ITEMS1(16)  ='- exit this menu                              '
 
 C Help text for menu.
       helptopic='setup_date_format'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      NITMS=15
+      NITMS=16
       CALL EMENU('Tool preferences',ITEMS1,NITMS,INO1)
       IF(INO1.EQ.1)THEN
 
@@ -441,15 +451,37 @@ C Set number of processor cores available to radiance.
         else
           radcores=iradcores
         endif 
-
+        
       ELSEIF(INO1.EQ.14)THEN
+
+C Set various tollerances for surface matching.
+        helptopic='surface_corner_detect'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL EASKR(CACC,' ',' Tolerance (metres) between vertices? ',
+     &    0.001,'W',0.2,'W',0.01,'dist tolerance',IER,nbhelp)
+        CALL EASKR(ANGCC,' ',
+     &    ' Tolerance (degrees) between surface normals? ',
+     &    0.1,'W',20.0,'W',10.0,'surf normal tolerance',IER,nbhelp)
+        CALL EASKR(COGCC,' ',
+     &    ' Tolerance (metres) between surface COG?',
+     &    0.01,'W',1.5,'W',0.5,'COG dist tolerance',IER,nbhelp)
+        CALL EASKR(SNACC,' ',
+     &    ' Tolerance (square metres) between surface areas?',
+     &    0.01,'W',1.0,'W',0.5,'surf area tolerance',IER,nbhelp)
+        CALL EASKR(DACC,' ',' Corner tolerance (degrees) ?',
+     &    0.1,'W',5.0,'W',1.0,'degree tolerance',IER,nbhelp)
+        CALL EASKI(IACC,' Number of corners which are allowed outside',
+     &    ' of the distance tolerance? ',
+     &     0,'F',2,'W',1,'corner tolerance',IER,nbhelp)
+
+      ELSEIF(INO1.EQ.15)THEN
 
 C User asked for help.
         helptopic='setup_date_format'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('general preferences',nbhelp,'-',0,0,IER)
         
-      ELSEIF(INO1.EQ.15)THEN
+      ELSEIF(INO1.EQ.16)THEN
         RETURN
       else
         goto 33

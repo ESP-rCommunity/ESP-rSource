@@ -153,6 +153,7 @@ C      common/aim2def/iAIM2,LAIM2
 #include "site.h"
 #include "plant.h"
 #include "power.h"
+#include "FMI.h"
 
 C geometry.h provides commons G0/G1/G2/prec2/precz/c20.
 #include "geometry.h"
@@ -172,6 +173,7 @@ C default file names for databases
       include "net_flow.h"
       include "tdf2.h"
       include "cfd.h"
+C UA1 from uncertainty.h
       include "uncertainty.h"
       include "gnetwk.h"
       include "dhw_common.h"
@@ -370,9 +372,6 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
       INTEGER :: idwe1,idwe2
 
-C Uncertainty analysis common.
-      COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
-
 C IPV data is from ipvdata.h. If within cfg file then the file
 C name is replaced with 'internal'.
       common/IPVF/lipvdatf
@@ -400,7 +399,7 @@ C Simulation parameter presets.
       INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
-      character :: selres*72,spfdescr*8
+      character :: selres*72,spfdescr*30
 
 C BASESIMP.
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
@@ -557,7 +556,6 @@ C Simulation parameters
       character GTGEOM*72
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)
-      character LUALF*72,LCNG*15,LLOC*15
       CHARACTER NDNAM*12
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character hvacfile*72,LBSIMP*72,LFClds*72
@@ -587,6 +585,7 @@ C Simulation parameters
       INTEGER :: itwpr,itrunc,iss,isva,istat,n,m,items,lastcc
       INTEGER :: lcfgl,lcfgr,louts,ncn,nd
       real    :: vp1,vp2,vp3,vp4,vp5  ! for ies control points
+      integer itmp
 
 #ifdef OSI
       integer iincomp,iincon  ! to pass nb zones connections to c code
@@ -634,7 +633,7 @@ C Initialize flag for boundary condition data
 C Scan the defaults file and then set file common blocks.
 C Make temporary use of file unit IUF.
 C Note: escdef must come after scan of .esprc file.
-      call escdef(IUF,IER)
+      call escdef(IUF,'s',IER)
       write(LCLIM,'(a)') DCLIM(1:lnblnk(DCLIM))
       write(LAPRES,'(a)') DAPRES(1:lnblnk(DAPRES))
       write(LFMAT,'(a)') DFCON(1:lnblnk(DFCON))
@@ -2871,7 +2870,10 @@ C Fill in a default zone name if blank or UNKNOWN.
         IF(zname(ICOMP)(1:2).EQ.'  '.OR.
      &     zname(ICOMP)(1:7).EQ.'UNKNOWN')THEN
           IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
-          IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+          IF(ICOMP.GT.9.and.ICOMP.LE.99)then
+            WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+          ENDIF
+          IF(ICOMP.GT.99)WRITE(zname(ICOMP),'(A5,I3)')'Zone-',ICOMP
           lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update the length of this string.
         ENDIF
         if(zdesc(ICOMP)(1:1).EQ.' ')then
@@ -3507,6 +3509,55 @@ C Free plant components database and/or fluid flow model file).
         IF(IUNIT1.NE.0) CALL ERPFREE(IUNIT1,ISTAT)
       endif
 
+C <FMI>
+C To specify an FMU in the cfg file, insert the following line at the
+C end of a cfg file:
+C *FMI [path to FMI specification file]
+
+C First, initialise FMI commons to default values.
+      CALL FMI_CLEARALL()
+C Try to read another line.
+      CALL STRIPC(IUC,OUTSTR,0,ND,0,'FMI line',IIER)
+      if (IIER.eq.2) then
+C Line does not exist, continue.
+        IIER=0
+      elseif (IIER.eq.0) then
+C Line is present, check to see if it is what we are expecting.
+        K=0
+        CALL EGETW(OUTSTR,K,WORD,'W','*FMI',IER)
+        if (WORD(1:4).eq.'*FMI') then
+C Yes, it is the FMU line.
+C Read FMI specification file name, open file, read 2 lines for number
+C of FMUs and set flag if any are defined.
+          CALL EGETW(OUTSTR,K,FMISFL,'W','FMI spec file',IER)
+          CALL ERPFREE(IUF,IIER)
+          CALL EFOPSEQ(IUF,FMISFL,1,IIER)
+          CALL STRIPC(IUF,OUTSTR,0,ND,0,'FMI spec file 1st line',IIER)
+          CALL STRIPC(IUF,OUTSTR,0,ND,0,'FMI spec file 2nd line',IIER)
+          K=0
+          CALL EGETW(OUTSTR,K,WORD,'W','*numFMUs',IIER)
+          CALL EGETWI(OUTSTR,K,FMUNOF,0,MFMU,'W','number of FMUs',IIER)
+          if (IIER.ne.0) then
+            outs=' Error getting number of FMUs from FMI spec file.'
+            CALL edisp(iuout,outs)
+            CALL edisp(iuout,' FMI will not be activated.')
+          else
+            if (FMUNOF.gt.0) then
+              IS_FMU=.true.
+            endif
+          endif
+          CALL ERPFREE(IUF,IIER)
+        else
+C Unexpected line, go to error handling.
+C NOTE: this code needs to be updated if further possible lines are
+C       added to cfg file.
+          goto 1
+        endif
+      else
+C Problem reading in line, go to error handling.
+        goto 1
+      endif
+C </FMI>
 
 C Both building and plant description are now complete
 C Close cfg file before exiting.

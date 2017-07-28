@@ -4,7 +4,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -30,7 +30,7 @@ C   CTLDUMPT: Control text dump (ctlexp T mode equiv without dialog).
 C CTLEXP ***********
 C CTLEXP: Control feedback to export wireframe or text feedback area.
 C Assign user-specified export file - checking if local or remote.
-C tg is a character T, X, or G specifying text, tabular or graphic 
+C tg is a character T, X, or G specifying text, tabular or graphic
 C   info being saved.
 C xfile (width variable) is the initial name of the file to be exported
 C msg (width variable) is prepended to dialog as export happens
@@ -39,7 +39,7 @@ C ixunit is the file unit number for the export file.
 C ixloc signals whether path is local or remote and is passed back
 C   to common block for retention until the second call to ctlexp
       subroutine ctlexp(xfile,ixopen,ixloc,ixunit,tg,msg,IER)
-      
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -56,7 +56,7 @@ C << outs probably needs to be longer if xfile is longer >>
 
 C Initial name for export parameter file is xfile+par.
       lenxfile=lnblnk(xfile)
-      if(xfile(1:1).ne.' '.and.lenxfile.gt.2)then
+      if(xfile(1:1).ne.' '.and.lenxfile.gt.2.and.lenxfile.lt.140)then
         write(ixpfile,'(2a)') xfile(1:lnblnk(xfile)),'.par'
       else
         ixpfile = 'data.grt.par'
@@ -227,14 +227,14 @@ C esrucom/ctlexp.F to see if a merge might happen.
 
 C CTLEXPMFS: Control feedback to export file or text feedback area.
 C Assign user-specified export file - checking if local or remote.
-C tg is a character T, X, or G specifying text, tabular or graphic 
+C tg is a character T, X, or G specifying text, tabular or graphic
 C   info being saved.
 C xfile (width variable) is the initial name of the file to be exported
 C msg (width variable) is prepended to dialog as export happens
 C ixopen is a toggle reset each time ctlexp is called to signal open or close file.
 C ixunit is the file unit number for the export file.
       subroutine ctlexpmfs(xfile,ixopen,ixunit,ixpunit,tg,msg,IER)
-      
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -430,7 +430,7 @@ C Include the name of the results library as a subtitle.
      &       LCMDFL(1:lnblnk(LCMDFL)),'"'
           write(ixpunit,'(a)') 'subtitle font 4'
           write(ixpunit,'(a)') 'subtitle size 1.00'
-          
+
 C Typical xaxis stuff.
           write(ixpunit,'(a)') '  xaxis  label "Day of year"'
           write(ixpunit,'(a)') '  xaxis  label place auto'
@@ -443,7 +443,7 @@ C Typical xaxis stuff.
           write(ixpunit,'(a)') '  xaxis  ticklabel layout horizontal'
           write(ixpunit,'(a)') '  xaxis  ticklabel  op bottom'
           write(ixpunit,'(a)') '  xaxis  ticklabel char size 0.75000'
-          
+
 C Typical yaxis stuff.
           write(ixpunit,'(a)') '  yaxis  tick on'
           write(ixpunit,'(a)') '  yaxis  label "Data"'
@@ -485,7 +485,7 @@ C ixloc signals whether path is local or remote
 C A variant of ctlexp which does not have a dialog for file name
 C if the user is working remotely from the model.
       subroutine ctldumpt(xfile,ixopen,ixloc,ixunit,msg,IER)
-      
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN

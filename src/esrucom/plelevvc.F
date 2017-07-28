@@ -160,20 +160,32 @@ C Draw a scale vertical axis.
         CALL axiscale(igwid,igheight,XMN,XMX,YMN,YMX,xsc,ysc,sca,
      &    Xadd,Yadd)
         call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
-        CALL horaxis(XMN,XMX,iigl,iigr,iigb,Xadd,sca,1,'East (m) ->')
-        CALL vrtaxis(YMN,YMX,iigl,iigb,iigt,Yadd,sca,1,0,'^ North')
+        call dintervalf(XMN,XMX,DY,NDEC,1)
+        CALL horaxisdd(XMN,XMX,iigl,iigr,iigb,Xadd,sca,1,
+     &    DY,NDEC,'East (m) ->')
+        call dintervalf(YMN,YMX,DY,NDEC,1)
+        CALL vrtaxisdd(YMN,YMX,iigl,iigb,iigt,Yadd,sca,1,
+     &    DY,NDEC,0,'^ North')
       elseif(direc.eq.'S')then
         CALL axiscale(igwid,igheight,XMN,XMX,ZMN,ZMX,xsc,ysc,sca,
      &    Xadd,Yadd)
         call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
-        call horaxis(XMN,XMX,iigl,iigr,iigb,Xadd,sca,1,'East (m) ->')
-        call vrtaxis(ZMN,ZMX,iigl,iigb,iigt,Yadd,sca,1,0,'^ Up')
+        call dintervalf(XMN,XMX,DY,NDEC,1)
+        call horaxisdd(XMN,XMX,iigl,iigr,iigb,Xadd,sca,1,
+     &    DY,NDEC,'East (m) ->')
+        call dintervalf(ZMN,ZMX,DY,NDEC,1)
+        call vrtaxisdd(ZMN,ZMX,iigl,iigb,iigt,Yadd,sca,1,
+     &    DY,NDEC,0,'^ Up')
       elseif(direc.eq.'E')then
         CALL axiscale(igwid,igheight,YMN,YMX,ZMN,ZMX,xsc,ysc,sca,
      &    Xadd,Yadd)
         call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
-        call horaxis(YMN,YMX,iigl,iigr,iigb,Xadd,sca,1,'North (m) ->')
-        call vrtaxis(ZMN,ZMX,iigl,iigb,iigt,Yadd,sca,1,0,'^ Up')
+        call dintervalf(YMN,YMX,DY,NDEC,1)
+        call horaxisdd(YMN,YMX,iigl,iigr,iigb,Xadd,sca,1,
+     &    DY,NDEC,'North (m) ->')
+        call dintervalf(ZMN,ZMX,DY,NDEC,1)
+        call vrtaxisdd(ZMN,ZMX,iigl,iigb,iigt,Yadd,sca,1,
+     &    DY,NDEC,0,'^ Up')
       endif
 
 C Loop through each of the selected zones and plot. Move to first 

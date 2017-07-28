@@ -29,6 +29,7 @@ C READUAL reads the data fron an existing UA library.
 
       subroutine READUAL(IUALF)
 #include "building.h"
+C Common blocks UA1 UA2 UA3 UA4 within uncertainty.h
 #include "uncertainty.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
@@ -39,16 +40,11 @@ C espriou.h provides currentfile.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
-      COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
-      COMMON/UA2/NILOC,NZG(MNIL),NZNOG(MNIL,MCOM),NSG(MNIL,MCOM),
-     &             NSNOG(MNIL,MCOM,MS)
       COMMON/UA2T/NTLOC(MNIL),NTG(MNIL,4)
-      COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
       COMMON/UA31/MATNAM(MNCNG,2)
       COMMON/UA32/IMISCD(MNCNG,2)
-      COMMON/UA4/NIACT,IACTD(MNACT,2)
       
-      character LUALF*72,LCNG*15,LLOC*15,MATNAM*12
+      character MATNAM*32
       CHARACTER OUTSTR*124, WORD*20,outs*124
 
 
@@ -103,9 +99,8 @@ C Provide feedback about what we're reading in.
         call EDISP (IUOUT,outs)
 
         K=0
-        call EGETWI(OUTSTR,K,IDTYP(II),1,1001,'W',
-     &                                              'change type',IER)
-        if (IDTYP(II).eq.1) then
+        call EGETWI(OUTSTR,K,IDTYPU(II),1,1001,'W','change type',IER)
+        if (IDTYPU(II).eq.1) then
 
 C Thermophysical property.
           call STRIPC(IUALF,OUTSTR,2,ND,0,'db ref & prop.',IER)
@@ -118,9 +113,9 @@ C Thermophysical property.
           K=0
           call EGETWI(OUTSTR,K,IDMAT(II,3),1,3,'W',
      &                                          'change type ref.',IER)
-          call EGETWR(OUTSTR,K,DAT(II,1),0.,100.,'W','change mag.',IER)
-          call EGETWR(OUTSTR,K,DAT(II,2),0.,100.,'W','change mag.',IER)
-        elseif (IDTYP(II).eq.2) then
+          call EGETWR(OUTSTR,K,DATU(II,1),0.,100.,'W','change mag.',IER)
+          call EGETWR(OUTSTR,K,DATU(II,2),0.,100.,'W','change mag.',IER)
+        elseif (IDTYPU(II).eq.2) then
 
 C MLC name or layer thickness.
           call STRIPC(IUALF,OUTSTR,2,ND,0,'Layer and MLC name.',IER)
@@ -141,12 +136,12 @@ C 1 MLC name and data for thickness change.
             K=0
             call EGETWI(OUTSTR,K,IDMAT(II,3),1,3,'W',
      &                                          'change type ref.',IER)
-            call EGETWR(OUTSTR,K,DAT(II,1),0.,100.,'W',
+            call EGETWR(OUTSTR,K,DATU(II,1),0.,100.,'W',
      &                                               'change mag.',IER)
-            call EGETWR(OUTSTR,K,DAT(II,2),0.,100.,'W',
+            call EGETWR(OUTSTR,K,DATU(II,2),0.,100.,'W',
      &                                               'change mag.',IER)
           endif
-        elseif (IDTYP(II).eq.3) then
+        elseif (IDTYPU(II).eq.3) then
 
 C Climate parameters.
           call STRIPC(IUALF,OUTSTR,1,ND,0,'Clm par.',IER)
@@ -158,9 +153,9 @@ C Climate parameters.
           K=0
           call EGETWI(OUTSTR,K,IDMAT(II,3),1,2,'W',
      &                                          'change type ref.',IER)
-          call EGETWR(OUTSTR,K,DAT(II,1),0.,10.,'W','change mag.',IER)
-          call EGETWR(OUTSTR,K,DAT(II,2),0.,10.,'W','change mag.',IER)
-        elseif (IDTYP(II).eq.4) then
+          call EGETWR(OUTSTR,K,DATU(II,1),0.,10.,'W','change mag.',IER)
+          call EGETWR(OUTSTR,K,DATU(II,2),0.,10.,'W','change mag.',IER)
+        elseif (IDTYPU(II).eq.4) then
 
 C Scheduled operations.
           call STRIPC(IUALF,OUTSTR,2,ND,0,'Oper data.',IER)
@@ -175,9 +170,9 @@ C Read associated data.
           K=0
           call EGETWI(OUTSTR,K,IDMAT(II,3),1,3,'W',
      &                                          'change type ref.',IER)
-          call EGETWR(OUTSTR,K,DAT(II,1),0.,100.,'W','change mag.',IER)
-          call EGETWR(OUTSTR,K,DAT(II,2),0.,100.,'W','change mag.',IER)
-        elseif (IDTYP(II).eq.5) then
+          call EGETWR(OUTSTR,K,DATU(II,1),0.,100.,'W','change mag.',IER)
+          call EGETWR(OUTSTR,K,DATU(II,2),0.,100.,'W','change mag.',IER)
+        elseif (IDTYPU(II).eq.5) then
 
 C Convection coefficients.
           call STRIPC(IUALF,OUTSTR,2,ND,0,'Conv coeffs.',IER)
@@ -192,16 +187,16 @@ C Read associated data.
             if (IER.NE.0) return
             K=0
             call EGETWI(OUTSTR,K,IDMAT(II,3),4,4,'W','corr ids.',IER)
-            call EGETWR(OUTSTR,K,DAT(II,1),1.,8.,'W','high corr.',IER)
-            call EGETWR(OUTSTR,K,DAT(II,2),1.,8.,'W','low corr.',IER)
+            call EGETWR(OUTSTR,K,DATU(II,1),1.,8.,'W','high corr.',IER)
+            call EGETWR(OUTSTR,K,DATU(II,2),1.,8.,'W','low corr.',IER)
           endif
-        elseif (IDTYP(II).eq.101) then
+        elseif (IDTYPU(II).eq.101) then
 
 C Zone level assumptions.
-          call STRIPC(IUALF,OUTSTR,2,ND,0,'Zone air.',IER)
+          call STRIPC(IUALF,OUTSTR,2,ND,0,'Zone air or SNA.',IER)
           if (IER.NE.0) return
           K=0
-          call EGETWI(OUTSTR,K,IDMAT(II,1),1,1,'W','Air.',IER)
+          call EGETWI(OUTSTR,K,IDMAT(II,1),1,2,'W','Air or SNA',IER)
           call EGETWI(OUTSTR,K,IDMAT(II,2),1,1,'W','Property.',IER)
           if (IDMAT(II,1).ne.0) then
 
@@ -211,25 +206,22 @@ C Read associated data.
             K=0
             call EGETWI(OUTSTR,K,IDMAT(II,3),1,4,'W',
      &                                          'change type ref.',IER)
-            call EGETWR(OUTSTR,K,DAT(II,1),0.,100.,'W',
-     &                                               'change mag.',IER)
-            call EGETWR(OUTSTR,K,DAT(II,2),0.,100.,'W',
-     &                                               'change mag.',IER)
+            call EGETWR(OUTSTR,K,DATU(II,1),0.,100.,'W',
+     &                                          'change mag.',IER)
+            call EGETWR(OUTSTR,K,DATU(II,2),0.,100.,'W',
+     &                                          'change mag.',IER)
           endif
-        elseif (IDTYP(II).eq.1001) then
+        elseif (IDTYPU(II).eq.1001) then
 
 C Control uncertainties.
           call STRIPC(IUALF,OUTSTR,4,ND,0,'Control.',IER)
           if (IER.NE.0) return
           K=0
-          call EGETWI(OUTSTR,K,IDMAT(II,1),1,mcf,'W',
-     &                                        'Function.',IER)
-          call EGETWI(OUTSTR,K,IDMAT(II,2),1,MCDT,'W',
-     &                                        'Day type.',IER)
-          call EGETWI(OUTSTR,K,IMISCD(II,1),1,MCDP,'W',
-     &                                        'Period.',IER)
+          call EGETWI(OUTSTR,K,IDMAT(II,1),1,mcf,'W','Function.',IER)
+          call EGETWI(OUTSTR,K,IDMAT(II,2),1,MCDT,'W','Day type.',IER)
+          call EGETWI(OUTSTR,K,IMISCD(II,1),1,MCDP,'W','Period.',IER)
           call EGETWI(OUTSTR,K,IMISCD(II,2),1,7,'W',
-     &                                        'Ctl parameter.',IER)
+     &      'Ctl parameter.',IER)
 
 C Read associated data.
           call STRIPC(IUALF,OUTSTR,3,ND,0,'data.',IER)
@@ -237,8 +229,8 @@ C Read associated data.
           K=0
           call EGETWI(OUTSTR,K,IDMAT(II,3),1,4,'W',
      &                                          'change type ref.',IER)
-          call EGETWR(OUTSTR,K,DAT(II,1),0.,100.,'W','change mag.',IER)
-          call EGETWR(OUTSTR,K,DAT(II,2),0.,100.,'W','change mag.',IER)
+          call EGETWR(OUTSTR,K,DATU(II,1),0.,100.,'W','change mag.',IER)
+          call EGETWR(OUTSTR,K,DATU(II,2),0.,100.,'W','change mag.',IER)
         endif
  10   continue
 
@@ -260,14 +252,14 @@ C Read the locations.
         call STRIPC(IUALF,OUTSTR,1,ND,0,'no of zones.',IER)
         if (IER.NE.0) return
         K=0
-        call EGETWI(OUTSTR,K,NZG(II),0,MCOM,'W','no of zones.',IER)
+        call EGETWI(OUTSTR,K,NZGU(II),0,MCOM,'W','no of zones',IER)
 
-C If NZG(II)<=1 then time based location.
-        if (NZG(II).lt.1) then
+C If NZGU(II)<=1 then time based location.
+        if (NZGU(II).lt.1) then
 
-C Set NZG to positive value.
+C Set NZGU to positive value.
           NTLOC(II)=-1
-          NZG(II)=NZG(II)*NTLOC(II)
+          NZGU(II)=NZGU(II)*NTLOC(II)
 
 C Uncertainty will have a start and finish time. NTLOC,NTG(MNIL,4)
 C          NTG(II,1)=start day
@@ -287,28 +279,28 @@ C          NTG(II,4)=finish hour
      &                            NTG(II,2),24,'W','finish hour',IER)
           endif
         endif
-        if (NZG(II).gt.0) then
+        if (NZGU(II).gt.0) then
 
 C For each zone read the zone id number and then the number of surfaces 
 C included in the definition.
-          do 201 IJ=1,NZG(II)
+          do 201 IJ=1,NZGU(II)
             call STRIPC(IUALF,OUTSTR,2,ND,
      &                                  0,'zones no and surfaces.',IER)
             if (IER.NE.0) return
             K=0
-            call EGETWI(OUTSTR,K,NZNOG(II,IJ),
-     &                                      1,MCOM,'W','zones no.',IER)
-            call EGETWI(OUTSTR,K,NSG(II,IJ),
-     &                                1,MCOM,'W','no of surfaces.',IER)
+            call EGETWI(OUTSTR,K,NZNOGU(II,IJ),
+     &        1,MCOM,'W','zones no.',IER)
+            call EGETWI(OUTSTR,K,NSGU(II,IJ),
+     &        1,MCOM,'W','no of surfaces.',IER)
 
 C Read surface list.
-            call STRIPC(IUALF,OUTSTR,NSG(II,IJ),
-     &                                        ND,0,'surface list.',IER)
+            call STRIPC(IUALF,OUTSTR,NSGU(II,IJ),
+     &        ND,0,'surface list.',IER)
             if (IER.NE.0) return
             K=0
-            do 202 IK=1,NSG(II,IJ)
+            do 202 IK=1,NSGU(II,IJ)
               call EGETWI(OUTSTR,K,NSNOG(II,IJ,IK),
-     &                                    1,MCOM,'W','surface no.',IER)
+     &          1,MCOM,'W','surface no.',IER)
  202        continue
  201      continue
         endif
@@ -345,19 +337,16 @@ C WRITUAL reads the data fron an existing UA library.
 
       subroutine WRITUAL(IUALF)
 #include "building.h"
+C Common blocks UA1 UA2 UA3 UA4 within uncertainty.h
 #include "uncertainty.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
-      COMMON/UA2/NILOC,NZG(MNIL),NZNOG(MNIL,MCOM),NSG(MNIL,MCOM),
-     &             NSNOG(MNIL,MCOM,MS)
       COMMON/UA2T/NTLOC(MNIL),NTG(MNIL,4)
-      COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
       COMMON/UA31/MATNAM(MNCNG,2)
-      COMMON/UA4/NIACT,IACTD(MNACT,2)
+      COMMON/UA32/IMISCD(MNCNG,2)
 
-      character LUALF*72,LCNG*15,LLOC*15,outs*124,MATNAM*12
+      character outs*124,MATNAM*32
 
       IER=0
 
@@ -385,36 +374,44 @@ C For each change write info.
         write (IUALF,42,IOSTAT=ISTAT,ERR=1003)
   42    FORMAT('*cng_def')
         write (IUALF,44,IOSTAT=ISTAT,ERR=1003)LCNG(II)
-  44    FORMAT(a15,' # Change id string')
+  44    FORMAT(a,' # Change id string')
         write (outs,'(a)') ' # Change type: unknown '
-        if (IDTYP(II).eq.1) then
+        if (IDTYPU(II).eq.1) then
           write (outs,'(a)') ' # Change type: Materials'
-        elseif (IDTYP(II).eq.2) then
+        elseif (IDTYPU(II).eq.2) then
           write (outs,'(a)') ' # Change type: Constructions'
-        elseif (IDTYP(II).eq.3) then
-          write (outs,'(a)') ' # Change type: Climate parameter'
-        elseif (IDTYP(II).eq.4) then
+        elseif (IDTYPU(II).eq.3) then
+          write (outs,'(a)') ' # Change type: Weather parameter'
+        elseif (IDTYPU(II).eq.4) then
           write (outs,'(a)') ' # Change type: Scheduled operation'
-        elseif (IDTYP(II).eq.5) then
+        elseif (IDTYPU(II).eq.5) then
           write (outs,'(a)') ' # Change type: Convection coefficients'
+        elseif (IDTYPU(II).eq.101) then
+          write (outs,'(a)') ' # Change type: Zone air volume'
+        elseif (IDTYPU(II).eq.1001) then
+          write (outs,'(a)') ' # Change type: Zone control'
         endif
-        write (IUALF,46,IOSTAT=ISTAT,ERR=1003)IDTYP(II),outs
+        write (IUALF,46,IOSTAT=ISTAT,ERR=1003)IDTYPU(II),outs
   46    FORMAT(i4,a40)
-        if (IDTYP(II).eq.1) then
+        if (IDTYPU(II).eq.1) then
           write(IUALF,45,IOSTAT=ISTAT,ERR=1003)IDMAT(II,1),IDMAT(II,2)
   45      FORMAT(2i4,' # material & property id')
-        elseif (IDTYP(II).eq.2) then
+        elseif (IDTYPU(II).eq.2) then
           write(IUALF,48,IOSTAT=ISTAT,ERR=1003)IDMAT(II,1),MATNAM(II,1)
   48      FORMAT(i4,' ',a,' # material & construction name')
-        elseif (IDTYP(II).eq.3) then
+        elseif (IDTYPU(II).eq.3) then
           write (IUALF,47,IOSTAT=ISTAT,ERR=1003)IDMAT(II,1)
   47      FORMAT(i4,' # Climate parameter ref')
+        elseif (IDTYPU(II).eq.1001) then
+          write (IUALF,51,IOSTAT=ISTAT,ERR=1003)IDMAT(II,1),
+     &      IDMAT(II,2),IMISCD(II,1),IMISCD(II,2)
+  51      FORMAT(4i4,' # Control parameters')
         else
           write (IUALF,49,IOSTAT=ISTAT,ERR=1003)IDMAT(II,1),IDMAT(II,2)
   49      FORMAT(2i4,' # ref 1, ref 2')
         endif
         write (IUALF,50,IOSTAT=ISTAT,ERR=1003)IDMAT(II,3),
-     &                                              DAT(II,1),DAT(II,2)
+     &    DATU(II,1),DATU(II,2)
   50    FORMAT(i4,2f10.3,' # Data')
  1000 continue
 
@@ -429,11 +426,11 @@ C For each location write info.
         write (IUALF,62,IOSTAT=ISTAT,ERR=1003)
   62    FORMAT('*loc_def')
         write (IUALF,64,IOSTAT=ISTAT,ERR=1003)LLOC(II)
-  64    FORMAT(a15,' # Location id string')
+  64    FORMAT(a,' # Location id string')
         if (NTLOC(II).eq.0) then
-          write (IUALF,66,IOSTAT=ISTAT,ERR=1003)NZG(II)
+          write (IUALF,66,IOSTAT=ISTAT,ERR=1003)NZGU(II)
         else
-          write (IUALF,66,IOSTAT=ISTAT,ERR=1003)NZG(II)*NTLOC(II)
+          write (IUALF,66,IOSTAT=ISTAT,ERR=1003)NZGU(II)*NTLOC(II)
         endif
   66    FORMAT(i4,' # Number of zones')
 
@@ -444,11 +441,12 @@ C If NTLOC=-1 then write time information.
         endif
 
 C Data for each zone.
-        do 2100, IJ=1,NZG(II)
-          write (IUALF,68,IOSTAT=ISTAT,ERR=1003)NZNOG(II,IJ),NSG(II,IJ)
+        do 2100, IJ=1,NZGU(II)
+          write (IUALF,68,IOSTAT=ISTAT,ERR=1003) NZNOGU(II,IJ),
+     &      NSGU(II,IJ)
   68      FORMAT(2i4,' # Zone number, Number of surfaces')
           write (IUALF,70,IOSTAT=ISTAT,ERR=1003)
-     &                                (NSNOG(II,IJ,IK),IK=1,NSG(II,IJ))
+     &      (NSNOG(II,IJ,IK),IK=1,NSGU(II,IJ))
   70      FORMAT(25i3,' # Surfaces')
  2100   continue
  2000 continue
@@ -464,11 +462,11 @@ C For each actions write info.
         write (IUALF,82,IOSTAT=ISTAT,ERR=1003)
   82    FORMAT('*act_def')
         write (IUALF,86,IOSTAT=ISTAT,ERR=1003)
-     &                                    IACTD(II,1),LCNG(IACTD(II,1))
-  86    FORMAT(i4,' # Uncertanty ref: ',a15)
+     &    IACTD(II,1),LCNG(IACTD(II,1))
+  86    FORMAT(i4,' # Uncertanty ref: ',a)
         write (IUALF,88,IOSTAT=ISTAT,ERR=1003)
-     &                                    IACTD(II,2),LLOC(IACTD(II,2))
-  88    FORMAT(i4,' # Location ref: ',a15)
+     &    IACTD(II,2),LLOC(IACTD(II,2))
+  88    FORMAT(i4,' # Location ref: ',a)
  3000 continue
 
    99 CALL ERPFREE(IUALF,ISTAT)
@@ -489,26 +487,21 @@ C 0=all; 1=distributions; 2=locations; 3=uncertainties.
       subroutine listual(ISEC,IELM)
 #include "building.h"
 #include "geometry.h"
+C Common blocks UA1 UA2 UA3 UA4 within uncertainty.h
 #include "uncertainty.h"
 #include "esprdbfile.h"
 #include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
-      COMMON/UA2/NILOC,NZG(MNIL),NZNOG(MNIL,MCOM),NSG(MNIL,MCOM),
-     &             NSNOG(MNIL,MCOM,MS)
-      COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
       COMMON/UA31/MATNAM(MNCNG,2)
-      COMMON/UA4/NIACT,IACTD(MNACT,2)
 
       logical closemat1,closemat2
 
-      integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
 
-      character LUALF*72,LCNG*15,LLOC*15,outs*124
-      character NAM*72,MATNAM*12,ITEM(6)*20
+      character outs*124
+      character NAM*72,MATNAM*32,ITEM(6)*20
 
       IER=0
 
@@ -524,25 +517,24 @@ C Find version of materials database.
       endif
 
       call edisp (iuout,'  ')
-      write(outs,'(a,a)')'Uncertainty analysis library: ',LUALF(1:40)
+      write(outs,'(2a)')'Uncertainty analysis library: ',LUALF(1:40)
       call edisp (iuout,outs)
 
       if (ISEC.eq.0.or.ISEC.eq.1) then
 C List distributions.
 
         call edisp (iuout,'  ')
-        write(outs,'(a,i4)')'Number of distributions defined:',NICNG
+        write(outs,'(a,i3)')'Number of distributions defined:',NICNG
         call edisp (iuout,outs)
-        do 10 I=1,NICNG
+        do 10 I=1,NICNG  ! for each distribution
           if (IELM.eq.0.or.IELM.eq.I) then
             call edisp (iuout,'  ')
             write(outs,'(a,i4,a,a)')'Distribution :',I,'; ',LCNG(I)
             call edisp (iuout,outs)
-            if (IDTYP(I).eq.1) then
+            if (IDTYPU(I).eq.1) then  ! if materials focus
               IDB=IDMAT(I,1)
-              legmat=IDB   ! which legacy index
-              if(legmat.gt.0)then
-                matarrayindex=mathash(legmat)  ! find matching array index
+              if(IDB.gt.0)then
+                matarrayindex=IDB  ! find matching array index
  
 C And if matarrayindex is zero then resetn dbcon dbden dbsht
                 if(matarrayindex.eq.0)then
@@ -566,16 +558,15 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht
               elseif (IDMAT(I,2).eq.6) then
                 call edisp(iuout,' Uncertain property: diffusion res.')
               endif
-            elseif(IDTYP(I).eq.2) then
+            elseif(IDTYPU(I).eq.2) then  ! if MLC focus
               write(outs,'(2a)')' Composite construction: ',MATNAM(I,1)
               call edisp (iuout,outs)
               if (IDMAT(I,1).eq.0) then
                 call edisp (iuout,'Undefined')
               else
                 IDB=IDMAT(I,1)
-                legmat=IDB   ! which legacy index
-                if(legmat.gt.0)then
-                  matarrayindex=mathash(legmat)  ! find matching array index
+                if(IDB.gt.0)then
+                  matarrayindex=IDB  ! find matching array index
  
 C And if matarrayindex is zero then resetn dbcon dbden dbsht
                   if(matarrayindex.eq.0)then
@@ -587,7 +578,7 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht
                 write(outs,'(2a)')' Thickness of material: ',NAM
                 call edisp (iuout,outs)
               endif
-            elseif(IDTYP(I).eq.3) then
+            elseif(IDTYPU(I).eq.3) then  ! if weather focus
               ITEM(1) ='Dry bulb temperature'
               ITEM(2) ='Direct normal solar '
               ITEM(3) ='Diffuse horiz solar '
@@ -596,7 +587,7 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht
               ITEM(6) ='Relative humidity   '
               write(outs,'(2a)')' Climate parameter: ',ITEM(IDMAT(I,1))
               call edisp (iuout,outs)
-            elseif(IDTYP(I).eq.4) then
+            elseif(IDTYPU(I).eq.4) then  ! if operation focus
               if (IDMAT(I,1).eq.0) then
                 if (IDMAT(I,2).eq.1) then
                   write(outs,'(a)')' Scheduled infiltration. '
@@ -606,52 +597,61 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht
                   write(outs,'(a)')' Scheduled ventilation source zone.'
                 elseif (IDMAT(I,2).eq.4) then
                   write(outs,'(a)')
-     &                     ' Scheduled ventilation source temperature.'
+     &              ' Scheduled ventilation source temperature.'
                 endif
                 call edisp (iuout,outs)
               else
                 if (IDMAT(I,2).eq.1) then
                   write(outs,'(a,i4)')
-     &                       ' Sensible casual gain, type: ',IDMAT(I,1)
+     &              ' Sensible casual gain, type: ',IDMAT(I,1)
                 elseif (IDMAT(I,2).eq.2) then
                   write(outs,'(a,i4)')
-     &                         ' Latent casual gain, type: ',IDMAT(I,1)
+     &              ' Latent casual gain, type: ',IDMAT(I,1)
                 elseif (IDMAT(I,2).eq.3) then
                   write(outs,'(a,i4)')
-     &               ' Radiant fraction casual gain, type: ',IDMAT(I,1)
+     &              ' Radiant fraction casual gain, type: ',IDMAT(I,1)
                 elseif (IDMAT(I,2).eq.4) then
                   write(outs,'(a,i4)')
      &            ' Convective fraction casual gain, type: ',IDMAT(I,1)
                 elseif (IDMAT(I,2).eq.5) then
                   write(outs,'(a,i4)')
-     &                          ' Total casual gain, type: ',IDMAT(I,1)
+     &              ' Total casual gain, type: ',IDMAT(I,1)
+                elseif (IDMAT(I,2).eq.6) then
+                  write(outs,'(a,i4)')
+     &              ' Period start hour, type: ',IDMAT(I,1)
+                elseif (IDMAT(I,2).eq.8) then
+                  write(outs,'(a,i4)')
+     &              ' RC split, type: ',IDMAT(I,1)
                 endif
                 call edisp (iuout,outs)
               endif
-            elseif(IDTYP(I).eq.5) then
+            elseif(IDTYPU(I).eq.5) then  ! if hc coefficients
               write(outs,'(a)')' Convection coefficients '
               call edisp (iuout,outs)
-
+            elseif(IDTYPU(I).eq.101) then  ! if geometry focus
+              write(outs,'(a)')' Zone air volume '
+              call edisp (iuout,outs)
             endif
             call edisp (iuout,' Distribution type:')
             if (IDMAT(I,3).eq.1) then
               call edisp (iuout,' Normal; limits defined as: ')
-              write (outs,'(a,f6.2,a)') ' +/- ',DAT(I,1),
-     &                                       '% of the database value.'
+              write (outs,'(a,f6.2,a)') ' +/- ',DATU(I,1),
+     &          '% of the database value.'
               call edisp (iuout,outs)
             elseif (IDMAT(I,3).eq.2) then
               call edisp (iuout,' Normal; limits defined as: ')
-              write (outs,'(a,f6.2,a)') ' +/- ',DAT(I,1),
-     &                                        ' of the database value.'
+              write (outs,'(a,f6.2,a)') ' +/- ',DATU(I,1),
+     &          ' of the database value.'
               call edisp (iuout,outs)
             elseif (IDMAT(I,3).eq.3) then
               call edisp(iuout,' Normal; absolute limits defined as: ')
-              write(outs,'(2(a,f6.2))')' From ',DAT(I,1),' to ',DAT(I,2)
+              write(outs,'(2(a,f6.2))')' From ',DATU(I,1),' to ',
+     &          DATU(I,2)
               call edisp (iuout,outs)
             elseif (IDMAT(I,3).eq.4) then
               call edisp(iuout,' Alternative correlations: ')
               write(outs,'(2(a,f6.2))')
-     &                              ' High ',DAT(I,1),', Low ',DAT(I,2)
+     &          ' High ',DATU(I,1),', Low ',DATU(I,2)
               call edisp (iuout,outs)
             endif
           endif
@@ -669,9 +669,9 @@ C List locations.
             write(outs,'(a,i4,a,a)')'Location :',I,'; ',LLOC(I)
             call edisp (iuout,outs)
             call edisp (iuout,' Zone           | Surface list ')
-            do 30 J=1,NZG(I)
-              write (outs,'(1x,a,a,25i3)')ZNAME(NZNOG(I,J)),':',
-     &                                    (NSNOG(I,J,K),K=1,NSG(I,J))
+            do 30 J=1,NZGU(I)
+              write (outs,'(1x,a,a,25i3)')ZNAME(NZNOGU(I,J)),':',
+     &          (NSNOG(I,J,K),K=1,NSGU(I,J))
               call edisp (iuout,outs)
  30         continue
           endif

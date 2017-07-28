@@ -48,6 +48,7 @@ C offset from the beginning of the display period.
 
       COMMON/VISSET/imgqua,NOX,NOZ,tscal,hLscal,hWscal,vLscal
       COMMON/arpoly/XS(7),ZS(7),bXmin,bXmax,bZmin,bZmax
+      integer icolindex
 
       character souts*48,name*12,scale*32,title*30
 #ifdef OSI
@@ -314,12 +315,8 @@ C      write(6,*) 'within MAKS3D SCmin,SCmax',SCmin,SCmax
 C Need to reset scale factors - do this by redrawing the domain.
       iz=0
       call VGRID3D('---','xyz',iz)
-
-C << res cannot draw boundaries just now but calls useful in prj >>
-C << TODO add boundary information to cfd results library to get round this >>
-C      call VSB3D(0,iz)
-C      call VAO3D(0,iz)
-
+      write(6,*) 'imgqua,NOX,NOZ,tscal,hLscal,hWscal,vLscal'
+      write(6,*) imgqua,NOX,NOZ,tscal,hLscal,hWscal,vLscal
 C Loop through all vectors.
       do 10 I=2,NIM1
         do 101 J=2,NJM1
@@ -343,6 +340,9 @@ C Scale vector length.
 
 C Setup colour for current cell arrow.
             icolindex=nint((tempmax-temp)*colmult)
+C            write(6,*) 
+C     &        'Vstart,Vend,temp,hsf,icolindex ',
+C     &        i,j,k,Vstart,Vend,temp,hsf
             if(icolindex.le.0) icolindex = 1
             if(icolindex.gt.ncset) icolindex = ncset
             if(cscaleok)then
@@ -355,6 +355,7 @@ C Setup colour for current cell arrow.
 
 C Draw the arrow.
             call arrow(Vstart,Vend,0.5,hsf,IC,'r',2)
+            call forceflush()
  102      continue
  101    continue
         iicol=0  ! set back to black

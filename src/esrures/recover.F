@@ -51,7 +51,7 @@ C READPIF - read performance information file and gather data.
       integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
       COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
 
-      common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
+      common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset
       
 
 C ihflag = 0 write 13h30, ihflag = 1 write 0.5625
@@ -267,7 +267,6 @@ C Filtering data.
           iocut=1
           IFILT=1
           call usrmsg('Assuming casual gain type 1=occupancy','  ','-')
-          call scnocup(iier)
         endif
           
         call EGETWI(OUTSTR,K,IROC,-1,1,'W','ROC filter',IER)

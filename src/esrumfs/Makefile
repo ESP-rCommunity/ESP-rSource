@@ -1,7 +1,14 @@
+architecture := $(shell uname -s)
+ifeq ($(architecture),Darwin)
+	SWTCH=
+else
+	SWTCH= -D
+endif
 SRCdir = `pwd`/..
 COMdir = $(SRCdir)/esrucom
 BPSdir = $(SRCdir)/esrubps
 PROG = mfs$(EXE)
+default: $(PROG)
 
 .SUFFIXES: .o .F
 .F.o:
@@ -63,12 +70,19 @@ tdrecbps.F:
 	ln -s $(BPSdir)/tdrecbps.F .
 
 strip:
-	@if [ -f $(PROG) ]; then strip $(PROG); fi
+	strip $(PROG)
 
 install:
-	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
+	install $(SWTCH) $(PROG) $(ESPBinDir)/$(PROG)
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
 	c2fdum.F ctlexp.F dossupport.F econtrol.F emfnetw.F gcfunc.F \
         initalc.F item.F nwkrewr.F psychro.F rnor.F startup.F tdfile.F tdrecbps.F
+
+distclean: clean
+
+uninstall:
+	-rm -f $(ESPBinDir)/$(PROG)
+	
+.PHONY: clean install default strip uninstall distclean

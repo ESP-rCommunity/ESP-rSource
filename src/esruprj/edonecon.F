@@ -184,7 +184,7 @@ C Editing of items.
         if(SO(1)(1:7).ne.'SIMILAR')then
           TOTHER(IE1(IFOC),1)='SIMILAR'
           write(tother(IE1(IFOC),2),'(i2.2)') IC2(ifoc)
-          write(tother(IE1(IFOC),3),'(i2.2)') IE2(ifoc)
+          write(tother(IE1(IFOC),3),'(i3.3)') IE2(ifoc)
           UPDGEO=.TRUE.
         endif
       elseif(iart.eq.3)then 
@@ -204,7 +204,7 @@ C Editing of items.
         if(SO(1)(1:8).ne.'CONSTANT')then
           TOTHER(IE1(IFOC),1)='CONSTANT'
           write(tother(IE1(IFOC),2),'(i2.2)') IC2(ifoc)
-          write(tother(IE1(IFOC),3),'(i2.2)') IE2(ifoc)
+          write(tother(IE1(IFOC),3),'(i3.3)') IE2(ifoc)
           UPDGEO=.TRUE.
         endif
       elseif(iart.eq.4)then 
@@ -241,7 +241,7 @@ C and display both zones.
           IE2(IFOC)=IS
           TOTHER(IE1(IFOC),1)='ANOTHER'
           write(tother(IE1(IFOC),2),'(i2.2)') IC2(ifoc)
-          write(tother(IE1(IFOC),3),'(i2.2)') IE2(ifoc)
+          write(tother(IE1(IFOC),3),'(i3.3)') IE2(ifoc)
           UPDGEO=.TRUE.
 
 C If applicable find other surface, return it`s connection number and
@@ -295,7 +295,7 @@ C profile has not been defined.
           if(SO(1)(1:6).ne.'GROUND')then
             TOTHER(IE1(IFOC),1)='GROUND'
             write(tother(IE1(IFOC),2),'(i2.2)') IC2(ifoc)
-            write(tother(IE1(IFOC),3),'(i2.2)') IE2(ifoc)
+            write(tother(IE1(IFOC),3),'(i3.3)') IE2(ifoc)
             UPDGEO=.TRUE.
           endif
         ELSE
@@ -322,7 +322,7 @@ C profile has not been defined.
           if(SO(1)(1:6).ne.'GROUND')then
             TOTHER(IE1(IFOC),1)='GROUND'
             write(tother(IE1(IFOC),2),'(i2.2)') IC2(ifoc)
-            write(tother(IE1(IFOC),3),'(i2.2)') IE2(ifoc)
+            write(tother(IE1(IFOC),3),'(i3.3)') IE2(ifoc)
             UPDGEO=.TRUE.
           endif
         else
@@ -340,7 +340,7 @@ C Link to a 3D conduction model..
         if(SO(1)(1:6).ne.'GROUND')then
           TOTHER(IE1(IFOC),1)='GROUND'
           write(tother(IE1(IFOC),2),'(i2.2)') IC2(ifoc)
-          write(tother(IE1(IFOC),3),'(i2.2)') IE2(ifoc)
+          write(tother(IE1(IFOC),3),'(i3.3)') IE2(ifoc)
           UPDGEO=.TRUE.
         endif
       elseif(iart.eq.8)then 
@@ -350,7 +350,7 @@ C Link to a 3D conduction model..
         if(SO(1)(1:9).ne.'ADIABATIC')then
           TOTHER(IE1(IFOC),1)='ADIABATIC'
           write(tother(IE1(IFOC),2),'(i2.2)') IC2(ifoc)
-          write(tother(IE1(IFOC),3),'(i2.2)') IE2(ifoc)
+          write(tother(IE1(IFOC),3),'(i3.3)') IE2(ifoc)
           UPDGEO=.TRUE.
         endif
       elseif(iart.eq.9)then 
@@ -377,7 +377,7 @@ C attribute to the surface under consideration.
         if(SO(1)(1:8).ne.'BASESIMP')then
           TOTHER(IE1(IFOC),1)='BASESIMP'
           write(tother(IE1(IFOC),2),'(i2.2)') IC2(ifoc)
-          write(tother(IE1(IFOC),3),'(i2.2)') IE2(ifoc)
+          write(tother(IE1(IFOC),3),'(i3.3)') IE2(ifoc)
           UPDGEO=.TRUE.
         endif
 C BASESIMP end.
@@ -394,7 +394,7 @@ C CEN 13791 partition start
         if(SO(1)(1:7).ne.'IDENT_CEN')then
           TOTHER(IE1(IFOC),1)='IDENT_CEN'
           write(tother(IE1(IFOC),2),'(i2.2)') IC2(ifoc)
-          write(tother(IE1(IFOC),3),'(i2.2)') IE2(ifoc)
+          write(tother(IE1(IFOC),3),'(i3.3)') IE2(ifoc)
           UPDGEO=.TRUE.
         endif
 C CEN 13791 partition end
@@ -452,7 +452,7 @@ C other zone) and write out that zones geometry.
         ICN=IZSTOCN(IC2(IFOC),IE2(IFOC))
         SSOTHER(ICN,1)='ANOTHER'
         write(SSOTHER(ICN,2),'(i2.2)') IC1(IFOC)
-        write(SSOTHER(ICN,3),'(i2.2)') IE1(IFOC)
+        write(SSOTHER(ICN,3),'(i3.3)') IE1(IFOC)
 
         call eclose(gversion(IC2(IFOC)),1.1,0.01,newgeo)
         if(igupgrade.eq.2.and.(.NOT.newgeo))then

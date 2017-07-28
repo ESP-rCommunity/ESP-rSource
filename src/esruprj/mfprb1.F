@@ -331,6 +331,39 @@ C Other definition functions.
       write(ITEM1(16),
      &'(a,F4.2,a)')' Wind reduction factor (',wred,')'
       ITEM1(17)   ='f Set wind reduction         '
+
+C << place to add in simulation preferences >>
+C      if(IPSMOD.eq.1)then
+C        ITEMG(9)=   'h Mass flow stack press >> sending node'
+C      elseif(IPSMOD.eq.2)then
+C        ITEMG(9)=   'h Mass flow stack press >> avg of nodes'
+C      elseif(IPSMOD.eq.0)then
+C        ITEMG(9)=   'h Mass flow stack press >> NA          '
+C      endif
+C      if(MSLVTP.eq.1)then
+C        ITEMG(10)=  'i Mass flow solution >> Gaussian        '
+C      elseif(MSLVTP.eq.2)then
+C        ITEMG(10)=  'i Mass flow solution >> LU decomposition'
+C      elseif(MSLVTP.eq.0)then
+C        ITEMG(10)=  'i Mass flow solution >> NA              '
+C      endif
+C      if(MFTRAC.eq.-1)then
+C        ITEMG(11)=  'j Mass flow trace >> silent             '
+C      elseif(MFTRAC.eq.0)then
+C        ITEMG(11)=  'j Mass flow trace >> iterations only    '
+C      elseif(MFTRAC.eq.1)then
+C        ITEMG(11)=  'j Mass flow trace >> data on worst node '
+C      elseif(MFTRAC.eq.2)then
+C        ITEMG(11)=  'j Mass flow trace >> data on all nodes  '
+C      elseif(MFTRAC.eq.3)then
+C        ITEMG(11)=  'j Mass flow trace >> all nodes + solver '
+C      endif
+C      if(MFBSNC.eq.0)then
+C        ITEMG(12)=  'k Mass flow timestep >> 1 per hour      '
+C      elseif(MFBSNC.eq.1)then
+C        ITEMG(12)=  'k Mass flow timestep >> 1 per zone_step '
+C      endif
+
       ITEM1(18)   ='  __________________________ '
       ITEM1(19)   ='g Link nodes and zones       '
       ITEM1(20)   ='  __________________________ '

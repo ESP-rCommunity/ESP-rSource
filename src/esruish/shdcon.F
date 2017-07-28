@@ -89,16 +89,18 @@ C from the zone geometry file.
       if(icont.eq.0)then
          if(newgeo)then
             call edisp(iuout,
-     &        'No shaded surfaces in zone geometry file - skipping!')
+     &      'No shading directives in zone geometry file - skipping!')
             return
          else
             if(act.eq.'s')then
-               call edisp(iuout,'No surfaces, shading skipped!')
-               return
+              call edisp(iuout,
+     &        'No shading directives in zone geometry file-skippimg!')
+              return
             else
                dok=.true.
-               call askok('No surfaces selected!','Re-specify?',
-     &           ok,dok,nbhelp)
+               call askok(
+     &           'No shading directives in zone geometry file.',
+     &           'Re-specify?',ok,dok,nbhelp)
                if(ok)goto 35
                call edisp(iuout,'Shading computation abandoned!')
                return
@@ -897,7 +899,7 @@ C Trace output.
         call edisp(icout,' ')
         call zsid(izone,itsur,ZSDES,ZSDESC,ZSDESS)
         lnzsn=lnblnk(zsdes)
-        write(outs,'(3a,i2,3a,i2,a,i1,a)')
+        write(outs,'(3a,i3,3a,i3,a,i1,a)')
      &    '*** DECOMP: Target surface ',zsdes(1:lnzsn),' (',itsur,
      &    ') obstruction ',
      &    blockname(izone,ibn)(1:lnblockname(izone,ibn)),' (',ibn,

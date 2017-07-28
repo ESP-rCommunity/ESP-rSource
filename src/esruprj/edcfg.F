@@ -44,6 +44,7 @@ C output; IER=0 indicates no error.
 
 C geometry.h provides commons G0/G1/G2/G7/prec2/precz.
 #include "geometry.h"
+C UA1 in uncertainty.h
 #include "uncertainty.h"
 #include "net_flow.h"
 #include "control.h"
@@ -54,10 +55,13 @@ C LAPRES,IAPRES (for window pressure databases)
 C LPRFDB,IPRODB (for event profile database)
 #include "plant.h"
 #include "power.h"
+#include "prj3dv.h"
 
 C espriou.h provides current file.
 #include "espriou.h"
-#include "prj3dv.h"
+
+C FMI.h provides FMU connection flag.
+#include "FMI.h"
 
 C Function definition
       INTEGER :: lnblnk
@@ -94,8 +98,6 @@ C Defaults.
       character DFCFD*72,DECMPDBFL*72,DICONDBFL*72
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
 
-C Uncertainty.
-      COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
@@ -134,7 +136,6 @@ C Uncertainty.
       integer iappwpc ! application height as % of nominal size
 
       dimension ITEMS(30)
-      character LUALF*72,LCNG*15,LLOC*15
       character*72 LAPROB,DFILE,LPNF,tfile
       character longtfile*144,longtfiledos*144
       character ITEMS*34,ETEXT*82
@@ -226,7 +227,7 @@ C are active.
       if(ientxist.gt.0)nets=nets+1
       if(ihvacflag.gt.0)nets=nets+1
 
-      ictl=ncf+ncl+ncc+ngf+nof
+      ictl=ncf+ncl+ncc+ngf+nof+nCFCctlloops
       IER=0
       WRITE(ITEMS(1),'(A,A)') ' cfg file: ',LCFGF(1:22)
       IF(INDCFG.EQ.0)THEN 
@@ -239,86 +240,89 @@ C are active.
         ITEMS(2)= 'a model domains >> building/plant'
       ENDIF
       ITEMS(3)   ='b model context                '
-      ITEMS(4)   =' _____________________________ '
-      WRITE(ITEMS(5),'(A,I2,A)')' ... Zones.....(',NCOMP,' defined)'
-      ITEMS(6)   ='c composition                ' 
-      WRITE(ITEMS(7),'(A,I2,A)')' ... Networks......(',nets,' defined)'
+      WRITE(ITEMS(4),'(A,I2,A)')' ... Zones.....(',NCOMP,' defined)'
+      ITEMS(5)   ='c composition                '
+      WRITE(ITEMS(6),'(A,I2,A)')' ... Networks......(',nets,' defined)'
       if(indcfg.ge.2.or.ihvacflag.gt.0)then
-        ITEMS(8)='d plant & systems (defined)  '
+        ITEMS(7)='d plant & systems (defined)  '
       else
-        ITEMS(8)='d plant & systems            '
+        ITEMS(7)='d plant & systems            '
       endif
 
 C Check flags for air flow type. << How does the reference to iAIM2
 C work? if iAIM2=0 then the next line tests for iAIM2=1
       IF (iairn.lt.1) THEN
         IF (iAIM2.EQ.1) THEN
-          ITEMS(9)='e empirical air infiltration'
-        ELSE 
-          ITEMS(9)='e air flow                  '
+          ITEMS(8)='e empirical air infiltration'
+        ELSE
+          ITEMS(8)='e air flow                  '
         ENDIF
       ELSE
         if(iairn.ge.1)then
-          ITEMS(9)='e network flow (defined)       '
+          ITEMS(8)='e network flow (defined)       '
         else
-          ITEMS(9)='e network flow              '
+          ITEMS(8)='e network flow              '
         endif
       ENDIF
       if(ientxist.gt.0)then
-        ITEMS(10)='f electrical (defined)      '
+        ITEMS(9)='f electrical (defined)      '
       else
-        ITEMS(10)='f electrical                '
+        ITEMS(9)='f electrical                '
       endif
       if(nocntm.gt.0)then
-        ITEMS(11)='g contaminant (defined)     '
+        ITEMS(10)='g contaminant (defined)     '
       else
-        ITEMS(11)='g contaminant               '
+        ITEMS(10)='g contaminant               '
       endif
-      WRITE(ITEMS(12),'(A,I2,A)')' ... Controls.....(',ictl,' defined)'
+      WRITE(ITEMS(11),'(A,I2,A)')' ... Controls.....(',ictl,' defined)'
       if(ncf.eq.0)then
-        WRITE(ITEMS(13),'(A)')     'j zones                       '
+        WRITE(ITEMS(12),'(A)')     'j zones                       '
       else
-        WRITE(ITEMS(13),'(A,I2,A)')'j zones (',ncf,' loops)       '
+        WRITE(ITEMS(12),'(A,I2,A)')'j zones (',ncf,' loops)       '
       endif
       if(ncl.eq.0)then
-        WRITE(ITEMS(14),'(A)')     'k plant & systems '
+        WRITE(ITEMS(13),'(A)')     'k plant & systems '
       else
-        WRITE(ITEMS(14),'(A,I2,A)')'k plant & systems (',ncl,' loops)'
+        WRITE(ITEMS(13),'(A,I2,A)')'k plant & systems (',ncl,' loops)'
       endif
       if(ncc.eq.0)then
-        WRITE(ITEMS(15),'(A)')     'l network flow                '
+        WRITE(ITEMS(14),'(A)')     'l network flow                '
       else
-        WRITE(ITEMS(15),'(A,I2,A)')'l network flow (',ncc,' loops)'
+        WRITE(ITEMS(14),'(A,I2,A)')'l network flow (',ncc,' loops)'
       endif
       if(nof.eq.0)then
-        WRITE(ITEMS(16),'(A)')     'm optics                '
+        WRITE(ITEMS(15),'(A)')     'm optics                '
       else
-        WRITE(ITEMS(16),'(A,I2,A)')'m optics (',nof,' loops)'
+        WRITE(ITEMS(15),'(A,I2,A)')'m optics (',nof,' loops)'
       endif
       if(ngf.eq.0)then
-        WRITE(ITEMS(17),'(A)')     'n global system '
+        WRITE(ITEMS(16),'(A)')     'n global system '
       else
-        WRITE(ITEMS(17),'(A,I2,A)')'n global system (',ngf,' loops)'
+        WRITE(ITEMS(16),'(A,I2,A)')'n global system (',ngf,' loops)'
       endif
       if(nCFCctlloops.eq.0)then
-        WRITE(ITEMS(18),'(A)')     'o complex fenestration '
+        WRITE(ITEMS(17),'(A)')     'o complex fenestration '
       else
-        WRITE(ITEMS(18),'(A,I2,A)')
+        WRITE(ITEMS(17),'(A,I2,A)')
      &   'o complex fenestration (',nCFCctlloops,' loops)'
       endif
-      WRITE(ITEMS(19),'(A)')       ' _____________________________   '
-      ITEMS(20)  ='p define uncertainties         '
-      ITEMS(21)  =' _____________________________ '
-      ITEMS(22)  =' ... Actions.....              '
-      ITEMS(23)  ='q visualisation                '
-      ITEMS(24)  ='r simulation                   '
-      ITEMS(25)  ='s results analysis             '
-      ITEMS(26)  ='t results & QA reporting       '
-      ITEMS(27)  =' _____________________________ '
-      ITEMS(28)  ='! save model                   '
-      ITEMS(29)  ='? help                         '
-      ITEMS(30)  ='- exit this menu               '
-      nitems=30
+      if(is_FMU)then
+        WRITE(ITEMS(18),'(A,I2,A)')'p FMI (',FMUNOF,' FMUs)          '
+      else
+        WRITE(ITEMS(18),'(A)')     'p FMI                            '
+      ENDIF
+      WRITE(ITEMS(19),'(A)')       ' ... Uncertainty.....            '
+      ITEMS(20)  ='q define uncertainties         '
+      ITEMS(21)  =' ... Actions.....              '
+      ITEMS(22)  ='r visualisation                '
+      ITEMS(23)  ='s simulation                   '
+      ITEMS(24)  ='t results analysis             '
+      ITEMS(25)  ='u results & QA reporting       '
+      ITEMS(26)  =' ... Miscellaneous.....        '
+      ITEMS(27)  ='! save model                   '
+      ITEMS(28)  ='? help                         '
+      ITEMS(29)  ='- exit this menu               '
+      nitems=29
 
 C Help text for this menu.
       helptopic='model_comprises_br_sim'
@@ -492,11 +496,11 @@ C Model context.
           CALL USRMSG('Please define your model first!',' ','W')
         ENDIF
         goto 3
-      elseif(INO.EQ.6)THEN
+      elseif(INO.EQ.5)THEN
 
 C Go to zones definintion menu.
         call EDZCOMP(ITRC,ITRU,IER)
-      ELSEIF(INO.EQ.8)THEN
+      ELSEIF(INO.EQ.7)THEN
 
 C ---------------------------------------------------------------------------------------------
 C -----------------------------------PLANT NETWORK DESCRIPTION---------------------------------
@@ -661,8 +665,8 @@ C If an error has been encountered then reset the configuration type.
           endif
           enddo  ! of while hvind ne nhvac_items
         endif
-        
-      ELSEIF(INO.EQ.9)THEN
+
+      ELSEIF(INO.EQ.8)THEN
 
 C Flow description.
  
@@ -1026,58 +1030,64 @@ C of the text based file (for use in bps and res).
           call edisp(iuout,'Updating configuration flow links...done.')
           call edisp(iuout,' ')
         endif
-      ELSEIF(INO.EQ.10)THEN
+      ELSEIF(INO.EQ.9)THEN
 
 C Electrical network description.
         call tstamp('>','PRJ: enter electrical network')
         call ELECNET
-      ELSEIF(INO.EQ.11)THEN
+      ELSEIF(INO.EQ.10)THEN
 
 C Contaminant model description
         call tstamp('>','PRJ: enter contaminant model')
         call CTPROB
-      ELSEIF(INO.EQ.13)THEN
+      ELSEIF(INO.EQ.12)THEN
 
 C Zone control description.
         call tstamp('>','PRJ: enter zone control')
         icfoc=0
         CALL CONTRL(ITRC,ITRU,icfoc,IER)
         CTLOK=.TRUE.
-      ELSEIF(INO.EQ.14)THEN
+      ELSEIF(INO.EQ.13)THEN
 
 C Plant control description.
         call tstamp('>','PRJ: enter plant control')
         icfoc=1
         CALL CONTRL(ITRC,ITRU,icfoc,IER)
         CTLOK=.TRUE.
-      ELSEIF(INO.EQ.15)THEN
+      ELSEIF(INO.EQ.14)THEN
 
 C Flow control description.
         call tstamp('>','PRJ: enter flow control')
         icfoc=2
         CALL CONTRL(ITRC,ITRU,icfoc,IER)
         CTLOK=.TRUE.
-      ELSEIF(INO.EQ.16)THEN
+      ELSEIF(INO.EQ.15)THEN
 
 C Optical control description.
         call tstamp('>','PRJ: enter optics control')
         icfoc=5
         CALL CONTRL(ITRC,ITRU,icfoc,IER)
         CTLOK=.TRUE.
-      ELSEIF(INO.EQ.17)THEN
+      ELSEIF(INO.EQ.16)THEN
 
 C Global control description.
         call tstamp('>','PRJ: enter global control')
         icfoc=3
         CALL CONTRL(ITRC,ITRU,icfoc,IER)
         CTLOK=.TRUE.
-      ELSEIF(INO.EQ.18)THEN
+      ELSEIF(INO.EQ.17)THEN
 
 C Complex fenestration control description.
         call tstamp('>','PRJ: enter complex fen. control')
         icfoc=6
         CALL CONTRL(ITRC,ITRU,icfoc,IER)
         CTLOK=.TRUE.
+
+C <FMI>
+      ELSEIF(INO.EQ.18)THEN
+        call tstamp('>','PRJ: enter FMI specification')
+        call FMI_ED(IER)
+C </FMI>
       ELSEIF(INO.EQ.20)THEN
 
 C Call uncertainty definition controller.
@@ -1087,9 +1097,9 @@ C Call uncertainty definition controller.
      &    0,'-',0,'-',0,'password',IER,nbhelp)
         if (IPASS.eq.101) then
           call tstamp('>','PRJ: enter uncertainty control')
-          call UNCERTA(LUALF)
+          call UNCERTA()
         endif
-      ELSEIF(INO.EQ.23)THEN
+      ELSEIF(INO.EQ.22)THEN
 
 C Select visualisation option.
         IF(CFGOK)THEN
@@ -1108,12 +1118,12 @@ C Select visualisation option.
           CALL USRMSG(' ','Please define your model first!','W')
         ENDIF
         goto 3
-      ELSEIF(INO.EQ.24)THEN
+      ELSEIF(INO.EQ.23)THEN
 
 C Call simulation controller.
         call tstamp('>','PRJ: enter simulation setup')
         call simula(ier)
-      ELSEIF(INO.EQ.25)THEN
+      ELSEIF(INO.EQ.24)THEN
 
 C Call results analysis module assuming same simulation parameter
 C set as the last simulation. If isset not instanciated then set = 1.
@@ -1290,7 +1300,7 @@ C an offset from prj start position.
         call usrmsg('Starting assessment recovery via',doit,'-')
         call runit(doit,tmode)
 
-      ELSEIF(INO.EQ.26)THEN
+      ELSEIF(INO.EQ.25)THEN
 
 C Execute editor and report generation tools. Start with assumption
 C that all zones in the model are to be included.
@@ -1682,8 +1692,10 @@ C Find the index of the MLC which matches each surface.
             DO 9994 I=1,NZSUR(icomp)
               icn1=izstocn(icomp,i)
               ssmlcindex(icn1)=0  ! assume no matching MLC          
+              lnssmlc=lnblnk(SSMLCN(icn1))
               do 5 ii=1,nmlc
-                if(SSMLCN(icn1)(1:12).eq.mlcname(ii)(1:12)) then
+                if(SSMLCN(icn1)(1:lnssmlc).eq.
+     &             mlcname(ii)(1:lnmlcname(ii))) then
                   ssmlcindex(icn1)=ii   ! remember MLC index     
                 endif
   5           continue
@@ -1883,7 +1895,9 @@ C file and then recover the zone commons.
               CALL ERCZONE(NCOMP)
             endif
           elseif(IOBS(ic).eq.2)then
-            continue   ! obstr within geometry file so copy not required.
+
+C Obstructions in geo file so just set OKOB to true.
+            OKOB=.true.
           endif
 
 C Zone rotations and transforms.
@@ -2767,7 +2781,10 @@ C database gets its name corrupted requiring a re-scan).
         call FINDFIL(lworking,XST)
         if(XST)then
           CALL ERMLDB(0,IUOUT,IER)
-        else
+          IF(IER.eq.4)THEN
+            CALL ERMLDB2(0,iuout,IER)
+          endif
+         else
 
 C Could not find Constructions db at this time, report to user.
           write(outs248,'(3a)') 'Constructions db ',
@@ -2941,12 +2958,15 @@ C << geometry files are used. This is not yet done.
 C Global tasks.
           helptopic='global_shading_tasks'
           call gethelptext(helpinsub,helptopic,nbhelp)
-          CALL EASKABCD(' ','Options for multiple zones:',
-     &      'recalculate shading','dereference shading files',
-     &      'add insolation','cancel',IW,nbhelp)
+          CALL EASKATOG('Options for multiple zones:',' ',
+     &      're-establish missing shading','recalculate shading',
+     &      'dereference shading files','add insolation','cancel',
+     &      ' ',' ',IW,nbhelp)
           if(IW.eq.1)then
-            call eddshd
+            call eddshd('asci')
           elseif(IW.eq.2)then
+            call eddshd('site')
+          elseif(IW.eq.3)then
             inpic=0
             call askmultizone(inpic,ivals,
      &        'Select zones do dereference insolation?',
@@ -2957,7 +2977,7 @@ C Global tasks.
                 ISI(ICOMP)=0
  153          continue
             endif
-          elseif(IW.eq.3)then
+          elseif(IW.eq.4)then
             inpic=0
             call askmultizone(inpic,ivals,
      &        'Select zones to add insolation?',
@@ -2992,8 +3012,8 @@ C << geometry file (if version 1.1).
  151          continue
             endif
             CALL EMKCFG('-',IER)
-            call eddshd
-          elseif(IW.eq.4)then
+            call eddshd('site')
+          elseif(IW.eq.5)then
             continue
           endif
           IC=-1
@@ -3072,6 +3092,9 @@ C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive ish.
           call tstamp('>','PRJ: start shading')
           call comissionish(ic,'in ',ier)
+          if(ier.ne.0)then
+            call edisp(iuout,'Possible error in calculations.')
+          endif
         endif
 
 C Loop back and see if another zone is requested.
@@ -4096,8 +4119,10 @@ C Find the index of the MLC which matches each surface.
             icn1=izstocn(icomp,i)
             if(icn1.ge.1)then
               ssmlcindex(icn1)=0  ! assume no matching MLC          
+              lnssmlc=lnblnk(SSMLCN(icn1))
               do 5 ii=1,nmlc
-                if(SSMLCN(icn1)(1:12).eq.mlcname(ii)(1:12)) then
+                if(SSMLCN(icn1)(1:lnssmlc).eq.
+     &             mlcname(ii)(1:lnmlcname(ii)))then
                   ssmlcindex(icn1)=ii   ! remember MLC index     
                 endif
   5           continue
@@ -4262,6 +4287,10 @@ C << it would be clearer if all model I/O happened there >>
 #include "model.h"
       
       integer lnblnk  ! function definition
+      integer ier
+
+C Parameters.
+      character act*1  !  V (for Viewer) or R (for Radiance)
 
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
@@ -4275,7 +4304,7 @@ C << it would be clearer if all model I/O happened there >>
       logical concat,OK,DOK,browse,XST,deref,unixok,modcfg
       character dradcf*72,OUTSTR*124,outs*124,outs248*248
       character dvfil*72,ltmp*72
-      character doit*248,tmode*8,act*1
+      character doit*248,tmode*8
       character fs*1,tfile*72
       character longtfile*144,longtfiledos*144,L144*144,lltmp*144
       character brw*8   ! to signal model is being browsed
@@ -4404,8 +4433,9 @@ C And update radpath. The L144 is for future use of EASKXORGTKF
             modcfg=.true.
           endif
 
-          if(lradcf(1:7).eq.'UNKNOWN')then
-            write(lradcf,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.rcf'
+          if(lradcf(1:7).eq.'UNKNOWN')then  ! setup in form of ../rad/xx
+            write(lradcf,'(6a)') '..',fs,'rad',fs,
+     &        cfgroot(1:lnblnk(cfgroot)),'.rcf'
 C            write(L144,'(8a)')path(1:lnblnk(path)),fs,'..',fs,'rad',
 C     &        fs,cfgroot(1:lnblnk(cfgroot)),'.rcf'
             modcfg=.true.
@@ -4625,6 +4655,21 @@ C Find out the version number so we know what to do with obstructions later.
             Z(I)=Z(I)+VALZ
    62     continue
           iZBFLG(IICOMP)=0
+  
+          if(nbvis(iicomp).gt.0)then
+
+C Visual object transforms.
+            do ij=1,nbvis(iicomp)
+              XOV(iicomp,ij)=XOV(iicomp,ij)+VALX
+              YOV(iicomp,ij)=YOV(iicomp,ij)+VALY
+              ZOV(iicomp,ij)=ZOV(iicomp,ij)+VALZ
+              do ibe=1,8
+                XVP(iicomp,ij,ibe)=XVP(iicomp,ij,ibe)+VALX
+                YVP(iicomp,ij,ibe)=YVP(iicomp,ij,ibe)+VALY
+                ZVP(iicomp,ij,ibe)=ZVP(iicomp,ij,ibe)+VALZ
+              enddo  ! of ibe
+            enddo    ! of ij
+          endif
 
 C Decide whether to upgrade the geometry file format.
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
@@ -4722,6 +4767,7 @@ C apply the transform and write the file back out.
               endif
             endif
           endif
+
           write(outs,'(3a)') ' Transforming: ',zn(1:lnblnk(zn)),
      &      '...done'
           if(.NOT.silent)CALL USRMSG(' ',outs,'-')
@@ -4778,6 +4824,7 @@ C user can un-do this action.
       integer itrc,iuf,iicomp,ij,iz
       integer ibe   ! loop for faces of obstruction
       real A,pi,XR,YR,XXX,YYY,CA,SA
+      real angr   ! rotation angle
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -4804,6 +4851,30 @@ C Find out version number so we know if upgrade required.
           call georead(IUF,LTMP,IICOMP,1,iuout,IER)
           CALL ESCROT(VAL,x1,y1)
           iZBFLG(IICOMP)=0
+  
+          if(nbvis(iicomp).gt.0)then
+
+C Visual object rotation.
+            ANGR=VAL
+            PI = 4.0 * ATAN(1.0)
+            A=-ANGR*PI/180.
+            CA=COS(A)
+            SA=SIN(A)
+            do ij=1,nbvis(iicomp)
+              XXX=XOV(IICOMP,ij)-X1; YYY=YOV(IICOMP,ij)-Y1
+              XR=XXX*CA+YYY*SA; YR=YYY*CA-XXX*SA
+              XOV(IICOMP,ij)=XR+X1; YOV(IICOMP,ij)=YR+Y1
+              BANGOV(IICOMP,ij,1)=BANGOV(IICOMP,ij,1)+ANGR
+              do ibe=1,8
+                XXX=XVP(iicomp,ij,ibe)-X1
+                YYY=YVP(iicomp,ij,ibe)-Y1
+                XR=XXX*CA+YYY*SA; YR=YYY*CA-XXX*SA
+                XVP(iicomp,ij,ibe)=XR+X1
+                YVP(iicomp,ij,ibe)=YR+Y1
+              enddo  ! of ibe
+            enddo    ! of ij
+          endif
+
 
 C Remember user directive for future un-do.
           rotateit(iicomp,1)=0.0

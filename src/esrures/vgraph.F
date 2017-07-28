@@ -313,7 +313,7 @@ C Establish associated information if JPICK = 8,9,12,23,25,26 or 35.
       RETURN
 
 C Which surface ?
-    3 WRITE(outs,'(A,I2,A)')' Zone ',II,': which surface for output ?'
+    3 WRITE(outs,'(A,I3,A)')' Zone ',II,': which surface for output ?'
       call edisp(iuout,outs)
       CALL ASKSUR(II,ISUR)
       IVCON(IZ)=ISUR
@@ -321,7 +321,7 @@ C Which surface ?
       goto 1
 
 C Construction node: which one ?
-    5 WRITE(outs,'(A,I2,A)')' Zone ',II,
+    5 WRITE(outs,'(A,I3,A)')' Zone ',II,
      &                       ': which construction for output ?'
       call edisp(iuout,outs)
       CALL ASKSUR(II,ISUR)
@@ -335,7 +335,7 @@ C Ask for node number.
 C Dew point temperature: what % saturation ?
     6 helptopic='res_inside_saturation'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      WRITE(outs,'(A,I2,A)')' Zone ',II,': inside % saturation :'
+      WRITE(outs,'(A,I3,A)')' Zone ',II,': inside % saturation :'
       CALL EASKR(V,outs,' ?',0.,'F',100.,'F',50.,
      &    '% saturation',IER,nbhelp)
       VPSAT(IZ)=V
@@ -938,10 +938,13 @@ C Copy axis labels into local variable and then display the
 C horizontal and vertical axis.
       HIT=' '
       HIT=HITEM
-      call horaxis(YMINH,YMAXH,iigl,iigr,iigb,Xadd,xsc,0,HIT)
+      call dintervalf(YMINH,YMAXH,ddy1,ny,0)
+      call horaxisdd(YMINH,YMAXH,iigl,iigr,iigb,Xadd,xsc,0,ddy1,ny,HIT)
       VIT=' '
       VIT=VITEM
-      call vrtaxis(YMINV,YMAXV,iigl,iigb,iigt,Yadd,ysc,0,0,VIT)
+      CALL dintervalf(YMINV,YMAXV,ddy1,ny,0)
+      call vrtaxisdd(YMINV,YMAXV,iigl,iigb,iigt,Yadd,ysc,0,
+     &  ddy1,ny,0,VIT)
 
       RETURN
 

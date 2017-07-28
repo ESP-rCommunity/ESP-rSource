@@ -878,7 +878,7 @@ C If there is occupancy filter and occupancy then include in check.
 C Assume fully occupied.
             ih=int(ATIME+1.)
             ioc=1
-            if(iocupf.eq.1) call getocup(IZONE,IDAY,ih,ioc,ier)
+            if(iocupf.eq.1) call getocup(IZONE,IDAY,J,ioc,ier)
             if(ioc.ne.0) then
               YTOTSD(IX)=YTOTSD(IX)+((YAVE(IX)-VAL2(IX,J))**2)
               NY(IX)=NY(IX)+1
@@ -1379,7 +1379,7 @@ C If there is occupancy filter and occupancy then include in check.
 C Assume fully occupied.
             ih=int(ATIME+1.)
             ioc=1
-            if(iocupf.eq.1) call getocup(IZONE,IDAY,ih,ioc,ier)
+            if(iocupf.eq.1) call getocup(IZONE,IDAY,J,ioc,ier)
             if(ioc.ne.0) then
               if (display) then
                 XTOTSD=XTOTSD+((XAVE-VAL2(IX,J))**2)
@@ -1587,7 +1587,7 @@ C If there is occupancy filter and occupancy then include in check.
 C Assume fully occupied.
             ih=int(ATIME+1.)
             ioc=1
-            if(iocupf.eq.1) call getocup(IZONE,IDAY,ih,ioc,ier)
+            if(iocupf.eq.1) call getocup(IZONE,IDAY,J,ioc,ier)
             if(ioc.ne.0) then
 
 C Find largest value for current timestep and zone.

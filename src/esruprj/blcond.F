@@ -631,7 +631,7 @@ C file(s)
         DO 50 J=1,NE(I)
           IF((IVKON(ICOMP,I,J).EQ.1.OR.IVKON(ICOMP,I,J).EQ.3).AND.
      &      ABS(THRMLI(ICOMP,I,J,6)).LT.1.E-12)THEN
-            WRITE(TEXT,'(3(A,I2),A)')
+            WRITE(TEXT,'(3(A,I3),A)')
      &        ' WARNING : thermal conductivity of layer (',
      &          ICOMP,',',I,',',J,') is temperature dependent'
             CALL EDISP(IUOUT,TEXT)
@@ -642,7 +642,7 @@ C file(s)
           ENDIF
           IF(IVKON(ICOMP,I,J).EQ.2.OR.IVKON(ICOMP,I,J).EQ.3)THEN
             IF(ABS(THRMLI(ICOMP,I,J,7)).LT.1.E-12)THEN
-              WRITE(TEXT,'(3(A,I2),A)')
+              WRITE(TEXT,'(3(A,I3),A)')
      &        ' WARNING : thermal conductivity of layer (',
      &        ICOMP,',',I,',',J,') is moisture content dependent'
               CALL EDISP(IUOUT,TEXT)

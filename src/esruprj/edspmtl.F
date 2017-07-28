@@ -659,7 +659,8 @@ C General image option flags.
      &    'component. ',IER)
       ENDIF
       CALL EPMENRC
-      if(SOTF(ISO)(1:4).eq.'OPAQ'.or.SOTF(ISO)(1:4).eq.'CFC ')then
+      if(SOTF(ISO)(1:4).eq.'OPAQ'.or.SOTF(ISO)(1:4).eq.'CFC '.or.
+     &   SOTF(ISO)(1:4).eq.'CFC2')then
         ISPMF=1
       else
         ISPMF=0
@@ -683,7 +684,8 @@ c      IVAL=IFOC
       CALL ADJVIEW(IER)
       MODIFYVIEW=.TRUE.
       MODBND=.TRUE.
-      if(SOTF(ISO)(1:4).eq.'OPAQ'.or.SOTF(ISO)(1:4).eq.'CFC ')then
+      if(SOTF(ISO)(1:4).eq.'OPAQ'.or.SOTF(ISO)(1:4).eq.'CFC '.or.
+     &   SOTF(ISO)(1:4).eq.'CFC2')then
         ISPMF=1
       else
         ISPMF=0
@@ -977,7 +979,9 @@ C Free standing turbine does not need this information.
 C Check composite name of surface with composite name in MLC common.
         imatch=0
         do 5 i=1,nmlc
-          if(SMLCN(iso)(1:12).eq.mlcname(i)(1:12)) then
+          lnssmlc=lnblnk(SMLCN(iso))
+          if(SMLCN(iso)(1:lnssmlc).eq.
+     &       mlcname(i)(1:lnmlcname(i))) then
             imatch=i          
           endif
   5     continue
@@ -991,7 +995,7 @@ C Write menu displaying a list of layer names
         footer=3
         write(item(1),'(a,a)') 'a surface name: ',SNAME(iz,iso)
         write(item(2),'(a,i2)')'b number of layers: ',LAYERS(imatch)
-        write(item(3),'(a,a)') 'c MLC name: ',mlcname(imatch)(1:12)
+        write(item(3),'(a,a)') 'c MLC name: ',mlcname(imatch)(1:16)
         item(4)='  ----------------------------'
 
 C Loop through each layer in MLC imatch.

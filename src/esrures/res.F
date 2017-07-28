@@ -107,7 +107,7 @@ C Path to model and command line file (if any).
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
 C Comfort parameters and hash table.
-      common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
+      common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset
 
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
@@ -164,7 +164,7 @@ C IEEE callback (Solaris)
       character inf*144,LCMDFL*144,outs248*248,xfile*144
       character outs*124,MODE*4,tg*1,delim*1
       character*72 LFCFG
-      character path*72,spsname*8,paction*16
+      character path*72,spsname*30,paction*16
       character fs*1,act*16,aut*12
       character journcmd*20,jfile*72,uname*24,cjfile*72,OUTSTR*124
       character bact*4,pifltog*4,lpifl*72
@@ -431,7 +431,7 @@ C All subsequent tstamp messages will be appended to root journal.
       endif
 
 C Scan the defaults file for default configuration.
- 902  call escdef(ixunit,IER)
+ 902  call escdef(ixunit,'s',IER)
 
 C Take command line file name as initial results file name.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
@@ -1022,6 +1022,14 @@ C Depending on computer type set integer size of passed parameters.
 
       SUBROUTINE EMKVIEW(IUO,CFGOK,IER)
       logical cfgok
+      ier=0
+      return
+      end
+      
+      SUBROUTINE EDMLDB2(chgdb,ACTION,isel,IER)
+      logical chgdb
+      character*1 ACTION
+      integer isel,ier
       ier=0
       return
       end

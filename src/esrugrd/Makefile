@@ -1,3 +1,9 @@
+architecture := $(shell uname -s)
+ifeq ($(architecture),Darwin)
+	SWTCH=
+else
+	SWTCH= -D
+endif
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
 CDBdir = $(SRCdir)/esrucdb
@@ -7,6 +13,7 @@ PRJdir = $(SRCdir)/esruprj
 CETCdir = $(SRCdir)/cetc
 BLDdir = $(SRCdir)/esrubld
 PROG = grd$(EXE)
+default: $(PROG)
 
 .SUFFIXES: .o .F
 .F.o:
@@ -23,7 +30,8 @@ OBJECTS = grd.o arrow.o ascii_mat.o bgrd1d.o bgrd1m.o bgrd3d.o bgrdst.o c2fdum.o
 	 edcondb.o egeometry.o egrid.o emfnetw.o emkcfg.o emoist.o enetmisc.o eroper.o \
 	 esgrid.o esru_misc.o esystem.o filelist.o item.o g3dcmp.o g3dcnc.o g3dmsc.o \
 	 g3dmsh.o grd_misc.o grnd3d.o mfcdat.o nwkrewr.o pltcfg.o readTrnsys.o \
-	 rwipv.o rwsbem.o sort.o  tdfile.o
+	 rwipv.o rwsbem.o sort.o  tdfile.o \
+	 FMIcom.o
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod start_up.mod \
 	parse_command_line.mod h3kmodule.mod
@@ -145,12 +153,15 @@ tdfile.F:
 h3kmodule.f90:
 	rm -f h3kmodule.f90
 	ln -s $(CETCdir)/h3kmodule.f90 .
+FMIcom.F:
+	rm -f FMIcom.F
+	ln -s $(COMdir)/FMIcom.F .
 
 strip:
-	@if [ -f $(PROG) ]; then strip $(PROG); fi
+	strip $(PROG)
 
 install:
-	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
+	install $(SWTCH) $(PROG) $(ESPBinDir)/$(PROG)
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
@@ -159,4 +170,12 @@ clean:
 	e3dviews.F econstr.F edatabase.F edcondb.F egeometry.F egrid.F emfnetw.F \
 	enetmisc.F enetrewr.F emkcfg.F emoist.F esgrid.F eroper.F esru_misc.F \
 	esystem.F filelist.F item.F mfcdat.F nwkrewr.F pltcfg.F rwipv.F rwsbem.F sort.F \
-	startup.F tdfile.F trnsf.F readTrnsys.F h3kmodule.f90
+	startup.F tdfile.F trnsf.F readTrnsys.F h3kmodule.f90 \
+	FMIcom.F
+
+distclean: clean
+
+uninstall:
+	-rm -f $(ESPBinDir)/$(PROG)
+	
+.PHONY: clean install default strip uninstall distclean

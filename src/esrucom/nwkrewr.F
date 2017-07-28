@@ -273,6 +273,7 @@ C Get attributes which are global to this domain.
 C Scan three words, the first is the data type, 2nd is either the
 C string `external` or `-` and the 3rd is either a tag to find
 C in an external file or `-`
+C << consider depreciating ddgtagatr(JJ,3) & ddgtagatr(JJ,4)
           write(ddgtagatr(JJ,1),'(a)')WORD(1:12)
           CALL EGETW(OUTSTR,K,WORD,'W','glob atrib data type',IER)
           CALL EGETW(OUTSTR,K,WORD1,'W','glob atrib external or -',IER)
@@ -282,6 +283,7 @@ C in an external file or `-`
           IF(IER.NE.0) CONT=.FALSE.
 
 C Based on the data type parse the remaining items on the line.
+C << consider depreciating the min and max >>
           if(WORD(1:4).eq.'intg'.or.WORD(1:4).eq.'INTG')then
             write(ddgtagatr(JJ,2),'(a)')WORD(1:12)
             CALL EGETW(OUTSTR,K,WORD,'W','glob intg value',IER)
@@ -296,6 +298,7 @@ C Based on the data type parse the remaining items on the line.
             IF(IER.NE.0) CONT=.FALSE.
             write(ddgmenuatr(JJ),'(a)')PHRASE(1:32)
           elseif(WORD(1:4).eq.'real'.or.WORD(1:4).eq.'REAL')then
+C << consider depreciating the min and max >>
             write(ddgtagatr(JJ,2),'(a)')WORD(1:12)
             CALL EGETW(OUTSTR,K,WORD,'W','glob real value',IER)
             write(ddgatrib(JJ,1),'(a)') WORD(1:12)
@@ -456,6 +459,7 @@ C << consider depreciating the min and max >>
             IF(IER.NE.0) CONT=.FALSE.
             write(ATRMENU(I,JJ),'(a)')PHRASE(1:32)
           elseif(WORD(1:4).eq.'real'.or.WORD(1:4).eq.'REAL')then
+C << consider depreciating the min and max >>
             write(ATRTAG(I,JJ,2),'(a)')WORD(1:12)
             CALL EGETW(OUTSTR,K,WORD,'W','real value',IER)
             write(ATRICN(I,JJ,1),'(a)') WORD(1:12)
@@ -676,6 +680,7 @@ C in an external file or `-`
 
 C Based on the data type parse the remaining items on the line.
           if(WORD(1:4).eq.'intg'.or.WORD(1:4).eq.'INTG')then
+C << consider depreciating min and max >>
             write(ddtagatr(INICNN,JJ,2),'(a)')WORD(1:12)
             CALL EGETW(OUTSTR,K,WORD,'W','intg value',IER)
             write(ddatrib(INICNN,JJ,1),'(a)') WORD(1:12)
@@ -689,6 +694,7 @@ C Based on the data type parse the remaining items on the line.
             IF(IER.NE.0) CONT=.FALSE.
             write(ddmenuatr(INICNN,JJ),'(a)')PHRASE(1:32)
           elseif(WORD(1:4).eq.'real'.or.WORD(1:4).eq.'REAL')then
+C << consider depreciating min and max >>
             write(ddtagatr(INICNN,JJ,2),'(a)')WORD(1:12)
             CALL EGETW(OUTSTR,K,WORD,'W','real value',IER)
             write(ddatrib(INICNN,JJ,1),'(a)') WORD(1:12)
@@ -1238,6 +1244,7 @@ C This routine writes out a network graphics file for use with ESP-r's Network
 C tool. The routine can be called using two modes: 
 C 1 - save current file in the current location with the current filename (if any).
 C 2 - save the current file with a specified location and name.
+C << consider deprediating the min and max from the attributes >>
       SUBROUTINE NETWRITE(IMODE)
 #include "building.h"
 #include "gnetwk.h"
@@ -1395,6 +1402,7 @@ C Newer files may also include flow solution preferences.
         do 212 J=1,idgatrdom
 
 C Write out global attributes with minimal white space.
+C << consider depreciating ddgatrib(J,2) & ddgatrib(J,3) >>
           l3=lnblnk(ddgtagatr(J,1))
           l4=lnblnk(ddgtagatr(J,2))
           l5=lnblnk(ddgtagatr(J,3))
@@ -1456,6 +1464,8 @@ C Write attributes.
           do 211 J=1,NICONATR(I)
 
 C Write out attributes with minimal white space.
+C << see about not including ATRICN(I,J,2) & ATRICN(I,J,3) >>
+C << and possibly ATRTAG(I,J,3) & ATRTAG(I,J,4 >>
             l3=lnblnk(ATRTAG(I,J,1))
             l4=lnblnk(ATRTAG(I,J,2))
             l5=lnblnk(ATRTAG(I,J,3))
@@ -1556,6 +1566,8 @@ C Write out the current connection data
           do 111 J=1,idatrdom(I)
 
 C Write out attributes with minimal white space.
+C << see about omitting ddatrib(I,J,2) & ddatrib(I,J,3) and
+C << possibly ddtagatr(I,J,3) & ddtagatr(I,J,4)
             l3=lnblnk(ddtagatr(I,J,1))
             l4=lnblnk(ddtagatr(I,J,2))
             l5=lnblnk(ddtagatr(I,J,3))

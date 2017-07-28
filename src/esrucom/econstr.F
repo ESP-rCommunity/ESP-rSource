@@ -368,13 +368,14 @@ C Write out the construction file data.
      &  zname(ICOMP)(1:lnzname(ICOMP)),CONFIL(1:lnblnk(CONFIL))
   30  FORMAT('# thermophysical properties of ',a,' defined in ',a,/,
      &'# no of |air |surface(from geo)| multilayer construction',/,
-     &'# layers|gaps|  no.  name      | database name ')
+     &'# layers|gaps|number &  name   | database name ')
 
       DO 1180 I=1,NZSUR(icomp)
         icn1=izstocn(icomp,i)
+        lnslmlcn=lnblnk(SSMLCN(icn1))
         WRITE(IFILT,5632,IOSTAT=IOS,ERR=146)NE(I),NAIRG(I),I,
-     &      SSNAME(icn1),SSMLCN(icn1)(1:12)
-5632    FORMAT(I6,',',I6,'  # ',I2,' ',A12,' ',A12)
+     &      SSNAME(icn1),SSMLCN(icn1)(1:lnslmlcn)
+5632    FORMAT(I6,',',I6,'  # ',I3,' ',A,' ',A)
 
 C Trap in case of mlc not being found.
         if(NE(I).eq.0)then
@@ -389,7 +390,7 @@ C Write out air gap details.
       DO 1190 I = 1,NZSUR(icomp)
         IF (NAIRG(I).GT.0)THEN
           WRITE(IFILT,5641,IOSTAT=IOS,ERR=146)I
-5641      FORMAT('# air gap position & resistance for surface ',I2)
+5641      FORMAT('# air gap position & resistance for surface ',I3)
           WRITE(IFILT,5640,IOSTAT=IOS,ERR=146)(IPAIRG(I,J),
      &            RAIRG(I,J),J=1,NAIRG(I))
 5640      FORMAT(1X,10(I2,',',F8.3,','))
@@ -410,13 +411,13 @@ C Write out layer thermophysical properties.
      &                            SHT(I,J),THK(I,J),IVKON(ICOMP,I,J),
      &                            (THRMLI(ICOMP,I,J,K),K=5,7),I,J
 5661        FORMAT(1X,F10.4,',',F10.1,',',F10.1,',',F8.4,',',3X,I1,
-     &             ',',F7.2,',',F8.5,',',F8.5,'  # ',I2,'  ',I2)
+     &             ',',F7.2,',',F8.5,',',F8.5,'  # ',I3,'  ',I2)
           ELSE
             WRITE(IFILT,5663,IOSTAT=IOS,ERR=146)CON(I,J),DEN(I,J),
      &                            SHT(I,J),THK(I,J),IVKON(ICOMP,I,J),
      &                            (THRMLI(ICOMP,I,J,K),K=5,7),J
 5663        FORMAT(1X,F10.4,',',F10.1,',',F10.1,',',F8.4,',',3X,I1,
-     &             ',',F7.2,',',F8.5,',',F8.5,'  # ','    ',I2)
+     &             ',',F7.2,',',F8.5,',',F8.5,'  # ','    ',I3)
           ENDIF
 1210    CONTINUE
 1220  CONTINUE
@@ -501,7 +502,7 @@ C on common blocks. If isur=0 then all, otherwise for one surface.
       logical closemat1,closemat2
 
       integer cfcarrayindex ! the indes within cfcdataarray
-      logical closecfc1
+      logical closecfc1,closecfc2
 
       dimension RT(MS),OPT(MS),PNAM(MS,ME),iprtext(MS,ME),imatch(MS)
       CHARACTER OUTS*124,sn*12,SOPT*12,OPT*12,PNAM*72,NAM*72
@@ -522,7 +523,8 @@ C have been filled after the model cfg file was scanned.
 C Use CFC layer arrays if available. This also assumes that constructions will
 C have been filled after the model cfg file was scanned.
       call eclose(cfcver,1.1,0.01,closecfc1)
-      if(closecfc1)then
+      call eclose(cfcver,1.2,0.01,closecfc2)
+      if(closecfc1.or.closecfc2)then
         continue
       else
         call usrmsg('CONINF: The CFC layer arrays are incomplete so',
@@ -685,10 +687,11 @@ C 0.10 inside upward flow and 0.17 inside downward flow.
         UVALUED=1.0/RTD
         RTI=RT(I)+0.13+0.13
         UVALUEI=1.0/RTI
+        lnssmlcn=lnblnk(SSMLCN(icn1))
         IF(SSOTF(icn1)(1:4).NE.'CFC2') THEN
           write(OUTS,'(3A,3F7.3,a,F7.3)')
      &      ' ISO 6946 U values (hor/up/dn heat flow) for ',
-     &      SSMLCN(icn1)(1:lnblnk(SSMLCN(icn1))),' is',
+     &      SSMLCN(icn1)(1:lnssmlcn),' is',
      &      UVALUEH,UVALUEU,UVALUED,' (partn)',UVALUEI
           call edisp(itru,OUTS)
         ENDIF
@@ -852,8 +855,9 @@ C Reporting.
         CALL EDISP(ITRU,' Name         Description  TRANS   Reference')
         DO 31, ISR=1,NS
           icn=izstocn(icomp,isr)
-          WRITE(OUTS,'(1X,A12,2X,A12,2X,A6,I4)')SSNAME(icn),
-     &      SSMLCN(icn)(1:12),SSOTF(icn)(1:6),ITMCFL(ICOMP,ISR)
+          lnslmlcn=lnblnk(SSMLCN(icn))
+          WRITE(OUTS,'(1X,A,2X,A,2X,A,I4)')SSNAME(icn),
+     &      SSMLCN(icn)(1:lnslmlcn),SSOTF(icn)(1:6),ITMCFL(ICOMP,ISR)
           CALL EDISP(ITRU,OUTS)
    31   CONTINUE
       ENDIF
@@ -873,13 +877,14 @@ C the list points to an existing set of properties.
         IERR=0
         DO 90 J=1,NS
           icn=izstocn(icomp,j)
+          lnslmlcn=lnblnk(SSMLCN(icn))
           IF(ITMCFL(ICOMP,J).EQ.I.AND.NTGLAZ.NE.NE(J))IERR=1
           IF(IERR.EQ.1)THEN
             write(outs,'(6a,1x,a)')
      &      ' Mismatched TMC & mlc layers: ',
      &      SSNAME(icn)(1:lnblnk(SSNAME(icn))),' in ',
      &      zname(ICOMP)(1:lnzname(ICOMP)),' composed of ',
-     &      SSMLCN(icn),TOPTIC(ICOMP,I)
+     &      SSMLCN(icn)(1:lnslmlcn),TOPTIC(ICOMP,I)
             call edisp(iuout,outs)
             goto 1002
           ENDIF

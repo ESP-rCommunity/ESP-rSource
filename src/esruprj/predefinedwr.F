@@ -57,9 +57,9 @@ C Predefined entity variables.
 
 C << use parameters when available >>
       dimension catname(6),cats(6)
-      dimension names(32),menus(32),itemcat(32)
+      dimension names(42),menus(42),itemcat(42)
       integer pointback(30) ! to point back to item in list
-      real bounding(32,3) ! width, depth, height
+      real bounding(42,3) ! width, depth, height
       character predef*144,fs*1
       integer loop
       logical unixok
@@ -208,8 +208,8 @@ C << use parameters when available >>
       character menus*32  ! list of menus for objects
       character itemcat*12 ! category for each object
       dimension catname(6),cats(6)
-      dimension names(32),menus(32),itemcat(32)
-      real bounding(32,3) ! width, depth, height for each    
+      dimension names(42),menus(42),itemcat(42)
+      real bounding(42,3) ! width, depth, height for each    
       integer IER         ! error return where zero is ok, 
                           ! ier=-1 file not found, ier=-2 no objects
 
@@ -245,7 +245,7 @@ C << use parameters when ready >>
         catname(loop)=' '
       enddo    
       numitems=0
-      do loop=1,32
+      do loop=1,42
         names(loop)='  '
         menus(loop)='  '
         itemcat(loop)='  '
@@ -390,7 +390,8 @@ C If there were no errors in reading header line then read another.
       END
        
 C ******************************** PREDEFEMBED
-C Read tag-data version of predefined objects file.
+C Read tag-data version of predefined objects file and merge
+C these data structures into the zone (ICOMP).
 C Currently entity is found in predefined.h 
       SUBROUTINE PREDEFEMBED(IFA,LASCI,ICOMP,DX,DY,DZ,DA,name,prec,IER)
       
@@ -645,8 +646,8 @@ C Scan visp definition and instanciate model entity.
 C Prepend prec to name and update the compound object reference.
           write(VISNAME(icomp,nbv),'(2a)') prec,WORD(1:11)
           LNVISNAME(icomp,nbv)=lnblnk(VISNAME(icomp,nbv))
-          CALL EGETW(LOUTSTR,K,WORD,'W','vis mat name',IFLAG)
-          write(VISMAT(icomp,nbv),'(a)') WORD(1:lnblnk(WORD))
+          CALL EGETP(LOUTSTR,K,phrase,'W','vis mat name',IFLAG)
+          write(VISMAT(icomp,nbv),'(a)') phrase(1:lnblnk(phrase))
           LNVISMAT(icomp,nbv)=lnblnk(VISMAT(icomp,nbv))
           VISTYP(icomp,nbv)='visp'
           IF(IER.NE.0) CONT=.FALSE.
@@ -749,8 +750,8 @@ C Prepend prec to the name.
           LNVISNAME(icomp,nbv)=lnblnk(VISNAME(icomp,nbv))
 
 C The name of the construction might contain spaces so use EGETP.
-          CALL EGETP(LOUTSTR,K,WORD,'W','vis mat name',IFLAG)
-          write(VISMAT(icomp,nbv),'(a)') WORD(1:lnblnk(WORD))
+          CALL EGETP(LOUTSTR,K,phrase,'W','vis mat name',IFLAG)
+          write(VISMAT(icomp,nbv),'(a)') phrase(1:lnblnk(phrase))
           LNVISMAT(icomp,nbv)=lnblnk(VISMAT(icomp,nbv))
           VISTYP(icomp,nbv)='vis3'
           IF(IER.NE.0) CONT=.FALSE.
@@ -790,8 +791,8 @@ C Prepend prec to the name.
           LNVISNAME(icomp,nbv)=lnblnk(VISNAME(icomp,nbv))
 
 C The name of the visual material might contain spaces so use EGETP.
-          CALL EGETP(LOUTSTR,K,WORD,'W','vis mat name',IFLAG)
-          write(VISMAT(icomp,nbv),'(a)') WORD(1:lnblnk(WORD))
+          CALL EGETP(LOUTSTR,K,phrase,'W','vis mat name',IFLAG)
+          write(VISMAT(icomp,nbv),'(a)') phrase(1:lnblnk(phrase))
           LNVISMAT(icomp,nbv)=lnblnk(VISMAT(icomp,nbv))
           VISTYP(icomp,nbv)='vis '
           IF(IER.NE.0) CONT=.FALSE.
@@ -816,8 +817,8 @@ C limit if geometry.h changes.
 
           write(VOBJNAME(icomp,nbvo),'(2a)') prec,WORD(1:11) ! adjust name
           LNVOBJNAME(icomp,nbvo)=lnblnk(VOBJNAME(icomp,nbvo))
-          CALL EGETP(LOUTSTR,K,WORD,'W','vis obj desc',IFLAG)
-          write(VOBJDESC(icomp,nbvo),'(a)') WORD(1:lnblnk(WORD))
+          CALL EGETP(LOUTSTR,K,phrase,'W','vis obj desc',IFLAG)
+          write(VOBJDESC(icomp,nbvo),'(a)') phrase(1:lnblnk(phrase))
           LNVOBJDESC(icomp,nbvo)=lnblnk(VOBJDESC(icomp,nbvo))
           CALL EGETWI(LOUTSTR,K,iv,1,MOMVB,'F','nb vis entities',
      &      IER)
@@ -1004,14 +1005,14 @@ C line 1044 of insert.F of the subroutine ADDSUR.
           SUSE(nsur,1)='FURNI'  ! predefined mass
           SUSE(nsur,2)='- '
 
-C Set each pair to be back-to-back. Logic for up to 6.
+C Set each pair to be back-to-back. Logic for up to 10 mass surfaces.
           SOTHER(NSUR,1)='ANOTHER'
-          if(ix.eq.1.or.ix.eq.3.or.ix.eq.5)then
+          if(ix.eq.1.or.ix.eq.3.or.ix.eq.5.or.ix.eq.7.or.ix.eq.9)then
             write(SOTHER(NSUR,2),'(i2.2)')INT(icomp)
-            write(SOTHER(NSUR,3),'(i2.2)')INT(NSUR+1)
+            write(SOTHER(NSUR,3),'(i3.3)')INT(NSUR+1)
           else
             write(SOTHER(NSUR,2),'(i2.2)')INT(icomp)
-            write(SOTHER(NSUR,3),'(i2.2)')INT(NSUR-1)
+            write(SOTHER(NSUR,3),'(i3.3)')INT(NSUR-1)
           endif
 
 C Update the connection list. Move all others up and then insert with
@@ -1260,8 +1261,8 @@ C Because many names may start similarly, check against actual widths.
           if(NMLC.gt.0)then                
             lstrs=lnblnk(anysurmat(NS))  ! surface attribute length
             DO 20 IC=1,NMLC
-              lstrd=lnblnk(mlcname(ic))
-              if(mlcname(ic)(1:lstrd).EQ.anysurmat(NS)(1:lstrs))ICF=IC
+              if(mlcname(ic)(1:lnmlcname(ic)).EQ.
+     &           anysurmat(NS)(1:lstrs))ICF=IC
   20        CONTINUE
           endif
 
@@ -1306,7 +1307,7 @@ C with the construction (TRAN is an ok mis-match).
                   else
                     write(outs,*) 'Optics ',WORD(1:lnow),
      &                ' in geo file does not match optics of the MLC ',
-     &                  mlcname(ICF)(1:12),' ',OPT(1:lno)
+     &                  mlcname(ICF)(1:lnmlcname(ICF)),' ',OPT(1:lno)
                     call edisp(iuout,outs)
                   endif
                 endif
@@ -1503,8 +1504,8 @@ C formats depending on whether the key is '*obs' or '*obs3'.
             OBJBLOCKNAME(objnbobs)=WORD(1:12)
 
 C The name of the construction might contain spaces so use EGETP.
-            CALL EGETP(LOUTSTR,K,WORD,'W','obs mat name',IFLAG)
-            write(OBJBLOCKMAT(objnbobs),'(a)') WORD(1:lnblnk(WORD))
+            CALL EGETP(LOUTSTR,K,phrase,'W','obs mat name',IFLAG)
+            write(OBJBLOCKMAT(objnbobs),'(a)') phrase(1:lnblnk(phrase))
             OBJBLOCKTYP(objnbobs)='obs3'
             goto 72
 
@@ -1522,8 +1523,8 @@ C A general polygon obstruction to be associated with the current zone.
             endif
             CALL EGETW(LOUTSTR,K,WORD,'W','obs blk name',IFLAG)
             write(OBJBLOCKNAME(objnbobs),'(a)') WORD(1:lnblnk(WORD))
-            CALL EGETW(LOUTSTR,K,WORD,'W','obs mat name',IFLAG)
-            write(OBJBLOCKMAT(objnbobs),'(a)') WORD(1:lnblnk(WORD))
+            CALL EGETP(LOUTSTR,K,phrase,'W','obs mat name',IFLAG)
+            write(OBJBLOCKMAT(objnbobs),'(a)') phrase(1:lnblnk(phrase))
             OBJBLOCKTYP(objnbobs)='obsp'
 
             CALL LSTRIPC(IUNIT,LOUTSTR,99,ND,1,'first 4 coord',IER)
@@ -1608,8 +1609,8 @@ C A general polygon obstruction to be associated with the current zone.
             OBJBLOCKNAME(objnbobs)=WORD(1:12)
 
 C The name of the construction might contain spaces so use EGETP.
-            CALL EGETP(LOUTSTR,K,WORD,'W','obs mat name',IFLAG)
-            write(OBJBLOCKMAT(objnbobs),'(a)') WORD(1:lnblnk(WORD))
+            CALL EGETP(LOUTSTR,K,phrase,'W','obs mat name',IFLAG)
+            write(OBJBLOCKMAT(objnbobs),'(a)') phrase(1:lnblnk(phrase))
             OBJBLOCKTYP(objnbobs)='obs '
             goto 72
           elseif(phrase(1:4).eq.'*mrt')then
@@ -1656,8 +1657,8 @@ C formats depending on whether the key is '*vis', '*vis3', 'visp'.
             objvisname(nbobjvis)=WORD(1:12)
 
 C The name of the construction might contain spaces so use EGETP.
-            CALL EGETP(LOUTSTR,K,WORD,'W','vis mat name',IFLAG)
-            write(objvismat(nbobjvis),'(a)') WORD(1:lnblnk(WORD))
+            CALL EGETP(LOUTSTR,K,phrase,'W','vis mat name',IFLAG)
+            write(objvismat(nbobjvis),'(a)') phrase(1:lnblnk(phrase))
             objvistyp(nbobjvis)='vis3'
 C Debug.
             write(6,*) 'vis3',nbobjvis,objvisname(nbobjvis),
@@ -1686,8 +1687,8 @@ C next 4 coordinates. The surface and edge ordering is as obsp.
             endif
             CALL EGETW(LOUTSTR,K,WORD,'W','vis blk name',IFLAG)
             objvisname(nbobjvis)=WORD(1:12)
-            CALL EGETP(LOUTSTR,K,WORD,'W','vis mat name',IFLAG)
-            write(objvismat(nbobjvis),'(a)') WORD(1:lnblnk(WORD))
+            CALL EGETP(LOUTSTR,K,phrase,'W','vis mat name',IFLAG)
+            write(objvismat(nbobjvis),'(a)') phrase(1:lnblnk(phrase))
             objvistyp(nbobjvis)='visp'
 
             CALL LSTRIPC(IUNIT,LOUTSTR,99,ND,1,'first 4 coord',IER)
@@ -1771,8 +1772,8 @@ C next 4 coordinates. The surface and edge ordering is as obsp.
             objvisname(nbobjvis)=WORD(1:12)
 
 C The name of the visual material might contain spaces so use EGETP.
-            CALL EGETP(LOUTSTR,K,WORD,'W','vis mat name',IFLAG)
-            write(objvismat(nbobjvis),'(a)') WORD(1:lnblnk(WORD))
+            CALL EGETP(LOUTSTR,K,phrase,'W','vis mat name',IFLAG)
+            write(objvismat(nbobjvis),'(a)') phrase(1:lnblnk(phrase))
             objvistyp(nbobjvis)='vis '
 C Debug.
             write(6,*) 'vis ',nbobjvis,objvisname(nbobjvis),
@@ -1790,8 +1791,9 @@ C *vobject,rubish-bskt,square wood rubish bin,4,basket_bk,basket_fr,basket_lf,ba
             nbobjvisobj=nbobjvisobj+1
             CALL EGETW(LOUTSTR,K,WORD,'W','vis obj name',IFLAG)
             objvobjname(nbobjvisobj)=WORD(1:12)
-            CALL EGETP(LOUTSTR,K,WORD,'W','vis obj desc',IFLAG)
-            write(objvobjdesc(nbobjvisobj),'(a)') WORD(1:lnblnk(WORD))
+            CALL EGETP(LOUTSTR,K,phrase,'W','vis obj desc',IFLAG)
+            write(objvobjdesc(nbobjvisobj),'(a)') 
+     &        phrase(1:lnblnk(phrase))
             CALL EGETWI(LOUTSTR,K,ival,1,12,'F','nb vis entities',IER)
             objnbvobjlist(nbobjvisobj)=ival
             do ibvo = 1,ival 
@@ -2105,23 +2107,25 @@ C If predefined included shading obstructions print.
           write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# '
           do ib=1,objnbobs
             if(objblocktyp(ib)(1:4).eq.'obs3')then
-              WRITE(outs,'(2a,9F9.4,F6.2,1X,A,1X,A)',IOSTAT=ios,
+              WRITE(outs,'(2a,9F9.4,F6.2,1X,A)',IOSTAT=ios,
      &          ERR=13) 
      &          '*obs3',tab,OBJXOB(ib),OBJYOB(ib),OBJZOB(ib),
      &          OBJDXOB(ib),OBJDYOB(ib),OBJDZOB(ib),OBJBANGOB(ib,1),
      &          OBJBANGOB(ib,2),OBJBANGOB(ib,3),OBJOPOB(ib),
-     &          OBJBLOCKNAME(ib),OBJBLOCKMAT(ib)
+     &          OBJBLOCKNAME(ib)
               call SDELIM(outs,outsd,'C',IW)
-              write(ifilg,'(2a,i3)',IOSTAT=IOS,ERR=13) 
-     &          outsd(1:lnblnk(outsd)),'  # block ',ib
+              lnbm=lnblnk(OBJBLOCKMAT(ib))
+              write(ifilg,'(4a,i3)',IOSTAT=IOS,ERR=13) 
+     &          outsd(1:lnblnk(outsd)),' ',OBJBLOCKMAT(ib)(1:lnbm),
+     &          '  # block ',ib
             elseif(objblocktyp(ib)(1:4).eq.'obsp')then
-              WRITE(outs,'(2a,F6.2,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
-     &          '*obsp',' 8 6 ',OBJOPOB(ib),OBJBLOCKNAME(ib),
-     &          OBJBLOCKMAT(ib)
+              WRITE(outs,'(2a,F6.2,1X,A)',IOSTAT=ios,ERR=13) 
+     &          '*obsp',' 8 6 ',OBJOPOB(ib),OBJBLOCKNAME(ib)
               call SDELIM(outs,outsd,'C',IW)
-              write(ifilg,'(2a,i3,a)',IOSTAT=IOS,ERR=13) 
-     &          outsd(1:lnblnk(outsd)),'  # block ',ib,
-     &          ' coords follow:'
+              lnbm=lnblnk(OBJBLOCKMAT(ib))
+              write(ifilg,'(4a,i3,a)',IOSTAT=IOS,ERR=13) 
+     &          outsd(1:lnblnk(outsd)),' ',OBJBLOCKMAT(ib)(1:lnbm),
+     &          '  # block ',ib,' coords follow:'
 
               WRITE(outs,'(12F9.4)',IOSTAT=ios,ERR=13) 
      &          OBJXBP(ib,1),OBJYBP(ib,1),OBJZBP(ib,1),
@@ -2142,15 +2146,16 @@ C If predefined included shading obstructions print.
      &          outsd(1:lnblnk(outsd)),'  # 5-8 '
 
             elseif(objblocktyp(ib)(1:4).eq.'obs ')then
-              WRITE(outs,'(2a,7F9.4,F6.2,1X,A,1X,A)',IOSTAT=ios,
+              WRITE(outs,'(2a,7F9.4,F6.2,1X,A)',IOSTAT=ios,
      &          ERR=13) 
      &          '*obs',tab,OBJXOB(ib),OBJYOB(ib),OBJZOB(ib),
      &          OBJDXOB(ib),OBJDYOB(ib),OBJDZOB(ib),
-     &          OBJBANGOB(ib,1),objopob(ib),OBJBLOCKNAME(ib),
-     &          OBJBLOCKMAT(ib)
+     &          OBJBANGOB(ib,1),objopob(ib),OBJBLOCKNAME(ib)
               call SDELIM(outs,outsd,'C',IW)
-              write(ifilg,'(2a,i3)',IOSTAT=IOS,ERR=13) 
-     &          outsd(1:lnblnk(outsd)),'  # block ',ib
+              lnbm=lnblnk(OBJBLOCKMAT(ib))
+              write(ifilg,'(4a,i3)',IOSTAT=IOS,ERR=13) 
+     &          outsd(1:lnblnk(outsd)),' ',OBJBLOCKMAT(ib)(1:lnbm),
+     &          '  # block ',ib
             endif
           enddo  !  ib
         endif
@@ -2160,24 +2165,26 @@ C Visual entities are in the next section.
           write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# '
           do ib=1,nbobjvis
             if(objvistyp(ib)(1:4).eq.'vis3')then
-              WRITE(outs,'(2a,9F10.4,F6.2,4A)',IOSTAT=ios,
+              WRITE(outs,'(2a,9F10.4,F6.2,2A)',IOSTAT=ios,
      &          ERR=13) 
      &          '*vis3',tab,OBJXOV(ib),OBJYOV(ib),OBJZOV(ib),
      &          OBJDXOV(ib),OBJDYOV(ib),OBJDZOV(ib),
      &          OBJBANGOV(ib,1),OBJBANGOV(ib,2),OBJBANGOV(ib,3),
-     &          objvisopaq(ib),' ',OBJVISNAME(ib),' ',objvismat(ib)
+     &          objvisopaq(ib),' ',OBJVISNAME(ib)
               write(6,*) outs(1:lnblnk(outs))
+              lnvm=lnblnk(objvismat(ib))
               call SDELIM(outs,outsd,'C',IW)
-              write(ifilg,'(2a,i3)',IOSTAT=IOS,ERR=13) 
-     &          outsd(1:lnblnk(outsd)),'  # visual block ',ib
+              write(ifilg,'(4a,i3)',IOSTAT=IOS,ERR=13) 
+     &          outsd(1:lnblnk(outsd)),' ',objvismat(ib)(1:lnvm),
+     &          '  # visual block ',ib
             elseif(objvistyp(ib)(1:4).eq.'visp')then
-              WRITE(outs,'(2a,F6.2,4A)',IOSTAT=ios,ERR=13) 
-     &          '*visp',' 8 6 ',objvisopaq(ib),' ',OBJVISNAME(ib),
-     &          ' ',objvismat(ib)
+              WRITE(outs,'(2a,F6.2,2A)',IOSTAT=ios,ERR=13) 
+     &          '*visp',' 8 6 ',objvisopaq(ib),' ',OBJVISNAME(ib)
+              lnvm=lnblnk(objvismat(ib))
               call SDELIM(outs,outsd,'C',IW)
-              write(ifilg,'(2a,i3,a)',IOSTAT=IOS,ERR=13) 
-     &          outsd(1:lnblnk(outsd)),'  # visual ',ib,
-     &          ' coords follow:'
+              write(ifilg,'(4a,i3,a)',IOSTAT=IOS,ERR=13) 
+     &          outsd(1:lnblnk(outsd)),' ',objvismat(ib)(1:lnvm),
+     &          '  # visual ',ib,' coords follow:'
 
               WRITE(outs,'(12F9.4)',IOSTAT=ios,ERR=13) 
      &          OBJXVP(ib,1),OBJYVP(ib,1),OBJZVP(ib,1),
@@ -2199,15 +2206,15 @@ C Visual entities are in the next section.
      &          outsd(1:lnblnk(outsd)),'  # 5-8 '
 
             elseif(objvistyp(ib)(1:4).eq.'vis ')then
-              WRITE(outs,'(2a,7F10.4,F6.2,5A)',IOSTAT=ios,ERR=13) 
+              WRITE(outs,'(2a,7F10.4,F6.2,2A)',IOSTAT=ios,ERR=13) 
      &          '*vis',tab,OBJXOV(ib),OBJYOV(ib),OBJZOV(ib),
      &          OBJDXOV(ib),OBJDYOV(ib),OBJDZOV(ib),
-     &          OBJBANGOV(ib,1),objvisopaq(ib),' ',OBJVISNAME(ib),
-     &          ' ',objvismat(ib),' '
+     &          OBJBANGOV(ib,1),objvisopaq(ib),' ',OBJVISNAME(ib)
               write(6,*) outs
               call SDELIM(outs,outsd,'C',IW)
-              write(ifilg,'(2a,i3)',IOSTAT=IOS,ERR=13) 
-     &          outsd(1:lnblnk(outsd)),'  # visual ',ib
+              write(ifilg,'(4a,i3)',IOSTAT=IOS,ERR=13) 
+     &          outsd(1:lnblnk(outsd)),' ',objvismat(ib)(1:lnvm),
+     &          '  # visual ',ib
             endif
           enddo   ! ib
         endif     ! visual entities
@@ -2663,9 +2670,10 @@ C Collection of entities making up an object.
           CALL EGETW(LOUTSTR,K,WORD,'W','vis obj name',IFLAG)
 
           write(objvobjname(nbobjvisobj),'(a)') WORD(1:lnblnk(WORD))
-          CALL EGETP(LOUTSTR,K,WORD,'W','vis obj desc',IFLAG)
-          write(objvobjdesc(nbobjvisobj),'(a)') WORD(1:lnblnk(WORD))
-          CALL EGETWI(LOUTSTR,K,iv,1,12,'F','nb vis entities',IER)
+          CALL EGETP(LOUTSTR,K,phrase,'W','vis obj desc',IFLAG)
+          write(objvobjdesc(nbobjvisobj),'(a)') 
+     &      phrase(1:lnblnk(phrase))
+          CALL EGETWI(LOUTSTR,K,iv,1,14,'F','nb vis entities',IER)
           objnbvobjlist(nbobjvisobj)=iv
           do ibvo = 1,iv
             WORD='            ' 

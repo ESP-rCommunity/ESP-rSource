@@ -1,3 +1,9 @@
+architecture := $(shell uname -s)
+ifeq ($(architecture),Darwin)
+	SWTCH=
+else
+	SWTCH= -D
+endif
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
 CDBdir = $(SRCdir)/esrucdb
@@ -7,6 +13,7 @@ PRJdir = $(SRCdir)/esruprj
 CETCdir = $(SRCdir)/cetc
 BLDdir = $(SRCdir)/esrubld
 PROG = dbm$(EXE)
+default: $(PROG)
 
 .SUFFIXES: .o .F
 .F.o:
@@ -24,7 +31,8 @@ OBJECTS = jdbm.o ascii_mat.o basesimp.o basesimp_inputs.o bscoeff.o bscoeff_exte
 	egeometry.o emfnetw.o emkcfgg.o enved.o eroper.o esru_misc.o esystemg.o \
 	filelist.o gendbb.o hyged.o implegadb.o item.o \
 	mfcdat.o mlced.o nwkrewr.o pltcfg.o \
-	prsitem.o sort.o startupg.o tdfile.o readTrnsys.o
+	prsitem.o sort.o startupg.o tdfile.o readTrnsys.o \
+	FMIcom.o
 
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod \
@@ -117,12 +125,15 @@ readTrnsys.F:
 h3kmodule.f90:
 	rm -f h3kmodule.f90
 	ln -s $(CETCdir)/h3kmodule.f90 .
+FMIcom.F:
+	rm -f FMIcom.F
+	ln -s $(COMdir)/FMIcom.F .
 
 strip:
-	@if [ -f $(PROG) ]; then strip $(PROG); fi
+	strip $(PROG)
 
 install:
-	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
+	install $(SWTCH) $(PROG) $(ESPBinDir)/$(PROG)
 
 clean :
 	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
@@ -130,4 +141,12 @@ clean :
 	CDBPlugins.F CDBCommon.F CDBExplore.F \
 	c2fdum.F ctlexp.F ctread.F dossupport.F edatabase.F \
 	egeometry.F emfnetw.F emkcfgg.F eroper.F esru_misc.F filelist.F item.F mfcdat.F nwkrewr.F \
-	pltcfg.F sort.F tdfile.F readTrnsys.F h3kmodule.f90
+	pltcfg.F sort.F tdfile.F readTrnsys.F h3kmodule.f90 \
+	FMIcom.F
+
+distclean: clean
+
+uninstall:
+	-rm -f $(ESPBinDir)/$(PROG)
+	
+.PHONY: clean install default strip uninstall distclean

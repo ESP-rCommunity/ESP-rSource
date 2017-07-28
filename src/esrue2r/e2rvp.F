@@ -290,6 +290,10 @@ C          write(6,*) 'lltmp ',lltmp(1:lnblnk(lltmp))
 C Read a radiance view point file and make sure that the
 C view point is within the bounds of the image.
           call RRVEW(ITA2,lltmp,IER)
+
+C At this point common block radv has been filled but
+C not yet written to vewcmds array.
+
           call UV2AZ(vdx,vdy,vdz,azimuth,elevtn)
           XMN=AMIN1(XMN,rvpx); YMN=AMIN1(YMN,rvpy)
           ZMN=AMIN1(ZMN,rvpz)
@@ -325,11 +329,14 @@ C Internal view.
 
         CALL EASKS(trvewsh,'Name for view?',' ',10,'vew1',
      &    'short view tag',IER,nbhelp)
-        call edisp(iuout,'Please check the view point...')
+        call edisp(iuout,
+     &    'Please check the view point...if ok save the view.')
 
       elseif(ipckvew.eq.indxvew+1)then
 
-C Ask for name of new viewpoint or vp file and set eye point at centre.
+C User request a new view. Take the current wireframe information
+C as a start. Ask for name of new viewpoint or vp file and set 
+C eye point at centre.
         addview = .true.
         if(intext.eq.0)then
           rvpx=XMN; rvpy=YMN; rvpz=ZMX
@@ -345,7 +352,8 @@ C of the azimuth and elevation.
      &    azimuth,elevtn)
         CALL EASKS(trvewsh,'Name for view?',' ',10,'vew1',
      &    'short view tag',IER,nbhelp)
-        call edisp(iuout,'Please define the new view point now.')
+        call edisp(iuout,
+     &    'Please adjust the new view point and save it.')
 
       elseif(ipckvew.eq.1)then
 
@@ -657,8 +665,22 @@ C << implemented in GTK? >>
             CALL trackview(iik,iix,iiy)
 
 C Transform back from mouse position to actual coordinate.
-            ex=((FLOAT(iix-igl)/sca)-Xadd)
-            ey=((FLOAT(igb-iiy)/sca)-Yadd)
+C Note: the coordinate is an offset from the lower left corner
+C of the zone plan display and for zones which do not start at
+C the site origin we need to add in offsets.
+            if(ITPPSW.eq.0)then
+              ex=((FLOAT(iix-igl)/sca)-Xadd)+XMN
+              ey=((FLOAT(igb-iiy)/sca)-Yadd)+YMN
+            elseif(ITPPSW.eq.1)then
+              ex=((FLOAT(iix-igl)/sca)-Xadd)+XMN
+              ey=((FLOAT(igb-iiy)/sca)-Yadd)+ZMN
+            elseif(ITPPSW.eq.2)then
+              ex=((FLOAT(iix-igl)/sca)-Xadd)+YMN
+              ey=((FLOAT(igb-iiy)/sca)-Yadd)+ZMN
+            elseif(ITPPSW.eq.3)then
+              ex=((FLOAT(iix-igl)/sca)-Xadd)+XMN
+              ey=((FLOAT(igb-iiy)/sca)-Yadd)+YMN
+            endif
             iupdown=0; isym=6
             call etplot(ex,ey,iupdown,isym)
             call forceflush()
@@ -943,9 +965,9 @@ C If an existing view then just update, if a new view then
 C extend the list and the view command. If viewed point is
 C near origin can use shorter format.
         if(rvpx.lt.99.0.and.rvpy.lt.99.0.and.rvpz.lt.99.0)then
-	  short=.true.
+          short=.true.
         else
-	  short=.false.
+          short=.false.
         endif
         call eclose(cutfor,0.0,0.1,okfore)
         call eclose(cutaft,0.0,0.1,okaft)
@@ -955,24 +977,24 @@ C near origin can use shorter format.
           rvewsh(indxvew) = trvewsh  ! remember new name
           if(short)then
             if(okfore.and.okaft)then
-              write(doit,'(a,3F6.2,a,3F6.3,a,3F5.2,2(a,F5.1),a)') 
+              write(doit,'(a,3F7.1,a,3F7.3,a,3F5.2,2(a,F5.1),a)') 
      &        '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
      &        ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
      &        ' -vs 0 -vl 0 -vo 0 -va 0'
             else
-              write(doit,'(a,3F6.2,a,3F6.3,a,3F5.2,4(a,F5.1))') 
+              write(doit,'(a,3F7.1,a,3F7.3,a,3F5.2,4(a,F5.1))') 
      &        '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
      &        ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
      &        ' -vs 0 -vl 0 -vo ',cutfor,' -va ',cutaft
             endif
           else
             if(okfore.and.okaft)then
-              write(doit,'(a,3F8.2,a,3F6.3,a,3F5.2,2(a,F5.1),a)') 
+              write(doit,'(a,3F8.2,a,3F7.3,a,3F5.2,2(a,F5.1),a)') 
      &        '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
      &        ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
      &        ' -vs 0 -vl 0 -vo 0 -va 0'
             else
-              write(doit,'(a,3F8.2,a,3F6.3,a,3F5.2,4(a,F5.1))') 
+              write(doit,'(a,3F8.2,a,3F7.3,a,3F5.2,4(a,F5.1))') 
      &        '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
      &        ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
      &        ' -vs 0 -vl 0 -vo ',cutfor,' -va ',cutaft
@@ -982,24 +1004,24 @@ C near origin can use shorter format.
         else
           if(short)then
             if(okfore.and.okaft)then
-              write(doit,'(a,3F6.2,a,3F6.3,a,3F5.2,2(a,F5.1),a)') 
+              write(doit,'(a,3F7.1,a,3F7.3,a,3F5.2,2(a,F5.1),a)') 
      &        '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
      &        ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
      &        ' -vs 0 -vl 0 -vo 0 -va 0'
             else
-              write(doit,'(a,3F6.2,a,3F6.3,a,3F5.2,4(a,F5.1))') 
+              write(doit,'(a,3F7.1,a,3F7.3,a,3F5.2,4(a,F5.1))') 
      &        '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
      &        ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
      &        ' -vs 0 -vl 0 -vo ',cutfor,' -va ',cutaft
             endif
           else
             if(okfore.and.okaft)then
-              write(doit,'(a,3F8.2,a,3F6.3,a,3F5.2,2(a,F5.1),a)') 
+              write(doit,'(a,3F8.2,a,3F7.3,a,3F5.2,2(a,F5.1),a)') 
      &        '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
      &        ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
      &        ' -vs 0 -vl 0 -vo 0 -va 0'
             else
-              write(doit,'(a,3F8.2,a,3F6.3,a,3F5.2,4(a,F5.1))') 
+              write(doit,'(a,3F8.2,a,3F7.3,a,3F5.2,4(a,F5.1))') 
      &        '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
      &        ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
      &        ' -vs 0 -vl 0 -vo ',cutfor,' -va ',cutaft

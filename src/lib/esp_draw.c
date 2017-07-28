@@ -27,7 +27,6 @@
      etriang_() triangle drawing routine.
      ecirc_() circle drawing routine.
      earc_() arc drawing routine.
-     dinterval_() finds interval DV on an axis
      labelstr() generate a tic label
      etlabel_() display text as in old teklib tlabel
      vrtaxis_() draws a vertical axis (tic & labels on right or left side).
@@ -40,18 +39,18 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include "esp-r.h"
-#include <commons.h>    
+#include <commons.h>
 
 extern FILE *wwc;
 extern int  wwc_ok;   /* assume this set in esru_util.c */
 extern int  wwc_macro;   /* assume this set in esru_util.c */
 
-/* f_height and f_width which already declared globaly in esp-r.c are used here. */ 
+/* f_height and f_width which already declared globaly in esp-r.c are used here. */
 extern gint f_height;
 extern gint f_width;
 
 
- 
+
 /* ********* wstxpt_() write a string beginning at pixel x and y. ******* */
 /* Note the calling code assumes that the pixel is at the lower left
  * corner of the block of text. An internal adjustment is required
@@ -63,12 +62,12 @@ long int *x, *y;       /* x y is the position of the string */
 int  len;        /* len is length passed from fortran */
 {
  char buffer[248];
- const char* get_text; 
+ const char* get_text;
  gint ix = (gint) *x;
  gint iy = (gint) *y;
  PangoFontDescription *pfd;	/* to hold test font */
- PangoContext *context;	/* for use in finding font properties */ 
- PangoLayout *layout;	/* pango layout for the text in the buffer */ 
+ PangoContext *context;	/* for use in finding font properties */
+ PangoLayout *layout;	/* pango layout for the text in the buffer */
 
 /* create font description to use for resetting the graphic font.
  * Use pango_font_get_metrics to get font width and height. */
@@ -131,18 +130,18 @@ int  len;        /* len is length passed from fortran */
 }
 
  context = gtk_widget_get_pango_context (graphic);
- 
+
  pango_font_description_free(pfd);
 
  layout = pango_layout_new (context);	/* clear and set layout */
  buffer[0] = '\0';
  g_snprintf (buffer, sizeof (buffer), "%s", buff); /* copy buff into buffer */
- 
+
  pango_layout_set_text (layout, buffer, len);	/* add len char of text */
 
  get_text = pango_layout_get_text (layout);
  /* fprintf(stderr, "\nget_text displays: %s\n", buffer);   debug */
- 
+
  /* draw it on the pixmap taking acount to shift text up by f_height. */
  gdk_draw_layout (gr_image, gc,ix,iy-f_height,layout);
  g_object_unref (layout);	/* clear the layout */
@@ -228,23 +227,23 @@ int  len;        /* len is length passed from fortran */
 
  } else if (butn_fnt == 4 ) {
   pfd = pango_font_description_from_string("Courier,Medium 8");
-   f_height = font_calculations_array[courier_small].f_height;   
-   f_width  = font_calculations_array[courier_small].f_width;   
+   f_height = font_calculations_array[courier_small].f_height;
+   f_width  = font_calculations_array[courier_small].f_width;
 /*   g_print("wstxpt graphic font courier medium 8\n");  debug */
  } else if (butn_fnt == 5 ) {
   pfd = pango_font_description_from_string("Courier,Medium 10");
-  f_height = font_calculations_array[courier_medium].f_height;   
-  f_width  = font_calculations_array[courier_medium].f_width;    
+  f_height = font_calculations_array[courier_medium].f_height;
+  f_width  = font_calculations_array[courier_medium].f_width;
 /*   g_print("wstxpt graphic font courier medium 10\n");  debug */
  } else if (butn_fnt == 6 ) {
    pfd = pango_font_description_from_string("Courier,Medium 12");
-   f_height = font_calculations_array[courier_large].f_height;   
-   f_width  = font_calculations_array[courier_large].f_width;    
-/*   g_print("wstxpt graphic font courier medium 12\n");  debug */ 
+   f_height = font_calculations_array[courier_large].f_height;
+   f_width  = font_calculations_array[courier_large].f_width;
+/*   g_print("wstxpt graphic font courier medium 12\n");  debug */
  } else if (butn_fnt == 7 ) {
    pfd = pango_font_description_from_string("Courier,Medium 14");
-   f_height = font_calculations_array[courier_largest].f_height;   
-   f_width  = font_calculations_array[courier_largest].f_width;    
+   f_height = font_calculations_array[courier_largest].f_height;
+   f_width  = font_calculations_array[courier_largest].f_width;
 /*   g_print("wstxpt graphic font courier medium 14\n");  debug */
  }
 
@@ -327,7 +326,7 @@ int  len;        /* len is length passed from fortran */
  gint vfw;
  char buffer[248];
  gint width;	/* to hold initial smaller guess of width */
-	
+
 /* find number of characters in buff, load metrics for current font and
    the find the pixel width. */
  ilen = 0;
@@ -402,7 +401,7 @@ int  len;        /* len is length passed from fortran */
  }
  gtk_widget_modify_font(graphic, pfd);  /* << ?? >> */
  context = gtk_widget_get_pango_context (graphic);
- 
+
  pango_font_description_free(pfd);
 
  width = f_width * ilen; /* conservative width */
@@ -418,7 +417,7 @@ int  len;        /* len is length passed from fortran */
 
  return;
 }
- 
+
 /* ************** viewtext_() display text in graphics box *************** */
 /*
  Given a string 'msg' and the 'line' where the string should be written
@@ -523,14 +522,14 @@ void viewtext_(msg,linep,side,size,len)
   }
   gtk_widget_modify_font(graphic, pfd);  /* << ?? >> */
   context = gtk_widget_get_pango_context (graphic);
- 
+
   pango_font_description_free(pfd);
 
   width = f_width * t_len; /* conservative width */
   layout = pango_layout_new (context);  /* clear and set layout */
   buffer[0] = '\0';
   g_snprintf (buffer, sizeof (buffer), "%s", msg); /* copy msg into buffer */
-  
+
   pango_layout_set_text (layout, buffer, t_len);  /* add t_len char of text */
   pango_layout_get_extents (layout, NULL, &logical_rect);  /* find box the text fits within */
   fitpix = MAX (width, PANGO_PIXELS (logical_rect.width));
@@ -567,7 +566,7 @@ void findviewtext_(charposp,linep,size,irx,iry)
   PangoFontMetrics *metrics;
   gint mid;
   long int fsize, charpos;
- 
+
   gint b_top, b_bottom, b_left, b_right; /* pixels at top/bottom/left/right */
   gint width;	/* conservative width of msg */
 
@@ -637,7 +636,7 @@ void findviewtext_(charposp,linep,size,irx,iry)
    pfd = pango_font_description_from_string("Courier,Medium 14");
    f_height = font_calculations_array[courier_largest].f_height;
    f_width  = font_calculations_array[courier_largest].f_width;
-/*    g_print("wstxpt graphic font medium 14\n");  debug */  
+/*    g_print("wstxpt graphic font medium 14\n");  debug */
 }
   gtk_widget_modify_font(graphic, pfd);  /* << ?? >> */
   context = gtk_widget_get_pango_context (graphic);
@@ -1584,7 +1583,7 @@ void axiscale_(long int* gw,long int* gh,float* xmn,float* xmx,float* ymn,
    axgw=(float)*gw; axgh=(float)*gh;
    axxmn=(float)*xmn; axxmx=(float)*xmx;
    axymn=(float)*ymn; axymx=(float)*ymx;
-   
+
 /* Derive factors for horizontal axis. */
     if (axxmn < 0.0 && axxmx >= 0.0) {
 	axxsc = axgw / (axxmx + (-1.0 * axxmn));
@@ -1710,6 +1709,28 @@ void pixel2u_(ux,uy,gx,gy)
 
   return;
 }
+
+/* *************** etplot_wwc_() general line plotting to wwc file. *************** */
+/*
+ As below, but ouputs lines to wwc file without drawing them.
+
+*/
+void etplotwwc_(ux,uy,updown,sym)
+  float *ux, *uy;
+  long int *updown, *sym;
+{
+  float x,y;
+  gint isymbol,iupd,x1,x2,y1,y2,width;
+  long int lx1,lx2,ly1,ly2,ipdis,isz,gs;
+
+/* If echo send parameters to wwc file */
+  if ( wwc_ok == 1) {
+    fprintf(wwc,"*etplot\n");
+    fprintf(wwc,"%f %f %ld %ld\n",*ux,*uy,*updown,*sym);
+   }
+
+   return;
+ }
 
 /* *************** etplot_() general line plotting. *************** */
 /*
@@ -2077,78 +2098,6 @@ void earc_(x,y,rad,ang1,ang2,operation)
   return;
 }
 
-/* ******** dinterval_() finds interval DV on an axis ******************** */
-/*
- DINTERVAL finds interval DV on an AXIS(V1,V2) and a suitable number of
- decimal places for the axis values. When 'mode'=0, factors of 10 are
- removed and the interval IS 0.2 for scale length 1-2
-                 0.5                  2-5
-                 1.0                  5-10
-
- When 'mode'=1 the hour interval on the graphical time (x-axis) is
- set as follow:
- v=v2-v1     for v < 12 dv=1
-                 v < 18 dv=2
-                 v < 24 dv=3
-                 v < 48 dv=6
-                 v < 96 dv=12   else dv=24.
-*/
-
-void dinterval_(v1,v2,dv,ndec,mode)
- float *v1, *v2, *dv;
- long int *ndec, *mode;
-{
-    /* Local variables */
-    float v, w, x, z, vr, vv, dvv;
-    int ix,nd,mde;
-    double dx, dz;
-
-    mde = (int) *mode;
-
-    if (mde == 0) {
-	vv = *v2 - *v1;
-	v = (float) fabs(vv);   /* ?? fabs((double)vv) */
-	x = (float) log10(v);
-	ix = (int) x;
-        if (x < 0.0) ix=ix-2;
-        dx = (double) ix;
-
-	dz = pow(10.0,dx);
-	vr =  v / (float) dz;
-	w = 10.0;
-	if (vr < 5.0) w = 5.0;
-	if (vr < 2.0) w = 2.0;
-
-	dvv = w * 0.1 * (float) dz;
-	if (vv < 0.0) dvv = -dvv;
-
-	nd = 1 - ix;
-	if (w == 10.0) --nd;
-        else if (w == 5.0) nd = 1;
-        else if (w == 2.0) nd = 2;
-
-       	if (nd < 0) nd = 0;
-
-    } else {
-/* if over 6 months draw a tick each week, if over 60 days
-   draw every other day, if over 7 days tick each 12 hours */
-	v = *v2 - *v1;
-	dvv = 168.0;
-	if (v < 4320.0) dvv = 48.0;
-	if (v < 1440.0) dvv = 24.0;
-	if (v < 170.0) dvv = 12.0;
-	if (v < 98.0) dvv = 8.0;
-	if (v < 50.0) dvv = 4.0;
-	if (v < 26.0) dvv = 3.0;
-	if (v < 20.0) dvv = 2.0;
-	if (v < 14.0) dvv = 1.0;
-	nd = 0;
-    }
-    *dv = dvv;
-    *ndec = nd;
-  return;
-} /* dinterval_ */
-
 /* ************ labelstr() generate a tic label *************** */
 /*
  Generate a tic label where n is the number of decimal places,
@@ -2259,7 +2208,8 @@ void etlabel_(msg,x,y,ipos,size,len)
   return;
 } /* etlabel */
 
-/* ************** vrtaxis_() construct and draw a vert axis *************** */
+
+/* ************** vrtaxisdd_() construct and draw a vert axis *************** */
 /*
  Construct and draw a vertical axis via WW where: YMN,YMX are the data
  minimum & maximum values, offl & offb are the pixel coords of the
@@ -2268,14 +2218,15 @@ void etlabel_(msg,x,y,ipos,size,len)
  Mode = 1 for time axis, Mode = 0 for other data display types.
  Side = 0 lables and tic on left, Side = 1 labels and tic on right.
  msg is the axis label and mlen is it's length (passed from fortran).
+ ddy is data interval, ny number of decimal places to use.
  TODO: pass in character offset for axis rather than assuming a
        fixed value.
 */
 
-void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
+void vrtaxisdd_(ymn,ymx,offl,offb,offt,yadd,sca,mode,dddy,nny,side,msg,mlen)
 
- float *ymn, *ymx,  *yadd, *sca;
- long int  *offl,*offb, *offt, *mode, *side;
+ float *ymn, *ymx,  *yadd, *sca, *dddy;
+ long int  *offl,*offb, *offt, *mode, *nny, *side;
  int  mlen;
  char  *msg;
 {
@@ -2314,14 +2265,10 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
  }
 
  ofl = (gint) *offl; ofb = (gint) *offb; oft = (gint) *offt; mde = (gint) *mode; sid = (gint) *side;
+ ny = (gint) *nny; ddy = *dddy;
 
 /* set box extents of graphic for user later */
  b_top = 0; b_left = 0; b_right = graphic->allocation.width; b_bottom = graphic->allocation.height;
-
-/* Define tic intervals (DDX data increment, NY decimal places). */
- ny = 0;
- ddy = 0.;
- dinterval_(ymn, ymx, &ddy, &ny, &mde);
 
 /* Find the maximum label text width.  */
  label_width = 0;
@@ -2434,21 +2381,23 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
   }
   g_object_unref (layout);	/* clear the layout */
   return;
-} /* vrtaxs_ */
+} /* vrtaxsdd_ */
 
-/* ************ horaxis_() construct and draw a horiz axis *************** */
+
+/* ************ horaxisdd_() construct and draw a horiz axis *************** */
 /*
  Construct and draw a horizontal axis via WW where: XMN,XMX are the data
  minimum & maximum values, offL & offB are the pixel coords of the
  left start of the axis.  SCA is the scaling factor and Xadd is a data
  offset to adjust plotting for various data ranges. mode defines how
- left starting point is adjusted.
+ left starting point is adjusted. ddx is data interval, nx number
+ of decimal places to use.
 */
 
-void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
+void horaxisdd_(xmn,xmx,offl,offr,offb,xadd,sca,mode,dddx,nnx,msg,mlen)
 
- float *xmn, *xmx, *sca, *xadd;
- long int   *offl,*offr,*offb, *mode;
+ float *xmn, *xmx, *sca, *xadd, *dddx;
+ long int   *offl,*offr,*offb, *mode, *nnx;
  int   mlen;
  char  *msg;
 {
@@ -2466,7 +2415,7 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
  gint l, n, ix, iy, ix1, iy1, nintvl, ilen;
  gint last_label_right_pixel, label_width, mid;
  long int nx,wticc,mde;
- float xticv,ddx,rintvl,resid;
+ float ddx,xticv,rintvl,resid;
  char msg2[80];
 
 /* Use Pango context previously setup in esp-r.c */
@@ -2488,14 +2437,10 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
                 *xmn,*xmx,*offl,*offr,*offb,*xadd,*sca,*mode); */
 
  ofl = (gint) *offl; ofr = (gint) *offr; ofb = (gint) *offb; mde = *mode;
+ nx = (gint) *nnx; ddx = *dddx;
 
 /* set box extents of graphic for user later */
  b_top = 0; b_left = 0; b_right = graphic->allocation.width; b_bottom = graphic->allocation.height;
-
-/* Define tic intervals (DDX data increment, NX num decimal places). */
- nx = 0;
- ddx = 0.;
- dinterval_(xmn, xmx, &ddx, &nx, &mde);
 
 /* Find the maximum label text width.  */
  label_width = 0;
@@ -2579,10 +2524,10 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
  }
  g_object_unref (layout);	/* clear the layout */
  return;
-} /* horaxis_ */
+} /* horaxisdd_ */
 
 
-/* ************ horaxishdw_() construct and draw a horiz axis *************** */
+/* ************ horaxishdwdd_() construct and draw a horiz axis *************** */
 /*
  Construct and draw a horizontal axis via WW where: XMN,XMX are the data
  minimum & maximum values, offL & offB are the pixel coords of the
@@ -2591,10 +2536,10 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
  left starting point is adjusted.
 */
 
-void horaxishdw_(xmn,xmx,offl,offr,offb,xadd,sca,mode,ind,idiv,isjday,msg,mlen)
+void horaxishdwdd_(xmn,xmx,offl,offr,offb,xadd,sca,mode,dddx,nnx,ind,idiv,isjday,msg,mlen)
 
- float *xmn, *xmx, *sca, *xadd;
- long int   *offl,*offr,*offb, *mode, *ind, *idiv, *isjday;
+ float *xmn, *xmx, *sca, *xadd, *dddx;
+ long int   *offl,*offr,*offb, *mode, *nnx, *ind, *idiv, *isjday;
  int   mlen;
  char  *msg;
 {
@@ -2636,15 +2581,11 @@ void horaxishdw_(xmn,xmx,offl,offr,offb,xadd,sca,mode,ind,idiv,isjday,msg,mlen)
                 *xmn,*xmx,*offl,*offr,*offb,*xadd,*sca,*mode); */
 
  ofl = (gint) *offl; ofr = (gint) *offr; ofb = (gint) *offb; mde = *mode;
+ nx = (gint) *nnx; ddx = *dddx;
  iind = (gint) *ind; iidiv = (gint) *idiv; iisjday = (gint) *isjday;
 
 /* set box extents of graphic for user later */
  b_top = 0; b_left = 0; b_right = graphic->allocation.width; b_bottom = graphic->allocation.height;
-
-/* Define tic intervals (DDX data increment, NX num decimal places). */
- nx = 0;
- ddx = 0.;
- dinterval_(xmn, xmx, &ddx, &nx, &mde);
 
 /* Find the maximum label text width based on which ind.  */
  label_width = 0;
@@ -2759,7 +2700,7 @@ void horaxishdw_(xmn,xmx,offl,offr,offb,xadd,sca,mode,ind,idiv,isjday,msg,mlen)
  }
  g_object_unref (layout);	/* clear the layout */
  return;
-} /* horaxishdw_ */
+} /* horaxishdwdd_ */
 
 
 /* ***** popupimage_() display image with documentation */
@@ -2832,8 +2773,8 @@ void popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int lend
 /* now set the font size to be used for the image documentation. */
    if (disp_fnt == 0 ) {
      pfd = pango_font_description_from_string("Serif,Medium 8");
-     f_height = font_calculations_array[serif_small].f_height;   
-     f_width  = font_calculations_array[serif_small].f_width; 
+     f_height = font_calculations_array[serif_small].f_height;
+     f_width  = font_calculations_array[serif_small].f_width;
 /*    g_print("configure font medium 8\n"); debug */
    } else if (disp_fnt == 1 ) {
      pfd = pango_font_description_from_string("Serif,Medium 10");
@@ -2849,17 +2790,17 @@ void popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int lend
      pfd = pango_font_description_from_string("Serif,Medium 14");
      f_height = font_calculations_array[serif_largest].f_height;
      f_width  = font_calculations_array[serif_largest].f_width;
-/*    g_print("configure font medium 14\n"); debug */   
+/*    g_print("configure font medium 14\n"); debug */
    } else if (disp_fnt == 4 ) {
      pfd = pango_font_description_from_string("Courier,Medium 8");
      f_height = font_calculations_array[courier_small].f_height;
      f_width  = font_calculations_array[courier_small].f_width;
-/*    g_print("configure courier medium 8\n"); debug */     
+/*    g_print("configure courier medium 8\n"); debug */
    } else if (disp_fnt == 5 ) {
      pfd = pango_font_description_from_string("Courier,Medium 10");
      f_height = font_calculations_array[courier_medium].f_height;
      f_width  = font_calculations_array[courier_medium].f_width;
-/*    g_proint("configure courier medium 10\n");  debug */     
+/*    g_proint("configure courier medium 10\n");  debug */
    } else if (disp_fnt == 6 ) {
      pfd = pango_font_description_from_string("Courier,Medium 12");
      f_height = font_calculations_array[courier_large].f_height;
@@ -2899,8 +2840,3 @@ void popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int lend
    return;
 
 }
-
-
-
-
-

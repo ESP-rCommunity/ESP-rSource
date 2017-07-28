@@ -199,7 +199,7 @@ C Trace output ?
       CALL DAYCLK(IDYP,BTIMEF,ITU)
 
 C Output computed values.
-      write(outs,'(3A,I2,a)')' Zone ',zname(ICOMP),' (',ICOMP,
+      write(outs,'(3A,I3,a)')' Zone ',zname(ICOMP),' (',ICOMP,
      &  ') Inter-surface radiation coefficients'
       call edisp(itu,' ')
       call edisp(itu,outs)
@@ -256,7 +256,7 @@ C  difference between the external ambient and surface temperatures.
 #include "CFC_common.h"
 #include "net_flow.h"
 #include "tdf2.h"
-      
+
       integer lnblnk  ! function definition
 
       common/trc/itrc
@@ -947,12 +947,12 @@ C restore last one.
 C Don't use correlation if artificial emissivity used (>1)
         IF(ABS(QELWF(I)).GT.495.0.AND.EE(ICOMP,I).LE.1.)THEN
           call zsid(icomp,I,ZSDES,ZSDESC,ZSDESS)
-          write(outs,'(A,F9.1,A,A,A,F5.1,A,I6)')
+          write(outs,'(A,F12.1,A,A,A,F8.1,A,I6)')
      &    ' MZELWE: a longwave flux of',QELWF(I),
      &    ' W/m^2 has been calculated for ',ZSDESC(1:lnblnk(ZSDESC)),
      &    ' (T=',TFC(ICOMP,I,1)+ZEROK,'K) @ increment',NSINC
           call edisp(iuout,outs)
-          write(outs,'(A,F7.1,A,F5.1,A,F7.1,A,F5.1,A,F7.1,A,F5.1,A)')
+          write(outs,'(A,F10.1,A,F5.1,A,F10.1,A,F5.1,A,F10.1,A,F5.1,A)')
      &    '  Components: sky = ',QELWFK(I),' (T=',TSKY,
      &    '), buildings = ',QELWFB(I),' (T=',TBLD(I),'), ground = ',
      &    QELWFG(I),' (T=',TGRD,')'
@@ -965,6 +965,7 @@ C Don't use correlation if artificial emissivity used (>1)
      &    '  A correlation long wave flux value of',QELWF(I),
      &    ' W/m^2 will be used instead.'
           call edisp(iuout,outs)
+
         ENDIF
    49   QELWS(ICOMP,I)=QELWF(I)
         QELWB(ICOMP,I)=QELWFB(I)
@@ -1079,7 +1080,7 @@ C Debug.
         xx=QELWF(I)/DT
         call eclose(HROF(I),xx,0.01,close)
         if(.NOT.close)write(itu,*)'corrupted hrof',I,HROF(I),xx,
-     &  TFC(ICOMP,I,1)
+     &  TFC(ICOMP,I,1),DT,QELWF(I),TEQV(I)
 
         IF(IE(ICOMP,I).EQ.0)THEN
 
@@ -1152,6 +1153,7 @@ C                 external temperature (for use in MZLS3).
       include "hvac_parameters.h"
       include "blc25_open_windows.h"   
       include "hvac_common.h"
+      include "FMI.h"
  
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER :: icalender,nbcaldays,nbdaytype
@@ -1283,6 +1285,9 @@ C Logical flags for indicating which air flow model is in use.
       
 C      Used to check if windows are open or not for AIM
       LOGICAL AreWindowsOpen
+
+C Temporary variable.
+      real rtmp
 
 c --- 28-08-2014: Patrice Pinel: Initialise mechanical ventilation variables to zero
 c --- This way, nothing will be changed if MECH_VENT_CONTROL is not called
@@ -1748,6 +1753,16 @@ C  this code infact be operating on CVVF?)
             endif OprDiffCooling
           
           endif OprInfCtl
+
+C <FMI> Multiply a fraction (specified by FMUCTLSUP) of infiltration by
+C the FMU control value, if control is required.
+          if (FMUDOCTL(ICOMP,3)) then
+            rtmp=(CVIF*FMUCTLSUP(ICOMP,3,1)*FMUCTL(ICOMP,3))+
+     &           (CVIF*(1-FMUCTLSUP(ICOMP,3,1)))
+            CVIF=rtmp
+          endif
+C </FMI>          
+
 C========================================================================          
         elseif ( bAFN ) then 
 C User has defined an air-flow network. Use conductance reported from there.        

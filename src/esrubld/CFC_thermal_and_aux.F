@@ -122,7 +122,27 @@ C ******** Calculate effective longwave properties for each CFC layer
 C.........Only calculate at first time-step and when slat angle change occurs
 C.........(effective longwave radiative properties are a function of geometry only).
           diff = abs(vb_phiNew(icomp,icfctp) - vb_phiOld(icomp,icfctp))
+	  
+cx Slat angle change implies diff > 0.x, no?? Logic suggested by A. Geissler.
+cx Uncomment this line to implement this rather than legacy logic in line 130.
+cx          IF((NSINC.eq.1).or.(diff.gt.0.1))then
+C Legacy logic for slat angle change is used in the next line.
           IF((NSINC.eq.1).or.(diff.lt.0.1))then
+
+cx << insert check for CFC thin layers here??
+cx    PROBLEM: availability of layer (and timestep length?) data ... ???
+cx        if (icfcfl(ICOMP,I).ne.0) then
+C           Check rho cp s / t - value; thermal layer values from
+C           materials.h entries for zone,surface,layer;
+C           Check outermost layer (index 1) only.
+c            cfclaythrm=cfcdbden(cfcarrayindex)
+c     &                *cfcdbsht(cfcarrayindex)*cfcthck()/TIMESEP
+c          if (cfclaythrm.lt.4.0) then
+C           Issue warning! << output function needs change!! >>
+c            CALL USRMSG('*** WARNING : CFC Layer very thin!!',
+c     &         'Numerical issues (e.g. MZELWE errors) likely!','W')
+c          endif
+c        endif
 
             do 20 j = 1, ncfc_el(icomp,icfctp)
 
@@ -144,7 +164,7 @@ C...............the outdoors).
                 call vb_eff_diff_properties(tmp_vb_w,tmp_vb_s,
      &            tmp_vb_phi,tmp_lwEF,tmp_lwEB,tmp_lwT,eff_lwE,eff_lwT)
 
-C...............Save effective properties (front reflectance and transmittance) into 
+C...............Save effective properties (front emissivity and transmittance) into
 C...............common variables.
                 rlwEF(icomp,icfctp,j) = eff_lwE
                 rlwT(icomp,icfctp,j)  = eff_lwT
@@ -155,7 +175,7 @@ C...............the indoors) by setting negative slat angle
      &            tmp_vb_phi*(-1.0),tmp_lwEF,tmp_lwEB,tmp_lwT,
      &            eff_lwE,eff_lwT)
 
-C...............Save efective back reflectance into common variable
+C...............Save efective back emissivity into common variable
                 rlwEB(icomp,icfctp,j) = eff_lwE
             
 C...............If shade is retracted, set longwave transmittance to 1.             
@@ -614,7 +634,7 @@ C Now know all script F configuration factors.
 C Determine heat exchange between each pair of surfaces in CFC 
 C construction and internal zone surfaces.
 
-C assign nodal temperatures and convert to kelvin
+C Assign nodal temperatures and convert to kelvin
       nn=nndc(icomp,isurf)
       do 30 i=1,nn
 C        if(i.lt.nn)then
@@ -624,7 +644,7 @@ C          tsrf=tfs(icomp,isurf)+273.15
 C        end if
   30  continue
 
-C assign emittance to front and back surfaces of cfc type itp
+C Assign emittance to front and back surfaces of cfc type itp
       do 60 n=1,ne,2
         epsf(n)=rlwEF(icomp,icfctp,n)
         epsb(n)=rlwEB(icomp,icfctp,n)
@@ -2296,12 +2316,8 @@ C.....Switch for zone name output here
       if (ReportBoolConfig("use_zonenames")) then
         write (cZone_Chars,'(A)') zname(icomp)(1:lnzname(icomp))
       else
-C.......Pad zone index to 'XX'
-        if ( icomp .gt. 9 ) then
-           write (cZone_Chars,'(A,I2)') 'zone_',icomp
-        else
-           write (cZone_Chars,'(A,I1)') 'zone_0',icomp
-        endif
+C.......Pad zone index to 'XXX'
+        write (cZone_Chars,'(A,I3.3)') 'zone_',icomp
       endif ! use_zonenames
 
 C << the following would ideally require that surface name lengths
@@ -2313,14 +2329,8 @@ cx      if (ReportBoolConfig ("use_surfacenames")) then
 cx        write (cSurf_Chars,'(A)')
 cx     &          sname(iZone,isurf)(1:lnsname(icomp,isurf))
 cx      else
-C.......Pad surface index to 'XX'
-        if ( isurf .gt. 9 ) then
-cx          write (cSurf_Chars,'(I2)') iSurface
-          write (cSurf_Chars,'(A,I2)') 'surface_',isurf
-        else
-cx          write (cSurf_Chars,'(A,I1)') '0', iSurface
-          write (cSurf_Chars,'(A,I1)') 'surface_0',isurf
-        endif
+C.......Pad surface index to 'XXX'
+          write (cSurf_Chars,'(A,I3.3)') 'surface_',isurf
 cx      endif ! use_surfacenames
 
 c      call AddToReport(
@@ -2546,8 +2556,8 @@ C**************** Ambient, Solar and CFC descriptors *****************
                ivblayr=j
                
                write(97,9991)
-     &           ' CFC SURFACE |  PAZI  |  ANGI  |  PROANG  | HCIF |',
-     &           'HCOF |VBLAYR|   W   |   S   |   PHI   | ORIENT |'
+     & '        CFC SURFACE |  PAZI  |  ANGI  |  PROANG  | HCIF |',
+     &       '  HCOF |VBLAYR|   W     |   S   |   PHI   | ORIENT |'
                write(97,9992)i,pazi(icomp,i),fInc_angle(i),
      &            proang_s(icomp,icfctp,i),
      &           hcif(icomp,i),hcof(icomp,i),ivblayr,vb_w(icomp,icfctp),
@@ -2649,8 +2659,8 @@ C**************** CFC Convection/LW exchange*************************
         ivblayr=j        
         
         write(98,9996)
-     &'   CFC SURFACE |  PAZI  |  ANGI  |  PROANG  | HCIF |',
-     &'HCOF |VBLAYR|   W   |   S   |   PHI   | ORIENT |'
+     & '       CFC SURFACE |  PAZI  |  ANGI  |  PROANG  | HCIF   | ',
+     & 'HCOF  |VBLAYR|   W   |   S    |   PHI   | ORIENT |'
 
         write(98,9997)i,pazi(icomp,i),fInc_angle(i),
      & proang_s(icomp,icfctp,i),
@@ -2698,7 +2708,7 @@ C**************** CFC Convection/LW exchange*************************
 
  14   continue        
         
- 9996     format(A50,A48)
+ 9996     format(2A)
  9997     format(6x,I10,3x,5F9.3,I7,3f9.3,A8)
  8882     format(A57)
  8883     format(3x,I10,3F9.3,I6,I7) 
@@ -2715,7 +2725,7 @@ C**************** CFC Convection/LW exchange*************************
           do 15 l=1,ne
 
             if((icfcltp(icomp,icfctp,l).lt.2.and.l.lt.ne).or.
-     &         (icfcltp(icomp,icfctp,l).eq.2.and.l.gt.1.and.
+     &         (icfcltp(icomp,icfctp,l).ge.2.and.l.gt.1.and.
      &          l.lt.ne))then
 
               write(98,9999)l,tfc(icomp,i,(l*2)-1),tfc(icomp,i,l*2),
@@ -2726,7 +2736,7 @@ C**************** CFC Convection/LW exchange*************************
      &          qcfc_cv(icomp,i,l*2,2),qcfc_cv(icomp,i,(l*2)+1,2)
 
       !outdoor blind
-            elseif(icfcltp(icomp,icfctp,l).eq.2.and.l.eq.1)then
+            elseif(icfcltp(icomp,icfctp,l).ge.2.and.l.eq.1)then
 
               write(98,9999)l,tfc(icomp,i,(l*2)-1),tfc(icomp,i,l*2),
      &          tfc(icomp,i,(l*2)+1),
@@ -2760,7 +2770,7 @@ C**************** CFC Convection/LW exchange*************************
             else
               !do nothing
             end if
- 9999       format(6x,I12,1x,7F8.3,6F13.3,2F8.3)
+ 9999       format(6x,I12,1x,3F8.3,F8.2,3F8.3,6F13.3,2F8.3)
 
  15       continue
         end if
@@ -2891,6 +2901,8 @@ C Use geometry.h for zname
 #include "geometry.h"
 #include "control.h"
 #include "CFC_common.h"
+#include "net_flow.h" ! supplies MNOD
+#include "tdf2.h"
       COMMON/OUTIN/IUOUT,IUIN
       integer iuout,iuin
 
@@ -2917,28 +2929,38 @@ C Use geometry.h for zname
       integer IE
       real ATP,ATF,ARP,ARF
 
+      common/trc/itrc
+      integer itrc
+
+      common/dllerr/dllsubr,dllmesg
+      character dllsubr*12,dllmesg*124
+
+      logical dll
+
       CHARACTER outs*124
       
 C Working variables to temporarily store slat angle for daytype and hour
 C      real vb_phiX
 C      dimension vb_phiX(mcom,mcfc,mdty,MT)
 C      real slat_angleX
- 
-      integer i,j,k           ! do loop indices
-      integer ictlfun         ! control function index
-      integer nctldaytypes    ! number of control day types
-      integer iday            ! current day
-      integer idaytype        ! day type
-      integer idayofweek      ! day of week (1 to 7)
-      integer nperiods        ! number of periods in control daytype
-      integer iperiod         ! control period
-      integer icomp           ! zone index
-      integer iZone           ! zone index for zone loops
-      integer icfctp          ! CFC type index
+
+      integer IER,ISD,itdi,IFOC     ! used in context with tdf ...
+      integer i,j,k                 ! do loop indices
+      integer ictlfun               ! control function index
+      integer nctldaytypes          ! number of control day types
+      integer iday                  ! current day
+      integer idaytype              ! day type
+      integer idayofweek            ! day of week (1 to 7)
+      integer nperiods              ! number of periods in control daytype
+      integer iperiod               ! control period
+      integer icomp                 ! zone index
+      integer iZone                 ! zone index for zone loops
+      integer icfctp                ! CFC type index
       integer iact1, iact2, iact3   ! actuator details
       integer isen1, isen2, isen3   ! sensor details
       integer ictype                ! control type
       integer ischedule_shdstateONorOFF
+      real VAL
       real shdONsetpoint
       real shdOFFsetpoint
       real shdONslatPOSITION
@@ -2952,6 +2974,12 @@ C      real slat_angleX
       character msgout*124
       character*12 cZone_Chars
       character*2  cCFC_Chars
+
+      DIMENSION VAL(MBITS+2)
+
+C Check if running in dll mode.
+      call isadll(dll)
+
 
 C Prior to initiating control logic, set the default slat angle and 
 C shading state for the next time step in all zones and all CFC types
@@ -3059,7 +3087,8 @@ C -------------------------------------------------------------------
 C Determine actuator type and copy control data to working variables
 C -------------------------------------------------------------------
 
-  12      iact1 = iCFCactuator(ictlfun,1)    ! 0=shade ON/OFF, 1=slat angle, 2=both (for schedule
+  12      iact1 = iCFCactuator(ictlfun,1)    ! 0=shade ON/OFF, 1=slat angle, 2=both (for schedule)
+                                             ! 9=both (read from tdf)
           iact2 = iCFCactuator(ictlfun,2)    ! zone index
           iact3 = iCFCactuator(ictlfun,3)    ! CFC type
 
@@ -3082,7 +3111,43 @@ C Schedule
      &      INT(CFCmiscdata(ictlfun,idaytype,iperiod,2))
             schedule_slat_angle = 
      &            CFCmiscdata(ictlfun,idaytype,iperiod,3)
-          endif
+
+          elseif(iact1.eq.9)then
+C Temporal data file (tdf)
+
+            if(ICFCCTL(ictlfun).ne.0) then
+              itdi=ICFCCTL(ictlfun)
+              IFOC=itdi
+C           Data in temporal database (on/off state and slat angle).
+              CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
+              ischedule_shdstateONorOFF = VAL(ISD)
+              schedule_slat_angle       = VAL(ISD+1)
+
+C Debug.
+C           write(6,*)'tdf ctl data @',btimef,' is item',itdi,
+C     &       ' column ',isd,' value ',ischedule_shdstateONorOFF,
+C     &       ' column ',isd+1, value ',schedule_slat_angle,
+C     &       ' for ctl loop ',icf
+
+            else
+C            Error ... !!
+             write(outs,'(a,a,i2,a,i2,a)')
+     &       'CFC_control: ICFCCTL does not point to a valid temporal',
+     &       ' item for zone ',iact2,', CFC type',iact3,'.'
+             if(dll)then
+               dllsubr='CFC_control'
+               dllmesg=outs
+               ier=2
+               return
+             else
+               call edisp(iuout,outs)
+               call epwait
+               call epagend
+               STOP
+             endif
+            endif
+
+          endif ! check iact1
 
 C -------------------------------------------------------------------
 C Set shade ON/OFF state or slat angle based on sensor and control
@@ -3232,6 +3297,10 @@ C Perform actual control of shade ON/OFF and slat angle here
           ELSEIF(ictype.eq.7)then                   ! no sensor, schedule only
             i_shd(iact2,iact3) = ischedule_shdstateONorOFF
             vb_phiNew(iact2,iact3) = schedule_slat_angle
+
+          ELSEIF(ictype.eq.9)then                   ! no sensor, tdf
+            i_shd(iact2,iact3) = ischedule_shdstateONorOFF
+            vb_phiNew(iact2,iact3) = schedule_slat_angle
           ENDIF    
 
 C Check that new slat angle is within correct range:
@@ -3242,7 +3311,7 @@ C     -90 (deg.) < vb_phiNew < 90 (deg.)
           if(vb_phiNew(icomp,icfctp).lt.-89.9.or.vb_phiNew(icomp,icfctp)
      &      .gt.89.9)then
 C Send warning error message and overwrite angle to 89.9 deg.
-            write(outs,'(a,a,i2,a,i2,a)')
+            write(outs,'(a,a,i2,a,i3,a)')
      &        'WARNING: Calculated slat angle for CFC',
      &        ' type ',icfctp, 'in zone ',icomp, ' is out of range.'
             CALL EDISP(IUOUT,outs)
@@ -3281,11 +3350,7 @@ C.........Switch for zone name output here
             write (cZone_Chars,'(A)') zname(iZone)(1:lnzname(iZone))
           else
 C...........Pad zone index to 'XX'
-            if ( iZone .gt. 9 ) then
-              write (cZone_Chars,'(A,I2)') 'zone_',iZone
-            else
-              write (cZone_Chars,'(A,I1)') 'zone_0',iZone
-            endif
+            write (cZone_Chars,'(A,I3.3)') 'zone_',iZone
           endif ! use_zonenames
 
           DO 44 j = 1, ncfc(iZone)                  ! Examine each type of CFC in zone.
@@ -3326,7 +3391,7 @@ C Calculates direct and diffuse components of solar radiation incident
 C on an external surface (including shading from obstructions).
 C
 C ********************************************************************
-      subroutine get_incident_solrad(icomp,isur,solrad_dir, solrad_diff)
+      subroutine get_incident_solrad(icomp,isur,solrad_dir,solrad_diff)
 #include "building.h"    
       
       COMMON/SUNPOS/SAZI,SALT,ISUNUP

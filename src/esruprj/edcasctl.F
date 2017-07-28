@@ -359,12 +359,14 @@ C Daylight coef method (5).
         call forceflush()
       endif
 
-C In case of user defined daylight factor.
+C In case of user defined daylight factor. At this point still
+C treats CFC and CFC2 with opaque surfaces.
       if(IDFST(ICOMP,N).EQ.2)then
         m=m+1   
         write(ITEM(m),'(A)') '  Source surface & DF(s) per photocell:'
         do 44 ii = 1,NSUR
-          if(SOTF(II)(1:4).NE.'OPAQ'.AND.SOTF(II)(1:4).NE.'CFC ')THEN
+          if(SOTF(II)(1:4).NE.'OPAQ'.AND.SOTF(II)(1:4).NE.'CFC '.AND.
+     &       SOTF(II)(1:4).NE.'CFC2')THEN
             m=m+1
             CALL EMKEY(m,KEY,IER)
             write(sn,'(a)') sname(icomp,II)
@@ -880,10 +882,12 @@ C Select the calculation type.
         elseif(irt.eq.2)then
           IDFST(ICOMP,N)=2
           ldcoef=.false.
-C Loop through all surfaces and find out number of TMCs:
+C Loop through all surfaces and find out number of TMCs: It
+C does not (yet) count CFC and CFC2 as transparent.
           ICOUNT=0
           do i = 1, NSUR
-            if(SOTF(I)(1:4).NE.'OPAQ'.AND.SOTF(I)(1:4).NE.'CFC ')THEN
+            if(SOTF(I)(1:4).NE.'OPAQ'.AND.SOTF(I)(1:4).NE.'CFC '.AND.
+     &         SOTF(I)(1:4).NE.'CFC2')THEN
               ICOUNT=ICOUNT+1              
             endif
           enddo   ! of I

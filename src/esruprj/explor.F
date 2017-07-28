@@ -875,6 +875,7 @@ C IPS is the timestep to insert data at.
       CHARACTER IMPT*42,KEY*1,OUTSTR*124,WORD*20,OUTS*124
       CHARACTER SALT*16
       CHARACTER DFILE*96,tfile*96,msgl2*48
+      CHARACTER OUTSTR1K*1000
       logical warncas,XST
       integer IMPTL,INODA ! max items and current menu item
 
@@ -1003,7 +1004,7 @@ C Check that columns have been specified.
  85     continue
         N=0
    70   N=N+1
-        CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'import raw data',IER)
+        CALL STRIPC1K(IUNIT,OUTSTR1K,0,ND,1,'import raw data',IER)
 
 C If the user has specified that data import should start at the
 C line imstl of the column data file. If we are not there yet
@@ -1023,7 +1024,7 @@ C the line of data we want.
           ELSEIF(IMSTL.GT.1.AND.IP.EQ.1)THEN
             CALL EDISP(IUOUT,' ')
           ELSE
-            CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'import data',IER)
+            CALL STRIPC1K(IUNIT,OUTSTR1K,0,ND,1,'import data',IER)
           ENDIF
           IF(IER.NE.0)GOTO 103
 
@@ -1046,7 +1047,7 @@ C import file. Parse the import line until the column is loacted.
 C Read value, associate with proper column and check if it changes
 C the minimum/maximum of that column.
                   VAL=0.
-                  CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',
+                  CALL EGETWR(OUTSTR1K,K,VAL,0.,0.,'-','imp data',
      &                        IER)
                   TABU(ITCOL(IFOC,J))=VAL
                   if(TABU(ITCOL(IFOC,J)).lt.TABUMN(ITCOL(IFOC,J)))
@@ -1054,7 +1055,7 @@ C the minimum/maximum of that column.
                   if(TABU(ITCOL(IFOC,J)).gt.TABUMX(ITCOL(IFOC,J)))
      &              TABUMX(ITCOL(IFOC,J))=TABU(ITCOL(IFOC,J))
                 ELSE
-                  CALL EGETW(OUTSTR,K,WORD,'-','skip',IFLAG)
+                  CALL EGETW(OUTSTR1K,K,WORD,'-','skip',IFLAG)
                 ENDIF
   33          CONTINUE
               IF(ITRC.GT.1)THEN
@@ -1067,7 +1068,7 @@ C Text attribute field. Last word read is appropriate one. Compare it
 C with allowable strings and then store the matching index.
               call exgmat(ia,SALT,ier)
               DO 34 N1=1,IMSTC(J)
-                CALL EGETW(OUTSTR,K,WORD,'-','skip',IFLAG)
+                CALL EGETW(OUTSTR1K,K,WORD,'-','skip',IFLAG)
   34          CONTINUE
               IF(WORD(1:16).EQ.SALT(1)(1:16))THEN
                 TABU(ITCOL(IFOC,J))=1.0
@@ -1095,7 +1096,7 @@ C import file. Parse the import line until the column is located.
               DO 36 N1=1,IMSTC(J)
                 IF(N1.EQ.IMSTC(J))THEN
                   IVAL=0
-                  CALL EGETWI(OUTSTR,K,IVAL,0,0,'-','imp data',
+                  CALL EGETWI(OUTSTR1K,K,IVAL,0,0,'-','imp data',
      &                        IER)
                   TABU(ITCOL(IFOC,J))=REAL(IVAL)
                   if(TABU(ITCOL(IFOC,J)).lt.TABUMN(ITCOL(IFOC,J)))
@@ -1103,7 +1104,7 @@ C import file. Parse the import line until the column is located.
                   if(TABU(ITCOL(IFOC,J)).gt.TABUMX(ITCOL(IFOC,J)))
      &              TABUMX(ITCOL(IFOC,J))=TABU(ITCOL(IFOC,J))
                 ELSE
-                  CALL EGETW(OUTSTR,K,WORD,'-','skip',IFLAG)
+                  CALL EGETW(OUTSTR1K,K,WORD,'-','skip',IFLAG)
                 ENDIF
   36          CONTINUE
               IF(ITRC.GT.1)THEN
@@ -1136,11 +1137,11 @@ C Actual read of ASCII import file.  If it is an older timestep
 C casual gain file provide a warning to the user.
         warncas=.false.
         K=0
-    7   READ(IUNIT,10,IOSTAT=ISTAT,END=102)OUTSTR
-   10   FORMAT(A124)
-        if(k.eq.0.and.OUTSTR(1:14).eq.'* CASUAL GAINS')warncas=.true.
+    7   READ(IUNIT,10,IOSTAT=ISTAT,END=102)OUTSTR1K
+   10   FORMAT(A1000)
+        if(k.eq.0.and.OUTSTR1K(1:14).eq.'* CASUAL GAINS')warncas=.true.
         K=K+1
-        CALL  EDISP(IUOUT,OUTSTR)
+        CALL  EDISP248(IUOUT,OUTSTR1K,144)
         IF(K.LT.8)GOTO 7
         CALL EDISP(IUOUT,'  .......  ')
         CALL EDISP(IUOUT,' ')

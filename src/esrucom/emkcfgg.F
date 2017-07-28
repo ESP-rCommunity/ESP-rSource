@@ -18,8 +18,8 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C emkcfg.F includes the following:
-C  EMKCFG  Creates a system configuration file.
+C emkcfgg.F includes the following:
+C  EMKCFGG  Creates a system configuration file.
 C  CONXINF Returns inter-connection descr in CXSTR (copy)
 C  ckcurmatch Scan and report current connection mis-matches.
 
@@ -52,6 +52,7 @@ C ICLIM,LCLIM (for climate file)
 #include "schedule.h"
 #include "plant.h"
 #include "power.h"
+#include "FMI.h"
       INTEGER, PARAMETER :: MSTMC=20
       
       integer lnblnk  ! function definition
@@ -165,9 +166,6 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
       INTEGER :: idwe1,idwe2
 
-C Uncertainty analysis common.
-      COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
-
 C Anchor data in model.h.
 
 C Simulation parameter presets.
@@ -248,10 +246,10 @@ C Generic databases from esprdbfile.h.
       character GTGEOM*72,LCFD*72,DCNN*72
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,indxcmt*24,DBSN*15
       character*10 wkd1, wkd2
-      character LUALF*72,LCNG*15,LLOC*15,lipvdatf*72,act*1
+      character lipvdatf*72,act*1
       CHARACTER outs*124
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,spfdescr*8,ltmp*72,louts*144
+      character selres*72,spfdescr*30,ltmp*72,louts*144
       character bidirfile*72,bidirname*12
       character calename*32,calentag*12,calendayname*32,loutc*96
       CHARACTER CNTMFIL*72,CONTMNAM*12,CNTMDESC*124
@@ -722,8 +720,8 @@ C Simulation parameter presets.
      &     isbnstep,ispnstep,issave,isavgh
         do 333 iss=1,nsset
           WRITE(IFCFG,'(4I4,2x,A,A)',IOSTAT=IOS,ERR=2)isstday(iss),
-     &      isstmon(iss),isfnday(iss),isfnmon(iss),spfdescr(iss),
-     &      ' # period & name'
+     &      isstmon(iss),isfnday(iss),isfnmon(iss),
+     &      spfdescr(iss)(1:lnblnk(spfdescr(iss))),' # period & name'
           if(INDCFG.ne.2)WRITE(IFCFG,'(A,A)',IOSTAT=IOS,ERR=2)'*sblr ',
      &       sblres(iss)(1:lnblnk(sblres(iss)))
           if(IAIRN.ge.1)WRITE(IFCFG,'(A,A)',IOSTAT=IOS,ERR=2)'*sflr ',
@@ -979,6 +977,14 @@ C Plant network information.
         WRITE(IFCFG,5007,IOSTAT=IOS,ERR=2)LPNF(:lnblnk(LPNF))
  5007   FORMAT(A,'       # plant network description')
       endif
+
+C <FMI>
+C If FMI is active, write the tag and spec file name.
+      if (is_FMU.and.FMISFL.ne.'UNKNOWN') then
+        write(IFCFG,'(a,a,a)',IOSTAT=IOS,ERR=2)
+     &    '*FMI ',FMISFL(1:lnblnk(FMISFL)),'  # FMI specification file'
+      endif
+C </FMI>
 
  9028 CALL  ERPFREE(IFCFG,IOS)
       RETURN

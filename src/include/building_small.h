@@ -5,7 +5,8 @@ C 82 zone 62 surface version 08.2011 updated
 C 82 zone 80 surface version 10.2011 updated
 C 3300 surfaces for MCON 3.2012 updated
 C 8 air gaps MGP and 16 layers ME 7.2012 updated
-C Smaller version jwh may 2013
+C Smaller version jwh may 2013 suitable for constrained kit, does not
+C support all exemplars.
 
 C Type declarations.
       integer MCOM,MCON,MTV,MV,ME,MGP,MN,MP,MDY,MT,MA,MC,MBP,MTMS
@@ -19,7 +20,7 @@ C Type declarations.
       integer MNRS,MNFA,MROW,MCOL,MLAY,MLEV,MGRID,MMTR,MBND,MSNOD
       integer MMAT,MIPVM,MIPVA,MSPS,MDTY,MGTY,MGPER
       integer MCNDV,MCNDC,MPICK,MVAR,MIMG
-      integer MCFC
+      integer MCFC,MSPMRES
 
 C Geometry.
       PARAMETER (MCOM=32)      !- Zones.
@@ -63,6 +64,7 @@ C Variable thermo-physical properties.
 C Special materials.
       PARAMETER (MSPMNOD=40)   !- Special materials.
       PARAMETER (MSPMDAT=21)   !- Defining data items.
+      PARAMETER (MSPMRES=12)   !- Output data items
 
 C Casual gains.
       PARAMETER (MCT=7,MGTY=7) !- Casual gain types.
@@ -110,13 +112,14 @@ C Time-step control.
 C Results analysis.
       PARAMETER (MSPS=10)       !- Simulation parameter sets.
       PARAMETER (MNFA=4)        !- Factorial analyses.
-      PARAMETER (MNRS=2**MNFA)  !- Result sets (set to 100 for sensitivity analysis).
+C      PARAMETER (MNRS=2**MNFA) !- Result sets (set to 100 for sensitivity analysis).
+      PARAMETER (MNRS=50)       !- Result sets (set to 100 for sensitivity analysis).
       PARAMETER (MIPVA=MSPS)    !- IPV assessments.
       PARAMETER (MIPVM=12)      !- IPV metrics.
-      PARAMETER (MZS=90)        !- Number of items to report in res (biggest of MCOM or MS).
-      PARAMETER (MZRL=MCOM+12)  !- Fields in a zone results library record. It should
-                                !  be largest of (36 for file names or MCON for zones
-                                !  or MS + 12 or MGP * 5). See reslib.F for logic.
+      PARAMETER (MZS=80)        !- Number of items to report in res (biggest of MCOM or MS).
+      PARAMETER (MZRL=MS+12)    !- Fields in a zone results library record. It should
+                                !  be largest of (40 for file names or MCON+12 for zones
+                                !  or MS+12 or MGP * 5). See reslib.F for logic.
 C Mathematical model.
       PARAMETER (MEQ=MS+1)      !- Equations.
       PARAMETER (MTR=MS+4)      !- Equation terms.

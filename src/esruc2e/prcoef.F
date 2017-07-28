@@ -5,7 +5,7 @@ C CPVEWI
 C CPVELE
 C CPROOF
 
-	SUBROUTINE CPVEWI (VeEXP,PAD,RbH,FAR,SAR,AnbW,ZH,XL,CP,*,KEY)
+      SUBROUTINE CPVEWI (VeEXP,PAD,RbH,FAR,SAR,AnbW,ZH,XL,CP,*,KEY)
 c************************************************************************
 c Purpose: this routine calculates the Surface Wind Pressure Coefficient
 c          (CP) for any facade element of a windward wall.

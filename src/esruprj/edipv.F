@@ -1688,7 +1688,7 @@ C Simulation parameter sets.
 
       character act*6,lipvdatf*72,cr*32,tag*3
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,spfdescr*8
+      character selres*72,spfdescr*30
       CHARACTER LAPROB*72
       logical MSTROK,MSTRZN
 

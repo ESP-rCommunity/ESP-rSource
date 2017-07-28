@@ -92,7 +92,7 @@ C Simulation parameter presets.
       CHARACTER NAM*72,outs*124
       character CLMLOC*30
       character ctldoc*248,LCTLF*72
-      character ZSDES*28,ZSDESC*20,ZSDESS*16,mlc_name*12
+      character ZSDES*28,ZSDESC*20,ZSDESS*16,mlc_name*32
       character dstmp*24
       CHARACTER LAPROB*72
 
@@ -614,8 +614,8 @@ C Scan for materials.
       DO 20 INO=1,NMLC
 
 C Loop through each construction in the database, check if it
-C is used in the model and if so proceed to check.
-        mlc_name=mlcname(ino)(1:12)
+C is used in the model and if so proceed to check. Currently ...
+        mlc_name=mlcname(ino)
         call mlcrefs(mlc_name,areamlc,tareamlc,foundmlc)
         if(.NOT.foundmlc) goto 20
 
@@ -677,8 +677,13 @@ C If not already known add it to the list.
               iij=iij+1
               iprndx(iij)=IPRMAT(INO,IL)
               thkiprndx(iij)=DTHK(ino,IL)
-              deniprndx(iij)=matdbden(iprndx(iij))
-              sphtiprndx(iij)=matdbsht(iprndx(iij))
+              if(iprndx(iij).ne.0)then
+                deniprndx(iij)=matdbden(iprndx(iij))
+                sphtiprndx(iij)=matdbsht(iprndx(iij))
+              else
+                deniprndx(iij)=0.0
+                sphtiprndx(iij)=0.0
+              endif
               if(opt(1:6).eq.'OPAQUE')then
                 iglassndx(iij)=0
                 optndx(iij)=OPT
@@ -719,8 +724,13 @@ C First material (which will never be air).
             iij=iij+1
             iprndx(iij)=IPRMAT(INO,IL)
             thkiprndx(iij)=DTHK(ino,IL)
-            deniprndx(iij)=matdbden(iprndx(iij))
-            sphtiprndx(iij)=matdbsht(iprndx(iij))
+            if(iprndx(iij).ne.0)then
+              deniprndx(iij)=matdbden(iprndx(iij))
+              sphtiprndx(iij)=matdbsht(iprndx(iij))
+            else
+              deniprndx(iij)=0.0
+              sphtiprndx(iij)=0.0
+            endif
             if(opt(1:6).eq.'OPAQUE')then
               iglassndx(iij)=0
               optndx(iij)=OPT
@@ -877,7 +887,7 @@ C and assign iconmatpointer for each layer.
 
 C Loop through each construction in the database, check if it
 C is used in the model and if so proceed to check.
-        mlc_name=mlcname(ino)(1:12)
+        mlc_name=mlcname(ino)
         call mlcrefs(mlc_name,areamlc,tareamlc,foundmlc)
         if(.NOT.foundmlc) goto 200
 
@@ -940,7 +950,7 @@ C Now for each construction.
       do 36 ino = 1,NMLC
         cxm=0.0
         mlckg=0.0
-        mlc_name=mlcname(ino)(1:12)
+        mlc_name=mlcname(ino)
         call mlcrefs(mlc_name,areamlc,tareamlc,foundmlc)
         if(.NOT.foundmlc) goto 36
 
@@ -1640,6 +1650,8 @@ C Further logic required if there is more than one radiant/convective split.
      &    '  !- Surface Name/Angle Factor List Name'
         WRITE(ioout,'(3a)',iostat=ios,err=5) indent,com,
      &    '  !- Work Efficiency Schedule Name (0.0-1.0,real)'
+
+C << in 8.2 new tag ClothingInsulationSchedule needs to be added >>
         WRITE(ioout,'(3a)',iostat=ios,err=5) indent,com,
      &    '  !- Clothing Insulation Schedule Name (real)'
         WRITE(ioout,'(3a)',iostat=ios,err=5) indent,com,
@@ -1901,13 +1913,16 @@ C Generate this entity.
 
 C If a surface is transparent, it must have a non-blank parent
 C and it must be a true child surface, if not ask the user.
+C Does not really know what to do with CFC and CFC2 so treats
+C as opaque.
           if(SSOTF(icc)(1:4).NE.'OPAQ'.and.
-     &       SSOTF(icc)(1:4).NE.'CFC ')then
+     &       SSOTF(icc)(1:4).NE.'CFC '.and.
+     &       SSOTF(icc)(1:4).NE.'CFC2')then
             if(truechild(icc))then
               continue    ! surface is a true child so process
             else
               SSPARENT(icc)=' '
-              write(outs,'(3a,i2,a)') 'Skipping surface ',
+              write(outs,'(3a)') 'Skipping surface ',
      &          ZSDES(1:lnblnk(ZSDES)),
      &          ' is transparent and is NOT in a child location.'
               WRITE(ioout,'(a)') ' '
@@ -1920,7 +1935,7 @@ C If ESP-r thinks there is no parent confirm with user.
             if(SSPARENT(icc)(1:2).eq.'  '.or.
      &         SSPARENT(icc)(1:2).eq.'- ')then
               call zsid(mz,is,ZSDES,ZSDESC,ZSDESS)
-              write(outs,'(3a,i2,a)')'Surface ',ZSDES(1:lnblnk(ZSDES)),
+              write(outs,'(3a)')'Surface ',ZSDES(1:lnblnk(ZSDES)),
      &          ' is transparent without parent surface.'
               call edisp(iuout,outs)
               dok=.false.
@@ -1938,7 +1953,7 @@ C If ESP-r thinks there is no parent confirm with user.
                   SSPARENT(icc)=ssname(ibinval)
                 else
                   SSPARENT(icc)=' '
-                  write(outs,'(3a,i2,a)') 'Skipping surface ',
+                  write(outs,'(3a)') 'Skipping surface ',
      &              ZSDES(1:lnblnk(ZSDES)),
      &              ' which is transparent WITHOUT a parent.'
                   WRITE(ioout,'(a)') ' '
@@ -1948,7 +1963,7 @@ C If ESP-r thinks there is no parent confirm with user.
                 endif
               else
                 SSPARENT(icc)=' '
-                write(outs,'(3a,i2,a)') 'Skipping surface ',
+                write(outs,'(3a)') 'Skipping surface ',
      &            ZSDES(1:lnblnk(ZSDES)),
      &            ' which is transparent WITHOUT a parent.'
                 WRITE(ioout,'(a)') ' '
@@ -1961,6 +1976,8 @@ C If ESP-r thinks there is no parent confirm with user.
 
 C The initial tag is dependant on whether the surface is
 C opaque or transparent and whether it is adiabetic or similar.
+C At this point does not quite know what to do with CFC and CFC2
+C so treats with opaque.
           treatasmass=.false.  ! initial assumption
           iccsimilar=0         ! connection in case of similar
 
@@ -1968,7 +1985,8 @@ C  << this logic to be updated >>
           WRITE(ioout,'(a)') ' '
 
           if(SSOTF(icc)(1:4).NE.'OPAQ'.AND.
-     &      SSOTF(icc)(1:4).NE.'CFC ')then
+     &       SSOTF(icc)(1:4).NE.'CFC '.AND.
+     &       SSOTF(icc)(1:4).NE.'CFC2')then
 
 C A transparent surface.
             WRITE(ioout,'(2a)',iostat=ios,err=6) 
@@ -2067,13 +2085,15 @@ C and site exposure. An index of 8 signals user defined values.
             endif
           endif      
 
-C Generate a unique name (zone + surface).
+C Generate a unique name (zone + surface). At this point still treats
+C CFC and CFC2 as opaque surfaces.
           call zsid(mz,is,ZSDES,ZSDESC,ZSDESS)
           WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &      ZSDES(1:lnblnk(ZSDES)),com,'   !- Name'
 
           if(SSOTF(icc)(1:4).NE.'OPAQ'.AND.
-     &      SSOTF(icc)(1:4).NE.'CFC ')then
+     &       SSOTF(icc)(1:4).NE.'CFC '.AND.
+     &       SSOTF(icc)(1:4).NE.'CFC2')then
 
 C We have a transparent surface.
             WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'Window',com,
@@ -2460,10 +2480,12 @@ C From version 4.0 onwards different syntax.
       endif
 
 C Include directive for EnergyPlus to dump out additional diagnotics
-C for geometry. 
+C for geometry and do not mirror detached shading objects (OBS). 
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
       WRITE(ioout,'(5a)',iostat=ios,err=2) '  Output:Diagnostics',
      &  com,'DisplayExtraWarnings',sim,'   !- Extra diagnostics'
+      WRITE(ioout,'(5a)',iostat=ios,err=2) '  Output:Diagnostics',
+     &  com,'DoNotMirrorDetachedShading',sim,'   !- Not needed for OBS'
 
 C Include minimal meters: ambient db and zone air temperatures.
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '

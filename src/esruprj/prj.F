@@ -37,6 +37,7 @@ C ********** MAIN
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
+C UA1 in uncertainty.h
 #include "uncertainty.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -130,9 +131,6 @@ C IPV description via ipvdata.h.
       common/gzonpik/izgfoc,nzg,nznog(mcom)
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
-C Uncertainty.
-      COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
-
 C IDST tool commands
       common/idsta/CMDCFG,CMDCLM,CMDCLMN,CMDNOTE,CMDRES,CMDLBL(10),
      &             CMDLNAM(10)
@@ -145,6 +143,15 @@ C Name of current application
       common/APPNAME/cAppName
       character cAppName*12
 
+C Tollerance for surface matching.
+      real ANGCC  ! angle between surfaces tolerance
+      real CACC   ! tolerance between vertices
+      real DACC   ! angle tolerance along line
+      real COGCC  ! tolerance between surface COG
+      real SNACC  ! tolerance between surface areas
+      integer IACC ! number of matching corners outside dist tolerance
+      common/matching/ANGCC,CACC,DACC,COGCC,SNACC,IACC
+
       integer iverb     ! verbosity passed on command line
       logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,MODSIT,CFCDBOK
       logical browse,confirm,XST,ckpath
@@ -152,7 +159,6 @@ C Name of current application
       logical itisanexemplar  ! passed to newprb to ensure browse mode.
 
       character dstmp*24,uname*24
-      character LUALF*72,LCNG*15,LLOC*15
       character LTMP*72
       character inf*144,inz*16,inzone*16,act*16,inact*16,LCMDFL*144
       character outs*124,outstr*124
@@ -275,6 +281,9 @@ C that the default common data files will be defined explicitly).
       ipathapres=0; ipathoptdb=0; ipathpcdb=0; ipathprodb=0
       ipathmat=0; ipathmul=0; ipathclim=0; ipathsbem=0; ipathmsc=0
       ipathmould=0
+
+C Set initial values for surface-to-surface matching.
+      ANGCC=10.0; CACC=0.025; DACC=5.0; COGCC=1.0; SNACC=0.5; IACC=0 
       
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -549,7 +558,7 @@ C Write header of the journal file and then close.
 C Scan the defaults file for default system configuration file.
 C Make temporary use of file unit IFIL+5.  Note: escdef must come
 C after scan of .esprc file.
-      call escdef(IFIL+5,IER)
+      call escdef(IFIL+5,'-',IER)
 
 C Debug.
 C      write(6,*) 'def mould is ',dmdbnam(1:lnblnk(dmdbnam))
@@ -651,6 +660,34 @@ C and if so do what it says.
             write(longtfile,'(a)') LCMDFL(1:lnblnk(LCMDFL))
             IUNIT=IFIL+1
             call silentread(iunit,longtfile,'-',theprimedirective,ier)
+            call edisp(iuout,theprimedirective)
+            call edisp(iuout,modeltitle)
+            call edisp248(iuout,modeldocblock,80)
+            if(theprimedirective(1:3).eq.'new')then
+              call usrmsg('Processing of silent file complete.',
+     &          'Exiting from project manager','P')
+
+C Clear allocatable arrays
+              CALL DeallocateAllArrays
+              CALL EPAGEND
+              STOP
+            else
+              goto 3
+            endif
+          endif
+        endif
+      elseif(inact(1:13).eq.'silentxmlread')then
+
+C Check to see if the -file parameter is a high level silent input file
+C and if so do what it says.
+        if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
+          INQUIRE (FILE=LCMDFL,EXIST=XST)
+          if(XST)then
+            call clrprb  ! clear the model common blocks prior to scan
+            write(longtfile,'(a)') LCMDFL(1:lnblnk(LCMDFL))
+            IUNIT=IFIL+1
+            call silentxmlread(iunit,longtfile,'-',theprimedirective,
+     &        ier)
             call edisp(iuout,theprimedirective)
             call edisp(iuout,modeltitle)
             call edisp248(iuout,modeldocblock,80)
@@ -882,12 +919,16 @@ C Scan for matching MLC for surfaces.
 C Find the index of the MLC which matches each surface.
             DO 9994 I=1,NZSUR(icomp)
               icn1=izstocn(icomp,i)
-              ssmlcindex(icn1)=0  ! assume no matching MLC          
-              do 5 ii=1,nmlc
-                if(SSMLCN(icn1)(1:12).eq.mlcname(ii)(1:12)) then
-                  ssmlcindex(icn1)=ii   ! remember MLC index  
-                endif
-  5           continue
+              if(icn1.gt.0)then
+                ssmlcindex(icn1)=0  ! assume no matching MLC          
+                lnssmlc=lnblnk(SSMLCN(icn1))
+                do 5 ii=1,nmlc
+                  if(SSMLCN(icn1)(1:lnssmlc).eq.
+     &               mlcname(ii)(1:lnmlcname(ii)))then
+                    ssmlcindex(icn1)=ii   ! remember MLC index  
+                  endif
+  5             continue
+              endif
  9994       continue
  30       continue
 
@@ -1542,6 +1583,7 @@ C simula commissions technical assessments and analysis.
       subroutine simula(ier)
 #include "building.h"
 #include "model.h"
+#include "uncertainty.h"
 #include "plant.h"
 #include "power.h"
 #include "sbem.h"
@@ -1586,21 +1628,21 @@ C ispnstep (plant timesteps/hr), issave (results save level).
 
       dimension ITEMS(25)
 
-      character doit*248,tmode*8,ITEMS*34,key*1
+      character doit*248,tmode*8,ITEMS*42,key*1
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spflnam*72,longtfile*144,longtfiledos*144
       CHARACTER*72 LAPROB,lipvdatf
-      character cr*32,spfdescr*8,ipvaction*3
+      character cr*32,spfdescr*30,ipvaction*3
 
 C dd is character array for selecting simulation parameter sets.
-      character dd(MSPS+3)*33,de*8,aut*12
+      character dd(MSPS+3)*55,de*30,aut*12
       character t72*72
 
       character brw*11,outs*124
       character descra*7,descrb*7,descrst*10,descrfn*10
 
       logical DOK,OK,MSTROK,MSTRZN,XST,modparms
-      logical browse,concat,hri,defok,unixok
+      logical browse,concat,hri,defok,unixok,LIBXST
       logical mlcok,bndryok,bndrysxc,confok,geofok,oprfok,prob
       logical tmcok,shdok
       integer iappwpc ! application height as % of nominal size
@@ -1659,7 +1701,8 @@ C constructions are known.
       else
         write(ITEMS(1),'(a,i2,a,i2,a)')'a simulation presets (',isset,
      &    ' of',nsset,')'
-        write(ITEMS(2),'(a,a8)')      'b set name: ',spfdescr(isset)
+        write(ITEMS(2),'(a,a)')       'b set name: ',spfdescr(isset)
+     &                                   (1:lnblnk(spfdescr(isset)))
         write(ITEMS(3),'(a,i4)')      'c start-up days:',isstup
         if(isbnstep.le.1)then
           write(ITEMS(4),'(a,i2)')    'd zone timestep/h:',isbnstep
@@ -1745,7 +1788,7 @@ C Display the simulation period.
       ITEMS(M+5)   ='u NCM compliance checking        '
       ITEMS(M+6)   ='  ______________________________ '
       IF(ITRC.EQ.0)THEN
-        ITEMS(m+7) = 'v feedback >> silent              '
+        ITEMS(m+7) = 'v feedback >>               '
       ELSEIF(ITRC.EQ.1)THEN
         ITEMS(m+7) = 'v feedback >> summary             '
       ELSEIF(ITRC.EQ.2)THEN
@@ -1791,6 +1834,10 @@ C Toggle trace level.
       elseif(INO.EQ.MITEM-8)then
 
 C Invoke simulator for the case of a simulation parameter set.
+C If uncertanties included in model tell user to use silent mode.
+        INQUIRE (FILE=LUALF,EXIST=LIBXST)
+        if(LIBXST) call edisp(iuout,
+     &     'Use run silent for uncertainty assessments.')
         helptopic='prj_simulation_menu'
         call gethelptext(helpinsub,helptopic,nbhelp)
         if(nsset.gt.0)then
@@ -1861,11 +1908,12 @@ C          write(6,*) 'iappw,iappwpc',iappw,iappwpc
             write(doit,'(3a,3i4,7a)') 'bps -mode ',tmode,
      &        ' -s ',iappwpc,iappx+15,iappy+50,' -file ',
      &        longtfile(1:lnblnk(longtfile)),brw,' -p ',
-     &        spfdescr(isset),aut,' &'
+     &        spfdescr(isset)(1:lnblnk(spfdescr(isset))),aut,' &'
           else
             write(doit,'(9a)') 'bps -mode ',tmode,
      &        ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
-     &        brw,' -p ',spfdescr(isset),aut,' &'
+     &        brw,' -p ',spfdescr(isset)(1:lnblnk(spfdescr(isset))),aut,
+     &        ' &'
           endif
 
 C Debug.
@@ -1875,6 +1923,8 @@ C Debug.
         else
 
 C Invoke simulator for the case without a simulation parameter set.
+          if(NIACT.gt.0) call edisp(iuout,
+     &      'Use run silent for uncertainty assessments.')
           call tstamp('>','PRJ: beginning simulation')
           doit = ' '
           call terminalmode(childterminal,tmode)
@@ -2114,37 +2164,24 @@ C There may be ipv data held in the configuration file.
 C Setup one parameter set or several sets to match IPV description.
         if(ID.eq.1.or.ID.eq.3)then
           if(INDCFG.eq.2)then
-            nsset=1
-            isset=1
-            isstup=0
-            isbnstep=1
-            ispnstep=10
-            issave=4
-            isavgh=0
+            nsset=1; isset=1; isstup=0
+            isbnstep=1; ispnstep=10; issave=4; isavgh=0
           else
             call scntcnst(TDM,istd,TCM,ISTC)
-            nsset=1
-            isset=1
+            nsset=1; isset=1
             if(isstup.eq.0)isstup=ITCNST
-            isbnstep=1
-            ispnstep=10
-            issave=4
-            isavgh=0
+            isbnstep=1; ispnstep=10; issave=4; isavgh=0
           endif
           if(ID.eq.1)then
             de='default'
-            CALL EASKS(de,'Name for set?',' ',8,'win','set name',
+            CALL EASKS(de,'Name for set?',' ',30,'win','set name',
      &        IER,nbhelp)
-            write(spfdescr(isset),'(a8)')de(1:8)
+            write(spfdescr(isset),'(a30)')de(1:30)
             lde=lnblnk(spfdescr(isset))
-            spfdescr(2)='-'
-            spfdescr(3)='-'
-            spfdescr(4)='-'
-            spfdescr(5)='-'
-            isstday(isset)=9
-            isstmon(isset)=1
-            isfnday(isset)=15
-            isfnmon(isset)=1
+            spfdescr(2)='-'; spfdescr(3)='-'
+            spfdescr(4)='-'; spfdescr(5)='-'
+            isstday(isset)=9; isstmon(isset)=1
+            isfnday(isset)=15; isfnmon(isset)=1
             cr=cfgroot
             lr=lnblnk(cfgroot)
             if(INDCFG.ne.2)then
@@ -2196,7 +2233,8 @@ C Select an existing set, create a new one or cancel.
           CALL EDAY(isfnday(ii),isfnmon(ii),ijdfinish)
           call stdate(iyear,ijdfinish,descrb,descrfn)
           CALL EMKEY(ii,KEY,IER)
-          write(dd(ii),'(7a)') key,' ',spfdescr(ii),' ',descrst,'-',
+          write(dd(ii),'(7a)') key,' ',spfdescr(ii)
+     &      (1:lnblnk(spfdescr(ii))),' ',descrst,'-',
      &      descrfn
  60     continue
         if (nsset.lt.MSPS) then
@@ -2226,16 +2264,14 @@ C Select an existing set, create a new one or cancel.
 
 C It is possible to add another set so ask user and set file names.
           de='win'
-          CALL EASKS(de,' ','Name for set?',8,'win','set name',
+          CALL EASKS(de,' ','Name for set?',30,'win','set name',
      &      IER,nbhelp)
           nsset=nsset+1
           isset=nsset
-          write(spfdescr(isset),'(a8)')de(1:8)
+          write(spfdescr(isset),'(a30)')de(1:30)
           lde=lnblnk(spfdescr(isset))
-          isstday(isset)=9
-          isstmon(isset)=1
-          isfnday(isset)=15
-          isfnmon(isset)=1
+          isstday(isset)=9; isstmon(isset)=1
+          isfnday(isset)=15; isfnmon(isset)=1
           if(INDCFG.ne.2)then
             WRITE(sblres(isset),'(3a)')cr(1:lr),de(1:lde),'.res'
           else
@@ -2278,9 +2314,9 @@ C << IPV can co-exist with lots of parameter sets.
           call usrmsg('IPV set name is pre-defined,','.','W')
         else
           de=spfdescr(isset)
-          CALL EASKS(de,' ','Name for set?',8,spfdescr(isset),
+          CALL EASKS(de,' ','Name for set?',30,spfdescr(isset),
      &               'set name',IER,nbhelp)
-          write(spfdescr(isset),'(a8)')de(1:8)
+          write(spfdescr(isset),'(a30)')de(1:30)
           modparms=.true.
         endif
       elseif(MITEM.eq.25.and.INO.EQ.3)then
@@ -3244,6 +3280,8 @@ C  shdok checks if shading files are readable.
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive the modules.
       common/OUTIN/IUOUT,IUIN
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
       common/FILEP/IFIL
       
       integer ncomp,ncon
@@ -3258,12 +3296,16 @@ C to include the path and create a string to drive the modules.
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
 
       character CXSTR*78
+      character shdafile*72
       CHARACTER*72 LS
       character ZSDES*28,ZSDESC*20,ZSDESS*16
+      CHARACTER ZN*12,longtfile*144,longtfiledos*144
+      character DOIT*248,outs*248
 
-      logical XST,asked,dok,problem
+      logical XST,XSTA,asked,dok,problem
       logical mlcok,bndryok,bndrysxc,confok,geofok,oprfok,prob,dup
       logical tmcok,shdok
+      logical concat,unixok
       integer icple,iscple  ! coupled zone and surface for tmc check.
       integer itmc1,itmc2   ! non-zero if surface a tmc
 
@@ -3280,6 +3322,9 @@ C For help messages
 
       IUO=IFIL+1
       if(nsset.gt.0)isset=1
+
+C Check if Unix-based or DOS based.
+      call isunix(unixok)
 
 C Do an initial check to see if the model is attributed and
 C constructions are known.
@@ -3722,6 +3767,9 @@ C Zone construction file exists so attempt to scan it.
         CALL PHELPD('constructions checks',nbhelp,'-',0,0,IER)
       endif
 
+C Check for existance of zone shading files and if missing but
+C there is an ASCII shading file convert it otherwise attempt
+C to calculate.
       helptopic='has_unknown_shading'
       call gethelptext(helpinsub,helptopic,nbhelp)
       shdok=.true.
@@ -3734,16 +3782,62 @@ C Zone construction file exists so attempt to scan it.
             if(nbhelp.lt.60)then
               nbhelp=nbhelp+1
               write(h(nbhelp),'(3a)') 'Zone ',zname(i)(1:lnzname(i)),
-     &        ' shading undefined.'
+     &        ' shading expected but undefined.'
             endif
           else
             XST=.false.
             call FINDFIL(LS,XST)
+            write(shdafile,'(2a)') ls(1:lnblnk(ls)),'a'
+            call FINDFIL(shdafile,XSTA)
+
+C Setup file name depending on the machine type.
+            if(unixok)then
+              call addpath(LCFGF,longtfile,concat)
+            else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+              call addpath(LCFGF,longtfile,concat)
+              call cmdfiledos(longtfile,longtfiledos,ier)
+              longtfile=' '
+              longtfile=longtfiledos
+            endif
+            write(ZN,'(A)') zname(i)
+            doit = ' '
             if(.NOT.XST)then
-              if(nbhelp.lt.60)then
-                nbhelp=nbhelp+1
-                write(h(nbhelp),'(3a)') 'Zone ',zname(i)(1:lnzname(i)),
-     &        ' shading not found.'
+              if(XSTA)then
+                call edisp(iuout,'Importing missing shading...')
+                write(doit,'(6a)') 'ish -mode text -file ',
+     &            longtfile(1:lnblnk(longtfile)),' -zone ',
+     &            ZN(1:lnblnk(ZN)),' -act asci2bin ',
+     &            shdafile(1:lnblnk(shdafile))
+                call usrmsg('starting shading conversion via',doit,'-')
+                call runit(doit,'-')
+                write(outs,'(3a)') 'Shading for ',ZN(1:lnblnk(ZN)),
+     &            ' has been imported from ASCII.'
+                call edisp(iuout,outs)
+
+                if(nbhelp.lt.60)then
+                  nbhelp=nbhelp+1
+                  write(h(nbhelp),'(3a)') 'Shading for ',
+     &              ZN(1:lnblnk(ZN)),' has been imported from ASCII.'
+                endif
+              else
+                call edisp(iuout,'Regenerating missing shading...')
+                write(doit,'(5a)') 'ish -mode text -file ',
+     &            longtfile(1:lnblnk(longtfile)),' -zone ',
+     &            ZN(1:lnblnk(ZN)),' -act update_silent '
+                call usrmsg('starting shading calcs via',doit,'-')
+                call runit(doit,'-')
+                write(outs,'(3a)') 'Shading for ',ZN(1:lnblnk(ZN)),
+     &            ' has been calculated.'
+                call edisp(iuout,outs)
+                if(nbhelp.lt.60)then
+                  nbhelp=nbhelp+1
+                  write(ZN,'(A)') zname(i)
+                  write(h(nbhelp),'(3a)') 'Shading for ',
+     &              ZN(1:lnblnk(ZN)),' has been recalculated.'
+                endif
               endif
             else
 
@@ -3794,7 +3888,7 @@ C at maxrec=24 for older files. Remember maxrec for use in solar.F.
 
  1003   if(nbhelp.lt.59)then
           nbhelp=nbhelp+1
-          write(h(nbhelp),'(a,i2,a,i2,a,i2)') 'Model nsur=',NSUR,
+          write(h(nbhelp),'(a,i3,a,i3,a,i2)') 'Model nsur=',NSUR,
      &      ' db ns=',ns,' inext=',INEXT
           nbhelp=nbhelp+1
           write(h(nbhelp),'(A)') 
@@ -5658,7 +5752,7 @@ C        CALL EDISP(IUOUT,OUTS)
       ENDIF
 
 C If shading needs updating do this now.
-      IF(ISHAD.EQ.1)CALL EDDSHD
+      IF(ISHAD.EQ.1)CALL EDDSHD('site')
 
 C If calculated viewfactors need run do this now.
       if(nbvalsv.gt.0)then

@@ -466,11 +466,8 @@ C Set all data displays to ON
           IEGETNO(I,J)=0
   12    CONTINUE
         DO 14 K=1,6
-          IELLAB(I,K)=' '
-          IESLAB(I,K)=' '
-          IEAXIS(I,K)=0
-          IESYMB(I,K)=0
-          IELINE(I,K)=0
+          IELLAB(I,K)=' '; IESLAB(I,K)=' '
+          IEAXIS(I,K)=0; IESYMB(I,K)=0; IELINE(I,K)=0
  14     CONTINUE
  10   CONTINUE
 
@@ -662,11 +659,8 @@ C Clear all existing selections
             IEGETNO(I,J)=0
   40      CONTINUE
           DO 50 K=1,6
-            IELLAB(I,K)=' '
-            IESLAB(I,K)=' '
-            IEAXIS(I,K)=0
-            IESYMB(I,K)=0
-            IELINE(I,K)=0
+            IELLAB(I,K)=' '; IESLAB(I,K)=' '
+            IEAXIS(I,K)=0; IESYMB(I,K)=0; IELINE(I,K)=0
  50       CONTINUE
  30     CONTINUE 
         GOTO 20      
@@ -852,12 +846,9 @@ C The nodal voltage
             IEGETNO(IEGET,3)=INOD
             IEGETNO(IEGET,4)=1
             IEGETNO(IEGET,5)=1
-            IELINE(IEGET,1)=1
-            IELINE(IEGET,2)=-3
-            IESYMB(IEGET,1)=1
-            IESYMB(IEGET,2)=11
-            IEAXIS(IEGET,1)=1
-            IEAXIS(IEGET,2)=4
+            IELINE(IEGET,1)=1; IELINE(IEGET,2)=-3
+            IESYMB(IEGET,1)=1; IESYMB(IEGET,2)=11
+            IEAXIS(IEGET,1)=1; IEAXIS(IEGET,2)=4
             WRITE(IELLAB(IEGET,1),'(A,I3,A)') 
      &'Node ',INOD,' Voltage magnitude'   
             WRITE(IELLAB(IEGET,2),'(A,I3,A)') 
@@ -874,12 +865,9 @@ C The nodal load
             IEGETNO(IEGET,3)=INOD
             IEGETNO(IEGET,4)=2
             IEGETNO(IEGET,5)=1
-            IELINE(IEGET,1)=-2
-            IELINE(IEGET,2)=-2
-            IESYMB(IEGET,1)=3
-            IESYMB(IEGET,2)=13
-            IEAXIS(IEGET,1)=3
-            IEAXIS(IEGET,2)=3
+            IELINE(IEGET,1)=-2; IELINE(IEGET,2)=-2
+            IESYMB(IEGET,1)=3; IESYMB(IEGET,2)=13
+            IEAXIS(IEGET,1)=3; IEAXIS(IEGET,2)=3
             WRITE(IELLAB(IEGET,1),'(A,I3,A)') 
      &'Node ',INOD,' Loading (W)'  
             WRITE(IELLAB(IEGET,2),'(A,I3,A)') 
@@ -896,12 +884,9 @@ C The nodal generation
             IEGETNO(IEGET,3)=INOD
             IEGETNO(IEGET,4)=3
             IEGETNO(IEGET,5)=1
-            IELINE(IEGET,1)=-2
-            IELINE(IEGET,2)=-2
-            IESYMB(IEGET,1)=4
-            IESYMB(IEGET,2)=14
-            IEAXIS(IEGET,1)=3
-            IEAXIS(IEGET,2)=3
+            IELINE(IEGET,1)=-2; IELINE(IEGET,2)=-2
+            IESYMB(IEGET,1)=4; IESYMB(IEGET,2)=14
+            IEAXIS(IEGET,1)=3; IEAXIS(IEGET,2)=3
             WRITE(IELLAB(IEGET,1),'(A,I3,A)') 
      &'Node ',INOD,' Generation (W)' 
             WRITE(IELLAB(IEGET,2),'(A,I3,A)') 
@@ -919,12 +904,9 @@ C The nodal transmission
             IEGETNO(IEGET,3)=INOD
             IEGETNO(IEGET,4)=4
             IEGETNO(IEGET,5)=1
-            IELINE(IEGET,1)=-2
-            IELINE(IEGET,2)=-2
-            IESYMB(IEGET,1)=5
-            IESYMB(IEGET,2)=15
-            IEAXIS(IEGET,1)=3
-            IEAXIS(IEGET,2)=3
+            IELINE(IEGET,1)=-2; IELINE(IEGET,2)=-2
+            IESYMB(IEGET,1)=5; IESYMB(IEGET,2)=15
+            IEAXIS(IEGET,1)=3; IEAXIS(IEGET,2)=3
             WRITE(IELLAB(IEGET,1),'(A,I3,A)') 
      &'Node ',INOD,' Transmission (W)' 
             WRITE(IELLAB(IEGET,2),'(A,I3,A)') 
@@ -941,12 +923,9 @@ C The nodal grid import
             IEGETNO(IEGET,3)=INOD
             IEGETNO(IEGET,4)=5
             IEGETNO(IEGET,5)=1
-            IELINE(IEGET,1)=-2
-            IELINE(IEGET,2)=-2
-            IESYMB(IEGET,1)=6
-            IESYMB(IEGET,2)=16
-            IEAXIS(IEGET,1)=3
-            IEAXIS(IEGET,2)=3
+            IELINE(IEGET,1)=-2; IELINE(IEGET,2)=-2
+            IESYMB(IEGET,1)=6; IESYMB(IEGET,2)=16
+            IEAXIS(IEGET,1)=3; IEAXIS(IEGET,2)=3
             WRITE(IELLAB(IEGET,1),'(A,I3,A)') 
      &'Node ',INOD,' Grid import (W)' 
             WRITE(IELLAB(IEGET,2),'(A,I3,A)') 
@@ -964,8 +943,7 @@ C The nodal load power factor
             IEGETNO(IEGET,3)=INOD
             IEGETNO(IEGET,4)=6
             IEGETNO(IEGET,5)=1
-            IELINE(IEGET,1)=-3
-            IESYMB(IEGET,1)=7
+            IELINE(IEGET,1)=-3; IESYMB(IEGET,1)=7
             IEAXIS(IEGET,1)=4
             WRITE(IELLAB(IEGET,1),'(A,I3,A)') 
      &'Node ',INOD,' Load power factor' 
@@ -1029,24 +1007,12 @@ C The connection current
             IEGETNO(IEGET,3)=ICON
             IEGETNO(IEGET,4)=4
             IEGETNO(IEGET,5)=1
-            IELINE(IEGET,1)=1
-            IELINE(IEGET,2)=-2
-            IELINE(IEGET,3)=1
-            IELINE(IEGET,4)=-2
-            IELINE(IEGET,5)=1
-            IELINE(IEGET,6)=-2
-            IESYMB(IEGET,1)=13
-            IESYMB(IEGET,2)=3
-            IESYMB(IEGET,3)=13
-            IESYMB(IEGET,4)=3
-            IESYMB(IEGET,5)=13
-            IESYMB(IEGET,6)=3
-            IEAXIS(IEGET,1)=2
-            IEAXIS(IEGET,2)=4
-            IEAXIS(IEGET,3)=2
-            IEAXIS(IEGET,4)=4
-            IEAXIS(IEGET,5)=2
-            IEAXIS(IEGET,6)=4
+            IELINE(IEGET,1)=1; IELINE(IEGET,2)=-2; IELINE(IEGET,3)=1
+            IELINE(IEGET,4)=-2; IELINE(IEGET,5)=1; IELINE(IEGET,6)=-2
+            IESYMB(IEGET,1)=13; IESYMB(IEGET,2)=3; IESYMB(IEGET,3)=13
+            IESYMB(IEGET,4)=3; IESYMB(IEGET,5)=13; IESYMB(IEGET,6)=3
+            IEAXIS(IEGET,1)=2; IEAXIS(IEGET,2)=4; IEAXIS(IEGET,3)=2
+            IEAXIS(IEGET,4)=4; IEAXIS(IEGET,5)=2; IEAXIS(IEGET,6)=4
             WRITE(IELLAB(IEGET,1),'(A,I3,A)') 
      &'Connection ',IEGET,' Current magnitude ph1'   
             WRITE(IELLAB(IEGET,2),'(A,I3,A)') 
@@ -1080,24 +1046,12 @@ C The connection transmission
             IEGETNO(IEGET,3)=ICON
             IEGETNO(IEGET,4)=1
             IEGETNO(IEGET,5)=1
-            IELINE(IEGET,1)=1
-            IELINE(IEGET,2)=1
-            IELINE(IEGET,3)=1
-            IELINE(IEGET,4)=1
-            IELINE(IEGET,5)=1
-            IELINE(IEGET,6)=1
-            IESYMB(IEGET,1)=19
-            IESYMB(IEGET,2)=9
-            IESYMB(IEGET,3)=19
-            IESYMB(IEGET,4)=9
-            IESYMB(IEGET,5)=19
-            IESYMB(IEGET,6)=9
-            IEAXIS(IEGET,1)=3
-            IEAXIS(IEGET,2)=3
-            IEAXIS(IEGET,3)=3
-            IEAXIS(IEGET,4)=3
-            IEAXIS(IEGET,5)=3
-            IEAXIS(IEGET,6)=3
+            IELINE(IEGET,1)=1; IELINE(IEGET,2)=1; IELINE(IEGET,3)=1
+            IELINE(IEGET,4)=1; IELINE(IEGET,5)=1; IELINE(IEGET,6)=1
+            IESYMB(IEGET,1)=19; IESYMB(IEGET,2)=9; IESYMB(IEGET,3)=19
+            IESYMB(IEGET,4)=9; IESYMB(IEGET,5)=19; IESYMB(IEGET,6)=9
+            IEAXIS(IEGET,1)=3; IEAXIS(IEGET,2)=3; IEAXIS(IEGET,3)=3
+            IEAXIS(IEGET,4)=3; IEAXIS(IEGET,5)=3; IEAXIS(IEGET,6)=3
             WRITE(IELLAB(IEGET,1),'(A,I3,A)') 
      &'Connection ',IEGET,' Transmitted power ph1 (W)'   
             WRITE(IELLAB(IEGET,2),'(A,I3,A)') 
@@ -1131,15 +1085,9 @@ C The connection loss
             IEGETNO(IEGET,3)=ICON
             IEGETNO(IEGET,4)=2
             IEGETNO(IEGET,5)=1
-            IELINE(IEGET,1)=1
-            IELINE(IEGET,2)=1
-            IELINE(IEGET,3)=1
-            IESYMB(IEGET,1)=10
-            IESYMB(IEGET,2)=10
-            IESYMB(IEGET,3)=10
-            IEAXIS(IEGET,1)=3
-            IEAXIS(IEGET,2)=3
-            IEAXIS(IEGET,3)=3
+            IELINE(IEGET,1)=1; IELINE(IEGET,2)=1; IELINE(IEGET,3)=1
+            IESYMB(IEGET,1)=10; IESYMB(IEGET,2)=10; IESYMB(IEGET,3)=10
+            IEAXIS(IEGET,1)=3; IEAXIS(IEGET,2)=3; IEAXIS(IEGET,3)=3
             WRITE(IELLAB(IEGET,1),'(A,I3,A)') 
      &'Connection ',IEGET,' Power loss ph1 (W)'   
             WRITE(IELLAB(IEGET,2),'(A,I3,A)') 
@@ -1161,15 +1109,9 @@ C The connection power factor
             IEGETNO(IEGET,3)=ICON
             IEGETNO(IEGET,4)=3
             IEGETNO(IEGET,5)=1
-            IELINE(IEGET,1)=-2
-            IELINE(IEGET,2)=-2
-            IELINE(IEGET,3)=-2
-            IESYMB(IEGET,1)=11
-            IESYMB(IEGET,2)=11
-            IESYMB(IEGET,3)=11
-            IEAXIS(IEGET,1)=4
-            IEAXIS(IEGET,2)=4
-            IEAXIS(IEGET,3)=4
+            IELINE(IEGET,1)=-2;IELINE(IEGET,2)=-2; IELINE(IEGET,3)=-2
+            IESYMB(IEGET,1)=11; IESYMB(IEGET,2)=11; IESYMB(IEGET,3)=11
+            IEAXIS(IEGET,1)=4; IEAXIS(IEGET,2)=4; IEAXIS(IEGET,3)=4
             WRITE(IELLAB(IEGET,1),'(A,I3,A)') 
      &'Connection ',IEGET,' Power factor ph1'   
             WRITE(IELLAB(IEGET,2),'(A,I3,A)') 
@@ -1210,12 +1152,9 @@ C Power-only component power flows
             IEGETNO(IEGET,3)=IPOWOC
             IEGETNO(IEGET,4)=1
             IEGETNO(IEGET,5)=1
-            IELINE(IEGET,1)=1
-            IELINE(IEGET,2)=1
-            IESYMB(IEGET,1)=13
-            IESYMB(IEGET,2)=3
-            IEAXIS(IEGET,1)=3
-            IEAXIS(IEGET,2)=3
+            IELINE(IEGET,1)=1; IELINE(IEGET,2)=1
+            IESYMB(IEGET,1)=13; IESYMB(IEGET,2)=3
+            IEAXIS(IEGET,1)=3; IEAXIS(IEGET,2)=3
             WRITE(IELLAB(IEGET,1),'(A,I3,A)') 
      &'Power-only comp ',IPOWOC,' Power flow (W) '   
             WRITE(IELLAB(IEGET,2),'(A,I3,A)') 
@@ -1250,12 +1189,9 @@ C Hybrid component power flows.
             IEGETNO(IEGET,3)=IHYBCOM
             IEGETNO(IEGET,4)=1
             IEGETNO(IEGET,5)=1
-            IELINE(IEGET,1)=1
-            IELINE(IEGET,2)=1
-            IESYMB(IEGET,1)=14
-            IESYMB(IEGET,2)=4
-            IEAXIS(IEGET,1)=3
-            IEAXIS(IEGET,2)=3
+            IELINE(IEGET,1)=1; IELINE(IEGET,2)=1
+            IESYMB(IEGET,1)=14; IESYMB(IEGET,2)=4
+            IEAXIS(IEGET,1)=3; IEAXIS(IEGET,2)=3
             WRITE(IELLAB(IEGET,1),'(A,I3,A)') 
      &'Hybrid comp ',IHYBCOM,' Power flow (W) '   
             WRITE(IELLAB(IEGET,2),'(A,I3,A)') 
@@ -1290,12 +1226,9 @@ C Network Load.
           IEGETNO(IEGET,7)=16
           IEGETNO(IEGET,8)=6
           IEGETNO(IEGET,9)=3
-          IELINE(IEGET,1)=-2
-          IELINE(IEGET,2)=-2
-          IESYMB(IEGET,1)=16
-          IESYMB(IEGET,2)=6
-          IEAXIS(IEGET,1)=3
-          IEAXIS(IEGET,2)=3
+          IELINE(IEGET,1)=-2; IELINE(IEGET,2)=-2
+          IESYMB(IEGET,1)=16; IESYMB(IEGET,2)=6
+          IEAXIS(IEGET,1)=3; IEAXIS(IEGET,2)=3
           WRITE(IELLAB(IEGET,1),'(A)') 
      &'Network load (W) '   
           WRITE(IELLAB(IEGET,2),'(A)') 
@@ -1312,12 +1245,9 @@ C Network Generation.
           IEGETNO(IEGET,3)=99
           IEGETNO(IEGET,4)=3
           IEGETNO(IEGET,5)=1
-          IELINE(IEGET,1)=-2
-          IELINE(IEGET,2)=-2
-          IESYMB(IEGET,1)=17
-          IESYMB(IEGET,2)=7
-          IEAXIS(IEGET,1)=3
-          IEAXIS(IEGET,2)=3
+          IELINE(IEGET,1)=-2; IELINE(IEGET,2)=-2
+          IESYMB(IEGET,1)=17; IESYMB(IEGET,2)=7
+          IEAXIS(IEGET,1)=3; IEAXIS(IEGET,2)=3
           WRITE(IELLAB(IEGET,1),'(A)') 
      &'Network generation (W) '   
           WRITE(IELLAB(IEGET,2),'(A)') 
@@ -1334,12 +1264,9 @@ C Network imported power
           IEGETNO(IEGET,3)=99
           IEGETNO(IEGET,4)=1
           IEGETNO(IEGET,5)=1
-          IELINE(IEGET,1)=-2
-          IELINE(IEGET,2)=-2
-          IESYMB(IEGET,1)=15
-          IESYMB(IEGET,2)=5
-          IEAXIS(IEGET,1)=3
-          IEAXIS(IEGET,2)=3
+          IELINE(IEGET,1)=-2; IELINE(IEGET,2)=-2
+          IESYMB(IEGET,1)=15; IESYMB(IEGET,2)=5
+          IEAXIS(IEGET,1)=3; IEAXIS(IEGET,2)=3
           WRITE(IELLAB(IEGET,1),'(A)') 
      &'Network import (W) '   
           WRITE(IELLAB(IEGET,2),'(A)') 
@@ -1418,24 +1345,12 @@ C Network Loading by phase
           IEGETNO(IEGET,3)=99
           IEGETNO(IEGET,4)=9
           IEGETNO(IEGET,5)=1
-          IELINE(IEGET,1)=1
-          IELINE(IEGET,2)=-2
-          IELINE(IEGET,3)=1
-          IELINE(IEGET,4)=-2
-          IELINE(IEGET,5)=1
-          IELINE(IEGET,6)=-2
-          IESYMB(IEGET,1)=20
-          IESYMB(IEGET,2)=10
-          IESYMB(IEGET,3)=20
-          IESYMB(IEGET,4)=10
-          IESYMB(IEGET,5)=20
-          IESYMB(IEGET,6)=10
-          IEAXIS(IEGET,1)=3
-          IEAXIS(IEGET,2)=3
-          IEAXIS(IEGET,3)=3
-          IEAXIS(IEGET,4)=3
-          IEAXIS(IEGET,5)=3
-          IEAXIS(IEGET,6)=3
+          IELINE(IEGET,1)=1; IELINE(IEGET,2)=-2; IELINE(IEGET,3)=1 
+          IELINE(IEGET,4)=-2; IELINE(IEGET,5)=1; IELINE(IEGET,6)=-2
+          IESYMB(IEGET,1)=20; IESYMB(IEGET,2)=10; IESYMB(IEGET,3)=20
+          IESYMB(IEGET,4)=10; IESYMB(IEGET,5)=20; IESYMB(IEGET,6)=10
+          IEAXIS(IEGET,1)=3; IEAXIS(IEGET,2)=3; IEAXIS(IEGET,3)=3
+          IEAXIS(IEGET,4)=3; IEAXIS(IEGET,5)=3; IEAXIS(IEGET,6)=3
           WRITE(IELLAB(IEGET,1),'(A)') 
      &'Network load phase 1 (W) '
           WRITE(IELLAB(IEGET,2),'(A)') 
@@ -1469,24 +1384,12 @@ C Network phase generation
           IEGETNO(IEGET,3)=99
           IEGETNO(IEGET,4)=10
           IEGETNO(IEGET,5)=1
-          IELINE(IEGET,1)=1
-          IELINE(IEGET,2)=-2
-          IELINE(IEGET,3)=1
-          IELINE(IEGET,4)=-2
-          IELINE(IEGET,5)=1
-          IELINE(IEGET,6)=-2
-          IESYMB(IEGET,1)=21
-          IESYMB(IEGET,2)=8
-          IESYMB(IEGET,3)=21
-          IESYMB(IEGET,4)=8
-          IESYMB(IEGET,5)=21
-          IESYMB(IEGET,6)=8
-          IEAXIS(IEGET,1)=3
-          IEAXIS(IEGET,2)=3
-          IEAXIS(IEGET,3)=3
-          IEAXIS(IEGET,4)=3
-          IEAXIS(IEGET,5)=3
-          IEAXIS(IEGET,6)=3
+          IELINE(IEGET,1)=1; IELINE(IEGET,2)=-2; IELINE(IEGET,3)=1
+          IELINE(IEGET,4)=-2; IELINE(IEGET,5)=1; IELINE(IEGET,6)=-2
+          IESYMB(IEGET,1)=21; IESYMB(IEGET,2)=8; IESYMB(IEGET,3)=21
+          IESYMB(IEGET,4)=8; IESYMB(IEGET,5)=21; IESYMB(IEGET,6)=8
+          IEAXIS(IEGET,1)=3; IEAXIS(IEGET,2)=3; IEAXIS(IEGET,3)=3
+          IEAXIS(IEGET,4)=3; IEAXIS(IEGET,5)=3; IEAXIS(IEGET,6)=3
           WRITE(IELLAB(IEGET,1),'(A)') 
      &'Network generation phase 1 (W) '   
          WRITE(IELLAB(IEGET,2),'(A)') 
@@ -1520,24 +1423,12 @@ C Network phase import
           IEGETNO(IEGET,3)=99
           IEGETNO(IEGET,4)=11
           IEGETNO(IEGET,5)=1
-          IELINE(IEGET,1)=1
-          IELINE(IEGET,2)=-2
-          IELINE(IEGET,3)=1
-          IELINE(IEGET,4)=-2
-          IELINE(IEGET,5)=1
-          IELINE(IEGET,6)=-2
-          IESYMB(IEGET,1)=22
-          IESYMB(IEGET,2)=9
-          IESYMB(IEGET,3)=22
-          IESYMB(IEGET,4)=9
-          IESYMB(IEGET,5)=22
-          IESYMB(IEGET,6)=9
-          IEAXIS(IEGET,1)=3
-          IEAXIS(IEGET,2)=3
-          IEAXIS(IEGET,3)=3
-          IEAXIS(IEGET,4)=3
-          IEAXIS(IEGET,5)=3
-          IEAXIS(IEGET,6)=3
+          IELINE(IEGET,1)=1; IELINE(IEGET,2)=-2; IELINE(IEGET,3)=1
+          IELINE(IEGET,4)=-2; IELINE(IEGET,5)=1; IELINE(IEGET,6)=-2
+          IESYMB(IEGET,1)=22; IESYMB(IEGET,2)=9; IESYMB(IEGET,3)=22
+          IESYMB(IEGET,4)=9; IESYMB(IEGET,5)=22; IESYMB(IEGET,6)=9
+          IEAXIS(IEGET,1)=3; IEAXIS(IEGET,2)=3; IEAXIS(IEGET,3)=3
+          IEAXIS(IEGET,4)=3; IEAXIS(IEGET,5)=3; IEAXIS(IEGET,6)=3
           WRITE(IELLAB(IEGET,1),'(A)') 
      &'Network import phase 1 (W) ' 
           WRITE(IELLAB(IEGET,2),'(A)') 
@@ -1908,19 +1799,17 @@ C Array of recovered data and associated infomation
      &EVMARK,EVLINE
 
       CHARACTER IELLAB*64,IESLAB*16,EVLABS*16,IEULAB*4,EVLABU*4,MODE*1
-      
+      CHARACTER MSG*72
+
+      MSG='  '      
       IF(MODE.EQ.'I') THEN
 
 C Initialise the data array
         IVAL=0
         DO 10 I=1,MERAWD
-          EVAL1(I)=0.0
-          EVAL2(I)=0.0      
-          EVLABS(I)=' '        
-          EVLABU(I)=' ' 
-          EVLINE(I)=0 
-          EVMARK(I)=0
-          EVAXIS(I)=0
+          EVAL1(I)=0.0; EVAL2(I)=0.0      
+          EVLABS(I)=' '; EVLABU(I)=' ' 
+          EVLINE(I)=0; EVMARK(I)=0; EVAXIS(I)=0
   10    CONTINUE
 
 C Set up the recovery array
@@ -1959,7 +1848,9 @@ C Recover the data from the library.
 C Check the array bounds has been exceeded.
           IF((IVAL+NPOS).GT.MERAWD) RETURN
 
-C Read the record in the library.
+C Read the record in the library. Get error message sorted if failure
+          write(msg,'(a,2i6)') 
+     &    'ERROR reading electrical results file at record ',IREC,IELIBW
           READ(IELFIL,REC=IREC,IOSTAT=ISTAT,ERR=999)(VAL(I),I=1,IELIBW)
 
 C Write the data items to the EVAL1 array. 
@@ -1972,7 +1863,8 @@ C Write the data items to the EVAL1 array.
       ENDIF
       RETURN
 
-999   CALL EDISP(IUOUT,'ERROR reading electrical results file')
+C Write message about where glitch happened.
+999   CALL EDISP(IUOUT,MSG)
       RETURN
       END
 

@@ -355,6 +355,8 @@ C Vertical axis label depending on generic type.
         LABEL1='m/sec           '
       ELSEIF(FOCUS(1:7).EQ.'SETPTTT')THEN
         LABEL1='temperatue deg C'
+      ELSEIF(FOCUS(1:6).EQ.'CFCCTL')THEN
+        LABEL1='on/off state    '
       ELSEIF(FOCUS(1:8).EQ.'HTCLSETP')THEN
         LABEL1='temperatue deg C'
       ELSEIF(FOCUS(1:7).EQ.'SKYLUXT')THEN
@@ -401,16 +403,18 @@ C    ......
       igheight=igwh
       call axiscale(igwid,igheight,XMIN,XMAX,YMIN,YMAX,xsc,ysc,sca,
      &   Xadd,Yadd)
-      CALL dinterval(XMIN,XMAX,ddy1,ny,1)
+      CALL dintervalf(XMIN,XMAX,ddy1,ny,1)
 
 C Try axis of hours.
       iind=1
       intsph=ntsph
       iigbdoy=igbdoy
-      CALL horaxishdw(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,1,iind,intsph,
-     &  iigbdoy,LABEL2)
-C      CALL horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,1,LABEL2)
-      CALL vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,LABEL1)
+      call dintervalf(XMIN,XMAX,DY,NDEC,1)
+      CALL horaxishdwdd(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,1,
+     &  DY,NDEC,iind,intsph,iigbdoy,LABEL2)
+      call dintervalf(YMIN,YMAX,DY,NDEC,0)
+      CALL vrtaxisdd(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,
+     &  DY,NDEC,0,LABEL1)
 
       IEFLDS=NTBITS(IFOC)+NTSTAT(IFOC)
       ISFLDS=IEFLDS-NTBITS(IFOC)+1

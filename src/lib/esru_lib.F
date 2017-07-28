@@ -1756,7 +1756,7 @@ C overwriting the string passed, deal with a copy.
       COMMON/OUTIN/IUOUT,IUIN
       CHARACTER*(*) A
       CHARACTER*32 WORDS(12)
-      CHARACTER B*124,C*1,fs*1,outs*124
+      CHARACTER B*248,C*1,fs*1,outs*248
       logical unixok
 
 C Determine the file separator and clear the WORDS to return.
@@ -1770,7 +1770,7 @@ C Determine the file separator and clear the WORDS to return.
         WORDS(i)='  '
   9   continue
 
-      lastcc = MIN0(LNBLNK(A),123)
+      lastcc = MIN0(LNBLNK(A),246)
       WRITE(B,'(A)',IOSTAT=ios,ERR=1) A(1:lastcc+1)
 
 C Loop through B and convert all fileseparators to blanks.
@@ -1786,6 +1786,7 @@ C Loop through B and see how many 'words'.
 
 C Start by skipping blanks before the word.
    10 K=K+1
+      IF(K.ge.248) GOTO 3
       C=B(K:K)
       IF(C.EQ.' ') GOTO 10
 
@@ -1808,21 +1809,31 @@ C assign WORDS.
       IF(C.EQ.' ')GOTO 102
       GOTO 20
    1  if(IOS.eq.2)then
-        write(outs,*) 'GETTOKENS: internal wreite permission error: ',A
-        call edisp(iuout,outs)
+        write(outs,*) 
+     &   'GETTOKENS: internal write permission error: ',A(1:lnblnk(A))
+        call edisp248(iuout,outs,100)
       else
-        write(outs,*) 'GETTOKENS: error in internal write: ',A
-        call edisp(iuout,outs)
+        write(outs,*) 
+     &    'GETTOKENS: error in internal write: ',A(1:lnblnk(A))
+        call edisp248(iuout,outs,100)
       endif
       return
    2  if(IOS.eq.2)then
-        write(outs,*) 'GETTOKENS: permission error in getting token: ',A
-        call edisp(iuout,outs)
+        write(outs,*) 
+     &  'GETTOKENS: permission error in getting token: ',A(1:lnblnk(A))
+        call edisp248(iuout,outs,100)
       else
-        write(outs,*) 'GETTOKENS: error in getting token: ',A
-        call edisp(iuout,outs)
+        write(outs,*) 
+     &  'GETTOKENS: error in getting token: ',A(1:lnblnk(A))
+        call edisp248(iuout,outs,100)
       endif
       return
+    3 write(outs,*) 
+     &  'GETTOKENS: ran past end of internal string buffer: ',
+     &   A(1:lnblnk(A))
+      call edisp248(iuout,outs,100)
+      return
+
 
       END
 
@@ -6395,6 +6406,7 @@ C  = '>' append message to journal
 
       character*(*) msg
       character dstmp*24,act*1,outs*124,journcmd*20,jfile*72
+      character outs248*248  ! to handle longer messages
       logical there
 
       call dstamp(dstmp)
@@ -6409,7 +6421,7 @@ C  = '>' append message to journal
 
 C If there is a journal file append the current message to it and close.
         LN=max(1,lnblnk(msg))
-        write(outs,'(3A)')msg(1:LN),' @ ',dstmp
+        write(outs248,'(3A)')msg(1:LN),' @ ',dstmp
         ltf=max(1,LNBLNK(jfile))
         if(journio.eq.1.and.
      &    (jfile(1:2).ne.'  '.and.jfile(1:4).ne.'UNKN'))then
@@ -6419,8 +6431,8 @@ C If there is a journal file append the current message to it and close.
             close(iuj)
             open(iuj,file=jfile(1:ltf),position='APPEND',
      &        status='UNKNOWN',err=1)
-            LN=max(1,lnblnk(outs))
-            write(iuj,'(a)',iostat=ios,err=2)outs(1:LN)
+            LN=max(1,lnblnk(outs248))
+            write(iuj,'(a)',iostat=ios,err=2)outs248(1:LN)
             close(iuj)
           endif
         endif
@@ -6647,7 +6659,7 @@ C working then try switching bweteen these options.
       subroutine runit(cmd,tg)
       common/OUTIN/IUOUT,IUIN
       character*(*) cmd,tg
-      character tmp*360,tmode*4,message*248
+      character tmp*360,ltmp*360,tmode*8,message*248
       character dq*1
       integer system
       logical unixok
@@ -6683,29 +6695,41 @@ C          i = system(cmd)
         endif
         return
       else
+
+C Non-linux only uses tg if passed as 'bg'. It then
+C attempts to mimic starting a background task.
+        write (tmode,'(a)') tg(1:lnblnk(tg))
         LN=lnblnk(cmd)
         if (cmd(LN:LN).eq."&") then
           write (tmp,'(4a)') dq,'start ',cmd(1:LN-1),dq
-          write (cmd,'(a)') tmp(1:lnblnk(tmp))
-          call edisp248(iuout,cmd,90)
+C          write (cmd,'(a)') tmp(1:lnblnk(tmp))
+          call edisp248(iuout,tmp,90)
         else
-          write (tmp,'(3a)') dq,cmd(1:LN),dq
-          write (cmd,'(a)') tmp(1:lnblnk(tmp))
-          call edisp248(iuout,cmd,90)
+          if(tmode.eq.'bg')then  ! background
+            write (tmp,'(7a)') dq,'start /B ',dq,dq,' ',
+     &        cmd(1:LN),dq
+C            write (cmd,'(a)') tmp(1:lnblnk(tmp))
+          else
+            write (tmp,'(3a)') dq,cmd(1:LN),dq
+C            write (cmd,'(a)') tmp(1:lnblnk(tmp))
+          endif
+          call edisp248(iuout,tmp,90)
+          call edisp(iuout,' ')
+          call forceflush()
         endif
 
 C        i = system(cmd)
-        call execute_command_line (cmd, exitstat=i)
+        call execute_command_line (tmp, exitstat=i)
         if(i.gt.0.and.i.le.126)then
           call edisp(iuout,'task terminated with an error condition')
           LN=lnblnk(cmd)
-          write(tmp,'(a,i3,2a)') 'status ',i,' ',cmd(1:LN)
-          call edisp248(iuout,tmp,90)
+          write(ltmp,'(a,i3,2a)') 'status ',i,' ',cmd(1:LN)
+          call edisp248(iuout,ltmp,90)
         elseif(i.eq.127)then
           call edisp(iuout,'task requested was unknown.')
           LN=lnblnk(cmd)
-          write(tmp,'(a,i3,2a)') 'status ',i,' ',cmd(1:LN)
-          call edisp248(iuout,tmp,90)
+          write(ltmp,'(a,i3,2a)') 'status ',i,' ',cmd(1:LN)
+          call edisp248(iuout,ltmp,90)
         endif
 
 C An even older method of asking OS to do some work.

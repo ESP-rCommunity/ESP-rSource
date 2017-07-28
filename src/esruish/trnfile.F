@@ -293,7 +293,7 @@ C Trace output.
  9998 format('*** TFILE3: mode ',a,'.')
       call edisp(icout,outs)
       write(outs,9997)is,ihour
- 9997 format('Surface = ',i2,' Hour = ',i2)
+ 9997 format('Surface = ',i3,' Hour = ',i2)
       call edisp(icout,outs)
       if(isunup.eq.1)then
          write(outs,9996)gssa,gsa,ogrida(is)

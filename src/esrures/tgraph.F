@@ -499,18 +499,20 @@ C draw vertical axis.
             iicol=0
             call winscl('-',iicol)  ! ensure axis drawn in black
           endif
-          call dinterval(TSTART-1.0,TFINSH,DT,NDEC,1)
+          call dintervalf(TSTART-1.0,TFINSH,DT,NDEC,1)
           igwid=igw
           igheight=igwh
           iigx=int(igx(I))
           call axiscale(igwid,igheight,TSTART-1.0,TFINSH,YMIN(I),
      &                  YMAX(I),TSC,YSC(I),sca,Xadd,Yadd(I))
           if (ILR(I).eq.0) then
-            call vrtaxis(YMIN(I),YMAX(I),iigx,iigb,iigt,Yadd(I),
-     &                             YSC(I),0,ilr(I),ALABEL(I))
+            call dintervalf(YMIN(I),YMAX(I),ddy1,ny,0)
+            call vrtaxisdd(YMIN(I),YMAX(I),iigx,iigb,iigt,Yadd(I),
+     &        YSC(I),0,ddy1,ny,ilr(I),ALABEL(I))
           else
-            call vrtaxis(YMIN(I),YMAX(I),iigx,iigb,iigt,Yadd(I),
-     &                             YSC(I),0,ilr(I),'  ')
+            call dintervalf(YMIN(I),YMAX(I),ddy1,ny,0)
+            call vrtaxisdd(YMIN(I),YMAX(I),iigx,iigb,iigt,Yadd(I),
+     &        YSC(I),0,ddy1,ny,ilr(I),'  ')
             iid1=igx(I); iid2=igt-5;
             call wstxpt(iid1,iid2,ALABEL(I))
           endif
@@ -525,24 +527,30 @@ C default.
       if(horaxisdiv.eq.0.or.horaxisdiv.eq.1)then
         overalldays=IODF-IODS
         if(overalldays.le.60)then
-          call horaxis(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
-     &      'Time Hrs')
+          call dintervalf(TSTART-1.0,TFINSH,ddy1,ny,1)
+          call horaxisdd(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
+     &      ddy1,ny,'Time Hrs')
         elseif(overalldays.gt.60.and.overalldays.le.120)then
-          call horaxishdw(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
-     &      2,24,iods,'Time (days)')
+          call dintervalf(TSTART-1.0,TFINSH,ddy1,ny,1)
+          call horaxishdwdd(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
+     &      ddy1,ny,2,24,iods,'Time (days)')
         else
-          call horaxishdw(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
-     &      3,168,iods,'Time (weeks)')
+          call dintervalf(TSTART-1.0,TFINSH,ddy1,ny,1)
+          call horaxishdwdd(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
+     &      ddy1,ny,3,168,iods,'Time (weeks)')
         endif
       elseif(horaxisdiv.eq.2)then
-        call horaxis(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
-     &    'Time Hrs')
+        call dintervalf(TSTART-1.0,TFINSH,ddy1,ny,1)
+        call horaxisdd(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
+     &    ddy1,ny,'Time Hrs')
       elseif(horaxisdiv.eq.3)then
-        call horaxishdw(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
-     &    2,24,iods,'Time (days)')
+        call dintervalf(TSTART-1.0,TFINSH,ddy1,ny,1)
+        call horaxishdwdd(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
+     &    ddy1,ny,2,24,iods,'Time (days)')
       elseif(horaxisdiv.eq.4)then
-        call horaxishdw(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
-     &    3,168,iods,'Time (weeks)')
+        call dintervalf(TSTART-1.0,TFINSH,ddy1,ny,1)
+        call horaxishdwdd(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
+     &    ddy1,ny,3,168,iods,'Time (weeks)')
       endif
       
 C Recover and plot data.
@@ -1360,7 +1368,7 @@ C no horizontal plot,
          ipos=3
          isize=0
          IF(NZ.GT.1)THEN        
-           write(BLAB,'(A2,I2,A8)')'zn',IZONE,LABEL
+           write(BLAB,'(A2,I3.3,A8)')'zn',IZONE,LABEL
            call etlabel(BLAB,TFINSH,XVAL1(L),ipos,isize)
          ELSE
            call etlabel(LABEL,TFINSH,XVAL1(L),ipos,isize)

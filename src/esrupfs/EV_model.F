@@ -1,33 +1,33 @@
 C This file holds data relating to electric vehicles and related code. The vehicle model
 C can be used in conjunction with ESP-r's power flow modelling capability. The routines 
 C are as follows. 
-C POWOC_EV_model     - 	electric vehicle-to-home model dealing with the presence of the 
-C 			vehicle, the state of charge and the charging current/power
+C POWOC_EV_model     - electric vehicle-to-home model dealing with the presence of the 
+C                      vehicle, the state of charge and the charging current/power
 C
-C EV_state	     -	calculates the "state" of the electric vehicle _idle_, charge or
-C			absent (logical).
+C EV_state           - calculates the "state" of the electric vehicle _idle_, charge or
+C                      absent (logical).
 C
-C EV_init	     -	initialised the component's data.
+C EV_init            - initialised the component's data.
 C
-C EV_charge_ctl		routine that handles the different charging options for the vehicle.
+C EV_charge_ctl        routine that handles the different charging options for the vehicle.
 C
-C > EV_fix_charge    -	fixed charge rate for the vehicle battery, charge rate set by the
-C			user - typically used during a fast (e.g. 2hr) or trickle (e.g. 8 hr)
-C 			charge.
+C > EV_fix_charge    - fixed charge rate for the vehicle battery, charge rate set by the
+C                      user - typically used during a fast (e.g. 2hr) or trickle (e.g. 8 hr)
+C                      charge.
 C 
 C > EV_opp_charge    -  vehicle only charges when the building demand is low enough (set by user)
-C			or alternatively there is power available from any local renewables. 
+C                       or alternatively there is power available from any local renewables. 
 C
-C > EV_V2H_charge    - 	the vehicle charges at periods of low power or renewable availability or
-C			alternatively can discharge in order to limit the peak building demand.
+C > EV_V2H_charge    - the vehicle charges at periods of low power or renewable availability or
+C                      alternatively can discharge in order to limit the peak building demand.
 C
-C EV_trip()  	     -	calculates feasible trips for the electric vehicle.
+C EV_trip()          - calculates feasible trips for the electric vehicle.
 C 
-C EV_SOC()	     -	calculates the new SOC of the battery based on the trip or charging situation.
+C EV_SOC()           - calculates the new SOC of the battery based on the trip or charging situation.
 C 
-C EV_save() 	     -	saves the EV data to the library and transfers boundary conditions, also writes the
-C			component trace if required   
-C   	 
+C EV_save()          - saves the EV data to the library and transfers boundary conditions, also writes the
+C                      component trace if required   
+C    
 C New routines to be added here <<>>.
 C
 C
@@ -222,7 +222,7 @@ C Set going or leaving probabilities.
           IF(ENETIMEF.GE.SUNPERS(IPWC,IPER).AND.
      &    ENETIMEF.LT.SUNPERS(IPWC,IPER+1))THEN
             INPER=IPER 
-          ENDIF           		
+          ENDIF          
   9     CONTINUE
 
 C Check if in final draw period

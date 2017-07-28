@@ -39,6 +39,7 @@ C esrures/psychart.F - revised to for plotting weather data.
       real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
+      integer ipixhist
       common/pixhist/ipixhist(8760,2)
      
       CHARACTER*26 ITEM(7)
@@ -53,11 +54,13 @@ C esrures/psychart.F - revised to for plotting weather data.
       integer iicol
       integer iigl,iigr,iigt,iigb,iigw,iigwh
       integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iix,iiy
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iicol
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
       integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iix,iiy
 #endif
 
 C For help messages
@@ -215,14 +218,14 @@ C range of T or RH via colmult.
 
 C If within temperature range, plot it.
             if(X.ge.Xmin.and.X.le.Xmax)then
-              call u2pixel(X,GS,ix,iy)
+              call u2pixel(X,GS,iix,iiy)
 
 C Debug.
-C              write(6,*) ihrplt,colmult,icolindex,ix,iy,CTMP(K),CHUM(K)
+C              write(6,*) ihrplt,colmult,icolindex,iix,iiy,CTMP(K),CHUM(K)
 
-              ipixhist(ihrplt,1)=ix
-              ipixhist(ihrplt,2)=iy
-              call esymbol(ix,iy,32,1)
+              ipixhist(ihrplt,1)= int(iix)
+              ipixhist(ihrplt,2)= int(iiy)
+              call esymbol(iix,iiy,32,1)
             endif
  41       continue
  31     continue
@@ -380,10 +383,14 @@ C Setup and pass in parameters to win3d.
      &  xadd,yadd)
 
 C Draw the axes of the chart.
-      CALL horaxis(Xmin,Xmax,iigl,iigr,iigb,xadd,XSC,0,'db Temp C')
-      CALL vrtaxis(0.0,0.01,iigl,iigb,iigt,yadd,YSC,0,0,
+      CALL dintervalf(Xmin,Xmax,ddy1,ny,0)
+      CALL horaxisdd(Xmin,Xmax,iigl,iigr,iigb,xadd,XSC,0,ddy1,ny,
+     &   'db Temp C')
+      call dintervalf(0.0,0.01,DY,NDEC,0)
+      CALL vrtaxisdd(0.0,0.01,iigl,iigb,iigt,yadd,YSC,0,DY,NDEC,0,
      &  'Enthalpy kJ/kg')
-      CALL vrtaxis(Ymin,Ymax,iigr,iigb,iigt,yadd,YSC,0,1,
+      CALL dintervalf(Ymin,Ymax,ddy1,ny,0)
+      CALL vrtaxisdd(Ymin,Ymax,iigr,iigb,iigt,yadd,YSC,0,ddy1,ny,1,
      &  'Moisture g/kg')
 
 C Store the scaling parameters used in drawing the axes

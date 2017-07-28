@@ -103,11 +103,11 @@ C Exterior sensor, don't bother to calculate daylight factors, set to 1.0.
         IF(close)THEN
           IF(ITFLG.EQ.1)WRITE(ITU,896) zname(icomp),N,ISS
   896     FORMAT(' Zone ',A,' Light zone',I1,/,
-     &  ' Exterior horiz sensor @ surface ',I2)
+     &  ' Exterior horiz sensor @ surface ',I3)
         ELSE
           IF(ITFLG.EQ.1)WRITE(ITU,897) zname(icomp),N,ISS
   897     FORMAT(' Zone ',A,' Light zone',I1,/,
-     &  ' Exterior vert sensor @ surface ',I2)
+     &  ' Exterior vert sensor @ surface ',I3)
         ENDIF
 
 C User specified DF, no preprocessing required.
@@ -143,7 +143,7 @@ C of total windows in zone with nt. Exclude skylights.
             IF(close.AND.(ITMCFL(ICOMP,J).GT.0))THEN
               IF (NVER(J).NE.4)THEN
                 WRITE(ITU,811) zname(icomp),J
-  811           format('Zone ',A,' TMC surf ',I2,' not 4 vertexes!')
+  811           format('Zone ',A,' TMC surf ',I3,' not 4 vertexes!')
 
 C This would be a good place to calculate an alternative bounding box
 C for use in width/height calculations.
@@ -182,7 +182,7 @@ C and high WIDTH, HIGH:
                 ENDIF
               ELSE
                 WRITE(ITU,812) zname(icomp),J
-  812           format('Zone ',A,'TMC',I2,' may not be rectangular!')
+  812           format('Zone ',A,'TMC',I3,' may not be rectangular!')
               ENDIF 
 
               XX1=XPL(1)

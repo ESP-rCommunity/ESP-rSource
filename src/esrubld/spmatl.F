@@ -148,8 +148,9 @@ C except where explicitly redefined.
       common/tc/itc,icnt
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
-      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
-     &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
+      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,mspmres),
+     &         strspm(mspmnod,mspmres),unitspm(mspmnod,mspmres),
+     &         txtspm(mspmnod,mspmres)
       common/zonspmf/zspmf1(mcom),zspmf2(mcom)
       common/spmfxst/ispmxist,spflnam
       common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
@@ -456,8 +457,9 @@ C except where explicitly redefined.
       common/tc/itc,icnt
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
-      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
-     &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
+      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,mspmres),
+     &         strspm(mspmnod,mspmres),unitspm(mspmnod,mspmres),
+     &         txtspm(mspmnod,mspmres)
       common/zonspmf/zspmf1(mcom),zspmf2(mcom)
       common/spmfxst/ispmxist,spflnam
       common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
@@ -608,8 +610,9 @@ C convention except where explicitly redefined.
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
-      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
-     &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
+      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,mspmres),
+     &         strspm(mspmnod,mspmres),unitspm(mspmnod,mspmres),
+     &         txtspm(mspmnod,mspmres)
       common/zonspmf/zspmf1(mcom),zspmf2(mcom)
       common/spmfxst/ispmxist,spflnam
       common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
@@ -938,8 +941,9 @@ C except where explicitly redefined.
       common/tc/itc,icnt
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
-      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
-     &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
+      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,mspmres),
+     &         strspm(mspmnod,mspmres),unitspm(mspmnod,mspmres),
+     &         txtspm(mspmnod,mspmres)
       common/zonspmf/zspmf1(mcom),zspmf2(mcom)
       common/spvst/spmvstr(mspmnod,5)
       common/spmfxst/ispmxist,spflnam
@@ -1213,8 +1217,9 @@ C I/O.
       integer iuin      !- read unit number
 
 C Special materials.
-      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
-     &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
+      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,mspmres),
+     &         strspm(mspmnod,mspmres),unitspm(mspmnod,mspmres),
+     &         txtspm(mspmnod,mspmres)
       integer   ndatspm     !- number of data items for special material
       real      dataspm     !- special component results data
       character strspm*16   !- name string for the data item
@@ -1964,8 +1969,9 @@ C convention except where explicitly redefined.
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
-      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
-     &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
+      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,mspmres),
+     &         strspm(mspmnod,mspmres),unitspm(mspmnod,mspmres),
+     &         txtspm(mspmnod,mspmres)
       common/zonspmf/zspmf1(mcom),zspmf2(mcom)
       common/spmfxst/ispmxist,spflnam
       common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
@@ -2216,8 +2222,9 @@ C except where explicitly redefined.
       common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
      &              nnodat(mspmnod),spmdat(mspmnod,mspmdat)
       common/spmatlbl/spmlabel(mspmnod)
-      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
-     &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
+      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,mspmres),
+     &         strspm(mspmnod,mspmres),unitspm(mspmnod,mspmres),
+     &         txtspm(mspmnod,mspmres)
       common/zonspmf/zspmf1(mcom),zspmf2(mcom)
       common/fvalc/tfc(mcom,ms,mn),qfc(mcom)
 
@@ -2398,8 +2405,9 @@ C except where explicitly redefined.
       common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
      &              nnodat(mspmnod),spmdat(mspmnod,mspmdat)
       common/spmatlbl/spmlabel(mspmnod)
-      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
-     &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
+      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,mspmres),
+     &         strspm(mspmnod,mspmres),unitspm(mspmnod,mspmres),
+     &         txtspm(mspmnod,mspmres)
       common/zonspmf/zspmf1(mcom),zspmf2(mcom)
       common/evapsur/vapsur(mcom)
       common/prec1/sna(mcom,ms)
@@ -2541,8 +2549,9 @@ C thrmli(icomp,isurf,ielem,4) = thickness
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       common/vthp15/vcp(ms,mn,2),qcp(ms,mn)
       common/vthp16/vcf(ms,mn,2),qcf(ms,mn)
-      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
-     &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
+      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,mspmres),
+     &         strspm(mspmnod,mspmres),unitspm(mspmnod,mspmres),
+     &         txtspm(mspmnod,mspmres)
 
 C Special materials.
       common/spmfxst/ispmxist,spflnam
@@ -3153,8 +3162,9 @@ C except where explicitly redefined.
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       common/vthp15/vcp(ms,mn,2),qcp(ms,mn)
       common/vthp16/vcf(ms,mn,2),qcf(ms,mn)
-      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
-     &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
+      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,mspmres),
+     &         strspm(mspmnod,mspmres),unitspm(mspmnod,mspmres),
+     &         txtspm(mspmnod,mspmres)
 
 C Special materials.
       common/spmfxst/ispmxist,spflnam
@@ -3538,8 +3548,9 @@ C except where explicitly redefined.
       common/prec13/c(mcom,ms,mn,2),qc(mcom,ms,mn)
       common/vthp15/vcp(ms,mn,2),qcp(ms,mn)
       common/vthp16/vcf(ms,mn,2),qcf(ms,mn)
-      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
-     &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
+      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,mspmres),
+     &         strspm(mspmnod,mspmres),unitspm(mspmnod,mspmres),
+     &         txtspm(mspmnod,mspmres)
 
 C Special materials.
       common/spmfxst/ispmxist,spflnam
@@ -3940,8 +3951,9 @@ C except where explicitly redefined.
       common/vthp15/vcp(ms,mn,2),qcp(ms,mn)
       common/vthp16/vcf(ms,mn,2),qcf(ms,mn)
       common/zonspmf/zspmf1(mcom),zspmf2(mcom)
-      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
-     &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
+      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,mspmres),
+     &         strspm(mspmnod,mspmres),unitspm(mspmnod,mspmres),
+     &         txtspm(mspmnod,mspmres)
 
 C Special materials.
       common/spmfxst/ispmxist,spflnam
@@ -4225,54 +4237,77 @@ C Save future time row values as present values for next time step.
 10    continue
 
 C Results output.
-      ndatspm(ispmnod)=8
+      ndatspm(ispmnod)=12
       if(nsinc.le.1)then
          strspm(ispmnod,1)='/AppCON'
          unitspm(ispmnod,1)='(W/(m.degC))'
          txtspm(ispmnod,1)='Apparent conductivity of PCM layer'
 
-         strspm(ispmnod,6)='/APPSHC'
-         unitspm(ispmnod,6)='(J/(kg.degC))'
-         txtspm(ispmnod,6)='Apparent spec. heat capacity of PCM layer'
+         strspm(ispmnod,2)='/APPSHC'
+         unitspm(ispmnod,2)='(J/(kg.degC))'
+         txtspm(ispmnod,2)='Apparent spec. heat capacity of PCM layer'
 
-         strspm(ispmnod,2)='/StoredLH'
-         unitspm(ispmnod,2)='(J/kg)'
-         txtspm(ispmnod,2)='Latent heat stored in PCM'
+         strspm(ispmnod,3)='/StoredLH'
+         unitspm(ispmnod,3)='(J/kg)'
+         txtspm(ispmnod,3)='Latent heat stored in PCM'
 
-         strspm(ispmnod,3)='/SHCarea'
-         unitspm(ispmnod,3)='(J/m2)'
-         txtspm(ispmnod,3)='Latent heat stored per PCM area'
+         strspm(ispmnod,4)='/SHCarea'
+         unitspm(ispmnod,4)='(J/m2)'
+         txtspm(ispmnod,4)='Latent heat stored per PCM area'
 
-         strspm(ispmnod,4)='/PCMFAC'
-         unitspm(ispmnod,4)='(-)'
-         txtspm(ispmnod,4)='PCMFAC of middle node'
-
-         strspm(ispmnod,5)='/kkk'
+         strspm(ispmnod,5)='/PCMFAC'
          unitspm(ispmnod,5)='(-)'
-         txtspm(ispmnod,5)='k for each subnode - outside to inside'
+         txtspm(ispmnod,5)='PCMFAC of middle node'
 
-         strspm(ispmnod,7)='/ccc'
-         unitspm(ispmnod,7)='(-)'
-         txtspm(ispmnod,7)=
-     &                 'case for each subnode - outside to inside'
-
-         strspm(ispmnod,8)='/DT_F-P'
-         unitspm(ispmnod,8)='(K)'
-         txtspm(ispmnod,8)=
+         strspm(ispmnod,6)='/DT_F-P'
+         unitspm(ispmnod,6)='(K)'
+         txtspm(ispmnod,6)=
      &                 'Temperature difference (T_Future - T_Present)'
+
+         strspm(ispmnod,7)='/lflag_out'
+         unitspm(ispmnod,7)='(-)'
+         txtspm(ispmnod,7)='Liquification flag for outer subnode'
+
+         strspm(ispmnod,8)='/lflag_middle'
+         unitspm(ispmnod,8)='(-)'
+         txtspm(ispmnod,8)='Liquification flag for middle subnode'
+
+         strspm(ispmnod,9)='/lflag_in'
+         unitspm(ispmnod,9)='(-)'
+         txtspm(ispmnod,9)='Liquification flag for inner subnode'
+
+         strspm(ispmnod,10)='/db_out'
+         unitspm(ispmnod,10)='(-)'
+         txtspm(ispmnod,10)='Case / debug flag for outer subnode'
+
+         strspm(ispmnod,11)='/db_middle'
+         unitspm(ispmnod,11)='(-)'
+         txtspm(ispmnod,11)='Case / debug flag for middle subnode'
+
+         strspm(ispmnod,12)='/db_in'
+         unitspm(ispmnod,12)='(-)'
+         txtspm(ispmnod,12)='Case / debug flag for inner subnode'
       endif
 
-      if(Rtot.gt.0)dataspm(ispmnod,1)=thrmli(icomp,isurf,ielem,4)/Rtot
-      dataspm(ispmnod,2)=sumStoredLH
-      dataspm(ispmnod,3)=sumStoredLH*thrmli(icomp,isurf,ielem,2)*
+      if (Rtot.gt.0) then
+        dataspm(ispmnod,1)=thrmli(icomp,isurf,ielem,4)/Rtot
+      else
+        dataspm(ispmnod,1)=consol
+      endif
+      dataspm(ispmnod,2)=aveAPPSHC
+      dataspm(ispmnod,3)=sumStoredLH
+      dataspm(ispmnod,4)=sumStoredLH*thrmli(icomp,isurf,ielem,2)*
      &                                    thrmli(icomp,isurf,ielem,4)
-      dataspm(ispmnod,4)=pcmfac(icomp,isurf,inode)
-      dataspm(ispmnod,5)=100*pk(icomp,isurf,inode-1)+
-     &                                      10*pk(icomp,isurf,inode)+
-     &                                      pk(icomp,isurf,inode+1)
-      dataspm(ispmnod,6)=aveAPPSHC
-      dataspm(ispmnod,7)=100*db(1)+10*db(2)+db(3)
-      dataspm(ispmnod,8)=(tfcm-tpcm)
+      dataspm(ispmnod,5)=pcmfac(icomp,isurf,inode)
+      dataspm(ispmnod,6)=(tfcm-tpcm)
+
+      dataspm(ispmnod,7)=pk(icomp,isurf,inode-1)
+      dataspm(ispmnod,8)=pk(icomp,isurf,inode)
+      dataspm(ispmnod,9)=pk(icomp,isurf,inode+1)
+
+      dataspm(ispmnod,10)=db(1)
+      dataspm(ispmnod,11)=db(2)
+      dataspm(ispmnod,12)=db(3)
 
 C As a temporary measure, use zone-related variables, zspmf1, for
 C results library storage. Output is limited to one special material
@@ -4531,6 +4566,8 @@ C         |                                 \___/
 C         |-------------------------------------------------> T (degC)
 C *****************
 
+cx    use eclose logic here to "dampen" calcs? ... do what if TnS approx. equal TnS1?
+cx    storedLH += time step dependant?? 17/2/22
       if(TnS.lt.TnS1)then
 
 C PCM temperature increase.
@@ -4566,9 +4603,10 @@ C range (k=1, case 3).
 
 C Rest of solid PCM is completely melted and also heated as
 C liquid (case 4).
+cx << after timestep, appcon=conliq and appshc=shcliq, no? 17/2/22
                storeThisTS=LatentHeat(1,TnS,tsoli)
                storedLH=storedLH-storeThisTS
-          if(storedLH.gt.Lges)storedLH=Lges
+               if(storedLH.gt.Lges)storedLH=Lges
                AppCon=(1.0E0-storedLH/Lges)*consol+
      &                storedLH/Lges*conliq
                AppSHC=shcliq+storeThisTS/(TnS-tsoli)  !- to be verified
@@ -4680,9 +4718,9 @@ C Set new k.
             endif      !- temperature bracketing for k=0
          endif
       else
-                       !- what happens here (TnS = TnS1)?
-         if(AppCon.le.0.0E+00)AppCon=consol
-         if(AppSHC.le.0.0E+00)AppSHC=shcsol
+         !- what happens here (TnS = TnS1)?
+         if(AppCon.le.0.0E+00) AppCon=consol
+         if(AppSHC.le.0.0E+00) AppSHC=shcsol
          Debug=9
       endif
 
@@ -4707,8 +4745,9 @@ C Parameters.
 C Commons.
       common/spmatlbl/spmlabel(mspmnod)
       character spmlabel*16
-      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
-     &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
+      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,mspmres),
+     &         strspm(mspmnod,mspmres),unitspm(mspmnod,mspmres),
+     &         txtspm(mspmnod,mspmres)
       integer ndatspm       !- number of results items for each special material
       real dataspm          !- results data for special material
       character strspm*16
@@ -4727,12 +4766,8 @@ C.....Switch for zone name output here
       if (ReportBoolConfig("use_zonenames")) then
         write (cZone_Chars,'(A)') zname(iZone)(1:lnzname(iZone))
       else
-C.......Pad zone index to 'XX'
-        if ( iZone .gt. 9 ) then
-           write (cZone_Chars,'(A,I2)') 'zone_',iZone
-        else
-           write (cZone_Chars,'(A,I1)') 'zone_0',iZone
-        endif
+C.......Pad zone index to 'XXX'
+        write (cZone_Chars,'(A,I3.3)') 'zone_',iZone
       endif ! use_zonenames
 
 C << the following would ideally require that surface name lengths
@@ -4744,12 +4779,8 @@ cx      if (ReportBoolConfig ("use_surfacenames")) then
 cx        write (cSurf_Chars,'(A)')
 cx     &          sname(iZone,iSurface)(1:lnsname(icomp,isurf))
 cx      else
-C.......Pad surface index to 'XX'
-        if ( iSurf .gt. 9 ) then
-          write (cSurf_Chars,'(A,I2)') 'surface_',iSurf
-        else
-          write (cSurf_Chars,'(A,I1)') 'surface_0',iSurf
-        endif
+C.......Pad surface index to 'XXX'
+          write (cSurf_Chars,'(A,I3.3)') 'surface_',iSurf
 c      endif ! use_surfacenames
 
       if(inode.gt.9)then
@@ -4758,7 +4789,7 @@ c      endif ! use_surfacenames
          write(cNode_Chars,'(a,i1)') '0',inode
       endif
 
-      ndat=min0(8,ndatspm(ispmnod)) !- maximum of 8 entries possible
+      ndat=min0(mspmres,ndatspm(ispmnod)) !- maximum of mspmres entries possible
 
 C Output available PCM layer data.
       do idat=1,ndat
@@ -4813,7 +4844,7 @@ C CASE 1
 C apparent heat capacity - appsht(tcmf) constant value in phase change
 C temperature range 
 C laten heat stored - spcmf(tcmf) linear function 
-C than a and b calculated as:
+C then a and b calculated as:
 C a=0 
 c b=shtliq/(tsoli-tmelt) (shtliq - entire latent heat of phase change)
 C
@@ -4845,7 +4876,7 @@ C            tmelt   tsoli
 C CASE 2
 C apparent heat capacity - appsht(tcmf) increasing linear function 
 C laten heat stored - spcmf(tcmf) parabolic function opens up
-C than a and b calculated as:
+C then a and b calculated as:
 C a=2*shtliq/(tsoli-tmelt)**2 (shtliq - entire latent heat of phase change)
 c b=-a*tmelt
 C
@@ -4879,7 +4910,7 @@ C
 C CASE 3
 C apparent heat capacity - appsht(tcmf) decreasing linear function 
 C laten heat stored - spcmf(tcmf) parabolic function opens down
-C than a and b calculated as:
+C then a and b calculated as:
 C a=-2*shtliq/(tsoli-tmelt)**2 (shtliq - entire latent heat of phase change)
 c b=a*tsoli
 C 
@@ -4937,8 +4968,9 @@ C thrmli(icomp,isurf,ielem,4) = thickness
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       common/vthp15/vcp(ms,mn,2),qcp(ms,mn)
       common/vthp16/vcf(ms,mn,2),qcf(ms,mn)
-      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
-     &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
+      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,mspmres),
+     &         strspm(mspmnod,mspmres),unitspm(mspmnod,mspmres),
+     &         txtspm(mspmnod,mspmres)
 
 C Special materials.
       common/spmfxst/ispmxist,spflnam

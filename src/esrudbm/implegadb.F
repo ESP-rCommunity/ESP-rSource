@@ -75,7 +75,7 @@ C providing paramaters MGDB,MGCL,MGIT
       character dstmp*24,symname*12,othcolr*12,incolr*12
       character othacou*12,inacou*12,cnstimp*12
       character thrmtg*1,gaptg*1,mattag*12,glaydesc*32
-      CHARACTER LTMP*72,DFILE*72
+      CHARACTER LLTMP*144,DFILE*72
 
 C Logical noting whether it was possible to open legacy material
 C database to get IR and solar properties.
@@ -140,19 +140,19 @@ C there probably was an earlier scan and conversion of a legacy
 C material database so LFMAT should already be instanciated.
 C If it was not possible to open the material db then set default
 C values for the inside and outside solar and IR.
-      write(LTMP,'(a)') LFMAT(1:72)
-      DFILE='/usr/esru/esp-r/databases/constr_db3.materialdb'
-  29  CALL EASKS(LTMP,
+      write(LLTMP,'(a)') LFMAT(1:lnblnk(LFMAT))
+      DFILE='/usr/esru/esp-r/databases/material.db3.a'
+  29  CALL EASKS(LLTMP,
      &  'Legacy materials db used with this legacy construction',
-     &  'database?',72,DFILE,'legacy matrl name',IER,1)
-      IF(LTMP.EQ.' ')GOTO 29
+     &  'database?',96,DFILE,'legacy matrl name',IER,1)
+      IF(LLTMP.EQ.' ')GOTO 29
       IFMAT=IFIL
       call ERPFREE(IFMAT,IOS)
       ier=0
-      call rascimat(IFMAT,LTMP,IER)  ! try current ascii format
+      call rascimat(IFMAT,LLTMP,IER)  ! try current ascii format
       if(ier.eq.-2)then
         ier=0
-        call rlegacymat(IFMAT,LTMP,ier)  ! try older ascii format
+        call rlegacymat(IFMAT,LLTMP,ier)  ! try older ascii format
         if(ier.ne.0)then
           othir=0.90
           sinir=0.90
@@ -218,9 +218,9 @@ C Parse the GDESC string into string tokens.
         othacou='none'
         inacou='none'
         cnstimp='none'
-        write(itmenu(iit),'(a,20x)') mlcname(im)(1:lnblnk(mlcname(im)))
+        write(itmenu(iit),'(a)') mlcname(im)(1:lnmlcname(im))
         write(itdoc,'(3a)') 'construction ',
-     &    mlcname(im)(1:lnblnk(mlcname(im))),' is...'
+     &    mlcname(im)(1:lnmlcname(im)),' is...'
         call dstamp(dstmp)
         write(itdate(iit),'(a)') dstmp
 
@@ -1210,8 +1210,8 @@ C Look for index for MLCN in the current constructions file.
       WRITE(MLCN,'(A)')DES
       if(MLCN(1:4).eq.'UNKN') return
       do ii=1,nmlc
-        lndesc=lnblnk(mlcname(ii))
-        if(MLCN(1:lnmlcn).eq.mlcname(ii)(1:lndesc)) then
+        lnl=lnblnk(MLCN)
+        if(MLCN(1:lnl).eq.mlcname(ii)(1:lnmlcname(ii))) then
           imlcindex=ii   ! remember MLC index     
         endif
       end do

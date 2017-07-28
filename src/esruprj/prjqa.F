@@ -225,10 +225,10 @@ C Remember if each zone is fully attributed.
       character aok*17,CTLDOC*248,LCTLF*72
       character xfile*144,tg*1,delim*1,head*21
       character outs*124,outs248*248
-      character dstmp*24,mlc_name*12
+      character dstmp*24,mlc_name*32
       CHARACTER LAPROB*72,LPNF*72
       CHARACTER NDNAM*12,TOPTIC*12,msg*28,doit*248
-      character t16a*16,t16b*16,t16c*16
+      character t16a*16,t16b*16,t16c*16,t16d*16
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       character figlbl*20,figexe*48
       character grflbl*20,grfexe*48,foldlbl*20,foldexe*48
@@ -288,16 +288,17 @@ C in the current model. A -1 means not applicable
       integer NITMS   ! max items
       integer im,k,mnulen   ! multi column lines
       integer lr      ! length of model root string
-      integer iglib  ! for detecting GTK or X11
-      integer iitrc  ! for passing verbosity
-      integer imlc   ! loop for MLC reporting
-      logical odd   ! for display of vertex info
+      integer iglib   ! for detecting GTK or X11
+      integer iitrc   ! for passing verbosity
+      integer imlc    ! loop for MLC reporting
+      logical odd     ! for display of vertex info
+      integer lnsmlcn,lnl ! char lengths
       
       INTEGER :: i,icc,icoth,ie,ieripv,irec,iprb,inv
       INTEGER :: ins4,ino,imerr,ilcot,ijk,ij,ii,igrdp
       INTEGER :: ictlf,iuo,iunit1,iunit,iuf,iub,itu,itru,itrc,itbmenu
       INTEGER :: itb,istat,isc,is,ic,ins1,isel,iz,izo,izc,izz
-      INTEGER :: kk,j,l,lnb,lnc,lna,lsn10,lto,lzn10,m,igraphiclib
+      INTEGER :: kk,j,l,lnb,lnc,lna,lnd,lsn10,lto,lzn10,m,igraphiclib
       INTEGER :: iw
       INTEGER :: lsna,lk,lnk,lnkn  ! counters for string lengths
       REAL :: opq,totalarea,topq,tmp,tfla
@@ -407,6 +408,9 @@ C database gets its name corrupted requiring a re-scan).
         call FINDFIL(lworking,XST)
         if(XST)then
           CALL ERMLDB(0,IUOUT,IER)
+          IF(IER.eq.4)THEN
+            CALL ERMLDB2(0,iuout,IER)
+          endif
         else
 
 C Could not find Constructions db at this time, report to user.
@@ -826,8 +830,8 @@ C Generate report sorted by surface attributes.
         elseif(ins4.eq.2)then
           call edisp(itu,' Filtering for UNKNOWN surface composition.')
         elseif(ins4.eq.3)then
-          write(outs,'(3a)') ' Filtering for ',mlcname(ISEL)(1:12),
-     &      ' composition.'
+          write(outs,'(3a)') ' Filtering for ',
+     &      mlcname(ISEL)(1:lnmlcname(ISEL)),' composition.'
           call edisp(itu,outs)
         endif
         if(ins1.eq.1)then
@@ -934,8 +938,10 @@ C 'any horizontal','any orien.','cancel'.
               elseif(ins4.eq.2)then
                 if(SSMLCN(icc)(1:4).ne.'UNKN')apply=.false.
               elseif(ins4.eq.3)then
-                if(SSMLCN(icc)(1:4).eq.'UNKN')apply=.false. 
-                if(SSMLCN(icc)(1:12).ne.mlcname(ISEL)(1:12))then
+                if(SSMLCN(icc)(1:4).eq.'UNKN')apply=.false.
+                lnsmlcn=lnblnk(SSMLCN(icc))
+                if(SSMLCN(icc)(1:lnsmlcn).ne.
+     &             mlcname(ISEL)(1:lnmlcname(ISEL)))then
                   apply=.false.
                 endif
               endif
@@ -945,8 +951,8 @@ C 'any horizontal','any orien.','cancel'.
                 lsn10=MIN0(lnblnk(sn),10)
                 lzn10=MIN0(lnblnk(zn),10)
                 write(head,'(3a)') zn(1:lzn10),':',sn(1:lsn10)
-                WRITE(outs,'(a,1X,F7.2,F6.1,F6.1,1X,A4,
-     &            1X,A4,1X,A12,1X,A13)') head,SSNA(icc),SSPAZI(icc),
+                WRITE(outs,'(a,1X,F7.2,F6.1,F6.1,1X,A,
+     &            1X,A,1X,A,1X,A)') head,SSNA(icc),SSPAZI(icc),
      &            SSPELV(icc),SSOTF(icc),SSVFC(icc),SSMLCN(icc),
      &            SSOTHER(icc,1)
                 call edisp(itu,outs)
@@ -1125,6 +1131,7 @@ C Site information.
      &    ' in simulations is ',IYEAR,' and weekends occur on ', 
      &     wkd1(1:lnblnk(wkd1)),' and ',wkd2(1:lnblnk(wkd2)),'.'
         call edisp248(itu,outs248,80)
+        call edisp(itu,' ')
         if(siteexposureindex.eq.1)then
           WRITE(outs,'(a)')'site exposure is typical city centre'
         elseif(siteexposureindex.eq.2)then
@@ -1144,9 +1151,60 @@ C Site information.
   53      FORMAT('site exposure is sky=',F4.2,' ground=',F4.2,
      &      ' other buildings=',F4.2)
         endif
-        write(outs248,'(3a,f4.2,a)') 'The ',outs(1:lnblnk(outs)),
-     &    ' and the ground reflectance is ',groundrefl,'.'
-        call edisp248(itu,outs248,80)
+
+C Cater for groundreflmodel here (groundreflmodel.eq.1, 2 or 3)
+        if (groundreflmodel.eq.1) then
+          write(outs248,'(3a,f4.2,a)') 'The ',outs(1:lnblnk(outs)),
+     &      ' and the ground reflectance is ',groundrefl,'.'
+          call edisp248(itu,outs248,80)
+        elseif (groundreflmodel.eq.2) then
+          write(outs248,'(3a)') 'The ',outs(1:lnblnk(outs)),
+     &      '. The ground reflectance is defined with monthly values:'
+          call edisp248(itu,outs248,80)
+C         Write monthly values ...
+          itrunc=1
+          ipos=1
+          do while (itrunc.ne.0)
+            call arlist(ipos,12,groundreflmonth,12,'S',outs248,
+     &                                                  loutln,itrunc)
+            call edisp248(itu,outs248,100)
+            ipos=itrunc+1
+          end do
+
+          call edisp(itu,' ')
+          write(outs248,'(a)')
+     &      'Snow coverage is defined as days per month with snow:'
+C         Write monthly values ...
+          itrunc=1
+          ipos=1
+          do while (itrunc.ne.0)
+            call ailist(ipos,12,dayswithsnow,12,'S',outs248,
+     &                                                  loutln,itrunc)
+            call edisp248(itu,outs248,100)
+            ipos=itrunc+1
+          end do
+
+        else ! groundreflmodel.eq.3
+          write(outs248,'(3a)') 'The ',outs(1:lnblnk(outs)),
+     &      '. The ground reflectance is defined with monthly values:'
+          call edisp248(itu,outs248,80)
+C         Write monthly values
+          itrunc=1
+          ipos=1
+          do while (itrunc.ne.0)
+            call arlist(ipos,12,groundreflmonth,12,'S',outs248,
+     &                                                  loutln,itrunc)
+            call edisp248(itu,outs248,110)
+            ipos=itrunc+1
+          end do
+
+          call edisp(itu,' ')
+          write(outs248,'(3a)')
+     &      'Hourly snow coverage is defined via the data file ',
+     &           SNFNAM(1:lnblnk(SNFNAM)),'.'
+          call edisp248(itu,outs248,80)
+
+        endif
         call edisp(itu,' ')
 
 C Print address for building and client. If there is a UK NCM
@@ -1684,7 +1742,7 @@ C Obtain transparent surface index (>0) related to PV module location.
      &        SSMLCN(izstocn(ivals(ispmloc(ispm,1)),ispmloc(ispm,2))),
      &        ispmloc(ispm,3),
      &        (merge('Trn','Opq',iTMCidx.gt.0)),nnodat(ispm)
- 1111       FORMAT(1X,I3,1X,A16,1X,A12,1X,A12,1X,A12,1X,I3,3X,A3,3X,I3)
+ 1111       FORMAT(1X,I3,1X,A,1X,A,1X,A,1X,A,1X,I3,3X,A,3X,I3)
             CALL EDISP(itu,OUTS)
 
   33      continue ! loop through all spm entries
@@ -1749,6 +1807,7 @@ C that have been referenced and if very verbose (3) list all controls.
             call LSTCNTL(itu,0,0)
           endif
         endif
+
         if(NCL.gt.0)then
           call edisp(itu,' ')
           WRITE(outs,'(a,I2,a)')' Plant control includes ',
@@ -1761,6 +1820,7 @@ C that have been referenced and if very verbose (3) list all controls.
             enddo
           endif
         endif
+
         if(NCC.gt.0)then
           call edisp(itu,' ')
           WRITE(outs,'(a,I2,a)')' Flow control includes ',
@@ -1773,6 +1833,20 @@ C that have been referenced and if very verbose (3) list all controls.
  246        continue
           endif
         endif
+
+        if(nCFCctlloops.gt.0)then
+          call edisp(itu,' ')
+          WRITE(outs,'(a,I2,a)')' CFC control includes ',
+     &      nCFCctlloops,' functions.'
+          call edisp(itu,outs)
+          call edisp248(itu,CFCctldoc,80)
+          if(controlinfo.ge.2)then
+            do 247 ii=1,nCFCctlloops
+              call LSTCNTL(itu,6,ii)
+ 247        continue
+          endif
+        endif
+
         if(NGF.gt.0)then
           call edisp(itu,' ')
           WRITE(outs,'(a,I2,a)')' Global control includes ',
@@ -1872,9 +1946,10 @@ C Jump if no zones.
           DO 41 I=1,NZSUR(ivals(iz))
             icc=izstocn(ivals(iz),i)
             if(SSOTHER(icc,1)(1:4).eq.'UNKN')attribok(IVALS(IZ))=.false.
+
+C At this point CFC and CFC2 are not counted as transparent.
             if(SSMLCN(icc)(1:4).eq.'UNKN')attribok(IVALS(IZ))=.false.
-            if(SSOTF(icc)(1:4).NE.'OPAQ'.AND.
-     &            SSOTF(icc)(1:4).NE.'CFC ')then
+            if(SSOTF(icc)(1:4).NE.'OPAQ') then
               TRN=TRN+SSNA(icc)
             else
               OPQ=OPQ+SSNA(icc)
@@ -1958,11 +2033,15 @@ C Write out UA information if extra information requested.
         if(zoneextrainfo.gt.1)then
 
 C Debug...
-C          write(itu,*) 'in zone ',izz,' area wall = ',areawall(IZZ)
+C          write(itu,*) 'in zone ',izz,' area opq to ambient = ',
+C     &                 areawall(IZZ)
 C          write(itu,*) 'area flat roof = ',areafltroof(IZZ)
 C          write(itu,*) 'area sloped roof = ',areaslproof(IZZ)
 C          write(itu,*) 'area skylights = ',areaskylt(IZZ)
-C          write(itu,*) 'area windows = ',areatran(IZZ)
+C          write(itu,*) 'area facade windows = ',areatran(IZZ)
+C          write(itu,*) 'area inside windows = ',areainttran(IZZ)
+C          write(itu,*) 'area inside opq wall floor ceil = ',
+C     &                  areaintopaq(IZZ)
 C          write(itu,*) 'floor area = ',ZBASEA(IZZ)
 C          write(itu,*) 'to ground = ',areaground(IZZ)
 C          write(itu,*) 'exposed = ',exposed(IZZ)
@@ -1981,6 +2060,7 @@ C          write(itu,*) 'TB heat loss = ',totheatloss(IZZ)
 C If there is external glazing or skylights then report.
             call rel16str(exposed(IZZ),t16a,lna,ier)
             call rel16str(vexposed(IZZ),t16b,lnb,ier)
+            call rel16str(areawall(IZZ),t16c,lnc,ier)
             if(vexposed(IZZ).gt.0.1)then
               write(outs,'(5a)')' There is ',
      &          t16a(1:lna),'m2 of exposed surface area, ',
@@ -1999,8 +2079,8 @@ C If there is external glazing or skylights then report.
             endif
             call rel16str(wallper(IZZ),t16a,lna,ier)
             call rel16str(uavwall(IZZ),t16b,lnb,ier)
-            write(outs,'(3a,F5.3,2a)')' Outside walls are ',
-     &        t16a(1:lna),' % of floor area & average U of ',
+            write(outs,'(5a,F5.3,2a)')' Facade opaque is ',t16c(1:lnc),
+     &        'm2 & ',t16a(1:lna),' % of floor area & average U of ',
      &        uavwall(IZZ)/areawall(IZZ),' & UA of ',t16b(1:lnb)
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
           endif
@@ -2042,8 +2122,10 @@ C If there is external glazing or skylights then report.
             call rel16str(tranper(IZZ),t16a,lna,ier)
             call rel16str(vtranper,t16b,lnb,ier)
             call rel16str(uavgtran(IZZ),t16c,lnc,ier)
-            write(outs,'(5a,F5.3,2a)')
-     &        ' Glazing is ',t16a(1:lna),' % of floor & ',t16b(1:lnb),
+            call rel16str(areatran(IZZ),t16d,lnd,ier)
+            write(outs,'(7a,F5.3,2a)')
+     &        ' Facade glazing is ',t16d(1:lnd),'m2 & ',t16a(1:lna),
+     &        ' % of floor & ',t16b(1:lnb),
      &        ' % facade with average U of ',
      &        uavgtran(IZZ)/areatran(IZZ),' & UA of ',t16c(1:lnc)
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
@@ -2059,6 +2141,14 @@ C If there is external glazing or skylights then report.
             write(outs,'(3a,F5.3,2a)')' Skylights are ',
      &        t16a(1:lna),' % of floor area & average U of ',
      &        uavgsky(IZZ)/areaskylt(IZZ),' & UA of ',t16b(1:lnb)
+            if(attribok(IVALS(IZ)))call edisp(itu,outs)
+          endif
+          if(areainttran(IZZ).gt.0.1.or.areaintopaq(IZZ).gt.0.1)then
+            call rel16str(areainttran(IZZ),t16a,lna,ier)
+            call rel16str(areaintopaq(IZZ),t16b,lnb,ier)
+            write(outs,'(5a)')' Opaque partitions:ceiling:floor ',
+     &        t16b(1:lnb),'m2 & trasparent partitions:ceiling:floor ',
+     &        t16a(1:lna),'m2.'
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
           endif
           if(areaground(IZZ).gt.0.1)then
@@ -2454,13 +2544,15 @@ C While looping check that constructions of partitions are matching.
 
 C If the current construction is nonsymmetric then it should not be
 C used for a partition (and db does not have a linked MLC - inform the user.
+              lnsmlcn=lnblnk(SSMLCN(icc))
               write(outs,'(5a)') 'Surface ',SN(1:lnblnk(SN)),
      &          ' has a nonsymmetric construction ',
-     &          SSMLCN(icc)(1:lnblnk(SSMLCN(icc))),'.'
+     &          SSMLCN(icc)(1:lnsmlcn),'.'
               call edisp(itu,outs)
+              lnsmlcn=lnblnk(SSMLCN(icoth))
               write(outs,'(5a)') 'It faces ',
      &          SSNAME(icoth),' which is composed of ',
-     &          SSMLCN(icoth)(1:12),' (which may not match).'
+     &          SSMLCN(icoth)(1:lnsmlcn),' (which may not match).'
               call edisp(itu,outs)
             else
               continue
@@ -2671,7 +2763,7 @@ C Debug.
 C        write(6,*) 'nmlc is ',nmlc,databaseinfo
         do imlc=1,nmlc
           found=.false.
-          mlc_name=mlcname(imlc)(1:12)
+          write(mlc_name,'(a)') mlcname(imlc)(1:lnmlcname(imlc))
           call mlcrefs(mlc_name,areamlc,tareamlc,found)
           if(found)then
             if(databaseinfo.eq.2)then
@@ -2913,9 +3005,13 @@ C see if there are shading and obstruction files.
                   nsurfinso(iz)=0
                   DO 678 I=1,NZSUR(iz)
                     ioc=IZSTOCN(iz,i)
+
+C At this point CFC and CFC2 surfaces are not included as
+C insolation sources (?).
                     if(SSOTHER(ioc,1)(1:5).eq.'EXTER'.and.
      &                 SSOTF(ioc)(1:4).ne.'OPAQ'.and.
-     &                 SSOTF(ioc)(1:4).ne.'CFC ')then
+     &                 SSOTF(ioc)(1:4).ne.'CFC '.and.
+     &                 SSOTF(ioc)(1:4).ne.'CFC2')then
                       nsurfinso(iz)=nsurfinso(iz)+1
                       isurfinso(iz,nsurfinso(iz))=I
                     endif
@@ -2928,9 +3024,13 @@ C see if there are shading and obstruction files.
                   nsurfinso(iz)=0
                   DO 679 I=1,NZSUR(iz)
                     ioc=IZSTOCN(iz,i)
+
+C At this point CFC and CFC2 surfaces are not included as
+C insolation sources (?).
                     if(SSOTHER(ioc,1)(1:5).eq.'EXTER'.and.
      &                 SSOTF(ioc)(1:4).ne.'OPAQ'.and.
-     &                 SSOTF(ioc)(1:4).ne.'CFC ')then
+     &                 SSOTF(ioc)(1:4).ne.'CFC '.and.
+     &                 SSOTF(ioc)(1:4).ne.'CFC2')then
                       nsurfinso(iz)=nsurfinso(iz)+1
                       isurfinso(iz,nsurfinso(iz))=I
                     endif
@@ -2977,9 +3077,13 @@ C Otherwise assume all applicable for shading and insolation.
                 nsurfinso(iz)=0
                 DO 778 I=1,NZSUR(iz)
                   ioc=IZSTOCN(iz,i)
+
+C At this point CFC and CFC2 surfaces are not included as
+C insolation sources (?).
                   if(SSOTHER(ioc,1)(1:5).eq.'EXTER'.and.
      &               SSOTF(ioc)(1:4).ne.'OPAQ'.and.
-     &               SSOTF(ioc)(1:4).ne.'CFC ')then
+     &               SSOTF(ioc)(1:4).ne.'CFC '.and.
+     &               SSOTF(ioc)(1:4).ne.'CFC2')then
                     nsurfinso(iz)=nsurfinso(iz)+1
                     isurfinso(iz,nsurfinso(iz))=I
                   endif
@@ -2991,9 +3095,13 @@ C Otherwise assume all applicable for shading and insolation.
                 nsurfinso(iz)=0
                 DO 779 I=1,NZSUR(iz)
                   ioc=IZSTOCN(iz,i)
+
+C At this point CFC and CFC2 surfaces are not included as
+C insolation sources (?).
                   if(SSOTHER(ioc,1)(1:5).eq.'EXTER'.and.
      &               SSOTF(ioc)(1:4).ne.'OPAQ'.and.
-     &               SSOTF(ioc)(1:4).ne.'CFC ')then
+     &               SSOTF(ioc)(1:4).ne.'CFC '.and.
+     &               SSOTF(ioc)(1:4).ne.'CFC2')then
                     nsurfinso(iz)=nsurfinso(iz)+1
                     isurfinso(iz,nsurfinso(iz))=I
                   endif
@@ -3269,8 +3377,14 @@ C one in forground in an xterm with `-act update_silent`
 C as the command line.
             if(IRT.eq.1)then
               call comissionish(iz,'sr ',ier)
+              if(ier.ne.0)then
+                call edisp(iuout,'Possible error in calculations.')
+              endif
             else
               call comissionish(iz,'ir ',ier)
+              if(ier.ne.0)then
+                call edisp(iuout,'Possible error in calculations.')
+              endif
             endif
           endif
   43    continue
@@ -3358,6 +3472,8 @@ C floor area for each.
         uavgsky(IZZ) = 0.0
         uavground(IZZ) = 0.0
         areatran(IZZ) = 0.0
+        areainttran(IZZ) = 0.0
+        areaintopaq(IZZ) = 0.0
         areawall(IZZ) = 0.0
         areaslproof(IZZ) = 0.0
         areafltroof(IZZ) = 0.0
@@ -3385,7 +3501,9 @@ C Check the U value for each surface.
 C << possible place to use ssmlcindex >>
 
             do 511 ii=1,nmlc
-              if(SSMLCN(icc)(1:12).eq.mlcname(ii)(1:12)) then
+              lnssmlc=lnblnk(SSMLCN(icc))
+              if(SSMLCN(icc)(1:lnssmlc).eq.
+     &           mlcname(ii)(1:lnmlcname(ii)))then
 
 C Recover the ISO 6946 U values for horizontal, upwards and downwards
 C flow as well as internal partition (horizontal 0.13 both sides).
@@ -3395,7 +3513,7 @@ C the U and UA reporting below.
                 call etmldbu(0,itu,ii,UVH,UVU,UVD,UVI,UVG)
 
 C Debug.
-C                write(6,*) mlcname(ii)(1:12),'ii UVH UVU UVD UVI UVG',
+C                write(6,*) mlcname(ii)(1:lnmlcname(ii)),'ii UVH UVU UVD UVI UVG',
 C     &            ii,UVH,UVU,UVD,UVI,UVG
 
               else
@@ -3441,8 +3559,9 @@ C For floors facing outside assume downward hc coef.
                   xareawall = xareawall + SSNA(icc)
                   xuavwall = xuavwall + (SSNA(icc) * UVD)
                 endif
-              elseif(SSOTF(icc)(1:4).ne.'OPAQ'.and.
-     &               SSOTF(icc)(1:4).ne.'CFC ')then
+              elseif(SSOTF(icc)(1:4).ne.'OPAQ') then !.and.
+cx     &               SSOTF(icc)(1:4).ne.'CFC '.and.
+cx     &               SSOTF(icc)(1:4).ne.'CFC2')then
                 if(SSVFC(icc)(1:4).eq.'CEIL'.or.
      &             SSVFC(icc)(1:4).eq.'SLOP')then
 
@@ -3470,6 +3589,16 @@ C Consider glazing on walls to be a part of facade.
                 endif
               else
                 continue
+              endif
+            elseif(IE.eq.3)then
+
+C Internal partitions floors ceilings.
+              if(SSOTF(icc)(1:4).eq.'OPAQ')then
+                areaintopaq(IZZ) = areaintopaq(IZZ)+SSNA(icc)
+              elseif(SSOTF(icc)(1:4).ne.'OPAQ'.and.
+     &               SSOTF(icc)(1:4).ne.'CFC '.and.
+     &               SSOTF(icc)(1:4).ne.'CFC2')then
+                areainttran(IZZ) = areainttran(IZZ)+SSNA(icc)
               endif
             elseif(IE.eq.4)then
 

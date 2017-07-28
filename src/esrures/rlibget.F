@@ -1243,7 +1243,7 @@ C CALLS: MOREC1 MOREC2
       IUNIT=IFIL
       if(iz.eq.0.or.iday.eq.0.or.iset.eq.0.or.its.eq.0)then
         call edisp(iuout,'Error: One of the GZTMS parameters is zero.')
-        write(outs,'(a,i3,a,i2,a,i2)') 'iday= ',iday,' zone= ',iz,
+        write(outs,'(a,i3,a,i3,a,i2)') 'iday= ',iday,' zone= ',iz,
      &    ' set= ',iset
         call edisp(iuout,outs)
         return
@@ -1472,7 +1472,8 @@ C Get only if save is level 4, then compute start record address.
         endif
 
 C Debug.
-C        write(6,*) 'GSURFB data at ',IDAY,IZONE,ISFN,ITS,TSout,qswrdi,
+C        write(6,'(a,4i3,17f8.2)') 'GSURFB data at ',
+C     &    IDAY,IZONE,ISFN,ITS,TSout,qswrdi,
 C     &    qlwrdi,qconvi,qcondi,qstori,qstore,qconde,qconve,
 C     &    qlwrde,qlwrbd,qlwrsk,qswrde,avqcrioc,avqcrili,
 C     &    avqcrisp,avqcrioth
@@ -1629,14 +1630,15 @@ C QCASR the total radiant of all gains
 C QCASC the total convective of all gains
 C QCASL the total latent of all gains
 C FRAC the fraction controlled (0.0-1.0)
-C perocupc,perlightc,perequipc,otherc: sensible con for occup lights equip other.
-C perocupr,perlightr,perequipr,otherr: sensible rad for occup lights equip other.
-C perocupl,perlightl,perequipl,otherl: latent for occup lights equip other.
+C perocupc,perlightc,perequipc,perotherc: sensible con for occup lights equip other.
+C perocupr,perlightr,perequipr,perotherr: sensible rad for occup lights equip other.
+C perocupl,perlightl,perequipl,perotherl: latent for occup lights equip other.
 C theonectld (integer index) if non-zero the index of the gain to control.
 
       SUBROUTINE getallcas(IDAY,IZ,ISET,ITS,QCASR,QCASC,QCASL,FRAC,
-     & perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
-     & perequipr,otherr,perocupl,perlightl,perequipl,otherl,theonectld)
+     & perocupc,perlightc,perequipc,perotherc,perocupr,perlightr,
+     & perequipr,perotherr,perocupl,perlightl,perequipl,perotherl,
+     & theonectld)
 #include "building.h"
 #include "geometry.h"
       COMMON/FILEP/IFIL
@@ -1650,7 +1652,7 @@ C theonectld (integer index) if non-zero the index of the gain to control.
       real perocupc,perocupr,perocupl ! average occupant to write out
       real perlightc,perlightr,perlightl ! average lighting to write out
       real perequipc,perequipr,perequipl ! average equipment to write out
-      real otherc,otherr,otherl ! average other (future expansion) to write out
+      real perotherc,perotherr,perotherl ! average other to write out
       integer theonectld  ! if non-zero the casual gain type that is controlled.
       real X1,X2,X3,X4,X5
       DIMENSION XD(MS+7) ! for scanning past unneeded data
@@ -1659,7 +1661,7 @@ C theonectld (integer index) if non-zero the index of the gain to control.
       if(iz.eq.0.or.iday.eq.0.or.iset.eq.0.or.its.eq.0)then
         call edisp(iuout,
      &    'Error: One of the getallcas parameters is zero.')
-        write(outs,'(a,i3,a,i2,a,i2)') 'iday= ',iday,' zone= ',iz,
+        write(outs,'(a,i3,a,i3,a,i2)') 'iday= ',iday,' zone= ',iz,
      &    ' set= ',iset
         call edisp(iuout,outs)
         return
@@ -1671,26 +1673,27 @@ C Get ZTMS only if save is level 2 - 4.
         NN=NZSUR(IZ)
         NA=NZSUR(IZ)+7
         READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000) (XD(I),I=1,NA),
-     &    perocupc,perlightc,perequipc,otherc     
+     &    perocupc,perlightc,perequipc,perotherc     
         IREC=IREC+1
         READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000) (XD(I),I=1,NA),
-     &    perocupr,perlightr,perequipr,otherr
+     &    perocupr,perlightr,perequipr,perotherr
         IREC=IREC+1
         READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000) (XD(I),I=1,NN),
      &    QCASR,QCASC,X1,X2,FRAC,X3,X4,perocupl,perlightl,
-     &    perequipl,otherl,theonectld
+     &    perequipl,perotherl,theonectld
 
 C Make up QCASL from the separate latent gains.
-        QCASL=perocupl+perlightl+perequipl
+        QCASL=perocupl+perlightl+perequipl+perotherl
 
 C Dummy use of the temporary variables.
         X5=X1+X2+X3+X4+XD(1)
 
 C Debug.
-C        write(6,*) 'getallcas: ',IDAY,IZ,ISET,ITS,QCASR,QCASC,QCASL,
-C     &    FRAC,perocupc,perlightc,perequipc,otherc,
-C     &    perocupr,perlightr,perequipr,otherr,
-C     &    perocupl,perlightl,perequipl,otherl,theonectld
+C        write(6,'(a,4i3,16F6.1,i3)') 'getallcas: ',IDAY,IZ,ISET,ITS,
+C     &    QCASR,QCASC,QCASL,
+C     &    FRAC,perocupc,perlightc,perequipc,perotherc,
+C     &    perocupr,perlightr,perequipr,perotherr,
+C     &    perocupl,perlightl,perequipl,perotherl,theonectld
 
       ELSE
          call edisp(iuout,
@@ -1815,10 +1818,6 @@ C Pre calculated data (filtered).
       common/MMAFDAT/IFILT,RDFMAX(MCOM,3,MZRL),RDFMIN(MCOM,3,MZRL),
      &    RDFAVE(MCOM,3,MZRL),RDTFMAX(MCOM,3,MZRL),RDTFMIN(MCOM,3,MZRL)
 
-C Signal that pre-scan has been used.
-      logical didprescan
-      common/MMAPRE/didprescan
-
       dimension DATA(3,MZRL),XD(MZRL)
       character outs*124
 
@@ -1921,7 +1920,7 @@ C Average filtered and non filtered data and compare to
 C current max/min values.
             ih=int(ATIME+1.)
             ioc=1
-            call getocup(IZONE,IDAY,ih,ioc,ier)
+            call getocup(IZONE,IDAY,ITS,ioc,ier)
             do 600 K=1,3
               do 610 KI=1,NZI
                 if (NOUT.gt.1) DATA(K,KI)=DATA(K,KI)/float(NOUT)

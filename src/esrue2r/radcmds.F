@@ -219,8 +219,15 @@ C Continue and run radiance simulation?
       dok=.true.
       helptopic='e2r_proceed_with_sim'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      call ASKOK('Scene description is now complete.',
+      if (SCENEPURP(ISCENE)(1:5).eq.'Glare') then
+        CALL USRMSG(
+     &  'Glare scene description is now complete. You will need to',
+     &  'redefine the eye point directives before simulating.','W')
+        ok=.false.
+      else
+        call ASKOK('Scene description is now complete.',
      &           'Proceed with simulation?',OK,dok,nbhelp)
+      endif
       if (OK) then
         if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
      &      SCENEPURP(ISCENE)(1:8).eq.'Internal'.or.
@@ -231,8 +238,8 @@ C Generate default view information and then the image.
           call genimage(1)
         elseif (SCENEPURP(ISCENE)(1:5).eq.'Glare') then
 
-C Generate <<? default view information ?>> and then the image.
-          call defview
+C Generate the glare image assuming the user has set viewpoints.
+C          call defview
           call genimage(2)
           call getglr
           call dispimage(2)
@@ -719,9 +726,9 @@ C and set the default viewing angles to 1.2 factor.
         dvangv=eang*1.2
         dvangh=eang*1.2
         if(rvpx.lt.99.0.and.rvpy.lt.99.0.and.rvpz.lt.99.0)then
-	  short=.true.
+          short=.true.
         else
-	  short=.false.
+          short=.false.
         endif
         call eclose(cutfor,0.0,0.1,okfore)
         call eclose(cutaft,0.0,0.1,okaft)
@@ -729,18 +736,18 @@ C and set the default viewing angles to 1.2 factor.
         call AZ2UV(dvazim,dvelev,vdx,vdy,vdz)
         if(short)then
           if(okfore.and.okaft)then
-            write(vewcmds(1),'(a,3F6.2,a,3F6.3,a,3F5.2,2(a,F5.1),a)') 
+            write(vewcmds(1),'(a,3F7.1,a,3F7.3,a,3F5.2,2(a,F5.1),a)') 
      &       '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
      &       ' -vu ',vux,vuy,vuz,' -vh ',dvangh,' -vv ',dvangv,
      &       ' -vs 0 -vl 0 -vo 0 -va 0'
           else
-            write(vewcmds(1),'(a,3F6.2,a,3F6.3,a,3F5.2,4(a,F5.1))') 
+            write(vewcmds(1),'(a,3F7.1,a,3F7.3,a,3F5.2,4(a,F5.1))') 
      &       '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
      &       ' -vu ',vux,vuy,vuz,' -vh ',dvangh,' -vv ',dvangv,
      &       ' -vs 0 -vl 0 -vo ',cutfor,' -va ',cutaft
           endif
         else
-          write(vewcmds(1),'(a,3F8.2,a,3F6.3,a,3F5.2,4(a,F5.1))') 
+          write(vewcmds(1),'(a,3F8.2,a,3F7.3,a,3F5.2,4(a,F5.1))') 
      &       '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
      &       ' -vu ',vux,vuy,vuz,' -vh ',dvangh,' -vv ',dvangv,
      &       ' -vs 0 -vl 0 -vo ',cutfor,' -va ',cutaft
@@ -1400,9 +1407,12 @@ C Setup and pass in parameters to win3d.
 
 C Stuff into static variables for later access and draw axis.
             call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
-            call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,'UGR')
-            call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
-     &        'Degrees from view center')
+            call dintervalf(YMIN,YMAX,DY,NDEC,0)
+            call vrtaxisdd(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,
+     &        DY,NDEC,0,'UGR')
+            call dintervalf(Xmin,Xmax,DY,NDEC,0)
+            call horaxisdd(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
+     &        DY,NDEC,'Degrees from view center')
 
 C Draw values as a circle.
             call u2pixel(UGRANG(1),UGRV(1),iix1,iiy1)
@@ -1582,6 +1592,14 @@ C Debug/trace.
         write(icout,*) doit(1:lnblnk(doit))
       endif
       call runit(doit,'-')
+      
+C Now display glare sources on image.
+      write(doit,'(7a)') 'cd ',runpath(1:lnrp),
+     &  '; xglaresrc ',pf(1:lnblnk(pf)),' ',gf(1:lnblnk(gf)),' &'
+      call runit(doit,'-')
+      call usrmsg(
+     &  'The glare sources are shown via circles & intensity values.',
+     &  'Click when done. More glare info via view visu results','W')
 
       return
       end

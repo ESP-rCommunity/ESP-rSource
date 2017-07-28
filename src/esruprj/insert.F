@@ -71,6 +71,16 @@ C Passed parameters:
       LOGICAL closex,closey
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       LOGICAL     OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+
+C Tollerance for surface matching.
+      real ANGCC  ! angle between surfaces tolerance
+      real CACC   ! tolerance between vertices
+      real DACC   ! tolerance along line
+      real COGCC  ! tolerance between surface COG
+      real SNACC  ! tolerance between surface areas
+      integer IACC ! number of matching corners outside dist tolerance
+      common/matching/ANGCC,CACC,DACC,COGCC,SNACC,IACC
+
       logical same,clkok,found,DOK,DDOK,nameok,matchver
       logical newgeo  ! to use for testing if new/old geometry file.
       logical hasanotherchild ! true is surface is parent
@@ -203,7 +213,7 @@ C Update IE2 and ssother third tag in the other zone.
               IE2(IXU)=IE2(IXU)-1
               write(ssother(ixu,1),'(a)') 'ANOTHER'
               write(ssother(ixu,2),'(i2.2)') IC2(ixu)
-              write(ssother(ixu,3),'(i2.2)') IE2(ixu)
+              write(ssother(ixu,3),'(i3.3)') IE2(ixu)
 
 C Logic to decide whether to upgrade other zone geometry format.
               if(igupgrade.eq.2.and.(.NOT.newgeo))then
@@ -641,8 +651,7 @@ C Read the other zone and put selected surface data into temp storage.
         call usrmsg(outs,' ','-')
         NVER1=NVER(IS)
         DO 142 IV=1,NVER1
-          X1(iv)=X(JVN(IS,IV))
-          Y1(iv)=Y(JVN(IS,IV))
+          X1(iv)=X(JVN(IS,IV)); Y1(iv)=Y(JVN(IS,IV))
           Z1(iv)=Z(JVN(IS,IV))
   142   continue
 
@@ -744,15 +753,11 @@ C Create string buffer for variables with space at the end.
 C Do each of the transforms in order.
           CALL TRANSUR(ITRC,iuout,NVER1,X1,Y1,Z1,vdis,XT,YT,ZT,ZSDES)
           do 551 nt1=1,NVER1
-            X1(nt1)=XT(nt1)
-            Y1(nt1)=YT(nt1)
-            Z1(nt1)=ZT(nt1)
+            X1(nt1)=XT(nt1); Y1(nt1)=YT(nt1); Z1(nt1)=ZT(nt1)
  551      continue
 
           DO 553 I=1,NVER1
-            X1(I)=X1(I)+VALX
-            Y1(I)=Y1(I)+VALY
-            Z1(I)=Z1(I)+VALZ
+            X1(I)=X1(I)+VALX; Y1(I)=Y1(I)+VALY; Z1(I)=Z1(I)+VALZ
  553      continue
 
           if(ANGR.LT.-.01.OR.ANGR.GT..01)then
@@ -785,9 +790,7 @@ C Shift along normal and copy transformed points back to X1,Y1,Z1 array.
           endif
           CALL TRANSUR(ITRC,iuout,NVER1,X1,Y1,Z1,vdis,XT,YT,ZT,ZSDES)
           do 151 nt1=1,NVER1
-            X1(nt1)=XT(nt1)
-            Y1(nt1)=YT(nt1)
-            Z1(nt1)=ZT(nt1)
+            X1(nt1)=XT(nt1); Y1(nt1)=YT(nt1); Z1(nt1)=ZT(nt1)
  151      continue
         elseif(IRT.eq.2)then
 
@@ -839,17 +842,18 @@ C Rotate around a point in the surface.
         endif
 
 C After transforms, append new surface vertices to zone list if
-C they are unique, check with user if 5-10mm, otherwise link the
-C new surface to an existing vetex.
+C they are unique, use CACC for auto otherwise check with user 
+C if <10mm, otherwise link the new surface to an existing vetex.
   166   continue
         do 143 ix = 1,NVER1
           if(NTV+1.le.MTV)then
             found=.false.
             do 144 ixx = 1,NTV
               call eclose3(X1(ix),Y1(ix),Z1(ix),X(ixx),Y(ixx),Z(ixx),
-     &          0.004,closex)
+     &          CACC,closex)   ! if within CACC assume the same
               call eclose3(X1(ix),Y1(ix),Z1(ix),X(ixx),Y(ixx),Z(ixx),
-     &          0.010,closey)
+     &          CACC*2,closey)
+              dist=crowxyz(X1(ix),Y1(ix),Z1(ix),X(ixx),Y(ixx),Z(ixx))
               if(closex)then
                 found=.true.  ! close enough to auto match
                 match=ixx
@@ -858,14 +862,15 @@ C new surface to an existing vetex.
               if(closey)then
 
 C Feedback to the user about using existing vertex.
-                write(outs,'(a,i3,a,3f8.3,a,i3,a,3f8.3)')
+                write(outs,'(a,i3,a,3f8.3,a,f6.3,a,i3,a,3f8.3)')
      &            'New vertex ',ix,' @',X1(ix),Y1(ix),Z1(ix),
-     &            ' is close to existing vertex',iix,' @',
+     &            ' is close (',dist,') to existing vertex',iix,' @',
      &            X(ixx),Y(ixx),Z(ixx)
                 call edisp(iuout,outs)
                 dok=.false.
-                call askok('New point 5-10mm from an existing vertex.',
-     &            'Use existing vertex?',found,dok,nbhelp)
+                call askok(
+     &            'Use existing vertex instead of the new one?',
+     &            '  ',found,dok,nbhelp)
                 if(found)then
                   match=ixx
                   goto 145
@@ -892,7 +897,7 @@ C add a new vertex to the end of the zone list.
               YMX=AMAX1(YMX,Y(NTV))
               ZMX=AMAX1(ZMX,Z(NTV))
 
-C For a unique vertex also test to see if it is close (+-0.004m) to
+C For a unique vertex also test to see if it is close (+-CACC) to
 C one of the existing lines. nsur-1 because the new surface does
 C not need to be checked. Also check the last edge in the surface.
               iwhich3=NTV
@@ -911,7 +916,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
                   call pointtoline(iwhich3,iwhich1,iwhich2,offset,
      &              matchver)
                   if(.NOT.matchver) goto 247
-                  if(offset.lt.0.004)then
+                  if(offset.lt.CACC)then
                     write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
      &               'New vertex ',iwhich3,' @',
      &                X(NTV),Y(NTV),Z(NTV),' is close (',offset,
@@ -925,7 +930,7 @@ C number of vertices associated with this surface) shifting
 C JVN indices up one until at the current edge (ivjj) and then
 C inserting the new vertex index.
                     if(NVER(ivj)+1.le.MV)then
-                      if(offset.le.0.004)then
+                      if(offset.le.CACC)then
                         ok=.true.
                       else
                         dok=.true.
@@ -1228,7 +1233,7 @@ C VALOX,VALOY,VALOZ is the XYZ of the origin of the surface.
 C AANG is the azimuth in degrees.
 C DDX, DDZ length and width of rectangle.
 C sn (12 char) surface name
-C constr (12 char) the name of the construction for then new surface(s).
+C constr (32 char) the name of the construction for then new surface(s).
 C opt (12 char) the name of the optical set for the new surface(s).
 C IER is zero then no issue during creation, IER is -1 then user asked
 C   for new position, IER is -3 user aborted action.
@@ -1247,7 +1252,7 @@ C   for new position, IER is -3 user aborted action.
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
-      character constr*12,act*2,mode*1,OPT*12
+      character constr*32,act*2,mode*1,OPT*12
       character outs*124,SN*12
 
       DIMENSION  XXW(4),YYW(4),ZZW(4)  ! for the initial surface
@@ -1334,9 +1339,7 @@ C Display the new vertical (irt=6) or horizontal (irt=7) rectangle.
         if(MMOD.eq.8)then
           IAPNT = 1
           DO 350 J = 1,4
-            AX(J) = XXW(J)
-            AY(J) = YYW(J)
-            AZ(J) = ZZW(J)
+            AX(J) = XXW(J); AY(J) = YYW(J); AZ(J) = ZZW(J)
             IANXT(J) = J + 1
   350     CONTINUE
           IANXT(4) = IAPNT
@@ -1421,9 +1424,7 @@ C its future position via `one connection past the current last
       IZSTOCN(icomp,nsur)=icont  ! so connection will be known
       NVER(NSUR)=4
       DO 251 J = 1,4
-        X(NTV+J)=XXW(J)
-        Y(NTV+J)=YYW(J)
-        Z(NTV+J)=ZZW(J)
+        X(NTV+J)=XXW(J); Y(NTV+J)=YYW(J); Z(NTV+J)=ZZW(J)
         JVN(NSUR,J)=NTV+J
         VCOORD(ICOMP,ntv+J,1)=XXW(J)
         VCOORD(ICOMP,ntv+J,2)=YYW(J)
@@ -1451,7 +1452,7 @@ C Remember the reverse order of vertices for matching surface.
       SOTHER(NSUR,3)='0'
       SPARENT(NSUR)='-'
 
-      WRITE(SMLCN(NSUR),'(A12)')constr(1:12)
+      WRITE(SMLCN(NSUR),'(A)')constr
       write(SOTF(NSUR),'(a)') OPT(1:12)
 
 C If version 1.1 of geometry specify the use of the surface.
@@ -1469,7 +1470,7 @@ C matched then set sother to point to the next surface that will be created.
       if(act(2:2).eq.'M'.or.act(2:2).eq.'m')then
         SOTHER(NSUR,1)='ANOTHER'
         write(SOTHER(NSUR,2),'(i2.2)')INT(icomp)
-        write(SOTHER(NSUR,3),'(i2.2)')INT(NSUR+1)
+        write(SOTHER(NSUR,3),'(i3.3)')INT(NSUR+1)
       endif
 
 C Add surface to the connection list (icont) assuming an unknown boundary. 
@@ -1486,9 +1487,7 @@ C Update the data for the matching surface.
         IZSTOCN(icomp,nsur)=icontm  ! so connection will be known
         NVER(NSUR)=4
         DO 252 J = 1,4
-          X(NTV+J)=XXM(J)
-          Y(NTV+J)=YYM(J)
-          Z(NTV+J)=ZZM(J)
+          X(NTV+J)=XXM(J); Y(NTV+J)=YYM(J); Z(NTV+J)=ZZM(J)
           JVN(NSUR,J)=JVNM(J)  ! user the reversed order list.
           VCOORD(ICOMP,ntv+J,1)=XXM(J)
           VCOORD(ICOMP,ntv+J,2)=YYM(J)
@@ -1512,10 +1511,10 @@ C If SN is less than 12 characters add an _
 
         SOTHER(NSUR,1)='ANOTHER'
         write(SOTHER(NSUR,2),'(i2.2)')INT(icomp)
-        write(SOTHER(NSUR,3),'(i2.2)')INT(NSUR-1)
+        write(SOTHER(NSUR,3),'(i3.3)')INT(NSUR-1)
         SPARENT(NSUR)='-'
 
-        WRITE(SMLCN(NSUR),'(A12)')constr(1:12)
+        WRITE(SMLCN(NSUR),'(A)')constr
         write(SOTF(NSUR),'(a)') OPT(1:12)
 
 C If version 1.1 of geometry specify the use of the surface.
@@ -1564,6 +1563,16 @@ C Parameters passed.
       COMMON/OUTIN/IUOUT,IUIN
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
+
+C Tollerance for surface matching.
+      real ANGCC  ! angle between surfaces tolerance
+      real CACC   ! tolerance between vertices
+      real DACC   ! tolerance along line
+      real COGCC  ! tolerance between surface COG
+      real SNACC  ! tolerance between surface areas
+      integer IACC ! number of matching corners outside dist tolerance
+      common/matching/ANGCC,CACC,DACC,COGCC,SNACC,IACC
+
       LOGICAL check,found,closex,closey
       logical ok,dok,matchver
 
@@ -1640,9 +1649,7 @@ C Update as NZJVN well.
 C Now loop through the vertices and copy the contents of vertices >
 C IWHICH into the next lower one and also update VCOORD.
             DO 791 IVV=IWHICH,NTV-1
-              X(IVV)=X(IVV+1)
-              Y(IVV)=Y(IVV+1)
-              Z(IVV)=Z(IVV+1)
+              X(IVV)=X(IVV+1); Y(IVV)=Y(IVV+1); Z(IVV)=Z(IVV+1)
               VCOORD(ICOMP,ivv,1)=VCOORD(ICOMP,ivv+1,1)
               VCOORD(ICOMP,ivv,2)=VCOORD(ICOMP,ivv+1,2)
               VCOORD(ICOMP,ivv,3)=VCOORD(ICOMP,ivv+1,3)
@@ -1687,12 +1694,13 @@ C or if 10mm check with user, otherwise continue.
             found=.false.
             do 144 ixx = 1,NTV
               call eclose3(X1(ix),Y1(ix),Z1(ix),X(ixx),Y(ixx),Z(ixx),
-     &          0.004,closex)
+     &          CACC,closex)
               call eclose3(X1(ix),Y1(ix),Z1(ix),X(ixx),Y(ixx),Z(ixx),
-     &          0.010,closey)
+     &          CACC*2,closey)
+              dist=crowxyz(X1(ix),Y1(ix),Z1(ix),X(ixx),Y(ixx),Z(ixx))
               if(closex)then
                 call usrmsg(
-     &            'Co-ordinates were identical to an existing vertex',
+     &            'Co-ordinates ~identical to an existing vertex',
      &            'so ignored.','P')
                 found=.true.
                 goto 145
@@ -1702,12 +1710,13 @@ C or if 10mm check with user, otherwise continue.
 C Feedback to the user about using existing vertex.
                 write(outs,'(a,i3,a,3f8.3,a,i3,a,3f8.3)')
      &            'New vertex ',ix,' @',X1(ix),Y1(ix),Z1(ix),
-     &            ' is close to existing vertex',ix,' @',
+     &            ' is close (',dist,') to existing vertex',ixx,' @',
      &            X(ixx),Y(ixx),Z(ixx)
                 call edisp(iuout,outs)
                 dok=.false.
-                call askok('New point 5-10mm from an existing vertex.',
-     &            'Use existing vertex?',found,dok,nbhelp)
+                call askok(
+     &            'Use existing vertex instead of the new one?',
+     &            '  ',found,dok,nbhelp)
                 if(found)then
                   match=ixx  !  match is not yet used
                   goto 145
@@ -1721,79 +1730,10 @@ C add a new vertex to the end of the zone list and update vcoord.
               continue
             else
               changedgeo = .true.
-              NZTV(icomp)=NZTV(icomp)+1
-              NTV=NZTV(icomp)
-              X(NTV)=X1(ix)
-              Y(NTV)=Y1(ix)
-              Z(NTV)=Z1(ix)
-              VCOORD(ICOMP,ntv,1)=X1(ix)
-              VCOORD(ICOMP,ntv,2)=Y1(ix)
-              VCOORD(ICOMP,ntv,3)=Z1(ix)
 
-C For a unique vertex also test to see if it is close (+-0.003m) to
-C one of the existing lines. Also check the last edge in the surface.
-              iwhich3=NTV
-              do 246 ivj=1,NSUR
-                ivjlimit=NVER(ivj)
-                do 247 ivjj=1,ivjlimit
-                  if(ivjj.eq.ivjlimit)then
-                    iwhich1=JVN(ivj,ivjj)
-                    iwhich2=JVN(ivj,1)
-                  else
-                    iwhich1=JVN(ivj,ivjj)
-                    iwhich2=JVN(ivj,ivjj+1)
-                  endif
-
-C Report length of line. Use method of Ward/Radiance in fvect.c
-                  call pointtoline(iwhich3,iwhich1,iwhich2,offset,
-     &              matchver)
-                  if(.NOT.matchver) goto 247
-                  if(offset.lt.0.004)then
-                    write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
-     &               'New vertex ',iwhich3,' @',
-     &                X(NTV),Y(NTV),Z(NTV),' is close (',offset,
-     &                ') to edge ',IWHICH1,' &',IWHICH2,' of ',
-     &                sname(icomp,ivj)
-                    call edisp(iuout,outs)
-
-C If current surface (ivj) can take another vertex expand the
-C list. Logic works by looping down (from one more than the current
-C number of vertices associated with this surface) shifting
-C JVN indices up one until at the current edge (ivjj) and then
-C inserting the new vertex index.
-                    if(NVER(ivj)+1.le.MV)then
-                      if(offset.le.0.004)then
-                        ok=.true.
-                      else
-                        dok=.true.
-                        helptopic='vertex_near_edge'
-                        call gethelptext(helpinsub,helptopic,nbhelp)
-                        call askok(
-     &                  'Insert this vertex into the adjacent surface?',
-     &                  '(see help)',ok,dok,nbhelp)
-                      endif
-                    else
-                      ok=.false.
-                    endif
-                    if(ok)then
-                      NVER(ivj)=NVER(ivj)+1
-                      IXV=NVER(ivj)+1
-  148                 continue
-                      IXV=IXV-1
-                      JVN(ivj,IXV)=JVN(ivj,IXV-1)
-                      IF(IXV.GT.ivjj+1)GOTO 148
-                      JVN(ivj,ivjj+1)=iwhich3
-
-C Debug.
-C                      write(6,'(a,42i4)') 'now jvn is ',
-C     &                  (JVN(ivj,ii),ii=1,NVER(ivj))
-
-C Surface (ivj) vertex list has been updated. Go on to next surface.
-                      goto 246 
-                    endif
-                  endif
-  247           continue
-  246         continue
+C Merge the copied point into the zone and existing edges.
+              QX=X1(ix); QY=Y1(ix); QZ=Z1(ix)
+              CALL MERGEVERTINSURF(ICOMP,QX,QY,QZ,IER)
             endif
           endif
   143   continue
@@ -1824,17 +1764,18 @@ C user otherwise continue.
           found=.false.
           do 244 ixx = 1,NTV
             call eclose3(X1(1),Y1(1),Z1(1),X(ixx),Y(ixx),Z(ixx),
-     &        0.004,closex)
+     &        CACC,closex)
             call eclose3(X1(1),Y1(1),Z1(1),X(ixx),Y(ixx),Z(ixx),
-     &        0.010,closey)
+     &        CACC*2,closey)
+            dist=crowxyz(X1(1),Y1(1),Z1(1),X(ixx),Y(ixx),Z(ixx))
             if(closex)then
               found=.true.
               goto 245
             endif
             if(closey)then
               dok=.true.
-              call askok('Copied point 5-10mm from existing vertex.',
-     &          'Skip it?',found,dok,nbhelp)
+              call askok('Copied point close to existing vertex.',
+     &          'Skip copying it?',found,dok,nbhelp)
               goto 245
             endif
   244     continue
@@ -1842,78 +1783,13 @@ C user otherwise continue.
 C If an existing vertex is close then skip to next, otherwise
 C add a new vertex to the end of the zone list and update vcoord.
   245     if(found)then
+            call edisp(iuout,'Duplicate of existing vertex. Ignoring.')
             continue
           else
-            NZTV(icomp)=NZTV(icomp)+1
-            NTV=NZTV(icomp)
-            changedgeo = .true.
-            X(NTV)=X1(1)
-            Y(NTV)=Y1(1)
-            Z(NTV)=Z1(1)
-            VCOORD(ICOMP,ntv,1)=X1(1)
-            VCOORD(ICOMP,ntv,2)=Y1(1)
-            VCOORD(ICOMP,ntv,3)=Z1(1)
 
-C For a unique vertex also test to see if it is close (+-0.003m) to
-C one of the existing lines. Also check the last edge in the surface.
-            iwhich3=NTV
-            do 346 ivj=1,NSUR
-              ivjlimit=NVER(ivj)
-              do 347 ivjj=1,ivjlimit
-                if(ivjj.eq.ivjlimit)then
-                  iwhich1=JVN(ivj,ivjj)
-                  iwhich2=JVN(ivj,1)
-                else
-                  iwhich1=JVN(ivj,ivjj)
-                  iwhich2=JVN(ivj,ivjj+1)
-                endif
-
-C Report length of line. Use method of Ward/Radiance in fvect.c
-                call pointtoline(iwhich3,iwhich1,iwhich2,offset,
-     &            matchver)
-                if(.NOT.matchver) goto 347
-                if(offset.lt.0.004)then
-                  write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
-     &             'Copied vertex ',iwhich3,' @',
-     &              X(NTV),Y(NTV),Z(NTV),' is close (',offset,
-     &              ') to edge ',IWHICH1,' &',IWHICH2,' of ',
-     &                sname(icomp,ivj)
-                  call edisp(iuout,outs)
-
-C If current surface (ivj) can take another vertex expand the
-C list. Logic works by looping down (from one more than the current
-C number of vertices associated with this surface) shifting
-C JVN indices up one until at the current edge (ivjj) and then
-C inserting the new vertex index.
-                  if(NVER(ivj)+1.le.MV)then
-                    if(offset.le.0.004)then
-                      ok=.true.
-                    else
-                      dok=.true.
-                      helptopic='vertex_near_edge'
-                      call gethelptext(helpinsub,helptopic,nbhelp)
-                      call askok(
-     &                'Insert this vertex into the adjacent surface?',
-     &                '(see help)',ok,dok,nbhelp)
-                    endif
-                  else
-                    ok=.false.
-                  endif
-                  if(ok)then
-                    NVER(ivj)=NVER(ivj)+1
-                    IXV=NVER(ivj)+1
-  248               continue
-                    IXV=IXV-1
-                    JVN(ivj,IXV)=JVN(ivj,IXV-1)
-                    IF(IXV.GT.ivjj+1)GOTO 248
-                    JVN(ivj,ivjj+1)=iwhich3
-
-C Surface (ivj) vertex list has been updated. Go on to next surface.
-                    goto 346 
-                  endif
-                endif
-  347         continue
-  346       continue
+C Merge the copied point into the zone and existing edges.
+            QX=X1(1); QY=Y1(1); QZ=Z1(1)
+            CALL MERGEVERTINSURF(ICOMP,QX,QY,QZ,IER)
           endif
         endif
         MODIFYVIEW=.TRUE.
@@ -2164,7 +2040,17 @@ C door width and height.
       common/ginsert/defwininsert,defdoorwidth,defdoorheight
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      LOGICAL OK,dok,matchver
+
+C Tollerance for surface matching.
+      real ANGCC  ! angle between surfaces tolerance
+      real CACC   ! tolerance between vertices
+      real DACC   ! tolerance along line
+      real COGCC  ! tolerance between surface COG
+      real SNACC  ! tolerance between surface areas
+      integer IACC ! number of matching corners outside dist tolerance
+      common/matching/ANGCC,CACC,DACC,COGCC,SNACC,IACC
+
+      LOGICAL OK,dok,matchver,modmlc
       logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION  XX(MV),YY(MV),ZZ(MV)
@@ -2425,7 +2311,7 @@ C size and minimum dimensions < not yet done >.
         helptopic='opening_percent_overview'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKR(FRW,'Frame width (m).','  ',
-     &    0.001,'F',0.3,'F',40.0,'frame width',IER,nbhelp)
+     &    0.001,'F',0.3,'W',40.0,'frame width',IER,nbhelp)
 
       endif
 
@@ -2594,14 +2480,21 @@ C If in silent mode assign construction otherwise select.
         WRITE(SOTF(NSUR),'(A)')  rsotf(1:12)  ! only 1st 12 char
       else
         CALL EPMENSV
-        CALL EPKMLC(ISEL,'Select one of the constructions for the',
+        if(mlcver.eq.0)then
+          CALL EPKMLC(ISEL,'Select one of the constructions for the',
      &    'inserted surface. ',IER)
+        else
+          call edisp(iuout,
+     &      'Select a construction for inserted surface')
+          CALL EDMLDB2(modmlc,'-',ISEL,IER)
+        endif
         CALL EPMENRC
         IF(ISEL.GT.0)then
-          WRITE(SMLCN(NSUR),'(A12)') mlcname(ISEL)(1:12)
+          WRITE(SMLCN(NSUR),'(A)') mlcname(ISEL)
           IF(mlctype(ISEL)(1:4).NE.'OPAQ')SOTF(NSUR)='TRAN'
           IF(mlctype(ISEL)(1:4).EQ.'OPAQ')SOTF(NSUR)='OPAQUE'
           IF(mlctype(ISEL)(1:4).EQ.'CFC ')SOTF(NSUR)='CFC '
+          IF(mlctype(ISEL)(1:4).EQ.'CFC2')SOTF(NSUR)='CFC2'
         else
           WRITE(SMLCN(NSUR),'(A)') 'UNKNOWN'
           SOTF(NSUR)='OPAQUE'
@@ -3003,7 +2896,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
               call pointtoline(iwhich3,iwhich1,iwhich2,offset,
      &          matchver)
               if(.NOT.matchver) goto 247
-              if(offset.lt.0.004)then
+              if(offset.lt.CACC)then
                 write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
      &            'Door vertex ',iwhich3,' @',
      &            X(NTV),Y(NTV),Z(NTV),' is close (',offset,
@@ -3017,7 +2910,7 @@ C number of vertices associated with this surface) shifting
 C JVN indices up one until at the current edge (ivjj) and then
 C inserting the new vertex index.
                 if(NVER(ivj)+1.le.MV)then
-                  if(offset.le.0.004)then
+                  if(offset.le.CACC)then
                     ok=.true.
                   else
                     dok=.true.
@@ -3270,7 +3163,7 @@ C then the values of ICT and IC2 and IE2 should be updated so that
 C the connections file is correct.
         if(SOTHER(NSUR,1)(1:7).eq.'ANOTHER')then
           read(SOTHER(NSUR,2),'(i2)') ival1
-          read(SOTHER(NSUR,3),'(i2)') ival2
+          read(SOTHER(NSUR,3),'(i3)') ival2
           ICT(ICON)=3
           IC2(ICON)=ival1
           IE2(ICON)=ival2
@@ -3278,19 +3171,19 @@ C the connections file is correct.
           ICT(ICON)=5
         elseif(SOTHER(NSUR,1)(1:8).eq.'CONSTANT')then
           read(SOTHER(NSUR,2),'(i2)') ival1
-          read(SOTHER(NSUR,3),'(i2)') ival2
+          read(SOTHER(NSUR,3),'(i3)') ival2
           ICT(ICON)=2
           IC2(ICON)=ival1
           IE2(ICON)=ival2
         elseif(SOTHER(NSUR,1)(1:6).eq.'GROUND')then
           read(SOTHER(NSUR,2),'(i2)') ival1
-          read(SOTHER(NSUR,3),'(i2)') ival2
+          read(SOTHER(NSUR,3),'(i3)') ival2
           ICT(ICON)=4
           IC2(ICON)=ival1
           IE2(ICON)=ival2
         elseif(SOTHER(NSUR,1)(1:7).eq.'SIMILAR')then
           read(SOTHER(NSUR,2),'(i2)') ival1
-          read(SOTHER(NSUR,3),'(i2)') ival2
+          read(SOTHER(NSUR,3),'(i3)') ival2
           ICT(ICON)=1
           IC2(ICON)=ival1
           IE2(ICON)=ival2

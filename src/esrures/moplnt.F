@@ -92,10 +92,10 @@ C this clash.
       common/ntype/isv(mpcom,mnodec)
       COMMON/SYSLABEL/SPLABEL(MSYSRS),GPLABEL(MSYSRS)
 
-      dimension mcomp(mpcom), ipcndx(mpnode), ivals(15)
+      dimension mcomp(mpcom), ipcndx(mpcom), ivals(15)
       CHARACTER ITEM(26)*23
       character outs*124,xfile*144,tg*1,delim*1,MTITLE*22
-      character pcname*15,pcnam1(mpnode)*15,adopdsc*30
+      character pcname*15,pcnam1(mpcom)*15,adopdsc*30
       character aoutstr(15)*30
       character SPLABEL*32,GPLABEL*20,SUFFIX*6,PREFIX*14
       integer IWM  ! for radio button
@@ -1194,7 +1194,8 @@ C Common for new format component database
       character fs*1
       integer lndbp   ! for length of standard database path
       character lltmp*144  ! to re-create plant database file name with path
-
+      character domain_s*16,category_s*16
+      
 C For help messages
       character helpinsub*24   ! subroutine name
       character helptopic*24 ! string (unique) for topic
@@ -1286,7 +1287,8 @@ C Read additional output description and type
 c Read the additional plant output data data from the new format database.
       if(icdbf.eq.1)then
         argstr='parameters'
-        call CDBGetItemData(' ',' ',UCdbNam(IPC),argstr)
+        domain_s=' '; category_s=' '
+        call CDBGetItemData(domain_s,category_s,UCdbNam(IPC),argstr)
         argstr='detailed'
         CALL CDB2Plant(IPC,argstr)
         nnode=s_NNODE
@@ -1469,7 +1471,8 @@ C Occupancy filter info.
 C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       COMMON/FREQS/NBINS,XBIN1,XBINN,DXBIN,IFREQ,IHITS,IMISS,INBIN(MF)
-      COMMON/FREQS1/ICBIN(MF),ITOTAL
+      integer ICBIN,IRCBIN
+      COMMON/FREQS1/ICBIN(MF),IRCBIN(MF),ITOTAL
       common/ntype/isv(mpcom,mnodec)
       common/pcdat/ CSV1M(mnodec),CSV2M(mnodec),CSV3M(mnodec),
      &              NNODE(mpcom),nrecpc(mpcom)
@@ -2787,8 +2790,8 @@ C Setup and pass in parameters to win3d.
      &          GPLABEL(1)(1:lnblnk(GPLABEL(1))),
      &          ' (...), Bin width =',DXBIN
             endif
-            if(IG.eq.1.or.IG.eq.4)CALL MODDRW(1,TLABEL)
-            if(IG.eq.2.or.IG.eq.5)CALL MODDRW(2,TLABEL)
+            if(IG.eq.1.or.IG.eq.4)CALL MODDRW(1,TLABEL,0,0)
+            if(IG.eq.2.or.IG.eq.5)CALL MODDRW(2,TLABEL,0,0)
           else
             call edisp(iuout,' Sorry, not in graphic mode...')
           endif

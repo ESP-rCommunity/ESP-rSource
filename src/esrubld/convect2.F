@@ -112,12 +112,12 @@ C be superceeded by user specifications.
       IF(ITRACE(6).EQ.0.OR.NSINC.GT.ITCF)goto  9999
       IF(IZNTRC(ICOMP).NE.1)goto 9999 ! check if zone output is rq'd
       IF( IHC(ICOMP).EQ.1 ) THEN
-        write(outs,'(A,I4,a,i2,a,i2,a)')
+        write(outs,'(A,I4,a,i3,a,i3,a)')
      &    ' Subroutine HTBUOY  Trace output',ICNT,
      &    ' for zone ',icomp,' & surface ',isur,
      &    ' (data may be superceeded by the zone convective regime).'
       else
-        write(outs,'(A,I4,a,i2,a,i2)')
+        write(outs,'(A,I4,a,i3,a,i3)')
      &    ' Subroutine HTBUOY  Trace output',ICNT,
      &    ' for zone ',icomp,' & surface ',isur
       endif
@@ -462,6 +462,73 @@ C eqn. 111 from ISO 15099:2003
      &     real(RAS),real(NUSS),HC
           call edisp(itu,outs)
         endif
+      ELSEIF(ICOR.EQ.20)THEN
+
+C Alamdari and Hammond TEST VERSION that returns 2.6X standard hc value
+C to explore situations where the one face of the surface area is larger
+C that the other face (e.g. in facade mullion extrusions and
+C where one face is profiled such as metal forming under a slab).
+C Such a facility should be made generic so that the multiplier could 
+C be passed as a parameter and also consider whether other correlations
+C might take a multiplier parameter.
+        call eclose(HEIGHT,0.0,0.01,close)
+        if(close) HEIGHT = 1.0  ! reset hight if close to zero
+        HC=((1.50*((DT/HEIGHT)**0.25))**6.0
+     &     +(1.23*((DT)**(1.0/3.0)))**6.0)**(1.0/6.0)
+        HC=HC*2.6  ! test multiplier
+        if(dotrace)then
+          write(outs,'(A,2F9.3)')' Alamdari: 2X HC & DT',HC,DT
+          call edisp(itu,outs)
+        endif
+
+      ELSEIF(ICOR.EQ.21)THEN
+
+C Alamdari and Hammond TEST VERSION that returns 3X standard hc value
+C to explore situations where the one face of the surface area is larger
+C that the other face (e.g. in facade mullion extrusions and
+C where one face is profiled such as metal forming under a slab).
+        call eclose(HEIGHT,0.0,0.01,close)
+        if(close) HEIGHT = 1.0  ! reset hight if close to zero
+        HC=((1.50*((DT/HEIGHT)**0.25))**6.0
+     &     +(1.23*((DT)**(1.0/3.0)))**6.0)**(1.0/6.0)
+        HC=HC*3.0  ! test multiplier
+        if(dotrace)then
+          write(outs,'(A,2F9.3)')' Alamdari: 3X HC & DT',HC,DT
+          call edisp(itu,outs)
+        endif
+
+      ELSEIF(ICOR.EQ.22)THEN
+
+C Alamdari and Hammond TEST VERSION that returns 4.69X standard hc value
+C to explore situations where the one face of the surface area is larger
+C that the other face (e.g. in facade mullion extrusions and
+C where one face is profiled such as metal forming under a slab).
+        call eclose(HEIGHT,0.0,0.01,close)
+        if(close) HEIGHT = 1.0  ! reset hight if close to zero
+        HC=((1.50*((DT/HEIGHT)**0.25))**6.0
+     &     +(1.23*((DT)**(1.0/3.0)))**6.0)**(1.0/6.0)
+        HC=HC*4.69  ! test multiplier
+        if(dotrace)then
+          write(outs,'(A,2F9.3)')' Alamdari: 4.69X HC & DT',HC,DT
+          call edisp(itu,outs)
+        endif
+
+      ELSEIF(ICOR.EQ.23)THEN
+
+C Alamdari and Hammond TEST VERSION that returns 1.76X standard hc value
+C to explore situations where the one face of the surface area is larger
+C that the other face (e.g. in facade mullion extrusions and
+C where one face is profiled such as metal forming under a slab).
+        call eclose(HEIGHT,0.0,0.01,close)
+        if(close) HEIGHT = 1.0  ! reset hight if close to zero
+        HC=((1.50*((DT/HEIGHT)**0.25))**6.0
+     &     +(1.23*((DT)**(1.0/3.0)))**6.0)**(1.0/6.0)
+        HC=HC*1.76  ! test multiplier
+        if(dotrace)then
+          write(outs,'(A,2F9.3)')' Alamdari: 1.76X HC & DT',HC,DT
+          call edisp(itu,outs)
+        endif
+
       ELSEIF(ICOR.EQ.30)THEN
 
 C######   WINDOWS   ############################################################

@@ -2984,16 +2984,16 @@ C Convection coefficients.
             call eclose(HCI(I,J),-1.0,0.01,indefault)
             call eclose(HCE(I,J),-1.0,0.01,outdefault)
             if(indefault.and.outdefault)then
-              WRITE(outs,'(I2,5a)') J,' ',SSNAME(ICC),' (',
+              WRITE(outs,'(I3,5a)') J,' ',SSNAME(ICC),' (',
      &          SSVFC(ICC),')   default   default'
             elseif(indefault.and.(.NOT.outdefault))then
-              WRITE(outs,'(I2,5a,F8.3)') J,' ',SSNAME(ICC),' (',
+              WRITE(outs,'(I3,5a,F8.3)') J,' ',SSNAME(ICC),' (',
      &          SSVFC(ICC),')   default ',HCE(I,J)
             elseif(.NOT.indefault.and.outdefault)then
-              WRITE(outs,'(I2,5a,F8.3,a)') J,' ',SSNAME(ICC),' (',
+              WRITE(outs,'(I3,5a,F8.3,a)') J,' ',SSNAME(ICC),' (',
      &          SSVFC(ICC),')  ',HCI(I,J),'   default '
             else
-              WRITE(outs,'(I2,5a,2(1X,F8.3))') J,' ',SSNAME(ICC),
+              WRITE(outs,'(I3,5a,2(1X,F8.3))') J,' ',SSNAME(ICC),
      &          ' (',SSVFC(ICC),') ',HCI(I,J),HCE(I,J)
             endif
             call edisp(itru,outs)
@@ -3009,17 +3009,17 @@ C Correlation indices.
             if(IHCI(I,J).eq.-1) indefault=.true.
             if(IHCE(I,J).eq.-1) outdefault=.true.
             if(indefault.and.outdefault)then
-              WRITE(outs,'(I2,5a)') J,' ',SSNAME(ICC),' (',
+              WRITE(outs,'(I3,5a)') J,' ',SSNAME(ICC),' (',
      &          SSVFC(ICC),')  default   default'
               call edisp(itru,outs)
             elseif(indefault.and.(.NOT.outdefault))then
-              WRITE(outs,'(I2,5a,I8)') J,' ',SSNAME(ICC),' (',
+              WRITE(outs,'(I3,5a,I8)') J,' ',SSNAME(ICC),' (',
      &          SSVFC(ICC),')  default ',IHCE(I,J)
               call edisp(itru,outs)
               write(outs,'(2a)')'   other face ',hclngdescr(IHCE(I,J))
               call edisp(itru,outs)
             elseif(.NOT.indefault.and.outdefault)then
-              WRITE(outs,'(I2,5a,I8,a)') J,' ',SSNAME(ICC),' (',
+              WRITE(outs,'(I3,5a,I8,a)') J,' ',SSNAME(ICC),' (',
      &          SSVFC(ICC),') ',IHCI(I,J),'  default '
               call edisp(itru,outs)
               write(outs,'(2a)')'   inside face ',hclngdescr(IHCI(I,J))
@@ -3027,7 +3027,7 @@ C Correlation indices.
             else
               WRITE(outs,5205) J,SSNAME(icc),' (',SSVFC(icc),') ',
      &          IHCI(I,J),IHCE(I,J)
- 5205         FORMAT(I2,1x,4a,2(2X,I8))
+ 5205         FORMAT(I3,1x,4a,2(2X,I8))
               call edisp(itru,outs)
               write(outs,'(2a)')'   inside face ',hclngdescr(IHCI(I,J))
               call edisp(itru,outs)
@@ -3046,7 +3046,7 @@ C Control laws and associated data.
             icc=izstocn(icomp,j) 
             WRITE(outs,5206)J,SSNAME(ICC),' (',SSVFC(ICC),') ',
      &        (CVdata(I,J,jj),jj=1,8)
- 5206       FORMAT(I2,1x,4a,4(f4.0,1x),3x,4(f4.0,1x))
+ 5206       FORMAT(I3,1x,4a,4(f4.0,1x),3x,4(f4.0,1x))
             call edisp(itru,outs)
   862     CONTINUE
 
@@ -3147,6 +3147,14 @@ C Set all to not applicable and then instanciate available options.
       hclngdescr(16)='Bar-Cohen buoyancy ventilated channels          '
       hcshtdescr(17)='ISO 15099 corr buoyancy in chan '
       hclngdescr(17)='ISO 15099 corr buoyancy flow in vented vert chan'
+      hcshtdescr(20)='Alamdari & Hammond vertical 2.6X'
+      hclngdescr(20)='Alamdari & Hammond 2.65X test for vertical surf '
+      hcshtdescr(21)='Alamdari & Hammond vertical 3X  '
+      hclngdescr(21)='Alamdari & Hammond 3X test for vertical surfaces'
+      hcshtdescr(22)='Alamdari & Hammond vertical 4.7X'
+      hclngdescr(22)='Alamdari & Hammond 4.69X test for vertical surf '
+      hcshtdescr(23)='Alamdari & Hammond vertical 1.7X'
+      hclngdescr(23)='Alamdari & Hammond 1.76X test for vertical surf '
       hcshtdescr(30)='Khalifa & M window over radiator'
       hclngdescr(30)='Khalifa & Marshall window over radiator         '
       hcshtdescr(31)='Khalifa & M windows no radiator '

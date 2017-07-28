@@ -2,17 +2,17 @@ C Plot functions.
 
       SUBROUTINE PLOTTC(ICOL)
 #include "viewer.h"
- 
+
 C PLOTTC SETS CURRENT DISPLAY COLOUR
       IF(IOUTD.EQ.1)GO TO 10
       RETURN
-  
+
 C--------------------------------
 C SCREEN DISPLAY COLOUR
   10  continue
 C <<      CALL DCLSET(ICOL)
       RETURN
-  
+
       END
 
 C------------------------------------------------------
@@ -36,6 +36,7 @@ C    1   DRAW(PEN DOWN)  0   MOVE(PEN UP)   <0  DASHED LINE
       integer*8 iupdown,isym    ! passed to etplot
 #endif
       DATA SX,SY,LP/0.,0.,3/
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
 C SCALE PEN POSITION TO ABSOLUTE COORDS
       C=SCFXY*CO
@@ -132,10 +133,20 @@ C   PEN MARKER IS 0=UP,1=DOWN,-20=DASHED
   10  continue
       iupdown=0
       isym=0
-      CALL etplot(SX,SY,iupdown,isym)
+      IF(MMOD.EQ.8)THEN
+        CALL etplot(SX,SY,iupdown,isym)
+      ELSE
+        CALL etplotwwc(SX,SY,iupdown,isym)
+      ENDIF
+
       iupdown=IO
-      CALL etplot(A,B,iupdown,isym)
-      call forceflush()
+      IF(MMOD.EQ.8)THEN
+        CALL etplot(A,B,iupdown,isym)
+      ELSE
+        CALL etplotwwc(A,B,iupdown,isym)
+      ENDIF
+
+      IF(MMOD.EQ.8)call forceflush()
       RETURN
 
       END
@@ -200,6 +211,7 @@ C ARRANGES PLOT ON TEKTRONIX SCREEN AND DOES IT
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
 C SET OUTPUT DEVICE
       IOUTD=1
@@ -212,7 +224,9 @@ C Cast values for linescale.
       iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C SET SCREEN WINDOW
-      call startbuffer
+
+C Only do this if in text mode.
+      IF(MMOD.EQ.8) call startbuffer
       igwid=igw
       igheight=igwh
       call axiscale(igwid,igheight,-380.,380.,-380.,380.,xsc,ysc,sca,
@@ -225,7 +239,8 @@ C DO PROJECTION
 C DO PLOTTING
       CALL PERS1
       NPTEK=NPTEK+1
-      call forceflush()
+C Only do this if in text mode.
+      IF(MMOD.EQ.8) call forceflush()
 
       RETURN
       END
@@ -234,7 +249,7 @@ C--------------------------------------------------------
 C PLTFIL generates a pic file for use in forms package.
       SUBROUTINE PLTFIL
 #include "viewer.h"
-      
+
       integer lnblnk  ! function definition
 
       COMMON /FIL/ IFUSE, IFO

@@ -210,11 +210,11 @@ C Produce help text for both types of import.
         CALL PHELPD('optics db imp',nbhelp,'-',0,0,IER)
         IOW=1
         CALL EASKATOG('Optical actions: ',' ',
-     &    'Import Window5/6','Import WIS',
+     &    'Import Window5/6/7','Import WIS',
      &    'Add','Delete','Copy','Ignore',' ',IOW,nbhelp)
         if(IOW.eq.1)then
 
-C Import (from Window 5.1, 5.2, v6.x ).
+C Import (from Window 5.1, 5.2, v6.x v7.x).
           call OPT2TMP(ier)
           iwin4=IPRODB
           call IMPOPT(iwin4,IER)
@@ -680,9 +680,12 @@ C Setup and pass in parameters to win3d.
 
 C Stuff into static variables for later access and draw axis.
         call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
-        call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,'Value')
-        call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
-     &    'Degrees from normal')
+        call dintervalf(YMIN,YMAX,DY,NDEC,0)
+        call vrtaxisdd(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,
+     &    DY,NDEC,0,'Value')
+        call dintervalf(XMIN,XMAX,DY,NDEC,0)
+        call horaxisdd(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
+     &    DY,NDEC,'Degrees from normal')
 
         WRITE(ETEXT,'(4a)') 'Type: ',GTYPE(1:lnblnk(GTYPE)),
      &    ' descripion: ',GDESCR(1:34)
@@ -1167,13 +1170,16 @@ C Loop until start of "Optical Properties" section.
         endif
         goto 10
       elseif(outstr(1:9).eq.'Window 5.'.or.
-     &       outstr(1:9).eq.'Window v6')then
+     &       outstr(1:9).eq.'Window v6'.or.
+     &       outstr(1:9).eq.'WINDOW v7')then
 
 C A newer format file.
         if(outstr(1:9).eq.'Window 5.')then
           iwversion=5
         elseif(outstr(1:9).eq.'Window v6')then
           iwversion=6
+        elseif(outstr(1:9).eq.'WINDOW v7')then
+          iwversion=7
         endif
  13     CALL STRIPC(iwin4,outstr,0,ND,1,'data',IER)
         call edisp(iuout,outstr)
@@ -1188,7 +1194,7 @@ C A newer format file.
         endif
         goto 13
       else
-        call usrmsg('Does not appear to be a WINDOW 4/5/6 file...',
+        call usrmsg('Does not appear to be a WINDOW 4/5/6/7 file...',
      &    outstr,'W')
         ier=1
         return
@@ -1220,6 +1226,8 @@ C Estimate number of layers including air gaps.
         CALL EGETW(outstr,K,wdum,'W','skip :',IER)
         CALL EGETWR(outstr,K,VTRNED,0.0,0.999,'W','visib trn',IER)
       elseif(word(1:7).eq.'Outside')then
+
+C Read the tokens for the various layers.
         do 43 ij=1,nl
           CALL STRIPC(iwin4,outstr,99,ND,1,'layer dat',IEER)
           K=0
@@ -1231,7 +1239,7 @@ C Newer files do not have a # after air layers.
           if(iwversion.eq.4)then
             CALL EGETWR(outstr,K,wlthk(ij),0.0,99.0,'W','lay tk mm',
      &        IER)
-          elseif(iwversion.eq.5.or.iwversion.eq.6)then
+          elseif(iwversion.ge.5)then
             if(wlname(ij)(1:3).eq.'Air')then
               CALL EGETWR(outstr,K,wlthk(ij),0.0,99.0,'W','lay tk mm',
      &          IER)
@@ -1394,6 +1402,8 @@ C << also scan for `Pane` `Gap` `Shading` in these lines.
         nl=5
       elseif(outstr(1:11).eq.' layer 6 is')then
         nl=6
+      elseif(outstr(1:11).eq.' layer 7 is')then
+        nl=7
       elseif(outstr(1:4).eq.'prop')then
         if(ND.eq.12)then
           call edisp(iuout,'Angles 0->90 @10deg + diffuse')
@@ -1580,15 +1590,33 @@ C actual data seems to start at column 38 (and after a :)
         continue  ! already used
       elseif(outstr(1:11).eq.' layer 6 is')then
         continue  ! already used
+      elseif(outstr(1:11).eq.' layer 7 is')then
+        continue  ! already used
       elseif(outstr(1:27).eq.' --- Detailed Thermal Solar')then
         continue  ! not yet used
       elseif(outstr(1:12).eq.'abs x      :')then
         continue  ! not yet used
       elseif(outstr(1:12).eq.'t_sol      :')then
         continue  ! not yet used
+      elseif(outstr(1:9).eq.'t_sol_o_d')then
+        continue  ! not yet used
+      elseif(outstr(1:9).eq.'t_sol_o_t')then
+        continue  ! not yet used
+      elseif(outstr(1:9).eq.'t_sol_i_d')then
+        continue  ! not yet used
+      elseif(outstr(1:9).eq.'t_sol_i_t')then
+        continue  ! not yet used
       elseif(outstr(1:12).eq.'r_sol_o    :')then
         continue  ! not yet used
+      elseif(outstr(1:9).eq.'r_sol_o_d')then
+        continue  ! not yet used
+      elseif(outstr(1:9).eq.'r_sol_o_t')then
+        continue  ! not yet used
       elseif(outstr(1:12).eq.'r_sol_i    :')then
+        continue  ! not yet used
+      elseif(outstr(1:9).eq.'r_sol_i_d')then
+        continue  ! not yet used
+      elseif(outstr(1:9).eq.'r_sol_i_t')then
         continue  ! not yet used
       elseif(outstr(1:12).eq.'t_vis      :')then
         continue  ! not yet used
@@ -2123,11 +2151,13 @@ C echo the contents of lltmp.
       CALL LISTAS(IRCFG,lltmp,IER)
       
 C Check if file actually is an IES file it should start with
-C one of the following: IESNA:LM-63-2002 IESNA:LM-63-1995
+C one of the following: IESNA:LM-63-2002 IESNA:LM-63-1995 or
+C with IESNA:LM-79-2008.sudo
       CALL EFOPSEQ(IRCFG,lltmp,1,IER)
       write(currentfile,'(a)') lltmp(1:lnblnk(lltmp))
       call lstripc(IRCFG,loutstr,99,ND,1,'IES line 1',IER)
-      if(loutstr(1:11).eq.'IESNA:LM-63')then
+      if(loutstr(1:11).eq.'IESNA:LM-63'.or.
+     &   loutstr(1:11).eq.'IESNA:LM-79')then
  43     call lstripc(IRCFG,loutstr,99,ND,1,'IES LUMCAT',IER)
         if(loutstr(1:8).eq.'[LUMCAT]')then
           k=9

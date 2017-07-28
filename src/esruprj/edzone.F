@@ -362,6 +362,7 @@ C High level info for all cases except clickonbitmap.
       IF(zname(ICOMP)(1:2).EQ.'  ')THEN
         IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
         IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+        IF(ICOMP.GT.99)WRITE(zname(ICOMP),'(A5,I3)')'Zone-',ICOMP
         lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update length for this string.
       ENDIF
       if(zdesc(ICOMP)(1:2).EQ.'  ')then
@@ -573,7 +574,7 @@ C User did not select a file. Take them back to the question.
 
 C Existing ESP-r geom file.
         DFILE=' '
-        WRITE(OUTSTR,'(a,i2,a)')' For zone ',IC,
+        WRITE(OUTSTR,'(a,i3,a)')' For zone ',IC,
      &   ' the geometry is defined in:'
         CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'geom file',IER,nbhelp)
         IF(LTMP(1:2).EQ.'  ')GOTO 293
@@ -704,7 +705,9 @@ C Update the connection based data structures.
 C Find the index of the MLC which matches this surface.
           ssmlcindex(iccc)=0  ! assume no matching MLC          
           do 5 ii=1,nmlc
-            if(SSMLCN(iccc)(1:12).eq.mlcname(ii)(1:12)) then
+            lnssmlc=lnblnk(SSMLCN(iccc))
+            if(SSMLCN(iccc)(1:lnssmlc).eq.
+     &         mlcname(ii)(1:lnmlcname(ii)))then
               ssmlcindex(iccc)=ii   ! remember MLC index     
             endif
   5       continue
@@ -780,7 +783,7 @@ C                write(6,*) ltmp
           else
             LTMP=LPROJ(IC)
           endif
-          WRITE(OUTSTR,'(a,i2,a)')' For zone ',IC,
+          WRITE(OUTSTR,'(a,i3,a)')' For zone ',IC,
      &      ' the operations are defined in:'
  295      CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'opr file',IER,nbhelp)
           IF(LTMP(1:2).EQ.'  ')GOTO 295
@@ -837,7 +840,7 @@ C                write(6,*) ltmp
           else
             LTMP=LTHRM(IC)
           endif
-          WRITE(OUTSTR,'(a,i2,a)')' For zone ',IC,
+          WRITE(OUTSTR,'(a,i3,a)')' For zone ',IC,
      &      ' the constructions are defined in:'
  297      CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'constr file',IER,nbhelp)
           IF(LTMP(1:2).EQ.'  ')GOTO 297
@@ -887,7 +890,7 @@ C Existing zip geom file.
         helptopic='zone_also_zip_source'
         call gethelptext(helpinsub,helptopic,nbhelp)
         DFILE=' '
-        WRITE(OUTSTR,'(a,i2,a)')'For zone ',IC,
+        WRITE(OUTSTR,'(a,i3,a)')'For zone ',IC,
      &    ' the geometry is to be scanned from:'
  396    CALL EASKS(LTMP,' ',OUTSTR,72,DFILE,'zip file',IER,nbhelp)
         IF(LTMP(1:2).EQ.'  ')GOTO 293
@@ -1917,10 +1920,10 @@ C If existing db out of date the perform recalculation.
           call tstamp('>','PRJ: start shading recalculation')
           if(IRT.eq.1)then
             call comissionish(icomp,'sra',ier)
-            ishold=.false.
+            if(ier.eq.0)ishold=.false.
           else
             call comissionish(icomp,'ira',ier)
-            ishold=.false.
+            if(ier.eq.0)ishold=.false.
           endif
         endif
       endif
@@ -1954,6 +1957,8 @@ C     = 'sra'  silent recalculation (of all files)
 C     = 'ir '  interactive recalculation (existing files)
 C     = 'ira'  interactive recalculation (of all files)
 C     = 'in '  interactive new
+C     = 'sab'  silent conversion ASCII to binary
+C     = 'sua'  silent useupdate_silent mode
       subroutine comissionish(iz,act,ier)
 #include "building.h"
 #include "model.h"
@@ -1971,13 +1976,20 @@ C     = 'in '  interactive new
       integer iappw,iappx,iappy
       integer iappwpc ! application %
 
+C Directives for shading and/or insolation.
+      common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
+     &     nsurfinso(MCOM),isurfinso(MCOM,MS)
+
       CHARACTER ZN*12,longtfile*144,longtfiledos*144
       character TMODE*8,outs*248,DOIT*248
+      character shdafile*72
       character act*3  ! the parameter passed
-      logical XST,concat,unixok
+      logical XST,XSTA,concat,unixok
+      logical shdasked,ishasked
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
+      shdasked=.true.; ishasked=.true.
 
       if(iz.eq.0.or.iz.gt.ncomp)then
         ier=1
@@ -1989,8 +2001,45 @@ C Check if Unix-based or DOS based.
         return  ! do not do if ISI has not been setup yet
       endif
 
+C Confirm that zone shading directives have been defined. Use
+C similar logic to that used in edgeo.F for the interface.
+      if(nsurfcalc(iz).gt.0)then
+        if(iaplic(iz,1).eq.0)then
+          shdasked=.true.
+        else
+          shdasked=.true.
+        endif
+      else
+        if(IOBS(iz).eq.0)then
+          shdasked=.false.
+        elseif(IOBS(iz).eq.2)then
+          shdasked=.false.
+        else
+          shdasked=.false.
+        endif
+      endif
+      if(nsurfinso(iz).gt.0)then
+        if(iaplic(iz,2).eq.0)then
+          ishasked=.true.
+        else
+          ishasked=.true.
+        endif
+      else
+        ishasked=.false.
+      endif
+      if((.NOT.shdasked).and.(.NOT.ishasked))then
+        ier=3
+        call edisp(iuout,
+     &  'No shading or insolation directives set for this zone.')
+        call edisp(iuout,
+     &  'Return to the zone geometry facility and set these.')
+        return  ! do not do if ISI has not been setup yet
+      endif
+
 C Check if file exists and get local zone name for feedback.
       call FINDFIL(LSHAD(iz),XST)
+      write(shdafile,'(2a)') lshad(iz)(1:lnblnk(lshad(iz))),'a'
+      call FINDFIL(shdafile,XSTA)
       write(ZN,'(A)') zname(iz)
       LNZ=max(1,lnzname(iz))  ! find current lenght of at least on character
 
@@ -2035,6 +2084,7 @@ C rather than starting up a new xterm.
           write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
      &        ' has been recalculated.'
           call edisp(iuout,outs)
+          ier=0
         else
           ier=3
           return  ! if shading file does exist
@@ -2055,6 +2105,7 @@ C rather than starting up a new xterm.
         write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
      &      ' has been recalculated.'
         call edisp(iuout,outs)
+        ier=0
 
       elseif(act(1:3).eq.'ir ')then
 
@@ -2077,6 +2128,7 @@ C on to child with an offset from prj start position.
           write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
      &      ' has been recalculated.'
           call edisp(iuout,outs)
+          ier=0
         else
           ier=3
           return  ! if shading file does exist
@@ -2101,6 +2153,7 @@ C pass this on to child with an offset from prj start position.
         write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
      &    ' has been recalculated.'
         call edisp(iuout,outs)
+        ier=0
 
       elseif(act(1:3).eq.'in ')then
 
@@ -2120,7 +2173,45 @@ C Interactive shading calculation for a new shading database.
         write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
      &    ' has been recalculated.'
         call edisp(iuout,outs)
-       
+        ier=0
+
+      elseif(act(1:3).eq.'sab')then
+
+C Convert ASCII shading to binary but only if an ASCII file is
+C found.
+        if(XSTA)then
+          write(doit,'(6a)') 'ish -mode text -file ',
+     &      longtfile(1:lnblnk(longtfile)),' -zone ',
+     &      ZN(1:lnz),' -act asci2bin ',shdafile(1:lnblnk(shdafile))
+          call usrmsg('starting shading conversion via',doit,'-')
+
+C Since silent, tell runit to use the current command window
+C rather than starting up a new xterm.
+          call runit(doit,'-')
+          write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
+     &      ' has been imported from ASCII.'
+          call edisp(iuout,outs)
+        endif
+        ier=0
+
+      elseif(act(1:3).eq.'sua')then
+
+C Silent useupdate_silent mode to convert ASCII if available or
+C to recalculate whether or not there is an existing shading
+C file.
+        write(doit,'(5a)') 'ish -mode text -file ',
+     &    longtfile(1:lnblnk(longtfile)),' -zone ',
+     &    ZN(1:lnz),' -act useupdate_silent'
+        call usrmsg('starting shading analysis via',doit,'-')
+
+C Since silent, tell runit to use the current command window
+C rather than starting up a new xterm.
+        call runit(doit,'-')
+        write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
+     &      ' has been converted or recalculated.'
+        call edisp(iuout,outs)
+        ier=0
+
       endif
 
       return

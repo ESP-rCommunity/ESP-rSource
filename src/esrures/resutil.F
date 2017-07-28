@@ -320,17 +320,19 @@ C              write(6,*) 'New    ',YMIN(I)
 
 C Set-up frequency of labels (DT), number of decimal places (NDEC) and 
 C draw vertical axis.
-          call dinterval(TSTART,TFINISH,DT,NDEC,1)
+          call dintervalf(TSTART,TFINISH,DT,NDEC,1)
           igwid=igw
           igheight=igwh
           call axiscale(igwid,igheight,TSTART,TFINISH,YMIN(I),YMAX(I),
      &                             TSC,YSC(I),sca,Xadd,Yadd(I))
           if (ILR(I).eq.0) then
-            call vrtaxis(YMIN(I),YMAX(I),igx(I),iigb,iigt,Yadd(I),
-     &        YSC(I),0,ilr(I),ALABEL(I))
+            call dintervalf(YMIN(I),YMAX(I),ddy1,ny,0)
+            call vrtaxisdd(YMIN(I),YMAX(I),igx(I),iigb,iigt,Yadd(I),
+     &        YSC(I),0,ddy1,ny,ilr(I),ALABEL(I))
           else
-            call vrtaxis(YMIN(I),YMAX(I),igx(I),iigb,iigt,Yadd(I),
-     &        YSC(I),0,ilr(I),'  ')
+            call dintervalf(YMIN(I),YMAX(I),ddy1,ny,0)
+            call vrtaxisdd(YMIN(I),YMAX(I),igx(I),iigb,iigt,Yadd(I),
+     &        YSC(I),0,ddy1,ny,ilr(I),'  ')
             iid1=igx(I); iid2=igt-5;
             call wstxpt(iid1,iid2,ALABEL(I))
           endif
@@ -339,8 +341,9 @@ C draw vertical axis.
 
 C Draw horizontal (time) axis.
       if(act.eq.'P')then
-        call horaxis(TSTART,TFINISH,iigl,iigr,iigb,Xadd,TSC,1,
-     &    'Timesteps')
+        call dintervalf(TSTART,TFINISH,ddy1,ny,1)
+        call horaxisdd(TSTART,TFINISH,iigl,iigr,iigb,Xadd,TSC,1,
+     &    ddy1,ny,'Timesteps')
       else
 
 C- Hardwired to display hours instead of timesteps on x-axis
@@ -353,15 +356,21 @@ C        call horaxis(TST,TFI,iigl,iigr,iigb,Xadd,TSCR,1,'Time Hrs')
         if(horaxisdiv.eq.0.or.horaxisdiv.eq.1)then
 
 C Default is the same as AXISDRW always provided.
-          call horaxis(TST,TFI,iigl,iigr,iigb,Xadd,TSCR,1,'Time Hrs')
+          call dintervalf(TST,TFI,ddy1,ny,1)
+          call horaxisdd(TST,TFI,iigl,iigr,iigb,Xadd,TSCR,1,
+     &      ddy1,ny,'Time Hrs')
         elseif(horaxisdiv.eq.2)then
-          call horaxis(TST,TFI,iigl,iigr,iigb,Xadd,TSCR,1,'Time Hrs')
+          call dintervalf(TST,TFI,ddy1,ny,1)
+          call horaxisdd(TST,TFI,iigl,iigr,iigb,Xadd,TSCR,1,
+     &      ddy1,ny,'Time Hrs')
         elseif(horaxisdiv.eq.3)then
-          call horaxishdw(TST,TFI,iigl,iigr,iigb,Xadd,TSCR,1,
-     &      2,24,iods,'Time (days)')
+          call dintervalf(TST,TFI,ddy1,ny,1)
+          call horaxishdwdd(TST,TFI,iigl,iigr,iigb,Xadd,TSCR,1,
+     &      ddy1,ny,2,24,iods,'Time (days)')
         elseif(horaxisdiv.eq.4)then
-          call horaxishdw(TST,TFI,iigl,iigr,iigb,Xadd,TSCR,1,
-     &      3,168,iods,'Time (weeks)')
+          call dintervalf(TST,TFI,ddy1,ny,1)
+          call horaxishdwdd(TST,TFI,iigl,iigr,iigb,Xadd,TSCR,1,
+     &      ddy1,ny,3,168,iods,'Time (weeks)')
         endif
       endif
       RETURN

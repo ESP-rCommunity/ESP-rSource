@@ -150,7 +150,7 @@ C Optional title for graph and up to 10 other labels and their positions.
       common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
 
 C Comfort parameters and hash table.
-      common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
+      common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset
 
 C iocpzone is the zone to get occupancy pattern from for use by
 C air flow reporting.
@@ -162,11 +162,14 @@ C air flow reporting.
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
+      common/recver/izver,ipver,iever
+      common/timfltr/iwkdst,iwkdfn,isatst,isatfn,isunst,isunfn
+
       DIMENSION IVALS(MCOM),zn(MCOM)
       CHARACTER ITEM(35)*23, MTITLE*22, values*20
       character xfile*144,tg*1,delim*1
       character SUFFIX*6
-      CHARACTER outs*124,pifltog*4,lpifl*72
+      CHARACTER outs*124,pifltog*4,lpifl*72,hold*24
       CHARACTER NDNAM*12,PROMPT1*72,PROMPT2*72,CONTMNAM*12
       character graftitle*64,grlbl*24,t64*64,t24*24
       character ll1*12,ll2*12,ll3*12
@@ -293,8 +296,10 @@ C Setup menu items.
 C If a time series plot clear selections otherwise show state of occupancy filter.
         ITEM(23)='/ clear all selections'
       else
-        if(iocupf.eq.0)then
+        if(iocut.eq.0)then
           ITEM(23)='+ filter >> none      '
+        elseif(iocut.eq.-1)then
+          ITEM(23)='+ filter >> time based'
         else
           ITEM(23)='+ filter >> occup only'
         endif
@@ -788,33 +793,61 @@ C << revise for additional casual gain types >>
             call edisp(iuout,' ')
             helptopic='res_casual_gain_type'
             call gethelptext(helpinsub,helptopic,nbhelp)
-            IOT=1
+ 937        IOT=1
             CALL EASKATOG('Which casual gain represents occupancy:',
      &         '  ','Always occupied',ll1,ll2,ll3,'time',' ',' ',IOT,
      &         nbhelp)
             if (IOT.gt.1.and.IOT.lt.5) then
               call usrmsg('  ','  ','-')
-              iocupf=1
-              iocut=IOT-1
-              call scnocup(iier)
+              if (izver.lt.4) then
+                write(outs,'(2a)')'Occupancy filtering not ',
+     &        'available for legacy results libraries before version 4.'
+                call usrmsg(outs,
+     &   'Please regenerate results library or use time filtering.','W')
+                goto 937
+              else
+                iocupf=1      
+                iocut=IOT-1
+              endif
             elseif(IOT.eq.5)then
               iocupf=1
               iocut=-1
-              call scnocup(iier)
+              write(HOLD,'(a)') '  0  24  '
+              CALL EASKS(HOLD,' ',' Weekday occupancy period: ',
+     &         24,' 0  24 ','wkd occup period',IER,nbhelp)
+              K=0
+              CALL EGETWI(HOLD,K,iwkdst,0,24,'W','iwkdst',IER)
+              CALL EGETWI(HOLD,K,iwkdfn,iwkdst,24,'W','iwkdst',IER)
+
+              write(HOLD,'(a)') '  0  24  '
+              CALL EASKS(HOLD,' ',
+     &         ' First weekend day occupancy period: ',24,' 0  24 ',
+     &         'sat occup period',IER,nbhelp)
+              K=0
+              CALL EGETWI(HOLD,K,isatst,0,24,'W','isatst',IER)
+              CALL EGETWI(HOLD,K,isatfn,isatst,24,'W','isatst',IER)
+
+              write(HOLD,'(a)') '  0  24  '
+              CALL EASKS(HOLD,' ',
+     &         ' Second weekend day occupancy period: ',24,' 0  24 ',
+     &         'sun occup period',IER,nbhelp)
+              K=0
+              CALL EGETWI(HOLD,K,isunst,0,24,'W','isunst',IER)
+              CALL EGETWI(HOLD,K,isunfn,isunst,24,'W','isunst',IER)
             elseif(IOT.eq.1)then
               iocpzone=0
               iocupf=0
               iocut=0
-              call scnocup(iier)
             endif
           else
             iocupf=0
+            iocut=0
             iocpzone=0
           endif
 
 C For flow, need to ask the user which zone is to be used to get
 C the occupany pattern from.
-          if(iocupf.eq.1)then
+          if(iocut.gt.0)then
             call edisp(iuout,
      &    'Occupancy filtering is based on casual gains in a zone.')
             call edisp(iuout,
@@ -832,7 +865,6 @@ C the occupany pattern from.
             if(INPIC.eq.0)then
               iocupf=0
               iocut=0
-              call scnocup(iier)
               iocpzone=0
             else
               iocpzone=IVALS(1)

@@ -74,9 +74,6 @@ intialisation and graphics, using ww. The routines are :-
 	horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
                         :- draws a horizontal axis with tic marks and
                            labels.
-	dinterval_(v1,v2,dv,ndec,mode)
-                        :- determins the tic interval for an axis as well
-                           as the number of decimal places.
 	labelstr(n,val,WticC,sstr)
                         :- generates an appropriate label for the value
                            passed.  INTERNAL.
@@ -371,7 +368,7 @@ static int ter = -1;            /* terminal type passed on initial call (set ini
                             system execution calls.  */
 static int child_ter = -1;      /* child process terminal type  */
 
-static char *envmenu[] = { 
+static char *envmenu[] = {
                     "menu     : tiny       ",
                     "         : small      ",
                     "         : medium     ",
@@ -1508,10 +1505,10 @@ void winfnt_(n)
  long int *n;
 {
  long int font_index;
- 
+
  char *test = "_A_V_";
  int vfw,lt;
- 
+
  font_index = *n;  /* cast to local variable */
  if(font_index>=10) font_index=1;  /* in case of 64 bit huge number */
 
@@ -1780,7 +1777,7 @@ this enables the size of the scroll bar to be set*/
 
 /* **************  Open a 3D viewing box *************** */
 /*
- Passed the character width of the main control menu (menu_char), 
+ Passed the character width of the main control menu (menu_char),
  the width of the left (cl), right (cr) inside margins in terms of
  number of characters with the butn_fnt font and the top (ct)and bottom
  (cb)inside margins in terms of lines of characters.
@@ -4266,7 +4263,7 @@ void askcncldialog_(sstr,cncl,id,iq,f_len,a_len)
         if(start_height != (unsigned int)wa.height || start_width != (unsigned int)wa.width) {
 
 	/* Window resized so force update of the positions of the various boxes
-           including the position of askbx.  
+           including the position of askbx.
            << todo put similar logic in other dialogs >> */
         /* debug  fprintf(stderr,"askcncldialog detected configure event\n"); */
           refreshenv_();
@@ -5204,7 +5201,7 @@ void egdisp_(msg,line,len)
   */
   // strncpy(msg2,msg,len);
   // msg2[len+1] = '\0';
-  
+
 /* add message to the queue */
   if(edisp_index < EDISP_LIST_LEN-1) {
     edisp_index++;
@@ -5421,6 +5418,28 @@ void pixel2u_(ux,uy,gx,gy)
 
   return;
 }
+
+/* *************** General line plotting to wwc file. *************** */
+/*
+ As below, but outputs lines to wwc file without drawing them.
+
+*/
+ void etplotwwc_(ux,uy,updown,sym)
+   float *ux, *uy;
+   long int *updown, *sym;
+ {
+   float x,y;
+   int isymbol,iupd,x1,x2,y1,y2;
+   long int lx1,lx2,ly1,ly2,ipdis,isz,gs;
+
+ /* If echo send parameters to wwc file */
+   if ( wwc_ok == 1) {
+     fprintf(wwc,"*etplot\n");
+     fprintf(wwc,"%f %f %ld %ld\n",*ux,*uy,*updown,*sym);
+    }
+
+    return;
+  }
 
 /* *************** General line plotting. *************** */
 /*
@@ -6203,7 +6222,7 @@ void axiscale_(long int* gw,long int* gh,float* xmn,float* xmx,float* ymn,
    axgw=(float)*gw; axgh=(float)*gh;
    axxmn=(float)*xmn; axxmx=(float)*xmx;
    axymn=(float)*ymn; axymx=(float)*ymx;
-   
+
 /* Derive factors for horizontal axis. */
     if (axxmn < 0.0 && axxmx >= 0.0) {
 	axxsc = axgw / (axxmx + (-1.0 * axxmn));
@@ -6287,77 +6306,6 @@ void linescale_(long int* loff,float* ladd,float* lscale,long int* boff,float* b
   return;
 }
 
-/* ******** DINTERVAL ******************** */
-/*
- DINTERVAL finds interval DV on an AXIS(V1,V2) and a suitable number of
- decimal places for the axis values. When 'mode'=0, factors of 10 are
- removed and the interval IS 0.2 for scale length 1-2
-                 0.5                  2-5
-                 1.0                  5-10
-
- When 'mode'=1 the hour interval on the graphical time (x-axis) is
- set as follow:
- v=v2-v1     for v < 12 dv=1
-                 v < 18 dv=2
-                 v < 24 dv=3
-                 v < 48 dv=6
-                 v < 96 dv=12   else dv=24.
-*/
-
-void dinterval_(v1,v2,dv,ndec,mode)
- float *v1, *v2, *dv;
- long int *ndec, *mode;
-{
-    /* Local variables */
-    float v, w, x, vr, vv, dvv;
-    int ix,nd,mde;
-    double dx, dz;
-
-    mde = (int) *mode;
-
-    if (mde == 0) {
-	vv = *v2 - *v1;
-	v = fabs(vv);  /* ?? fabs((double)vv) */
-	x = log10(v);
-	ix = x;
-        if (x < 0.0) ix=ix-2;
-        dx = (double) ix;
-
-	dz = pow(10.0,dx);
-	vr =  v / (float) dz;
-	w = 10.0;
-	if (vr < 5.0) w = 5.0;
-	if (vr < 2.0) w = 2.0;
-
-	dvv = w * 0.1 * (float) dz;
-	if (vv < 0.0) dvv = -dvv;
-
-	nd = 1 - ix;
-	if (w == 10.0) --nd;
-        else if (w == 5.0) nd = 1;
-        else if (w == 2.0) nd = 2;
-
-       	if (nd < 0) nd = 0;
-
-    } else {
-/* if over 6 months draw a tick each week, if over 60 days
-   draw every other day, if over 7 days tick each 12 hours */
-	v = *v2 - *v1;
-	dvv = 168.0;
-	if (v < 4320.0) dvv = 48.0;
-	if (v < 1440.0) dvv = 24.0;
-	if (v < 338.0) dvv = 12.0;
-	if (v < 122.0) dvv = 8.0;
-	if (v < 50.0) dvv = 4.0;
-	if (v < 26.0) dvv = 3.0;
-	if (v < 20.0) dvv = 2.0;
-	if (v < 14.0) dvv = 1.0;
-	nd = 0;
-    }
-    *dv = dvv;
-    *ndec = nd;
-  return;
-} /* dinterval_ */
 
 /* ************ Generate a tic label *************** */
 /*
@@ -6393,7 +6341,8 @@ void labelstr(n,val,WticC,sstr)
   return;
 } /* labelstr */
 
-/* ************** VRTAXIS *********************** */
+
+/* ************** VRTAXISDD *********************** */
 /*
  Construct and draw a vertical axis via where: YMN,YMX are the data
  minimum & maximum values, offl & offb are the pixel coords of the
@@ -6402,14 +6351,15 @@ void labelstr(n,val,WticC,sstr)
  Mode = 1 for time axis, Mode = 0 for other data display types.
  Side = 0 lables and tic on left, Side = 1 labels and tic on right.
  msg is the axis label and mlen is it's length (passed from fortran).
- TODO: pass in character offset for axis rather than assuming a
+ ddy is data interval, ny number of decimal places to use.
+  TODO: pass in character offset for axis rather than assuming a
        fixed value.
 */
 
-void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
+void vrtaxisdd_(ymn,ymx,offl,offb,offt,yadd,sca,mode,dddy,nny,side,msg,mlen)
 
- float *ymn, *ymx,  *yadd, *sca;
- long int  *offl,*offb, *offt, *mode, *side;
+ float *ymn, *ymx,  *yadd, *sca, *dddy;
+ long int  *offl,*offb, *offt, *mode, *nny, *side;
  int  mlen;
  char  *msg;
 {
@@ -6440,10 +6390,8 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
  }
 
  ofl = (int) *offl; ofb = (int) *offb; oft = (int) *offt;
+ ny = (int) *nny; ddy = *dddy;
  mde = *mode; sid = (int) *side;
-
-/* Define tic intervals (DDX data increment, NY decimal places). */
- dinterval_(ymn, ymx, &ddy, &ny, &mde);
 
 /* Find the maximum label text width.  */
  label_width = 0;
@@ -6551,21 +6499,23 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
   }
   if (saved_font != butn_fnt) winfnt_(&saved_font);
   return;
-} /* vrtaxs_ */
+} /* vrtaxsdd_ */
 
-/* ************** HORAXS *********************** */
+
+/* ************** HORAXSdd *********************** */
 /*
  Construct and draw a horizontal axis via WW where: XMN,XMX are the data
  minimum & maximum values, offL & offB are the pixel coords of the
  left start of the axis.  SCA is the scaling factor and Xadd is a data
  offset to adjust plotting for various data ranges. mode defines how
- left starting point is adjusted.
+ left starting point is adjusted. ddx is data interval, nx number
+ of decimal places to use.
 */
 
-void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
+void horaxisdd_(xmn,xmx,offl,offr,offb,xadd,sca,mode,dddx,nnx,msg,mlen)
 
- float *xmn, *xmx, *sca, *xadd;
- long int   *offl,*offr,*offb, *mode;
+ float *xmn, *xmx, *sca, *xadd, *dddx;
+ long int   *offl,*offr,*offb, *mode, *nnx;
  int   mlen;
  char  *msg;
 {
@@ -6580,7 +6530,7 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
  int l, n, ix, iy, ix1, iy1, nintvl, ilen;
  int last_label_right_pixel, label_width, mid;
  long int nx,wticc,mde,saved_font;
- float xticv,ddx,rintvl,resid;
+ float ddx,xticv,rintvl,resid;
  char msg2[80];
 
  f_to_c_l(msg,&mlen,&ilen); strncpy(msg2,msg,(unsigned int)ilen); msg2[ilen] = '\0';
@@ -6595,9 +6545,7 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
  }
 
  ofl = (int) *offl; ofr = (int) *offr; ofb = (int) *offb; mde = *mode;
-
-/* Define tic intervals (DDX data increment, NX num decimal places). */
- dinterval_(xmn, xmx, &ddx, &nx, &mde);
+ nx = *nnx; ddx = *dddx;
 
 /* Find the maximum label text width.  */
  label_width = 0;
@@ -6675,15 +6623,17 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
  }
  if (saved_font != butn_fnt) winfnt_(&saved_font);
  return;
-} /* horaxis_ */
+} /* horaxisdd_ */
 
-/* ************** HORAXSHDW *********************** */
+
+/* ************** HORAXSHDWDD *********************** */
 /*
  Construct and draw a hour/day/week horizontal axis where: XMN,XMX are the data
  minimum & maximum values, offL & offB are the pixel coords of the
  left start of the axis.  SCA is the scaling factor and Xadd is a data
  offset to adjust plotting for various data ranges. mode defines how
- left starting point is adjusted.
+ left starting point is adjusted. ddx is data interval, nx number
+ of decimal places to use.
  ind = 0 display & tics per timestep, 1 display & tics per hour,
        2 display & tics per day, 3 display & tics per week,
        4 display & tics day-of-the-week
@@ -6694,10 +6644,11 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
       case of ind = 2 or 4 (otherwise ignored)
 */
 
-void horaxishdw_(xmn,xmx,offl,offr,offb,xadd,sca,mode,ind,idiv,isjday,msg,mlen)
+void horaxishdwdd_(xmn,xmx,offl,offr,offb,xadd,sca,mode,dddx,nnx,
+     ind,idiv,isjday,msg,mlen)
 
- float *xmn, *xmx, *sca, *xadd;
- long int  *offl,*offr,*offb, *mode, *ind, *idiv, *isjday;
+ float *xmn, *xmx, *sca, *xadd, *dddx;
+ long int  *offl,*offr,*offb, *mode, *nnx, *ind, *idiv, *isjday;
  int   mlen;
  char  *msg;
 {
@@ -6728,10 +6679,8 @@ void horaxishdw_(xmn,xmx,offl,offr,offb,xadd,sca,mode,ind,idiv,isjday,msg,mlen)
  }
 
  ofl = (int) *offl; ofr = (int) *offr; ofb = (int) *offb; mde = *mode;
+ nx = (int) *nnx; ddx = *dddx;
  iind = (int) *ind; iidiv = (int) *idiv; iisjday = (int) *isjday;
-
-/* Define tic intervals (DDX data increment, NX num decimal places). */
- dinterval_(xmn, xmx, &ddx, &nx, &mde);
 
 /* Find the maximum label text width based on which ind.  */
  label_width = 0;
@@ -6840,7 +6789,7 @@ void horaxishdw_(xmn,xmx,offl,offr,offb,xadd,sca,mode,ind,idiv,isjday,msg,mlen)
  }
  if (saved_font != butn_fnt) winfnt_(&saved_font);
  return;
-} /* horaxishdw_ */
+} /* horaxishdwdd_ */
 
 /* *************** ESRU menu text update. *************** */
 /*

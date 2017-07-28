@@ -181,6 +181,10 @@ C and future time rows. Units: W/m^2
       include "CFC_common.h"
       include "net_flow.h"
       include "tdf2.h"
+C <FMI>
+      include "FMI.h"
+C </FMI>
+
 C ADD NEW PARAMETER STATEMENT
 C MSTMC is number of different bidirectional datasets, limited
 C to 20 for the present.
@@ -707,6 +711,9 @@ C Sensing time to swtich to alternative properties.
                   IBOFOT(ICOMP,I)=1
                   ECRAT(ICOMP,I)=0.0
                   NBPONT(ICOMP,I)=K
+C Debug.
+C                  write(6,*) 'blind control ',icomp,i,IBOFOT(ICOMP,I),
+C     &               ECRAT(ICOMP,I),NBPONT(ICOMP,I)
                 ELSEIF(NBCTT(ICOMP,K,ITMC).EQ.1) THEN
 
 C External air temperature activation.
@@ -908,6 +915,27 @@ C POO/POO2 contains shading factor on corresponding opaque surface.
                     NBPONT(ICOMP,I)=K
                   ENDIF
                 ENDIF
+
+C <FMI>
+C If blinds control is active, set IBOFOT to control value from FMU if
+C this is the associated zone. It is assumed that control is set up such
+C that IBOFOT=1 (use alternative properties) corresponds to active
+C blinds, and hence the FMU control value is synonymous with IBOFOT.
+C TODO - maybe try and handle non-binary blind states?
+                if (FMUDOCTL(ICOMP,6)) then
+                  call eclose(FMUCTL(ICOMP,6),0.0,0.001,bCloseToZero)
+                  if (bCloseToZero) then
+                    IBOFOT(ICOMP,I)=0
+                    ECRAT(ICOMP,I)=1.
+                    NBPONT(ICOMP,I)=0
+                  else
+                    IBOFOT(ICOMP,I)=1
+                    ECRAT(ICOMP,I)=0.
+                    NBPONT(ICOMP,I)=K
+                  endif
+                endif
+C </FMI>
+
               ENDIF
    5        CONTINUE
           endif
@@ -949,6 +977,8 @@ C << use? and what about the case of ITPREP being zero >>
                   write (33,*)
      &               'Too many controlled windows! Ignoring surface ',I
                 endif
+C                write(6,*) 'ask for alt optics',ICALL,IWC,IMDB(IWC),
+C     &            IGLZ(IWC)
               endif
             endif
           endif
@@ -2329,6 +2359,9 @@ C Output solar intensity details.
       call edisp(itu,outs)
 
 C Output QSOLE and QSOLI for each construction if sun up.
+
+C << does not reflect blind control alternative optics >>
+
       if(SALT.lt.-1.0)goto 9992
       call edisp(itu,' ')
       write(outs,'(a)') ' Solar nodal absorptions (W/m^2):'
@@ -4152,9 +4185,9 @@ C        write(6,*) 'desc', mlcname(ictl_constrdbindex_number)
 C        write(6,*) 'ssmlcn', SSMLCN(izstocn(icomp,ISURFNumber))
 
               write(ctl_constrdb_name,'(a)')
-     &             mlcname(ictl_constrdbindex_number)(1:12)
+     &             mlcname(ictl_constrdbindex_number)
               write(name_constr_ofStudy,'(a)')
-     &             SSMLCN(izstocn(icomp,ISURFNumber))(1:12)
+     &             SSMLCN(izstocn(icomp,ISURFNumber))
 
 C controls start here
 C<<< Consider changing ioan(1,1) in the future to ioan(iol,1)>>>>

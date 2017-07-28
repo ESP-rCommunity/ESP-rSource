@@ -43,7 +43,6 @@ Send inquiries to:
 ESP-r is also supported through a community mailing list.  To subscribe
 to the list, visit:
 
-
    http://lists.strath.ac.uk/mailman/listinfo/esp-r
 
 ===========================================================
@@ -74,30 +73,45 @@ back into the community.
 
 Version-controlled source code
 ------------------------------
-The ESP-r source code is stored on a publicly-accessible repository
-at <https://github.com/ESP-rCommunity. To checkout the full repository
-issue the following command:
+The ESP-r source code is stored on a publicly-accessible repositories
+at <https://github.com/ESP-rCommunity. Although you can compile ESP-r
+with only the ESP-rSource.git to get full functionality you have
+to checkout all four repositories and create a new folder structure 
+to hold the combined distribution. Assuming the folder for downloads is
+ESPrgit and the combined distribution will be in ESPr_Master give
+the following commands:
 
-git clone --recurse-submodules https://github.com/ESP-rCommunity/ESP-rSource.git ESP-rCentral
+ mkdir ESPrgit
+ cd ESPrgit
+ git clone --recursive https://github.com/ESP-rCommunity/ESP-rSource.git
+ git clone --recursive https://github.com/ESP-rCommunity/ESP-rDatabases.git
+ git clone --recursive https://github.com/ESP-rCommunity/ESP-rModels.git
+ git clone --recursive https://github.com/ESP-rCommunity/ESP-rDoc.git
 
-The download zip button may not include all of the documentation and
-example models.
+Now use a utility called rsync to merge the repositories into ESPr_Master:
+
+ mkdir ESP-rMaster
+ rsync -av ESP-rSource/ ESP-rMaster/
+ rsync -av ESP-rDatabases/ ESPrMaster/data/
+ rsync -av ESP-rDoc/ ESPrMaster/doc/
+ rsync -av ESP-rModels/ ESPrMaster/models/
 
 You can learn more about accessing the ESP-r repository here:
 
    http://www.esru.strath.ac.uk/Programs/ESP-r_central.htm
 
-Assuming you have a folder structure in the form 
-of /home/fred/Src/simulation  unzip the downloaded file 
-within Src/simulation folder. You will also need a folder
-for the compiled ESP-r. Lets assume this is /opt/esru
-(create it if it does not exist). 
+You will also need a folder for the compiled ESP-r. Lets assume 
+this is /opt/esru (create it if it does not exist) On Windows
+this would be C:/ESRU. 
 
-In the top folder is an Install script. For Linux, OSX and
-Cywin and/or MSYS a typical set of commands to build ESP-r
+In the top folder of ESPrMaster is an Install script. For Linux, OSX and
+Cywin a typical set of commands to build ESP-r
 is:
  ./Install -d /opt/esru --gcc4 --debug
- 
+
+or for a MSYS2 development environment on Windows:
+ ./Install -d C:/ESRU --gcc4 --debug
+
 Answer yes to installing the databases and example models.
 more information about setting up computers and development
 tool chains are found in the doc/manual/OS folders.
@@ -106,14 +120,14 @@ tool chains are found in the doc/manual/OS folders.
 ===========================================================
 4. SYSTEM REQUIREMENTS
 
-ESP-r has been installed Linux, Cygwin, MinGW and MAC
+ESP-r has been installed Linux, Cygwin, MSYS2 and MAC
 OS X systems, using a variety of compiler and graphics library
 combinations.
 
 While ESP-r has been built on all of the supported platforms and
 configurations, it is most routinely used on Linux.  Installation on
 common Linux distributions (including Ubuntu, Redhat/Fedora and
-Gentoo) using the gcc 4 (gcc g++ gfortran) series of compiler 
+Gentoo) using the gcc 4/5/6 (gcc g++ gfortran) series of compiler 
 suites has proven robust, and you can use it with confidence on 
 these systems.  OSX is similar to Linux in the build process (see
 the notes in the doc/manual/OS/Apple folder). ESP-r can also be 
@@ -133,11 +147,10 @@ ESP-r is presently supported on 32 and 64 bit systems.
  -----------------------------------------------------------
                       Linux   Cygwin  MSYS2    OS X
  ...........................................................
- 32-bit                  S       S       S       S
+ 32-bit                  S       S       S       -
  64-bit                  S       S       S       S
  -----------------------------------------------------------
  S = Stable
- B = Beta testing
  X = Not supported
  - = Not applicable
 
@@ -145,7 +158,7 @@ Compilers
 ---------
 Compilation of ESP-r is presently supported with
 the following compiler sets:
-  - GCC 4.4 - 4.9 (gcc, g++ and gfortran)
+  - GCC 4.9 - 6.0 (gcc, g++ and gfortran)
 
 Graphics libraries
 ------------------
@@ -156,14 +169,13 @@ and GTK versions of ESP-r can be installed on all platforms provided
 the GTK libraries are available.
 
  -----------------------------------------------------------
-                      Linux   Cygwin  MinGW    OS X
+                      Linux   Cygwin  MSYS2  OS X
  ...........................................................
  X11                    S       S      -       S
  GTK                    S       S      S       S
  no graphics            S       S      S       S
  -----------------------------------------------------------
  S = Stable
- B = Beta testing
  X = Not supported
  - = Not applicable
 
@@ -298,15 +310,16 @@ Theoretical basis
 Application of ESP-r
 --------------------
 
-  - "The ESP-r Cookbook"  describes the application of
+  - "Strategies for Deploying Virtual Representations of the Built 
+    Environment"  describes the application of
     ESP-r in building simulation:
        
-       ftp://ftp.strath.ac.uk/Esru_public/documents/esp-r_cookbook.pdf
+       www.esru.strath.ac.uk/Documents/ESP-r_cookbook_june_2015.pdf
 
   - "Data model summary ESP-r Version 9 Series" describes
     the  format of ESP-r's input files:
 
-       ftp://ftp.strath.ac.uk/Esru_public/documents/ESP-r_data_doc.pdf
+       www.esru.strath.ac.uk/Documents/ESP-r_data_doc.pdf
 
 Developing with ESP-r
 ---------------------
@@ -315,23 +328,7 @@ Developing with ESP-r
     outlines the branch structure in use on ESP-r
     central, and procedures for merging code:
 
-       ftp://ftp.strath.ac.uk/Esru_public/documents/repository.pdf
-
-  - "An overview of Subversion for ESP-r Central
-    Users" summarizes the use of subversion to
-    access and maintain branches on ESP-r Central:
-       
-       ftp://ftp.strath.ac.uk/Esru_public/documents/subversion.pdf
-
-  - "ESP-r Coding Guide" provides guidelines for
-    modifying ESP-r source code:
-
-       ftp://ftp.strath.ac.uk/Esru_public/documents/coding_guide.pdf
-
-  - "ESP-r Developers' Quality Assurance Checklist"
-    prescribes testing procedures for contributers:
-
-       ftp://ftp.strath.ac.uk/Esru_public/documents/QA_checklist.pdf
+       www.esru.strath.ac.uk/Documents/good_practice.pdf
 
 ===========================================================
 9. VALIDATION

@@ -49,6 +49,8 @@ TargetFolder=$3
 printf "\r                                                                            "
 printf "\r   - Creating binary plant databases [${TargetName}]..."
 
+# Debug
+# echo "$PDB -mode text -file $TargetName -act asci2bin ${SourceName}"
 $PDB -mode text -file $TargetName -act asci2bin ${SourceName}
 mv $TargetName $TargetFolder
 
@@ -80,11 +82,12 @@ DESTdir=/usr/esru          # Target Directory
 COSIMdir=" "			   # Harmonizer install directory
 xml_support=prompt         # support for XML output
 SQLite_support="no"        # support for SQLite output
+FMI_support="prompt"       # support for FMI
 debugging="no"             # include debugging symbols
 EXE=""                     # executable file extension (i.e. .exe on cygwin and Windows)
 FFLAGS="-I../include "     # initial fortran compiler flags
 CFLAGS="-I../include "     # initial C compiler flags
-LD_FLAGS=" "               # inisial link-loader flags
+LD_FLAGS=" "               # initial link-loader flags
 platform="auto-detect"     # default platform
 install_dbs="yes"          # Install dbs files
 install_training="yes"     #         training files
@@ -181,6 +184,7 @@ if [ $# -ne 0 ]; then
         --silent)       mode="silent";             shift;;
         --xml)          xml_support=yes;           shift;;
         --SQLite)       SQLite_support="yes";      shift;;
+        --FMI)          FMI_support="yes";         shift;;
         --co-sim) shift; COSIMdir=$1; input="yes";  enable_cosim="yes";  shift;;
         --gcc4)         gnu_version="gcc4";        shift;;
         --intel)        use_intel="yes";           shift;;
@@ -352,6 +356,13 @@ if [ $help -eq 1 ]; then
   echo "        in an SQLite database. Requires the libsqlite3.so library."
   echo "        **EXPERIMENTAL**"
   echo " "
+  echo "    --FMI: Force prj and bps to try to compile with Functional Mockup"
+  echo "        Interface (FMI) functionality. This argument prevents checks"
+  echo "        for FMILibrary resources in standard locations; it is left to"
+  echo "        the user to ensure that headers/libraries are available on "
+  echo "        the compiler/linker paths. See FMI developers guide "
+  echo "        doc/manual/FMI/Developers.txt for more details."
+  echo " "
   echo "    --co-sim <PATH>: Compile Harmonizer.exe, Harmonizer.dll and bps.dll"
   echo "        for co-simulation with TRNSYS. Harmonizer.exe and Harmonizer.dll"
   echo "        will be installed in <PATH> directory, and bps.dll will be" 
@@ -443,6 +454,49 @@ if [ "$SQLite_support" = "yes" ]; then
    esac
 fi
 
+# Check that FMI support is available.
+if [ "$FMI_support" = "prompt" ]; then
+  found=true
+# Check for library. 
+  if [ ! -f "/usr/lib/libfmilib_shared.so" ]; then
+    found=false
+# If runnning silently, warn user.
+    if [ "$mode" = "silent" ]; then
+      echo " "
+      echo " Warning: FMIL library libfmilib_shared.so could not be found"
+      echo " in /usr/lib"
+      echo " "
+      echo " FMI support disabled."
+    fi
+  fi
+# Check for headers.
+  if [ ! -d "/usr/include/FMI" ] && 
+     [ ! -d "/usr/include/FMI1" ] &&
+     [ ! -d "/usr/include/FMI2" ] &&
+     [ ! -d "/usr/include/JM" ] &&
+     [ ! -f "/usr/include/fmilib.h" ] &&
+     [ ! -f "/usr/include/fmilib_config.h" ]; then
+    found=false
+# If runnning silently, warn user.
+    if [ "$mode" = "silent" ]; then
+      echo " "
+      echo " Warning: FMIL header(s) could not be found"
+      echo " in /usr/include"
+      echo " "
+      echo " FMI support disabled."
+    fi
+  fi
+  if $found; then
+    FMI_libs_found="yes"
+  else
+    FMI_libs_found="no"
+  fi
+elif [ "$FMI_support" = "yes" ]; then
+# If FMI_support is yes, do not check for FMIL resources, assume they
+# are present somewhere on the linker/compiler paths.
+  FMI_libs_found="assume"
+fi
+
 #--------------------------------------------------------------------
 # Error trap command-line options
 #--------------------------------------------------------------------
@@ -458,11 +512,12 @@ if [ "$platform" = "auto-detect" ]; then
       [ "$architecture" != "CYGWIN_NT-6.0" ] &&
       [ "$architecture" != "CYGWIN_NT-6.1" ] &&
       [ "$architecture" != "CYGWIN_NT-6.1-WOW64" ] &&
+      [ "$architecture" != "CYGWIN_NT-10.0" ] &&
       [ "$architecture" != "MINGW32_NT-5.1" ] &&
-      [ "$architecture" != "MINGW32_NT-5.0" ] &&
       [ "$architecture" != "MINGW32_NT-5.2" ] &&
       [ "$architecture" != "MINGW32_NT-6.1" ] &&
       [ "$architecture" != "MINGW64_NT-6.1" ] &&
+      [ "$architecture" != "MINGW64_NT-10.0" ] &&
       [ "$architecture" != "MSYS_NT-6.1" ] &&
       [ "$architecture" != "Darwin" ] &&
       [ "$architecture" != "SunOS" ]; then
@@ -575,8 +630,8 @@ if [ "$platform" = "auto-detect" ]; then
    # Note: $architecture has been error-trapped above.
    case $architecture in
       Linux)                           platform="linux";;
-      CYGWIN_NT-5.2  | CYGWIN_NT-5.1  | CYGWIN_NT-5.0  | CYGWIN_NT-6.0 | CYGWIN_NT-6.1 | CYGWIN_NT-6.1-WOW64 ) platform="cygwin";;
-      MINGW64_NT-6.1 |MINGW32_NT-6.1 | MINGW32_NT-5.2 | MINGW32_NT-5.1 | MINGW32_NT-5.0 | MSYS_NT-6.1 ) platform="mingw";;
+      CYGWIN_NT-5.2  | CYGWIN_NT-5.1  | CYGWIN_NT-5.0  | CYGWIN_NT-6.0 | CYGWIN_NT-6.1 | CYGWIN_NT-6.1-WOW64 | CYGWIN_NT-10.0 ) platform="cygwin";;
+      MINGW64_NT-10.0 | MINGW64_NT-6.1 | MINGW32_NT-6.1 | MINGW32_NT-5.2 | MINGW32_NT-5.1 | MSYS_NT-6.1 ) platform="mingw";;
       Darwin)                          platform="mac";;
       SunOS)                           platform="sun";;
    esac
@@ -740,6 +795,88 @@ else
   fi
 fi
 
+#----------------------------------------------------------------------
+# Prompt user for FMI support
+#----------------------------------------------------------------------
+
+if [ "$mode" = "interactive" ]; then
+
+  if [ "${FMI_libs_found}" = "no" ]; then
+
+    #FMI libraries not available.
+    echo " "
+    echo " FMILibrary resources could not be found"
+    echo " on this system. Please follow instructions in"
+    echo " manual/FMI/Users.txt to install FMILibrary."
+    echo " FMI will be disabled, but the rest of the ESP-r"
+    echo " installation will proceed normally. "
+    echo
+    FMI_support="no"
+  elif [ "${FMI_libs_found}" = "yes" ]; then
+
+    # Supported platforms/architectures:
+    if ! [ "$platform" = "linux" ] && 
+       ! [ "$machine" = "x86_64" ] &&
+       ! [ "$machine" = "i386" ] &&
+       ! [ "$machine" = "i686" ]; then
+      echo 
+      echo " *** WARNING *** "
+      echo
+      echo " FMI is presently not supported on "
+      echo " $platform $machine. You can enable"
+      echo " the functionality, but please be aware"
+      echo " that this may not work as expected."
+      echo " We recommend that only advanced users"
+      echo " proceed with FMI enabled."
+      echo 
+    fi
+
+    # Libraries were found. 
+    if [ "$FMI_support" = "prompt" ]; then
+    # Prompt user for inclusion.
+      B="none"
+      while [ "$B" != "y" ] && [ "$B" != "n" ] && [ "$B" != "Y" ] && [ "$B" != "N" ]
+      do
+        if [ "$B" != "none" ]; then
+          echo ""
+          echo "Please answer yes or no (y/n)."
+        fi
+        echo " "
+        echo " Install with FMI support (y/n) [n]? "
+        read B
+        if [ "$B" = "" ]; then
+          case "${FMI_support}" in
+            yes) B="y";;
+            *)   B="n";;
+          esac
+        fi
+      done
+      if [ "$B" = "y" ]; then
+        # Enable FMI
+        FMI_support="yes"
+        echo " FMI enabled"
+      else
+        # Disable FMI
+        FMI_support="no"
+        echo " FMI disabled"
+      fi
+      echo " "
+    fi
+  elif [ "${FMI_libs_found}" = "assume" ]; then
+    echo
+    echo " FMILibrary headers and library will be assumed"
+    echo " to be present somewhere on the compiler/linker"
+    echo " paths. No checks will be made for these resources"
+    echo " before attempting to compile with FMI support"
+    echo " enabled."
+    echo
+  fi
+else
+  # Silent mode: Disable FMI by default
+  if [ "$FMI_support" = "prompt" ]; then
+    FMI_support="no"
+  fi
+fi
 
 #----------------------------------------------------------------------
 # Prompt for graphics libraries
@@ -976,9 +1113,14 @@ case $xLibs in
               x86_64)
                 case $platform in
                   mac) if [ -d /usr/X11R6/lib/X11 ] ; then
-                    X11_found="yes"
-                    XINSTALLDIR="/usr/X11R6"
-                  fi;;
+                         X11_found="yes"
+                         XINSTALLDIR="/usr/X11R6"
+                       else
+                         if [ -d /opt/X11/lib/X11 ] ; then
+                           X11_found="yes"
+                           XINSTALLDIR="/opt/X11"
+                         fi
+                    fi;;
                   *) if [ -d /usr/X11R6/lib64/X11 ] ; then
                        X11_found="yes"
                        XINSTALLDIR="/usr/X11R6"
@@ -1000,6 +1142,11 @@ case $xLibs in
                   XINSTALLDIR="/usr/lib/arm-linux-gnueabihf"
                 fi;;
               armv7l)
+                if [ -d /usr/lib/X11 ] ; then
+                  X11_found="yes"
+                  XINSTALLDIR="/usr/lib/X11"
+                fi;;
+              aarch64)
                 if [ -d /usr/lib/X11 ] ; then
                   X11_found="yes"
                   XINSTALLDIR="/usr/lib/X11"
@@ -1140,18 +1287,19 @@ case $platform in
           i386)    fDefType="-DSUN";;
         esac;;
    linux) case $machine in
-          i386)    fDefType="-DLIN -O1";;
-          i686)    fDefType="-DLIN -O1";;
-          x86_64)  fDefType="-DLIN -O1";;
-          armv6l)  fDefType="-DLIN -O1";;
-          armv7l)  fDefType="-DLIN -O1";;
+          i386)    fDefType="-DLIN";;
+          i686)    fDefType="-DLIN";;
+          x86_64)  fDefType="-DLIN";;
+          armv6l)  fDefType="-DLIN";;
+          armv7l)  fDefType="-DLIN";;
+          aarch64)  fDefType="-DLIN";;
         esac;;
-   cygwin)     fDefType="-DCYGW -O1";;
+   cygwin)     fDefType="-DCYGW";;
    mac) case $machine in
           i386)    fDefType="-DOSX -DOSI -DLIN -m32";;
-          x86_64)  fDefType="-DOSX -DLIN -O1 -m64";;
+          x86_64)  fDefType="-DOSX -DLIN -m64";;
         esac;;
-   mingw)      fDefType="-DMINGW -O1";;
+   mingw)      fDefType="-DMINGW";;
 esac
 
 # Append -DX11 flag as necessary
@@ -1254,6 +1402,7 @@ case $xLibs in
          i686) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
          armv6l) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR} -lX11";;
          armv7l) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR} -lX11";;
+         aarch64) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR} -lX11";;
          x86_64) case $platform in
                  mac) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
                  *) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib64 -lX11";;        
@@ -1320,6 +1469,22 @@ case $SQLite_support in
        targets="disableSQLite $targets";;
 esac
 
+# Append FMI library as required.
+case $FMI_support in
+  yes)
+    # Currently only tested with GNU compilers.
+    case $compiler in
+      sunF90)  ULIBS="$ULIBS -Wl,--no-as-needed -lCstd -lfmilib_shared";;
+      GNU)     ULIBS="$ULIBS -Wl,--no-as-needed -lstdc++ -lfmilib_shared ";;
+      intel)   ULIBS="$ULIBS -Wl,--no-as-needed -lstdc++ -lfmilib_shared ";;
+    esac;
+    FMIarg="enableFMI";;
+  no)
+    FMIarg="disableFMI";;
+esac
+
+    
+
 #-------------- LDFLAGS ------------------------
 # Directives for the link-loader (ld). The reduce-memory-overheads
 # speeds up linking greatly if machine memory is limited and has
@@ -1330,6 +1495,7 @@ case $platform in
    *)  case $machine in
       armv6l) LD_FLAGS="-Wl,--reduce-memory-overheads";;
       armv7l) LD_FLAGS="-Wl,--reduce-memory-overheads";;
+      aarch64) LD_FLAGS="-Wl,--reduce-memory-overheads";;
       *)      LD_FLAGS="-Wl,--reduce-memory-overheads";;
       esac;;
 esac
@@ -1527,6 +1693,7 @@ DESTdir=`echo "$DESTdir" | sed "s/\/$//"`
 
 ESPdir=${DESTdir}/esp-r
 ESPbin=${DESTdir}/esp-r/bin
+ESPBinDir=${DESTdir}/esp-r/bin
 corrupted_tree="no"
 if [ "$create_espr_dir" = "no" ]; then
 
@@ -1633,7 +1800,7 @@ fi
 if [ "${make_msg_file}" = "" ]; then
   echo " "
   echo " Intended shell command:"
-  echo " make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir=${DESTdir} ESPdir=${ESPdir} WWLINK=${WWLINK} EXE="${EXE}" XINSTALLDIR=${XINSTALLDIR} CFLAGS=${CFLAGS} FFLAGS=${FFLAGS} LD_FLAGS=${LD_FLAGS} ULIBS=${ULIBS} xml_status=${xml_status} $targets"
+  echo " make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir=${DESTdir} ESPdir=${ESPdir} ESPBinDir=${ESPBinDir} WWLINK=${WWLINK} EXE="${EXE}" XINSTALLDIR=${XINSTALLDIR} CFLAGS=${CFLAGS} FFLAGS=${FFLAGS} LD_FLAGS=${LD_FLAGS} ULIBS=${ULIBS} xml_status=${xml_status} $targets"
   echo " "
   echo " where the $xlibs libraries are in ${XINSTALLDIR}"
 fi
@@ -1857,22 +2024,22 @@ esac
 #---------------------------------------------------------------------
 # Begin build
 #---------------------------------------------------------------------
-targets="${targets} end_of_exes"
+targets_shift="${targets} end_of_exes"
 # Build each executable, 1 by 1.
-while [ "${targets}" != "end_of_exes" ]
+while [ "${targets_shift}" != "end_of_exes" ]
 do
    # The following chunk of code is an ugly, but sh-compatable
    # string-based shift register.
 
    # strip any leading spaces
-   targets=`echo $targets | sed 's/^ *//g'`
+   targets_shift=`echo $targets_shift | sed 's/^ *//g'`
 
-   # Extract leading execuitable from targets
-   target=`echo $targets | sed 's/ .*$//g'`
+   # Extract leading execuitable from targets_shift
+   target=`echo $targets_shift | sed 's/ .*$//g'`
 
-   # Now remove exe from targets
+   # Now remove exe from targets_shift
 
-   targets=`echo $targets | sed 's/^[^ ]* //g'`
+   targets_shift=`echo $targets_shift | sed 's/^[^ ]* //g'`
 
    # Let user know what's going on
    echo -n "    - building ${target}... "
@@ -1917,15 +2084,15 @@ do
    if [ "${make_msg_file}" != "" ]; then
       echo " Make command:"             >>$make_msg_file
       echo " -------------"             >>$make_msg_file
-      echo "   make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir="${DESTdir}" ESPdir="${ESPdir}" WWLINK="${WWLINK}" EXE="${EXE}" XINSTALLDIR="${XINSTALLDIR}" CFLAGS="${CFLAGS}" FFLAGS="${FFLAGS}" LD_FLAGS="${LD_FLAGS}" ULIBS="${ULIBS}" xml_status="${xml_status}" SQLite_status="${SQLite_status}" -f Makefile  ${target} >>$make_msg_file 2>&1 " >> $make_msg_file
+      echo "   make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir="${DESTdir}" ESPdir="${ESPdir}" WWLINK="${WWLINK}" EXE="${EXE}" XINSTALLDIR="${XINSTALLDIR}" CFLAGS="${CFLAGS}" FFLAGS="${FFLAGS}" LD_FLAGS="${LD_FLAGS}" ULIBS="${ULIBS}" xml_status="${xml_status}" SQLite_status="${SQLite_status}" FMIarg="${FMIarg}" -f Makefile  ${target} >>$make_msg_file 2>&1 " >> $make_msg_file
       echo " "                          >>$make_msg_file
       echo " Make output:"              >>$make_msg_file
       echo " ------------"                    >>$make_msg_file
-      make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir="${DESTdir}" ESPdir="${ESPdir}" WWLINK="${WWLINK}" EXE="${EXE}" XINSTALLDIR="${XINSTALLDIR}" CFLAGS="${CFLAGS}" FFLAGS="${FFLAGS}" LD_FLAGS="${LD_FLAGS}" ULIBS="${ULIBS}" xml_status="${xml_status}" SQLite_status="${SQLite_status}" -f Makefile  ${target} >>$make_msg_file 2>&1
+      make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir="${DESTdir}" ESPdir="${ESPdir}" WWLINK="${WWLINK}" EXE="${EXE}" XINSTALLDIR="${XINSTALLDIR}" CFLAGS="${CFLAGS}" FFLAGS="${FFLAGS}" LD_FLAGS="${LD_FLAGS}" ULIBS="${ULIBS}" xml_status="${xml_status}" SQLite_status="${SQLite_status}" FMIarg="${FMIarg}" -f Makefile  ${target} >>$make_msg_file 2>&1
    else
       echo ""
 
-      make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir="${DESTdir}" ESPdir="${ESPdir}" WWLINK="${WWLINK}" EXE="${EXE}" XINSTALLDIR="${XINSTALLDIR}" CFLAGS="${CFLAGS}" FFLAGS="${FFLAGS}" LD_FLAGS="${LD_FLAGS}" ULIBS="${ULIBS}" xml_status="${xml_status}" SQLite_status="${SQLite_status}" -f Makefile  ${target}
+      make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir="${DESTdir}" ESPdir="${ESPdir}" WWLINK="${WWLINK}" EXE="${EXE}" XINSTALLDIR="${XINSTALLDIR}" CFLAGS="${CFLAGS}" FFLAGS="${FFLAGS}" LD_FLAGS="${LD_FLAGS}" ULIBS="${ULIBS}" xml_status="${xml_status}" SQLite_status="${SQLite_status}" FMIarg="${FMIarg}" -f Makefile  ${target}
    fi
    fi
    # was target built successfully?
@@ -2047,16 +2214,16 @@ if [ "${LinkDB}" = "yes" ]; then
   echo "*clm ${DBInstDir}/climate/clm67" >> ${ESPdir}/default
   echo "*prs ${DBInstDir}/databases/pressc.db1" >> ${ESPdir}/default
   echo "*prm ${DBInstDir}/databases/material.db4.a" >> ${ESPdir}/default
-  echo "*mlc ${DBInstDir}/databases/multicon.db4" >> ${ESPdir}/default
+  echo "*mlc ${DBInstDir}/databases/multicon.db5" >> ${ESPdir}/default
   echo "*opt ${DBInstDir}/databases/optics.db2" >> ${ESPdir}/default
   echo "*evn ${DBInstDir}/databases/profiles.db2.a" >> ${ESPdir}/default
   echo "*pdb ${DBInstDir}/databases/plantc.db1" >> ${ESPdir}/default
   echo "*ecdb ${DBInstDir}/databases/elcomp.db1" >> ${ESPdir}/default
-  echo "*mcdb ${DBInstDir}/databases/mscomp.db2" >> ${ESPdir}/default
+  echo "*mcdb ${DBInstDir}/databases/mscomp.db1" >> ${ESPdir}/default
   echo "*icdb ${DBInstDir}/databases/icons.db1" >> ${ESPdir}/default
   echo "*mldb ${DBInstDir}/databases/mould.db1" >> ${ESPdir}/default
   echo "*sbem ${DBInstDir}/databases/SBEM.db1" >> ${ESPdir}/default
-  echo "*cfcdb ${DBInstDir}/databases/CFClayers.db1.a" >> ${ESPdir}/default
+  echo "*cfcdb ${DBInstDir}/databases/CFClayers.db2.a" >> ${ESPdir}/default
 
 fi
 
@@ -2080,6 +2247,12 @@ case "${MCTYPE}" in
          echo "*image_display,XBMP,iexplore.exe" >> ${ESPdir}/esprc
          echo "*image_display,GIF,iexplore.exe" >> ${ESPdir}/esprc
          echo "*image_display,XWD,iexplore.exe" >> ${ESPdir}/esprc
+    ;;
+  osx) # Use preview as image viewer
+         echo "*image_display,TIF,open" >> ${ESPdir}/esprc
+         echo "*image_display,XBMP,open" >> ${ESPdir}/esprc
+         echo "*image_display,GIF,open" >> ${ESPdir}/esprc
+         echo "*image_display,XWD,open" >> ${ESPdir}/esprc
     ;;
   *)     # Use display as image editor (and what if it's not available?)
          echo "*image_display,TIF,display" >> ${ESPdir}/esprc
@@ -2159,17 +2332,12 @@ echo " Installing standard databases. This may take some time."
   rm -f ${DESTdir}/esp-r/climate/clm67
   rm -f ${DESTdir}/esp-r/databases/test.res
   echo " Done."
-  # Construction databases. Note constr_db1.materialdb and constr_db2.materialdb
-  # are subsets of constr_db3.materialdb. Perhaps they can be merged into a single file?
   echo -n "   - Copying materials databases..."
   echo -n "  (${DATdir} - ${DESTdir}/esp-r/databases/ ) "
   cp ${DATdir}/databases/ccht_constr.db1 ${DESTdir}/esp-r/databases/ccht_constr.db1
   cp ${DATdir}/databases/ccht-optics.db1 ${DESTdir}/esp-r/databases/ccht-optics.db1
   cp ${DATdir}/databases/ccht_na_constr.db1 ${DESTdir}/esp-r/databases/ccht_na_constr.db1
   cp ${DATdir}/databases/ccht_material.ascii ${DESTdir}/esp-r/databases/ccht_material.ascii
-  cp ${DATdir}/databases/constr_db1.materialdb ${DESTdir}/esp-r/databases/constr_db1.materialdb
-  cp ${DATdir}/databases/constr_db2.materialdb ${DESTdir}/esp-r/databases/constr_db2.materialdb
-  cp ${DATdir}/databases/constr_db3.materialdb ${DESTdir}/esp-r/databases/constr_db3.materialdb
   cp ${DATdir}/databases/cellular.materialdb ${DESTdir}/esp-r/databases/cellular.materialdb
   cp ${DATdir}/databases/north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb.a
   cp ${DATdir}/databases/north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb
@@ -2177,10 +2345,10 @@ echo " Installing standard databases. This may take some time."
   cp ${DATdir}/databases/material.db3.a ${DESTdir}/esp-r/databases/material.db3.a
   cp ${DATdir}/databases/material.db4.a ${DESTdir}/esp-r/databases/material.db4.a
   cp ${DATdir}/databases/CFClayers.db1.a ${DESTdir}/esp-r/databases/CFClayers.db1.a
+  cp ${DATdir}/databases/CFClayers.db2.a ${DESTdir}/esp-r/databases/CFClayers.db2.a
 
   cp ${DATdir}/databases/SBEM.db1 ${DESTdir}/esp-r/databases/SBEM.db1
   cp ${DATdir}/databases/UK_notional.constrdb ${DESTdir}/esp-r/databases/UK_notional.constrdb
-  cp ${DATdir}/databases/profiles.db1.a ${DESTdir}/esp-r/databases/profiles.db1.a
   cp ${DATdir}/databases/profiles.db2.a ${DESTdir}/esp-r/databases/profiles.db2.a
   cp ${DATdir}/databases/icons.db1 ${DESTdir}/esp-r/databases/icons.db1
   cp ${DATdir}/databases/flow_icons.db6 ${DESTdir}/esp-r/databases/flow_icons.db6
@@ -2220,7 +2388,7 @@ echo " Installing standard databases. This may take some time."
 
    cd ${DATdir}/databases
    echo -n "   - Copying ASCII databases..."
-   cp components.db1 ccht_mlc.db multicon.db1 multicon.db2 multicon.db3 multicon.db4 north_american.constrdb optics.db1 optics.db2 optics.db3 ccht-optics.db1 mould.db1 pressc.db1 mscomp.db1 mscomp.db2 *.desc ${DESTdir}/esp-r/databases
+   cp components.db1 multicon.db3 multicon.db4 multicon.db5 north_american.constrdb optics.db2 optics.db3 ccht-optics.db1 mould.db1 pressc.db1 mscomp.db1 mscomp.db2 *.desc ${DESTdir}/esp-r/databases
    echo " Done."
 
 fi
@@ -2431,7 +2599,8 @@ echo -n " Installing executables... "
 if [ "$debugging" = "no" ]; then
   make ESPdir=${ESPdir} EXE=${EXE} COSIMDir=${COSIMdir} strip  >/dev/null 2>&1
 fi
-make ESPBinDir=${ESPbin} EXE=${EXE} COSIMDir=${COSIMdir} InstBins  >/dev/null 2>&1
+echo "Placing executables in ESPBinDir=${ESPBinDir}"
+make ESPBinDir=${ESPBinDir} EXE=${EXE} COSIMDir=${COSIMdir} InstBins ${targets}  >/dev/null 2>&1
 if [ "$clean" = "yes" ]; then
   make EXE=${EXE} clean  >/dev/null 2>&1
 fi

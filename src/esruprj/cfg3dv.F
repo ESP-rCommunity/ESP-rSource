@@ -132,7 +132,7 @@ C NZJVN : topology of vertices associated with each connection (via geometry.h).
       DIMENSION  CG(3),VN(3),ipoints(6,2)
 
       CHARACTER temp*16,DESCRC*25,stemp*13,temp20*21
-      CHARACTER MLCN*12,t13*13
+      CHARACTER MLCN*32,t13*13
 
 C Local variables to pass to edline and axiscale.
 #ifdef OSI
@@ -394,8 +394,9 @@ C Check for hilights. ITHLS=1 is composition, ITHLS=2 trn:opq,
 C ITHLS = 3 partial attributes.
 C << Note: later change MLCN to 32 char >>
         if(ITHLS.eq.1.and.ITHLZ.gt.0)then
-          WRITE(MLCN,'(A12)') mlcname(ITHLZ)(1:12)
-          if(MLCN(1:12).eq.SSMLCN(ICC)(1:12))then
+          WRITE(MLCN,'(A)') mlcname(ITHLZ)
+          lnssmlc=lnblnk(MLCN)
+          if(MLCN(1:lnssmlc).eq.SSMLCN(ICC)(1:lnssmlc))then
             IPEN= -305
           else
             IPEN= 1

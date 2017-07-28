@@ -91,7 +91,8 @@ C Occupancy filter info.
 C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       COMMON/FREQS/NBINS,XBIN1,XBINN,DXBIN,IFREQ,IHITS,IMISS,INBIN(MF)
-      COMMON/FREQS1/ICBIN(MF),ITOTAL
+      integer ICBIN,IRCBIN
+      COMMON/FREQS1/ICBIN(MF),IRCBIN(MF),ITOTAL
 
       dimension Yold(MZS), TIMEold(MZS)
       character TLABEL*60,trange*20,tranged*20,t28*28,dg*1
@@ -358,7 +359,7 @@ C from zone iocpzone. Start with assumption of full occupancy.
               ih=int(ATIME+1.)
               ioc=1
               if(iocupf.eq.1.and.iocpzone.ne.0)then
-                call getocup(iocpzone,IDAY,ih,ioc,iier)
+                call getocup(iocpzone,IDAY,JJ,ioc,iier)
               endif
               if(ioc.ne.0) then
                 if(FLOWVALS(IX).gt.FMAX(IX))then
@@ -759,7 +760,7 @@ C Assume fully occupied.
                   ih=int(ATIME+1.)
                   ioc=1
                   if(iocupf.eq.1.and.iocpzone.ne.0)then
-                    call getocup(iocpzone,IDAY,ih,ioc,iier)
+                    call getocup(iocpzone,IDAY,JJ,ioc,iier)
                   endif
                   if(ioc.ne.0) then
                     write (outs248(K:KE),'(f11.4)') FLOWVALS(IXY)
@@ -782,7 +783,7 @@ C Assume fully occupied.
                     ih=int(ATIME+1.)
                     ioc=1
                     if(iocupf.eq.1.and.iocpzone.ne.0)then
-                      call getocup(iocpzone,IDAY,ih,ioc,iier)
+                      call getocup(iocpzone,IDAY,JJ,ioc,iier)
                     endif
                     if(ioc.ne.0) then
                       write (outs800(K:KE),'(f11.4)') FLOWVALS(IXY)
@@ -857,7 +858,7 @@ C from zone iocpzone. Start with assumption of full occupancy.
                 ih=int(ATIME+1.)
                 ioc=1
                 if(iocupf.eq.1.and.iocpzone.ne.0)then
-                  call getocup(iocpzone,IDAY,ih,ioc,iier)
+                  call getocup(iocpzone,IDAY,JJ,ioc,iier)
                 endif
                 if(ioc.ne.0) then
                   IB = INT(((FLOWVALS(IX) - XBIN1) / DXBIN) + 1.)
@@ -921,7 +922,7 @@ C use pattern from zone iocpzone. Start with assumption of full occupancy.
                 ih=int(ATIME+1.)
                 ioc=1
                 if(iocupf.eq.1.and.iocpzone.ne.0)then
-                  call getocup(iocpzone,IDAY,ih,ioc,iier)
+                  call getocup(iocpzone,IDAY,JJ,ioc,iier)
                 endif
                 if(ioc.ne.0) then
                   FTOTSD(IX)=FTOTSD(IX)+((FAVE(IX)-FLOWVALS(IX))**2)
@@ -936,7 +937,7 @@ C use pattern from zone iocpzone. Start with assumption of full occupancy.
                 ih=int(ATIME+1.)
                 ioc=1
                 if(iocupf.eq.1.and.iocpzone.ne.0)then
-                  call getocup(iocpzone,IDAY,ih,ioc,iier)
+                  call getocup(iocpzone,IDAY,JJ,ioc,iier)
                 endif
                 if(ioc.ne.0) then
                   if (FLOWVALS(IX).gt.XQUERY)then
@@ -950,7 +951,7 @@ C Hours below.
                 ih=int(ATIME+1.)
                 ioc=1
                 if(iocupf.eq.1.and.iocpzone.ne.0)then
-                  call getocup(iocpzone,IDAY,ih,ioc,iier)
+                  call getocup(iocpzone,IDAY,JJ,ioc,iier)
                 endif
                 if(ioc.ne.0) then
                   if (FLOWVALS(IX).lt.XQUERY)then
@@ -1033,8 +1034,8 @@ C indicate that several flow items (e.g. nodes) are included.
      &            ' (...), Bin width =',DXBIN
               endif
             endif
-            if(IG.eq.1.or.IG.eq.4)CALL MODDRW(1,TLABEL)
-            if(IG.eq.2.or.IG.eq.5)CALL MODDRW(2,TLABEL)
+            if(IG.eq.1.or.IG.eq.4)CALL MODDRW(1,TLABEL,0,0)
+            if(IG.eq.2.or.IG.eq.5)CALL MODDRW(2,TLABEL,0,0)
           else
             call edisp(iuout,' Sorry, not in graphic mode...')
           endif

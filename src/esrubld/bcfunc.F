@@ -73,6 +73,7 @@ C The main building control function executive.
       SUBROUTINE MZBCTL(ier,icomp)
 #include "building.h"
 #include "control.h"
+#include "FMI.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -82,7 +83,7 @@ C The main building control function executive.
       character dllsubr*12,dllmesg*124,outs*124
       logical dll
 
-      logical bNested 
+      logical bNested,CLOSERH
 
 C Check if running in dll mode.
       call isadll(dll)
@@ -102,9 +103,17 @@ C (default to free-float)
 C For the special case of current zone, mixed node control only.
       IF(IBSN(ICF,1).EQ.-2.AND.IBSN(ICF,2).EQ.IICOMP
      &.AND.IBCLAW(ICF,IDTYP,IPER).NE.24) IFUNC=0
-     
-      CtlLaw: select case (IFUNC) 
-      case (0) 
+
+C <FMI>
+C Default to free float if control is not active according to FMU.
+      if (FMUDOCTL(iicomp,1)) then
+        CALL ECLOSE(FMUCTL(iicomp,1),0.0,0.001,CLOSERH)
+        if (CLOSERH) IFUNC=2
+      endif
+C </FMI>
+
+      CtlLaw: select case (IFUNC)
+      case (0)
         call BCL00
 
 C CL1 is basic control with potential for a different heating and
@@ -816,13 +825,19 @@ C the present time row surface and air point temperatures.
 #include "building.h"
 #include "control.h"
 
+      logical bInStartup  ! <- function true if simulation is in startup
+
       COMMON/TC/ITC,ICNT
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      real UNMETHRS  ! for each zone counter for unmet hours.
+      COMMON/UNMET/UNMETHRS(MCOM)
 
       COMMON/PREC1/SNA(MCOM,MS)
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
+      integer isd1,ism1,isd2,ism2,isds,isdf,ntstep
 
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
 
@@ -830,6 +845,17 @@ C the present time row surface and air point temperatures.
       COMMON/BTIME/BTIMEP,BTIMEF
 
       character outs*124
+      logical atrace  ! is trace active
+      logical close
+      real hrfrac
+
+C Determine if trace is on.
+      atrace = .false.
+      IF(ITC.GT.0.AND.NSINC.GT.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(41).NE.0)atrace = .true.
+     
+      hrfrac=1.0  ! fraction of hour in the current timestep
+      if(NTSTEP.gt.1) hrfrac=1.0/float(NTSTEP)
 
       B1=BB1
       B2=BB2
@@ -856,32 +882,106 @@ C Make decision based on imposed control philosophy.
       B3=BB3
 
 C Trace output ?
- 9993 IF(ITC.LE.0.OR.NSINC.LT.ITC)GOTO 9999
-      IF(ITRACE(30).EQ.0.OR.NSINC.GT.ITCF.OR.IZNTRC(IICOMP).NE.1)
-     &GOTO 9999
-      write(outs,'(A,I4)')' Subroutine BCL00     Trace output',ICNT
-      call edisp(itu,' ')
-      call edisp(itu,outs)
-      ICNT=ICNT+1
-      CALL DAYCLK(IDYP,BTIMEF,ITU)
+ 9993 IF(atrace)then
+        write(outs,'(A,I4,A,I4)')' Subroutine BCL00 Zone',IICOMP,
+     &    ' Trace output',ICNT
+        call edisp(itu,' ')
+        call edisp(itu,outs)
+        ICNT=ICNT+1
+        CALL DAYCLK(IDYP,BTIMEF,ITU)
 
 C Output control temperature and plant injection/extraction
 C values.
-      call edisp(itu,' ')
-      write(outs,'(A,I4)')    ' Zone',IICOMP
-      call edisp(itu,outs)
-      call edisp(itu,' ')
-      write(outs,'(A,F20.3)') ' TFUT = ',TFUT
-      call edisp(itu,outs)
-      write(outs,'(A,F20.3)') ' QFUT = ',QFUT
-      call edisp(itu,outs)
+        call edisp(itu,' ')
+        write(outs,'(A,F10.3,A,F10.3)') ' TFUT = ',TFUT,' QFUT = ',QFUT
+        call edisp(itu,outs)
+        write(outs,'(A,F10.3,A,F10.3,A,2F10.3,a)') 
+     &    ' Heat SP= ',TL,' Cooling SP= ',TU,' capacities= ',QH,QC,')'
+        call edisp(itu,outs)
+        if ( IPLT.eq.1 ) THEN  ! we are heating
+          call eclose(QH,QFUT,0.1,CLOSE)  ! and close to Maximum capacity
+          if( QFUT.lt.0.1)then
+            write(outs,'(a)')' free floating & SP ok '
+          elseif (close.and.TFUT.lt.TL)then
+            if (bInStartup())then
+              continue
+            else
+              UNMETHRS(IICOMP)=UNMETHRS(IICOMP)+hrfrac
+            endif
+            write(outs,'(a,f8.2,a,i3)')' heating capacity insufficient',
+     &        UNMETHRS(IICOMP),' hours in zone',IICOMP
+          elseif ( QFUT.le.QH.and.TFUT.ge.TL)then  ! if within capacity and setpoint
+            write(outs,'(a)')' heating capacity & SP ok '
+          elseif ( QFUT.le.QH.and.TFUT.lt.TL)then  ! if within capacity and setpoint
+            write(outs,'(a)')' heating capacity OK & SP NOT quite ok '
+          endif
+          call edisp(itu,outs)
+        else
+          call eclose(QC,QFUT,0.1,CLOSE)  ! and close to Maximum capacity
+          if( QFUT.lt.0.1)then
+            write(outs,'(a)')' free floating & SP ok '
+          elseif (close.and.TFUT.gt.TU)then
+            if (bInStartup())then
+              continue
+            else
+              UNMETHRS(IICOMP)=UNMETHRS(IICOMP)+hrfrac
+            endif
+            write(outs,'(a,f8.2,a,i3)')' cooling capacity insufficient',
+     &        UNMETHRS(IICOMP),' hours in zone ',IICOMP
+          elseif ( QFUT.le.QC.and.TFUT.le.TU)then  ! if within capacity and setpoint
+            write(outs,'(a)')' cooling capacity & SP ok '
+          elseif ( QFUT.le.QC.and.TFUT.gt.TU)then  ! if within capacity and setpoint
+            write(outs,'(a)')' cooling capacity & SP NOT quite ok '
+          endif
+          call edisp(itu,outs)
+        endif
+        call edisp(itu,' Leaving subroutine BCL00')
+      else
+
+C Keep track of unmet hours. With mixed sensor we may end up with
+C temperatures that are close to the setpoint but it is really only
+C an unmet timestep if the attempted capacity is close to the max
+C and we don't get the setpoint.
+        if ( IPLT.eq.1 ) THEN  ! we are heating
+          call eclose(QH,QFUT,0.1,CLOSE)  ! and close to Maximum capacity
+          if( QFUT.lt.0.1)then
+            continue
+          elseif (close.and.TFUT.lt.TL)then
+            if (bInStartup())then
+              continue
+            else
+              UNMETHRS(IICOMP)=UNMETHRS(IICOMP)+(1.0/real(NTSTEP))
+C Debug.
+              write(6,'(a,f8.2,a,i3)')' heating capacity insufficient ',
+     &          UNMETHRS(IICOMP),' hours in zone ',IICOMP
+            endif
+          elseif ( QFUT.le.QH.and.TFUT.ge.TL)then  ! if within capacity and setpoint
+            continue
+          endif
+        else
+          call eclose(QC,QFUT,0.1,CLOSE)  ! and close to Maximum capacity
+          if( QFUT.lt.0.1)then
+            continue
+          elseif (close.and.TFUT.gt.TU)then
+            if (bInStartup())then
+              continue
+            else
+              UNMETHRS(IICOMP)=UNMETHRS(IICOMP)+(1.0/real(NTSTEP))
+              write(6,'(a,f8.2,a,i3)')' cooling capacity insufficient ',
+     &          UNMETHRS(IICOMP),' hours in zone ',IICOMP
+            endif
+          elseif ( QFUT.le.QC.and.TFUT.le.TU)then  ! if within capacity and setpoint
+            continue
+          endif
+        endif
+      endif
  9999 RETURN
 
 C  Compute future time-row 'mixed' temperature but
 C  assuming present time-row surface temperatures.
     7 CALL MZMIXT(IICOMP,TMRT,TMIX)
       ITYPE=IBCLAW(ICF,IDTYP,IPER)
-      if(itype.eq.31)goto 6
+      if(itype.eq.31)goto 6  ! jump back for trace
       GOTO(8,9,11,12),ITYPE
       GOTO 99
 
@@ -926,7 +1026,7 @@ C ..... is this available ?
       IF(QQ.GT.QH)GOTO 15
 
 C Required cooling capacity not available hence set to
-C available amount.
+C available amount.  ? Unmet ?
       Q=QC
       IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
 
@@ -935,7 +1035,7 @@ C ..... and compute air temperature to result.
       GOTO 14
 
 C Required heating capacity not available hence set to
-C available amount.
+C available amount.  ? Unmet ?
    15 Q=QH
       IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
 
@@ -1033,10 +1133,10 @@ C  Determine target temperature.
       QFUT=Q
       IF(IBAN(ICF,1).EQ.-2)CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,
      &IPLT,QMX,QMN,TFUT,QFUT)
-      GOTO 9993
+      GOTO 9993  ! jump back for trace
 
 C Floating temperature period.
-    9 GOTO 6
+    9 GOTO 6  ! jump back for trace
 
 C Pre-heating/cooling period: first determine if no-plant
 C temperature is within range of subsequent period control temperatures.
@@ -1160,7 +1260,11 @@ C as an option.
       include "blc25_open_windows.h"
       include "net_flow.h"
       include "tdf2.h"
+C <FMI>
+      include "FMI.h"
+C </FMI>
 
+      logical bInStartup  ! <- function true if simulation is in startup
       integer IER ! Error flag
       
       integer IBehaviour 
@@ -1188,7 +1292,9 @@ C Climate data
       integer IDWP, IDWF   ! Present and future day of week
       integer NSINC        ! Simulation timestep
       integer ITS          ! ?
-      
+
+      common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
+      integer isd1,ism1,isd2,ism2,isds,isdf,ntstep
       
       COMMON/BTIME/BTIMEP,BTIMEF
       real BTimeP, BTimeF    ! Building present and future time of day
@@ -1203,7 +1309,8 @@ C Climate data
       real TNP
       real QFut, TFut
       
-      
+      real UNMETHRS  ! for each zone counter for unmet hours.
+      COMMON/UNMET/UNMETHRS(MCOM)
       
       COMMON/PREC1/SNA(MCOM,MS)
       real sna  ! Surface area (m2)
@@ -1261,6 +1368,7 @@ C Heating and cooling setpoint (oC)
 C Local variables for control algorithm.
       real CSP ! Cooling set point (deg.C) 
       real HSP ! Heating set point (deg.C) 
+      real hrfrac
       
       integer iPlt ! Set IPLT to 1 for heating, 2 in case of cooling
 
@@ -1284,7 +1392,8 @@ C Humidity Calculations:
       integer iRHCTT
       real RHC, RHI, RHT
       
-      
+      logical atrace  ! is trace requested
+      logical close   ! is requested Q close to the max
       
 C counter 
       integer iSur, iter
@@ -1298,6 +1407,14 @@ C Variables
       real val(MBITS+2)
       real T_hi,T_lo,T_core,Qmax,T_lo_db !,T_hi_db
 
+C Determine if trace is on.
+      atrace = .false.
+      IF(ITC.GT.0.AND.NSINC.GT.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(41).NE.0)atrace = .true.
+
+      hrfrac=1.0  ! fraction of hour in the current timestep
+      if(NTSTEP.gt.1) hrfrac=1.0/float(NTSTEP)
+
 C Check to see if running in dll mode.
       call isadll(dll)
 
@@ -1305,16 +1422,15 @@ C Fatal error test.
       IF(IBehaviour.ne.2.and.BMISCD(ICF,IDTYP,IPER,1).LT.6.)GOTO 99
 
 C Trace output.
-      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) then
+      IF(atrace)then
         if (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).eq.0) then
-          write(outs,'(a,i2)') 
+          write(outs,'(a,i3)') 
      &      'Entering subroutine BCL01 sensing in zone ',
      &      IBSN(ICF,1)
           call edisp(itu,' ')
           call edisp(itu,outs)
         elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
-          write(outs,'(a,i2,a,i2)') 
+          write(outs,'(a,i3,a,i3)') 
      &      'Entering subroutine BCL01 sensing in zone ',
      &      IBSN(ICF,1),' and actuating in zone ',IBAN(ICF,1)
           call edisp(itu,' ')
@@ -1369,6 +1485,15 @@ C Set minimum cooling capacity.
       
       HSP=BMISCD(ICF,IDTYP,IPER,6)
       CSP=BMISCD(ICF,IDTYP,IPER,7)
+
+C <FMI>
+C If thermostat control is active, set heating and cooling setpoints to
+C the control value.
+      if (FMUDOCTL(iicomp,5)) then
+        HSP=FMUCTL(iicomp,5)
+        CSP=FMUCTL(iicomp,5)
+      endif
+C </FMI>
 
 C Save heating/cooling setpoints.
       fHeatSetpoint(iicomp) = HSP
@@ -1558,7 +1683,7 @@ C Read charging information and set up heat injection to space
         CSP=1000.1
       endif
 
-C Check if control is required and return if setpoints are met.  	  
+C Check if control is required and return if setpoints are met.    
 C << however if standby losses are enabled then alternative logic
 C << is required to inject the standby losses.    
       IF(TCTL.LE.CSP.AND.TCTL.GE.HSP)RETURN
@@ -1601,7 +1726,7 @@ C should be invoked.
       endif HeatOrCool
 
 C Determine required plant capacity.
-
+C << test setting TCont = 10.0 >>
       Q=(BB3-BB1*TCont)/BB2
 
 C Is heat flux determined according to surface area?
@@ -1711,8 +1836,9 @@ C Save future time-row plant injection.
       else       
         QFUT = Q      
       endif 
-      
-c      WRITE(*,*)'Heating/cooling flux and set points',QFUT,HSP,CSP
+
+C Debug.
+C      WRITE(6,*)'Heating/cooling flux and set points',QFUT,HSP,CSP
       IF(IBAN(ICF,1).EQ.-2)CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,
      &IPLT,QMX,QMN,TFUT,QFUT)
      
@@ -1720,13 +1846,98 @@ C Set QFUT for use by slave controller.
       Qmst(ICF)=Q
       bMasterFreeCoolFlag(ICF)=bFreeCoolActive
       
-C Trace output.
-      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) THEN
-         write(outs,'(A,F10.3,A,F10.3,A,F10.3,a)') ' Qfuture = ',QFUT,
-     &     ' Tfuture = ',TFUT,' (Q master ',Qmst(ICF),')'
-         call edisp(itu,outs)
-         call edisp(itu,' Leaving subroutine BCL01')
+C Trace output. Update the logic here to reflect more of the approach
+C used in BCL00.
+      IF(atrace)then
+        write(outs,'(A,F10.3,A,F10.3,A,F10.3,a)') ' Qfuture = ',QFUT,
+     &    ' Tfuture = ',TFUT,' (Q master ',Qmst(ICF),')'
+        call edisp(itu,outs)
+        write(outs,'(A,F10.3,A,F10.3,A,F10.3,a)') ' Heat SP= ',HSP,
+     &    ' Cooling SP= ',CSP,' Control SP= ',TCTL,')'
+        call edisp(itu,outs)
+        write(outs,'(A,F10.3,A,F10.3,A,F10.3)')' Heat cap= ',QHM,
+     &    ' Cooling cap= ',QCM
+        call edisp(itu,outs)
+        if ( IPLT.eq.1 ) THEN  ! we are heating
+          call eclose(QHM,QFUT,0.1,CLOSE)  ! and close to Maximum capacity
+          if( QFUT.lt.0.1)then
+            write(outs,'(a)')' free floating & SP ok '
+          elseif (close.and.TFUT.lt.HSP)then
+            if (bInStartup())then
+              continue
+            else
+              UNMETHRS(IICOMP)=UNMETHRS(IICOMP)+hrfrac
+            endif
+            write(outs,'(a,f8.2,a,i3)')
+     &        ' heating capacity insufficient ',
+     &      UNMETHRS(IICOMP),' hours in zone',IICOMP
+          elseif ( QFUT.le.QHM.and.TFUT.ge.HSP)then  ! if within capacity and setpoint
+            write(outs,'(a)')' heating capacity & SP ok '
+          elseif ( QFUT.le.QHM.and.TFUT.lt.HSP)then  ! if within capacity and setpoint
+            write(outs,'(a)')' heating capacity & SP NOT quite ok '
+          endif
+          call edisp(itu,outs)
+          call edisp(itu,' Leaving subroutine BCL01')
+        else
+          call eclose(QCM,QFUT,0.1,CLOSE)  ! and close to Maximum capacity
+          if( QFUT.lt.0.1)then
+            write(outs,'(a)')' free floating & SP ok '
+          elseif (close.and.TFUT.gt.CSP)then
+            if (bInStartup())then
+              continue
+            else
+              UNMETHRS(IICOMP)=UNMETHRS(IICOMP)+hrfrac
+            endif
+            write(outs,'(a,f8.2,a,i3)')
+     &        ' cooling capacity insufficient ',
+     &        UNMETHRS(IICOMP),' hours in zone',IICOMP
+          elseif ( QFUT.le.QCM.and.TFUT.le.CSP)then  ! if within capacity and setpoint
+            write(outs,'(a)')' cooling capacity & SP ok '
+          elseif ( QFUT.le.QCM.and.TFUT.gt.CSP)then  ! if within capacity and setpoint
+            write(outs,'(a)')' cooling capacity & SP NOT quite ok '
+          endif
+          call edisp(itu,outs)
+        endif
+      ELSE
+
+C Keep track if trace is not active.
+        if ( IPLT.eq.1 ) THEN  ! we are heating
+          call eclose(QHM,QFUT,0.1,CLOSE)  ! and close to Maximum capacity
+          if( QFUT.lt.0.1)then
+            continue
+          elseif (close.and.TFUT.lt.HSP)then
+            if (bInStartup())then
+              continue
+            else
+              UNMETHRS(IICOMP)=UNMETHRS(IICOMP)+hrfrac
+
+C Debug uncomment to see the evolution of unmet hours.
+C              write(6,'(a,f8.2,a,i3)')' heating capacity insufficient ',
+C     &          UNMETHRS(IICOMP),' hours in zone ',IICOMP
+            endif
+         elseif ( QFUT.le.QHM.and.TFUT.ge.HSP)then  ! if within capacity and setpoint
+            continue
+         elseif ( QFUT.le.QHM.and.TFUT.lt.HSP)then  ! if within capacity and setpoint
+            continue
+          endif
+        else
+          call eclose(QCM,QFUT,0.1,CLOSE)  ! and close to Maximum capacity
+          if( QFUT.lt.0.1)then
+            continue
+          elseif (close.and.TFUT.gt.CSP)then
+            if (bInStartup())then
+              continue
+            else
+              UNMETHRS(IICOMP)=UNMETHRS(IICOMP)+hrfrac
+              write(6,'(a,f8.2,a,i3)')' cooling capacity insufficient ',
+     &          UNMETHRS(IICOMP),' hours in zone ',IICOMP
+            endif
+          elseif ( QFUT.le.QCM.and.TFUT.le.CSP)then  ! if within capacity and setpoint
+            continue
+          elseif ( QFUT.le.QCM.and.TFUT.gt.CSP)then  ! if within capacity and setpoint
+            continue
+          endif
+        endif      
       END IF
      
       RETURN
@@ -1818,14 +2029,14 @@ C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) then
         if (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).eq.0) then
-          write(outs,'(a,i2)') 
+          write(outs,'(a,i3)') 
      &      'Entering subroutine BCL03 sensing in zone ',
      &      IBSN(ICF,1)
           call edisp(itu,' ')
           call edisp(itu,outs)
         elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
           call edisp(itu,' ')
-          write(outs,'(a,i2,a,i2)') 
+          write(outs,'(a,i3,a,i3)') 
      &      'Entering subroutine BCL03 sensing in zone ',
      &      IBSN(ICF,1),' and actuating in zone ',IBAN(ICF,1)
           call edisp(itu,outs)
@@ -1971,13 +2182,13 @@ C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) then
         if (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).eq.0) then
-          write(outs,'(a,i2)') 
+          write(outs,'(a,i3)') 
      &      'Entering subroutine BCL04 sensing in zone ',
      &      IBSN(ICF,1)
           call edisp(itu,' ')
           call edisp(itu,outs)
         elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
-          write(outs,'(a,i2,a,i2)') 
+          write(outs,'(a,i3,a,i3)') 
      &      'Entering subroutine BCL04 sensing in zone ',
      &      IBSN(ICF,1),' and actuating in zone ',IBAN(ICF,1)
           call edisp(itu,' ')
@@ -2082,13 +2293,13 @@ C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) then
         if (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).eq.0) then
-          write(outs,'(a,i2)') 
+          write(outs,'(a,i3)') 
      &      'Entering subroutine BCL05 sensing in zone ',
      &      IBSN(ICF,1)
           call edisp(itu,' ')
           call edisp(itu,outs)
         elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
-          write(outs,'(a,i2,a,i2)') 
+          write(outs,'(a,i3,a,i3)') 
      &      'Entering subroutine BCL05 sensing in zone ',
      &      IBSN(ICF,1),' and actuating in zone ',IBAN(ICF,1)
           call edisp(itu,' ')
@@ -5690,13 +5901,13 @@ C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0)then
         if (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).eq.0) then
-          write(outs,'(a,i2)') 
+          write(outs,'(a,i3)') 
      &      'Entering subroutine BCL21 with master zone ',
      &      IBSN(ICF,1)
           call edisp(itu,' ')
           call edisp(itu,outs)
         elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
-          write(outs,'(a,i2,a,i2)') 
+          write(outs,'(a,i3,a,i3)') 
      &      'Entering subroutine BCL21 with master zone ',
      &      IBSN(ICF,1),' and slave zone ',IBAN(ICF,1)
           call edisp(itu,' ')
@@ -5774,8 +5985,10 @@ C cooling capacity for time step.
 C Using same % value, calculate delivered capacity to slave zone
       if (QM.GT.0.0) then
         Qslv=PBH*QHM
+        IPLT=1 ! heating
       elseif (QM.LT.0.0) then
         Qslv=PBC*QCM
+        IPLT=2 ! cooling
       endif
 
 C If close to zero then reset to zero.
@@ -5791,7 +6004,14 @@ C Check Qslv not greater than specified base capacities
         Qslv=QCM
       endif
   
-      QFUT=Qslv       
+      QFUT=Qslv
+
+C QMN and QMX are passed to the mixed radiant/convective actuator
+C subroutine. Setting them equal to QFUT forces the actuator to maintain
+C the total level of flux identified by the controller, which is
+C critical to maintain the master/slave relationship.
+      QMN=QFUT
+      QMX=QFUT       
    
 C Check for free cooling in master zone (are windows open?) 
       if ( bMasterFreeCoolFlag(imasctlindex) ) then  
@@ -5814,7 +6034,7 @@ C
 c        fCondFreeCool(IICOMP) = (fFreeCoolDelivered(IICOMP)
 c     &                         / ( TFA(IICOMP) - TF))
  
-		QFUT = -1.0 * fFreeCoolDelivered(IICOMP)
+         QFUT = -1.0 * fFreeCoolDelivered(IICOMP)
 
 C.......Determine temperatures in slave zone
         Tslv=(BB3-BB2*fFreeCoolDelivered(IICOMP)*(-1.0))/BB1        
@@ -5834,6 +6054,13 @@ C If zero capacity to zone, use TNP
       else
         TFUT=Tslv
       endif
+
+C TCONT is the temperature to aim for.
+      TCONT=TFUT      
+
+C Call mixed radiant/convective actuator.
+      IF(IBAN(ICF,1).EQ.-2)CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,
+     &IPLT,QMX,QMN,TFUT,QFUT)
 
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -6115,30 +6342,34 @@ C cooling setpoint at column 11.  RCTDFBALL gets all of the
 C columns into VAL. But decrement COLUMNSETP by one to exclude
 C the initial time column.
       COLUMNSETP=nint(BMISCD(ICF,IDTYP,IPER,2))
-      if(IACTIV(ICF).ne.0)then
-        itdi=IACTIV(ICF)
-      elseif(IHTCLSETP(ICF).ne.0)then
+
+C Debug.
+C      write(6,*) 'temporal ht set point col ',COLUMNSETP,'iicomp',iicomp
+C      write(6,*) 'IHTCLSETP array ',IHTCLSETP
+      if(IACTIV(IICOMP).ne.0)then
+        itdi=IACTIV(IICOMP)
+      elseif(IHTCLSETP(IICOMP).ne.0)then
 
 C For heating and cooling setpoints these will be linked to control loops
 C and the itdi index will be from the IHTCLSETP array.
-        itdi=IHTCLSETP(ICF) 
+        itdi=IHTCLSETP(IICOMP) 
       endif
 
 C There is only a requirement to scan this timestep once to get
 C both the heating and cooling setpoints.
       CALL RCTDFBALL(itrc,btimef,VAL,ISD,IER)
-      if(IACTIV(ICF).ne.0)then
+      if(IACTIV(IICOMP).ne.0)then
         HSP=VAL(COLUMNSETP-1)
-      elseif(IHTCLSETP(ICF).ne.0)then
+      elseif(IHTCLSETP(IICOMP).ne.0)then
         HSP=VAL(COLUMNSETP)
       endif
 
 C Now get the column for cooling.
       COLUMNSETP=nint(BMISCD(ICF,IDTYP,IPER,3))
-      if(IACTIV(ICF).ne.0)then
+      if(IACTIV(IICOMP).ne.0)then
         CSP=VAL(COLUMNSETP-1)
         cmsg=' via column'
-      elseif(IHTCLSETP(ICF).ne.0)then
+      elseif(IHTCLSETP(IICOMP).ne.0)then
         CSP=VAL(COLUMNSETP)
         cmsg=' via column'
       endif
@@ -6315,13 +6546,13 @@ C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) then
         if (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).eq.0) then
-          write(outs,'(a,i2)') 
+          write(outs,'(a,i3)') 
      &      'Entering subroutine BCL24 sensing in zone ',
      &      IBSN(ICF,1)
           call edisp(itu,' ')
           call edisp(itu,outs)
         elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
-          write(outs,'(a,i2,a,i2)') 
+          write(outs,'(a,i3,a,i3)') 
      &      'Entering subroutine BCL01 sensing in zone ',
      &      IBSN(ICF,1),' and actuating in zone ',IBAN(ICF,1)
           call edisp(itu,' ')
@@ -6810,13 +7041,13 @@ C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) then
         if (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).eq.0) then
-          write(outs,'(a,i2)') 
+          write(outs,'(a,i3)') 
      &      'Entering subroutine BCL26 sensing in zone ',
      &      IBSN(ICF,1)
           call edisp(itu,' ')
           call edisp(itu,outs)
         elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
-          write(outs,'(a,i2,a,i2)') 
+          write(outs,'(a,i3,a,i3)') 
      &      'Entering subroutine BCL26 sensing in zone ',
      &      IBSN(ICF,1),' and actuating in zone ',IBAN(ICF,1)
           call edisp(itu,' ')
@@ -8073,11 +8304,24 @@ c and convective component. Some iteration takes place.
 #include "building.h"
 #include "control.h"
       COMMON/OUTIN/IUOUT,IUIN
+      integer iuout, iuin
 
       COMMON/TC/ITC,ICNT
+      integer ITC, ICNT 
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      integer ITCF, ITRACE, IZNTRC, ITU ! I/O parameters for trace
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      integer IHRP, IHRF   ! Present and future hour of day
+      integer IDYP, IDYF   ! present and future day of year
+      integer IDWP, IDWF   ! Present and future day of week
+      integer NSINC        ! Simulation timestep
+      integer ITS          ! ?
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
+      integer iCF, iDTyp, iPer
+      real BB1, BB2, BB3 
+      integer iIComp
+      real TNP
+      real QFut, TFut
       COMMON/SETUQ/QPLTP(MCOM),QPLTF(MCOM),CONV(MCOM)
 
       COMMON/ZONEQN/E(MEQ,MTR)
@@ -8092,9 +8336,11 @@ c and convective component. Some iteration takes place.
       COMMON/PREC14/emarea(MCOM)
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       COMMON/GR1D04/GAM,RGAM
+      COMMON/BTIME/BTIMEP,BTIMEF
+      real BTimeP, BTimeF    ! Building present and future time of day
 
       logical atrace
-      character outs*124
+      character outs*200
 
 C If called from BCL06, any sensor will do
       IF(IBCLAW(ICF,IDTYP,IPER).EQ.6) GOTO 123

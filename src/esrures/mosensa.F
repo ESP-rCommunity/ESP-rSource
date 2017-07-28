@@ -97,12 +97,13 @@ C Instanciate help strings for this menu.
         CALL MORESS
         IDEFLT=0
       elseif(INO.EQ.2)then
+        IDEFLT=0  ! toggle so user can confirm period
         CALL MOOPER
       elseif(INO.EQ.3)then
         NZ=1
         helptopic='res_param_zone_list'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        CALL EPICKS(NZ,NZNO,' ',' Which zone to include: ',
+        CALL EPICKS(NZ,NZNO,' ','Which zone to include:',
      &    12,NCOMP,zname,' zone list',IER,1)
       elseif(INO.EQ.5)then
         CALL SAINTRA
@@ -267,7 +268,7 @@ C If there is occupancy filter and occupancy then include in check.
 C Assume fully occupied.
             ih=int(ATIME+1.)
             ioc=1
-            if(iocupf.eq.1) call getocup(IZONE,IDAY,ih,ioc,ier)
+            if(iocupf.eq.1) call getocup(IZONE,IDAY,J,ioc,ier)
             if(ioc.ne.0) then
               if (display) then
                 XTOTSD=XTOTSD+((XAVE-VAL2(IX,J))**2)
@@ -424,7 +425,11 @@ C SAINTER calculates summary statistics within result sets.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
 
+      common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
@@ -445,23 +450,29 @@ C SAINTER calculates summary statistics within result sets.
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
+      integer ifs,itfs,imfs
+      COMMON/GFONT/IFS,ITFS,IMFS
 
       dimension VAL(4,MTS), NVAL(MTS),VALHIGH(MTS), VALLOW(MTS)
-      logical graphit
+      logical graphit,colok
       integer YAXSET,ADDLIN,horaxisdiv
+      integer iglib   ! if iglib is 2 then using GTK library otherwise X11
 #ifdef OSI
       integer IGX  ! see common graf2
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym    ! passed to etplot
+      integer iicol
       integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 IGX  ! see common graf2
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iicol
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
       character outs*124
+      character prompt*124
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -470,8 +481,29 @@ C For help messages
 
       helpinsub='SAINTER'  ! set for subroutine
 
+C Define prompt
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      prompt='  '
+
+C Check if can draw in colour.
+      colok=.false.
+      if(nzonec.ge.NCOMP)colok=.true.
+
 C Cast values for linescale.
       iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+      
+C If output to file alter the edisp unit number.
+      itru = icout
+      if(ixopen.eq.1)then
+        itru = ixunit
+        if(NGET.ge.1)then
+          write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
+        else
+          write(prompt,'(a)')' Output being directed to file. ' 
+        endif
+      elseif(ixopen.eq.0)then
+        if(MMOD.eq.8)call startbuffer
+      endif
 
 C Call the menu of choices (this also sets some default options).
 C The logical variable totals controls the displaying of cumulative 
@@ -481,10 +513,6 @@ C data for all the zones chosen.
       call GOMENU
       if (MENUTYPE.eq.-1) return
       graphit=.false.
-
-C Set output unit number (assume default initially).
-      ITRU=ICOUT
-      if (IXOPEN.eq.1) ITRU=IXUNIT
 
 C Ask for set selection.
       call WHSET
@@ -556,6 +584,8 @@ C Copy current sub-set of sets into IGETNO array.
           IGETNO(NGET,5)=NSNO(ISET)
         endif
  20   continue
+      write(6,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' is focus'
+      write(6,'(a,a)') GLABEL(1)(1:LNGLABEL(1)),' is focus'
 
 C NDTS - the number of timesteps in a day.
       NDTS=24*NTS
@@ -563,12 +593,8 @@ C NDTS - the number of timesteps in a day.
       ISCAN=0
       do 5 J=1,MTS
         NVAL(J)=0
-        VAL(1,J)=0.
-        VAL(2,J)=0.
-        VAL(3,J)=0.
-        VAL(4,J)=0.
-        VALHIGH(J)=0.
-        VALLOW(J)=0.
+        VAL(1,J)=0.0; VAL(2,J)=0.0; VAL(3,J)=0.0
+        VAL(4,J)=0.0; VALHIGH(J)=0.0; VALLOW(J)=0.0
  5    continue
 
       call GOGET(IDAY)
@@ -597,7 +623,7 @@ C If there is occupancy filter and occupancy then include in check.
 C Assume fully occupied.
           ih=int(ATIME+1.)
           ioc=1
-          if(iocupf.eq.1) call getocup(IZONE,IDAY,ih,ioc,ier)
+          if(iocupf.eq.1) call getocup(IZONE,IDAY,J,ioc,ier)
           if(ioc.ne.0) then
             if (ISCAN.eq.1) then
               if (IMET.eq.1) then
@@ -715,7 +741,7 @@ C If there is occupancy filter and occupancy then include in check.
 C Assume fully occupied.
           ih=int(ATIME+1.)
           ioc=1
-          if(iocupf.eq.1) call getocup(IZONE,IDAY,ih,ioc,ier)
+          if(iocupf.eq.1) call getocup(IZONE,IDAY,J,ioc,ier)
           if(ioc.ne.0) then
             if (IMET.eq.1) then 
               VHI=VAL(3,J)+sqrt(VAL(1,J))
@@ -744,6 +770,12 @@ C Assume fully occupied.
         call EDISP(ITRU,'  ')
       elseif (IFMT.eq.3.and.graphit) then
 
+C Debug.
+C        write(6,*) 'igx values ',igx
+C        write(6,*) 'yaxset ',YAXSET
+C        write(6,*) 'igl igr igw igwh ',igl,igr,igw,igwh
+C        write(6,*) 'fonts ifs itfs  & imfs & iglib ',IFS,ITFS,IMFS,iglib
+
 C Draw data on graph.
         HRold=(24.0/float(NDTS))+float(IDAY-IODS)*24.0
         DO 4212 J = 1,NDTS,NOUT
@@ -757,21 +789,20 @@ C Assume fully occupied.
           IHRD=(IDAY-IODS)*24
           HR=(float(J)/float(NDTS))*24.0+float(IHRD)
           ioc=1
-          if(iocupf.eq.1) call getocup(IZONE,IDAY,ih,ioc,ier)
+          if(iocupf.eq.1) call getocup(IZONE,IDAY,J,ioc,ier)
           if(ioc.ne.0) then
             if (IMET.eq.1) then 
               VHI=VAL(3,J)+sqrt(VAL(1,J))
               VLO=VAL(3,J)-sqrt(VAL(2,J))
-              iupdown=0
-              isym=0
+              iupdown=0; isym=0  ! move to position
               if (J.eq.IOH1.AND.IHRD.eq.0) then
                 call etplot(HR,VAL(3,J),iupdown,isym)
               else
                 call etplot(HRold,VMEANold,iupdown,isym)
               endif
               VMEANold=VAL(3,J)
-              iupdown=-303
-              isym=4
+C              iupdown=-303; isym=4  ! draw thick line
+              iupdown=1; isym=0  ! draw line
               call etplot(HR,VAL(3,J),iupdown,isym)
               iupdown=0
               isym=0
@@ -780,60 +811,58 @@ C Assume fully occupied.
               else
                 call etplot(HRold,VHIold,iupdown,isym)
               endif
-              iupdown=1
-              isym=2
+C              iupdown=1; isym=2  ! draw solid line
+              iupdown=-206; isym=0  ! draw sparse dotted line
               call etplot(HR,VHI,iupdown,isym)
               VHIold=VHI
-              iupdown=0
-              isym=0
+              iupdown=0; isym=0  ! move to position
               if (J.eq.IOH1.AND.IHRD.eq.0) then
                 call etplot(HR,VLO,iupdown,isym)
               else
                 call etplot(HRold,VLOold,iupdown,isym)
               endif
-              iupdown=1
-              isym=3
+C              iupdown=1; isym=3 ! draw solid line
+              iupdown=-206; isym=0 ! draw dotted line
               call etplot(HR,VLO,iupdown,isym)
               VLOold=VLO
               HRold=HR
+              call forceflush()
             else
               SD=sqrt(VAL(4,J)/float(NVAL(1)-1))
               SDH=VAL(3,J)+SD
               SDL=VAL(3,J)-SD
-              iupdown=0
-              isym=0
+              iupdown=0; isym=0  ! move to position
               if (J.eq.IOH1.AND.IHRD.eq.0) then
                 call etplot(HR,VAL(3,J),iupdown,isym)
               else
                 call etplot(HRold,VMEANold,iupdown,isym)
               endif
               VMEANold=VAL(3,J)
-              iupdown=-303
-              isym=4
+C              iupdown=-303; isym=0  ! draw thick line
+              iupdown=1; isym=0  ! draw line
               call etplot(HR,VAL(3,J),iupdown,isym)
-              iupdown=0
-              isym=0
+              iupdown=0; isym=0  ! move to position
               if (J.eq.IOH1.AND.IHRD.eq.0) then
                 call etplot(HR,SDH,iupdown,isym)
               else
                 call etplot(HRold,SDHold,iupdown,isym)
               endif
-              iupdown=1
-              isym=2
+C              iupdown=1; isym=2  ! draw solid line
+              iupdown=-206; isym=0  ! draw sparse dotted line
               call etplot(HR,SDH,iupdown,isym)
               SDHold=SDH
-              iupdown=0
-              isym=0
+              iupdown=0; isym=0  ! move to position
               if (J.eq.IOH1.AND.IHRD.eq.0) then
                 call etplot(HR,SDL,iupdown,isym)
               else
                 call etplot(HRold,SDLold,iupdown,isym)
               endif
-              iupdown=1
-              isym=3
+C              iupdown=1; isym=3  ! draw solid line
+              iupdown=-206; isym=0  ! draw dotted line
               call etplot(HR,SDL,iupdown,isym)
               SDLold=SDL
               HRold=HR
+              call forceflush()
             endif
           else
             write (outs,'(f6.2,a)') HR,'No data due to filtering.'
@@ -851,23 +880,32 @@ C Calculate overall standard deviation and display depending on IFMT.
         write (outs,'(a,f8.3)') 'Average standard deviation: ',
      &                    SDTOT/real(NSDTOT)
         call edisp(ITRU,outs)
-      elseif (IFMT.eq.3.and..not.graphit) then
+      elseif (IFMT.eq.3.and.(.not.graphit)) then
         call MOGHED
         YMAX(1)=VMAX
         YMIN(1)=VMIN
+        YAXSET(1)=1  ! lets try left axis
         DHR=FLOAT(((IODF-1)*24+IOH2)-((IODS-1)*24+IOH1))
         TMIN=FLOAT(IOH1)-1.0/FLOAT(NTS)
         TMAX=FLOAT(IOH1)+DHR+1.0/FLOAT(NTS)
-        call dinterval(TMIN,TMAX+1.,DT,NDEC,1)
+        if(colok)then
+          iicol=0
+          call winscl('-',iicol)  ! ensure axis drawn in black
+        endif
+        call dintervalf(TMIN,TMAX+1.,DT,NDEC,1)
         IY1=1
         igwid=igw
         igheight=igwh
         call axiscale(igwid,igheight,TMIN,TMAX+1.,YMIN(1),YMAX(1),TSC,
      &    YSC(1),sca,Xadd,Yadd(1))
-        call vrtaxis(YMIN(1),YMAX(1),iigl,iigb,iigt,Yadd(1),YSC(1),0,0,
-     &    'Output')
-        call horaxis(TMIN,TMAX+1.,iigl,iigr,iigb,Xadd,TSC,1,
-     &    'Time Hours')
+
+C Adapt this label to match what user requested.
+        call dintervalf(YMIN(1),YMAX(1),ddy1,ny,0)
+        call vrtaxisdd(YMIN(1),YMAX(1),iigl,iigb,iigt,Yadd(1),YSC(1),0,
+     &    ddy1,ny,0,GLABEL(1))
+        call dintervalf(TMIN,TMAX+1.,ddy1,ny,1)
+        call horaxisdd(TMIN,TMAX+1.,iigl,iigr,iigb,Xadd,TSC,1,
+     &    ddy1,ny,'Time Hours')
         call linescale(iigl,Xadd,TSC,iigb,Yadd(1),YSC(1))
         graphit=.true.
         goto 4
@@ -1020,7 +1058,7 @@ C If there is occupancy filter and occupancy then include in check.
 C Assume fully occupied.
             ih=int(ATIME+1.)
             ioc=1
-            if(iocupf.eq.1) call getocup(IZONE,IDAY,ih,ioc,ier)
+            if(iocupf.eq.1) call getocup(IZONE,IDAY,J,ioc,ier)
             if(ioc.ne.0) then
               if (IMET.eq.1.or.IMET.eq.3) then
                 YTOT(IX)=YTOT(IX)+(VAL2(IX,J)-VAL2(1,J))
@@ -1076,13 +1114,15 @@ C Now display the calculated data.
       call edisp(ITRU,'  ')
 
       if (IMET.eq.1.or.IMET.eq.3) then
-        write (outs,'(a)')'   Set               Parameter uncertainty'
+        write (outs,'(a)')
+     &  '   Set                         Parameter uncertainty'
         call edisp(ITRU,outs)
-        write (outs,'(a)')'id name               standard   absolute'
+        write (outs,'(a)')
+     &  'id name                         standard   absolute'
         call edisp(ITRU,outs)
         do 30 I=2,NGET
           write (outs,'(i2,1x,a40,2(f8.3,2x))') I,RSNAME(I),
-     &                                              YTOT(I),YTOTAB(I)
+     &      YTOT(I),YTOTAB(I)
           call edisp(ITRU,outs)
  30     continue
       else

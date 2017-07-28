@@ -1,7 +1,7 @@
 C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
 C Strathclyde, Glasgow Scotland, 2001-2007.
-    
+
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
@@ -333,7 +333,7 @@ C No model yet so reset to the default names and exit.
           write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
           write(lfmould,'(a)') dmdbnam(1:lnblnk(dmdbnam))
           write(LCFCDB,'(a)') DCFCDB(1:lnblnk(DCFCDB))
-          write(LPREDEF,'()') DPREDEF(1:lnblnk(DPREDEF))
+          write(LPREDEF,'(a)') DPREDEF(1:lnblnk(DPREDEF))
           return
         endif
 
@@ -755,7 +755,12 @@ C Ask user for ascii Materials file to convert.
           call edisp248(iuout,outs248,100)
           call edisp(iuout,' ')
           MLDBOK=.FALSE.
-        else
+        ELSEIF(IER.eq.4)THEN
+          CALL ERMLDB2(0,iuout,IER)
+          if(IER.eq.0)then
+            MLDBOK=.TRUE.
+          endif
+         else
 
 C Scan was ok so set mldbok to true.
           MLDBOK=.TRUE.
@@ -914,7 +919,7 @@ C If db does not exist locally offer limited choices.
      &    'c select from model ../dbs',
      &    'd copy default file to model',
      &    'e copy file from common to model',
-     &    'f binary >> ascii export','g ascii >> binary',
+     &    'f legacy binary >> ascii export','g not applicable',
      &    'h create new materials',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
@@ -929,7 +934,7 @@ C If standard file then offer the following choices (incl /):
      &    'c select from model ../dbs',
      &    'd copy default file to model',
      &    'e copy file from common to model',
-     &    'f binary >> ascii export','g ascii >> binary',
+     &    'f legacy binary >> ascii export','g not applicable',
      &    'h create new materials',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
@@ -944,7 +949,7 @@ C If standard file then offer the following choices (without /):
      &    'c select from model ../dbs',
      &    'd copy default file to model',
      &    'e copy file from common to model',
-     &    'f binary >> ascii export','g ascii >> binary',
+     &    'f legacy binary >> ascii export','g not applicable',
      &    'h create new materials',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
@@ -960,7 +965,7 @@ C default file or the current database.
      &    'c select from model ../dbs',
      &    'd copy default file to model',
      &    'e copy file from common to model',
-     &    'f binary >> ascii export','g ascii >> binary',
+     &    'f legacy binary >> ascii export','g not applicable',
      &    'h create new materials',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
@@ -973,7 +978,7 @@ C << process.
 C        call MENUATOL('  ','Material properties <mod>',
 C     &    'a browse/edit','b select file from list',
 C     &    'c create new materials','d copy standard materials',
-C     &    'e binary >> ascii convert','f ascii >> binary convert',
+C     &    'e legacy binary >> ascii convert','f ascii >> binary convert',
 C     &    opte,optf,optg,' ',' ',' ',isw,idno,nbhelp)
 C        if(isw.eq.4)copydef=.true.
 C        if(isw.eq.9)copydef=.false.
@@ -1307,59 +1312,10 @@ C rescan into common blocks.
 
       elseif(isw.eq.7)then
 
-C Materials db: ASCII > BINARY. Guess that the ascii version has
-C the same name as the binary one and is in the same location.
-        IAF=IFIL+1
-        clkok=.false.
-        DFILE=' '
-        LLASCI=' '
-        if(ipathmat.eq.0.or.ipathmat.eq.1)then
-          write(LLASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
-        elseif(ipathmat.eq.2)then
-          lndbp=lnblnk(standarddbpath)
-          write(LLASCI,'(4a)') standarddbpath(1:lndbp),fs,
-     &      LFMAT(1:lnblnk(LFMAT)),'.a'
-        endif
-
-C << temporary shorter string until EASKXORGTKF >>
-        lsn2=MIN0(lnblnk(LLASCI),92)
-        LTMP=' '
-        write(LTMP,'(a)') LLASCI(1:lsn2)
-        CALL EASKSCNCL(LTMP,'Materials file (ascii) source.',
-     &    'Confirm:','cancel',clkok,92,DFILE,'materials (ascii)',
-     &    IER,nbhelp)
-        if(clkok) return
-        write(LLASCI,'(a)') LTMP(1:lnblnk(LTMP))
-
-        DFILE='./newmaterial.db1'
-        clkok=.false.
-        lltmp=' '; ltmp=' '
-        write(lltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
-        write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
- 143    CALL EASKSCNCL(ltmp,'Materials properties (binary)?',
-     &    'Confirm:','cancel',clkok,92,DFILE,'Materials (binary)',
-     &    IER,nbhelp)
-        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-          write(LFMAT,'(a)') ltmp(1:lnblnk(ltmp))
-        else
-          goto 143
-        endif
-        if(clkok)then
-          write(LFMAT,'(a)') lltmp(1:lnblnk(lltmp))  ! restore original file name
-          call edisp(iuout,'Restoring the previous materials db')
-          call edisp(iuout,LLTMP)
-          goto 60    ! jump back and reload and re-display
-        else
-          lastpathmat=ipathmat
-          ipathmat=0 ! reset to expect full path for binary
-          CALL MKBPRC(IAF,LLASCI,IER)
-          write(LFMAT,'(a)') lltmp(1:lnblnk(lltmp))  ! restore original file name
-          call edisp(iuout,'Restoring the previous materials db')
-          call edisp(iuout,LLTMP)
-          ipathmat=lastpathmat
-          goto 60    ! jump back and reload and re-display
-        endif
-
+C Materials db: ASCII > BINARY is no longer supported.
+        call edisp(iuout,'Binary materials db no longer supported.')
+        goto 60    ! jump back and reload and re-display
+ 
       elseif(isw.eq.3)then
 
 C Allow user to select from the model ../dbs folder for an
@@ -1522,7 +1478,7 @@ C Default ESP-r distribution path.
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical moddb,modcon,copydef,chgdb
 C      logical clkok,closemat2,DOK,OK
-      logical closemat1
+      logical closecfc1,closecfc2
 
 C      character LTMP*92,LLTMPFL*144
       character fs*1
@@ -1953,8 +1909,9 @@ C Scan CFC layers file into commons.
       chgdb=.false.
 
       call tstamp('>','PRJ: enter CFC layers db')
-      call eclose(cfcver,1.1,0.001,closemat1)
-      if(closemat1)then
+      call eclose(cfcver,1.1,0.001,closecfc1)
+      call eclose(cfcver,1.2,0.001,closecfc2)
+      if(closecfc1.or.closecfc2)then
 
 C Offer display and editing of CFC layer common blocks. If chgdb is
 C returned as true then write out the ASCII file.  
@@ -3239,7 +3196,7 @@ C Default esp-r distribution path.
       CHARACTER LTMP*72,lltmp*144,lprev*144
       character longtfile*144
       CHARACTER fs*1,APP*4
-C      CHARACTER outs248*248
+      CHARACTER outs248*248
       LOGICAL OK,XST,DOK
       character dinstpath*60,dirpath*72
 
@@ -3466,6 +3423,9 @@ C << alternative to IPR needed >>
         ENDIF
         ISEL=1
         CALL ERMLDB(0,ITRU,IER)
+
+C << TODO for the case of ERMLDB2 >>
+
         IF(IER.NE.0)goto 60
         MLDBOK=.TRUE.
 
@@ -3532,14 +3492,26 @@ C otherwise edit the contents.
    44 continue
 
 C Debug.
-C      write(outs248,'(2a)') 'Accessing MLC db: ',
-C     &  LFMUL(1:lnblnk(LFMUL))
-C      call edisp248(iuout,outs248,100)
+      write(outs248,'(2a)') 'Accessing MLC db: ',
+     &  LFMUL(1:lnblnk(LFMUL))
+      call edisp248(iuout,outs248,100)
 
       ier=0
       call tstamp('>','PRJ: enter MLC db')
       CALL ERMLDB(0,IUOUT,IER)
-      IF(IER.eq.1)then
+      IF(IER.eq.4)THEN
+        CALL ERMLDB2(0,iuout,IER)
+        if(IER.eq.0)then
+
+C If scanned without error echo the db documentation.
+          MLDBOK=.TRUE.
+          if(mlcver.eq.1.and.mlcdocs.ge.1)then
+            do loop=1,mlcdocs
+              call edisp(iuout,mlcdbdoc(loop))
+            enddo
+          endif
+        endif
+      ELSEIF(IER.eq.1)then
 
 C Problem scanning the constructions db.
         call usrmsg(
@@ -3567,17 +3539,24 @@ C construction files.
 C Find the index of the MLC which matches each surface.
         DO 9994 I=1,NZSUR(icomp)
           icn1=izstocn(icomp,i)
-          ssmlcindex(icn1)=0  ! assume no matching MLC          
+          ssmlcindex(icn1)=0  ! assume no matching MLC
+          lnsmlc=lnblnk(SSMLCN(icn1))         
           do 5 ii=1,nmlc
-            if(SSMLCN(icn1)(1:12).eq.mlcname(ii)(1:12)) then
+            if(SSMLCN(icn1)(1:lnsmlc).eq.
+     &         mlcname(ii)(1:lnmlcname(ii)))then
               ssmlcindex(icn1)=ii   ! remember MLC index  
             endif
   5       continue
  9994   continue
  30   continue
 
+C Enter database in management mode.
       call tstamp('>','PRJ: enter construction db')
-      CALL EDMLDB(ITRC,modmlc,IER,ISEL)
+      if(mlcver.eq.0)then
+        CALL EDMLDB(ITRC,modmlc,IER,ISEL)
+      elseif(mlcver.gt.0)then
+        CALL EDMLDB2(modmlc,'M',ISEL,IER)
+      endif
       if(IER.EQ.1)then
         CALL USRMSG(' ','Problem accessing constructions db','W')
         LFMUL=lprev

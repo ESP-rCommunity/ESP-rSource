@@ -466,6 +466,9 @@ C Find the maximum source of residual.
 
 C Write/ plot residuals and monitoring values.
 C First check if output for this iteration.
+
+C << If in text or script mode report less frequently,
+C << especially if the domain is large.
       if (mod(NITER,NPLT).eq.0.or.NITER.le.1) then
 
 C Check time taken to run since last check.
@@ -482,17 +485,27 @@ c          write(6,*)'NITER=',NITER
 c          write(6,*)'sec_pre=',sec_pre,'sec_now=',sec_now,
 c     &                                        'sec_tkn=',sec_tkn
           NITER_pre=NITER
-          if ((sec_tkn*50.).lt.0.75) then
-C Maximum NPLT of 100.
-            NPLT=100
-          else
+
+C For graphics mode re-display target is 0.75 seconds.
+          IF(MMOD.eq.8)THEN
+            if ((sec_tkn*50.).lt.0.75) then
+              NPLT=100  ! Maximum NPLT
+            else
 C Output ~ every 0.75 seconds, constrained to increments of 10 iterations (rounded up).
-            NPLT=0.75/sec_tkn
-C sec_tkn no longer needed, use as temporary variable.
-            sec_tkn=real(NPLT)/10.
-            NPLT=(int(sec_tkn)+1)*10
-          endif
-c          write(6,*)'NPLT=',NPLT
+              NPLT=0.75/sec_tkn
+              sec_tkn=real(NPLT)/10.  ! sec_tkn no longer needed, use as temporary variable.
+              NPLT=(int(sec_tkn)+1)*10
+            endif
+          ELSE  ! we have text mode
+            if ((sec_tkn*50.).lt.5.0) then
+              NPLT=100  ! Maximum NPLT of 100.
+            else
+C Output ~ every 9 seconds, constrained to increments of 10 iterations (rounded up).
+              NPLT=9.0/sec_tkn
+              sec_tkn=real(NPLT)/10.  ! sec_tkn no longer needed, use as temporary variable.
+              NPLT=(int(sec_tkn)+1)*10
+            endif
+          ENDIF
         endif
 C If in graphical mode, maximum NPLT of 40
         if ((MMOD.eq.8).and.(NPLT.gt.40)) then
@@ -679,7 +692,10 @@ C Only reset the maximum iterations.
             GOTO 320
           endif
         endif
-        CALL EDISP(IUOUT,'Solution did not converge')       
+        WRITE(OUT,'(A,I5,A,I3,A,F6.3)')
+     &    'Solution did NOT converge at ',
+     &    NITER,' iterations, for day no. ',idyf,' at ',btimef
+        CALL EDISP(IUOUT,out)       
       ELSE
         CONVER=.TRUE.
         call cpu_time(sec_conv)

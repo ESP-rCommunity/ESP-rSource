@@ -64,7 +64,7 @@ C Passed parameter.
 
       CHARACTER ETEXT*82
       CHARACTER temp*16,DESCRC*25,stemp*13,OUTSTR*124,temp20*21
-      CHARACTER MLCN*12,t13*13
+      CHARACTER MLCN*32,t13*13
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
@@ -372,9 +372,10 @@ C Set line style for this surface. linsty=2 is double width line.
 C Check for hilights. ITHLS=1 is composition, ITHLS=2 trn:opq,
 C ITHLS = 3 partial attributes
         if(ITHLS.eq.1.and.ITHLZ.gt.0)then
-          WRITE(MLCN,'(A12)') mlcname(ITHLZ)(1:12)
+          WRITE(MLCN,'(A)') mlcname(ITHLZ)
           if(ICC.gt.0)then
-            if(MLCN(1:12).eq.SSMLCN(ICC)(1:12))then
+            lnssmlc=lnblnk(SSMLCN(icc))
+            if(MLCN(1:lnmlcname(ITHLZ)).eq.SSMLCN(ICC)(1:lnssmlc))then
               IPEN= -305
             else
               IPEN= 1

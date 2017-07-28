@@ -597,14 +597,16 @@ cx              CALL EDISP(IUOUT,' ')
               CALL EDISP(IUOUT,OUTS)
             endif
 
-            WRITE(OUTS,1212) HYBCOMNO(IHYB),HYCOMTYPSTR(IHYB),
+C Check indices are non-zero.
+            if(IHYB.gt.0.and.(HYCONEN(IHYB,1).gt.0))then
+              WRITE(OUTS,1212) HYBCOMNO(IHYB),HYCOMTYPSTR(IHYB),
      &        HYCOMNAM(IHYB),PHTYPSTR(HYCOMPHTYP(IHYB)),
      &        (merge(ENODNAM(HYCONEN(IHYB,I)),'     0      ',
      &                       HYCONEN(IHYB,I).gt.0),I=1,3),
      &        (HYLOC(IHYB,J),J=1,3)
- 1212       FORMAT(1X,I3,1X,A12,1X,A12,1X,A12,
-     &               3(1X,A12),3(2X,I3))
-            CALL EDISP(IUOUT,OUTS)
+ 1212         FORMAT(1X,I3,1X,A,1X,A,1X,A,3(1X,A),3(2X,I3))
+              CALL EDISP(IUOUT,OUTS)
+            endif
           ENDIF
 
  40     CONTINUE 

@@ -222,7 +222,8 @@ C Path to model and command line file name.
       INTEGER :: iairn,icaas
       common/ffn/iflwn,icffs(mpcon)
       INTEGER :: iflwn,icffs
-
+      real SNA
+      COMMON/PREC1/SNA(MCOM,MS)
       common/prec7/itcnst
       INTEGER :: itcnst
       COMMON/DNORGH/IRTYPE
@@ -286,7 +287,7 @@ C For reading in of bi-directional data.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 
       CHARACTER OUTSTR*124,MODE*4
-      CHARACTER outs*124,louts*248,spsname*8,L144*144
+      CHARACTER outs*124,louts*248,spsname*30,L144*144
       CHARACTER outs248*248,LCMDFL*144
       character*72 laprob,path
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
@@ -297,7 +298,8 @@ C HVAC AIM-2
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST,CFCDBOK
       LOGICAL GRND3D,MSTROK,MSTRZN
-      logical dll,closemat1,closemat2,unixok,concat,closecfc1
+      logical dll,closemat1,closemat2,unixok,concat
+      logical closecfc1,closecfc2
 
 C GSHP
 C Common holding flag indicating presence of gshp data input file:
@@ -325,7 +327,7 @@ C Status of multi-year climate database
       character lworking*144,fs*1,llclmdb*144
 
       integer IClmErr  ! the error state for climate file opening
-      integer ier, irep
+      integer ier, irep, j
       
       REAL :: clmloc
       INTEGER :: i,iaprob,iglib,irec,istat,itru,iua,llt,nclass
@@ -735,7 +737,8 @@ C In silent running mode, notify user and terminate simulation.
 
           if(ier.eq.0)then
             call eclose(cfcver,1.1,0.001,closecfc1)
-            if(closecfc1) CFCDBOK=.TRUE.
+            call eclose(cfcver,1.2,0.001,closecfc2)
+            if(closecfc1.or.closecfc2) CFCDBOK=.TRUE.
           endif
         endif      
       ENDIF
@@ -768,7 +771,18 @@ C Use file unit IAPROB to read db.
       else
         write(currentfile,'(a)') lfmul(1:lnblnk(lfmul))
         CALL ERMLDB(0,iuout,IER)
-        if(IER.NE.0)then
+        IF(IER.eq.4)THEN
+          CALL ERMLDB2(0,iuout,IER)
+          if(IER.eq.0)then
+            MLDBOK=.TRUE.
+          else
+
+C Note: the databases are not actually referenced by bps. This is a non-
+C       critical error --- warn user and clear error flag
+            call usrmsg(outs,' ','W')
+            ier = 0 
+          endif
+        ELSEIF(IER.EQ.1.or.IER.eq.2.or.IER.eq.3)THEN
           outs='Problem during reading of construction database.'
           if(dll)then
             dllsubr='mzinpt'
@@ -1172,12 +1186,19 @@ C Now alter properties for uncertainty analysis.
           elseif (IMET.eq.2) then
             call FCTA(IZ)
           elseif (IMET.ge.3) then
+C            write (36,*) 'before mcsa sna= ',(SNA(1,J),J=1,7)
             call MCSA(IZ)
+C            write (36,*) 'after mcsa sna= ',(SNA(1,J),J=1,7)
           endif
         endif
 
 C Now initiate computation of all time-independent zone properties.
-        CALL MZAREA(IZ)
+        if (ISIM.gt.1) then
+          continue
+        else
+          CALL MZAREA(IZ)
+        endif
+C        write (36,*) 'after mzarea sna= ',(SNA(1,J),J=1,7)
 
         CALL MZVOLM(IZ)
         CALL MZPAZI(IZ)
@@ -1790,7 +1811,7 @@ C lafres  - fluid flow network results file
       character*72 ERESLIB
       character outs*124, outs2*124
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,spfdescr*8,name*8
+      character selres*72,spfdescr*30,name*30
       character dllsubr*12,dllmesg*124
 
 C Check if running in dll mode.

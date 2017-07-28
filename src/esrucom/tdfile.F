@@ -130,6 +130,7 @@ C Search instances in temporal file to find match(s).
 C Associate with real & reactive power item with a zone.
                       if(DBTASK(ITD1)(1:7).eq.'ELECPWR')
      &                  IELECPWR(itd3)=itd4
+
                       if(DBTASK(ITD1)(1:6).eq.'ZIVENT')
      &                  IZIVENT(itd3)=itd4
                       if(DBTASK(ITD1)(1:6).eq.'RAIRVL')
@@ -239,6 +240,17 @@ C Search instances in temporal file to find match(s).
                           IHTCLSETP(itd3)=itd4
                         ENDIF
                       ENDDO
+
+                    elseif(DBTASK(ITD1)(1:6).eq.'CFCCTL')then
+
+c CFC control to temporal data file feature ...
+C Search instances in temporal file to find match(s).
+                      DO itd4=1,NDATA
+                        IF(TAG(itd4)(1:lnblnk(TAG(itd4))).EQ.
+     &                    DBTAG(itd1)(1:lnblnk(DBTAG(itd1))))THEN
+                          ICFCCTL(itd3)=itd4
+                        ENDIF
+                      ENDDO
                     endif
                   endif
   80            continue
@@ -311,6 +323,7 @@ C in the configuration file if called from simulator or res.
             IOBJDIR=0
             ISKYTMP=0
             IGLOVRT=0
+            IRAININD=0
 
 C Search instances in temporal file to find match(s).
             NDATA=NITDF
@@ -361,6 +374,8 @@ C in the tdf file.
                 IGLOVRT=ifoc
               elseif(TTYPE(ifoc)(1:6).EQ.'OBJROT')then
                 IOBJDIR=ifoc
+              elseif(TTYPE(ifoc)(1:7).EQ.'RAININD')then
+                IRAININD=ifoc
               endif
               WRITE(OUTS,'(A,I2,7A,I2,A)')
      &            ' Tdf item:',M,' :',DBTAG(M),
@@ -987,14 +1002,14 @@ C record structures can be accommodated.
           IF(ITDFTR(I,J).EQ.1)THEN
             WRITE(FSTR,62)IA,IC,TMAR(I,IA),TMIN(I,IA),
      &                    TMAX(I,IA),TDFDES(I,J)
-   62       FORMAT('REAL',2I3,3F11.3,2X,A32)
+   62       FORMAT('REAL',I3,1X,I3,3F11.3,2X,A32)
           ELSEIF(ITDFTR(I,J).EQ.2)THEN
             WRITE(FSTR,63)IA,IC,TMAT(I,IA),TDFDES(I,J)
-   63       FORMAT('TEXT',2I3,2X,A16,2X,A32)
+   63       FORMAT('TEXT',I3,1X,I3,2X,A16,2X,A32)
           ELSEIF(ITDFTR(I,J).EQ.3)THEN
             WRITE(FSTR,64)IA,IC,ITMAR(I,IA),ITMIN(I,IA),
      &                    ITMAX(I,IA),TDFDES(I,J)
-   64       FORMAT('INTG',2I3,3I10,2X,A32)
+   64       FORMAT('INTG',I3,1X,I3,3I10,2X,A32)
           ENDIF
           WRITE(iafil,'(a)',IOSTAT=ios,ERR=103)FSTR
   60    CONTINUE
@@ -1095,11 +1110,14 @@ C espriou.h provides current file.
       real toler  ! what is half of the timestep
 
 C If not already opened free unit and check if file exists.
+cx << in the case of adding existing tdf and then choosing browse/edit
+cx << file seems to be open and call to EFOPSEQ() below gives error 5004
       IER=0
       CALL ERPFREE(iafil,ISTAT)
       CALL EFOPSEQ(iafil,AFIL,1,IER)
       IF(ier.ne.0)THEN
-        write(msgl2,'(2a)') ' error opening ',AFIL(1:lnblnk(AFIL))
+        write(msgl2,'(2a)') 'TDFAIMPT: Error opening ',
+     &                                        AFIL(1:lnblnk(AFIL))
         CALL USRMSG(' ',msgl2,'W')
         IER=1
         RETURN

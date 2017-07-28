@@ -397,9 +397,9 @@ C Find the user's home folder then get users custom settings.
       endif
       call scesprc(esprc,IFIL+1,0,IIER)
 
-C Scan the defaults file for default configuration.
+C Scan the defaults file silently for default configuration.
 C Make temporary use of file unit IFIL+1.
-      call escdef(IFIL+1,IER)
+      call escdef(IFIL+1,'s',IER)
 
 C Take `c' command line file name, convert to fortran string LCMDFL.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then

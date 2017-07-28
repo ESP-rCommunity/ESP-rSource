@@ -329,8 +329,12 @@ C Scale the axes of the chart (initial values)
       CALL startbuffer()
 
 C Draw the axes of the chart.
-      CALL horaxis(Xmin,Xmax,iigl,iigr,iigb,xadd,XSC,0,'Db Temp C')
-      CALL vrtaxis(Ymin,Ymax,iigl,iigb,iigt,yadd,YSC,0,0,'RH %')
+      call dintervalf(Xmin,Xmax,DY,NDEC,0)
+      CALL horaxisdd(Xmin,Xmax,iigl,iigr,iigb,xadd,XSC,0,
+     &  DY,NDEC,'Db Temp C')
+      call dintervalf(Ymin,Ymax,DY,NDEC,0)
+      CALL vrtaxisdd(Ymin,Ymax,iigl,iigb,iigt,yadd,YSC,0,
+     &  DY,NDEC,0,'RH %')
 
 C Store the scaling parameters used in drawing the axes
       CALL linescale(iigl,xadd,XSC,iigb,yadd,YSC)
@@ -518,7 +522,7 @@ C subroutine curvedraw
       common/mdbase/mdbnam
       common/FILEP/IFIL
 
-      character outs*124, mdbnam*72 ,mldnam*48
+      character outs*124, mdbnam*144 ,mldnam*48
 #ifdef OSI
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot

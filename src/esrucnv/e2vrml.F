@@ -147,7 +147,7 @@ C << surface should be skipped logic for later...>>
         if(mlctype(IM)(1:4).NE.'OPAQ')then
           WRITE(ioout,'(3a)')
      &      '   appearance DEF Glass_',
-     &      mlcname(IM)(1:lnblnk(mlcname(IM))),' Appearance {'
+     &      mlcname(IM)(1:lnmlcname(IM)),' Appearance {'
           WRITE(ioout,'(2a)')
      &      '     material Material { diffuseColor 1 1 1 ',
      &      ' ambientIntensity 1.0 specularColor 0 0 100  '
@@ -157,7 +157,7 @@ C << surface should be skipped logic for later...>>
         else
           WRITE(ioout,'(3a)')
      &      '    appearance DEF Solid_',
-     &      mlcname(IM)(1:lnblnk(mlcname(IM))),' Appearance {'
+     &      mlcname(IM)(1:lnmlcname(IM)),' Appearance {'
           WRITE(ioout,'(a,3F5.2,a,3F5.2)')
      &      '      material Material { diffuseColor ',
      &      1.0-AE,1.0-AE,1.0-AE,' specularColor ',1.0-AE,1.0-AE,1.0-AE
@@ -239,11 +239,11 @@ C (which holds the coordinates of the zone along with the first surface.
             if(mlctype(IM)(1:4).NE.'OPAQ')then
               WRITE(ioout,'(2a)')
      &          '      appearance USE Glass_',
-     &          mlcname(IM)(1:lnblnk(mlcname(IM)))
+     &          mlcname(IM)(1:lnmlcname(IM))
             else
               WRITE(ioout,'(2a)')
      &          '      appearance USE Solid_',
-     &          mlcname(IM)(1:lnblnk(mlcname(IM)))
+     &          mlcname(IM)(1:lnmlcname(IM))
             endif
 
 C Ensure first character is not a number.
@@ -297,11 +297,11 @@ C Write differently if opaque or transparent.
             if( mlctype(IM)(1:4).NE.'OPAQ')then
               WRITE(ioout,'(2a)')
      &          '     appearance USE Glass_',
-     &          mlcname(IM)(1:lnblnk(mlcname(IM)))
+     &          mlcname(IM)(1:lnmlcname(IM))
             else
               WRITE(ioout,'(2a)')
      &          '     appearance USE Solid_',
-     &          mlcname(IM)(1:lnblnk(mlcname(IM)))
+     &          mlcname(IM)(1:lnmlcname(IM))
             endif
             call ifnumber(sname(newfoc,j)(1:1),numb)
             if(numb)then
