@@ -3088,7 +3088,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'variable sets the default location, in Windows $HOMEPATH environment'
 'variable sets the default location. Models are copied to this '
 'default or a folder you select. NOTE: no checks are made to'
-'confirm you have control of the nominated folder).
+'confirm you have control of the nominated folder).'
 '  '
 'GTK interface note: the file browser initially points to the home'
 'folder, if you click on a folder then what is [selected:] will be'
@@ -4881,7 +4881,9 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'based or idealized) and air flow, electrical & contaminant networks.'
 '  '
 'The [controls] section gives access to the detail of the ideal'
-'zone controls as well as plant & flow controls and global controls.'
+'zone controls as well as plant, flow and global controls.'
+'Co-simulation links can also be specified using the Functional Mockup'
+'Interface (FMI) standard.'
 '  '
 'The [actions] section includes tasks that are applicable to models'
 'which are complete:'
@@ -9406,12 +9408,15 @@ For the purposes of ESP-r, the use of WIS is focused on the'
         CALL EASKS(LCNN,' Updated surface connections file ?',' ',
         CALL EASKS(CFGFN,
         CALL EASKS(LCNN,' Updated surface connections file ?',' ',
-*item EDCONN
-'The current mosw description will be placed into this file.'
-'It is suggested that you define a new file (ie. '
-'project.cfg > project_a.cfg).'
+*item EDCONN surface_corner_detect
+'ESP-r provides two methods for scanning for geometric surface'
+'matches - within the topology checking facility and in the surface'
+'attribution [scan for nearby surfaces] option. Both check for a'
+'number of tollerances vis-a-vis how close vertices are, how close'
+'the angles between surface normals are, how close the COG of surfaces'
+'are etc. If your model includes fine details and/or small surfaces'
+'then changing to smaller tollerances helps to constrain the tests.'
 *enditem
-          CALL EASKS(CFGFN,
 *subroutine CONFIG
 *item CONFIG setting_up_topol
 'The process of checking topology in a model usually involves all of'
@@ -16397,11 +16402,18 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '   whole of each day as well as no infiltration or ventilation'
 '   for all day types.'
 ' '
+' cellular office creates a typical pattern for a single occupant'
+' cellular office with a bit of diversity for occupants lights and'
+' small power. Saturday has morning use. Sunday & holiday minimal.'
+' '
+' open plan office creates a typical pattern with a bit of'
+' diversity for occupants lights & small power. 9 m2/person'
+' lighting ~7W/m2 & small power 11.7W/m2. Saturday morning use.'
+' Sunday & holiday minimal.'
+' '
 'After initiating one of the above actions you can edit the data'
-'as required. '
-'  '
-'A zone operation file contains schedules of air flow and casual'
-'gains.  Air flows may have thermostatic or wind speed control.'
+'as required. The file also contains schedules of air flow'
+'schedules which may have thermostatic or wind speed control.'
 *enditem
           CALL EASKS(LTMP,' ','Zone operations file name?',
           call askzone(isource,izdef,
@@ -16881,6 +16893,9 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'be appropriate for your project. You can adapt the '
 'labels if it clarifies your model. '
 '  '
+'Note the option for a so-called dynamic occupant. This requires'
+'additional attributes to be entered.
+'  '
 'If you want to use the standard labels select them from the list.'
 *enditem
         call askok(' ','Change type labels?',OK,dok,3)
@@ -17267,7 +17282,8 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '  '
 'You will then be asked to pick the required thermophysical'
 'property for this sensitivity study. You will also be asked'
-'to specify the bounds of the property to search within.'
+'to specify the bounds of the property to which the random.'
+'change will be applied.'
 '   '
 'Exit will return to the main menu without saving any data.'
 *enditem
@@ -17280,26 +17296,29 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'a specific layer of a MLC. First select which material you want to'
 'alter.'
 *enditem
-      call EASKAB('Which composite construction parameter? ','  ',
-      CALL EPICKS(INPIC,IVALE,' ',' Which material : ',
+      call EASKAB('Which composite construction parameter?','  ',
+      CALL EPICKS(INPIC,IVALE,' ',' Which material:',
 *subroutine SDDEF003
 *item SDDEF003 uncert_climate
 'Pick the required climate parameter from the list. '
 '   '
 'Exit will return to the main menu without saving any data.'
 *enditem
-      CALL EPICKS(INPIC,IVALP,' ',' Which parameter : ',
+      CALL EPICKS(INPIC,IVALP,' ','Which parameter:',
 *subroutine SDDEF004
 *item SDDEF004 uncert_operations
 'You can nominate casual gains or scheduled air flows as uncertain.'
 ' '
-'If casual gains then you will be asked which casual gain. and'
-'then whether it is the radiant or convective portion of the gain.'
-'or the total magnitude of the gain.'
+'If casual gains then you will be asked which casual gain, and'
+'then whether it is the radiant or convective portion of the gain,'
+'or the total magnitude of the gain or the period start time.'
 '  '
 'If schedules air flows selected then you are asked if it is'
 'infiltration or which zone is a ventilation source or if it'
 'is the source temperature of the ventilation which is uncertain.'
+'  '
+'For either casual gains or scheduled air flows you need to link'
+'with a defined (zone) location.'
 *enditem
       call EASKAB('  ','Which scheduled parameter? ',
       call EASKABC('  ','Which casual gain? ',
@@ -17321,15 +17340,20 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'take are defined via one of three processes:'
 '1) Percentage change: the upper and lower values will'
 '   be the base case value +/- the percentage change.'
-'   A value greater than zero is expected.'
+'   This will be multipled by the random seed for the run'
+'   to get the specific change to apply.'
+'   A % value greater than zero is expected.'
 '  '
 '2) Absolute change: the upper and lower values will be'
-'   the base case value +/- the absolute change.'
+'   the base case value +/- the absolute change. For example'
+'   to increment or decrement thickness by 10mm (0.01m).'
+'   This will be multipled by the random seed for the run'
+'   to get the specific change to apply.'
 '   A value greater than zerio is expected.'
 '  '
 '3) Explicitly: the upper and lower values will be '
-'   defined explicitly. Two values are expected and the'
-'   upper must be greater than the lower.'
+'   defined separately. Two values are expected and the'
+'   upper must be greater than the lower. '
 *enditem
         call EASKABC(' Define parameter bounds',' via:',
         call EASKR(PERC,' ',' Percentage change value? ',
@@ -17341,10 +17365,17 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'take are defined via one of two processes:'
 '1) Percentage change: the upper and lower values will'
 '   be the base case value +/- the percentage change.'
-'   A value greater than zero is expected.'
+'   This will be multipled by the random seed for the run'
+'   to get the specific change to apply.'
+'   A % value greater than zero is expected.'
 '  '
 '2) Absolute change: the upper and lower values will be'
-'   the base case value +/- the absolute change.'
+'   the base case value +/- the absolute change * the current'
+'   random number seed (+-2.0). For example to increment or'
+'   decrement thickness by a nominal 10mm set a value of 0.01m'
+'   (be sure the value reflects the units of the attribute).'
+'   This will be multipled by the random seed for the run'
+'   to get the specific change to apply.'
 '   A value greater than zero is expected.'
 *enditem
         call EASKAB(' Define parameter bounds',' via:',
@@ -17368,22 +17399,41 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 *enditem
       call EASKS(LTEMP,' Uncertainty definitions file name ?',
 *item UNCERTA uncert_overview_a
+'ESP-r includes formal descriptions of uncertainty for the following'
+'topics: 1) thermophysical properties, 2) layer thickness, 3) weather'
+'4) zone operations, 5) convection coefficients, zone air volume.'
+'  '
 'Uncertainties are defined in a three stage process '
 'analogous to mass flow.'
 '  '
-'1. A distribution for a chosen parameter is defined.  '
-'   Minimum one distribution.'
+'1 One or more distributions are defined. For example, if thickness'
+'  of insulation is of interest we might create named distributions'
+'  [wall_thickness] & [roof thickness] and identify specific materials'
+'  to perturb (% or +- absolute increments).'
 '  '
-'2. A physical location in the model is defined; zone,  '
-'   surface etc. Minimum one location.'
+'2 One or more named physical locations in the model are defined e.g.'
+'  [facades] & [roof] each of which are linked to specific zones &'
+'  surfaces. Thermophysical properties & layer thickness & zone'
+'  operations need a zone location. Weather needs a temporal location.'
 '  '
-'3. Distributions and locations are linked to define an '
-'   uncertainty.  The validity of the uncertainty is '
-'   checked at simulation time. Minimum one uncertainty.'
+'3. Distributions and locations are linked to define one or more'
+'   uncertanties e.g. [wall_thickness] + [facades].  The validity'
+'   of the uncertainty is checked at simulation time.'
 '  '
-'A so-called uncertainty library is used and if prj detects'
-'that you are working in a remote folder you are asked to'
-'confirm where to place the library.'
+'When the assessment is run you are given a choice of: differential,'
+'factorial, Monti-Carlo assessments. For each run a random see will be'
+'generated (within the range +-2.0 and applied to the user defined'
+'bounds. The results file will include a base case pluse all of'
+'the separate variants (sets) required.' 
+'NOTE: bps must be run in silent mode to support sensitivity studies.'
+'  '
+'When res is run you are given the option to work with all of the  '
+'sets or specific result sets. Look for the [sensitivity] menu option. '
+'  '
+'The initial option [a create default bounds] allows you to define'
+'bounds for uncertainty for thermophysical properties in advance'
+'and reference these defaults rather than manually stipulating the'
+'bounds to apply.'
 *enditem
         CALL PHELPD('Uncertainty definitions file',12,'-',0,0,IER)
 *subroutine DISPOPT
@@ -17416,7 +17466,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 *subroutine LOCDEF
 *item LOCDEF uncert_location
 'The location of the uncertainty can be:'
-' - spatial and in all temporal locations.'
+' - spatial (zones or zones:surfaces) and in all temporal locations.'
 ' - temporal and in all spatial locations.'
 ' - both.  Only use this option if both domains have a restriction'
 ' '
@@ -17432,9 +17482,9 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'If you are also selecting surfaces then you can select from the'
 'list of surfaces (suggest making a note of what you have selected.'
 '  '
-'For temporal selections you must define a period when uncertainty'
-'is applicable (start day of the year and hour of the day and finish'
-'day of the year and hour of the day). If you cancel then'
+'For temporal selections (i.e. weather) you must define a period when'
+'uncertainty is applicable (start day of the year and hour of the day'
+'and finish day of the year and hour of the day). If you cancel then'
 'the data is not changed.'
 *enditem
       CALL EASKABC(' ',
@@ -17450,6 +17500,9 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'Pick the required uncertainty definition(s).'
 '  '
 'Next pick the required location definition.'
+'  '
+'With a good naming regime the pairs of uncertainty and location'
+'will provide a clear indication of intent.  '
 '  '
 'Exit returns to the main menu without saving any data. '
 *enditem
@@ -17694,6 +17747,15 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'applications are invoked. '
 *enditem
         CALL EASKXORGTKF(exemfl,'ESP-r exemplars?','(see help)',
+*item SETUP surface_corner_detect
+'ESP-r provides two methods for scanning for geometric surface'
+'matches - within the topology checking facility and in the surface'
+'attribution [scan for nearby surfaces] option. Both check for a'
+'number of tollerances vis-a-vis how close vertices are, how close'
+'the angles between surface normals are, how close the COG of surfaces'
+'are etc. If your model includes fine details and/or small surfaces'
+'then changing to smaller tollerances helps to constrain the tests.'
+*enditem
 *subroutine tdfedit
 *item tdfedit tdf_time_format
 'The selected format for the input of time is currently'
@@ -17911,4 +17973,247 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
         CALL EASKS(tfile,' Import file name? ',
         CALL EASKI(ITEXP,' Several export formats are available: ',
         CALL EASKS(tfile,' Export file name? ',
-
+*subroutine FMI_ED
+*item FMI_ED FMI_disabled
+'This version of ESP-r has not been compiled with FMI support.'
+'Instructions to enable this functionality can be found in:'
+'[ESP-r installation directory]/manual/FMI/Users.txt.'
+*enditem
+      CALL PHELPD('FMI not available',nbhelp,'-',0,0,IER)
+*item FMI_ED FMI_spec_none
+'This facility allows creation and editing of directives to co-simulate'
+'with external programs called Functional Mock-up Units (FMUs). The'
+'data exchange is defined by the Functional Mock-up Interface (FMI)'
+'standard. Information on the FMI implementation in ESP-r, including'
+'a list of supported FMUs and their functionality, can be found in:'
+'[ESP-r installation directory]/manual/FMI'
+' '
+'Currently there are no FMU specifications. Please add one using'
+'option +.'
+*enditem
+        CALL PHELPD('FMI specification help',nbhelp,'-',0,0,IER)
+*item FMI_ED FMI_spec_some
+'This facility allows creation and editing of directives to co-simulate'
+'with external programs called Functional Mock-up Units (FMUs). The'
+'data exchange is defined by the Functional Mock-up Interface (FMI)'
+'standard. Information on the FMI implementation in ESP-r, including'
+'a list of supported FMUs and their functionality, can be found in:'
+'[ESP-r installation directory]/manual/FMI'
+' '
+'Note that multiple instances of an FMU can be defined from the same'
+'FMU specification (often there is one instance per zone). In most'
+'cases you should use a separate FMU specification for each different'
+'FMU you plan to co-simulate with, not for each instance.'
+' '
+'Option a: cycle through FMU specifications.'
+'Option b: set path to the FMU file (can be relative from model cfg'
+'          directory).'
+'Option c: define a brief identifying phrase for the FMU (maximum'
+'          30 characters).'
+'Option d: define the maximum time allowed for communication between'
+'          ESP-r and the FMU (in milli-seconds). A value of zero means'
+'          no limit.'
+'Option e: toggle debug logging for the FMU on or off. Only advanced'
+'          users should put this on.'
+'Option f: define FMU inputs, i.e. data passed from ESP-r to the FMU.'
+'Option g: define FMU outputs, i.e. data passed from the FMU to ESP-r.'
+'Option +: manage FMU specifications.'
+'Option !: list data for the currently selected FMU specification.'
+'Option >: save all FMU specification data to a file. By default this'
+'          file is given the extension .fmi and is placed in the ctl'
+'          model directory. Before saving, you will be warned if any'
+'          FMU files have not been specified.'
+'Option ?: show this help text.'
+'Option -: exit this menu. If there is unsaved data, you will be asked'
+'          if you want to save this before exiting.'
+*enditem
+        CALL PHELPD('FMI specification help',nbhelp,'-',0,0,IER)
+*item FMI_ED manage_FMUs
+'Here you can add, delete or copy an FMU specification. All inputs and'
+'outputs will also be deleted or copied along with the FMU'
+'specification. There is no undo for deleting an FMU specification'
+'(except reloading a previous file), so think carefully before doing'
+'so!'
+' '
+'When deleting or copying an FMU, you will be prompted for a number.'
+'This corresponds to the FMU specification index, listed when the'
+'prompt is given. Specifications are added at the end of the list'
+'(i.e. if there are 2 existing specifications and one is added, the'
+'new one will become number 3).'
+*enditem
+C Manage FMU specifications.
+        helptopic='manage_FMUs'
+        CALL gethelptext(helpinsub,helptopic,nbhelp)
+        CALL EASKABCD(' ','Options:',
+     &    'add','delete','copy','cancel',itmp,nbhelp)
+*item FMI_ED enter_FMU_file
+'This is a path to the FMU file, which normally has extension .fmu.'
+'This can be a relative path from the model cfg directory, or an'
+'absolute path. 72 characters maximum. After entering the file path,'
+'you will be warned if it cannot be found in the specified location.'
+*enditem
+          CALL EASKS(FMUFIL(IFMU),' ',' FMU file?',72,ctmp,'FMU file',
+     &      IER,nbhelp)
+*item FMI_ED FMU_file_not_found
+'The FMU file cannot be found at the location you have specified. This'
+'is not a fatal error, but please be aware that you will be unable to'
+'run a simulation with FMI active if any FMUs cannot be found at run'
+'time. You can try entering the file path again, or continue with the'
+'previously specified path.'
+*enditem
+            CALL EASKAB(' Cannot find this file!','Options:',
+     &        'respectify','continue',itmp,nbhelp)
+*subroutine FMI_EDINP
+*item FMI_EDINP FMU_input
+'Here the FMU inputs are defined. This creates directives for ESP-r to'
+'pass data to the FMU, for example a temperature. Inputs are first'
+'associated with a zone (including the ambient environment), and then'
+'a specific variable is selected. The available choice of variables is'
+'different depending on whether the ambient environment or a building'
+'zone is selected.'
+' '
+'There are two other data items, which correspond with entities defined'
+'in the FMU. The FMU instance name is an identifier for each component'
+'of the FMU. Guidance on this may be found in the relevant entry in the'
+'ESP-r manual FMU listings ([ESP-r installation directory]/manual/FMI),'
+'or the documentation for the FMU itself. The FMU variable name is an'
+'identifier that should be defined in the modelDescription.xml file'
+'within the FMU.'
+' '
+'Options a-z: edit data for a specific input. If there are a large'
+'             number of inputs, this part of the menu will be'
+'             paginated.'
+'Option 0: if the menu is paginated, this allows page control.'
+'Option +: manage inputs.'
+'Option !: list data for all inputs of the active FMU specification.'
+'Option ?: show this help text.'
+'Option -: exit this menu.'
+*enditem
+        CALL PHELPD('FMU inputs help',nbhelp,'-',0,0,IER)
+*item FMI_EDINP manage_inputs
+'Here you can add, delete or copy an FMU input. There is no undo for'
+'deleting an input (except reloading a previous file), so think'
+'carefully before doing so!'
+' '
+'When deleting or copying an input, you will be prompted for a number.'
+'This corresponds to the FMU input index, listed when the prompt is'
+'given. Inputs are added at the end of the list (i.e. if there are 2'
+'existing inputs and one is added, the new one will become number 3).'
+*enditem
+C Manage inputs.
+        helptopic='manage_inputs'
+        CALL gethelptext(helpinsub,helptopic,nbhelp)
+        CALL EASKABCD(' ','Options:',
+     &    'add','delete','copy','cancel',itmp,nbhelp)
+*item FMI_EDINP edit_input
+'Here you can edit data for an individual FMU input. Inputs are first'
+'associated with a zone (including the ambient environment), and then'
+'a specific variable is selected. The available choice of variables is'
+'different depending on whether the ambient environment or a building'
+'zone is selected. Some variable types require supplementary data; for'
+'guidance please refer to the FMI users manual found at:'
+'[ESP-r installation directory]/manual/FMI/Users.txt'
+' '
+'There are two other data items, which correspond with entities defined'
+'in the FMU. The FMU instance name is an identifier for each component'
+'of the FMU. Guidance on this may be found in the relevant entry in the'
+'ESP-r manual FMU listings ([ESP-r installation directory]/manual/FMI),'
+'or the documentation for the FMU itself. The FMU variable name is an'
+'identifier that should be defined in the modelDescription.xml file'
+'within the FMU.'
+' '
+'Option a: choose associated zone.'
+'Option b: choose ESP-r variable.'
+'Option c: define supplementary data.'
+'Option d: define FMU instance name.'
+'Option e: define FMU variable name.'
+'Option ?: show this help text.'
+'Option -: exit this menu.'
+*enditem
+          CALL PHELPD('FMU input editing help',nbhelp,'-',0,0,IER)
+*item FMI_EDINP sup_data
+'Supplementary data depends on what ESP-r variable you have selected for'
+'this input. Guidance on which variables require supplementary data, and'
+'what the supplementary data represents, is given in the FMI users'
+'manual found at:'
+'[ESP-r installation directory]/manual/FMI/Users.txt'
+*enditem
+              EASKS(ctmp_30,' ',' Supplementary data?',30,'  ',
+     &          'FMU sup data',IER,nbhelp)
+*subroutine FMI_EDOUT
+*item FMI_EDOUT FMU_output
+'Here the FMU outputs are defined. This creates directives for ESP-r to'
+'receive data from the FMU, for example a control signal. Outputs are'
+'first associated with a zone (including the ambient environment), and'
+'then a specific variable is selected. The available choice of'
+'variables is different depending on whether the ambient environment or'
+'a building zone is selected.'
+' '
+'There are two other data items, which correspond with entities defined'
+'in the FMU. The FMU instance name is an identifier for each component'
+'of the FMU. Guidance on this may be found in the relevant entry in the'
+'ESP-r manual FMU listings ([ESP-r installation directory]/manual/FMI),'
+'or the documentation for the FMU itself. The FMU variable name is an'
+'identifier that should be defined in the modelDescription.xml file'
+'within the FMU.'
+' '
+'Options a-z: edit data for a specific output. If there are a large'
+'             number of outputs, this part of the menu will be'
+'             paginated.'
+'Option 0: if the menu is paginated, this allows page control.'
+'Option +: manage outputs.'
+'Option !: list data for all outputs of the active FMU specification.'
+'Option ?: show this help text.'
+'Option -: exit this menu.'
+*enditem
+        CALL PHELPD('FMU outputs help',nbhelp,'-',0,0,IER)
+*item FMI_EDOUT manage_outputs
+'Here you can add, delete or copy an FMU output. There is no undo for'
+'deleting an output (except reloading a previous file), so think'
+'carefully before doing so!'
+' '
+'When deleting or copying an output, you will be prompted for a number.'
+'This corresponds to the FMU output index, listed when the prompt is'
+'given. outputs are added at the end of the list (i.e. if there are 2'
+'existing outputs and one is added, the new one will become number 3).'
+*enditem
+C Manage outputs.
+        helptopic='manage_outputs'
+        CALL gethelptext(helpinsub,helptopic,nbhelp)
+        CALL EASKABCD(' ','Options:',
+     &    'add','delete','copy','cancel',itmp,nbhelp)
+*item FMI_EDOUT edit_output
+'Here you can edit data for an individual FMU output. Outputs are first'
+'associated with a zone (including the ambient environment), and then'
+'a specific variable is selected. The available choice of variables is'
+'different depending on whether the ambient environment or a building'
+'zone is selected. Some variable types require supplementary data; for'
+'guidance please refer to the FMI users manual found at:'
+'[ESP-r installation directory]/manual/FMI/Users.txt'
+' '
+'There are two other data items, which correspond with entities defined'
+'in the FMU. The FMU instance name is an identifier for each component'
+'of the FMU. Guidance on this may be found in the relevant entry in the'
+'ESP-r manual FMU listings ([ESP-r installation directory]/manual/FMI),'
+'or the documentation for the FMU itself. The FMU variable name is an'
+'identifier that should be defined in the modelDescription.xml file'
+'within the FMU.'
+' '
+'Option a: choose associated zone.'
+'Option b: choose ESP-r variable.'
+'Option c: define supplementary data.'
+'Option d: define FMU instance name.'
+'Option e: define FMU variable name.'
+'Option ?: show this help text.'
+'Option -: exit this menu.'
+*enditem
+              CALL PHELPD('FMU output editing help',nbhelp,'-',0,0,IER)
+*item FMI_EDOUT sup_data
+'Supplementary data depends on what ESP-r variable you have selected for'
+'this output. Guidance on which variables require supplementary data,'
+'and what the supplementary data represents, is given in the FMI users'
+'manual found at:'
+'[ESP-r installation directory]/manual/FMI/Users.txt'
+*enditem
+              EASKS(ctmp_30,' ',' Supplementary data?',30,'  ',
+     &          'FMU sup data',IER,nbhelp)
