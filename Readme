@@ -78,7 +78,7 @@ at <https://github.com/ESP-rCommunity. Although you can compile ESP-r
 with only the ESP-rSource.git to get full functionality you have
 to checkout all four repositories and create a new folder structure 
 to hold the combined distribution. Assuming the folder for downloads is
-ESPrgit and the combined distribution will be in ESPr_Master give
+ESPrgit and the combined distribution will be in ESP-rMaster give
 the following commands:
 
  mkdir ESPrgit
@@ -88,13 +88,13 @@ the following commands:
  git clone --recursive https://github.com/ESP-rCommunity/ESP-rModels.git
  git clone --recursive https://github.com/ESP-rCommunity/ESP-rDoc.git
 
-Now use a utility called rsync to merge the repositories into ESPr_Master:
+Now use a utility called rsync to merge the repositories into ESP-rMaster:
 
  mkdir ESP-rMaster
  rsync -av ESP-rSource/ ESP-rMaster/
- rsync -av ESP-rDatabases/ ESPrMaster/data/
- rsync -av ESP-rDoc/ ESPrMaster/doc/
- rsync -av ESP-rModels/ ESPrMaster/models/
+ rsync -av ESP-rDatabases/ ESP-rMaster/data/
+ rsync -av ESP-rDoc/ ESP-rMaster/doc/
+ rsync -av ESP-rModels/ ESP-rMaster/models/
 
 You can learn more about accessing the ESP-r repository here:
 
@@ -104,7 +104,7 @@ You will also need a folder for the compiled ESP-r. Lets assume
 this is /opt/esru (create it if it does not exist) On Windows
 this would be C:/ESRU. 
 
-In the top folder of ESPrMaster is an Install script. For Linux, OSX and
+In the top folder of ESP-rMaster is an Install script. For Linux, OSX and
 Cywin a typical set of commands to build ESP-r
 is:
  ./Install -d /opt/esru --gcc4 --debug
