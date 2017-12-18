@@ -634,23 +634,23 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht
             endif
             call edisp (iuout,' Distribution type:')
             if (IDMAT(I,3).eq.1) then
-              call edisp (iuout,' Normal; limits defined as: ')
-              write (outs,'(a,f6.2,a)') ' +/- ',DATU(I,1),
-     &          '% of the database value.'
+              write (outs,'(a,f6.2,a)') 
+     &         ' Distribution type: Normal; limits +/- ',
+     &         DATU(I,1),'% of the database value.'
               call edisp (iuout,outs)
             elseif (IDMAT(I,3).eq.2) then
-              call edisp (iuout,' Normal; limits defined as: ')
-              write (outs,'(a,f6.2,a)') ' +/- ',DATU(I,1),
-     &          ' of the database value.'
+              write (outs,'(a,f6.2,a)') 
+     &         ' Distribution type: Normal; limits +/- ',
+     &         DATU(I,1),'of the database value.'
               call edisp (iuout,outs)
             elseif (IDMAT(I,3).eq.3) then
-              call edisp(iuout,' Normal; absolute limits defined as: ')
-              write(outs,'(2(a,f6.2))')' From ',DATU(I,1),' to ',
-     &          DATU(I,2)
+              write (outs,'(2a,f6.2,a,f6.2)') 
+     &         ' Distribution type: Normal; absolute limits:',
+     &         ' From ',DATU(I,1),' to ',DATU(I,2)
               call edisp (iuout,outs)
             elseif (IDMAT(I,3).eq.4) then
-              call edisp(iuout,' Alternative correlations: ')
-              write(outs,'(2(a,f6.2))')
+              write (outs,'(2a,f6.2,a,f6.2)') 
+     &         ' Distribution type: Alternative correlations: ',
      &          ' High ',DATU(I,1),', Low ',DATU(I,2)
               call edisp (iuout,outs)
             endif

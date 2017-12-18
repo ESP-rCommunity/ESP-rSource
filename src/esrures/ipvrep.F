@@ -72,7 +72,8 @@ C Comfort parameters and hash table.
 C ihflag = 0 write 13h30, ihflag = 1 write 0.5625
 C idhflg = 0 no day demarcations, idhflg = 1 write demarcation
 C          between tabular reporting days.
-C ilflag = 0 tabular labels on multi-lines, ilflag = 1 on one line.
+C ilflag = 0 tabular labels on multi-lines, ilflag = 1 on one line
+C          ilflag = 2 do not include # header lines in file.
       COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
@@ -88,8 +89,21 @@ C << is pvdayhr useful? >>
       common/ract/paction
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
-     &  smstres(MSPS),selres(MSPS),sipvres
+     &  smstres(MSPS),selres(MSPS),scfdres(MSPS),sipvres
+      character sblres*72,sflres*72,splres*72,smstres*72,
+     &  selres*72,scfdres*72,sipvres*72
+
+C Extended simulation parameters for each set.
+      common/spfldats/isstupex(MSPS),isbnstepex(MSPS),ispnstepex(MSPS),
+     &  issaveex(MSPS),isavghex(MSPS),iscfdactivate(MSPS),
+     &  isicfdys(MSPS),isicfdyf(MSPS),
+     &  scftims(MSPS),scftimf(MSPS)
+      INTEGER :: isstupex,isbnstepex,ispnstepex,issaveex,isavghex
+      INTEGER :: iscfdactivate      ! zero ignore domains
+      INTEGER :: isicfdys,isicfdyf  ! CFD simulation start & finish days
+      REAL :: scftims,scftimf       ! CFD simulation start & finish time
 
 C Pre calculated data (filtered).
       common/MMAFDAT/IFILT,RDFMAX(MCOM,3,MZRL),RDFMIN(MCOM,3,MZRL),
@@ -105,8 +119,7 @@ C Pre calculated data (filtered).
       character xfile*144,tg*1,delim*1,ITEM*18,lipvdatf*72
       character SUFFIX*8,paction*16
       CHARACTER ltmp*72,LJTIME*8
-      character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      CHARACTER selres*72,CLMLOC*30
+      CHARACTER CLMLOC*30
       character descr*7,descrst*10,descrfn*10,dstmp*24,sq*1
       character ipvaction*3  ! to signal external IPV file
 
@@ -1933,7 +1946,9 @@ C      common/OUTIN/IUOUT,IUIN
      &              pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox,
      &              pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
-     &  smstres(MSPS),selres(MSPS),sipvres
+     &  smstres(MSPS),selres(MSPS),scfdres(MSPS),sipvres
+      character sblres*72,sflres*72,splres*72,smstres*72,
+     &  selres*72,scfdres*72,sipvres*72
       
       dimension NHW(9,MSPS)
       dimension WHD(MSPS),WCD(MSPS),WLD(MSPS),WFD(MSPS),WSPD(MSPS)
@@ -1941,8 +1956,6 @@ C      common/OUTIN/IUOUT,IUIN
       dimension WLC(MSPS),WFC(MSPS),WSPC(MSPS),WDHWC(MSPS),WPVC(MSPS)
       character outs*124,outsd*124,outsn*124
       character xfile*144,tg*1,delim*1,tab*1,OUTSTR*124,sq*1
-      character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72
 
       logical XST,dmdsok,closea,closeb
 
@@ -2604,16 +2617,15 @@ C Uncomment next line if debugging required.
 C      common/OUTIN/IUOUT,IUIN
 
 C IPV description via ipvdata.h.
-
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
-     &  smstres(MSPS),selres(MSPS),sipvres
+     &  smstres(MSPS),selres(MSPS),scfdres(MSPS),sipvres
+      character sblres*72,sflres*72,splres*72,smstres*72,
+     &  selres*72,scfdres*72,sipvres*72
 
       dimension WHC(MSPS),WCC(MSPS),WLC(MSPS),WFC(MSPS),WSPC(MSPS)
       dimension WDHWC(MSPS),WPVC(MSPS),HCS(MSPS,11),CCS(MSPS,11)
       dimension ZLUCS(MSPS,11),ZLCS(MSPS,11),FCS(MSPS,11)
       dimension SPCS(MSPS,11),DHWCS(MSPS,11),PVC(MSPS,11)
-      character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72
       character outstr*124,word*20,third*20,name*12
       logical dmdsok,atassment,atreports
 
@@ -2771,7 +2783,9 @@ C << at some point include additional arrays for pumps and lifts >>
 C Uncomment the next line if debugging required.
 C      common/OUTIN/IUOUT,IUIN
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
-     &  smstres(MSPS),selres(MSPS),sipvres
+     &  smstres(MSPS),selres(MSPS),scfdres(MSPS),sipvres
+      character sblres*72,sflres*72,splres*72,smstres*72,
+     &  selres*72,scfdres*72,sipvres*72
 
 C For each simulation which was run and type of demand, and 
 C for one more than the possible
@@ -2782,8 +2796,6 @@ C number of demand sets (the extra is for distributed demands).
       dimension SPDS(MSPS,11),DHWDS(MSPS,11),DPVD(MSPS,11)
       character outstr*124,word*20
       character name*12,third*20
-      character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72
       logical dmdsok,atassment,atreports
 
 C Open intermediate report.
@@ -2937,7 +2949,9 @@ C << at some point include additional arrays for pumps and lifts >>
 C Uncomment the next line if debugging required.
 C      common/OUTIN/IUOUT,IUIN
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
-     &  smstres(MSPS),selres(MSPS),sipvres
+     &  smstres(MSPS),selres(MSPS),scfdres(MSPS),sipvres
+      character sblres*72,sflres*72,splres*72,smstres*72,
+     &  selres*72,scfdres*72,sipvres*72
 
 C For each type of demand, and for one more than the possible
 C number of demand sets (the extra is for distributed demands).
@@ -2946,8 +2960,6 @@ C number of demand sets (the extra is for distributed demands).
       dimension SPDS(11),DHWDS(11),DPVD(11)
       character outstr*124,word*20
       character name*12,third*20
-      character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72
       logical dmdsok,atassment,atreports
 
 C Open intermediate report.
@@ -3089,11 +3101,11 @@ C Note if Java IPV because different logic required.
 C Uncomment the next line if debugging required.
 C      common/OUTIN/IUOUT,IUIN
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
-     &  smstres(MSPS),selres(MSPS),sipvres
+     &  smstres(MSPS),selres(MSPS),scfdres(MSPS),sipvres
+      character sblres*72,sflres*72,splres*72,smstres*72,
+     &  selres*72,scfdres*72,sipvres*72
 
-      character outstr*124,word*20
-      character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,third*20
+      character outstr*124,word*20,third*20
       dimension nh(9,5)
       logical atassment,atreports
 

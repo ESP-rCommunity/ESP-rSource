@@ -33,9 +33,10 @@ C MOCFD
       common/CFDSV/IRECPC,ICFDSV,IEQSV(5+MCTM)
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
      &      JHUMINDX,URFC(MCTM)
+      common/rpath/path
 
       character LTMP*72,POLNAM*12
-      character path*72,LCMDFL*144,ltmpc*144
+      character path*72,LCMDFL*144,ltmpc*144,lpath*72
       logical XST,CALPOL,CALLMA
 
 C For help messages
@@ -43,76 +44,15 @@ C For help messages
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
 
-      helpinsub='MOCFD'  ! set for cfiles
-
-C Ask for CFD results library.
-      helptopic='res_cfd_lib_name'
-      call gethelptext(helpinsub,helptopic,nbhelp)
-      LTMP='UNKNOWN'
-      ltmpc='UNKNOWN'
-      llt=lnblnk(ltmpc)
-
-C The X11 version will be returning only the name of the
-C file, while the GTK version will be returning the
-C name with the full path.
-      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-      if(iglib.eq.1.or.iglib.eq.3)then
-        if(llt.lt.96)then
-          CALL EASKF(ltmpc,'CFD library name?',' ',96,LTMP,
-     &      'CFDresfl name',IER,nbhelp)
-        elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(ltmpc,'CFD library name?',' ',124,LTMP,
-     &      'CFDresfl name',IER,nbhelp)
-        elseif(llt.ge.124.and.llt.le.144)then
-          CALL EASKF(ltmpc,'CFD library name?',' ',144,LTMP,
-     &      'CFDresfl name',IER,nbhelp)
-        endif
-      elseif(iglib.eq.2)then
-        CALL EASKF(ltmpc,'CFD library name?',' ',144,LTMP,
-     &    'CFDresfl name',IER,nbhelp)
-      else
-        CALL EASKF(ltmpc,'CFD library name?',' ',96,LTMP,
-     &    'CFDresfl name',IER,nbhelp)
-      endif
-      if(ier.eq.-3) return  ! cancel deteted return.
-
-      if(ltmpc(1:2).ne.'  '.and.ltmpc(1:4).ne.'UNKN')then
-        LCMDFL=ltmpc
-      else
-        return
-      endif
-      IER=0
-
-C Find the path and local file name.
-
-C Debug.
-C      write(6,*) 'MOCFD: current path is ',path
-
-      iunit=IFIL+14
-      call fdroot(LCMDFL,path,LTMP)
-      CALL ERPFREE(iunit,ISTAT)
-      call FINDFIL(LTMP,XST)
-      IF(XST)THEN
-
-C Check that its a CFD results library.
-        call EFOPRAN(iunit,LTMP,MCEL1D,1,IER)
-        if(ier.eq.0) then
-          irec=1
-          read(iunit,rec=irec,iostat=istat) 
-     &      IRLEN,ICFDSV,(IEQSV(J),J=1,5+NCTM)
-
-C Debug.
-C          write(6,*) IRLEN,ICFDSV,(IEQSV(J),J=1,5+NCTM)
-
-          if(IRLEN.ne.MCEL1D) return
-        endif
-      ELSE
-        call usrmsg(' Could not find: ',LTMP,'W')
-        return
-      ENDIF
+C Ensure CFD results library is open.
+      call OPCFD(XST,IER)
+      if (.not.XST.or.IER.ne.0) return
 
 C Read header data and set common block data.
-      call RCFDLIBH(IER)
+      lpath=path
+      call fdroot(LCMDFL,path,LTMP)
+      call RCFDLIBH(0,IER)
+      path=lpath
       if (IER.ne.0) return
 
 C Display menu options << should be icomp?? >>.
@@ -123,9 +63,11 @@ C Display menu options << should be icomp?? >>.
       end
 
 C ******************** RCFDLIBH ********************
-C RCFDLIBH - read CFD library 
+C RCFDLIBH - read CFD library
+C If IZONE>0, will select the domain coupled to the zone instead of
+C asking which domain.
 
-      SUBROUTINE RCFDLIBH(IER)
+      SUBROUTINE RCFDLIBH(IZONE,IER)
 #include "building.h"
 #include "cfd.h"
 
@@ -184,6 +126,10 @@ C      write(6,*) IREC,ICDYS,ICDYF,CFTS,CFTF
       call CFDPER(1)
 
 C Read number of Contaminants and their names (assume zone 1)
+
+C TODO - need a significant change in the format of CFD results
+C libraries to accomodate contaminants in multiple domains, as well as
+C different things saved in different libraries.
       ICF=1
       IREC=4
       read(iunit,REC=IREC,IOSTAT=ISTAT,ERR=1000) NCTM
@@ -200,15 +146,17 @@ C Read which variables are saved
  33   CONTINUE
       
 C Work out which thermal zone the CFD zone is conflated to.
-C If more than one then ask which one to use.
+C If more than one then ask which one to use, unless IZONE>0 tells us
+C which one to use.
       ICDOM=0
       NCDOM=0
       NCFDSZ=0
       do 10 IC=1,NCOMP
         if (IFCFD(IC).ne.0) then
           NCDOM=NCDOM+1
-          ICFDZ(NCDOM)=IC
-          ICFD=ICFDZ(NCDOM)
+          ICDOM=IFCFD(IC)
+          ICFDZ(ICDOM)=IC
+          ICFD=ICDOM
 
 C Read domain size.
           IREC=5+NCTM+(4*(IC-1))
@@ -219,21 +167,23 @@ C Debug.
 C          write(6,*) IREC,IDRSZE,NIM2,NJM2,NKM2
 
 C NRCFDOM is the number of records for each CFD domain.
-          NRCFDOM(NCDOM)=IDRSZE
+          NRCFDOM(ICDOM)=IDRSZE
 
 C NCFDSZ is the number of records for each timestep (all CFD domains).
           NCFDSZ=NCFDSZ+IDRSZE
         endif
  10   continue
 
-C Set up contaminants in correct CFD domain
-      DO 1234 ICTM=1,NCTM
-        POLNAM(ICTM,ICFDZ(NCDOM))=POLNAM(ICTM,ICF)
- 1234 CONTINUE
+C Set up contaminants in correct CFD domain <??? - commented>
+c      DO 1234 ICTM=1,NCTM
+c        POLNAM(ICTM,ICFDZ(NCDOM))=POLNAM(ICTM,ICF)
+c 1234 CONTINUE
       if (NCDOM.eq.0) then
         call edisp(iuout,'No CFD zones detected')
       elseif (NCDOM.eq.1) then
         ICDOM=1
+      elseif (IZONE.gt.0) then
+        ICDOM=IFCFD(IZONE)
       else
  99     IER=0
         helptopic='res_cfd_which_res_set'
@@ -290,7 +240,7 @@ C Set geometric variables.
 C Debug.
 C      write(6,*) 'IREC ',IREC
 
-      call erpfree(iunit,istat)
+c      call erpfree(iunit,istat)
       return
       end
 
@@ -321,6 +271,9 @@ C MCFDM - define the parameters for the visualization of results.
 
       subroutine MCFDM(ICOMP)
 #include "building.h"
+#include "cfd.h"
+#include "geometry.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
       integer iCountWords
@@ -330,6 +283,7 @@ C MCFDM - define the parameters for the visualization of results.
 
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
 
+      COMMON/cfdsmper/ICDYS,ICDYF,CFTS,CFTF
       COMMON/cfdotper/ICDYOS,ICDYOF,CFTOS,CFTOF
       common/flvimg/imgtyp,IMOPTS
       common/flvnam/LBITrt(MCOM,6)
@@ -337,6 +291,13 @@ C MCFDM - define the parameters for the visualization of results.
      &              IRESvw(MCOM,6),VLSCvw(MCOM,6),VTSCvw(MCOM,6),
      &              HLSCvw(MCOM,6),HTSCvw(MCOM,6),IFRQvw(MCOM,6)
       common/flvcol/ISOPT(6),IBGOPT(6),SCmin,SCmax
+      COMMON/cfddoms/NCDOM,ICDOM,ICFDZ(MNZ)
+
+      common/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
+      real XC,YC,ZC
+      integer IX,IY,IZ
+      integer IZNSEL(MCON),ISFSEL(MCON)
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
       CHARACTER KEY*1,ITEM(35)*26,outs*124
       character LBITrt*12,t12*12,t24*24
@@ -361,7 +322,7 @@ C Setup for multi-page menu.
 C Note: if you do not alter the output period it will produce images
 C or image files for each of the timesteps defined in the CFD output
 C file.
-      ICOMP=1
+      ICOMP=ICFDZ(ICDOM)
  3    MHEAD=3
       MCTL=6
       ILEN=Nview(ICOMP)
@@ -443,12 +404,14 @@ C redefine name of image. As for temperature range.
           call EGETWR(t24,K,SCmin,0.,0.,'-','minimum',IER)
           if (SCmax.lt.SCmin) goto 204
         endif
-        NCTS=int((float(ICDYOF-ICDYOS)*24.0+CFTOF-CFTOS)*float(NTS))+1
-        if (NCTS.gt.0) then
+        NCT=int((float(ICDYOF-ICDYOS)*24.0+CFTOF-CFTOS)*float(NTS))+1
+        ICTS=int((float(ICDYOS-ICDYS)*24.0+CFTOS-CFTS)*float(NTS))+1
+        ICTF=ICTS+NCT-1
+        if (NCT.gt.0) then
           do 48 IM=1,Nview(ICOMP)
             ISOPT(IM)=-1
  48       continue
-          do 50 IFRAME=1,NCTS
+          do 50 IFRAME=ICTS,ICTF
             call RDCFDAT(IFRAME)
             if (imgtyp.eq.4) then
               call tecplotend(IFRAME)
@@ -529,8 +492,9 @@ C Image frequency (dynamic flow viualisation only).
 C Add/ delete image definition.
         helptopic='res_cfd_new_view'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        call EASKABC(' ','View definitions:',
-     &    'add another','delete one','continue',IW,nbhelp)
+        call EASKATOG(' ','View definitions:','add one','delete one',
+     &    'MRT sensor','room COG','continue',' ',' ',
+     &    IW,nbhelp)
         if (IW.eq.1) then
 
 C Add new image definition.
@@ -623,10 +587,151 @@ C Set defaults for customisation and frequency variables.
           write (outs,'(2a)')' Defaults set for arrow scaling factors ',
      &                'and generation frequency. Edit via image pick. '
           call edisp(iuout,outs)
+
         elseif (IW.eq.2) then
 
 C Remove an image definition.
-          call usrmsg(' ','Facility not available. ','P')
+          CALL EASKI(NV,'  ',' Which view to remove? ',1,'F',
+     &      Nview(ICOMP),'F',Nview(ICOMP),' View number',IER,nbhelp)
+          if (IV.lt.Nview(ICOMP)) then
+            do IV=NV,(Nview(ICOMP)-1)
+              LBITrt(ICOMP,IV)=LBITrt(ICOMP,IV+1)
+              ISURvw(ICOMP,IV)=ISURvw(ICOMP,IV+1)
+              ILAYvw(ICOMP,IV)=ILAYvw(ICOMP,IV+1)
+              IRESvw(ICOMP,IV)=IRESvw(ICOMP,IV+1)
+            enddo
+          endif
+          LBITrt(ICOMP,Nview(ICOMP))='UNKNOWN'
+          ISURvw(ICOMP,Nview(ICOMP))=0
+          ILAYvw(ICOMP,Nview(ICOMP))=0
+          IRESvw(ICOMP,Nview(ICOMP))=0
+          Nview(ICOMP)=Nview(ICOMP)-1
+
+C <H2G>
+        elseif (IW.eq.3) then
+
+C Add XY, XZ and YZ planes intersecting at an MRT sensor.
+
+C TODO - currently, read CFD file to get axis vertices to initialise
+C CFD - building domain transformation matrices. In future, consider
+C adding this to the CFD library.
+          NSEL=1
+          CALL PIKMRTS(IZNSEL,ISFSEL,NSEL,ICOMP,IER)
+          IMRT=ISFSEL(1)
+ 
+          CALL RCFDVRTS(ICOMP,IER)
+          CALL INIT_CFDTRANS(IER)
+          if (IER.ne.0) then
+            call edisp(iuout,' Problem reading CFD axis vertices')
+          else
+C Find CFD point closest to MRT sensor.              
+            CALL GRIDGEO
+            CALL CFDTRANS(2,XOC(IMRT)+DXC(IMRT)/2,YOC(IMRT)+DYC(IMRT)/2,
+     &                      ZOC(IMRT)+DZC(IMRT)/2,XC,YC,ZC,IER)
+            CALL FDCFDPT(XC,YC,ZC,IIX,IIY,IIZ,IER)
+            if (IER.ne.0) then
+              call edisp(iuout,' Problem finding CFD point')
+            endif
+          endif
+         
+          Nview(ICOMP)=Nview(ICOMP)+1
+          NV=Nview(ICOMP)
+          LBITrt(ICOMP,NV)='XZ'            
+          ISURvw(ICOMP,NV)=1
+          ILAYvw(ICOMP,NV)=IIY
+          IRESvw(ICOMP,NV)=2
+            
+          Nview(ICOMP)=Nview(ICOMP)+1
+          NV=Nview(ICOMP)
+          LBITrt(ICOMP,NV)='YZ'            
+          ISURvw(ICOMP,NV)=2
+          ILAYvw(ICOMP,NV)=IIX
+          IRESvw(ICOMP,NV)=2
+            
+          Nview(ICOMP)=Nview(ICOMP)+1
+          NV=Nview(ICOMP)
+          LBITrt(ICOMP,NV)='XY'            
+          ISURvw(ICOMP,NV)=6
+          ILAYvw(ICOMP,NV)=IIZ
+          IRESvw(ICOMP,NV)=2
+
+          goto 3
+
+        elseif (IW.eq.4) then
+
+C Add XY, XZ and YZ planes intersecting at the room centre of gravity.
+
+C Ask for height.
+c          DO I=1,nztv(ICOMP)
+c            XMN=AMIN1(XMN,VCOORD(ICOMP,I,1))
+c            YMN=AMIN1(YMN,VCOORD(ICOMP,I,2))
+c            ZMN=AMIN1(ZMN,VCOORD(ICOMP,I,3))
+c            XMX=AMAX1(XMX,VCOORD(ICOMP,I,1))
+c            YMX=AMAX1(YMX,VCOORD(ICOMP,I,2))
+c            ZMX=AMAX1(ZMX,VCOORD(ICOMP,I,3))
+c          ENDDO
+c          write(outs,'(a,1x,f10.1,1x,f10.1)')
+c     &      ' Zone min and max in Z direction:',ZMN,ZMX
+c          call edisp(iuout,outs)
+c          ZHGT=ZMN
+c          CALL EASKR(ZHGT,' Z height above min:',' (bounds reported)',
+c     &      0.,'F',ZMX-ZMN,'F',0.,' Z height',IER,nbhelp)
+
+          nzg=1
+          nznog(1)=ICOMP
+          ITBND=1
+          CALL BNDOBJ(0,IER)
+          if (IER.ne.0) then
+            call edisp(iuout,' Problem calculating zone COG')
+            goto 3
+          endif
+
+C TODO - currently, read CFD file to get axis vertices to initialise
+C CFD - building domain transformation matrices. In future, consider
+C adding this to the CFD library.
+          CALL RCFDVRTS(ICOMP,IER)
+          CALL INIT_CFDTRANS(IER)
+          if (IER.ne.0) then
+            call edisp(iuout,' Problem reading CFD axis vertices')
+            goto 3
+          else
+C Find CFD plane closest to selected Z height.
+            CALL GRIDGEO
+            CALL CFDTRANS(2,ZCOG(ICOMP,1),ZCOG(ICOMP,2),ZCOG(ICOMP,3),
+     &        XC,YC,ZC,IER)
+            write(6,*)'XC,YC,ZC',XC,YC,ZC
+            CALL FDCFDPT(XC,YC,ZC,IIX,IIY,IIZ,IER)
+            write(6,*)'IIX,IIY,IIZ',IIX,IIY,IIZ
+            if (IER.ne.0) then
+              call edisp(iuout,' Problem finding CFD point')
+              goto 3
+            endif
+          endif
+
+          Nview(ICOMP)=Nview(ICOMP)+1
+          NV=Nview(ICOMP)
+          LBITrt(ICOMP,NV)='XZ'            
+          ISURvw(ICOMP,NV)=1
+          ILAYvw(ICOMP,NV)=IIY
+          IRESvw(ICOMP,NV)=2
+
+          Nview(ICOMP)=Nview(ICOMP)+1
+          NV=Nview(ICOMP)
+          LBITrt(ICOMP,NV)='YZ'            
+          ISURvw(ICOMP,NV)=2
+          ILAYvw(ICOMP,NV)=IIX
+          IRESvw(ICOMP,NV)=2
+            
+          Nview(ICOMP)=Nview(ICOMP)+1
+          NV=Nview(ICOMP)
+          LBITrt(ICOMP,NV)='XY'            
+          ISURvw(ICOMP,NV)=6
+          ILAYvw(ICOMP,NV)=IIZ
+          IRESvw(ICOMP,NV)=2
+
+          goto 3
+
+C </H2G>
         endif
 
 C Output period.
@@ -908,8 +1013,12 @@ C      use first timestep of output period)
       CHARACTER  POLNAM*12
       LOGICAL CALPOL,CALLMA
 
+      logical ok
+
 C Set unit number.
       iunit=IFIL+14
+      INQUIRE(iunit,OPENED=ok)
+c      write(6,*)'opened',ok
 
 C Calculate number of time steps into CFD results lib.
       if (ICFTS.gt.0) then
@@ -917,9 +1026,6 @@ C Calculate number of time steps into CFD results lib.
       else
         ITS=int((float(ICDYOS-ICDYS)*24.0+CFTOS-CFTS)*float(NTS))+1
       endif
-
-C Debug.
-C      write(6,*) 'ITS ',ITS
 
 C Read data from res file.
       ISTREC=5+((MCOM-1)*4)+ NCFDSZ*(ITS-1)+NCTM
@@ -1052,3 +1158,170 @@ C      write(6,*) 'IREC ',IREC
       call erpfree(iunit,istat)
       return
       END
+
+C ******************** OPCFD ********************
+C OPCFD checks if the CFD library is open, and if not, prompts the user
+C for a file.
+      SUBROUTINE OPCFD(is_open,IER)
+#include "building.h"
+#include "cfd.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
+      common/CFDSV/IRECPC,ICFDSV,IEQSV(5+MCTM)
+      common/rpath/path
+
+      character path*72,LCMDFL*144,ltmpc*144,LTMP*72,lpath*72
+      integer igraphiclib  ! external definition
+      character outs*124
+      logical is_open,XST
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='OPCFD'  ! set for cfiles
+
+C Ask for CFD results library.
+      helptopic='res_cfd_lib_name'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      LTMP='UNKNOWN'
+      ltmpc='UNKNOWN'
+      llt=lnblnk(ltmpc)
+
+      is_open=.false.
+
+C Check if CFD results library has been opened.
+      INQUIRE(IFIL+14,OPENED=XST)    
+      if (.not.XST) then   
+
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
+C name with the full path.
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(ltmpc,'CFD library name?',' ',96,LTMP,
+     &      'CFDresfl name',IER,nbhelp)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(ltmpc,'CFD library name?',' ',124,LTMP,
+     &      'CFDresfl name',IER,nbhelp)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(ltmpc,'CFD library name?',' ',144,LTMP,
+     &      'CFDresfl name',IER,nbhelp)
+          endif
+        elseif(iglib.eq.2)then
+          CALL EASKF(ltmpc,'CFD library name?',' ',144,LTMP,
+     &    'CFDresfl name',IER,nbhelp)
+        else
+          CALL EASKF(ltmpc,'CFD library name?',' ',96,LTMP,
+     &    'CFDresfl name',IER,nbhelp)
+        endif
+        if(ier.eq.-3) goto 925  ! cancel detected, no CFD.
+
+        if(ltmpc(1:2).ne.'  '.and.ltmpc(1:4).ne.'UNKN')then
+          LCMDFL=ltmpc
+        else
+          goto 924
+        endif
+        IER=0
+
+C Find the path and local file name.
+
+C Debug.
+C      write(6,*) 'MOCFD: current path is ',path
+
+        iunit=IFIL+14
+        lpath=path
+        call fdroot(LCMDFL,path,LTMP)
+c        write(6,*)'lpath,LCMDFL,path,LTMP',lpath,LCMDFL,path,LTMP
+        CALL ERPFREE(iunit,ISTAT)
+        call FINDFIL(LTMP,XST)
+      
+        IF(XST)THEN
+
+C Check that its a CFD results library.
+          call EFOPRAN(iunit,LTMP,MCEL1D,1,IER)
+          if(ier.eq.0) then
+            irec=1
+            read(iunit,rec=irec,iostat=istat) 
+     &        IRLEN,ICFDSV,(IEQSV(J),J=1,5+MCTM)
+
+C Debug.
+C            write(6,*) IRLEN,ICFDSV,(IEQSV(J),J=1,5+MCTM)
+
+            if (IRLEN.ne.MCEL1D) then
+              path=lpath
+              goto 924
+            endif
+          endif
+        ELSE
+          call usrmsg(' Could not find: ',LTMP,'W')
+          path=lpath
+          goto 924
+        ENDIF
+        path=lpath
+
+      endif
+      if (IER.ne.0) goto 924
+      is_open=.true.
+ 925  RETURN
+
+ 924  write(outs,'(a)')' OPCFD: problem opening CFD library'
+      call edisp(iuout,outs)
+      IER=1
+      goto 925
+
+      END
+
+C ******************** GETIFRM ********************
+C GETIFRM returns IFRAME for getting CFD results using RDCFDAT, based on
+C day and time step indices IDAY and ITS. Returns IER=1 if CFD results
+C are not available for this timestep.
+
+      SUBROUTINE GETIFRM(IDAY,ITS,IFRAME,IER)
+
+      COMMON/cfdsmper/ICDYS,ICDYF,CFTS,CFTF
+      COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
+
+C Check if there are CFD results available for this time step.
+c      write(6,*)'IDAY,ICDYS,ICDYF',IDAY,ICDYS,ICDYF
+      if (IDAY.eq.ICDYS.and.IDAY.eq.ICDYF) then              
+c        write(6,*)'ITS,int(CFTS*float(NTS)),int(CFTF*float(NTS))',
+c     &             ITS,int(CFTS*float(NTS)),int(CFTF*float(NTS))
+        if (ITS.ge.int(CFTS*float(NTS)).and.
+     &      ITS.le.int(CFTF*float(NTS))) then
+          IFRAME=ITS-int(CFTS*float(NTS))+1
+        else
+          goto 666
+        endif
+      elseif (IDAY.eq.ICDYS) then
+c        write(6,*)'ITS,int(CFTS*float(NTS))',
+c     &             ITS,int(CFTS*float(NTS))
+        if (ITS.ge.int(CFTS*float(NTS))) then
+          IFRAME=ITS-int(CFTS*float(NTS))+1
+        else
+          goto 666
+        endif
+      elseif (IDAY.gt.ICDYS.and.IDAY.lt.ICDYF) then
+        IFRAME=ITS+int((float(IDAY-ICDYS)*24.0-CFTS)*float(NTS))
+      elseif (IDAY.eq.ICDYF) then            
+c        write(6,*)'ITS,int(CFTF*float(NTS))',
+c     &             ITS,int(CFTF*float(NTS))
+        if (ITS.le.int(CFTF*float(NTS))) then
+          IFRAME=ITS+int((float(IDAY-ICDYS)*24.0-CFTS)*float(NTS))
+        else
+          goto 666
+        endif
+      else
+        goto 666
+      endif
+c      write(6,*)'IFRAME',IFRAME
+
+ 999  RETURN
+
+ 666  IER=1
+      GOTO 999
+      END
+

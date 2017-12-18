@@ -518,18 +518,15 @@ C Save viewfactor & sensor file...
           IVF(ICOMP)=0
           goto 48
         ENDIF
-        write(6,*) ' EDMRT d',icomp,NCUB(ICOMP)
         CALL usrmsg(' Updating the viewfactor file...',' ','-')
         CALL EMKMRT(LVIEW(ICOMP),LGEOM(ICOMP),NZS,IUF,ICOMP,'v',IER)
         CALL usrmsg(' Updating the viewfactor file...done.',' ','-')
-        write(6,*) ' EDMRT e',icomp,NCUB(ICOMP)
         if(ncub(ICOMP).gt.0)then
 
 C Also save any mrt sensors to geometry file.
           call eclose(gversion(ICOMP),1.1,0.01,newgeo)
           if(newgeo)then
             call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
-        write(6,*) ' EDMRT f',icomp,NCUB(ICOMP)
           endif
         endif
 
@@ -721,13 +718,16 @@ C EDMRTS: Edit details of a MRT sensor block.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
+      COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       DIMENSION VERT(15)
-      CHARACTER VERT*28,MSG*72,S6*6,head*30
+      CHARACTER VERT*28,MSG*72,S6*6,head*30,outs*124,hold*36
       character ETEXT*82
       integer NITMS,IVERT ! max items and current menu item
       logical newgeo
+      DIMENSION IVLST(MTV)
+      integer INPICK  ! to use with epkvert
 
 C Passed parameters for cfgtogg
 #ifdef OSI
@@ -757,6 +757,9 @@ C For help messages
       integer nbhelp     ! number of help lines found
 
       helpinsub='EDMRTS'  ! set for subroutine
+
+C Echo current information and then offer choice of manual
+C edit or select zone vertex.
 
 C Initial menu entry setup.
       write(head,'(A,A)')'  MRT details: ',zname(ICOMP)
@@ -792,9 +795,7 @@ C draw the sensor cubes.  Set all surface lines to standard width.
         call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
         WRITE(etext,'(2A)')'Model: ',modeltitle(1:lnblnk(modeltitle))
-        iside=1
-        isize=1
-        ifont=1
+        iside=1; isize=1; ifont=1
         call viewtext(etext,iside,isize,ifont)
       endif
       CALL ESCZONE(ICOMP)
@@ -808,24 +809,63 @@ C Help text for this menu.
 C Now display the menu.
       NITMS=11
       CALL EMENU(head,VERT,NITMS,IVERT)
-      IF(IVERT.EQ.1)THEN
-        WRITE(MSG,'(a,I3)')'For sensor ',ICUB
-        CALL EASKR(XOC(ICUB),MSG,'Origin X coordinate?',
+      IF(IVERT.EQ.1.or.IVERT.eq.2.or.IVERT.eq.3)THEN
+        write(outs,'(a,3F8.3)')'Origin is: ',XOC(ICUB),YOC(ICUB),
+     &    ZOC(ICUB)
+        call edisp(iuout,outs)
+        write(outs,'(a,3F8.3)')'Dimensions:',DXC(ICUB),DYC(ICUB),
+     &    DZC(ICUB)
+        call edisp(iuout,outs)
+        call easkabc('Origin choices:',' ','edit sensor origin',
+     &    'use zone vertex','abort',ibopt,nbhelp)
+        if(ibopt.eq.1)then
+          IF(IVERT.EQ.1)THEN
+            WRITE(MSG,'(a,I3)')'For sensor ',ICUB
+            CALL EASKR(XOC(ICUB),MSG,'Origin X coordinate?',
      &       -999.9,'W',999.9,'W',1.0,'origin X coord',IER,nbhelp)
-        IVFOK(icub)=0
-        MODIFYVIEW=.TRUE.
-        MODLEN=.TRUE.
-      ELSEIF(IVERT.EQ.2)THEN
-        CALL EASKR(YOC(ICUB),MSG,' Origin Y coordinate?',
+            IVFOK(icub)=0
+            MODIFYVIEW=.TRUE.
+            MODLEN=.TRUE.
+          ELSEIF(IVERT.EQ.2)THEN
+            CALL EASKR(YOC(ICUB),MSG,'Origin Y coordinate?',
      &       -999.9,'W',999.9,'W',1.0,'origin X coord',IER,nbhelp)
-        IVFOK(icub)=0
-        MODIFYVIEW=.TRUE.
-        MODLEN=.TRUE.
-      ELSEIF(IVERT.EQ.3)THEN
-        CALL EASKR(ZOC(ICUB),MSG,'Origin Z coordinate?',
+            IVFOK(icub)=0
+            MODIFYVIEW=.TRUE.
+            MODLEN=.TRUE.
+          ELSEIF(IVERT.EQ.3)THEN
+            CALL EASKR(ZOC(ICUB),MSG,'Origin Z coordinate?',
      &       -999.9,'W',999.9,'W',1.0,'origin X coord',IER,nbhelp)
-        MODIFYVIEW=.TRUE.
-        MODLEN=.TRUE.
+            MODIFYVIEW=.TRUE.
+            MODLEN=.TRUE.
+          ENDIF
+        elseif(ibopt.eq.2)then
+
+C User current zone G1 common block to present list of points.
+          inpick=1
+          CALL EPMENSV
+          call EPKVERT(INPICK,IVLST,'Vertices for origin',
+     &      'Select a vertex to define the origin...',' ',nbhelp,ier)
+          CALL EPMENRC
+          if(inpick.eq.1)then
+            iwhich1=IVLST(1)
+            HOLD=' '
+            WRITE(hold,'(1x,3f8.4)')X(iwhich1),Y(iwhich1),Z(iwhich1)
+            CALL EASKS(HOLD,'Confirm object origin @ (X Y Z metres)',
+     &      'i.e. within the room: ',
+     &      36,' 0. 0. 0.','origin XYZ',IER,nbhelp)
+            K=0
+            CALL EGETWR(HOLD,K,DX,-99.,99.,'W','X tr',IER)
+            CALL EGETWR(HOLD,K,DY,-99.,99.,'W','Y tr',IER)
+            CALL EGETWR(HOLD,K,DZ,-99.,99.,'W','Z tr',IER)
+            XOC(ICUB)=DX; YOC(ICUB)=DY; ZOC(ICUB)=DZ
+            MODIFYVIEW=.TRUE.
+            MODLEN=.TRUE.
+          else
+            goto 92
+          endif
+        elseif(ibopt.eq.3)then
+          goto 92
+        endif
       ELSEIF(IVERT.EQ.4)THEN
         CALL EASKR(DXC(ICUB),MSG,' Sensor width? ',
      &       0.001,'W',99.9,'W',1.0,'sensor X dimension',IER,nbhelp)
@@ -872,7 +912,8 @@ C Also save mrt sensors to geometry file.
         call eclose(gversion(ICOMP),1.1,0.01,newgeo)
         if(newgeo)then
           call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
-          write(6,*) ' EDMRTS a update geometry'
+          write(outs,*) ' EDMRTS a update geometry'
+          call edisp(iuout,outs)
         endif
       endif
       GOTO 92

@@ -135,7 +135,11 @@ C      ITEM(10)='e CEN statistics     '
       ITEM(24)='- exit               '
 
  2    NITMS=24
-      INO=-3
+      if(MMOD.eq.8)then
+        INO=-1
+      else
+        INO=-2
+      endif
 
 C Instanciate help strings for the menu.
       helptopic='res_statistics_menu'
@@ -1562,6 +1566,10 @@ C Initialise arrays.
         isOcc(IX)=-1
         TActive(IX)=0.0
         TOccup(IX)=0.0
+        isActPrev(IX)=0
+        isOccPrev(IX)=0
+        TOccStart(IX)=0.0
+        TOccFinish(IX)=0.0 
       enddo
 
 C Calculate time values for first and last time steps, and duration

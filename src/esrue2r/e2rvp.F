@@ -137,6 +137,11 @@ C ******* Default views formation.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
+      COMMON/ZONPIK/NZ,NZNO(MCOM)
+      integer IZLST(MCOM),ISLST(MCOM)
+
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+
       LOGICAL XST,OK,DOK
       logical addview   ! mark we are working a new view
       logical redraw
@@ -162,7 +167,7 @@ C ******* Default views formation.
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iix,iiy,iixx,iiyy,iik
+      integer*8 iix,iiy,iixx,iiyy,iik
 #endif
 
 C For help messages
@@ -203,15 +208,15 @@ C If outside view then initially select all zones...
         CALL EPICKS(INPIC,IVALS,' ','Which zones to include:',
      &    12,NCOMP,zname,' zone list',IER,nbhelp)
         nzg=INPIC
+        NZ=INPIC
         izgfoc=0
         if(nzg.eq.1)izgfoc=IVALS(1)
         DO 45 I=1,nzg
           nznog(I)=IVALS(I)
+          NZNO(I)=IVALS(I)
   45    CONTINUE
       endif
-      MODBND=.TRUE.
-      MODLEN=.TRUE.
-      MODIFYVIEW=.TRUE.
+      MODBND=.TRUE.; MODLEN=.TRUE.; MODIFYVIEW=.TRUE.
       CALL BNDOBJ(1,IER)
 
 C Outside view. Scale bounding box to be a bit less than
@@ -228,8 +233,7 @@ C adding in the ground disk.
         YMN=cy-DD; YMX=cy+DD
         ZMN=ZMN; ZMX=DD
       endif
-      MODBND=.FALSE.
-      MODLEN=.FALSE.
+      MODBND=.FALSE.; MODLEN=.FALSE.
 
 C Pull up a list of views and ask user for which one. Include an additional
 C option for creation of a new view or importation of a rvu generated file.
@@ -240,9 +244,10 @@ C << take account of length of rvewsh to allow more of vewcmds to display >>
   333 continue
       valt(indxvew+1) = 'Create a new view.'
       valt(indxvew+2) = 'Import a rvu view file'
+      valt(indxvew+3) = 'Create views for MRT sensors'
       IX=1
   334 CALL EPICKS(IX,IVALV,' Select a view: ',' ',
-     &  28,indxvew+2,VALT,'View options',IER,nbhelp)
+     &  28,indxvew+3,VALT,'View options',IER,nbhelp)
       if(IX.eq.0)then
         CALL EASKAB(' One of the options must be selected:',' ',
      &    'select an option','exit view point facility',IW,nbhelp)
@@ -293,24 +298,29 @@ C view point is within the bounds of the image.
 
 C At this point common block radv has been filled but
 C not yet written to vewcmds array.
-
           call UV2AZ(vdx,vdy,vdz,azimuth,elevtn)
+          write(outs,'(a,3f7.3,a,2f7.2)') 'Converting vector ',
+     &      vdx,vdy,vdz,' to ',azimuth,elevtn
+          call edisp(iuout,outs)
           XMN=AMIN1(XMN,rvpx); YMN=AMIN1(YMN,rvpy)
           ZMN=AMIN1(ZMN,rvpz)
           XMX=AMAX1(XMX,rvpx); YMX=AMAX1(YMX,rvpy)
           ZMX=AMAX1(ZMX,rvpz)
           EYEM(1)=rvpx; EYEM(2)=rvpy; EYEM(3)=rvpz
+          write(outs,'(a,3f8.3)') 'Setting eyepoint to ',rvpx,rvpy,rvpz
+          call edisp(iuout,outs)
+          OXMN=XMN; OYMN=YMN; OZMN=ZMN  ! update
+          OXMX=XMX; OYMX=YMX; OZMX=ZMX
+
           if(intext.eq.0)then
 
 C External view.
             ITPPSW=3
-            call ang3vtx(OXMN,OYMN,OZMN,EYEM(1),EYEM(2),EYEM(3),
-     &        OXMX,OYMX,OZMX,eang)
-            angv=eang*1.25
-            angh=eang*1.25
-            ANG=angh
-            HANG=ANG/2.0
-            ITBND=0
+            ANG=AMAX1(angh,angv)
+            write(outs,'(a,3f8.3)') 'Recovered view angles ',
+     &         angh,angv,ANG
+            call edisp(iuout,outs)
+            HANG=ANG/2.0; ITBND=0
             call edisp(iuout,' ')
             call edisp(iuout,'Switching to static viewing angles.')
             MODIFYVIEW=.TRUE.
@@ -355,6 +365,81 @@ C of the azimuth and elevation.
         call edisp(iuout,
      &    'Please adjust the new view point and save it.')
 
+      elseif(ipckvew.eq.indxvew+3)then
+
+C Create a viewpoint for each selected MRT sensor, pointing in the direction of the sensor rotation.
+C First, select MRT sensors.
+        NSEL=999
+        CALL PIKMRTS(IZLST,ISLST,NSEL,-1,IER)
+        if (ier.ne.0) then
+          call edisp(iuout,'Error selecting MRT sensors.')
+          goto 334
+        endif
+
+C Now, create a viewpoint for each one.
+        do IMRT=1,NSEL
+
+C Use coordinates at the centre of the top face of the MRT sensor.
+          PI = 4.0 * ATAN(1.0)
+          R=PI/180.
+          SA=SIN(CANG(IMRT)*R)
+          CA=COS(CANG(IMRT)*R)
+          DX=(DXC(IMRT)/2.)*CA-(DYC(IMRT)/2.)*SA
+          DY=(DXC(IMRT)/2.)*SA+(DYC(IMRT)/2.)*CA
+
+C Set coordinates.
+          rvpx=XOC(IMRT)+DX
+          rvpy=YOC(IMRT)+DY
+          rvpz=ZOC(IMRT)+DZC(IMRT)
+
+          write(outs,*)'MRV rvpx,rvpy,rvpz',rvpx,rvpy,rvpz
+          call edisp(iuout,outs)
+
+C Set view direction.
+          CALL AZ2UV(CANG(IMRT),0.0,vdx,vdy,vdz)
+C For some reason we need to reverse the X axis.
+C ESP-r's rotation is anticlockwise - maybe radiance is clockwise?
+C Would explain this.
+          vdx=-vdx
+
+C Set -vu (?).
+          vux=0.0; vuy=0.0; vuz=1.0
+
+C Set view angles.
+          angh=90.0; angv=60.0
+
+          indxvew = indxvew +1
+          write(trvewsh,'(a,i2.2)')'vew',IMRT
+          rvewsh(indxvew) = trvewsh  ! remember new name
+          if(short)then
+            if(okfore.and.okaft)then
+              write(doit,'(a,3F7.1,a,3F7.3,a,3F5.2,2(a,F5.1),a)') 
+     &        '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
+     &        ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
+     &        ' -vs 0 -vl 0 -vo 0 -va 0'
+            else
+              write(doit,'(a,3F7.1,a,3F7.3,a,3F5.2,4(a,F5.1))') 
+     &        '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
+     &        ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
+     &        ' -vs 0 -vl 0 -vo ',cutfor,' -va ',cutaft
+            endif
+          else
+            if(okfore.and.okaft)then
+              write(doit,'(a,3F8.2,a,3F7.3,a,3F5.2,2(a,F5.1),a)') 
+     &        '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
+     &        ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
+     &        ' -vs 0 -vl 0 -vo 0 -va 0'
+            else
+              write(doit,'(a,3F8.2,a,3F7.3,a,3F5.2,4(a,F5.1))') 
+     &        '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
+     &        ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
+     &        ' -vs 0 -vl 0 -vo ',cutfor,' -va ',cutaft
+            endif
+          endif
+          WRITE(vewcmds(indxvew),'(a)') doit  ! new cmd
+
+        enddo     
+
       elseif(ipckvew.eq.1)then
 
 C If the default view for exterior (intext zero) or interior view.
@@ -362,14 +447,10 @@ C If the default view for exterior (intext zero) or interior view.
           rvpx=-100.0; rvpy=-100.0; rvpz=100.0
           call ang3vtx(OXMN,OYMN,OZMN,EYEM(1),EYEM(2),EYEM(3),OXMX,
      &             OYMX,OZMX,eang)
-          angv=eang*1.25
-          angh=eang*1.25
+          angv=eang*1.25; angh=eang*1.25
         else
-          rvpx=XMN+0.1
-          rvpy=YMN+0.1
-          rvpz=VIEWM(3)
-          angv=90.0
-          angh=90.0
+          rvpx=XMN+0.1; rvpy=YMN+0.1; rvpz=VIEWM(3)
+          angv=90.0; angh=90.0
         endif
 
 C Given view point and viewed point return and update common values
@@ -380,7 +461,7 @@ C of the azimuth and elevation.
 
       else
 
-C An exiting view. Perhaps a referenced file.
+C An existing view. Perhaps a referenced file.
         write(OUTSTR,'(a)')vewcmds(ipckvew)(1:lnblnk(vewcmds(ipckvew)))
         K=0
         CALL EGETW(OUTSTR,K,WORD,'W','view command',IFLAG)
@@ -413,15 +494,11 @@ C External view.
                 ITPPSW=3
                 call ang3vtx(OXMN,OYMN,OZMN,EYEM(1),EYEM(2),EYEM(3),
      &             OXMX,OYMX,OZMX,eang)
-                angv=eang*1.25
-                angh=eang*1.25
-                ANG=angh
-                HANG=ANG/2.0
-                ITBND=0
+                angv=eang*1.25; angh=eang*1.25
+                ANG=angh; HANG=ANG/2.0; ITBND=0
                 call edisp(iuout,' ')
                 call edisp(iuout,'Switching to static viewing angles.')
-                MODIFYVIEW=.TRUE.
-                MODLEN=.TRUE.
+                MODIFYVIEW=.TRUE.; MODLEN=.TRUE.
               else
 
 C Internal view.
@@ -490,10 +567,7 @@ C Got all of the viewing data.
           if(intext.eq.0)then
 
 C External view.
-            ITPPSW=3
-            ANG=angh
-            HANG=ANG/2.0
-            ITBND=0
+            ITPPSW=3; ANG=angh; HANG=ANG/2.0; ITBND=0
             call edisp(iuout,' ')
             call edisp(iuout,'Switching to static viewing angles.')
             MODIFYVIEW=.TRUE.
@@ -508,10 +582,7 @@ C External view.
 
 C Reflect eyepoint in the perspective view.
       if(intext.eq.0)then
-        ITPPSW=3
-        ANG=angh*1.1
-        HANG=ANG/2.0
-        ITBND=0
+        ITPPSW=3; ANG=angh*1.1; HANG=ANG/2.0; ITBND=0
         call edisp(iuout,' ')
         call edisp(iuout,'Switching to static viewing angles... ')
         MODIFYVIEW=.TRUE.
@@ -580,6 +651,12 @@ C Perspective view.
       ITEM(18) =                  '? help                        '
       ITEM(19) =                  '- exit                        '
       NITEMS = 19
+
+C Check if graphics are active.
+      if (MMOD.ne.8) then
+        redraw=.false.
+      endif
+
       if(redraw)then
 
 C Draw the problem in plan/elevation with viewcone.
@@ -663,23 +740,31 @@ C Select point from plan or current perspective.
 
 C << implemented in GTK? >>
             CALL trackview(iik,iix,iiy)
+            ix=int(iix); iy=int(iiy)
+
+C Debug.
+C            write(6,*) 'axiscale ',igwid,igheight,XMN,XMX,YMN,YMX,
+C     &        xsc,ysc,sca,Xadd,Yadd
+C            write(6,*) 'trackview iix,iiy,ix,iy,igb,igl,ITPPSW',
+C     &        iix,iiy,ix,iy,igb,igl,ITPPSW
+C            write(6,*) 'diffs ',(iix-igl),(igb-iiy)
 
 C Transform back from mouse position to actual coordinate.
 C Note: the coordinate is an offset from the lower left corner
 C of the zone plan display and for zones which do not start at
 C the site origin we need to add in offsets.
             if(ITPPSW.eq.0)then
-              ex=((FLOAT(iix-igl)/sca)-Xadd)+XMN
-              ey=((FLOAT(igb-iiy)/sca)-Yadd)+YMN
+              ex=((FLOAT(ix-igl)/sca)-Xadd)+XMN
+              ey=((FLOAT(igb-iy)/sca)-Yadd)+YMN
             elseif(ITPPSW.eq.1)then
-              ex=((FLOAT(iix-igl)/sca)-Xadd)+XMN
-              ey=((FLOAT(igb-iiy)/sca)-Yadd)+ZMN
+              ex=((FLOAT(ix-igl)/sca)-Xadd)+XMN
+              ey=((FLOAT(igb-iy)/sca)-Yadd)+ZMN
             elseif(ITPPSW.eq.2)then
-              ex=((FLOAT(iix-igl)/sca)-Xadd)+YMN
-              ey=((FLOAT(igb-iiy)/sca)-Yadd)+ZMN
+              ex=((FLOAT(ix-igl)/sca)-Xadd)+YMN
+              ey=((FLOAT(igb-iy)/sca)-Yadd)+ZMN
             elseif(ITPPSW.eq.3)then
-              ex=((FLOAT(iix-igl)/sca)-Xadd)+XMN
-              ey=((FLOAT(igb-iiy)/sca)-Yadd)+YMN
+              ex=((FLOAT(ix-igl)/sca)-Xadd)+XMN
+              ey=((FLOAT(igb-iy)/sca)-Yadd)+YMN
             endif
             iupdown=0; isym=6
             call etplot(ex,ey,iupdown,isym)
@@ -689,12 +774,9 @@ C the site origin we need to add in offsets.
             dok=.true.
             CALL ASKOK(outs,'Is this view ok?',OK,dok,nbhelp)
             IF(OK)then
-              rvpx=ex
-              rvpy=ey
-              vewdone=.false.
-              redraw =.true.
-              MODLEN=.true.
-              MODIFYVIEW=.TRUE.
+              rvpx=ex; rvpy=ey
+              vewdone=.false.; redraw =.true.
+              MODLEN=.true.; MODIFYVIEW=.TRUE.
               rvpz=VIEWM(3)
             endif
           endif
@@ -715,16 +797,12 @@ C the site origin we need to add in offsets.
               call AZ2UV(az,el,vdx,vdy,vdz)
               call ang3vtx(OXMN,OYMN,OZMN,EYEM(1),EYEM(2),EYEM(3),OXMX,
      &             OYMX,OZMX,eang)
-              azimuth=az
-              elevtn=el
-              vewdone=.false.
-              redraw =.true.
-              MODLEN=.true.
-              MODIFYVIEW=.TRUE.
+              azimuth=az; elevtn=el
+              vewdone=.false.; redraw =.true.
+              MODLEN=.true.; MODIFYVIEW=.TRUE.
             endif
           else
-            MODLEN=.true.
-            MODIFYVIEW=.TRUE.
+            MODLEN=.true.; MODIFYVIEW=.TRUE.
           endif
         else
           IEE=1
@@ -741,10 +819,8 @@ C the site origin we need to add in offsets.
           CALL EGETWR(HOLD,K,rvpy,-999.,999.,'W','Y cord',IER)
           CALL EGETWR(HOLD,K,rvpz,0.,999.,'W','eye Z cord',IER)
           if(ier.ne.0)goto 55
-          vewdone=.false.
-          redraw =.true.
-          iupdown=0
-          isym=14
+          vewdone=.false.; redraw =.true.
+          iupdown=0; isym=14
           call etplot(rvpx,rvpy,iupdown,isym)
           call forceflush()
           if(ITPPSW.eq.3)then
@@ -757,12 +833,9 @@ C the site origin we need to add in offsets.
               EYEM(1)=rvpx; EYEM(2)=rvpy; EYEM(3)=rvpz
               call ln2az(EYEM(1),EYEM(2),EYEM(3),VIEWM(1),VIEWM(2),
      &          VIEWM(3),az,el)
-              azimuth=az
-              elevtn=el
-              vewdone=.false.
-              redraw =.true.
-              MODLEN=.true.
-              MODIFYVIEW=.TRUE.
+              azimuth=az; elevtn=el
+              vewdone=.false.; redraw =.true.
+              MODLEN=.true.; MODIFYVIEW=.TRUE.
               call usrmsg('Altering the eyepoint may require using the',
      &        'wireframe control to set the viewed point. ','W')
             endif
@@ -794,14 +867,11 @@ C Update the viewing azimuth and elevation.
               call  AZ2UV(azimuth,elevtn,vdx,vdy,vdz)
               call ang3vtx(OXMN,OYMN,OZMN,EYEM(1),EYEM(2),EYEM(3),OXMX,
      &             OYMX,OZMX,eang)
-              vewdone=.false.
-              redraw =.true.
-              MODLEN=.TRUE.
-              MODIFYVIEW=.TRUE.
+              vewdone=.false.; redraw =.true.
+              MODLEN=.TRUE.; MODIFYVIEW=.TRUE.
             endif
           else
-            MODLEN=.TRUE.
-            MODIFYVIEW=.TRUE.
+            MODLEN=.TRUE.; MODIFYVIEW=.TRUE.
           endif
         else
           IEE=1
@@ -818,8 +888,7 @@ C Update the viewing azimuth and elevation.
           call AZ2UV(azimuth,elevtn,vdx,vdy,vdz)
           call ang3vtx(OXMN,OYMN,OZMN,EYEM(1),EYEM(2),EYEM(3),OXMX,
      &             OYMX,OZMX,eang)
-          vewdone=.false.
-          redraw =.true.
+          vewdone=.false.; redraw =.true.
         endif
 
       elseif(INO.EQ.9.or.INO.EQ.10)then
@@ -843,14 +912,11 @@ C View angle horizontal and vertical.
      &      OK,dok,nbhelp)
           if(OK)then
             ITBND=0
-            ANG=angh
-            HANG=ANG/2.0
-            MODLEN=.TRUE.
-            MODIFYVIEW=.TRUE.
+            ANG=angh; HANG=ANG/2.0
+            MODLEN=.TRUE.; MODIFYVIEW=.TRUE.
           endif
         endif
-        vewdone=.false.
-        redraw =.true.
+        vewdone=.false.; redraw =.true.
 
       elseif(INO.EQ.11)then
 
@@ -874,8 +940,7 @@ C horiz axis...
           CALL EGETWR(HOLD,K,XMN,-300.,300.,'W','X min',IER)
           CALL EGETWR(HOLD,K,XMX,XMN,300.,'W','X max',IER)
           if(ier.ne.0)goto 41
-          igwid=igw
-          igheight=igwh
+          igwid=igw; igheight=igwh
           call axiscale(igwid,igheight,XMN,XMX,YMN,YMX,xsc,ysc,sca,
      &       Xadd,Yadd)
           call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
@@ -887,8 +952,7 @@ C horiz axis...
           CALL EGETWR(HOLD,K,XMN,-300.,300.,'W','X min',IER)
           CALL EGETWR(HOLD,K,XMX,XMN,300.,'W','X max',IER)
           if(ier.ne.0)goto 141
-          igwid=igw
-          igheight=igwh
+          igwid=igw; igheight=igwh
           call axiscale(igwid,igheight,XMN,XMX,ZMN,ZMX,xsc,ysc,sca,
      &      Xadd,Yadd)
           call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
@@ -900,15 +964,13 @@ C horiz axis...
           CALL EGETWR(HOLD,K,YMN,-300.,300.,'W','Y min',IER)
           CALL EGETWR(HOLD,K,YMX,YMN,300.,'W','Y max',IER)
           if(ier.ne.0)goto 241
-          igwid=igw
-          igheight=igwh
+          igwid=igw; igheight=igwh
           call axiscale(igwid,igheight,YMN,YMX,ZMN,ZMX,xsc,ysc,sca,
      &      Xadd,Yadd)
           call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
         elseif(ITPPSW.eq.3)then
         endif
-        vewdone=.false.
-        redraw =.true.
+        vewdone=.false.; redraw =.true.
 
       elseif(INO.EQ.14)then
 
@@ -923,8 +985,7 @@ C vertical axis...
           CALL EGETWR(HOLD,K,YMN,-300.,300.,'W','Y min',IER)
           CALL EGETWR(HOLD,K,YMX,YMN,300.,'W','Y max',IER)
           if(ier.ne.0)goto 144
-          igwid=igw
-          igheight=igwh
+          igwid=igw; igheight=igwh
           call axiscale(igwid,igheight,XMN,XMX,YMN,YMX,xsc,ysc,sca,
      &      Xadd,Yadd)
           call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
@@ -936,8 +997,7 @@ C vertical axis...
           CALL EGETWR(HOLD,K,ZMN,-300.,300.,'W','Y min',IER)
           CALL EGETWR(HOLD,K,ZMX,ZMN,300.,'W','Y max',IER)
           if(ier.ne.0)goto 145
-          igwid=igw
-          igheight=igwh
+          igwid=igw; igheight=igwh
           call axiscale(igwid,igheight,XMN,XMX,ZMN,ZMX,xsc,ysc,sca,
      &      Xadd,Yadd)
           call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
@@ -949,15 +1009,13 @@ C vertical axis...
           CALL EGETWR(HOLD,K,ZMN,-300.,300.,'W','Y min',IER)
           CALL EGETWR(HOLD,K,ZMX,ZMN,300.,'W','Y max',IER)
           if(ier.ne.0)goto 245
-          igwid=igw
-          igheight=igwh
+          igwid=igw; igheight=igwh
           call axiscale(igwid,igheight,YMN,YMX,ZMN,ZMX,xsc,ysc,sca,
      &      Xadd,Yadd)
           call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
         elseif(ITPPSW.eq.3)then
         endif
-        vewdone=.false.
-        redraw =.true.
+        vewdone=.false.; redraw =.true.
 
       elseif(INO.EQ.16)then
 

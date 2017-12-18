@@ -45,7 +45,8 @@ C      COMMON/ZONPIK/NZ,NZNO(MCOM)
 C ihflag = 0 write 13h30, ihflag = 1 write 0.5625, = 2 write yyyy-mm-dd 13:30:00
 C idhflg = 0 no day demarcations, idhflg = 1 write demarcation
 C          between tabular reporting days.
-C ilflag = 0 tabular labels on multi-lines, ilflag = 1 on one line.
+C ilflag = 0 tabular labels on multi-lines, ilflag = 1 on one line
+C          ilflag = 2 do not include # header lines in file.
       COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
@@ -101,6 +102,8 @@ C Default value for GRTOOL file = 0 (off), day hash marks off.
         ITEM(12)='& labels >> multiline  '
       elseif(ILFLAG.eq.1)then
         ITEM(12)='& labels >> on one line'
+      elseif(ILFLAG.eq.2)then
+        ITEM(12)='& labels >> one ln no #'
       endif
       if(delim.eq.'-')then
         ITEM(13)='^ delim >> normal      '
@@ -171,13 +174,17 @@ C Toggle time format and day separators.
 
 C Toggle tabular listing label format.
         ILFLAG=ILFLAG+1
-        if(ILFLAG.GT.1)ILFLAG=0
+        if(ILFLAG.GT.2)ILFLAG=0
         if(ILFLAG.eq.0)then
           call edisp(iuout,' ')
           call edisp(iuout,'column labels on multi-lines ')
         elseif(ILFLAG.eq.1)then
           call edisp(iuout,' ')
           call edisp(iuout,'column labels on one line (spreadsheets)')
+        elseif(ILFLAG.eq.2)then
+          call edisp(iuout,' ')
+          call edisp(iuout,
+     &      'column labels on one line & no # header lines in files')
         endif
       elseif(INO.EQ.13.AND.ISAVE.GE.1)then
 
@@ -298,6 +305,7 @@ C Call the menu of choices (this also sets some default options).
         if (MENUTYPE.eq.-1) return
       endif
       IINLVDT=0
+      INOCFD=0
 
 C Call GOGET for each output day to get required data.
 C GOGET recovers the data in VAL2 (and averages output if required.)
@@ -327,20 +335,35 @@ C Write general header information (skip if IPV mode).
         CALL HDDATE(PDESCR)
         CALL HDSTEP(SDESCR)
         
-C If julian or 13:30:00 requested or writing to file start lines with a '#'.
+C If julian or 13:30:00 requested or writing to file start lines with 
+C a '#'. If user has set ILFLAG=2 then do not write # header lines.
         if (IHFLAG.eq.1.or.IHFLAG.eq.2.or.ixopen.eq.1) then
-          call edisp(itru,'# Timestep performance metrics.')
+          if(ILFLAG.le.1)then
+            call edisp(itru,'# Timestep performance metrics.')
+          endif
           lsn1=MIN0(lnblnk(RFILE),42)
           if(NSIM.gt.1)then
-            write(outs248,'(3A,I4,2A)')'# Lib: ',RFILE(1:lsn1),' Set:',
-     &      ISIM,': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
+            if(ILFLAG.le.1)then
+              write(outs248,'(3A,I4,2A)')'# Lib: ',RFILE(1:lsn1),
+     &        ' Set:',ISIM,': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
+            else
+              write(outs248,'(3A,I4,2A)')' Lib: ',RFILE(1:lsn1),
+     &        ' Set:',ISIM,': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
+            endif
           else
-            write(outs248,'(4A)')'# Lib: ',RFILE(1:lsn1),
+            if(ILFLAG.le.1)then
+              write(outs248,'(4A)')'# Lib: ',RFILE(1:lsn1),
      &        ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
+            else
+              write(outs248,'(4A)')' Lib: ',RFILE(1:lsn1),
+     &        ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
+            endif
           endif
           if(ixopen.eq.1)then
             lnb=lnblnk(outs248)   ! write directly to file
-            write(itru,'(A)',iostat=ios,err=1)outs248(1:lnb)
+            if(ILFLAG.le.1)then
+              write(itru,'(A)',iostat=ios,err=1)outs248(1:lnb)
+            endif
           else
             lnb=MIN0(lnblnk(outs248),124)
             if(lnb.lt.124)then
@@ -351,7 +374,9 @@ C If julian or 13:30:00 requested or writing to file start lines with a '#'.
           endif
           WRITE(outs,'(4A)')'# ',PDESCR(1:lnblnk(PDESCR)),' ',
      &      SDESCR(11:lnblnk(SDESCR))
-          call edisp(itru,outs)
+          if(ILFLAG.le.1)then
+            call edisp(itru,outs)
+          endif
         else
 
 C Writing to the screen. It would be great to figure out how wide
@@ -390,11 +415,11 @@ C Write day of results and column headings information (skip if IPV mode).
         if(act(1:1).ne.'m')then
           if (IDHFLG.eq.1.and.ixopen.eq.1) then
             outs='# '
-            call edisp(itru,outs)
+            if(ILFLAG.le.1) call edisp(itru,outs)
             write(outs,'(3A)')'# ',DESCR1,' timestep misc. listing'
-            call edisp(itru,outs)
+            if(ILFLAG.le.1) call edisp(itru,outs)
             outs='# '
-            call edisp(itru,outs)
+            if(ILFLAG.le.1) call edisp(itru,outs)
           elseif (IDHFLG.eq.0.and.ixopen.eq.1) then
             continue
           elseif (IDHFLG.eq.0.and.ixopen.eq.0) then
@@ -410,7 +435,7 @@ C Write day of results and column headings information (skip if IPV mode).
           endif
           
 C If printing to screen then split column headings over four rows 
-C   don't do this if printing to file.
+C don't do this if printing to file.
           irows=4
           if (ixopen.eq.1) irows=1
           is=1
@@ -426,8 +451,15 @@ C   don't do this if printing to file.
                   outs248='*time'
                   outs800='*time'
                 else
-                  outs248='#Time'
-                  outs800='#Time'
+                  if(ILFLAG.le.1)then
+                    outs248='#Time'
+                    outs800='#Time'
+                  else
+                    outs248='Time'
+                    outs800='Time'
+                    K=5   ! initial value for 248 buffer
+                    K4=5  ! initial value for 800 buffer
+                  endif
                 endif
               elseif ((IHFLAG.eq.1.or.IHFLAG.eq.2).and.ixopen.eq.0)then
                 if (delim.eq.'X') then
@@ -649,12 +681,17 @@ C Assume fully occupied.
               ioc=1
               if(iocupf.eq.1) call getocup(IZONE,IDAY,J,ioc,ier)
               if(ioc.ne.0) then
-                write (outs248(K:KE),'(f11.2)') VAL2(IG,J)
-              elseif (IGETNO(IG,1).ge.50.AND.IGETNO(IG,1).le.59) then
-                if (VAL2(IG,J).gt.100.0) then
-                  write (outs248(K:KE),'(a)') '  invl dT  '
-                  IINLVDT=1
-                else
+                if (IGETNO(IG,1).ge.50.AND.IGETNO(IG,1).le.59) then
+                  if (VAL2(IG,J).gt.101.5) then                    
+                    write (outs248(K:KE),'(a)') '  no CFD   '
+                    INOCFD=1
+                  elseif (VAL2(IG,J).gt.100.0) then
+                    write (outs248(K:KE),'(a)') '  invl ipt '
+                    IINLVDT=1
+                  else
+                    write (outs248(K:KE),'(f11.2)') VAL2(IG,J)
+                  endif
+                else                  
                   write (outs248(K:KE),'(f11.2)') VAL2(IG,J)
                 endif
               else
@@ -678,11 +715,16 @@ C Assume fully occupied.
                 ioc=1
                 if(iocupf.eq.1) call getocup(IZONE,IDAY,J,ioc,ier)
                 if(ioc.ne.0) then
-                  write (outs800(K:KE),'(f11.2)') VAL2(IG,J)
-                elseif (IGETNO(IG,1).ge.50.AND.IGETNO(IG,1).le.59) then
-                  if (VAL2(IG,J).gt.100.0) then
-                    write (outs800(K:KE),'(a)') '  invl dT  '
-                    IINLVDT=1
+                  if (IGETNO(IG,1).ge.50.AND.IGETNO(IG,1).le.59) then
+                    if (VAL2(IG,J).gt.101.5) then                    
+                      write (outs800(K:KE),'(a)') '  no CFD   '
+                      INOCFD=1
+                    elseif (VAL2(IG,J).gt.100.0) then
+                      write (outs800(K:KE),'(a)') '  invl ipt '
+                      IINLVDT=1
+                    else
+                      write (outs800(K:KE),'(f11.2)') VAL2(IG,J)
+                    endif
                   else
                     write (outs800(K:KE),'(f11.2)') VAL2(IG,J)
                   endif
@@ -730,9 +772,15 @@ C Writing to screen so use shorter file buffer.
 
 C Explain inlv dT comment.
       if (IINLVDT.eq.1) then
-        call edisp(itru,'invl dT: the supplied temperature difference')
-        call edisp(itru,' to the comfort algorithm was outside the ')
-        call edisp(itru,' valid range, thus no data could be returned.')
+        call edisp(itru,'invl ipt: the supplied input to the comfort')
+        call edisp(itru,' algorithm was outside the valid range, thus')
+        call edisp(itru,' no data could be returned.')
+      endif
+
+C Explain no CFD comment.
+      if (INOCFD.eq.1) then
+        call edisp(itru,'no CFD: CFD results were not found for this')
+        call edisp(itru,' time step, thus no data could be returned.')
       endif
 
 C End tag for tagged data

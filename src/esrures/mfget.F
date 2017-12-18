@@ -121,6 +121,7 @@ C columns listed above.
       
       integer lnblnk  ! function definition
 
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       
       integer ncomp,ncon
@@ -321,39 +322,45 @@ C If plot show add profile, otherwise toggle delimiter state.
         ITEM(25)='+ add another profile'
       else
         if(delim.eq.'-')then
-          ITEM(25)='^ delim >> normal '
+          ITEM(25)='^ delim >> normal  '
         elseif(delim.eq.'T')then
-          ITEM(25)='^ delim >> TAB    '
+          ITEM(25)='^ delim >> TAB     '
         elseif(delim.eq.'C')then
-          ITEM(25)='^ delim >> comma  '
+          ITEM(25)='^ delim >> comma   '
         elseif(delim.eq.'S')then
-          ITEM(25)='^ delim >> space  '
+          ITEM(25)='^ delim >> space   '
         elseif(delim.eq.'X')then
-          ITEM(25)='^ delim >> tagged      '
+          ITEM(25)='^ delim >> tagged  '
         endif
       endif
       if(MENUTYPE.eq.3) then
 
 C If plot give graph command and labels command, otherwise list command.
-        ITEM(26)='@ labels        '
-        ITEM(27)='! draw graph    '
+        ITEM(26)  ='@ labels           '
+        ITEM(27)  ='! draw graph       '
         nl=2
       elseif(MENUTYPE.eq.4)then
         if(ILFLAG.eq.0)then
-          ITEM(26)='@ labels>>short'
+          ITEM(26)='@ labels>>short    '
         elseif(ILFLAG.eq.1)then
-          ITEM(26)='@ labels>>long '
+          ITEM(26)='@ labels>>long     '
+        elseif(ILFLAG.eq.2)then
+          ITEM(26)='@ labels>>long no #'
         endif
-        ITEM(27)='! list data    '
+        ITEM(27)  ='! list data        '
         nl=2
       else
         nl=0
       endif
-      ITEM(26+nl)='? help           '
-      ITEM(27+nl)='- exit           '
+      ITEM(26+nl) = '? help            '
+      ITEM(27+nl) ='- exit             '
 
       NITMS=27+nl
-      INO=-2
+      if(MMOD.eq.8)then
+        INO=-1
+      else
+        INO=-2
+      endif
 
 C Instanciate help strings for this menu.
       helptopic='res_mass_flow_menu'
@@ -1057,13 +1064,17 @@ C Find out point where text should be drawn.
 
 C Toggle tabular listing label format.
           ILFLAG=ILFLAG+1
-          if(ILFLAG.GT.1)ILFLAG=0
+          if(ILFLAG.GT.2)ILFLAG=0
           if(ILFLAG.eq.0)then
             call edisp(iuout,' ')
             call edisp(iuout,'column labels on multi-lines ')
           elseif(ILFLAG.eq.1)then
             call edisp(iuout,' ')
             call edisp(iuout,'one line column labels (spreadsheets)')
+          elseif(ILFLAG.eq.2)then
+            call edisp(iuout,' ')
+            call edisp(iuout,
+     &      'column labels on one line & no # header lines in files')
           endif
           goto 1   ! jump back to the menu
         else
@@ -2641,6 +2652,7 @@ C EDMFGOGET allows removal of output requests for flow networks.
 #include "building.h"
 #include "net_flow.h"
 
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
       COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,8)
@@ -2688,7 +2700,11 @@ C IVERT is the menu position, MVERT the current number of menu lines.
 
 C Initial menu entry setup.
       IER=0
-      IVERT=-3
+      if(MMOD.eq.8)then
+        IVERT=-1
+      else
+        IVERT=-2
+      endif
 
 C Loop through the items until the page to be displayed. M is the
 C current menu line index. Build up text strings for the menu.

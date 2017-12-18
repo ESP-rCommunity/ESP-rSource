@@ -635,8 +635,11 @@ C        CALL EASKABC('Data display options:',outs,
         CALL PHELPD('flow vis facility',14,'-',0,0,IER)
 *item MCFDM res_cfd_new_view
 'Define a new view, or delete a current view.'
+''
+'Option b will generate 3 views, one in each axial plane, that'
+'each cross the location of an MRT sensor that you select.'
 *enditem
-        call EASKABC(' ','View definitions:',
+        call EASKABCD(' ','View definitions:',
 *item MCFDM res_cfd_view_root_name
 'Please supply a root name for the image.  '
 'In the case of a dynamic viualisation the frame number'

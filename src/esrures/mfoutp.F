@@ -71,6 +71,7 @@ C ihflag = 0 write 13h30, ihflag = 1 write 0.5625
 C idhflg = 0 no day demarcations, idhflg = 1 write demarcation
 C          between tabular reporting days.
 C ilflag = 0 tabular labels on multi-lines, ilflag = 1 on one line.
+C          ilflag = 2 do not include # header lines in file.
       COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/LIBOK/IBLIB,IFLIB,ICLIB,IELIB,IPLIB
@@ -579,7 +580,7 @@ C For those dumping to a spreadsheet file write out labels on a single line.
             if(ILFLAG.eq.0)then
               KE=K+11   ! short label
               KE4=K4+11   ! short label
-            else
+            elseif(ILFLAG.ge.1)then
               KE=K+lke+1       ! set new end to reflect label
               KE4=K4+lket28+1  ! set new end to reflect packed label
             endif
@@ -587,7 +588,7 @@ C For those dumping to a spreadsheet file write out labels on a single line.
               if(ILFLAG.eq.0)then
                 write (outs248(K:KE),'(a,a)') '|',GMFLABEL(IL)(1:10)
                 K=K+11
-              else
+              elseif(ILFLAG.ge.1)then
 
 C For longer labels use the current delimiter.
                 if(delim.eq.'-')then
@@ -624,7 +625,7 @@ C packed string.
                     write(outs800(K4:KE4),'(2a)') ' ',t28(1:lket28)
                     K4=K4+lket28+1  ! next start point
                   endif
-                else
+                elseif(ILFLAG.ge.1)then
                   write(outs800(K4:KE4),'(2a)') ' ',t28(1:lket28)
                   K4=K4+lket28+1    ! next start point
                 endif

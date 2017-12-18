@@ -986,7 +986,7 @@ C            fields based on preliminary CFD run.
      2            P(ntcelx,ntcely,ntcelz),PP(ntcelx,ntcely,ntcelz),
      3            TEf(ntcelx,ntcely,ntcelz),EDf(ntcelx,ntcely,ntcelz)
       COMMON/INITIA/UINIT(MNZ),VINIT(MNZ),WINIT(MNZ),PINIT(MNZ),
-     &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ)
+     &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ),POLINIT(MNZ,MCTM)
 
       LOGICAL CALLU,CALLV,CALLW,CALLT,CALLC,KEMDL,BUOY,BOUSSI
       LOGICAL ZEROT,ZandKE,MITzero
@@ -1410,9 +1410,9 @@ C          Supporting routine for CFD `adaptive conflation controller'.
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/closehow/yplus(ntcelx,ntcely,ntcelz)
-      COMMON/ypave/ypavg(MCOM)
+      COMMON/ypave/ypavg(MS)
 
-      real rmass(MCOM),total(MCOM)
+      real rmass(MS),total(MS)
 
 C This routine calculates the average y+ value of the next-to-wall grid points
 C for each surface in the thermal model. It saves these values to a common

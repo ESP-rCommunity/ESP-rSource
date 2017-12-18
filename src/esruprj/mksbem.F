@@ -94,11 +94,22 @@ C UA1 in uncertainty.h
       COMMON/HVACINFO/IHVACFLAG,HVACFILE
 
       COMMON/SPFLDAT/NSSET,ISSET,ISSTUP,ISBNSTEP,ISPNSTEP,ISSAVE,ISAVGH
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       COMMON/SPFLPER/ISSTDAY(MSPS),ISSTMON(MSPS),ISFNDAY(MSPS),
      &               ISFNMON(MSPS)
+
+C Extended simulation parameters for each set.
+      common/spfldats/isstupex(MSPS),isbnstepex(MSPS),ispnstepex(MSPS),
+     &  issaveex(MSPS),isavghex(MSPS),iscfdactivate(MSPS),
+     &  isicfdys(MSPS),isicfdyf(MSPS),
+     &  scftims(MSPS),scftimf(MSPS)
+      INTEGER :: isstupex,isbnstepex,ispnstepex,issaveex,isavghex
+      INTEGER :: iscfdactivate      ! zero ignore domains
+      INTEGER :: isicfdys,isicfdyf  ! CFD simulation start & finish days
+      REAL :: scftims,scftimf       ! CFD simulation start & finish time
+
       COMMON/SPFLDES/SPFDESCR(MSPS)
-      INTEGER nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh,ISSTDAY
-      INTEGER ISSTMON,ISFNDAY,ISFNMON
+      INTEGER ISSTDAY,ISSTMON,ISFNDAY,ISFNMON
       CHARACTER SPFDESCR*30
 
       COMMON/CFDFIL/LCFD(MCOM),IFCFD(MCOM)
@@ -275,6 +286,9 @@ C Strip model of optional higher resolution
 
 C Dereference all files that are to be dereferenced and generate
 C stripped model. Define the simulation parameters for the run.
+
+C << logic needed for extended *sps >>
+
       ISBEM=2    ! have description as well as SBEM db
       INOTI=4    ! mark explicitly as stripped model
       IYEAR=2008 ! match SBEM activities database version year
@@ -282,12 +296,20 @@ C stripped model. Define the simulation parameters for the run.
       call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKABCD(' ','Initial assessment period (see help)',
      &  'January','April','July','Annual (official)',IW,nbhelp)
-      if(isstup.le.0)isstup=20
-      if(isbnstep.le.2)isbnstep=6   ! 1 tsph for testing 4 std 12 for 5m
-      if(ispnstep.le.2)ispnstep=10
+      if(isstup.le.0)then
+        isstup=20; isstupex(1)=20
+      endif
+      if(isbnstep.le.2)then
+        isbnstep=6   ! 1 tsph for testing 4 std 12 for 5m
+        isbnstepex(1)=6
+      endif
+      if(ispnstep.le.2)then
+        ispnstep=10
+        ispnstepex(1)=10
+      endif
       NSSET=1
-      issave=6
-      isavgh=1
+      issave=6; issaveex(1)=6
+      isavgh=1; isavghex(1)=1
       if(iw.eq.1)then
         isstday(1)=1
         isstmon(1)=1
@@ -3542,9 +3564,9 @@ C Assume that geometry files are version 1.1. If not exit with ier set to 2.
         ENDIF
         ACT='s'
 
-C Code to loop through each surface to build a hash table so that each
-C surface also knowns its children
-        CALL SURREL(ACT,ICOMP,IER)
+C Use edge checking logic of surrel2 to find child surfaces.
+C        CALL SURREL(ACT,ICOMP,IER)
+        CALL SURREL2(ACT,ICOMP,IER)
 
 C For each surface in this zone
         DO 552 ISUR=1,NZSUR(ICOMP)
@@ -4965,7 +4987,7 @@ C      WRITE(LFMUL,'(A)') 'UK_notional.constrdb'
       endif
 
 C Loop through each zone in the model and first scan in the zone
-C geometry, next use surrel to update parent/child information and
+C geometry, next use surrel2 to update parent/child information and
 C write out the zone.
       DO 550 ICOMP=1,NCOMP
 
@@ -5013,7 +5035,8 @@ C     &    ssmlcindex(4),ssmlcindex(5),ssmlcindex(6),ssmlcindex(7)
         CALL FNCNGR(LGEOM_O(ICOMP),APE,EXT,NNAME)
         LGEOM(ICOMP)=NNAME
         ACT='s'
-        CALL SURREL(ACT,ICOMP,IER)
+C        CALL SURREL(ACT,ICOMP,IER)
+        CALL SURREL2(ACT,ICOMP,IER)
         call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
 
 C Make a copy of constructions file and tmc file if applicable.
@@ -6361,7 +6384,7 @@ C ensures that the original model files are not corrupted.
           APE='_not  '
           newgeo=.true.  ! assume newer format geometry.
 
-C Loop through this zone and first scan geometry, next use surrel to
+C Loop through this zone and first scan geometry, next use surrel2 to
 C update parent/child information and write out the zone.
           IUF=IFIL+2
           EXT='.geo'
@@ -6383,8 +6406,11 @@ C            return
 
           CALL FNCNGR(LGEOM_O(IZ),APE,EXT,NNAME)
           LGEOM(IZ)=NNAME
+
+C Use edge checking logic of surrel2 to establish children.
           ACT='s'
-          CALL SURREL(ACT,IZ,IER)
+C          CALL SURREL(ACT,IZ,IER)
+          CALL SURREL2(ACT,IZ,IER)
           call geowrite(IUF,LGEOM(IZ),IZ,ITRU,3,IER)
 
 C Make a copy of constructions file and tmc file if applicable.
@@ -6568,7 +6594,7 @@ C The inital task is to make copies of the relevant zone files
 C which is functionally equivalent to the code blocks in subroutine
 C verman for the case of geometry and attribution (ILM=2).
 
-C Loop through this zone and first scan geometry, next use surrel to
+C Loop through this zone and first scan geometry, next use surrel2 to
 C update parent/child information and write out the zone.
       IUF=IFIL+2
       EXT='.geo'
@@ -6610,8 +6636,11 @@ C     &  ssmlcindex(4),ssmlcindex(5),ssmlcindex(6),ssmlcindex(7)
 
       CALL FNCNGR(LGEOM_O(ICOMP),APE,EXT,NNAME)
       LGEOM(ICOMP)=NNAME
+
+C Use edge checking logic of surrel2 to find child surfaces.
       ACT='s'
-      CALL SURREL(ACT,ICOMP,IER)
+C      CALL SURREL(ACT,ICOMP,IER)
+      CALL SURREL2(ACT,ICOMP,IER)
       call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
 
 C Make a copy of constructions file and tmc file if applicable.
@@ -16178,7 +16207,7 @@ C   act = '-' work silently, 'w' print warnings.
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      character acts*1   ! for call to surrel
+      character acts*1   ! for call to surrel2
       character outs*124 ! for feedback
       logical unixok
       logical newgeo
@@ -16218,9 +16247,10 @@ C Scan geometry file, look for surface attributes.
           CALL GEOREAD(IUF,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
           acts='s'
 
-C Code to loop through each surface to build a hash table so that each
-C surface also knowns its children
-          CALL SURREL(acts,ICOMP,IER)
+C Use edge checking code in surrel2 to establish child
+C surfaces.
+C          CALL SURREL(acts,ICOMP,IER)
+          CALL SURREL2(acts,ICOMP,IER)
 
 C For each surface in this zone
           DO 552 ISUR=1,NZSUR(ICOMP)

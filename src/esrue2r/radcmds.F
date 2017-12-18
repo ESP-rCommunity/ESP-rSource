@@ -1161,12 +1161,16 @@ C Generate command to convert to a gif.
      &          ttifd(1:lnblnk(ttifd))
             elseif(IWF.eq.3)then
 
-C Using convert to go from hdr to jpg usually darkens so use command line
-C option for a 20% brightening and -20% contrast reduction to look better.
-              write(doit,'(4a)') 'convert -brightness-contrast 20x-20 ',
-     &          tpicd(1:lnblnk(tpicd)),' ',tjpgd(1:lnblnk(tjpgd))
+C Using the Imagemagic utility convert to go from hdr to jpg.
+C Includes -gamma 2.2 to prevent darkening of the jpg. 
+C An alternative command line option for a 20% brightening and
+C -20% contrast reduction to look better.
+C              write(doit,'(4a)') 'convert -brightness-contrast 20x-20 ',
+C     &          tpicd(1:lnblnk(tpicd)),' ',tjpgd(1:lnblnk(tjpgd))
 C              write(doit,'(4a)') 'convert ',tpicd(1:lnblnk(tpicd)),' ',
 C     &          tjpgd(1:lnblnk(tjpgd))
+              write(doit,'(4a)') 'convert -gamma 2.2 ',
+     &          tpicd(1:lnblnk(tpicd)),' ',tjpgd(1:lnblnk(tjpgd))
             endif
 
 C Debug/trace.
@@ -1919,7 +1923,7 @@ C with Lux legend.
       integer itc,icout  ! trace verbosity and output channel
       common/trace/itc,icout
 
-      CHARACTER ltmp*96,doit*360
+      CHARACTER ltmp*96,doit*400
       character rendopt*200,buffer*200
       character ilfile*72,ulfile*72 ! for illuminance
       character ihfile*72,uhfile*72 ! for luminance
@@ -1965,7 +1969,7 @@ C      write(6,*) 'lux ',luxfile(1:lnblnk(luxfile))
 
 C Ask max lux and how many steps e.g. 30 and 15 results in
 C 2 lux intervals.
-      maxlux=20
+      maxlux=200
       CALL EASKI(maxlux,'Lux range from zero to X. Confirm the',
      &  'maximum Lux level contour:',
      &   1,'F',3000,'W',20,'max lux range',IER,nbhelp) 

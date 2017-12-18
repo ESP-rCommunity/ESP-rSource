@@ -95,7 +95,7 @@ C Clear viewing area, set and store scaling factors.
       CALL startbuffer()
 
 C Setup and pass in parameters to win3d.
-      iiw1=6; iiw2=6; iiw3=6; iiw4=4; iimenu=menuchw
+      iiw1=6; iiw2=4; iiw3=4; iiw4=2; iimenu=menuchw
       iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
       CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &  iigl,iigr,iigt,iigb,iigw,iigwh)
@@ -274,6 +274,11 @@ C first view.
      4              vecZbeg(ntcelx,ntcely,ntcelz),
      5              vecZend(ntcelx,ntcely,ntcelz)
 
+C To support stand-alone display via DFV.
+      integer ISIMDAY ! Julian day within a cfd3dasci file
+      real SIMTIMEF   ! time associated with a cfd3dasci file
+      COMMON/DFVtime/ISIMDAY,SIMTIMEF
+
       dimension Vstart(3),Vend(3),IC(6,2)
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
@@ -365,16 +370,25 @@ C Draw the arrow.
 
 C Draw 10 steps along colour range.
 C Write a title for the plot.
-C Figure out the current time!
-      CALL EDAYR(ICDYOS,IDs,IMs)
-      CALL EDAYR(ICDYOF,IDf,IMf)
-      FRACH=1.0/float(NTS)  ! what part of hour
-      NOW=CFTOS+((IFRAME-1)*FRACH)
-      if(NOW.gt.24.1) NOW=0.0
-C      write(6,*) 'IFRAME,FRACH,CFTOS,NOW',IFRAME,FRACH,CFTOS,NOW
-      write(PDESCR,'(a,i3,2a,f5.2,a,i3,2a,f5.2,a,f5.2,a,f5.2)')
-     &  ' During',IDs,MTHNAM(IMs),', hr ',CFTOS,' to',IDf,MTHNAM(IMf),
-     &  ', hr ',CFTOF,' @',NOW
+C Figure out the current time!  If IFRAME is zero then subroutine
+C called within DFV so use alternative variables.
+      if(IFRAME.eq.0)then
+        CALL EDAYR(ISIMDAY,IDs,IMs)
+        NOW=SIMTIMEF
+        write(6,*) 'IFRAME,IDs,IMs,NOW',IFRAME,IDs,IMs,NOW
+        write(PDESCR,'(a,i3,2a,f5.2)')
+     &    ' On',IDs,MTHNAM(IMs),' @',NOW
+      else
+        CALL EDAYR(ICDYOS,IDs,IMs)
+        CALL EDAYR(ICDYOF,IDf,IMf)
+        FRACH=1.0/float(NTS)  ! what part of hour
+        NOW=CFTOS+((IFRAME-1)*FRACH)
+        if(NOW.gt.24.1) NOW=0.0
+        write(6,*) 'IFRAME,FRACH,CFTOS,NOW',IFRAME,FRACH,CFTOS,NOW
+        write(PDESCR,'(a,i3,2a,f5.2,a,i3,2a,f5.2,a,f5.2,a,f5.2)')
+     &    ' During',IDs,MTHNAM(IMs),', hr ',CFTOS,' to',IDf,MTHNAM(IMf),
+     &    ', hr ',CFTOF,' @',NOW
+      endif
       iside=1 ! 1st line
       isize=0
       ifont=1

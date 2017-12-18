@@ -299,6 +299,11 @@ C.....Named constants for timerows
       logical OK,DOK
       logical bInStartup  ! logical function returning true if in startup period
 
+C <SPR>
+      common/occup/isocc(MCOM)
+      logical isocc
+C </SPR>
+
 C Trace output ?
       traceok = .true.
       IF(ITC.LE.0.OR.NSINC.LT.ITC)traceok = .false.
@@ -478,6 +483,17 @@ C << any need for ICGUnit?  Probably always is W. >>
         ctlperlightl(icomp,2)=VAL(ISD+5)
         ctlperequipl(icomp,2)=VAL(ISD+8)
         ctlperotherl(icomp,2)=0.0
+
+C <SPR>
+C Set occupancy flag.
+        isocc(ICOMP)=.false.
+        if ((ctlperocupc(icomp,2)+
+     &       ctlperocupr(icomp,2)+
+     &       ctlperocupl(icomp,2)).gt.0.) then
+          isocc(ICOMP)=.true.
+        endif
+C </SPR>
+
         if(traceok)then
           write(outs,*)'separate casual gains from temporal db=',
      &        VAL(ISD),VAL(ISD+1),VAL(ISD+2),VAL(ISD+3),VAL(ISD+4),
@@ -1065,6 +1081,19 @@ C by value from FMU.
 c              write(287,*)'CGCTL(ICOMP,2,IGN),ICOMP,IGN',
 c     &          CGCTL(ICOMP,2,IGN),ICOMP,IGN
 C </FMI>
+
+C <SPR>
+C Set occupancy flag.
+              if (IGN.eq.1) then
+                isocc(ICOMP)=.false.
+                if ((CGSENC(ICOMP,IDAY,IGN,IPER)+
+     &               CGSENR(ICOMP,IDAY,IGN,IPER)+
+     &               CGLAT(ICOMP,IDAY,IGN,IPER))*
+     &              CGCTL(ICOMP,2,IGN).gt.0.) then
+                  isocc(ICOMP)=.true.
+                endif
+              endif
+C </SPR>
 
               QCASC(2)=QCASC(2)+CGSENC(ICOMP,IDAY,IGN,IPER)*
      &                 CGCTL(ICOMP,2,IGN)
@@ -2005,9 +2034,11 @@ C is non-zero.
           write(outs,911)I,ICOMP,IBOFOT(ICOMP,I)
  911      format('the TMC surface ',I3,' on zone',I3,' has IBOFOT=',I1)  
           call edisp(itu,outs)
-          write(outs,'(A,I3,A,F5.2,A)')'The VT of surface',I,' is ',
-     &      V,'**'
-          call edisp(itu,outs)
+
+C Note: VT is not defined in this subroutine.
+C          write(outs,'(A,I3,A,F5.2,A)')'The VT of surface',I,' is ',
+C     &      V,'**'
+C          call edisp(itu,outs)
         ENDIF 
  52   CONTINUE  
 
@@ -2026,9 +2057,10 @@ C Description for irradiation/illumination data:
       write(outs,99974)SAZI,SALT
 99974 format('    : solar azi deg(',F6.1,') solar alt deg(',F6.1,')')
       call edisp(itu,outs)
-      write(outs,99975)RATIO,nelem
-99975 format('    : TMC blind/shuter(',F4.2,') Sun patch no.(',I3,')')
-      call edisp(itu,outs)
+C Note: ratio & nelem are not defined in this subroutine.
+C      write(outs,99975)RATIO,nelem
+C99975 format('    : TMC blind/shuter(',F4.2,') Sun patch no.(',I3,')')
+C      call edisp(itu,outs)
 
   999 return
       end
@@ -2097,7 +2129,6 @@ C Illuminance database.
       DIMENSION Aa(MLCOM,MDF),Ab(MLCOM,MDF),Ac(MLCOM,MDF),Ya(MLCOM,MDF)
       DIMENSION zelum(MLCOM)
       DIMENSION XPL(MV),YPL(MV),ZPL(MV)
-
       CHARACTER*25 CSTR
       character outs*124,doit*124,outstr*124
       character*72 LTMPFL,LTMPFLA,OUTCMD
@@ -2105,9 +2136,13 @@ C Illuminance database.
 
       logical close,closea,closeb,closec,closed,closee,closef,closeg
       logical closeh,closei,instart,neglum,XST,bInStartup,nog
+      REAL PI,TODEG,RAD
 
       iunit=ifil+1
       e2redit='NONE'
+      PI = 4.0 * ATAN(1.0)
+      TODEG=180/PI
+      RAD=PI/180.0
 
 C If esp pre-processor or user defined df then read in geometry data.
       nog=.false.

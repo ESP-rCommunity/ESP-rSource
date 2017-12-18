@@ -293,8 +293,10 @@ C (disabled by default!)
               else 
                 call getarg(i,act)
               end if
-C If act is asci2bin or bin2asci read ascii file name
-              if(act(1:8).eq.'asci2bin'.or.act(1:8).eq.'bin2asci')then
+C If act is asci2bin ascii 2bin or bin2asci bin2ascii read
+C ascii file name.
+              if(act(1:8).eq.'asci2bin'.or.act(1:9).eq.'ascii2bin'.or.
+     &           act(1:8).eq.'bin2asci'.or.act(1:9).eq.'bin2ascii')then
               i=i+1
               if (UsePassedCommandLine) then 
                 call EGETW(PassedCommandLine,pos,actf,'-',
@@ -357,7 +359,8 @@ C If act is asci2bin or bin2asci read ascii file name
                 call getarg(i,act)
               end if
 C If act is asci2bin or bin2asci read ascii file name
-              if(act(1:8).eq.'asci2bin'.or.act(1:8).eq.'bin2asci')then
+              if(act(1:8).eq.'asci2bin'.or.act(1:9).eq.'ascii2bin'.or.
+     &           act(1:8).eq.'bin2asci'.or.act(1:9).eq.'bin2ascii')then
                 i=i+1
                 if (UsePassedCommandLine) then 
                   call EGETW(PassedCommandLine,pos,ascif,'-',
@@ -1036,124 +1039,6 @@ C*******************************************************************************
 C***********************************************************************************************************************
 C***********************************************************************************************************************
 C***********************************************************************************************************************
-C***********************************************************************************************************************
-C***********************************************************************************************************************
-C***********************************************************************************************************************
-C parcnv parse command line paramters for ecnv.
-      subroutine parcnv(iverb,conv,iobs,ichop,itmprm,iform,oform,
-     &                   inf,ouf,ucfg)
-      
-      integer lnblnk  ! function definition
-
-      COMMON/OUTIN/IUOUT,IUIN
-
-      integer iargc,m
-      integer termtype
-      integer i,iverb,itmprm,iobs,ichop
-      real conv
-      character argument*72,prog*72,inf*144,outs*248,appn*24
-      character iform*24,oform*24,ouf*144,ucfg*72,mode*8
-
-      inf  = 'UNKNOWN'
-      iform = 'UNKNOWN'
-      oform = 'UNKNOWN'
-      ouf  = 'UNKNOWN'
-      ucfg  = 'UNKNOWN'
-      conv = 0.001
-      iverb = 0
-      itmprm = 1
-      iobs  = 0
-      ichop = 0
-
-C Get number of arguments and command name.
-      termtype = -1
-      mode = 'text'
-      m = iargc()
-      i = 0
-      call getarg(i,prog)
-      call findapp(prog,appn)
-
-C If one parameter.
-      if(m.eq.0)then
-        stop
-      elseif(m.ge.1)then
-  41    i= i+1
-        if(i.gt.m)goto 42
-        call getarg(i,argument)
-        if(argument(1:5).eq.'-help')then
-      call edisp(iuout,'The product model filter. ')
-      call edisp(iuout,' Use: [-v] [{-mm|-metre}] ')
-      call edisp(iuout,'  -if {esp|dxf|ww} -in <file> ')
-      call edisp(iuout,
-     &  '  -of {esp|dxf|viewer|xfig|vrml} -out <file>')
-      call edisp(iuout,' ')
-      call edisp(iuout,'Where options are:')
-      call edisp(iuout,' -if [esp|dxf|ww] = input format')
-      call edisp(iuout,'      (dxf = AutoCAD V11-12)')
-      call edisp(iuout,'      (ww = ww graphic commands)')
-      call edisp(iuout,' -in [file]  = input file')
-      call edisp(iuout,
-     &  ' -of [esp|dxf|viewer|xfig|vrml] = dest format')
-      call edisp(iuout,' -out [file] = output file')
-      call edisp(iuout,' -v          = verbose mode')
-      call edisp(iuout,' -mm -metre  = dxf coords in mm (default)')
-      call edisp(iuout,' -keep       = retain scratch files')
-      call edisp(iuout,' -obs        = include esp-r obstructions')
-      call edisp(iuout,' ')
-      call edisp(iuout,'The following combinations are supported:')
-      call edisp(iuout,'  input format  output format')
-      call edisp(iuout,'  esp-r         dxf, viewer, vrml')
-      call edisp(iuout,'  dxf           esp-r, viewer')
-      call edisp(iuout,' ')
-      call edisp(iuout,'If converting to esp-r then an additional') 
-      call edisp(iuout,'parameter is allowed:')
-      call edisp(iuout,' -u [upgrade] when updating a model from ')
-      call edisp(iuout,'    registration stage.')
-      call edisp(iuout,' ')
-      call edisp(iuout,' -help :this help message.')
-      call edisp(iuout,' ')
-          stop
-        elseif(argument(1:2).eq.'-v')then
-          iverb = 2   ! tell application to run with debug on
-        elseif(argument(1:3).eq.'-mm')then
-          conv = 0.001
-        elseif(argument(1:6).eq.'-metre')then
-          conv = 1.00
-        elseif(argument(1:4).eq.'-obs')then
-          iobs = 1
-        elseif(argument(1:5).eq.'-chop')then
-          ichop = 1
-        elseif(argument(1:5).eq.'-keep')then
-          itmprm = 0
-        elseif(argument(1:3).eq.'-in')then
-          i=i+1
-          call getarg(i,inf)
-        elseif(argument(1:4).eq.'-out')then
-          i=i+1
-          call getarg(i,ouf)
-        elseif(argument(1:2).eq.'-u')then
-          i=i+1
-          call getarg(i,ucfg)
-          call edisp(iuout,'Will attempt to update configuration')
-        elseif(argument(1:3).eq.'-if')then
-          i=i+1
-          call getarg(i,iform)
-        elseif(argument(1:3).eq.'-of')then
-          i=i+1
-          call getarg(i,oform)
-        endif
-        goto 41
-
-  42    continue
-        write(outs,'(4a)') 'Starting ecnv in ',
-     &    oform(1:lnblnk(oform)),' mode with in file ',
-     &    inf(1:lnblnk(inf))
-        call edisp248(iuout,outs,100)
-        write(outs,'(3a)') 'and output file ',ouf(1:lnblnk(ouf)),'.'
-        call edisp248(iuout,outs,100)
-        return
-      endif
-      end
 
 C ******* FINDAPP
 C FINDAPP given a file name (string) see if it contains one of the esp-r module names.
@@ -1266,7 +1151,7 @@ C Where validation tests are kept.
       character*(*) LFDEF
       CHARACTER OUTSTR*124,WORD*20
       character outs*124,outs248*248
-      character fmttag*4,fmtexe*20,cadlbl*20,cadexe*20,cadfmt*4
+      character fmttag*4,fmtexe*20,cadlbl*20,cadexe*20,cadfmt*5
       character replbl*20,repexe*20
       character gprlbl*20,gprcmd*48
       character gxwdlbl*20,gxwdcmd*60
@@ -1933,14 +1818,15 @@ C parpsfh: Help message for several of the command line parsers.
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
         call edisp(iuout,'       [-file <climate db>]')
         call edisp(iuout,'   [-act <action> <how> <file>]')
-        call edisp(iuout,'  (where action {asci2bin|bin2asci|epw2bin})')
-        call edisp(iuout,'  (where how {interactive|silent} defines ')
-        call edisp(iuout,'   whether the user interacts')
-        call edisp(iuout,'  (where file is asci input or output file)')
+        call edisp(iuout,'   where: ')
+        call edisp(iuout,'    <action> {ascii2bin|bin2ascii|epw2bin})')
+        call edisp(iuout,'    <how> {interactive|silent} level of')
+        call edisp(iuout,'      user interaction')
+        call edisp(iuout,'    <file> the ascii file to read/create.')
         call edisp(iuout,' ')
         call edisp(iuout,'Example converting binary file to asci: ')
         call edisp(iuout,
-     &    ' clm -file current.clm -act bin2asci silent current.asci')
+     &    ' clm -file current.clm -act bin2asci silent new.asci')
         call edisp(iuout,' ')
         call edisp(iuout,'Example converting asci file to binary: ')
         call edisp(iuout,

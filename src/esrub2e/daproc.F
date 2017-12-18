@@ -294,7 +294,17 @@ C Simulation parameter periods.
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
      &               isfnmon(MSPS)
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
+C Extended simulation parameters for each set.
+      common/spfldats/isstupex(MSPS),isbnstepex(MSPS),ispnstepex(MSPS),
+     &  issaveex(MSPS),isavghex(MSPS),iscfdactivate(MSPS),
+     &  isicfdys(MSPS),isicfdyf(MSPS),
+     &  scftims(MSPS),scftimf(MSPS)
+      INTEGER :: isstupex,isbnstepex,ispnstepex,issaveex,isavghex
+      INTEGER :: iscfdactivate      ! zero ignore domains
+      INTEGER :: isicfdys,isicfdyf  ! CFD simulation start & finish days
+      REAL :: scftims,scftimf       ! CFD simulation start & finish time
 
       COMMON/RBEMSTR/BHSTR(MBCOL)   
 
@@ -477,6 +487,7 @@ C day to today.
 
 C Set the simulation timestep to that in the tdf database and file.
           isbnstep=NINT(3600./SIMTSTP)
+          isbnstepex(1)=NINT(3600./SIMTSTP)
 
 C Update the config file with this data. 
           CALL EDISP(IUOUT,'Updating configuration file with the start')
@@ -565,6 +576,9 @@ C Write out the header data
         WRITE(IBUNIT,'(A)')'*task,update'
 
 C Write out the integer value of the timestep.
+
+C << logic needed in the case of extended *sps >>
+
         ISTPH=NINT(3600./SIMTSTP) 
         IF(ISTPH.EQ.0) ISTPH=1
         WRITE(IBUNIT,'(A,I5)')'*stepperhour,',ISTPH
@@ -1083,6 +1097,17 @@ C Commons
       COMMON/B2EI3/MSIM,NZINT,IZINT(MCOM)
 
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+
+C Extended simulation parameters for each set.
+      common/spfldats/isstupex(MSPS),isbnstepex(MSPS),ispnstepex(MSPS),
+     &  issaveex(MSPS),isavghex(MSPS),iscfdactivate(MSPS),
+     &  isicfdys(MSPS),isicfdyf(MSPS),
+     &  scftims(MSPS),scftimf(MSPS)
+      INTEGER :: isstupex,isbnstepex,ispnstepex,issaveex,isavghex
+      INTEGER :: iscfdactivate      ! zero ignore domains
+      INTEGER :: isicfdys,isicfdyf  ! CFD simulation start & finish days
+      REAL :: scftims,scftimf       ! CFD simulation start & finish time
 
 C Commom for the optimim start/stop simulation. 
       COMMON/OPPSIM/NOPSSPT,OPSSPT(MCOM),NOPSSTIM,OPSSTIM(MCOM),
@@ -1130,7 +1155,8 @@ C Recover the zone ID
         CALL EGETWR(OUTSTR,K,TIMEH,0.,0.,'-','time h',IER)
         CALL EGETWR(OUTSTR,K,TEMP,0.,0.,'-','time t',IER)
 
-Check if criteria have been met for this zone. 
+Check if criteria have been met for this zone.
+C << extended *sps ? >> 
         NTSPH=isbnstep
         toler=(1./(24*float(NTSPH)))*0.5
         DO 10 IZ=1,NZINT
@@ -1171,9 +1197,9 @@ C then return the start time to BEMS.
             WRITE(IE2BFIL,*) '#Start heating at:'
             ISIM=ISIMUL
             WRITE(IE2BFIL,*) OPSSTIM(IZI)-
-     &(float(ISIM)/float(isbnstep))
+     &        (float(ISIM)/float(isbnstep))
             write(outs,'(a,f7.3)')'#Start heating at:',OPSSTIM(IZI)-
-     &(float(ISIM)/float(isbnstep))
+     &        (float(ISIM)/float(isbnstep))
             call edisp(iuout,outs)
             RESULTG=.TRUE.
           ELSE
@@ -1225,6 +1251,17 @@ C Commom for the optimim start/stop simulation.
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
      &               isfnmon(MSPS)
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+
+C Extended simulation parameters for each set.
+      common/spfldats/isstupex(MSPS),isbnstepex(MSPS),ispnstepex(MSPS),
+     &  issaveex(MSPS),isavghex(MSPS),iscfdactivate(MSPS),
+     &  isicfdys(MSPS),isicfdyf(MSPS),
+     &  scftims(MSPS),scftimf(MSPS)
+      INTEGER :: isstupex,isbnstepex,ispnstepex,issaveex,isavghex
+      INTEGER :: iscfdactivate      ! zero ignore domains
+      INTEGER :: isicfdys,isicfdyf  ! CFD simulation start & finish days
+      REAL :: scftims,scftimf       ! CFD simulation start & finish time
 
       COMMON/RBEMDAT/SIMTSTP,NLINE,NCOLS,CURTM,BVAR(MBROW,MBCOL),
      &SENMAP(MBCOL)

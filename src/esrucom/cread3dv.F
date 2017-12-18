@@ -557,11 +557,9 @@ C Make some concession to the size of the font.
                 IF(SSVFC(icc).EQ.'VERT')THEN
 
 C Draw arrow and horizontal line.
-                  iid1=iixc+3
-                  iid2=iiyc-3
+                  iid1=iixc+3; iid2=iiyc-3
                   call eswline(iixc,iiyc,iid1,iid2)
-                  iid1=iixc+3
-                  iid2=iiyc+3
+                  iid1=iixc+3; iid2=iiyc+3
                   call eswline(iixc,iiyc,iid1,iid2)
                   iid1=iixc+7
                   call eswline(iixc,iiyc,iid1,iiyc)
@@ -569,40 +567,29 @@ C Draw arrow and horizontal line.
                 ELSEIF(SSVFC(icc).EQ.'CEIL')THEN
 
 C Draw arrow to surface then up and horizontal to the text.
-                  iid1=iixc+3
-                  iid2=iiyc-3
+                  iid1=iixc+3; iid2=iiyc-3
                   call eswline(iixc,iiyc,iid1,iid2)
-                  iid1=iixc-3
-                  iid2=iiyc-3
+                  iid1=iixc-3; iid2=iiyc-3
                   call eswline(iixc,iiyc,iid1,iid2)
                   iid1=iiyc-5
                   call eswline(iixc,iiyc,iixc,iid1)
-                  iid1=iiyc-5
-                  iid2=iixc+7
-                  iid3=iiyc-5
+                  iid1=iiyc-5; iid2=iixc+7; iid3=iiyc-5
                   call eswline(iixc,iid1,iid2,iid3)
-                  iiyc=iiyc-5
-                  iixc=iixc+7
+                  iiyc=iiyc-5; iixc=iixc+7
                 ELSEIF(SSVFC(icc).EQ.'FLOR')THEN
 
 C Draw arrow to surface then down and horizontal to the text.
-                  iid1=iixc+3
-                  iid2=iiyc+3
+                  iid1=iixc+3; iid2=iiyc+3
                   call eswline(iixc,iiyc,iid1,iid2)
-                  iid1=iixc-3
-                  iid2=iiyc+3
+                  iid1=iixc-3; iid2=iiyc+3
                   call eswline(iixc,iiyc,iid1,iid2)
                   iid1=iiyc+5
                   call eswline(iixc,iiyc,iixc,iid1)
-                  iid1=iiyc+5
-                  iid2=iixc+7
-                  iid3=iiyc+5
+                  iid1=iiyc+5; iid2=iixc+7; iid3=iiyc+5
                   call eswline(iixc,iid1,iid2,iid3)
-                  iiyc=iiyc+5
-                  iixc=iixc+7
+                  iiyc=iiyc+5; iixc=iixc+7
                 ENDIF
-C Make some concession to the size of the font.
-                iid4=iiyc+(3*(NAMEFT+1))
+                iid4=iiyc+3
                 CALL wstxpt(iixc,iid4,stemp)
                 IF(IFS.GT.0)CALL winfnt(IFS)
               endif

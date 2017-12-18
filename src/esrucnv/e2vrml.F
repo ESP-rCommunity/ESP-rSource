@@ -64,7 +64,7 @@ C creates a grey-scale VRML 2.0 world.
       character OPT*12  ! to pass optical properties
       character ZSN*28,q*1
       DIMENSION SNA(MS),PAZI(MS),PELV(MS),ZSN(MS)
-      character outs*124,outsd*124,hc*1
+      character outs*124,outsd*124,louts*496,loutsd*496,hc*1
       logical XST,numb
       integer llbm    ! length of block material
       
@@ -274,12 +274,12 @@ C In esp-r +Y goes into the screen, in VRML -Z goes into screen.
             WRITE(ioout,'(a)') '        coordIndex [ '
 
 C Write a comma separated list of vertices (in both directions) with a trailing -1.
-            write(outs,'(24I4)') (JVN(J,K)-1,K=1,NVER(j))
-            call sdelim(outs,outsd,'C',IW)
-            WRITE(ioout,'(3a)')'    ',outsd(1:lnblnk(outsd)),',-1,'
-            write(outs,'(24I4)') (JVN(J,K)-1,K=NVER(j),1,-1)
-            call sdelim(outs,outsd,'C',IW)
-            WRITE(ioout,'(3a)')'    ',outsd(1:lnblnk(outsd)),',-1'
+            write(louts,'(124I4)') (JVN(J,K)-1,K=1,NVER(j))
+            call sdelim(louts,loutsd,'C',IW)
+            WRITE(ioout,'(3a)')'    ',loutsd(1:lnblnk(loutsd)),',-1,'
+            write(louts,'(124I4)') (JVN(J,K)-1,K=NVER(j),1,-1)
+            call sdelim(louts,loutsd,'C',IW)
+            WRITE(ioout,'(3a)')'    ',loutsd(1:lnblnk(loutsd)),',-1'
             WRITE(ioout,'(a)') '        ] '
             WRITE(ioout,'(a,3F5.2,a,3F5.2,a)')
      &        '        color Color {  color [ ',
@@ -320,12 +320,12 @@ C Write differently if opaque or transparent.
             WRITE(ioout,'(2a)') '        coord USE COORD_',
      &        zname(newfoc)(1:lnzname(newfoc))
             WRITE(ioout,'(a)')  '        coordIndex [ '
-            write(outs,'(24I4)') (JVN(J,K)-1,K=1,NVER(j))
-            call sdelim(outs,outsd,'C',IW)
-            WRITE(ioout,'(3a)') '    ',outsd(1:lnblnk(outsd)),',-1,'
-            write(outs,'(24I4)') (JVN(J,K)-1,K=NVER(j),1,-1)
-            call sdelim(outs,outsd,'C',IW)
-            WRITE(ioout,'(3a)') '    ',outsd(1:lnblnk(outsd)),',-1'
+            write(louts,'(124I4)') (JVN(J,K)-1,K=1,NVER(j))
+            call sdelim(louts,loutsd,'C',IW)
+            WRITE(ioout,'(3a)') '    ',loutsd(1:lnblnk(loutsd)),',-1,'
+            write(louts,'(124I4)') (JVN(J,K)-1,K=NVER(j),1,-1)
+            call sdelim(louts,loutsd,'C',IW)
+            WRITE(ioout,'(3a)') '    ',loutsd(1:lnblnk(loutsd)),',-1'
             WRITE(ioout,'(a)') '        ] '
             WRITE(ioout,'(a,3F5.2,a,3F5.2,a)')
      &        '        color Color {  color [ ',

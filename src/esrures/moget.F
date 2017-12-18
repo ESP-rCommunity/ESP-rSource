@@ -184,8 +184,11 @@ C IGET = 74 IPV metric maximum power capacity (W/m^2)
 C IGET = 75 IPV metric pollutant emissions (kg/m^2/yr)
 C IGET = 76 IPV metric overall thermal comfort distribution
 
-C IGET = 80 Measured zone db T (for display only)
-C IGET = 81 Measured surface T (for display only)
+C IGET = 80 Observed zone db T (for display only)
+C IGET = 81 Observed surface T (for display only)
+C IGET = 82 Observed zone RH (for display only)
+C IGET = 83 Observed zone heat (for display only)
+C IGET = 84 Observed zone cool (for display only)
 
 
 C ************************ GOMSETUP ************************
@@ -250,6 +253,7 @@ C EDGOGET allows removal of output requests.
 #include "epara.h"
 #include "building.h"
 
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
@@ -293,7 +297,12 @@ C IVERT is the menu position, MVERT the current number of menu lines.
 
 C Initial menu entry setup.
       IER=0
-      IVERT=-3
+      if(MMOD.eq.8)then
+        IVERT=-1
+      else
+        IVERT=-2
+      endif
+C      IVERT=-3
 
 C Loop through the items until the page to be displayed. M is the 
 C current menu line index. Build up text strings for the menu based
@@ -423,6 +432,7 @@ C above.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/recov01/pifltog,lpifl
       COMMON/DNORGH/IRTYPE
 
@@ -452,6 +462,8 @@ C Optional title for graph and up to 10 other labels and their positions.
 
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
 
+C ilflag = 0 tabular labels on multi-lines, ilflag = 1 on one line
+C          ilflag = 2 do not include # header lines in file.
       COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
@@ -469,7 +481,7 @@ C Comfort parameters and hash table.
       
 C MRT Sensors via geometry.h.
 
-      CHARACTER ITEM(35)*24, MTITLE*22, values*20
+      CHARACTER ITEM(36)*24, MTITLE*22, values*20
       CHARACTER ITEMS(19)*23
       CHARACTER ITEMC(29)*24
       character xfile*144,tg*1,delim*1
@@ -681,7 +693,7 @@ C Setup menu items.
       ITEM(17)='m Renewables/adv. comp.'
       ITEM(18)='n Network air/wtr flow '
       ITEM(19)='o CFD metrics          '
-      ITEM(20)='p Measured:temporal    '
+      ITEM(20)='p Observed:temporal    '
       ITEM(21)='  ------------------   '
       if(NGET.eq.0)then
         ITEM(22)='                     '
@@ -703,11 +715,11 @@ C Setup menu items.
         endif
       endif
       if(IROC.eq.0)then
-        ITEM(24)='& Data: as values       '
+        ITEM(24)='% Data: as values       '
       elseif(IROC.eq.1)then
-        ITEM(24)='& Data: rate of change  '
+        ITEM(24)='% Data: rate of change  '
       elseif(IROC.eq.-1)then
-        ITEM(24)='& Data: integrated      '
+        ITEM(24)='% Data: integrated      '
       endif
 
       if (MENUTYPE.eq.3) then
@@ -733,70 +745,87 @@ C Setup menu items.
           ITEM(26)='* Time >> mm-dd 10:30:00'
         endif
 
-C << place ILFLAG here to define tabular labels >>
       endif
 
-C Make up text for 27th and 28th menu slots.
+C Set ILFLAG to define tabular labels
       if (MENUTYPE.eq.3) then
-        ITEM(27)='+ Add another profile'
+        ITEM(27)='  - NA -'
+      else
+        if(ILFLAG.eq.0)then
+          ITEM(27)='& labels >> multiline  '
+        elseif(ILFLAG.eq.1)then
+          ITEM(27)='& labels >> on one line'
+        elseif(ILFLAG.eq.2)then
+          ITEM(27)='& labels >> one ln no #'
+        endif
+      endif
+
+C Make up text for 28th and 29th menu slots.
+      if (MENUTYPE.eq.3) then
+        ITEM(28)='+ Add another profile'
         if(ireportunit.eq.0)then
-          ITEM(28)='" Units >> normal '
+          ITEM(29)='" Units >> normal '
         elseif(ireportunit.eq.1)then
-          ITEM(28)='" Units >> W or Whr'
+          ITEM(29)='" Units >> W or Whr'
         elseif(ireportunit.eq.2)then
-          ITEM(28)='" Units >> kW or kWhr'
+          ITEM(29)='" Units >> kW or kWhr'
         else
-          ITEM(28)='" Units >> unknown'
+          ITEM(29)='" Units >> unknown'
         endif
       else
 
 C Set delimiter, and for tabular lists allow unit choice. Stats is supposed
 C to be normal units ??
         if(delim.eq.'-')then
-          ITEM(27)='^ Delim >> normal '
+          ITEM(28)='^ Delim >> normal '
         elseif(delim.eq.'T')then
-          ITEM(27)='^ Delim >> TAB    '
+          ITEM(28)='^ Delim >> TAB    '
         elseif(delim.eq.'C')then
-          ITEM(27)='^ Delim >> comma  '
+          ITEM(28)='^ Delim >> comma  '
         elseif(delim.eq.'S')then
-          ITEM(27)='^ Delim >> space  '
+          ITEM(28)='^ Delim >> space  '
         elseif(delim.eq.'X')then
-          ITEM(27)='^ delim >> tagged '
+          ITEM(28)='^ delim >> tagged '
         endif
         if (MENUTYPE.eq.4) then
           if(ireportunit.eq.0)then
-            ITEM(28)='" Units >> normal '
+            ITEM(29)='" Units >> normal '
           elseif(ireportunit.eq.1)then
-            ITEM(28)='" Units >> W or Whr'
+            ITEM(29)='" Units >> W or Whr'
           elseif(ireportunit.eq.2)then
-            ITEM(28)='" Units >> kW or kWhr'
+            ITEM(29)='" Units >> kW or kWhr'
           else
-            ITEM(28)='" Units >> unknown'
+            ITEM(29)='" Units >> unknown'
           endif
         elseif (MENUTYPE.eq.5) then
           if(ireportunit.eq.0)then
-            ITEM(28)='" Units >> normal '
+            ITEM(29)='" Units >> normal '
           else
-            ITEM(28)='                     '
+            ITEM(29)='                     '
           endif
         endif
       endif
 
       if(MENUTYPE.eq.3) then
-        ITEM(29)='! Draw graph    '
-        ITEM(30)='* Labels        '
+        ITEM(30)='! Draw graph    '
+        ITEM(31)='* Labels        '
         nl=2
       elseif(MENUTYPE.eq.4)then
-        ITEM(29)='! List data    '
+        ITEM(30)='! List data    '
         nl=1
       else
         nl=0
       endif
-      ITEM(29+nl)='? Help           '
-      ITEM(30+nl)='- Exit           '
+      ITEM(30+nl)='? Help           '
+      ITEM(31+nl)='- Exit           '
 
-      NITMS=30+nl
-      INO=-2
+      NITMS=31+nl
+      if(MMOD.eq.8)then
+        INO=-1
+      else
+        INO=-2
+      endif
+C      INO=-2
 
 C Instanciate the help text for this menu.
       helptopic='res_select_metrics_list'
@@ -1280,15 +1309,15 @@ C IGET = 23  Comfort, ask which index and initialise.
      &    'a Predicted Mean Vote (PMV)','b PMV using SET',
      &    'c Percentage Dissatisfied (PPD)','d Local delta T head-foot',
      &    'e Dissatisfied due to floor T','f Diss. warm/ cool ceiling',
-     &    'g Diss. wall rad T assymetry','  ','  ','  ','  ','  ',
-     &    inoc,idnoc,nbhelp)
+     &   'g Diss. wall rad T assymetry','h Dissatisfied due to draught',
+     &    '  ','  ','  ','  ',inoc,idnoc,nbhelp)
         if(inoc.eq.0)goto 1
         call usrmsg('  ','  ','-')
         NGET=NGET+1
         IGETNO(NGET,1)=23
         IGETNO(NGET,9)=12
         if(inoc.eq.1)then
-          IGETNO(NGET,3)=1
+          IGETNO(NGET,4)=1
           IGETNO(NGET,6)=-304; IGETNO(NGET,7)=8; IGETNO(NGET,8)=4
           SUFFIX=' PMV'
           if(IROC.eq.0)then
@@ -1298,8 +1327,9 @@ C IGET = 23  Comfort, ask which index and initialise.
           elseif(IROC.eq.-1)then
             SLABEL(NGET)='Comfort (PMV hours) (-)'; LNSLABEL(NGET)=23
           endif
+          MRTLIST=.true.
         elseif(inoc.eq.2)then
-          IGETNO(NGET,3)=2
+          IGETNO(NGET,4)=2
           IGETNO(NGET,6)=-304; IGETNO(NGET,7)=8; IGETNO(NGET,8)=4
           SUFFIX=' PMV'
           if(IROC.eq.0)then
@@ -1310,8 +1340,9 @@ C IGET = 23  Comfort, ask which index and initialise.
           elseif(IROC.eq.-1)then
             SLABEL(NGET)='Comfort (PMV set hours)'; LNSLABEL(NGET)=23
           endif
+          MRTLIST=.true.
         elseif(inoc.eq.3)then
-          IGETNO(NGET,3)=3
+          IGETNO(NGET,4)=3
           IGETNO(NGET,6)=-304; IGETNO(NGET,7)=8; IGETNO(NGET,8)=4
           SUFFIX=' PPD'
           if(IROC.eq.0)then
@@ -1322,10 +1353,11 @@ C IGET = 23  Comfort, ask which index and initialise.
           elseif(IROC.eq.-1)then
             SLABEL(NGET)='Comfort (PPD % hours)'; LNSLABEL(NGET)=21
           endif
+          MRTLIST=.true.
         elseif(inoc.eq.4) then
           IGETNO(NGET,1)=50
           IGETNO(NGET,6)=-305; IGETNO(NGET,7)=8; IGETNO(NGET,8)=4
-          SUFFIX=' PPD'
+          SUFFIX=' PDdT'
           if(IROC.eq.0)then
             SLABEL(NGET)='Comfort PD head/foot (%)'
             LNSLABEL(NGET)=24
@@ -1336,10 +1368,11 @@ C IGET = 23  Comfort, ask which index and initialise.
             SLABEL(NGET)='Comfort PD hd/ft (% hours)'
             LNSLABEL(NGET)=26
           endif
+          MRTLIST=.true.
         elseif(inoc.eq.5) then
           IGETNO(NGET,1)=51
           IGETNO(NGET,6)=-305; IGETNO(NGET,7)=8; IGETNO(NGET,8)=4
-          SUFFIX=' PPD'
+          SUFFIX=' PDfl'
           if(IROC.eq.0)then
             SLABEL(NGET)='Comfort PD floor (%)'; LNSLABEL(NGET)=20
           elseif(IROC.eq.1)then
@@ -1354,7 +1387,7 @@ C IGET = 23  Comfort, ask which index and initialise.
           IGETNO(NGET,1)=52
           IGETNO(NGET,4)=5
           IGETNO(NGET,6)=-305; IGETNO(NGET,7)=8; IGETNO(NGET,8)=4
-          SUFFIX=' PDceil'
+          SUFFIX=' PDcl'
           if(IROC.eq.0)then
             SLABEL(NGET)='Ceiling discomf PD (%)'; LNSLABEL(NGET)=22
           elseif(IROC.eq.1)then
@@ -1374,7 +1407,15 @@ C IGET = 23  Comfort, ask which index and initialise.
           CALL EASKABCD('Sensor facing which direction:',' ','South',
      &      'East','North','West',ICF,nbhelp)
           IGETNO(NGET,4)=ICF
-          SUFFIX=' PDwall'
+          if (ICF.eq.1) then
+            SUFFIX=' PDwS'
+          elseif (ICF.eq.2) then
+            SUFFIX=' PDwE'
+          elseif (ICF.eq.3) then
+            SUFFIX=' PDwN'
+          elseif (ICF.eq.4) then
+            SUFFIX=' PDwW'
+          endif
           if(IROC.eq.0)then
             SLABEL(NGET)='Wall discomf PD (%)'; LNSLABEL(NGET)=19
           elseif(IROC.eq.1)then
@@ -1384,10 +1425,23 @@ C IGET = 23  Comfort, ask which index and initialise.
             SLABEL(NGET)='Wall discomf PD (% hours)'
             LNSLABEL(NGET)=25
           endif
+        elseif(inoc.eq.8) then
+          IGETNO(NGET,1)=54
+          IGETNO(NGET,6)=-305; IGETNO(NGET,7)=8; IGETNO(NGET,8)=4
+          MRTLIST=.true.
+          if(IROC.eq.0)then
+            SLABEL(NGET)='Draught discomf PD (%)'; LNSLABEL(NGET)=22
+          elseif(IROC.eq.1)then
+            SLABEL(NGET)='Draught discomf PD (% change/hr)'
+            LNSLABEL(NGET)=32
+          elseif(IROC.eq.-1)then
+            SLABEL(NGET)='Draught discomf PD (% hours)'
+            LNSLABEL(NGET)=28
+          endif
         endif
         idd=1
         izz=1
-        CALL MOCMFT(idd,izz,'I')
+        CALL MOCMFT(idd,izz,0,'I')
 
       elseif(INO.EQ.8)then
 
@@ -3202,30 +3256,45 @@ C CFD flow.
 
       elseif(INO.EQ.20)then
 
-C Measured data.
-C Measured zone db T, select associated zone or if measured
-C surface T select the zone and surface.
-C << give the users clues about which zones have measured temps >>
-C << make this into a selection list, but if there is only one
-C << then it could be automatically selected
+C Observed data.
+C Observed zone db T heating and cooling, select associated zone
+C or if observed surface T select the zone and surface.
+
+C Give the users clues about which zones have observed data.
         do 188 loop=1,NZ
-          if(IDBTZNM(loop).ne.0)then
-            write(outs,'(2a)') 'measured db T in ',
+          if(IDBTZNOBS(loop).ne.0)then
+            write(outs,'(2a)') 'observed db T in ',
      &        ZNAME(loop)(1:lnzname(loop))
             call edisp(iuout,outs)
           endif
           do 189 kk=1,nzsur(loop)
-            if(ISURTMEAS(loop,kk).ne.0)then
-              write(outs,'(3a,i3)') 'measured surf T in ',
+            if(ISURTOBS(loop,kk).ne.0)then
+              write(outs,'(3a,i3)') 'observed surf T in ',
      &          ZNAME(loop)(1:lnzname(loop)),' surf ',kk
               call edisp(iuout,outs)
             endif
   189     continue
+          if(IZNRHOBS(loop).ne.0)then
+            write(outs,'(2a)') 'observed RH in ',
+     &        ZNAME(loop)(1:lnzname(loop))
+            call edisp(iuout,outs)
+          endif
+          if(IZNHTOBS(loop).ne.0)then
+            write(outs,'(2a)') 'observed heating in ',
+     &        ZNAME(loop)(1:lnzname(loop))
+            call edisp(iuout,outs)
+          endif
+          if(IZNCLOBS(loop).ne.0)then
+            write(outs,'(2a)') 'observed cooling in ',
+     &        ZNAME(loop)(1:lnzname(loop))
+            call edisp(iuout,outs)
+          endif
   188   continue
         helptopic='res_measured_data_select'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        CALL EASKAB('Which measured data type',
-     &    ' :','zone db T','surface T',IR,nbhelp)
+        CALL EASKATOG('Which observed data type',' :',
+     &    'zone db T','surface T','zone RH','zone heat',
+     &    'zone cool','  ','  ',IR,nbhelp)
         NGET=NGET+1
         if(ir.eq.1)then
           call ASKZON(IZONE)
@@ -3234,16 +3303,16 @@ C << then it could be automatically selected
           IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
           IGETNO(NGET,8)=1; IGETNO(NGET,9)=12
           SUFFIX=' db T'
-          GLABEL(NGET)='Measured db Tmp'; LNGLABEL(NGET)=15
+          GLABEL(NGET)='Observed db Tmp'; LNGLABEL(NGET)=15
           if(IROC.eq.0)then
-            SLABEL(NGET)='Measured zone db T (degC)'
+            SLABEL(NGET)='Observed zone db T (degC)'
             LNSLABEL(NGET)=25
           elseif(IROC.eq.1)then
-            SLABEL(NGET)='Meas zone db T change (degC/hr)'
-            LNSLABEL(NGET)=31
-          elseif(IROC.eq.-1)then
-            SLABEL(NGET)='Meas zone db T hours (degC.hr)'
+            SLABEL(NGET)='Obs zone db T change (degC/hr)'
             LNSLABEL(NGET)=30
+          elseif(IROC.eq.-1)then
+            SLABEL(NGET)='Obs zone db T hours (degC.hr)'
+            LNSLABEL(NGET)=29
           endif
         elseif(ir.eq.2)then
           call ASKZON(IZONE)
@@ -3254,16 +3323,70 @@ C << then it could be automatically selected
           IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
           IGETNO(NGET,8)=1; IGETNO(NGET,9)=12
           SUFFIX=' surf T'
-          GLABEL(NGET)='Measured surf T'; LNGLABEL(NGET)=15
+          GLABEL(NGET)='Observed surf T'; LNGLABEL(NGET)=15
           if(IROC.eq.0)then
-            SLABEL(NGET)='Measured surf T (degC)'
+            SLABEL(NGET)='Observed surf T (degC)'
             LNSLABEL(NGET)=22
           elseif(IROC.eq.1)then
-            SLABEL(NGET)='Meas surf T change (degC/hr)'
-            LNSLABEL(NGET)=28
-          elseif(IROC.eq.-1)then
-            SLABEL(NGET)='Meas surf T hours (degC.hr)'
+            SLABEL(NGET)='Obs surf T change (degC/hr)'
             LNSLABEL(NGET)=27
+          elseif(IROC.eq.-1)then
+            SLABEL(NGET)='Obs surf T hours (degC.hr)'
+            LNSLABEL(NGET)=26
+          endif
+        elseif(ir.eq.3)then
+          call ASKZON(IZONE)
+          IGETNO(NGET,1)=82   ! hopefully a UNIQUE indicator 
+          IGETNO(NGET,2)=IZONE
+          IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
+          IGETNO(NGET,8)=1; IGETNO(NGET,9)=12
+          SUFFIX=' RH%'
+          GLABEL(NGET)='Observed RH'; LNGLABEL(NGET)=15
+          if(IROC.eq.0)then
+            SLABEL(NGET)='Observed zone RH (%)'
+            LNSLABEL(NGET)=25
+          elseif(IROC.eq.1)then
+            SLABEL(NGET)='Obs zone RH change (%/hr)'
+            LNSLABEL(NGET)=31
+          elseif(IROC.eq.-1)then
+            SLABEL(NGET)='Obs zone RH hours (%.hr)'
+            LNSLABEL(NGET)=30
+          endif
+        elseif(ir.eq.4)then
+          call ASKZON(IZONE)
+          IGETNO(NGET,1)=83   ! hopefully a UNIQUE indicator 
+          IGETNO(NGET,2)=IZONE
+          IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
+          IGETNO(NGET,8)=1; IGETNO(NGET,9)=12
+          SUFFIX=' W'
+          GLABEL(NGET)='Observed heat'; LNGLABEL(NGET)=13
+          if(IROC.eq.0)then
+            SLABEL(NGET)='Observed zone heat (W)'
+            LNSLABEL(NGET)=22
+          elseif(IROC.eq.1)then
+            SLABEL(NGET)='Obs zone heat change (W/hr)'
+            LNSLABEL(NGET)=27
+          elseif(IROC.eq.-1)then
+            SLABEL(NGET)='Obs zone heat hours (W.hr)'
+            LNSLABEL(NGET)=26
+          endif
+        elseif(ir.eq.5)then
+          call ASKZON(IZONE)
+          IGETNO(NGET,1)=84   ! hopefully a UNIQUE indicator 
+          IGETNO(NGET,2)=IZONE
+          IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
+          IGETNO(NGET,8)=1; IGETNO(NGET,9)=12
+          SUFFIX=' W'
+          GLABEL(NGET)='Observed cool'; LNGLABEL(NGET)=13
+          if(IROC.eq.0)then
+            SLABEL(NGET)='Observed zone cool (W)'
+            LNSLABEL(NGET)=22
+          elseif(IROC.eq.1)then
+            SLABEL(NGET)='Obs zone cool change (W/hr)'
+            LNSLABEL(NGET)=27
+          elseif(IROC.eq.-1)then
+            SLABEL(NGET)='Obs zone cool hours (W.hr)'
+            LNSLABEL(NGET)=26
           endif
 
         endif
@@ -3284,6 +3407,8 @@ C Output redirect.
           call ctlexp(xfile,ixopen,ixunit,ixpunit,'G','Graphics',IER)
         elseif(MENUTYPE.eq.4)then
           call ctlexp(xfile,ixopen,ixunit,ixpunit,'X','Tabular',IER)
+        elseif(MENUTYPE.eq.6)then  ! sensitivity
+          call ctlexp(xfile,ixopen,ixunit,ixpunit,'X','Tabular',IER)
         else
           call ctlexp(xfile,ixopen,ixunit,ixpunit,'T','Text',IER)
         endif
@@ -3293,6 +3418,7 @@ C If user request cancel then return after resetting ixopen to zero.
           ixopen=0
           goto 1
         endif
+        goto 1
 
       elseif(INO.EQ.24)then
 
@@ -3469,6 +3595,26 @@ C Toggle time format and day separators.
 
       elseif(INO.EQ.27)then
 
+C Toggle headers.
+        if(MENUTYPE.eq.3) then
+          continue  ! nothing
+        else
+          ILFLAG=ILFLAG+1
+          if(ILFLAG.GT.2)ILFLAG=0
+          if(ILFLAG.eq.0)then
+            call edisp(iuout,' ')
+            call edisp(iuout,'column labels on multi-lines ')
+          elseif(ILFLAG.eq.1)then
+            call edisp(iuout,' ')
+            call edisp(iuout,'column labels on one line (spreadsheets)')
+          elseif(ILFLAG.eq.2)then
+            call edisp(iuout,' ')
+            call edisp(iuout,
+     &      'column labels on one line & no # header lines in files')
+          endif
+        endif
+      elseif(INO.EQ.28)then
+
         if(MENUTYPE.eq.3) then
 
 C Add another selection - time series plot only.
@@ -3496,7 +3642,7 @@ C Toggle delimeter.
           endif
         endif
 
-      elseif(INO.EQ.28)then
+      elseif(INO.EQ.29)then
 
 C Toggle flux units for all menu types.
 
@@ -3542,7 +3688,7 @@ C Debug.
 C          write(6,*) 'new ireportunit ',ireportunit,lastireportunit,
 C     &      YMAX(2),YMIN(2)
         endif
-      elseif(INO.eq.29.and.nl.ne.0) then
+      elseif(INO.eq.30.and.nl.ne.0) then
 
 C Debug...
 C        do 999 I=1,NGET
@@ -3686,12 +3832,13 @@ C Reset local zone and surface selections, NSEL is total number selected.
       NSEL=0
 
 C Copy data for multi zones, surfaces and nodes. In the
-C case of climate data or measured data GLABEL has already been set.
+C case of climate data or observed data GLABEL has already been set.
       if (IGETNO(NGET,1).eq.2.or.IGETNO(NGET,1).eq.19.or.
      &    IGETNO(NGET,1).eq.20.or.IGETNO(NGET,1).eq.21.or.
      &    IGETNO(NGET,1).eq.22.or.IGETNO(NGET,1).eq.26.or.
      &    IGETNO(NGET,1).eq.34.or.IGETNO(NGET,1).eq.80.or.
-     &    IGETNO(NGET,1).eq.81) then
+     &    IGETNO(NGET,1).eq.81.or.IGETNO(NGET,1).eq.82.or.
+     &    IGETNO(NGET,1).eq.83.or.IGETNO(NGET,1).eq.84) then
 
 C Do nothing.
         continue
@@ -3753,8 +3900,26 @@ C Need to ask for specific surface and node.
         elseif (MRTLIST) then
 
 C Need to ask for MRT sensors.
-          call PIKMRTS(IZNSEL,ISFSEL,NSEL,IER)
+          NSEL=MCOM*MCUB
+          call PIKMRTS(IZNSEL,ISFSEL,NSEL,-1,IER)
           call usrmsg('  ','  ','-')
+
+C For PMV, we have a special case.
+C Need to default to the standard treatment if:
+C 1. there are no MRT sensors, or
+C 2. if the user chooses no MRT sensors.
+          if (IGETNO(NGET,1).eq.23.and.
+     &       (IER.ne.0.or.NSEL.eq.0)) then
+            IER=0
+            NSEL=0
+C Copy current zone selection.
+            do I=1,NZ
+              NSEL=NSEL+1
+              IZNSEL(NSEL)=NZNO(I)
+            end do
+            MRTLIST=.false.
+          endif
+
         elseif (AGRLIST) then
 
 C If we have asked for an aggregate of heating or cooling or lighting
@@ -3812,7 +3977,7 @@ C Copy new data into IGETNO array if a selection has been made.
                     ITLEN=lnblnk(CUBN(ISFSEL(IG)))
                     IZLEN=lnzname(IZ)
                     ISLEN=lnblnk(SUFFIX)
-                    if ((IZLEN+ISLEN).gt.16) IZLEN=16-ISLEN
+                    if ((IZLEN+ISLEN+ITLEN).gt.20) IZLEN=16-ISLEN-ITLEN
                     write (GLABEL(NGET),'(3a)')ZNAME(IZ)(1:IZLEN),
      &                        CUBN(ISFSEL(IG))(1:ITLEN),SUFFIX(1:ISLEN)
                     LNGLABEL(NGET)=lnblnk(GLABEL(NGET))
@@ -3883,7 +4048,7 @@ C specific information.
                 if (SLIST.and.NLIST) then
                   IGETNO(NGET,3)=ISFSEL(IG)
                   IGETNO(NGET,4)=INODE
-                else
+                elseif (.not.(MRTLIST.and.IGETNO(NGET,1).eq.23)) then
                   IGETNO(NGET,4)=IGETNO((NGET-1),4)
                 endif
                 IGETNO(NGET,5)=IGETNO((NGET-1),5)
@@ -3909,14 +4074,14 @@ C specific information.
                   elseif (MRTLIST) then
                     call ZSID(IZ,ISFSEL(IG),ZSDES,ZSDESC,ZSDESS)
                     ITLEN=lnblnk(CUBN(ISFSEL(IG)))
-                    IZLEN=lnzname(IZ)
                     ISLEN=lnblnk(SUFFIX)
-                    if ((IZLEN+ISLEN).gt.16) IZLEN=16-ISLEN
+                    IZLEN=lnzname(IZ)
+                    if ((IZLEN+ISLEN+ITLEN).gt.20) IZLEN=20-ISLEN-ITLEN
                     write (GLABEL(NGET),'(3a)')ZNAME(IZ)(1:IZLEN),
-     &                        CUBN(ISFSEL(IG))(1:ITLEN),SUFFIX(1:ISLEN)
+     &                CUBN(ISFSEL(IG))(1:ITLEN),SUFFIX(1:ISLEN)
                     LNGLABEL(NGET)=lnblnk(GLABEL(NGET))
                     write (TABLABEL(NGET),'(3a)') ZNAME(IZ)(1:IZLEN),
-     &                        CUBN(ISFSEL(IG))(1:ITLEN),SUFFIX(1:ISLEN)
+     &                CUBN(ISFSEL(IG))(1:ITLEN),SUFFIX(1:ISLEN)
                     LNTABLABEL(NGET)=ITLEN+ISLEN
                   elseif (AGRLIST) then  ! aggregate does not need a zone name
                     ISLEN=lnblnk(SUFFIX)
@@ -3947,10 +4112,10 @@ C specific information.
                     ITLEN=lnblnk(CUBN(ISFSEL(IG)))
                     IZLEN=lnzname(IZ)
                     write (GLABEL(NGET),'(2a)')ZNAME(IZ)(1:IZLEN),
-     &                        CUBN(ISFSEL(IG))(1:ITLEN)
+     &                CUBN(ISFSEL(IG))(1:ITLEN)
                     LNGLABEL(NGET)=lnblnk(GLABEL(NGET))
                     write (TABLABEL(NGET),'(2a)') ZNAME(IZ)(1:IZLEN),
-     &                        CUBN(ISFSEL(IG))(1:ITLEN)
+     &                CUBN(ISFSEL(IG))(1:ITLEN)
                     LNTABLABEL(NGET)=ITLEN
 C                  elseif (AGRLIST) then  ! aggregate does not need a zone name
 C                    ISLEN=lnblnk(SUFFIX)
@@ -4179,7 +4344,7 @@ C      character outs*124
       real perotherc,perotherr,perotherl ! average other to write out
       integer theonectld  ! if non-zero the casual gain type that is controlled.
       integer iset    ! IGETNO(*,5)
-      logical dmdsok,xst
+      logical dmdsok,xst,ok
 
 C Check existance of demands file (it will have been scanned elsewhere).
       call FINDFIL(bdmds,XST)
@@ -4552,12 +4717,12 @@ C IGETNO(KGET,1) = 22 Ambient RH (climate parameter)
       elseif(IGETNO(KGET,1).eq.23)then
 
 C IGETNO(KGET,1) = 23 Comfort (IGETNO(KGET,3)= 1,2 or 3 - PMV/PPD..)
-        if(IGETNO(KGET,3).eq.1)then
-          CALL MOCMFT(IDAY,IGETNO(KGET,2),'M')
-        elseif(IGETNO(KGET,3).eq.2)then
-          CALL MOCMFT(IDAY,IGETNO(KGET,2),'E')
-        elseif(IGETNO(KGET,3).eq.3)then
-          CALL MOCMFT(IDAY,IGETNO(KGET,2),'D')
+        if(IGETNO(KGET,4).eq.1)then
+          CALL MOCMFT(IDAY,IGETNO(KGET,2),IGETNO(KGET,3),'M')
+        elseif(IGETNO(KGET,4).eq.2)then
+          CALL MOCMFT(IDAY,IGETNO(KGET,2),IGETNO(KGET,3),'E')
+        elseif(IGETNO(KGET,4).eq.3)then
+          CALL MOCMFT(IDAY,IGETNO(KGET,2),IGETNO(KGET,3),'D')
         endif
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
 
@@ -4965,20 +5130,32 @@ C IGET = 47 Renewables/advanced materials secondary output.
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.50)then
 
-C IGETNO(KGET,1) = 50 Local PPD: delta T head/ feet.
-        call edisp(iuout,
-     &    'Missing information on local air T, setting dT to zero.')
+C IGETNO(KGET,1) = 50 Local PD: delta T head/ feet.
+        call OPCFD(ok,ier)
+        call VERTdT(IDAY,IGETNO(KGET,2),IGETNO(KGET,3),ier)
+        if (.not.ok.or.ier.ne.0) then
+          ok=.false.
+          ier=0
+        endif
         DO J2=ISTART,IEND
           iflag=1
-          dT=0.
+          if (ok) then
+            dT=GVAL(J2)
+          else
+            dT=-1.
+          endif
           call DISCOMF(iflag,dT,PPD)
-          if (iflag.eq.-1) PPD=101.
+          if (iflag.eq.-1) then
+            PPD=101.
+          elseif (iflag.eq.-2) then
+            PPD=102.
+          endif
           GC(J2)=PPD
         END DO
         CALL XTVAL1(GC,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.51)then
 
-C IGETNO(KGET,1) = 51 Local PPD: floor T.
+C IGETNO(KGET,1) = 51 Local PD: floor T.
         CALL GTMS(IDAY,IGETNO(KGET,2),IGETNO(KGET,3),IGETNO(KGET,5))
         DO  1404 J2=ISTART,IEND
           iflag=2
@@ -4993,7 +5170,7 @@ C          write(6,*) '41 ',IGETNO(KGET,2),GVAL(J2),PPD
         CALL XTVAL1(GC,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.52)then
 
-C IGETNO(KGET,1) = 52 Local PD: ceiling T, assume dT between air and surface.
+C IGETNO(KGET,1) = 52 Local PD: Radiant asymmetry from ceiling.
         CALL SENMRT(IDAY,IGETNO(KGET,2),IGETNO(KGET,3),
      &                                  IGETNO(KGET,5),IGETNO(KGET,4))
         DO  1306 J2=ISTART,IEND
@@ -5015,7 +5192,7 @@ C          write(6,*) '42 ',IGETNO(KGET,2),GVAL(J2),PD
 
 C IGETNO(KGET,1) = 53 Local PD: assymetric dTrad
         CALL SENMRT(IDAY,IGETNO(KGET,2),IGETNO(KGET,3),
-     &                                  IGETNO(KGET,5),IGETNO(KGET,4))
+     &    IGETNO(KGET,5),IGETNO(KGET,4))
         DO  1308 J2=ISTART,IEND
           if (GVAL(J2).lt.0.0) then
             iflag=6
@@ -5031,15 +5208,52 @@ C          write(6,*) '42 ',IGETNO(KGET,2),GVAL(J2),PD
           GC(J2)=PD
  1308   CONTINUE
         CALL XTVAL1(GC,ISTART,IEND,KGET)
+      elseif(IGETNO(KGET,1).eq.54)then
+
+C IGETNO(KGET,1) = 54 Local PD: draught
+        call OPCFD(ok,ier)
+        if (.not.ok.or.ier.ne.0) then
+          ok=.false.
+          ier=0
+        endif        
+        DO  1309 J2=ISTART,IEND
+          if (ok) then
+            call DRAUGHT(IDAY,J2,IGETNO(KGET,2),IGETNO(KGET,3),iflag,PD,
+     &                   IER)
+          else
+            iflag=-2
+          endif
+
+          if (iflag.eq.-1) PD=101.
+          if (iflag.eq.-2) PD=102.
+          GC(J2)=PD
+ 1309   CONTINUE
+        CALL XTVAL1(GC,ISTART,IEND,KGET)
+        
       elseif(IGETNO(KGET,1).eq.80)then
 
-C IGETNO(KGET,1) = 80 Zone measured db temperature
-        CALL MOMEASURED('DBZNM   ',IDAY,IGETNO(KGET,2),0)
+C IGETNO(KGET,1) = 80 Zone observed db temperature
+        CALL MOMEASURED('DBZNOBS ',IDAY,IGETNO(KGET,2),0)
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.81)then
 
-C IGETNO(KGET,1) = 81 Surface measured db temperature
-        CALL MOMEASURED('SURTM   ',IDAY,IGETNO(KGET,2),IGETNO(KGET,3))
+C IGETNO(KGET,1) = 81 Surface observed db temperature
+        CALL MOMEASURED('SURTOBS ',IDAY,IGETNO(KGET,2),IGETNO(KGET,3))
+        CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+      elseif(IGETNO(KGET,1).eq.82)then
+
+C IGETNO(KGET,1) = 82 Zone observed RH
+        CALL MOMEASURED('ZNRHOBS ',IDAY,IGETNO(KGET,2),IGETNO(KGET,3))
+        CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+      elseif(IGETNO(KGET,1).eq.83)then
+
+C IGETNO(KGET,1) = 83 Zone observed heating
+        CALL MOMEASURED('ZNHTOBS ',IDAY,IGETNO(KGET,2),IGETNO(KGET,3))
+        CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+      elseif(IGETNO(KGET,1).eq.84)then
+
+C IGETNO(KGET,1) = 84 Zone observed cooling
+        CALL MOMEASURED('ZNCLOBS ',IDAY,IGETNO(KGET,2),IGETNO(KGET,3))
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
       endif
 
@@ -5236,9 +5450,15 @@ C << topics in the future.
       elseif(metric.eq.53)then
         continue  ! local PD: assymetric dTrad
       elseif(metric.eq.80)then
-        continue  ! zone measured db temperature
+        continue  ! zone observed db temperature
       elseif(metric.eq.81)then
-        continue  ! surface measured db temperature
+        continue  ! surface observed db temperature
+      elseif(metric.eq.82)then
+        continue  ! surface observed RH%
+      elseif(metric.eq.83)then
+        continue  ! surface observed heating
+      elseif(metric.eq.84)then
+        continue  ! surface observed cooling
       else
       endif
 

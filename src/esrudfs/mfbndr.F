@@ -49,6 +49,7 @@ C NCFDOPNO= CFD key volume number which is to be represented by opn_nod
 C           these are held in same order as MFNEWN
 C NFNDN   = total number of opn_nod (original mfs nodes are 1 to NNOD-
 C           NFNDN and opn_nodes are NNOD-NFNDN+1 to NNOD
+C NFNPDN  = as above, per domain
 C ********************* MFBNDR *********************
       SUBROUTINE MFBNDR(INTL)
 #include "building.h"

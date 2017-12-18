@@ -702,7 +702,8 @@ C   prescribed by the user.
      &          VOLPol(MCTM,MNVLS,MNZ)
       common/ocflux/COflux,H2Oexp,H2Oswt
       common/KEYVOLN/VOLNAME(MNVLS,MNZ),VCsurf(MNVLS,MNZ)
-      character VOLNAME*12
+      character VOLNAME*12,VCsurf*12
+
 C Set values for all faces.
       do 40 IFACE=1,6
         IST=IVCELLS(IBLK,ICFD,1)

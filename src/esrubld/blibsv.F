@@ -622,7 +622,7 @@ C the following initial string.
       endif
       IREC=NSIM+2
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NST,IRECPL,RSNAME
-      WRITE(6,*) 'at end of mzls2 ',NSIM,IREC,NST,IRECPL,RSNAME
+C      WRITE(6,*) 'at end of mzls2 ',NSIM,IREC,NST,IRECPL,RSNAME
     7 RETURN
 
  1000 write(outs,'(A,I5,A)')' MZLS2: error at record',IREC,'.'

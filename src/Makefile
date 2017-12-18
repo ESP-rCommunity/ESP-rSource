@@ -85,6 +85,12 @@ dfs:
 	else \
 	  cd $(SRCdir)/esrudfs; $(MAKE); \
 	fi
+dfv: 
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/esrudfs; $(MAKE) theCFV ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/esrudfs; $(MAKE) theCFV; \
+	fi
 c2e: 
 	if [ "$(doInstall)" = "yes" ]; then \
 	  cd $(SRCdir)/esruc2e; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \

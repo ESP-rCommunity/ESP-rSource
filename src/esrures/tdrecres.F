@@ -133,7 +133,7 @@ C Reporting.
 
 C ******************** MOMEASURED ********************
 
-C MOMEASURED sets up data from temporal file for measured
+C MOMEASURED sets up data from temporal file for observed
 C zone db temperatures, surface temperatures and (?). 
 C This is done by recovering the and interpolating as required. 
 C Returns requested value in GVAL.
@@ -160,13 +160,19 @@ C      CHARACTER OUTS*124   ! uncomment if debug needed
       LOGICAL found
 
 
-C Check to see if there is a temporal measured data
+C Check to see if there is a temporal observed data
 C entry for this zone.
       found = .false.
-      if(focus(1:5).eq.'DBZNM')then
-        if(IDBTZNM(izone).ne.0)found = .true.
-      elseif(focus(1:5).eq.'SURTM')then
-        if(ISURTMEAS(izone,isurf).ne.0)found = .true.
+      if(focus(1:7).eq.'DBZNOBS')then
+        if(IDBTZNOBS(izone).ne.0)found = .true.
+      elseif(focus(1:7).eq.'SURTOBS')then
+        if(ISURTOBS(izone,isurf).ne.0)found = .true.
+      elseif(focus(1:7).eq.'ZNRHOBS')then
+        if(IZNRHOBS(izone).ne.0)found = .true.
+      elseif(focus(1:7).eq.'ZNHTOBS')then
+        if(IZNHTOBS(izone).ne.0)found = .true.
+      elseif(focus(1:7).eq.'ZNCLOBS')then
+        if(IZNCLOBS(izone).ne.0)found = .true.
       endif
       if(found)then
 
@@ -187,10 +193,16 @@ C TFL is is the last timestep of the previous day.
             TP = TF - (1./Y2)
 
 C Get value of the temporal item.
-            if(focus(1:5).eq.'DBZNM')then
-              itdi=IDBTZNM(izone)
-            elseif(focus(1:5).eq.'SURTM')then
-              itdi=ISURTMEAS(izone,isurf)
+            if(focus(1:7).eq.'DBZNOBS')then
+              itdi=IDBTZNOBS(izone)
+            elseif(focus(1:7).eq.'SURTOBS')then
+              itdi=ISURTOBS(izone,isurf)
+            elseif(focus(1:7).eq.'ZNRHOBS')then
+              itdi=IZNRHOBS(izone)
+            elseif(focus(1:7).eq.'ZNHTOBS')then
+              itdi=IZNHTOBS(izone)
+            elseif(focus(1:7).eq.'ZNCLOBS')then
+              itdi=IZNCLOBS(izone)
             endif
             IFOC=itdi
             if(ij.eq.1)then
@@ -211,7 +223,7 @@ C            CALL EDISP(IUOUT,OUTS)
    20     CONTINUE
    10   CONTINUE
       else
-        call edisp(iuout,'No measured data for this zone')
+        call edisp(iuout,'No observed data for this zone')
       endif
 
       RETURN

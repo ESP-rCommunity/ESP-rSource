@@ -525,6 +525,7 @@ C << and probably also for obs3 ? >>
       integer nvis  ! number of visual entities
 
       LOGICAL OK,DOK,fict,extern,XST,similar
+      logical havediffusesources,founddiffuse
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -1003,6 +1004,53 @@ C Write the surface.
           WRITE(irofil,'(a)') '  '
  775    continue
       endif
+
+C Write standard diffuse lampcolor sources to the file.
+      WRITE(irofil,'(a)') ' '
+      WRITE(irofil,'(a)') '# diffuse light sources follow... '
+      WRITE(irofil,'(a)') '# derived from lampcolor WHITE '
+      WRITE(irofil,'(a)') '# diffuse 800 lum 50mm diam bulb'
+      WRITE(irofil,'(a)') 'void light 800lum-bulb '
+      WRITE(irofil,'(a)') '0 '
+      WRITE(irofil,'(a)') '0 '
+      WRITE(irofil,'(a)') '3 181.132831 181.132842 181.132842 '
+      WRITE(irofil,'(a)') '# diffuse 1000 lum 50mm diam bulb '
+      WRITE(irofil,'(a)') 'void light 1klum-bulb '
+      WRITE(irofil,'(a)') '0 '
+      WRITE(irofil,'(a)') '0 '
+      WRITE(irofil,'(a)') '3 226.416039 226.416053 226.416053'
+      WRITE(irofil,'(a)') '# diffuse 1200 lum 50mm halogin bulb '
+      WRITE(irofil,'(a)') 'void light 1.2klum-bulb '
+      WRITE(irofil,'(a)') '0 '
+      WRITE(irofil,'(a)') '0 '
+      WRITE(irofil,'(a)') '3 271.699247 271.699263 271.699263'
+      WRITE(irofil,'(a)') '# diffuse 2000 lum 50mm bulb '
+      WRITE(irofil,'(a)') 'void light 2klum-bulb '
+      WRITE(irofil,'(a)') '0 '
+      WRITE(irofil,'(a)') '0 '
+      WRITE(irofil,'(a)') '3 452.832079 452.832106 452.832106'
+      WRITE(irofil,'(a)') '# diffuse 1000 lum 100mmx100mm surf'
+      WRITE(irofil,'(a)') 'void light 1klum100mmsq '
+      WRITE(irofil,'(a)') '0 '
+      WRITE(irofil,'(a)') '0 '
+      WRITE(irofil,'(a)') '3 177.826741 177.826752 177.826752 '
+      WRITE(irofil,'(a)') '# diffuse 1000 lumin 200mmx200mm surf'
+      WRITE(irofil,'(a)') 'void light 1klum200mmsq '
+      WRITE(irofil,'(a)') '0 '
+      WRITE(irofil,'(a)') '0 '
+      WRITE(irofil,'(a)') '3 44.456685 44.456688 44.456688 '
+      WRITE(irofil,'(a)') '# diffuse 2000 lumin 200mmx200mm surf'
+      WRITE(irofil,'(a)') 'void light 2klum200mmsq '
+      WRITE(irofil,'(a)') '0 '
+      WRITE(irofil,'(a)') '0 '
+      WRITE(irofil,'(a)') '3 88.913371 88.913376 88.913376 '
+      WRITE(irofil,'(a)') '# diffuse 3240 lumin 1.2m x 0.3m surface '
+      WRITE(irofil,'(a)') 'void light 3.2klumpanel '
+      WRITE(irofil,'(a)') '0 '
+      WRITE(irofil,'(a)') '0 '
+      WRITE(irofil,'(a)') '3 16.004407 16.004408 16.004408 '
+      WRITE(irofil,'(a)') ' '
+
       WRITE(irofil,'(a)') '# other definitions of outside follow... '
 
 C If there are other zones that might be seen stick that data
@@ -1090,7 +1138,7 @@ C Confirm inclusion of obstructions.
 
           do 43 ib=1,nbobs(newfoc)
 
-C Create a genrbox command to match the obstruction.
+C Create a genbox command to match the obstruction.
 C BLOCKTYP (4 char) type of block:
 C   'obs ' - standard block (origin, three dimensions, one rotation)
 C   'obs3' - general block (origin, three dimensions, three rotations)
@@ -1109,9 +1157,9 @@ C Set material name
 
             if (BLOCKTYP(newfoc,ib).eq.'obs ') then
 
-C Create a >genrbox< command to match the obstruction.
+C Create a >genbox< command to match the obstruction.
               WRITE(irofil,'(4a,3f9.3,a,f9.3,a,3f9.3)')
-     &          '!genrbox rc_ex_',ObsMatName(1:lnbm),'  ',        
+     &          '!genbox rc_ex_',ObsMatName(1:lnbm),'  ',        
      &          BLOCKNAME(newfoc,IB)(1:LNBLOCKNAME(newfoc,IB)),
      &          DXOB(newfoc,ib),DYOB(newfoc,ib),DZOB(newfoc,ib),
      &          ' | xform -rz ',BANGOB(newfoc,ib,1),
@@ -1190,7 +1238,7 @@ C Confirm inclusion of visual object.
 
           do 143 ib=1,nbvis(newfoc)
 
-C Create a genrbox command to match the visual entities.
+C Create a genbox command to match the visual entities.
 C VISTYP (4 char) type of block:
 C   'vis ' - standard block (origin, three dimensions, one rotation)
 C   'vis3' - general block (origin, three dimensions, three rotations)
@@ -1209,9 +1257,9 @@ C Set material name
 
             if (VISTYP(newfoc,ib).eq.'vis ') then
 
-C Create a >genrbox< command to match the obstruction.
+C Create a >genbox< command to match the obstruction.
               WRITE(irofil,'(4a,3f9.3,a,f9.3,a,3f9.3)')
-     &          '!genrbox rc_ex_',ObsMatName(1:lnbm),'  ',        
+     &          '!genbox rc_ex_',ObsMatName(1:lnbm),'  ',        
      &          VISNAME(newfoc,IB)(1:LNVISNAME(newfoc,IB)),
      &          DXOV(newfoc,ib),DYOV(newfoc,ib),DZOV(newfoc,ib),
      &          ' | xform -rz ',BANGOV(newfoc,ib,1),
@@ -1313,6 +1361,25 @@ C << use call to matchmlcdesc >>
             lnsm=lnblnk(SSMLCN(icn))
             write(material,'(a)') SSMLCN(icn)(1:lnsm)
             if(iskip(icf).eq.1)ifict=1
+          endif
+
+C Check if this surface is associated with a diffuse light source
+C anchor. If so alter the material.
+          founddiffuse=.false.
+          if(SSUSE(icn,1)(1:7).eq.'FIXTURE')then
+            if(SSUSE(icn,2)(1:2).eq.'- ')then
+              continue
+            else
+
+C Found something SSUSE(icn,2) becomes the material name.
+              if(iesfil(1:8).eq.'embedded')then
+                founddiffuse=.true.
+                write(outs,*) 'found surface with fixture',icn,
+     &            SSUSE(icn,1),SSUSE(icn,2)
+                call edisp(iuout,outs)
+                write(material,'(a)') SSUSE(icn,2)
+              endif
+            endif
           endif
 
 C Depending on surface type (fict/tran/opaq) write header info.  
@@ -1496,9 +1563,15 @@ C for inside.)
               YY(iv) = Y(JVN(isf,iv))
               ZZ(iv) = Z(JVN(isf,iv))
   150       CONTINUE
-            WRITE(irzfil,'(4a)')'rc_in_',
-     &        material(1:lnblnk(material)),'  polygon  ',
-     &        zsn(isf)(1:lnblnk(zsn(isf)))
+            if(founddiffuse)then
+              WRITE(irzfil,'(3a)')
+     &          material(1:lnblnk(material)),'  polygon  ',
+     &          zsn(isf)(1:lnblnk(zsn(isf)))
+            else
+              WRITE(irzfil,'(4a)')'rc_in_',
+     &          material(1:lnblnk(material)),'  polygon  ',
+     &          zsn(isf)(1:lnblnk(zsn(isf)))
+            endif
             WRITE(irzfil,'(a)') '0 '
             WRITE(irzfil,'(a)') '0 '
             WRITE(irzfil,'(I3)')NVER(isf)*3
@@ -1534,9 +1607,15 @@ C            endif
             WRITE(irzfil,'(a)') '  '
 
             if (extern) then
-              WRITE(irofil,'(4a)')'rc_ex_',
-     &          material(1:lnblnk(material)),'  polygon  ',
-     &          zsn(isf)(1:lnblnk(zsn(isf)))
+              if(founddiffuse)then
+                WRITE(irofil,'(3a)')
+     &            material(1:lnblnk(material)),'  polygon  ',
+     &            zsn(isf)(1:lnblnk(zsn(isf)))
+              else
+                WRITE(irofil,'(4a)')'rc_ex_',
+     &            material(1:lnblnk(material)),'  polygon  ',
+     &            zsn(isf)(1:lnblnk(zsn(isf)))
+              endif
               WRITE(irofil,'(a)') '0 '
               WRITE(irofil,'(a)') '0 '
               WRITE(irofil,'(I3)')NVER(isf)*3
@@ -1711,6 +1790,8 @@ C For help messages
       ISTAT=0
       IER=0
 
+C << VARIANT logic needed when generating interior surfaces.
+
       if(nbofies.eq.0)then
         return
       endif
@@ -1739,6 +1820,10 @@ C Found something - think of what to do...
 C If no surfaces were associated with an IES entity then
 C no need to create this file.
       if(.NOT.found) return
+
+C If an embedded diffuse light source some of the steps
+C below are not needed. Test if iesfil is 'embedded'.
+      if(iesfil(1:8).eq.'embedded') return
 
 C Generate a file name.
       if(ACT.eq.'i')then
@@ -1769,6 +1854,7 @@ C Process each zone.
             else
 
 C Loop through the known IES entities to find a match.
+C << detect diffuse source >>
               do loop=1,nbofies
                 if(iesname(loop).eq.SSUSE(icn,2))then
 

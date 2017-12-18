@@ -127,7 +127,7 @@ C Transformed y value should be close to zero; warn if not.
      &                         ' is probably not coplanar!')
             call edisp(icout,outs)
             write(outs,9998)i,xs,ys,zs
- 9998       format('Vertex ',i2,', which has coordinates ',3f11.6,',')
+ 9998       format('Vertex ',i3,', which has coordinates ',3f11.6,',')
             call edisp(icout,outs)
             write(outs,9997)yft(i)
  9997       format('has transformed Y value of ',f11.6,
@@ -436,7 +436,7 @@ C Trace output (only for 1st grid point in source surface).
          call edisp(icout,' ')
          call zsid(izone,intsur,ZSDES,ZSDESC,ZSDESS)
          lnzsn=lnblnk(zsdes)
-         write(outs,'(3a,i2,a,i2,a)')
+         write(outs,'(3a,i3,a,i2,a)')
      &     '*** TRNSF3I: 1st point projection to surface ',
      &     ZSDES(1:lnzsn),' (',intsur,') for hour ',ihr,'.'
          call edisp(icout,outs)

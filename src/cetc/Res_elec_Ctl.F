@@ -308,9 +308,9 @@ C Common for grid rate and grid refund data management
       integer   iFIL_GridRefund     !
 
 C RES (elec) node information
-      common/reselec_enode/IENOD_ACbus
+      common/reselec_enode/IENOD_ACbus,IENOD_DCbus
 
-      integer IENOD_ACbus
+      integer IENOD_ACbus,IENOD_DCbus
 
 C Power-only component information for RES (elec) control
       common/reselec_powoc/IPWC_PVPCU,IPWC_gridconn,IPWC_ACDC,
@@ -648,9 +648,9 @@ C Check if plant domain controls have been adjusted. As battery can
 C cover full load and plant loads (e.g. heat pump) tend to be dominating
 C loads, this seems a plausible precaution
       call eclose ( fBatDemandP_old,
-     &                batDemandP,
-     &                2.0,                            ! 2W tolerance
-     &                bBat_same_signal )
+     &              batDemandP(IPWC_battery),
+     &              2.0,                            ! 2W tolerance
+     &              bBat_same_signal )
 
       if ( bBat_same_signal ) then
 C       Plt controls have not changed, and additional interdomain iteration is unnecessary
@@ -787,6 +787,7 @@ C-------------------------------------------------------------------------------
 
       real      SOC_MAX               !- maximum state of charge of battery
       real      SOC_MIN               !- minimum state of charge of battery
+      real      cycles_used_Li        !- local variable for cycles_used_Lion()
 
       parameter( SOC_MAX = 100.,
      &           SOC_MIN = 10. )
@@ -1063,7 +1064,11 @@ C     mainly for 2nd life usage ...
         bFileError = .true.
       endif
       k = 0
-      call egetwr(outstr,k,cycles_used_Lion,0.,50000.,
+
+C In BATTEERY.h cycles_used_Lion is defined as array.
+C      call egetwr(outstr,k,cycles_used_Lion,0.,50000.,
+C     &            'W','cycles used',ier)
+      call egetwr(outstr,k,cycles_used_Li,0.,50000.,
      &            'W','cycles used',ier)
       if ( ier .ne. 0 ) then
         write(iuout,*) 'Error reading bat. cycles used'
@@ -1073,7 +1078,8 @@ C     mainly for 2nd life usage ...
     ! Check if cycles used equal zero and set abuseFlag accordingly
     ! (avoid resetting of cycles_used_Lion in InitSimulation()
     ! of Battery.F (line 595 ff.))
-      call eclose(cycles_used_Lion,0,0.1,bBatteryNew)
+C      call eclose(cycles_used_Lion,0.0,0.1,bBatteryNew)
+      call eclose(cycles_used_Li,0.0,0.1,bBatteryNew)
       if (bBatteryNew) then
         abuseFlag=0
       else
@@ -1511,7 +1517,7 @@ C-------------------------------------------------------------------------------
                                       ! interrupted
           BDF_lds_per_rec_bin(iBDF) = BDF_lds_per_rec_annual
         CASE(BDF_lds_daily)
-          CALL FPRAND(iFIL_BDF,ISTAT,BDF_lds_per_rec_daily,3,
+          CALL FPRAND(iFIL_BDF(iBDF),ISTAT,BDF_lds_per_rec_daily,3,
      &                'FCloads.tmp')
           BDF_lds_per_rec_bin(iBDF) = BDF_lds_per_rec_daily
         CASE DEFAULT  

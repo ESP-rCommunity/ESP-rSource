@@ -1152,9 +1152,14 @@ C Copy anchor links to call parameters for passing back.
 
 C ******************** PIKMRTS ********************
 C PIKMRTS: call to enquire which MRT sensors to display sensed MRT for.
-C Returns zone and sensor number via IZNSEL and ISFSEL respectively.
+C Returns zones and sensor numbers via IZLST and ISLST respectively.
+C NSEL is the maximum number of selections allowed, and is set to the
+C number of selections made before returning.
+C If IZONE>0 then will show sensors for that zone, if IZONE=0 will show
+C sensors for all zones, if IZONE=-1 will show sensors for all currently
+C selected zones
 
-      SUBROUTINE PIKMRTS(IZLST,ISLST,NSEL,IER)
+      SUBROUTINE PIKMRTS(IZLST,ISLST,NSEL,IZONE,IER)
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
@@ -1164,6 +1169,8 @@ C Returns zone and sensor number via IZNSEL and ISFSEL respectively.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+
+      COMMON/ZONPIK/NZ,NZNO(MCOM)
 
       DIMENSION IV(60),IZLST(MCON),ISLST(MCON),ILZNO(MCON),ILSNO(MCON)
 
@@ -1178,20 +1185,38 @@ C For help messages
 
       IER=0
 
+      if (IZONE.gt.0) then
+        IST=IZONE
+        IFI=IZONE
+      elseif (IZONE.eq.-1) then
+        IST=1
+        IFI=NZ
+      else
+        IST=1
+        IFI=NCOMP
+      endif
+
 C Create list of MRT sensors: loop through zones and read any view 
 C factor files remembering sensor names only.
 C Remember the total number of sensors.
       NTSEN=0
-      do 10 I=1,NCOMP
-        IF(IVF(I).EQ.1)THEN
+      do 10 I=IST,IFI
+        if (IZONE.eq.-1) then
+          IZ=NZNO(I)
+        else
+          IZ=I
+        endif
+C Debug
+C        write(6,*)'IZ,IVF(IZ)',IZ,IVF(IZ)
+        IF(IVF(IZ).EQ.1)THEN
           IUF=IFIL+1
-          LMRT=LVIEW(I)
-          call ERMRT(0,IUOUT,IUF,LMRT,I,IER)
-          if (NCUB(I).gt.0) then
-            do 20 J=1,NCUB(I)
+          LMRT=LVIEW(IZ)
+          call ERMRT(0,IUOUT,IUF,LMRT,IZ,IER)
+          if (NCUB(IZ).gt.0) then
+            do 20 J=1,NCUB(IZ)
               NTSEN=NTSEN+1
-              write (ST(NTSEN),'(a,a,a)') zname(I),':',CUBN(J)
-              ILZNO(NTSEN)=I
+              write (ST(NTSEN),'(a,a,a)') zname(IZ),':',CUBN(J)
+              ILZNO(NTSEN)=IZ
               ILSNO(NTSEN)=J
  20         continue
           endif
@@ -1210,6 +1235,7 @@ C Display menu of anchor points allow only one selection.
       call gethelptext(helpinsub,helptopic,nbhelp)
       write(outs,'(a)')'Which MRT sensors to use?'
       IVLS=NTSEN
+      if (NTSEN.gt.NSEL) NTSEN=NSEL
       CALL EPICKS(NTSEN,IV,outs,'  ',22,IVLS,ST,'MRT sensors',
      &  IER,nbhelp)
 
@@ -1221,8 +1247,8 @@ C Copy anchor links to call parameters for passing back.
           IZLST(I)=ILZNO(IV(I))
           ISLST(I)=ILSNO(IV(I))
  801    continue
-        NSEL=NTSEN
       endif
+      NSEL=NTSEN
 
       RETURN
       END

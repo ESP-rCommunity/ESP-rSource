@@ -40,6 +40,6 @@ C cfd.h if MCONTM is changed change MCTM accordingly
 C Max number of contaminant supplementary data items
       PARAMETER (MCSD=9)
 C Max number of sources/sinks
-      PARAMETER (MSPMNO=20)
+      PARAMETER (MSPMNO=30)
 C Max number of contaminant source/sink types
       PARAMETER (MSRC=6)

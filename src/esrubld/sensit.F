@@ -278,12 +278,17 @@ C Common blocks UA3 UA4 within uncertainty.h
       character urunvals*1000 ! attribute changed-to value of each uncertainty change for the run.
       COMMON/USETN/USETNAME(MNRS),uheader,urunvals
 
+C Logical flag for uncertainty header has been printed.
+      logical uncertheadprinted
+      common/uncerthead/uncertheadprinted
+
       logical headerdone
       common/uhead/headerdone
       
       common/reclen/nzrl,nprl,nerl
       character RSNAME*40,outs*124,message*96,phrase*12,uhphrase*42
       integer irec,iunit
+      character urunvalsd*1000  ! to comma separate output
 
 C Reset climate change variables to zero - ONLY if first zone.
       if (IZONE.eq.1) then
@@ -334,8 +339,8 @@ C combined name of the uncertainty:location. Append to the header buffer.
         lnloc=lnblnk(LLOC(IACTD(IACT,2)))
         if(lncng.gt.21)lncng=21
         uhphrase=' '
-        write(uhphrase,'(3a)')LCNG(IACTD(IACT,1))(1:lncng),':',
-     &    LLOC(IACTD(IACT,2))(1:lnloc)
+        write(uhphrase,'(4a)')LCNG(IACTD(IACT,1))(1:lncng),':',
+     &    LLOC(IACTD(IACT,2))(1:lnloc),','
         luhphrase=lnblnk(uhphrase)
         write(36,'(a)') uhphrase(1:luhphrase)
 
@@ -394,8 +399,15 @@ C data as information is written each day rather than once at the
 C start of the run.
 C TODO do not need to write the header for the subsequent result sets.
 C TODO think of how to do this....
-      write(37,*)'**',uheader(1:lnblnk(uheader))
-      write(37,*)'**',urunvals(1:lnblnk(urunvals))
+      if(.NOT.uncertheadprinted)then
+        write(37,'(a)') uheader(1:lnblnk(uheader))
+        uncertheadprinted=.true.
+      endif
+
+C Add comma separations to the data.
+      urunvalsd=' '
+      call SDELIM(urunvals,urunvalsd,'C',IW)
+      write(37,'(a)') urunvalsd(1:lnblnk(urunvalsd))
 C      headerdone=.true.
 
 C See what the current position of IREC is and update RSNAME to the
@@ -601,15 +613,15 @@ C Make specific header string for each change (to match urunvals)
                lnloc=lnblnk(LLOC(ICL))
                if(lncng.gt.18)lncng=18
                uhphrase=' '
-               write(uhphrase,'(4a,i2.2,a,i3.3)')LCNG(ICC)(1:lncng),':',
-     &           LLOC(ICL)(1:lnloc),':',IZ,':',IS
+               write(uhphrase,'(4a,i2.2,a,i3.3,a)')LCNG(ICC)(1:lncng),
+     &           ':',LLOC(ICL)(1:lnloc),':',IZ,':',IS,','
                luhphrase=lnblnk(uhphrase)
                write(36,'(a)') uhphrase
       
                lfnuh=lstuh+luhphrase
                if(lfnuh.lt.1000)then
                  write(uheader(lstuh:lfnuh),'(a)')uhphrase(1:luhphrase)
-                 lstuh=lfnuh+2
+                 lstuh=lfnuh
                endif
                strval=' '        ! clear string buffer for the value changed
 
@@ -835,15 +847,15 @@ C Make specific header string for each change (to match urunvals)
             lnloc=lnblnk(LLOC(ICL))
             if(lncng.gt.18)lncng=18
             uhphrase=' '
-            write(uhphrase,'(4a,i2.2,a,i3.3)')LCNG(ICC)(1:lncng),':',
-     &        LLOC(ICL)(1:lnloc),':',IZ,':',IS
+            write(uhphrase,'(4a,i2.2,a,i3.3,a)')LCNG(ICC)(1:lncng),
+     &        ':',LLOC(ICL)(1:lnloc),':',IZ,':',IS,','
             luhphrase=lnblnk(uhphrase)
             write(36,'(a)') uhphrase
       
             lfnuh=lstuh+luhphrase
             if(lfnuh.lt.1000)then
               write(uheader(lstuh:lfnuh),'(a)') uhphrase(1:luhphrase)
-              lstuh=lfnuh+2
+              lstuh=lfnuh
             endif
             strval=' '        ! clear string buffer for the value changed
 
@@ -1068,15 +1080,15 @@ C Make specific header string for each change (to match urunvals)
             lnloc=lnblnk(LLOC(ICL))
             if(lncng.gt.18)lncng=18
             uhphrase=' '
-            write(uhphrase,'(4a,i2.2)')LCNG(ICC)(1:lncng),':',
-     &        LLOC(ICL)(1:lnloc),':',IZ
+            write(uhphrase,'(4a,i2.2,a)')LCNG(ICC)(1:lncng),':',
+     &        LLOC(ICL)(1:lnloc),':',IZ,','
             luhphrase=lnblnk(uhphrase)
             write(36,'(a)') uhphrase
       
             lfnuh=lstuh+luhphrase
             if(lfnuh.lt.1000)then
               write(uheader(lstuh:lfnuh),'(a)') uhphrase(1:luhphrase)
-              lstuh=lfnuh+2
+              lstuh=lfnuh
             endif
             strval=' '        ! clear string buffer for the value changed
 
@@ -1145,15 +1157,15 @@ C Make specific header string for each change (to match urunvals)
             lnloc=lnblnk(LLOC(ICL))
             if(lncng.gt.18)lncng=18
             uhphrase=' '
-            write(uhphrase,'(4a,i2.2)')LCNG(ICC)(1:lncng),':',
-     &        LLOC(ICL)(1:lnloc),':',IZ
+            write(uhphrase,'(4a,i2.2,a)')LCNG(ICC)(1:lncng),':',
+     &        LLOC(ICL)(1:lnloc),':',IZ,','
             luhphrase=lnblnk(uhphrase)
             write(36,'(a)') uhphrase
       
             lfnuh=lstuh+luhphrase
             if(lfnuh.lt.1000)then
               write(uheader(lstuh:lfnuh),'(a)') uhphrase(1:luhphrase)
-              lstuh=lfnuh+2
+              lstuh=lfnuh
             endif
             strval=' '        ! clear string buffer for the value changed
 
@@ -1411,6 +1423,7 @@ C Common blocks UA2 UA3 UA4 within uncertainty.h
 
       integer lstur, lfnur
       character strval*12,uhphrase*42
+      character urunvalsd*1000
 
 C Data stored in UA03 has the following meaning in this routine:
 C IDMAT(?,1): 1=air, 2=surface area
@@ -1453,15 +1466,15 @@ C Make specific header string for each change (to match urunvals)
             lnloc=lnblnk(LLOC(ICL))
             if(lncng.gt.18)lncng=18
             uhphrase=' '
-            write(uhphrase,'(4a,i2.2,a,i3.3)')LCNG(ICC)(1:lncng),':',
-     &        LLOC(ICL)(1:lnloc),':',IZ,':',IS
+            write(uhphrase,'(4a,i2.2,a,i3.3,a)')LCNG(ICC)(1:lncng),
+     &        ':',LLOC(ICL)(1:lnloc),':',IZ,':',IS,','
             luhphrase=lnblnk(uhphrase)
             write(36,'(a)') uhphrase
       
             lfnuh=lstuh+luhphrase
             if(lfnuh.lt.1000)then
               write(uheader(lstuh:lfnuh),'(a)') uhphrase(1:luhphrase)
-              lstuh=lfnuh+2
+              lstuh=lfnuh
             endif
             strval=' '        ! clear string buffer for the value changed
             if (IDMAT(ICC,2).eq.1) then 
@@ -1489,15 +1502,15 @@ C Make specific header string for each change (to match urunvals)
               lnloc=lnblnk(LLOC(ICL))
               if(lncng.gt.18)lncng=18
               uhphrase=' '
-              write(uhphrase,'(4a,i2.2,a,i3.3)')LCNG(ICC)(1:lncng),':',
-     &          LLOC(ICL)(1:lnloc),':',IZ,':',IS
+              write(uhphrase,'(4a,i2.2,a,i3.3,a)')LCNG(ICC)(1:lncng),
+     &          ':',LLOC(ICL)(1:lnloc),':',IZ,':',IS,','
               luhphrase=lnblnk(uhphrase)
               write(36,'(a)') uhphrase
       
               lfnuh=lstuh+luhphrase
               if(lfnuh.lt.1000)then
                 write(uheader(lstuh:lfnuh),'(a)') uhphrase(1:luhphrase)
-                lstuh=lfnuh+2
+                lstuh=lfnuh
               endif
               strval=' '        ! clear string buffer for the value changed
               write (36,'(a,f9.4,2i3)') 'From Area: ',SNA(IZ,IS),IZ,IS

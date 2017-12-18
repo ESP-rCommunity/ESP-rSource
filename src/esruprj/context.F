@@ -174,7 +174,7 @@ C Begin with high level menu.
       ITEMS(19)=                'p integrated performance view    '
       ITEMS(20)=                '  ___________________________    '
       ITEMS(21)=                'q pressure coefficients calc.    '
-      ITEMS(22)=                'r use measured/temporal data     '
+      ITEMS(22)=                'r use observed/temporal data    '
       ITEMS(23)=                '  ___________________________    '
       WRITE(ITEMS(24),'(a,i3)') 's define images: ',noimg
       ITEMS(25)=                't UK NCM specifications          '
@@ -1128,6 +1128,7 @@ C temporal data to be associated with a model.
       
       integer lnblnk  ! function definition
 
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/user/browse
@@ -1222,7 +1223,11 @@ C and present a different interface depending on file type.
 
 C Begin with high level menu.
     3 IER=0
-      IRT=-1
+      if(MMOD.eq.8)then
+        IRT=-1
+      else
+        IRT=-2
+      endif
 
       if(itdflg.eq.0)then
         if(browse)then
@@ -2025,19 +2030,55 @@ C Depending on the type of data, ask for associated zone & surface.
      &           'Select surface to apply vertical solar data',' ',IER)
             IF(ISUR.EQ.0.OR.ISUR.EQ.-1)GOTO 353
             write(DBSN(ITE),'(a)') sname(IC,ISUR)(1:12)
-          elseif(TTYPE(it)(1:6).eq.'DBTZNM')then
+          elseif(TTYPE(it)(1:8).eq.'DBTZNOBS')then
 
-C Measured db T (associated with a zone to allow reporting). Note: the simulator
+C Observed db T (associated with a zone to allow reporting). Note: bps
 C will not use these values only for reporting in res.
             IC=-1
  354        izdef=0
             call askzone(ic,izdef,
-     &        'Zone for measured db T to display in res?',
-     &        'Related zone','-','Measured db T for which zone?',ier)
+     &        'Zone for observed db T to display in res?',
+     &        'Related zone','-','Observed db T for which zone?',ier)
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 354
             write(DBZN(ITE),'(a)') zname(IC)(1:12)
             DBSN(ITE)='ALL' 
-          elseif(TTYPE(it)(1:5).eq.'SURTM')then
+          elseif(TTYPE(it)(1:7).eq.'ZNRHOBS')then
+
+C Observed RH (associated with a zone to allow reporting). Note: bps
+C will not use these values only for reporting in res.
+            IC=-1
+ 359        izdef=0
+            call askzone(ic,izdef,
+     &        'Zone for observed zone RH to display in res?',
+     &        'Related zone','-','Observed RH for which zone?',ier)
+            IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 359
+            write(DBZN(ITE),'(a)') zname(IC)(1:12)
+            DBSN(ITE)='ALL' 
+          elseif(TTYPE(it)(1:7).eq.'ZNHTOBS')then
+
+C Observed heating (associated with a zone to allow reporting). Note: bps
+C will not use these values only for reporting in res.
+            IC=-1
+ 357        izdef=0
+            call askzone(ic,izdef,
+     &        'Zone for observed zone heating to display in res?',
+     &        'Related zone','-','Observed heating for which zone?',ier)
+            IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 357
+            write(DBZN(ITE),'(a)') zname(IC)(1:12)
+            DBSN(ITE)='ALL' 
+          elseif(TTYPE(it)(1:7).eq.'ZNCLOBS')then
+
+C Observed cooling (associated with a zone to allow reporting). Note: bps
+C will not use these values only for reporting in res.
+            IC=-1
+ 358        izdef=0
+            call askzone(ic,izdef,
+     &        'Zone for observed zone cooling to display in res?',
+     &        'Related zone','-','Observed cooling for which zone?',ier)
+            IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 358
+            write(DBZN(ITE),'(a)') zname(IC)(1:12)
+            DBSN(ITE)='ALL' 
+          elseif(TTYPE(it)(1:7).eq.'SURTOBS')then
 
 C Measured surface T (associated with a zone and up to 6 surfaces to allow
 C the values to be reported). Note: the simulator will not use these values
@@ -2147,7 +2188,7 @@ C copy data into cm variables for later editing.
                 cm(3)=bmiscd(ispl,1,1,3)
 cx                cm(4)=bmiscd(ispl,1,1,4)
 cx                cm(5)=bmiscd(ispl,1,1,5)
-              elseif(itrc.eq.2) then
+              elseif(irtc.eq.2) then
 C              ?? create new??
 
               elseif(irtc.eq.3)then

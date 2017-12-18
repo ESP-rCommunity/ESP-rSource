@@ -363,8 +363,14 @@ C For CO2 concentration:
       COMMON/CONTM8/CCONC(MNOD,MCONTM)
       real CCONC
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
+      CHARACTER LAPROB*72
+      
 C For rain indicator:
       common/trc/itrc
+      character*10 wkd1, wkd2
+      common/wkdtyp/idwe1,idwe2,wkd1,wkd2
+
       DIMENSION VAL(MBITS+2)
 
 C Miscellaneous declarations.

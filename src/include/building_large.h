@@ -7,6 +7,8 @@ C 82 zone 96 surface version 02.2016 updated
 C 3300 surfaces for MCON 3.2012 updated
 C 8 air gaps MGP and 16 layers ME 7.2012 updated
 C 82 zone 150 surface version 02.2017 updated
+C 120 edges per polygon version 08.2017 updated
+C 200 surfaces per zone 500 vertex per zone 10.2017 updated
 
 C Type declarations.
       integer MCOM,MCON,MTV,MV,ME,MGP,MN,MP,MDY,MT,MA,MC,MBP,MTMS
@@ -23,11 +25,11 @@ C Type declarations.
       integer MCFC,MSPMRES
 
 C Geometry.
-      PARAMETER (MCOM=82)      !- Zones.
-      PARAMETER (MS=150)       !- Surfaces/zone (set MNSBZ in cfd.h to at least 2*MS).
-      PARAMETER (MCON=3600)    !- Surfaces in model.
-      PARAMETER (MTV=400)      !- Vertices/zone.
-      PARAMETER (MV=42)        !- Vertices/surface.
+      PARAMETER (MCOM=90)      !- Zones.
+      PARAMETER (MS=200)       !- Surfaces/zone (set MNSBZ in cfd.h to at least 2*MS).
+      PARAMETER (MCON=5200)    !- Surfaces in model.
+      PARAMETER (MTV=450)      !- Vertices/zone.
+      PARAMETER (MV=120)       !- Vertices/surface.
       PARAMETER (MST=MS)       !- Used with view factors.
       PARAMETER (MSM=MS+6)     !- Used with view factors.
 
@@ -36,9 +38,9 @@ C Ground topology.
       PARAMETER (MGTV=500)     !- Vertices.
 
 C Construction.
-      PARAMETER (ME=16)        !- Elements/construction. - Increased from 8 to 16 to support CFCs - (Bart Lomanowski)
-      PARAMETER (MN=50)        !- Nodes/construction.    - Increased from 35 to 50 to support CFCs - (Bart Lomanowski)
-      PARAMETER (MGP=8)       !- Air gaps/construction. - Increased from 3 to 8 to support CFCs - (Bart Lomanowski)
+      PARAMETER (ME=16)        !- Elements/construction. - 8 to 16 to support CFCs (B Lomanowski)
+      PARAMETER (MN=50)        !- Nodes/construction.    - 35 to 50 to support CFCs (B Lomanowski)
+      PARAMETER (MGP=8)        !- Air gaps/construction. - 3 to 8 to support CFCs (B Lomanowski)
       PARAMETER (MMLC=200)     !- Multilayered constructions in model.
       PARAMETER (MHCV=MN+ME)   !- Control volumes per construction.
 
@@ -50,7 +52,7 @@ C Glazing.
       PARAMETER (MGOPT=150)    !- Set size in optics database.
 
 C Shading/insolation.
-      PARAMETER (MB=180)       !- Site obstruction blocks.
+      PARAMETER (MB=280)       !- Site obstruction & visual blocks.
       PARAMETER (MOX=120)      !- Grid lines in x-direction.
       PARAMETER (MOZ=120)      !- Grid lines in z-direction.
       PARAMETER (MISUR=10)     !- Surfaces insolated from one source.
@@ -73,8 +75,8 @@ C Casual gains.
       PARAMETER (MC=24*MCT*MDTY)!- Total casual gains.
 
 C Mean radiant temperature.
-      PARAMETER (MCUB=6)        !- Sensors in zone.
-      PARAMETER (MGC=28000)     !- Surface grid cells (rougly associated with MS).
+      PARAMETER (MCUB=16)       !- Sensors in zone.
+      PARAMETER (MGC=72000)     !- Surface grid cells (rougly associated with MS).
       PARAMETER (MPATCH=200)    !- Hemispherical patches.
 
 C Time.
@@ -110,13 +112,13 @@ C Time-step control.
       PARAMETER (IRWMAX=20)     !- For type 6.
 
 C Results analysis.
-      PARAMETER (MSPS=10)       !- Simulation parameter sets.
+      PARAMETER (MSPS=30)       !- Simulation parameter sets.
       PARAMETER (MNFA=4)        !- Factorial analyses.
 C      PARAMETER (MNRS=2**MNFA)  !- Result sets (set to 100 for sensitivity analysis).
       PARAMETER (MNRS=100)      !- Result sets (set to 100 for sensitivity analysis).
       PARAMETER (MIPVA=MSPS)    !- IPV assessments.
       PARAMETER (MIPVM=12)      !- IPV metrics.
-      PARAMETER (MZS=120)        !- Number of items to report in res (biggest of MCOM or MS).
+      PARAMETER (MZS=240)       !- Number of items to report in res (biggest of MCOM or MS).
       PARAMETER (MZRL=MS+12)    !- Fields in a zone results library record. It should
                                 !  be largest of (36 for file names or MCON for zones
                                 !  or MS + 12 or MGP * 5). See reslib.F for logic.

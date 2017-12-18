@@ -61,11 +61,8 @@ c Set area summations to zero.
 
 c And consider each surface of the current zone in turn.
       DO 10 I=1,NSUR
-        XS=0.
-        YS=0.
-        ZS=0.
-        ZMAX=-1.E+10
-        ZMIN=1.E+10
+        XS=0.0; YS=0.0; ZS=0.0
+        ZMAX=-1.E+10; ZMIN=1.E+10
         NV=NVER(I)
 
 c Compute gross surface area.
@@ -75,13 +72,15 @@ c Compute gross surface area.
           IF(J.EQ.NV)K=1
           IP1=JVN(I,J)
           IP2=JVN(I,K)
-          ZMAX=AMAX1(ZMAX,Z(IP1))
-          ZMIN=AMIN1(ZMIN,Z(IP1))
-          XS=XS+Y(IP1)*Z(IP2)-Z(IP1)*Y(IP2)
-          YS=YS+Z(IP1)*X(IP2)-X(IP1)*Z(IP2)
-          ZS=ZS+X(IP1)*Y(IP2)-Y(IP1)*X(IP2)
-          ADDL=ADDL+SQRT((X(IP2)-X(IP1))**2+(Y(IP2)-Y(IP1))**2+
+          if(IP1.ge.1.and.IP2.ge.1)then
+            ZMAX=AMAX1(ZMAX,Z(IP1))
+            ZMIN=AMIN1(ZMIN,Z(IP1))
+            XS=XS+Y(IP1)*Z(IP2)-Z(IP1)*Y(IP2)
+            YS=YS+Z(IP1)*X(IP2)-X(IP1)*Z(IP2)
+            ZS=ZS+X(IP1)*Y(IP2)-Y(IP1)*X(IP2)
+            ADDL=ADDL+SQRT((X(IP2)-X(IP1))**2+(Y(IP2)-Y(IP1))**2+
      &         (Z(IP2)-Z(IP1))**2)
+          endif
    20   CONTINUE
         XSUM(I)=XS
         YSUM(I)=YS

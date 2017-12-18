@@ -24,12 +24,13 @@ default: $(PROG)
 
 MODULE_OBJECTS = h3kmodule.o startup.o aim2_module.o
 
-OBJECTS = ecnv.o ascii_mat.o c2fdum.o ctread.o \
+OBJECTS = ecnv.o ascii_mat.o c2fdum.o ctlwrt.o ctread.o \
 	  CDBPlugins.o CDBCommon.o CDBExplore.o dossupport.o \
-	  e2vrml.o e2vdxf.o edatabase.o egeometry.o egtgeom.o \
+	  e2vrml.o e2vdxf.o econstr.o econtrol.o edatabase.o \
+	  edcon.o egbxml.o egeometry.o egtgeom.o \
 	  emfnetw.o emkcfg.o enetmisc.o enetrewr.o eroper.o esru_misc.o \
 	  esystem.o filelist.o item.o low_lev.o mfcdat.o mid_lev.o \
-	  nwkrewr.o pltcfg.o readTrnsys.o rwipv.o rwsbem.o sort.o \
+	  nwkrewr.o pltcfg.o rcdblist.o readTrnsys.o rwipv.o rwsbem.o sort.o \
 	  tdfile.o wwxfig.o \
 	  FMIcom.o
       
@@ -57,15 +58,30 @@ CDBExplore.F:
 c2fdum.F:
 	rm -f c2fdum.F
 	ln -s $(COMdir)/c2fdum.F .
+ctlwrt.F:
+	rm -f ctlwrt.F
+	ln -s $(PRJdir)/ctlwrt.F .
 ctread.F:
 	rm -f ctread.F
 	ln -s $(COMdir)/ctread.F .
 dossupport.F:
 	rm -f dossupport.F
 	ln -s $(COMdir)/dossupport.F .
+econstr.F:
+	rm -f econstr.F
+	ln -s $(COMdir)/econstr.F .
+econtrol.F:
+	rm -f econtrol.F
+	ln -s $(COMdir)/econtrol.F .
+edcon.F:
+	rm -f edcon.F
+	ln -s $(PRJdir)/edcon.F .
 edatabase.F:
 	rm -f edatabase.F
 	ln -s $(COMdir)/edatabase.F .
+egbxml.F:
+	rm -f egbxml.F
+	ln -s $(PRJdir)/egbxml.F .
 egeometry.F:
 	rm -f egeometry.F
 	ln -s $(COMdir)/egeometry.F .
@@ -108,6 +124,9 @@ nwkrewr.F:
 pltcfg.F:
 	rm -f pltcfg.F
 	ln -s $(COMdir)/pltcfg.F .
+rcdblist.F:
+	rm -f rcdblist.F
+	ln -s $(COMdir)/rcdblist.F .
 readTrnsys.F:
 	rm -f readTrnsys.F
 	ln -s $(COMdir)/readTrnsys.F .
@@ -142,10 +161,11 @@ install:
 clean:
 	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
 	aim2_module.F ascii_mat.F CDBPlugins.F CDBCommon.F CDBExplore.F \
-	c2fdum.F ctread.F dossupport.F edatabase.F egeometry.F egtgeom.F \
+	c2fdum.F ctlwrt.F ctread.F dossupport.F econstr.F econtrol.F edatabase.F \
+	edcon.F egbxml.F egeometry.F egtgeom.F \
 	emfnetw.F emkcfg.F enetmisc.F enetrewr.F eroper.F esru_misc.F esystem.F \
 	filelist.F item.F mfcdat.F nwkrewr.F pltcfg.F readTrnsys.F rwipv.F rwsbem.F \
-	sort.F startup.F tdfile.F h3kmodule.f90 \
+	rcdblist.F sort.F startup.F tdfile.F h3kmodule.f90 \
 	FMIcom.F
 
 distclean: clean

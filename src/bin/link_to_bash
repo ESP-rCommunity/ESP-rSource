@@ -14,6 +14,8 @@ rm -f $HOME/bin/clm; ln -s $1/clm $HOME/bin/clm
 echo clm " is now pointing to "$1/clm
 rm -f $HOME/bin/dfs; ln -s $1/dfs $HOME/bin/dfs
 echo dfs " is now pointing to "$1/dfs
+rm -f $HOME/bin/dfv; ln -s $1/dfs $HOME/bin/dfv
+echo dfv " is now pointing to "$1/dfv
 rm -f $HOME/bin/e2r; ln -s $1/e2r $HOME/bin/e2r
 echo e2r " is now pointing to "$1/e2r
 rm -f $HOME/bin/ecnv; ln -s $1/ecnv $HOME/bin/ecnv

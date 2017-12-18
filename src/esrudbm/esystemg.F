@@ -344,8 +344,19 @@ C Simulation parameter presets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh      
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
-     &  smstres(MSPS),selres(MSPS),sipvres
+     &  smstres(MSPS),selres(MSPS),scfdres(MSPS),sipvres
+      character sblres*72,sflres*72,splres*72,smstres*72,
+     &  selres*72,scfdres*72,sipvres*72
 
+C Extended simulation parameters for each set.
+      common/spfldats/isstupex(MSPS),isbnstepex(MSPS),ispnstepex(MSPS),
+     &  issaveex(MSPS),isavghex(MSPS),iscfdactivate(MSPS),
+     &  isicfdys(MSPS),isicfdyf(MSPS),
+     &  scftims(MSPS),scftimf(MSPS)
+      INTEGER :: isstupex,isbnstepex,ispnstepex,issaveex,isavghex
+      INTEGER :: iscfdactivate      ! zero ignore domains
+      INTEGER :: isicfdys,isicfdyf  ! CFD simulation start & finish days
+      REAL :: scftims,scftimf       ! CFD simulation start & finish time
 
 C BASESIMP.
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
@@ -466,8 +477,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)
       CHARACTER NDNAM*12
-      character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,spfdescr*30
+      character spfdescr*30
       character hvacfile*72,LBSIMP*72,LFClds*72
       character gshpfile*72
       character gcepfile*72
@@ -1360,7 +1370,7 @@ C Read references to TDF id's, and then the related tasks and zones.
         CALL ERPFREE(IUTDF,ISTAT)
       elseif(WORD(1:4).eq.'*sps')then
 
-C Check for simulation setup data and save level.
+C Check for simulation global setup data and save level.
         CALL EGETWI(OUTSTR,K,nsset,1,5,'W','no. of sets',IER)
         CALL EGETWI(OUTSTR,K,isstup,0,300,'W','startup',IER)
         CALL EGETWI(OUTSTR,K,isbnstep,1,60,'W','zone_ts',IER)
@@ -1382,14 +1392,36 @@ C to empty strings even if they are not defind in the input file.
           write(smstres(iss), '(A)') '  '
           write(splres(iss), '(A)')  '  '
           write(selres(iss), '(A)')  '  '
+          write(scfdres(iss), '(A)')  '  '
 
-          CALL STRIPC(IUC,OUTSTR,0,ND,1,'sim set',IER)
+C Count number of items to see if legacy set or extended set.
+          CALL STRIPC(IUC,OUTSTR,99,ND,1,'sim set',IER)
           K=0
-          CALL EGETWI(OUTSTR,K,isstday(iss),1,31,'W','start',IER)
-          CALL EGETWI(OUTSTR,K,isstmon(iss),1,12,'W','start',IER)
-          CALL EGETWI(OUTSTR,K,isfnday(iss),1,31,'W','end',IER)
-          CALL EGETWI(OUTSTR,K,isfnmon(iss),1,12,'W','end',IER)
-          CALL EGETRM(OUTSTR,K,spfdescr(iss),'W','set name',IER)
+          if(ND.eq.5)then
+
+C No extended sps data found so set to global values.
+            isstupex(iss)=isstup; isbnstepex(iss)=isbnstep
+            ispnstepex(iss)=ispnstep
+            issaveex(iss)=issave; isavghex(iss)=isavgh
+            CALL EGETWI(OUTSTR,K,isstday(iss),1,31,'W','start',IER)
+            CALL EGETWI(OUTSTR,K,isstmon(iss),1,12,'W','start',IER)
+            CALL EGETWI(OUTSTR,K,isfnday(iss),1,31,'W','end',IER)
+            CALL EGETWI(OUTSTR,K,isfnmon(iss),1,12,'W','end',IER)
+            CALL EGETRM(OUTSTR,K,spfdescr(iss),'W','set name',IER)
+          else
+
+C Read extended sps data.
+            CALL EGETWI(OUTSTR,K,isstupex(iss),1,31,'W','startup',IER)
+            CALL EGETWI(OUTSTR,K,isbnstepex(iss),1,60,'W','bld ts',IER)
+            CALL EGETWI(OUTSTR,K,ispnstepex(iss),1,100,'W','plt ts',IER)
+            CALL EGETWI(OUTSTR,K,issaveex(iss),0,5,'W','save lv',IER)
+            CALL EGETWI(OUTSTR,K,isavghex(iss),0,1,'W','save hr',IER)
+            CALL EGETWI(OUTSTR,K,isstday(iss),1,31,'W','start',IER)
+            CALL EGETWI(OUTSTR,K,isstmon(iss),1,12,'W','start',IER)
+            CALL EGETWI(OUTSTR,K,isfnday(iss),1,31,'W','end',IER)
+            CALL EGETWI(OUTSTR,K,isfnmon(iss),1,12,'W','end',IER)
+            CALL EGETRM(OUTSTR,K,spfdescr(iss),'W','set name',IER)
+          endif
  334      CALL STRIPC(IUC,OUTSTR,0,ND,1,'res names',IER)
           K=0
           CALL EGETW(OUTSTR,K,WORD,'W','res tags',IFLAG)
@@ -1403,6 +1435,21 @@ C to empty strings even if they are not defind in the input file.
             CALL EGETRM(OUTSTR,K,smstres(iss),'W','moist res',IER)
           elseif(WORD(1:5).eq.'*selr')then
             CALL EGETRM(OUTSTR,K,selres(iss),'W','elect res',IER)
+          elseif(WORD(1:6).eq.'*scfdr')then
+
+C Read the cfd assessment attributes and the results file name.
+C isicfdys(iss),isicfdyf(iss),scftims(iss),scftimf(iss)
+            CALL EGETWI(OUTSTR,K,iscfdactivate(iss),0,1,'W',
+     &        'activate',IER)
+            CALL EGETWI(OUTSTR,K,isicfdys(iss),1,365,'W',
+     &        'cfd start',IER)
+            CALL EGETWI(OUTSTR,K,isicfdyf(iss),1,365,'W',
+     &        'cfd finish',IER)
+            CALL EGETWR(OUTSTR,K,scftims(iss),0.,24.,'W',
+     &        'cfd start time',IER)
+            CALL EGETWR(OUTSTR,K,scftimf(iss),0.,24.,'W',
+     &        'cfd finish time',IER)
+            CALL EGETRM(OUTSTR,K,scfdres(iss),'W','cfd res',IER)
           elseif(WORD(1:5).eq.'*spvr')then
             continue
           elseif(WORD(1:8).eq.'*end_set')then

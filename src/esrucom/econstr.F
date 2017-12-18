@@ -346,7 +346,7 @@ C Parameters
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
 
-      character outs*124,louts*248
+      character outs*124,louts*248,lkouts*1000
 
       IER=0
 
@@ -423,15 +423,16 @@ C Write out layer thermophysical properties.
 1220  CONTINUE
 
 C Write out surface properties as one or more lines of packed
-C strings. Code should be good for any number of surfaces.
+C strings. Code should be good for any number of surfaces. Use
+C arlist2 because not so many digits of accuracy are needed.
       WRITE(IFILT,'(a)',IOSTAT=IOS,ERR=146)
      &  '# for each surface: inside face emissivity'
       itrunc=1
       ipos=1
       do while (itrunc.ne.0)
-        call arlist(ipos,nzsur(icomp),EMISI,MS,'C',louts,loutln,itrunc)
-        write(ifilt,'(1x,a)',IOSTAT=ios,ERR=146) louts(1:loutln)
-        ipos=itrunc+1
+       call arlist2(ipos,nzsur(icomp),EMISI,MS,'C',lkouts,loutln,itrunc)
+       write(ifilt,'(1x,a)',IOSTAT=ios,ERR=146) lkouts(1:loutln)
+       ipos=itrunc+1
       end do
 
       WRITE(IFILT,'(a)',IOSTAT=IOS,ERR=146)
@@ -439,9 +440,9 @@ C strings. Code should be good for any number of surfaces.
       itrunc=1
       ipos=1
       do while (itrunc.ne.0)
-        call arlist(ipos,nzsur(icomp),EMISE,MS,'C',louts,loutln,itrunc)
-        write(ifilt,'(1x,a)',IOSTAT=ios,ERR=146) louts(1:loutln)
-        ipos=itrunc+1
+       call arlist2(ipos,nzsur(icomp),EMISE,MS,'C',lkouts,loutln,itrunc)
+       write(ifilt,'(1x,a)',IOSTAT=ios,ERR=146) lkouts(1:loutln)
+       ipos=itrunc+1
       end do
 
       WRITE(IFILT,'(a)',IOSTAT=IOS,ERR=146)
@@ -449,9 +450,9 @@ C strings. Code should be good for any number of surfaces.
       itrunc=1
       ipos=1
       do while (itrunc.ne.0)
-        call arlist(ipos,nzsur(icomp),ABSI,MS,'C',louts,loutln,itrunc)
-        write(ifilt,'(1x,a)',IOSTAT=ios,ERR=146) louts(1:loutln)
-        ipos=itrunc+1
+       call arlist2(ipos,nzsur(icomp),ABSI,MS,'C',lkouts,loutln,itrunc)
+       write(ifilt,'(1x,a)',IOSTAT=ios,ERR=146) lkouts(1:loutln)
+       ipos=itrunc+1
       end do
 
       WRITE(IFILT,'(a)',IOSTAT=IOS,ERR=146)
@@ -459,9 +460,9 @@ C strings. Code should be good for any number of surfaces.
       itrunc=1
       ipos=1
       do while (itrunc.ne.0)
-        call arlist(ipos,nzsur(icomp),ABSE,MS,'C',louts,loutln,itrunc)
-        write(ifilt,'(1x,a)',IOSTAT=ios,ERR=146) louts(1:loutln)
-        ipos=itrunc+1
+       call arlist2(ipos,nzsur(icomp),ABSE,MS,'C',lkouts,loutln,itrunc)
+       write(ifilt,'(1x,a)',IOSTAT=ios,ERR=146) lkouts(1:loutln)
+       ipos=itrunc+1
       end do
 
    99 CALL ERPFREE(IFILT,ISTAT)

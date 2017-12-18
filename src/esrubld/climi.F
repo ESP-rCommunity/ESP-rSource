@@ -126,6 +126,9 @@ C time step.
 #include "building.h"
 #include "net_flow.h"
 #include "tdf2.h"
+C <GRM>
+#include "gremlin.h"
+C </GRM>
 
       common/trc/itrc
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -493,6 +496,23 @@ C Assign flow climate variables.
       DFLF=DFP
       HFLP=HPP
       HFLF=HFP
+
+C <GRM>
+      if (NMCF.gt.0) then
+        do imcf=1,NMCF
+
+C Gremlin mischief type 2: outside dry bulb temperature + 10 deg. C
+          if (MCFTYP(imcf).eq.2) then
+            TF=TF+10.0
+
+C Gremlin mischief type 3: outside dry bulb temperature - 10 deg. C
+          elseif (MCFTYP(imcf).eq.3) then
+            TF=TF-10.0
+
+          endif
+        enddo
+      endif
+C </GRM>
 
       RETURN
       END

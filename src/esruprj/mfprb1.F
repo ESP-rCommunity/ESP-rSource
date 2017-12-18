@@ -75,14 +75,16 @@ C      COMMON/MFLITR/MAXITF,FERREL,FERMFL,PMAX,STEFFR,MFTRAC,ITER,IOK
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       common/user/browse
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
-     &  smstres(MSPS),selres(MSPS),sipvres
+     &  smstres(MSPS),selres(MSPS),scfdres(MSPS),sipvres
+      character sblres*72,sflres*72,splres*72,smstres*72,
+     &  selres*72,scfdres*72,sipvres*72
 
       CHARACTER*33 ITEM1(24)
       CHARACTER LAPROB*72
       CHARACTER LTMP*72,outs*124,outstr*124
-      character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,NDNAM*12,fs*1
+      character NDNAM*12,fs*1
       LOGICAL OK,dok,found,XST,clkok,browse,unixok
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       integer NITMS1,INO ! max items and current menu item

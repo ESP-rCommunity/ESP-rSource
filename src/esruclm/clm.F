@@ -355,9 +355,9 @@ C Take command line file name to LCMDF and use as initial weather file.
       endif
 
 C Take command line action parameter:
-C If paction = 'asci2bin' then fill binary file `inf` with data 
+C If paction = 'asci2bin' or 'ascii2bin' then fill binary file `inf` with data 
 C from `ascif` and exit.
-C If paction is `bin2asci` file ascii file `ascif` with data from
+C If paction is `bin2asci` or `bin2ascii`file ascii file `ascif` with data from
 C the binary file `inf` and exit.
 C If paction = `epw2bin` take user to point of interaction for dealing
 C with this conversion.
@@ -367,7 +367,8 @@ C with this conversion.
         if(itrc.gt.1)call edisp(iuout,outs)
         write(outs,'(a,a)')'clm: the input action is: ',paction
         call tstamp('>',outs)
-        if(paction(1:8).eq.'asci2bin')then
+        if(paction(1:8).eq.'asci2bin'.or.
+     &     paction(1:8).eq.'ascii2bin')then
           silent=.true.
           pascif=ascif
 
@@ -389,7 +390,8 @@ C          write(6,*)outs248(1:lnblnk(outs248))
 
           CALL EPAGEND
           STOP
-        elseif(paction(1:8).eq.'bin2asci')then
+        elseif(paction(1:8).eq.'bin2asci'.or.
+     &         paction(1:9).eq.'bin2ascii')then
           silent=.true.
           pascif=ascif
 

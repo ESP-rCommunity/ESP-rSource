@@ -158,7 +158,7 @@ C failed searches brought to users attention.
       M5SKP=.TRUE.
       M6SKP=.TRUE.
       M7SKP=.TRUE.
-      M8SKP=.FALSE.  !  back-to-back in zone assumed to be partitions
+      M8SKP=.TRUE.  !  back-to-back in zone assumed to be partitions
       OTHEROK=.TRUE.
       MODIFYVIEW=.FALSE.
       DCNN=' '
@@ -444,12 +444,12 @@ C Flip logic for back-to-back within zone.
         if(M8SKP)then
           M8SKP=.false.
         else
-          dok=.false.
+          dok=.true.
           helptopic='boundary_back_to_back'
           call gethelptext(helpinsub,helptopic,nbhelp)
           call askok('Do you want to confirm back-to-back surfaces',
      &               'within the room (see help)',OK,dok,nbhelp)
-          if(OK)M3SKP=.true.
+          if(OK)M8SKP=.true.
         endif
 
       ELSEIF(INO.EQ.15)THEN
@@ -2156,8 +2156,8 @@ C associated with a concept).
 
 C Anchor commons defined in model.h.
       DIMENSION VERT(35),flag(mcon),iconnpk(99)
-      CHARACTER VERT*59,KEY*1,outs*124
-      character CXITM*48,flag*9
+      CHARACTER VERT*61,KEY*1,outs*124
+      character CXITM*48,flag*12
       character ZN*12,SN*12
       character AL*12
       character LTMP*72
@@ -2232,7 +2232,10 @@ C anchor set(s) is/are associated with a connection.
             if(k.ne.0.and.i.eq.6)write(flag(k)(6:6),'(a)') '*'
             if(k.ne.0.and.i.eq.7)write(flag(k)(7:7),'(a)') '*'
             if(k.ne.0.and.i.eq.8)write(flag(k)(8:8),'(a)') '*'
-            if(k.ne.0.and.i.ge.9)write(flag(k)(9:9),'(a)') '*'
+            if(k.ne.0.and.i.eq.9)write(flag(k)(9:9),'(a)') '*'
+            if(k.ne.0.and.i.eq.10)write(flag(k)(10:10),'(a)') '*'
+            if(k.ne.0.and.i.eq.11)write(flag(k)(11:11),'(a)') '*'
+            if(k.ne.0.and.i.ge.12)write(flag(k)(12:12),'(a)') '*'
    4      continue
         endif
    5  continue
@@ -2246,7 +2249,7 @@ C current menu line index. Build up text strings for the menu.
           CALL EMKEY(L,KEY,IER)
           call CONXMENU(L,CXITM)
           VERT(M)=' '
-          WRITE(VERT(M),'(A1,1x,A,1a,a)')KEY,CXITM(1:46),'|',flag(L)
+          WRITE(VERT(M),'(A,1x,3A)')KEY,CXITM(1:46),'|',flag(L)
         ENDIF
    10 CONTINUE
 
@@ -2421,13 +2424,17 @@ C Force redraw of zones, highlighting anchor list.
           if(ALOCTYP(ifoc)(1:4).eq.'OPGR')ino=7
           if(ALOCTYP(ifoc)(1:4).eq.'DUCT')ino=8
           if(ALOCTYP(ifoc)(1:4).eq.'FANP')ino=9
+          if(ALOCTYP(ifoc)(1:4).eq.'DFLT')ino=10
+          if(ALOCTYP(ifoc)(1:4).eq.'IESL')ino=11
+          if(ALOCTYP(ifoc)(1:4).eq.'????')ino=12
           ilno=ino
           idno=1
           call MENUATOL('Select a type for the anchor:',
      &    'Anchor type (options)','a surface (general)','b closed door',
      &    'c open(able) door','d closed window','e open(able) window',
      &    'f closed grill','g openable grill','h duct or pipe',
-     &    'i fan or pump',' ',' ',' ',ino,idno,nbhelp)
+     &    'i fan or pump','j diffuse light','k IESNA light',
+     &    'l ???',ino,idno,nbhelp)
           if(ino.eq.0)then
             goto 31
           elseif(ino.eq.1)then
@@ -2485,6 +2492,24 @@ C Force redraw of zones, highlighting anchor list.
      &        IER,nbhelp)
             ALOCLBL(ifoc)=AL
             ALOCTYP(ifoc)='FANP'
+          elseif(ino.eq.10)then
+            if(ALOCLBL(ifoc)(1:4).eq.'unde')AL='difltsrc'
+            CALL EASKS(AL,'Label:',' ',12,'none','difltsrc',
+     &        IER,nbhelp)
+            ALOCLBL(ifoc)=AL
+            ALOCTYP(ifoc)='DFLT'
+          elseif(ino.eq.11)then
+            if(ALOCLBL(ifoc)(1:4).eq.'unde')AL='iesltsrc'
+            CALL EASKS(AL,'Label:',' ',12,'none','iesltsrc',
+     &        IER,nbhelp)
+            ALOCLBL(ifoc)=AL
+            ALOCTYP(ifoc)='IESL'
+          elseif(ino.eq.11)then
+            if(ALOCLBL(ifoc)(1:4).eq.'unde')AL='difltsrc_3'
+            CALL EASKS(AL,'Label:',' ',12,'none','difltsrc_3',
+     &        IER,nbhelp)
+            ALOCLBL(ifoc)=AL
+            ALOCTYP(ifoc)='DFL3'
           endif
           CALL EMKCFG('-',IER)
         endif
@@ -2554,8 +2579,8 @@ C << what additional functionality?? >>
       end
 
 C **************** anchlist 
-C anchlist allows selection and list management of anchor points (a list of connections
-C associated with a concept).
+C anchlist allows selection and list management of anchor points (a list
+C of connections associated with a concept).
       subroutine anchlist(iasel,ier)
 #include "building.h"
 #include "model.h"
@@ -2575,6 +2600,7 @@ C For help messages
       helpinsub='anchlist'  ! set for subroutine
 
       iasel=0
+      ifoc=0
 
 C Initialise connection menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -2646,7 +2672,8 @@ C Save and return.
      &    'Anchor type (options)','a surface (general)','b closed door',
      &    'c open(able) door','d closed window','e open(able) window',
      &    'f closed grill','g openable grill','h duct or pipe',
-     &    'i fan or pump',' ',' ',' ',ino,idno,nbhelp)
+     &    'i fan or pump','j diffuse light','k IESNA light',
+     &    'l ????',ino,idno,nbhelp)
           if(ino.eq.0)then
             goto 31
           elseif(ino.eq.1)then
@@ -2703,6 +2730,24 @@ C Save and return.
      &        IER,nbhelp)
             ALOCLBL(NALOC)=AL
             ALOCTYP(NALOC)='FANP'
+          elseif(ino.eq.10)then
+            if(ALOCLBL(NALOC)(1:4).eq.'unde')AL='difltsrc'
+            CALL EASKS(AL,'Label:',' ',12,'none','difltsrc',
+     &        IER,nbhelp)
+            ALOCLBL(NALOC)=AL
+            ALOCTYP(NALOC)='DFLT'
+          elseif(ino.eq.11)then
+            if(ALOCLBL(NALOC)(1:4).eq.'unde')AL='iesltsrc'
+            CALL EASKS(AL,'Label:',' ',12,'none','iesltsrc',
+     &        IER,nbhelp)
+            ALOCLBL(NALOC)=AL
+            ALOCTYP(NALOC)='IESL'
+          elseif(ino.eq.11)then
+            if(ALOCLBL(NALOC)(1:4).eq.'unde')AL='difltsrc_3'
+            CALL EASKS(AL,'Label:',' ',12,'none','difltsrc_3',
+     &        IER,nbhelp)
+            ALOCLBL(NALOC)=AL
+            ALOCTYP(NALOC)='DFL3'
           endif
           call usrmsg('You may now associate surfaces with this',
      &      'anchor... Begin by selecting from the list. ','W')

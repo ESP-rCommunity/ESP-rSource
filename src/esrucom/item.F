@@ -35,7 +35,7 @@ C IER=0 OK, IER=1 problem.
       common/pophelp/h(60)
       COMMON/TDFGH1/NITEMS
       COMMON/TDFGH2/GTYPES(MTI),GMENUS(MTI)
-      DIMENSION ISGGT(MTI+4),IVAL(MTI+4)
+      DIMENSION ISGGT(MTI+4),IVAL(MTI+4),IVALSS(MTI)
       LOGICAL FOUND
       CHARACTER GMENUS*24,GTYPES*8
       CHARACTER KEY*1,ISGGT*36,FOCUS*8
@@ -46,43 +46,57 @@ C Read the generic descriptions to see what is available.
       FOCUS='ALL'
       FOUND=.false.
       CALL GENDAT(FOCUS,0,FOUND,IER)
-      M=1     ! for the title of the list
+C      M=1     ! for the title of the list
+C      DO 3 IT=1,NITEMS
+C        M=M+1
+C        CALL EMKEY(M,KEY,IER)
+C        IVAL(M)=IT   ! remember mapping between item and menu position
+C        WRITE(ISGGT(M),72)KEY,GMENUS(IT),GTYPES(IT)
+C   72   FORMAT(A1,1X,A,1x,A)
+C    3 CONTINUE
+C      ISGGT(1)  ='  Description       TAG     '
+C      ISGGT(M+1)='? Help                      '
+C      ISGGT(M+2)='- Exit                      '
       DO 3 IT=1,NITEMS
-        M=M+1
-        CALL EMKEY(M,KEY,IER)
-        IVAL(M)=IT   ! remember mapping between item and menu position
-        WRITE(ISGGT(M),72)KEY,GMENUS(IT),GTYPES(IT)
-   72   FORMAT(A1,1X,A,1x,A)
+        WRITE(ISGGT(IT),'(3a)')GMENUS(IT),' ',GTYPES(IT)
     3 CONTINUE
-      ISGGT(1)  ='  Description       TAG     '
-      ISGGT(M+1)='? Help                      '
-      ISGGT(M+2)='- Exit                      '
 
 C Instanciateh() strings for this menu.
       h(1)='The tab type menu does not yet have'
       h(2)='any help associated with it. '
 
 C Make a menu of available generic items.
-      INO=-2
-   14 nitms=m+2
-      CALL EMENU('Available temporal types',ISGGT,nitms,INO)
-      IF(INO.EQ.M+2)THEN
-        IFG=0     ! signal nothing selected
-        RETURN
-      ELSEIF(INO.EQ.M+1)THEN
+      INPICK=1
+      CALL EPICKS(INPICK,IVALSS,'Available temporal types',
+     &  'Description       TAG',32,NITEMS,ISGGT,
+     &  'types',IER,nbhelp)
+      INO=IVALSS(1)
+      IFG=IVALSS(1)
+C Debug.
+      write(6,*) 'picked ',ifg,ino
+
+      RETURN
+      
+C      INO=-2
+C   14 nitms=m+2
+C      CALL EMENU('Available temporal types',ISGGT,nitms,INO)
+C      IF(INO.EQ.M+2)THEN
+C        IFG=0     ! signal nothing selected
+C        RETURN
+C      ELSEIF(INO.EQ.M+1)THEN
 
 C Help text...
-      ELSEIF(INO.GE.2.AND.INO.LE.M+1)THEN
-        IFG=IVAL(INO)   ! decode menu position back to item
+C      ELSEIF(INO.GE.2.AND.INO.LE.M+1)THEN
+C        IFG=IVAL(INO)   ! decode menu position back to item
 
 C Debug.
 C        write(6,*) 'picked ',ifg,ino
 
-        RETURN
-      ELSE
-        INO=-1
-        GOTO 14
-      ENDIF
+C        RETURN
+C      ELSE
+C        INO=-1
+C        GOTO 14
+C      ENDIF
 
       END
 
@@ -175,17 +189,17 @@ C Pick up the arrays used for displaying current generic items.
       GTYPES(20)='BAMSNSET'
       GMENUS(20)='BAM wireless sensor:   '  ! this is work in progress   
 
-C DBTZNM is not used by the simulator, res will graph/list it.  
-      GTYPES(21)='DBTZNM'
-      GMENUS(21)='Zone db T (to display):'
+C DBTZNOBS is not used by the simulator, res will graph/list it.  
+      GTYPES(21)='DBTZNOBS'
+      GMENUS(21)='Zone db T (observed):  '
 
-C SURTM is not used by the simulator, res will graph/list it.
-      GTYPES(22)='SURTM'
-      GMENUS(22)='Surface T (to display):'
+C SURTOBS is not used by the simulator, res will graph/list it.
+      GTYPES(22)='SURTOBS'
+      GMENUS(22)='Surface T (observed):'
       GTYPES(23)='NODPRESS'
       GMENUS(23)='Flow node press Pa:    '
-      GTYPES(24)='NODPRESS'
-      GMENUS(24)='Node Press Pa: '
+      GTYPES(24)='ZNRHOBS'   ! use this for observed RH
+      GMENUS(24)='Zone RH (observed): '   ! use this for observed RH
       GTYPES(25)='PERCTRL'
       GMENUS(25)='Pervasive ctrl:'
       GTYPES(26)='CTRLCAP'
@@ -200,6 +214,14 @@ C SURTM is not used by the simulator, res will graph/list it.
 C RAININD is currently only used to pass to external control via FMI.
       GTYPES(29)='RAININD'
       GMENUS(29)='Binary rain indicator: '
+
+C Observed zone heating for display in res
+      GTYPES(30)='ZNHTOBS'   ! use this for observed heating
+      GMENUS(30)='Zone heat (observed): '
+
+C Observed zone cooling for display in res
+      GTYPES(31)='ZNCLOBS'   ! use this for observed cooling
+      GMENUS(31)='Zone cool (observed): '
 
 C If not looking for a specific item then return.
       IF(FOCUS(1:7).EQ.'ALLCLMT')THEN
@@ -591,32 +613,68 @@ C BAM wireless sensor data (to be done).
         MGMA(6)='Audio (-):                  '
         FOUND=.TRUE.
 
-      ELSEIF(FOCUS(1:6).EQ.'DBTZNM')THEN
+      ELSEIF(FOCUS(1:8).EQ.'DBTZNOBS')THEN
 
-C Measured zone air temperature: one data item.
-        GAIDE   ='Measured zone DB temp '
-        GHELP(1)='Zone dry bulb temperature degree C measurements to'
+C Observed zone air temperature: one data item.
+        GAIDE   ='Observed zone DB temp '
+        GHELP(1)='Zone dry bulb temperature degree C observed to'
         GHELP(2)='to display in res for comparison with predictions.'
         GMH='2,1,0,0,1,0,-999.0'
-        GDHDRT(1)='   time  | meas zone db'
+        GDHDRT(1)='   time  | obs zone db '
         GDHDRT(2)='   of day| temperature '
-        GDHDRT(3)='Meas Zn DB temperature:'
+        GDHDRT(3)='Obs Zn DB temperature:'
         GMF(1)='REAL,1,0.0,-49.0,49.0'
-        MGMA(1)='Meas Zn DB temperature (C): '
+        MGMA(1)='Obs Zn DB temperature (C): '
         FOUND=.TRUE.
         
-      ELSEIF(FOCUS(1:5).EQ.'SURTM')THEN
+      ELSEIF(FOCUS(1:7).EQ.'SURTOBS')THEN
 
-C Measured surface temperature (for reporting in res): one data item.
-        GAIDE   ='Measured surface temp '
-        GHELP(1)='Zone surf temperature degree C measurements to'
-        GHELP(2)='to display in res for comparison with predictions.'
+C Observed surface temperature (for reporting in res): one data item.
+        GAIDE   ='Observed surface temp '
+        GHELP(1)='Zone surf temperature degree C observed to'
+        GHELP(2)='display in res for comparison with predictions.'
         GMH='2,1,0,0,1,0,-999.0'
-        GDHDRT(1)='   time  | meas surface'
+        GDHDRT(1)='   time  | obs surface'
         GDHDRT(2)='   of day| temperature '
-        GDHDRT(3)='Meas Surf temperature:'
+        GDHDRT(3)='Obs Surf temperature:'
         GMF(1)='REAL,1,0.0,-49.0,49.0'
-        MGMA(1)='Meas surf temperature (C): '
+        MGMA(1)='Obs surf temperature (C): '
+        FOUND=.TRUE.
+
+      ELSEIF(FOCUS(1:7).EQ.'ZNRHOBS')THEN
+        GAIDE   ='Observed zone RH (%) '
+        GHELP(1)='Zone RH % observed to display in res for'
+        GHELP(2)='comparison with predictions.'
+        GMH='2,1,0,0,1,0,-999.0'
+        GDHDRT(1)='   time  | obs relative '
+        GDHDRT(2)='   of day| humidity (%) ' 
+        GDHDRT(3)='Obs relative humidity (%):'
+        GMF(1)='REAL,1,50.0,0.0,100.0'
+        MGMA(1)='Obs zone RH (%):          '
+        FOUND=.TRUE.
+
+      ELSEIF(FOCUS(1:7).EQ.'ZNHTOBS')THEN
+        GAIDE   ='Observed zone heat (%) '
+        GHELP(1)='Zone heating observed to display in res'
+        GHELP(2)='for comparison with predictions.'
+        GMH='2,1,0,0,1,0,-999.0'
+        GDHDRT(1)='   time  | obs heating '
+        GDHDRT(2)='   of day| (W) ' 
+        GDHDRT(3)='Obs zone heating (W):'
+        GMF(1)='REAL,1,50.0,0.0,100.0'
+        MGMA(1)='Obs zone heat (W):          '
+        FOUND=.TRUE.
+
+      ELSEIF(FOCUS(1:7).EQ.'ZNCLOBS')THEN
+        GAIDE   ='Observed zone cool (%) '
+        GHELP(1)='Zone cooling observed to display in res'
+        GHELP(2)='for comparison with predictions.'
+        GMH='2,1,0,0,1,0,-999.0'
+        GDHDRT(1)='   time  | obs coolinging '
+        GDHDRT(2)='   of day| (W) ' 
+        GDHDRT(3)='Obs zone cooling (W):'
+        GMF(1)='REAL,1,50.0,0.0,100.0'
+        MGMA(1)='Obs zone cool (W):          '
         FOUND=.TRUE.
 
       ELSEIF(FOCUS(1:8).EQ.'NODPRESS')THEN

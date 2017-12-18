@@ -235,7 +235,9 @@ C Record lengths for zone (nzrl), plant (nprl), electrical(nerl) results librari
       common/recver/izver,ipver,iever
       common/hcthry/ihct,icorexhct
       COMMON/DNORGH/IRTYPE
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES,CFRESF
+      character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72,
+     &  CFRESF*72
       common/rdcgen/irdact
       common/rdcmfs/irdcm,sFLWTIM,sDRYB,sWDIR,sWSPD,sITER,sIOK,
      &              sTNOD(MNOD)
@@ -313,6 +315,14 @@ C Flag for enabling h3k customizations
      
       real UNMETHRS  ! for each zone counter for unmet hours.
       COMMON/UNMET/UNMETHRS(MCOM)
+
+C Toggle for extreme silent running (endless) mode.
+      logical endless,issilient
+      common/endlessmode/endless,issilient
+
+C Logical flag for uncertainty header has been printed.
+      logical uncertheadprinted
+      common/uncerthead/uncertheadprinted
       
       character cAppName*12
       integer iverb     ! verbosity passed on command line
@@ -333,8 +343,6 @@ C      logical gopher  ! not references
       CHARACTER*72 L3DNDD,L3DTLW,L3DLWV,LNLTHP,LGRD1D
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD,Lflpar
       character path*72,bresfil*72
-      character RFILE*72,PFILE*72,MSTRFILE*72
-      character LAFRES*72
       character journcmd*20,jfile*72,uname*24,cjfile*72,OUTSTR*124
       character dllsubr*12,dllmesg*124
       character t16*16,outs248*248
@@ -414,6 +422,7 @@ C have not been read in.
       RFILE='libb'
       PFILE='libp'
       LAFRES='libf'
+      CFRESF='libc'
       MSTRFILE='libmstr'
       do 5 I=1,MCOM
         Lflpar(I)='UNKNOWN'
@@ -443,6 +452,9 @@ C Default CFD coupling toggles.
 
 C Illuminance values held in database.
       NDBENT=0
+
+C Assume interactive or silent mode.
+      endless=.false.; issilient=.false.
 
 C Font sizes for graphic environment.
       IFS=1
@@ -494,6 +506,14 @@ C in browsing mode.
         browse=.true.
       endif
 
+C Check for endless running mode.
+      if(aut(1:7).eq.'endless')then
+        autook=.true.
+        endless=.true.
+        call edisp(iuout,'Reality-Emulator endless-running mode.')
+        call tstamp('>','SIM: Endless-running mode')
+      endif
+      
 C create new child thread to timeout simulation if required.
 C << Note this is temporarily commented out and should be
 C << re-established for CETC use.
@@ -542,6 +562,7 @@ C Use process ID as seed for random number generator (for use in
 C uncertainty analysis routines)
       call esppid(ipid)
       x=RSTART(ipid)
+      uncertheadprinted=.false.
 
 C If your compiler does not support floating-point arithmetic
 C according to ANSI/IEEE Std 754-1985 comment out the following code.
@@ -651,7 +672,12 @@ C Setup and pass in parameters to win3d.
       CALL EDISP(IUOUT,' ')
 
 C Write version.
-      CALL ESPrVersion("summary",cAppName,IUOUT)
+      if(endless.or.issilient)then
+        CALL EDISP(IUOUT,'Starting the ESP-r simulator.')
+        continue
+      else
+        CALL ESPrVersion("summary",cAppName,IUOUT)
+      endif
 
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)
@@ -769,9 +795,16 @@ C info in after reading the .cfg file.
             if(aut(1:6).eq.'silent')then
 C Debug.
 C              write(*,*)'Silent-running mode.'
-              autook=.true.
+              autook=.true.; issilient=.true.
               call edisp(iuout,'Silent-running mode.')
               call tstamp('>','SIM: Silent-running mode')
+            elseif(aut(1:7).eq.'endless')then
+C Debug.
+C              write(*,*)'Endless-running mode.'
+              autook=.true.
+              endless=.true.
+              call edisp(iuout,'Endless-running mode.')
+              call tstamp('>','SIM: Endless-running mode')
             else
               autook=.false.
             endif
@@ -1034,8 +1067,12 @@ C Cast expanded weather file name back to LCLIM.
           READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)CLMLOC
           WRITE(OUTS,1000)CLMLOC,ICYEAR
  1000     FORMAT(' Climate data: ',A30,':',I5)
-          CALL EDISP(IUOUT,' ')
-          CALL EDISP(IUOUT,OUTS)
+          if(endless.or.issilient)then
+            continue
+          else
+            CALL EDISP(IUOUT,' ')
+            CALL EDISP(IUOUT,OUTS)
+          endif
           IRTYPE=0
           IF(ICDNGH.EQ.123)IRTYPE=1
           if(icfgv.lt.3)then
@@ -1215,10 +1252,15 @@ C Delete any temporal scratch file if temporal data associated with
 C the model.
 
 C Debug write out unmet hours.
-        write(6,'(a)') 'Unmet hours for each zone at end of simulation.'
-        do I=1,NCOMP
-          write(6,'(a,i2,1x,a,f8.1)') 'Zone ',I,zname(I),UNMETHRS(I)
-        enddo
+        if(endless.or.issilient)then
+          continue
+        else
+          write(6,'(a)') 
+     &      'Unmet hours for each zone at end of simulation.'
+          do I=1,NCOMP
+            write(6,'(a,i2,1x,a,f8.1)') 'Zone ',I,zname(I),UNMETHRS(I)
+          enddo
+        endif
         if(ITDFLG.ne.0)then
           CALL ERPFREE(IUTDF,ISTAT)
           lnts=lnblnk(LTDF)

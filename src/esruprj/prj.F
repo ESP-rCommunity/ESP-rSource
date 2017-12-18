@@ -106,6 +106,17 @@ C is a logical flag, .true. restricts update/save options.
       common/rcmd/LCMDFL
 
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+
+C Extended simulation parameters for each set.
+      common/spfldats/isstupex(MSPS),isbnstepex(MSPS),ispnstepex(MSPS),
+     &  issaveex(MSPS),isavghex(MSPS),iscfdactivate(MSPS),
+     &  isicfdys(MSPS),isicfdyf(MSPS),
+     &  scftims(MSPS),scftimf(MSPS)
+      INTEGER :: isstupex,isbnstepex,ispnstepex,issaveex,isavghex
+      INTEGER :: iscfdactivate      ! zero ignore domains
+      INTEGER :: isicfdys,isicfdyf  ! CFD simulation start & finish days
+      REAL :: scftims,scftimf       ! CFD simulation start & finish time
 
 C Indicator of possible focus zone.
       common/rzone/inzone
@@ -184,7 +195,7 @@ C      character outs248*248
 C Passed parameters for pregist.
       character root*32,mpath*72
 
-C Returned parameters from silentread.
+C Returned parameters from silentread or silentxmlread.
       character theprimedirective*8
       integer iappwpc ! application height as % of nominal size
       integer itrc    ! feedback level during scans
@@ -200,7 +211,10 @@ C Returned parameters from silentread.
       character pagestitle*42 ! for banner title via epages call
       character subpath*84
       character sfile*144
-    
+      character odir*84
+      character cfgpath*144  ! full path to cfg folder for refocus
+      character thecfgis*72 ! cfg file only
+          
 C Passed parameters to cfgtogg
 #ifdef OSI
       integer icfg_type  ! model cfg type
@@ -267,11 +281,13 @@ C config file, zone focus and actions arguments).
       IFTIME=0
       nsset=0
       isset=0
-      isstup=0
-      isbnstep=1
-      ispnstep=2
-      issave=2
-      isavgh=0
+      isstup=0; isstupex(1)=0
+      isbnstep=4; isbnstepex(1)=4
+      ispnstep=2; ispnstepex(1)=2
+      issave=2; issaveex(1)=2
+      isavgh=0; isavghex(1)=0
+      iscfdactivate(1)=0; isicfdys(1)=0; isicfdyf(1)=0
+      scftims(1)=0.0; scftimf(1)=23.9
       NSIGFIG=3
       childterminal=MODL  ! remember so that child processes can run the same
 
@@ -486,7 +502,6 @@ C Generate the version report.
 
 C Remember where prj was started (pwdinitial). If we are starting
 C within a model pwdinitial will end in cfg or cfg/ or cfg\
-
       pwdinitial='  '  ! clear common
       pwdtocfg='  '    ! and from pwd into cfg folder
       call usrdir(pwdinitial)
@@ -651,7 +666,7 @@ C is a known command that can be acted on.
       XST=.false.
       if(inact(1:10).eq.'silentread')then
 
-C Check to see if the -file parameter is a high level silent input file
+C Check to see if the -file parameter is an ESP-r META file
 C and if so do what it says.
         if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
           INQUIRE (FILE=LCMDFL,EXIST=XST)
@@ -659,6 +674,8 @@ C and if so do what it says.
             call clrprb  ! clear the model common blocks prior to scan
             write(longtfile,'(a)') LCMDFL(1:lnblnk(LCMDFL))
             IUNIT=IFIL+1
+
+C If iverb passed as non-zero then change directive.
             call silentread(iunit,longtfile,'-',theprimedirective,ier)
             call edisp(iuout,theprimedirective)
             call edisp(iuout,modeltitle)
@@ -686,8 +703,16 @@ C and if so do what it says.
             call clrprb  ! clear the model common blocks prior to scan
             write(longtfile,'(a)') LCMDFL(1:lnblnk(LCMDFL))
             IUNIT=IFIL+1
-            call silentxmlread(iunit,longtfile,'-',theprimedirective,
-     &        ier)
+            write(mpath,'(a)')'/tmp/test'  ! fix for testing
+
+C If iverb passed as non-zero then change directive.
+            if(iverb.eq.0)then
+              call silentxmlread(iunit,longtfile,'- ',mpath,ier)
+            elseif(iverb.eq.1)then
+              call silentxmlread(iunit,longtfile,'v ',mpath,ier)
+            elseif(iverb.eq.2)then
+              call silentxmlread(iunit,longtfile,'vv',mpath,ier)
+            endif
             call edisp(iuout,theprimedirective)
             call edisp(iuout,modeltitle)
             call edisp248(iuout,modeldocblock,80)
@@ -837,7 +862,7 @@ C          call edisp(iuout,'* Loading supplied model description.')
 C Nothing on the command line and if we are in a cfg folder then
 C use the file browsing to see if there are any cfg files.
         if(pwdinitial(lnpwdi-2:lnpwdi).eq.'cfg')then
-          write(6,*) 'looking for cfg files...'
+          call edisp(iuout,'looking for cfg files...')
           write(subpath,'(a)') pwdinitial(1:lnpwdi)
 
           call discovercfg(subpath,sfile,ier)
@@ -850,33 +875,79 @@ C of the string sfile.
 C Debug.
 C            write(6,*) 'sfile is ',sfile(1:lnblnk(sfile))
 C            write(6,*) 'path is ',path(1:lnblnk(path))
+C            write(6,*) 'pwdtocfg is ',pwdtocfg(1:lnblnk(pwdtocfg))
 C            write(6,*) 'lcfgf is ',LCFGF(1:lnblnk(LCFGF))
-
-            CALL ERPFREE(IFCFG,ISTAT)
-            call FINDFIL(LCFGF,XST)
-            if(XST)then
-              write(LCMDFL,'(a)') sfile(1:lnblnk(sfile)) ! as if included in cmd line
-              CALL ERPFREE(IFCFG,ISTAT)
-
-C Call newprb without the need to confirm model but to check its path.
-C Assume that the file passed is not an exemplar.
-              itisanexemplar=.false.
-              confirm=.false.
-              ckpath=.true.
-              call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
-              if(ier.eq.-3)then
-                ier=0
-                goto 3  ! cancel detected, redisplay menu
+    
+            lcfgr=lnblnk(LCFGF)
+            lcfgl=lcfgr-3
+            if(lcfgr.gt.4)then
+              if(LCFGF(lcfgl:lcfgr).eq.'.cfg')then
+                if(lcfgl-1.le.32)then
+                  write(cfgroot,'(a)') LCFGF(1:lcfgl-1)
+                else
+                  write(cfgroot,'(a)') LCFGF(1:32)
+                endif
+                write(thecfgis,'(a,a)')LCFGF(1:lcfgr)
+              else
+                if(lcfgr.le.32)then
+                  write(cfgroot,'(a)') LCFGF(1:lcfgr)
+                else
+                  write(cfgroot,'(a)') LCFGF(1:32)
+                endif
+                write(LCFGF,'(a,a)')LCFGF(1:lcfgr),'.cfg'
+                write(thecfgis,'(a,a)')LCFGF(1:lcfgr),'.cfg'
               endif
-              call tstamp('>','PRJ: loading supplied model')
-              call tstamp('>',LCFGF)
+            else
+              if(lcfgr.le.32)then
+                write(cfgroot,'(a)') LCFGF(1:lcfgr)
+              else
+                write(cfgroot,'(a)') LCFGF(1:32)
+              endif
+              write(LCFGF,'(a,a)')LCFGF(1:lcfgr),'.cfg'
+              write(thecfgis,'(a,a)')LCFGF(1:lcfgr),'.cfg'
+            endif
+            odir=' '
+            call usrdir(odir)
+            lnod=lnblnk(odir)
+            lncr=lnblnk(cfgroot)
+            if(lnod+lncr+6.lt.72)then
+              call edisp(iuout,'  ')
+              if(pwdtocfg(1:1).eq.'!')then
+
+C Prj started within a model cfg folder. Set cfgpath accordingly.
+                lnpth=lnblnk(path)
+                write(cfgpath,'(a)') path(1:lnpth-1)  ! omit trailing /
+              else
+                write(path,'(6a)')odir(1:lnod),fs,cfgroot(1:lncr),
+     &            fs,'cfg',fs
+                write(cfgpath,'(5a)')odir(1:lnod),fs,cfgroot(1:lncr),
+     &            fs,'cfg'
+              endif
+              call edisp(iuout,
+     &          'New model configuration file is in folder:')
+              call edisp(iuout,path)
+            else
+              write(outs,'(6a)')odir(1:lnod),fs,cfgroot(1:lncr),
+     &          fs,'cfg',fs
+              call usrmsg(
+     &    'The derived path (below) is > 72 char give shorter root',
+     &          outs,'W')
+            endif
+
+C Refocus prj on the model cfg folder and re-load the model cfg file
+C as is done in cadio.F
+            call pausems(1000)
+
+C Use call to refocus to start a new prj within the model cfg folder.
+            call refocus(cfgpath,thecfgis,iret)
+            if(iret.eq.0)then
+              continue
+            elseif(iret.eq.-2)then
+              call edisp(iuout,
+     &        'Features using Radiance calls may not work as expected.')
             endif
           endif
-
-C   16     continue  ! write errors 
-C   17     continue
         endif
-
       endif
 
 C Provide site information, update wireframe control with
@@ -1052,7 +1123,7 @@ C      write(6,*) ' model management browse status ',browse
         ITEMS(14)=  '                              '
       endif
       ITEMS(15)   = ' .... Import & export ........'
-      ITEMS(16)   = 'n import CAD file                 '
+      ITEMS(16)   = 'n use CAD tool or parse gbxml file'
       if(CFGOK)then
         ITEMS(17) = 'o export current model            '
         ITEMS(18) = 'p archive current model           '
@@ -1603,11 +1674,15 @@ C to include the path and create a string to drive the modules.
       common/childt/childterminal
       COMMON/PREC7/ITCNST
       COMMON/C6/INDCFG
+      integer ncomp,ncon
+      common/C1/NCOMP,NCON
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
       common/IPVF/lipvdatf
+      common/ACTDOM/CFDOK
+      logical CFDOK
 
 C Typical seasons and default simulation periods. Isset is the
 C current seasons set, nsset number of similar parameter sets,
@@ -1619,18 +1694,33 @@ C ispnstep (plant timesteps/hr), issave (results save level).
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
      &               isfnmon(MSPS)
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
-     &  smstres(MSPS),selres(MSPS),sipvres
+     &  smstres(MSPS),selres(MSPS),scfdres(MSPS),sipvres
+      character sblres*72,sflres*72,splres*72,smstres*72,
+     &  selres*72,scfdres*72,sipvres*72
+
+C Extended simulation parameters for each set.
+      common/spfldats/isstupex(MSPS),isbnstepex(MSPS),ispnstepex(MSPS),
+     &  issaveex(MSPS),isavghex(MSPS),iscfdactivate(MSPS),
+     &  isicfdys(MSPS),isicfdyf(MSPS),
+     &  scftims(MSPS),scftimf(MSPS)
+      INTEGER :: isstupex,isbnstepex,ispnstepex,issaveex,isavghex
+      INTEGER :: iscfdactivate      ! zero ignore domains
+      INTEGER :: isicfdys,isicfdyf  ! CFD simulation start & finish days
+      REAL :: scftims,scftimf       ! CFD simulation start & finish time
+      COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
+      CHARACTER*72 LCFD
+      integer IFCFD      
       integer noimg  ! number of images
       integer iton   ! zero if images not yet shown, one if yes
       common/imagfi/noimg,iton
       common/user/browse
 
-      dimension ITEMS(25)
+      dimension ITEMS(26)
 
       character doit*248,tmode*8,ITEMS*42,key*1
-      character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,spflnam*72,longtfile*144,longtfiledos*144
+      character spflnam*72,longtfile*144,longtfiledos*144
       CHARACTER*72 LAPROB,lipvdatf
       character cr*32,spfdescr*30,ipvaction*3
 
@@ -1692,6 +1782,11 @@ C constructions are known.
       endif
 
       if(noimg.gt.0)call imgdisp(1,'FPER',ier)
+
+C Loop through zones to see if there is a cfd domain description.
+      do loop=1,NCOMP
+        IF(ABS(IFCFD(loop)).GT.0) CFDOK=.true.
+      enddo
       
     3 INO=-4
       if(nsset.eq.0)then
@@ -1701,27 +1796,29 @@ C constructions are known.
       else
         write(ITEMS(1),'(a,i2,a,i2,a)')'a simulation presets (',isset,
      &    ' of',nsset,')'
-        write(ITEMS(2),'(a,a)')       'b set name: ',spfdescr(isset)
+        write(ITEMS(2),'(a,a)')      'b set name: ',spfdescr(isset)
      &                                   (1:lnblnk(spfdescr(isset)))
-        write(ITEMS(3),'(a,i4)')      'c start-up days:',isstup
-        if(isbnstep.le.1)then
-          write(ITEMS(4),'(a,i2)')    'd zone timestep/h:',isbnstep
+        write(ITEMS(3),'(a,i4)')     'c start-up days:',isstupex(isset)
+        if(isbnstepex(isset).le.1)then
+          write(ITEMS(4),'(a,i2)')   'd zone timestep/h:',
+     &      isbnstepex(isset)
         else
-          if(isavgh.eq.0)then
-            write(ITEMS(4),'(a,i2,a)')'d zone timestep/h:',isbnstep,
-     &        ' each ts saved'
+          if(isavghex(isset).eq.0)then
+           write(ITEMS(4),'(a,i2,a)')'d zone timestep/h:',
+     &       isbnstepex(isset),' each ts saved'
           else
-            write(ITEMS(4),'(a,i2,a)')'d zone timestep/h:',isbnstep,
-     &        ' saved 1 ts/hr'
+           write(ITEMS(4),'(a,i2,a)')'d zone timestep/h:',
+     &       isbnstepex(isset),' saved 1 ts/hr'
           endif
         endif
         if(INDCFG.eq.2.or.INDCFG.eq.3)then
-          write(ITEMS(5),'(a,i2)')    'e plant timestep/(bldg ts):',
-     &      ispnstep
+          write(ITEMS(5),'(a,i2)')   'e plant timestep/(bldg ts):',
+     &      ispnstepex(isset)
         else
-          write(ITEMS(5),'(a)')       'e plant timestep/(bldg ts): N/A'
+          write(ITEMS(5),'(a)')      'e plant timestep/(bldg ts): N/A'
         endif
-        write(ITEMS(6),'(a,i2)')      'f result save level:',issave
+        write(ITEMS(6),'(a,i2)')     'f result save level:',
+     &    issaveex(isset)
 
 C Display the simulation period.
         CALL EDAY(isstday(isset),isstmon(isset),ijdstart)
@@ -1731,19 +1828,19 @@ C Display the simulation period.
         write(ITEMS(7),'(4a)')        'g from: ',descrst,' - ',descrfn
         if(INDCFG.ne.2)then
           write(ITEMS(8),'(2a)')      'h zone results: ',
-     &      sblres(isset)(1:16)
+     &      sblres(isset)(1:24)
         else
           write(ITEMS(8),'(a)')       '  zone results: N/A'
         endif
         if(IAIRN.ge.1)then
           write(ITEMS(9),'(2a)')      'i flow results: ',
-     &      sflres(isset)(1:16)
+     &      sflres(isset)(1:24)
         else
           write(ITEMS(9),'(a)')       '  flow results: N/A'
         endif
         if(INDCFG.eq.2.or.INDCFG.eq.3)then
           write(ITEMS(10),'(2a)')     'j plant results: ',
-     &      splres(isset)(1:15)
+     &      splres(isset)(1:23)
         else
           write(ITEMS(10),'(a)')      '  plant results: N/A'
         endif
@@ -1754,33 +1851,39 @@ C Display the simulation period.
         endif
         if(MSTROK)then
           write(ITEMS(12),'(2a)')     'l moist. results: ',
-     &      smstres(isset)(1:15)
+     &      smstres(isset)(1:22)
         else
           write(ITEMS(12),'(a)')      '  moisture results: N/A'
         endif
         if(ientxist.gt.0)then
           write(ITEMS(13),'(2a)')     'm elect. results: ',
-     &      selres(isset)(1:15)
+     &      selres(isset)(1:22)
         else
           write(ITEMS(13),'(a)')      '  electrical results: N/A'
         endif
-        if(lnblnk(lipvdatf).eq.0)then
-          write(ITEMS(14),'(a)')      '  IPV report   : N/A'
-        elseif(lipvdatf(1:7).eq.'UNKNOWN')then
-          write(ITEMS(14),'(a)')      '  IPV report   : N/A'
-        elseif(lipvdatf(1:8).eq.'internal')then
-          write(ITEMS(14),'(2a)')  'n IPV report: ',sipvres(1:18)
+        if(CFDOK)then  ! Also keep track of CFD results.
+          write(ITEMS(14),'(2a)')     'n CFD results: ',
+     &      scfdres(isset)(1:24)
         else
-          write(ITEMS(14),'(2a)')  'n IPV report: ',sipvres(1:18)
+          write(ITEMS(14),'(a)')      '  CFD results: N/A'
+        endif
+        if(lnblnk(lipvdatf).eq.0)then
+          write(ITEMS(15),'(a)')      '  IPV report   : N/A'
+        elseif(lipvdatf(1:7).eq.'UNKNOWN')then
+          write(ITEMS(15),'(a)')      '  IPV report   : N/A'
+        elseif(lipvdatf(1:8).eq.'internal')then
+          write(ITEMS(15),'(2a)')  'o IPV report: ',sipvres(1:24)
+        else
+          write(ITEMS(15),'(2a)')  'o IPV report: ',sipvres(1:24)
         endif    
-        ITEMS(15)  ='o save or dereference parameters '
-        ITEMS(16)  ='  ______________________________ '
-        M=16
+        ITEMS(16)  ='p save or dereference parameters '
+        ITEMS(17)  ='  ______________________________ '
+        M=17
       endif
       if(INDCFG.eq.2)then
-        ITEMS(M+1) ='p plant only simulation          '
+        ITEMS(M+1) ='q plant only simulation          '
       else
-        ITEMS(M+1) ='p integrated simulation          '
+        ITEMS(M+1) ='q integrated simulation          '
       endif
       ITEMS(M+2)   ='r fluid flow only                '
       ITEMS(M+3)   ='s visual impact                  '
@@ -2164,13 +2267,25 @@ C There may be ipv data held in the configuration file.
 C Setup one parameter set or several sets to match IPV description.
         if(ID.eq.1.or.ID.eq.3)then
           if(INDCFG.eq.2)then
-            nsset=1; isset=1; isstup=0
-            isbnstep=1; ispnstep=10; issave=4; isavgh=0
+            nsset=1; isset=1; isstup=0; isstupex(1)=0
+            isbnstep=4; isbnstepex(1)=4
+            ispnstep=10; ispnstepex(1)=10
+            issave=4; issaveex(1)=4
+            isavgh=0; isavghex(1)=0
+            iscfdactivate(1)=0; isicfdys(1)=0; isicfdyf(1)=0
+            scftims(1)=0.0; scftimf(1)=23.9
           else
             call scntcnst(TDM,istd,TCM,ISTC)
             nsset=1; isset=1
-            if(isstup.eq.0)isstup=ITCNST
-            isbnstep=1; ispnstep=10; issave=4; isavgh=0
+            if(isstup.eq.0)then
+              isstup=ITCNST; isstupex(1)=ITCNST
+            endif
+            isbnstep=4; isbnstepex(1)=4
+            ispnstep=10; ispnstepex(1)=10
+            issave=4; issaveex(1)=4
+            isavgh=0; isavghex(1)=0
+            iscfdactivate(1)=0; isicfdys(1)=0; isicfdyf(1)=0
+            scftims(1)=0.0; scftimf(1)=23.9
           endif
           if(ID.eq.1)then
             de='default'
@@ -2182,6 +2297,14 @@ C Setup one parameter set or several sets to match IPV description.
             spfdescr(4)='-'; spfdescr(5)='-'
             isstday(isset)=9; isstmon(isset)=1
             isfnday(isset)=15; isfnmon(isset)=1
+            iscfdactivate(isset)=0; 
+            isicfdys(isset)=9; isicfdyf(isset)=15
+            scftims(isset)=0.0; scftimf(isset)=23.9
+
+C Initially use global values.
+            isstupex(isset)=isstup; isbnstepex(isset)=isbnstep
+            ispnstepex(isset)=ispnstep
+            issaveex(isset)=issave; isavghex(isset)=isavgh
             cr=cfgroot
             lr=lnblnk(cfgroot)
             if(INDCFG.ne.2)then
@@ -2192,18 +2315,24 @@ C Setup one parameter set or several sets to match IPV description.
             if(IAIRN.ge.1)then
               WRITE(sflres(isset),'(A,A4)') cr(1:lr),'.mfr'
             else
-             sflres(isset)=' '
+              sflres(isset)=' '
             endif
             if(INDCFG.eq.2.or.INDCFG.eq.3)then
               WRITE(splres(isset),'(A,A4)') cr(1:lr),'.plr'
             else
-             splres(isset)=' '
+              splres(isset)=' '
             endif
             if(MSTROK)then
               WRITE(smstres(isset),'(A,A4)') cr(1:lr),'.msr'
             else
-             smstres(isset)=' '
+              smstres(isset)=' '
             endif
+            if(CFDOK)then
+              WRITE(scfdres(isset),'(A,A4)') cr(1:lr),'.dfr'
+            else
+              scfdres(isset)=' '
+            endif
+
             if(lnblnk(lipvdatf).eq.0)then
               sipvres=' '
             elseif(lipvdatf(1:7).eq.'UNKNOWN')then
@@ -2220,7 +2349,7 @@ C Set parameter sets for current number of IPV assessments.
           endif
           modparms=.true.
         endif
-      elseif(MITEM.eq.25.and.INO.EQ.1)then
+      elseif(MITEM.eq.26.and.INO.EQ.1)then
 
 C Help text for this menu and all of the dialogs.
         helptopic='prj_sim_set_menu'
@@ -2233,9 +2362,9 @@ C Select an existing set, create a new one or cancel.
           CALL EDAY(isfnday(ii),isfnmon(ii),ijdfinish)
           call stdate(iyear,ijdfinish,descrb,descrfn)
           CALL EMKEY(ii,KEY,IER)
-          write(dd(ii),'(7a)') key,' ',spfdescr(ii)
+          write(dd(ii),'(8a,i2)') key,' ',spfdescr(ii)
      &      (1:lnblnk(spfdescr(ii))),' ',descrst,'-',
-     &      descrfn
+     &      descrfn,' ',isbnstepex(ii)
  60     continue
         if (nsset.lt.MSPS) then
           dd(nsset+1)='+ make a new set'
@@ -2251,7 +2380,7 @@ C Select an existing set, create a new one or cancel.
  61       continue
         endif
 
-        CALL EMENU('Parameter sets',dd,ic,IRT)
+        CALL EMENU('Parameter sets periods TSPH',dd,ic,IRT)
         if(IRT.ge.ic) then
           INO=-4
           GOTO 3
@@ -2262,16 +2391,26 @@ C Select an existing set, create a new one or cancel.
           goto 170
         elseif(IRT.eq.ic-2.and.nsset.lt.MSPS)then
 
-C It is possible to add another set so ask user and set file names.
+C If it is possible to add another set so ask user & set file names.
           de='win'
-          CALL EASKS(de,' ','Name for set?',30,'win','set name',
-     &      IER,nbhelp)
+          CALL EASKS(de,' ','Name for simulation parameter set?',
+     &      30,'win','set name',IER,nbhelp)
           nsset=nsset+1
           isset=nsset
           write(spfdescr(isset),'(a30)')de(1:30)
+
+C Use global values that the user can update later.
+          isstupex(isset)=isstup
+          isbnstepex(isset)=isbnstep
+          ispnstepex(isset)=ispnstep
+          issaveex(isset)=issave
+          isavghex(isset)=isavgh
           lde=lnblnk(spfdescr(isset))
           isstday(isset)=9; isstmon(isset)=1
           isfnday(isset)=15; isfnmon(isset)=1
+          iscfdactivate(isset)=0; 
+          isicfdys(isset)=9; isicfdyf(isset)=15
+          scftims(isset)=0.0; scftimf(isset)=23.9
           if(INDCFG.ne.2)then
             WRITE(sblres(isset),'(3a)')cr(1:lr),de(1:lde),'.res'
           else
@@ -2280,18 +2419,24 @@ C It is possible to add another set so ask user and set file names.
           if(IAIRN.ge.1)then
             WRITE(sflres(isset),'(3a)')cr(1:lr),de(1:lde),'.mfr'
           else
-           sflres(isset)=' '
+            sflres(isset)=' '
           endif
           if(INDCFG.eq.2.or.INDCFG.eq.3)then
             WRITE(splres(isset),'(3a)')cr(1:lr),de(1:lde),'.plr'
           else
-           splres(isset)=' '
+            splres(isset)=' '
           endif
           if(MSTROK)then
             WRITE(smstres(isset),'(3a)')cr(1:lr),de(1:lde),'.msr'
           else
-           smstres(isset)=' '
+            smstres(isset)=' '
           endif
+          if(CFDOK)then
+            WRITE(scfdres(isset),'(3a)')cr(1:lr),de(1:lde),'.dfr'
+          else
+            scfdres(isset)=' '
+          endif
+
           modparms=.true.
           goto 170
         elseif(IRT.eq.ic-2.and.nsset.ge.MSPS)then
@@ -2302,7 +2447,7 @@ C It is possible to add another set so ask user and set file names.
           isset=IRT  ! choose an existing set
         endif
         call scntcnst(TDM,istd,TCM,ISTC)
-      elseif(MITEM.eq.25.and.INO.EQ.2)then
+      elseif(MITEM.eq.26.and.INO.EQ.2)then
 
 C If there is an IPV descripton and this set is one,
 C do not allow this set name to be changed.
@@ -2319,23 +2464,23 @@ C << IPV can co-exist with lots of parameter sets.
           write(spfdescr(isset),'(a30)')de(1:30)
           modparms=.true.
         endif
-      elseif(MITEM.eq.25.and.INO.EQ.3)then
+      elseif(MITEM.eq.26.and.INO.EQ.3)then
         if(INDCFG.eq.2)then
           call edisp(iuout,'* Start-up days not applicable to plant.')
         else
           call scntcnst(TDM,istd,TCM,ISTC)
-          isstupt=isstup
+          isstupt=isstupex(isset)
           CALL EASKI(isstupt,' ',
      &       'Pre-simulation start-up period (days)?',
      &       0,'F',100,'W',ITCNST,'presimulation days',IERI,nbhelp)
           if(ieri.eq.-3)then
             continue
           else
-            isstup=isstupt
+            isstupex(isset)=isstupt
             modparms=.true.
           endif 
         endif
-      elseif(MITEM.eq.25.and.INO.EQ.4)then
+      elseif(MITEM.eq.26.and.INO.EQ.4)then
 
 C The simulation timestep. Edit local variable and if not canceling
 C instantiate it and also ask about results integration if more than
@@ -2345,73 +2490,73 @@ C one timestep in the hour.
      &     'file with ',ntsph,' per hour frequency. Use this value.'
           call edisp(iuout,outs)
         endif
-        isbnstept=isbnstep
+        isbnstept=isbnstepex(isset)
         CALL EASKI(isbnstept,' ','Zone-side time steps per hour?',
      &       1,'F',60,'W',2,'zone steps per hour',IERI,nbhelp)
         if(ieri.eq.-3)then
           continue
         else
-          isbnstep=isbnstept
-          if(isbnstep.gt.1)then
+          isbnstepex(isset)=isbnstept
+          if(isbnstepex(isset).gt.1)then
             if(itdflg.ne.0)then
 
 C There is temporal data so must save at each timestep.
 C              write(6,*) 'temporal data found so save each timestep'
 
-              isavgh=0
+              isavghex(isset)=0
             else
               defok=.false.
               hri=.false.
               call askok(' Hourly results integration:',' ',hri,
      &          defok,nbhelp)
               if(hri)then
-                isavgh=1
+                isavghex(isset)=1
               else
-                isavgh=0
+                isavghex(isset)=0
               endif
             endif
           else
-            isavgh=0
+            isavghex(isset)=0
           endif
           modparms=.true.
         endif
-      elseif(MITEM.eq.25.and.INO.EQ.5)then
+      elseif(MITEM.eq.26.and.INO.EQ.5)then
         if(INDCFG.eq.2.or.INDCFG.eq.3)then
-          ispnstept=ispnstep
+          ispnstept=ispnstepex(isset)
           CALL EASKI(ispnstept,' ',
      &      'Plant-side time steps per zone step?',
      &      1,'F',100,'W',10,'plt steps per hour',IERI,nbhelp)
           if(ieri.eq.-3)then
             continue
           else
-            ispnstep=ispnstept
+            ispnstepex(isset)=ispnstept
             modparms=.true.
           endif
         endif
-      elseif(MITEM.eq.25.and.INO.EQ.6)then
-        issavet=issave
+      elseif(MITEM.eq.26.and.INO.EQ.6)then
+        issavet=issaveex(isset)
         CALL EASKI(issavet,' ','Results save level (0-4 & 6)?',
      &      0,'F',6,'F',6,'save level',IERI,nbhelp)
         if(ieri.eq.-3)then
           continue
         else
-          issave=issavet
+          issaveex(isset)=issavet
           modparms=.true.
         endif
-      elseif(MITEM.eq.25.and.INO.EQ.7)then 
+      elseif(MITEM.eq.26.and.INO.EQ.7)then 
         CALL EDAY(isstday(isset),isstmon(isset),ISDS)
         CALL EDAY(isfnday(isset),isfnmon(isset),ISDF)
         call EASKPER('Assessment period:',ISDS,ISDF,IFDAY,IER)
         call EDAYR(ISDS,isstday(isset),isstmon(isset))
         call EDAYR(ISDF,isfnday(isset),isfnmon(isset))
         modparms=.true.
-      elseif(MITEM.eq.25.and.INO.EQ.8)then
+      elseif(MITEM.eq.26.and.INO.EQ.8)then
         t72=sblres(isset)
         CALL EASKS(t72,' ','Building results library?',72,
      &    'zones.res','bld library',IER,nbhelp)
         sblres(isset)=t72
         modparms=.true.
-      elseif(MITEM.eq.25.and.INO.EQ.9)then
+      elseif(MITEM.eq.26.and.INO.EQ.9)then
         if(IAIRN.ge.1)then
           t72=sflres(isset)
           CALL EASKS(t72,' ','Network flow results library?',72,
@@ -2419,7 +2564,7 @@ C              write(6,*) 'temporal data found so save each timestep'
           sflres(isset)=t72
           modparms=.true.
         endif
-      elseif(MITEM.eq.25.and.INO.EQ.10)then
+      elseif(MITEM.eq.26.and.INO.EQ.10)then
         if(INDCFG.eq.2.or.INDCFG.eq.3)then
           t72=splres(isset)
           CALL EASKS(t72,' ','Plant results library?',72,
@@ -2427,11 +2572,11 @@ C              write(6,*) 'temporal data found so save each timestep'
           splres(isset)=t72
           modparms=.true.
         endif
-      elseif(MITEM.eq.25.and.INO.EQ.11)then
+      elseif(MITEM.eq.26.and.INO.EQ.11)then
         if(ispmxist.gt.0)then
           continue
         endif
-      elseif(MITEM.eq.25.and.INO.EQ.12)then
+      elseif(MITEM.eq.26.and.INO.EQ.12)then
         if(MSTROK)then
           t72=smstres(isset)
           CALL EASKS(t72,' ','Moisture results library?',72,
@@ -2439,7 +2584,7 @@ C              write(6,*) 'temporal data found so save each timestep'
           smstres(isset)=t72
           modparms=.true.
         endif
-      elseif(MITEM.eq.25.and.INO.EQ.13)then
+      elseif(MITEM.eq.26.and.INO.EQ.13)then
         if(ientxist.gt.0)then
           t72=selres(isset)
           CALL EASKS(t72,' ','Electrical results library?',72,
@@ -2447,7 +2592,49 @@ C              write(6,*) 'temporal data found so save each timestep'
           selres(isset)=t72
           modparms=.true.
         endif
-      elseif(MITEM.eq.25.and.INO.EQ.14)then
+      elseif(MITEM.eq.26.and.INO.EQ.14)then
+        if(CFDOK)then
+          if(scfdres(isset)(1:2).eq.'  ')then
+            cr=cfgroot
+            lr=lnblnk(cfgroot)
+	    WRITE(scfdres(isset),'(A,A4)') cr(1:lr),'.dfr'
+          endif
+          t72=scfdres(isset)
+          CALL EASKS(t72,' ','CFD results library?',72,
+     &    'cfd.res','CFD results library',IER,nbhelp)
+          scfdres(isset)=t72
+          modparms=.true.
+
+C Ask further attributes of CFD assessments.
+          DOK=.false.
+          CALL ASKOK('  ','Include domains in assessment?',
+     &      OK,DOK,nbhelp)
+          if(ok)then
+            iscfdactivate(isset)=1
+          else
+            iscfdactivate(isset)=0
+          endif
+          CALL EDAY(isstday(isset),isstmon(isset),icsday)
+          CALL EDAY(isfnday(isset),isfnmon(isset),icfday)
+          call EASKPER('CFD Assessment period:',icsday,icfday,
+     &      IFDAY,IER)
+          isicfdys(isset)=icsday
+          isicfdyf(isset)=icfday
+          modparms=.true.
+
+  50      write(outs,'(a)')'For the first day CFD is active specify'
+          CALL EASKR(scftims(isset),outs,'starting time ',
+     &      rtmp,'F',23.99,'F',rtmp,'Decimal fraction',IER,nbhelp)
+          write(outs,'(a)')'For the last day CFD is active specify'
+          CALL EASKR(scftimf(isset),outs,'finishing time ',
+     &      0.0,'F',23.99,'F',23.99,'Decimal fraction',IER,nbhelp)
+          if (scftimf(isset).lt.scftims(isset)) then
+            call edisp(iuout,' Start/Finish hours out of order.')
+            goto 50
+          endif
+          modparms=.true.
+        endif
+      elseif(MITEM.eq.26.and.INO.EQ.15)then
         if(lnblnk(lipvdatf).eq.0)then
         elseif(lipvdatf(1:7).eq.'UNKNOWN')then
         else
@@ -2459,7 +2646,7 @@ C              write(6,*) 'temporal data found so save each timestep'
           sipvres=t72
           modparms=.true.
         endif
-      elseif(MITEM.eq.25.and.INO.EQ.15)then
+      elseif(MITEM.eq.26.and.INO.EQ.16)then
         CALL EASKABC(' ','Options:',
      &    'save current sets','clear sets','cancel',IDO,nbhelp)
         if(IDO.eq.3)then
@@ -2523,13 +2710,25 @@ C defaults 1=autoexec mode), istcnst (startup days), isbnstep (building
 C timesteps/hr), ispnstep (plant timesteps/hr), issave (results save
 C level), isavgh = 0 save every timestep = 1 save hourly zone data.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
-     &  smstres(MSPS),selres(MSPS),sipvres
+     &  smstres(MSPS),selres(MSPS),scfdres(MSPS),sipvres
+      character sblres*72,sflres*72,splres*72,smstres*72,
+     &  selres*72,scfdres*72,sipvres*72
       common/user/browse
 
+C Extended simulation parameters for each set.
+      common/spfldats/isstupex(MSPS),isbnstepex(MSPS),ispnstepex(MSPS),
+     &  issaveex(MSPS),isavghex(MSPS),iscfdactivate(MSPS),
+     &  isicfdys(MSPS),isicfdyf(MSPS),
+     &  scftims(MSPS),scftimf(MSPS)
+      INTEGER :: isstupex,isbnstepex,ispnstepex,issaveex,isavghex
+      INTEGER :: iscfdactivate      ! zero ignore domains
+      INTEGER :: isicfdys,isicfdyf  ! CFD simulation start & finish days
+      REAL :: scftims,scftimf       ! CFD simulation start & finish time
+
       character doit*248,tmode*8,tfile*72
-      character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,longtfile*144,longtfiledos*144
+      character longtfile*144,longtfiledos*144
       CHARACTER lipvdatf*72
       character aut*12
 
@@ -3291,6 +3490,7 @@ C to include the path and create a string to drive the modules.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
@@ -4483,6 +4683,7 @@ C << message to user that such a file does not exist
 C Path to model and command line file (if any). 
       common/OUTIN/IUOUT,IUIN
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -4493,7 +4694,9 @@ C Path to model and command line file (if any).
       common/childt/childterminal
 
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
-     &  smstres(MSPS),selres(MSPS),sipvres
+     &  smstres(MSPS),selres(MSPS),scfdres(MSPS),sipvres
+      character sblres*72,sflres*72,splres*72,smstres*72,
+     &  selres*72,scfdres*72,sipvres*72
 
       common/cctlnm/ctldoc,lctlf
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
@@ -4515,7 +4718,6 @@ C ivalsv keeps track of new viewfactor files which need analysys
 C ivalsg keeps track of whether a geometry file has alread been copied.
       dimension ivalsv(MCOM),ivalsg(MCOM)
 
-      character*72 sblres,sflres,splres,smstres,sipvres,selres
       character CNTMFIL*72
       CHARACTER*72 LIPVDATF,NNAME,H,msg1,MSG2,LCFD
       character ctldoc*248,lctlf*72
@@ -5705,7 +5907,7 @@ C not any zones were selected.
 
 C Write out configuration file
 C But first change names of results libraries zones, flow, plant,
-C moisture, electrical and IPV
+C moisture, electrical cfd and IPV
         DO 123 ISPS=1,NSSET
           EXT='.res'
           CALL FNCNGR(SBLRES(ISPS),APE,EXT,NNAME)
@@ -5722,6 +5924,9 @@ C moisture, electrical and IPV
           EXT='.res'
           CALL FNCNGR(SELRES(ISPS),APE,EXT,NNAME)
           if(NNAME(1:4).ne.'not_')SELRES(ISPS)=NNAME
+          EXT='.dfr'
+          CALL FNCNGR(SCFDRES(ISPS),APE,EXT,NNAME)
+          if(NNAME(1:4).ne.'not_')SCFDRES(ISPS)=NNAME
  123    CONTINUE
         EXT='.rep'
         CALL FNCNGR(SIPVRES,APE,EXT,NNAME)

@@ -73,7 +73,7 @@ C for user questions about surfaces and months.
       iunit=ifil
 
       call edisp(itru,' ')
-      write(outs,'(a,i2,1x,2a)')'External surface shading for ',
+      write(outs,'(a,i3,1x,2a)')'External surface shading for ',
      &                           iavdec(mon),month(mon),'.'
       call edisp(itru,outs)
 
@@ -113,7 +113,7 @@ C << read from the transitional file.
            irec=irec+1
            if(isunup.eq.0)then  ! Sun not up.
               if(iprint.eq.2)then
-                 write(outs,'(i2,a)')j,':00   After sun-set'
+                 write(outs,'(i3,a)')j,':00   After sun-set'
                  call edisp(itru,outs)
 C Don't write again.
                  iprint=-1
@@ -124,7 +124,7 @@ C Don't write again.
               psof(i,j)=0.0
            else  ! Sun up.
               if(iprint.eq.1)then
-                 write(outs,'(i2,a)')j-1,':00   Before sun-rise'
+                 write(outs,'(i3,a)')j-1,':00   Before sun-rise'
                  call edisp(itru,outs)
               endif
 
@@ -143,10 +143,10 @@ C No direct shading.
      &                                                     psof(i,j)
                  irec=irec+1
                  if(iexcludediff_flag.eq.0)then
-                    write(outs,'(i2,a,f8.1,a,2x,2f8.1)')j,
+                    write(outs,'(i3,a,f8.1,a,2x,2f8.1)')j,
      &                      ':00     0.0%',psof(i,j)*100.0,'%',sazi,salt
                  elseif(iexcludediff_flag.eq.1)then                   
-                    write(outs,'(i2,a,a,2x,2f8.1)')j,
+                    write(outs,'(i3,a,a,2x,2f8.1)')j,
      &                      ':00     0.0%',' excluded',sazi,salt
                  endif
                  call edisp(itru,outs)
@@ -159,10 +159,10 @@ C Total direct shading.
      &                                                     psof(i,j)
                  irec=irec+1
                  if(iexcludediff_flag.eq.0)then                 
-                    write(outs,'(i2,a,f8.1,a,2x,2f8.1)')j,
+                    write(outs,'(i3,a,f8.1,a,2x,2f8.1)')j,
      &                    ':00   100.0%',psof(i,j)*100.0,'%',sazi,salt
                  elseif(iexcludediff_flag.eq.1)then
-                    write(outs,'(i2,a,a,2x,2f8.1)')j,
+                    write(outs,'(i3,a,a,2x,2f8.1)')j,
      &                    ':00   100.0%',' excluded',sazi,salt
                  endif   
                  call edisp(itru,outs)
@@ -178,10 +178,10 @@ C ioshd array.
      &                                                     psof(i,j)
                  irec=irec+1
                  if(iexcludediff_flag.eq.0)then                   
-                   write(outs,'(i2,a,f8.1,a,f8.1,a,2x,2f8.1)')j,':00',
+                   write(outs,'(i3,a,f8.1,a,f8.1,a,2x,2f8.1)')j,':00',
      &                pso(i,j)*100.0,'%',psof(i,j)*100.0,'%',sazi,salt
                  elseif(iexcludediff_flag.eq.1)then  
-                   write(outs,'(i2,a,f8.1,a,a,2x,2f8.1)')j,':00',
+                   write(outs,'(i3,a,f8.1,a,a,2x,2f8.1)')j,':00',
      &                pso(i,j)*100.0,'%',' excluded',sazi,salt                 
                  endif   
                  call edisp(itru,outs)
@@ -299,7 +299,7 @@ C The value of isunupx indicates if sun is up.
            isunup=isunupx
            if(isunup.eq.0)then  ! Sun not up.
               if(iprint.eq.2)then
-                 write(outs,'(i2,a)')j,':00   After sun-set'
+                 write(outs,'(i3,a)')j,':00   After sun-set'
                  call edisp(itru,outs)
 C Don't write again.
                  iprint=-1
@@ -310,7 +310,7 @@ C Don't write again.
               psof(i,j)=0.0
            else   ! Sun up.
               if(iprint.eq.1)then
-                 write(outs,'(i2,a)')j-1,':00   Before sun-rise'
+                 write(outs,'(i3,a)')j-1,':00   Before sun-rise'
                  call edisp(itru,outs)
               endif
 
@@ -323,10 +323,10 @@ C assume format for mixed.
 C Partial direct shading: increment irec by nox to skip over
 C ioshd array.
               if(iexcludediff_flag.eq.0)then    
-                 write(outs,'(i2,a,f8.1,a,f8.1,a,2x,2f8.1)')j,':00',
+                 write(outs,'(i3,a,f8.1,a,f8.1,a,2x,2f8.1)')j,':00',
      &                 pso(i,j)*100.0,'%',psof(i,j)*100.0,'%',sazi,salt
               elseif(iexcludediff_flag.eq.1)then
-                 write(outs,'(i2,a,f8.1,a,a,2x,2f8.1)')j,':00',
+                 write(outs,'(i3,a,f8.1,a,a,2x,2f8.1)')j,':00',
      &                 pso(i,j)*100.0,'%',' excluded',sazi,salt              
               endif
               call edisp(itru,outs)
@@ -432,7 +432,7 @@ C ntmc is 0 or 1.
 C Sun not up.
           if(insst(kount,j,1).eq.-1)then
             if(iprint.eq.2)then
-              write(outs,'(i2,a)')j,':00  After sun-set'
+              write(outs,'(i3,a)')j,':00  After sun-set'
               call edisp(itru,outs)
 C Don't write again.
              iprint=-1
@@ -443,22 +443,22 @@ C Don't write again.
 C Surface shaded.
           elseif(insst(kount,j,1).eq.0)then
             if(iprint.eq.1)then
-              write(outs,'(i2,a)')j-1,':00  Before sun-rise'
+              write(outs,'(i3,a)')j-1,':00  Before sun-rise'
               call edisp(itru,outs)
             endif
-            write(outs,'(i2,a,28x,2f8.1)')  j,':00  100.0%',sazi,salt
+            write(outs,'(i3,a,28x,2f8.1)')  j,':00  100.0%',sazi,salt
             call edisp(itru,outs)
             iprint=2
             
 C Surface insolated.
           else
             if(iprint.eq.1)then
-              write(outs,'(i2,a)')j-1,':00  Before sun-rise'
+              write(outs,'(i3,a)')j-1,':00  Before sun-rise'
               call edisp(itru,outs)
             endif
             if(pso(i,j).gt.0.999)then
               write(outs,1000)j,sazi,salt
- 1000         format(i2,':00 100.0%',2f8.1)
+ 1000         format(i3,':00 100.0%',2f8.1)
               call edisp(itru,outs)
             else
               do k=1,misur
@@ -473,7 +473,7 @@ C non zero pinsst.
                     sn=ssname(icm)
                     write(outs,1001)j,pso(i,j)*100.0,l,
      &                sn(1:12),pinsst(kount,j,k)*100.0,sazi,salt
- 1001               format(i2,':00',f6.1,'% ',i2,' (',a,')',
+ 1001               format(i3,':00',f6.1,'% ',i3,' (',a,')',
      &                     f6.1,'%',4x,2f8.1)
                     call edisp(itru,outs)
                   else
@@ -482,7 +482,7 @@ C non zero pinsst.
                     sn=ssname(icm)
                     write(outs,1002)l,sn(1:12),
      &                    pinsst(kount,j,k)*100.0
- 1002               format(13x,i2,' (',a,')',f6.1,'%')
+ 1002               format(13x,i3,' (',a,')',f6.1,'%')
                     call edisp(itru,outs)
                   endif
                 endif

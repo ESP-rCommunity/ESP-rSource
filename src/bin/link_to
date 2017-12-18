@@ -3,10 +3,12 @@
 # so can test out different variants easily.  $HOME must exist
 echo "use is"
 echo "link_to [folder with exectables]"
-foreach i ( aco bps c2e cfg clm dfs e2r ecnv eco enet espvwf grd ish mfs mld mrt pdb prj res viewer )
+foreach i ( aco bps c2e cfg clm dfs dfv e2r ecnv eco enet espvwf grd ish mfs mld espvwf pdb prj res viewer )
   if ( -f $1/$i )then
     if ( -f $HOME/bin/$i ) rm -f $HOME/bin/$i
     ln -s $1/$i $HOME/bin/$i
     echo $i " is now pointing to "$1/$i
   endif
 end
+# if ( -f $HOME/bin/espvwf ) rm -f $HOME/bin/espvwf
+# ln -s $1/mrt $HOME/bin/espvwf

@@ -92,7 +92,7 @@ C     &              Zplawe(MNREG,MNZ),NREG(3,MNZ)
      &              URFCT(MNZ),URFCK(MNZ),URFCE(MNZ),URFCVS(MNZ),
      &              URFCC(MNZ,MCTM)
       COMMON/INITIA/UINIT(MNZ),VINIT(MNZ),WINIT(MNZ),PINIT(MNZ),
-     &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ)
+     &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ),POLINIT(MNZ,MCTM)
       common/EQTION/CALLU(MNZ),CALLV(MNZ),CALLW(MNZ),CALLT(MNZ),
      &             CALLC(MNZ),KEMDL(MNZ),BUOY(MNZ),BOUSSI(MNZ),
      &             ZEROT(MNZ),ZandKE(MNZ),MITzero(MNZ)

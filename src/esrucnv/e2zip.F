@@ -90,7 +90,7 @@ C Write surface information to the zip file. (Rotation set to 0 deg).
    40   continue
 
         DO 50 J=1,NSUR
-          WRITE(ioout,'(2X,I3,1X,24I3)')NVER(J),(JVN(J,K),K=1,NVER(J))
+          WRITE(ioout,'(I4,1X,124I4)')NVER(J),(JVN(J,K),K=1,NVER(J))
           ndum(J)=0
    50   continue
 
@@ -134,7 +134,7 @@ C << there are 8 vertices and 6 surfaces
               endif
    41       continue
             DO 51 J=1,6
-              WRITE(ioout,'(a,4I3)') ' 4 ',(JVNB(J,K),K=1,4)
+              WRITE(ioout,'(a,4I4)') ' 4 ',(JVNB(J,K),K=1,4)
               ndum(J)=0
    51       continue
 

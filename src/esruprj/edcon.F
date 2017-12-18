@@ -1460,7 +1460,7 @@ C Parameter
       logical XST
 
       dimension ival(MS)
-      CHARACTER TOPTIC*12,louts*248
+      CHARACTER TOPTIC*12,louts*248,lkouts*1000
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -1500,7 +1500,7 @@ C Write out the transparent construction file data.
   30  FORMAT('# transparent properties of ',a,' defined in ',a)
 
 C Build one or two packed strings and write out. Should be good
-C for up to NZSUR() of ~62.
+C for up to NZSUR() of ~120.
       WRITE(IFU,'(I4,A)',IOSTAT=ISTAT,ERR=98)NZSUR(icomp),
      &  '   # surfaces'
       do 32 ij=1,MS
@@ -1510,8 +1510,8 @@ C for up to NZSUR() of ~62.
       itrunc=1
       ipos=1
       do while (itrunc.ne.0)
-        call ailist(ipos,nzsur(icomp),ival,MS,'C',louts,loutlen,itrunc)
-        write(ifu,'(a)',IOSTAT=ios,ERR=98) louts(1:loutlen)
+        call ailist(ipos,nzsur(icomp),ival,MS,'C',lkouts,loutlen,itrunc)
+        write(ifu,'(a)',IOSTAT=ios,ERR=98) lkouts(1:loutlen)
         ipos=itrunc+1
       end do
 

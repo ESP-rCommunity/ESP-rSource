@@ -1042,12 +1042,12 @@ C the polygon.
             ff(i,j)=ff(i,j)/den
           endif
 
-C If an individual ff is > 1.0 reset it because it is impossible
-C and causes havoc when attempting to re-read the vwf file.
-          if(ff(i,j).gt.1.00)then
+C If an individual ff is > 0.99999 reset it because it
+C causes havoc when attempting to re-read the vwf file.
+          if(ff(i,j).gt.0.9999)then
             write(outs,*) 'resetting ff(ij)',ff(i,j),' to 0.999'
             call edisp(iuout,outs)
-            ff(i,j)=0.999
+            ff(i,j)=0.9999
           endif
           rowsum(i)=rowsum(i)+ff(i,j)
 
@@ -1451,4 +1451,227 @@ C In support of floating point exceptions.
       end
 #endif
 #endif
+
+C Local copyt of EPKVERT (from edgeo.F)
+C ************* EPKVERT 
+C EPKVERT Select one or more vertices from information currently in
+C common block G1.
+C << zone index is not known but might be useful here >>
+      SUBROUTINE EPKVERT(INPICK,IVLST,TITLE,PROMPT1,PROMPT2,NHELP,IER)
+#include "building.h"
+#include "geometry.h"
+#include "epara.h"
+#include "prj3dv.h"
+
+C Parameters passed.
+      integer inpick  ! passed in number of items that can be selected
+                      ! and becomes actual number of items selected
+      integer IVLST   ! array to hold items selected
+      CHARACTER*(*) TITLE,PROMPT1,PROMPT2
+      integer nhelp   ! number of context help lines
+      integer ier     ! error state zero ok, one problem
+
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      COMMON/OUTIN/IUOUT,IUIN
+      common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
+      DIMENSION  item(36)
+      real COG1,COG2,COG3  ! position to check against
+      DIMENSION  COG1(3),COG2(3),COG3(3),IVLST(MTV)
+      CHARACTER item*33,outs*124,KEY*1
+      logical greyok,found
+      integer MVERT,IVERT ! max items and current menu item
+
+C Trackview needs iixx,iiyy.
+#ifdef OSI
+      integer iix,iiy,ixd,iyd,iicol,iixx,iiyy,iik
+#else
+      integer*8 iix,iiy,ixd,iyd,iicol,iixx,iiyy,iik
+#endif
+
+C Initialise vertex list menu size variables based on window size.
+C IVERT is the menu position, MVERT the current number of menu lines.
+C Also clear tagged items list (IVLST).
+      greyok=.false.
+      if(nifgrey.gt.4)then
+        greyok=.true.
+      endif
+      IER=0
+      MHEAD=1
+      MCTL=4
+      ILEN=NTV
+      IPACT=CREATE
+      CALL EKPAGE(IPACT)
+      IALLOW=INPICK
+      INPICK=0
+      DO 40 I=1,NTV
+        IVLST(I)=0
+   40 CONTINUE
+
+C Initial menu entry setup.
+C << is there something better to use then NTV ? >>
+      CALL USRMSG(PROMPT1,PROMPT2,'-')
+   92 ILEN=NTV
+      IVERT=-3
+
+C Loop through the items until the page to be displayed. M is the 
+C current menu line index. Build up text strings for the menu. 
+    3 M=MHEAD
+      DO 10 L=1,ILEN
+        IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
+          M=M+1
+          CALL EMKEY(L,KEY,IER)
+          item(m)=' '
+          WRITE(item(M),'(A1,I3,3F9.3)')KEY,L,X(L),Y(L),Z(L)
+          do 20 K=1,INPICK
+            if(IVLST(K).eq.L) then
+              WRITE(item(M),'(A1,I3,3F9.3,A)')KEY,L,X(L),Y(L),
+     &          Z(L),' *'
+            endif
+ 20       continue
+        ENDIF
+   10 CONTINUE
+
+      item(1)    =' Vertex | X Y Z coordinates      '
+
+C Number of actual items displayed.
+      MVERT=M+MCTL
+
+C If a long list include page facility text.      
+      IF(IPFLG.EQ.0)THEN  
+        item(M+1)='  ______________________________ '
+      ELSE
+        WRITE(item(M+1),15)IPM,MPM 
+   15   FORMAT   ('0 page: ',I2,' of ',I2,' --------')
+      ENDIF
+      if(MMOD.lt.8)then
+        write(item(M+2),'(2x,a,i3,a)') '(',IALLOW,' items)'
+      else
+        write(item(M+2),'(a,i3,a)')'* select via mouse (',IALLOW,
+     &    ' items)'
+      endif
+      item(M+3)  ='? help                           '
+      item(M+4)  ='- exit                           '
+
+C Help text for this menu is passed from calling routine.
+      CALL EMENU(TITLE,item,MVERT,IVERT)
+      IF(IVERT.LE.MHEAD)THEN
+
+C Within the header so skip request.
+        IVERT=-1
+        goto 3
+      ELSEIF(IVERT.EQ.MVERT)THEN
+
+C Return with updated IVLST().
+        RETURN
+      ELSEIF(IVERT.EQ.(MVERT-1))THEN
+
+C Display help strings setup in the calling function.
+        CALL PHELPD('vertex pick',NHELP,'-',0,0,IER)
+      ELSEIF(IVERT.EQ.(MVERT-2))THEN
+
+C Use mouse to select existing vertices.
+        if(MMOD.eq.8)then
+          ijvn=0
+          if(inpick.ne.2)then
+            call edisp(iuout,
+     &        'Select points via cursor...type `e` to finish.')
+          else
+            call edisp(iuout,
+     &        'Select points or edge via cursor...type `e` to finish.')
+          endif
+
+C Return pixel position of mouse click, check if key `e` or `E` was
+C hit and then loop through each of the vertices for something close.
+C In this code block trackview is correctly using iixx and iiyy.
+  46      CALL trackview(iik,iixx,iiyy)
+          if(iik.eq.69.or.iik.eq.101)goto 47
+          found=.false.
+          do 45 i=1,NTV
+            COG1(1)=X(I); COG1(2)=Y(I); COG1(3)=Z(I)
+            CALL VECTRN(COG1,TEMAT,COG2,IER)
+            CALL VECTRN(COG2,ETSMAT,COG3,IER)
+            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            ixd=iix-iixx
+            iyd=iiy-iiyy
+C Debug
+C            write(6,'(7i5)') i,iixx,iiyy,iix,iiy,ixd,iyd
+            if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
+              if(found)then
+                call edisp(iuout,'Close points...try again.')
+                goto 46
+              endif
+              WRITE(outs,'(a,i3,a,3F9.3)')' The point matches vertex',
+     &          i,' @ XYZ ',X(I),Y(I),Z(I)
+              call edisp(iuout,outs)
+              found=.true.
+              INPICK=INPICK+1
+              ijvn=ijvn+1
+              IVLST(ijvn)=i
+
+C Highight the matching vertex.
+              iicol=0
+              if(greyok)call winscl('z',iicol)
+              call esymbol(iix,iiy,24,1)
+              iicol=0
+              if(greyok)call winscl('-',iicol)
+              call forceflush()
+              goto 46
+            endif
+  45      continue
+          if(.NOT.found)then
+
+C If there were only two points to find, check if user clicked on edge.
+            if(inpick.eq.2)then
+              call edisp(iuout,'code for edge check in progress')
+            endif
+            goto 46
+          endif
+  47      continue
+        endif
+      ELSEIF(IVERT.EQ.(MVERT-3))THEN
+
+C If there are enough items allow paging control via EKPAGE.
+        IF(IPFLG.EQ.1)THEN
+          IPACT=EDIT
+          CALL EKPAGE(IPACT)
+        ENDIF
+      ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
+
+C Look through previous selections and see if IFOC is unique, if
+C so update IVLST and loop back for another.
+        CALL KEYIND(MVERT,IVERT,IFOC,IO)
+        FOUND=.FALSE.
+        IF(INPICK.GT.0)THEN
+          DO 44 J=1,INPICK
+            IF(IVLST(J).EQ.IFOC.or.FOUND) then
+              FOUND=.TRUE.
+              if (J+1.gt.NTV) then
+                IVLST(J)=0
+              else
+                IVLST(J)=IVLST(J+1)
+              endif
+            endif
+  44      CONTINUE
+          IF(.NOT.FOUND)THEN
+            if (INPICK.lt.IALLOW) then
+              INPICK=INPICK+1
+              IVLST(INPICK)=IFOC
+            endif
+          ELSE
+            INPICK=INPICK-1
+          ENDIF
+        ELSEIF(INPICK.EQ.0)THEN
+          INPICK=1
+          IVLST(INPICK)=IFOC
+        ENDIF
+      ELSE
+
+C Not one of the legal menu choices.
+        IVERT=-1
+        goto 92
+      ENDIF
+      IVERT=-2
+      goto 3
+
+      END
 

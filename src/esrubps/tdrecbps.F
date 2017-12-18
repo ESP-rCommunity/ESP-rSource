@@ -45,7 +45,9 @@ C day and VAL(2...) are timestep fields.
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
       COMMON/TDATPREV/TABUPREV(MTABC)
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/tdfrem/ialrdy_warned
+      common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
 
 C For each timestep (assuming 10 tsph frequency over a year) iknowrec
 C will be zero if not yet set and a positive number representing the record
@@ -83,8 +85,11 @@ C Reset error and initialise returned VAL.
 
 C Workout if building side timestep is equal to tdf timestep or not
 C need to do once per simulaton. Skip if any of the UK NCM models
+
+C << if we have multiple timesteps for different assessments how to work this? >>
       IF(INOTI.LT.1.OR.INOTI.GT.4)THEN
-        IF(ISBNSTEP.GT.NTSPH.AND.ialrdy_warned.NE.1)THEN
+C        IF(ISBNSTEP.GT.NTSPH.AND.ialrdy_warned.NE.1)THEN
+        IF(ntstep.GT.NTSPH.AND.ialrdy_warned.NE.1)THEN
           helptopic='tdf_timestep_mismatch'
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL PHELPD('tdf warning',nbhelp,'bsim-tdf-mismatch',0,0,IER)
@@ -246,7 +251,9 @@ C day and VAL(2...) are timestep fields.
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
       COMMON/TDATPREV/TABUPREV(MTABC)
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/tdfrem/ialrdy_warned
+      common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
 
 C For each timestep (assuming 10 tsph frequency over a year) iknowrec
 C will be zero if not yet set and a positive number representing the record
@@ -284,7 +291,8 @@ C Reset error and initialise returned VAL.
 C Workout if building side timestep is equal to tdf timestep or not
 C need to do once per simulaton. Skip if any of the UK NCM models
       IF(INOTI.LT.1.OR.INOTI.GT.4)THEN
-        IF(ISBNSTEP.GT.NTSPH.AND.ialrdy_warned.NE.1)THEN
+C        IF(ISBNSTEP.GT.NTSPH.AND.ialrdy_warned.NE.1)THEN
+        IF(ntstep.GT.NTSPH.AND.ialrdy_warned.NE.1)THEN
           helptopic='tdf_timestep_mismatch'
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL PHELPD('tdf warning',nbhelp,'bsim-tdf-mismatch',0,0,IER)

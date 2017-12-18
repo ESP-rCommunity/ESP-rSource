@@ -45,9 +45,9 @@ C Arrays mapping binary names to longer descriptions
       integer iBinIndex, iCurIndex
       character*3 cXLibs
 
-      data cBinNames / 'aco', 'b2e', 'bps', 'dbm', 'dfs', 'c2e', 'cfg',
-     &                 'clm', 'e2r', 'ecnv', 'eco', 'grd', 'ish', 'mfs',
-     &                 'mld', 'mrt', 'net', 'pdb', 'prj', 'res', 'tdf', 
+      data cBinNames / 'aco', 'b2e', 'bps', 'dbm', 'dfs', 'dfv', 'c2e', 
+     &                 'cdb', 'clm', 'e2r', 'ecnv', 'eco', 'grd', 'ish',
+     &                 'mfs', 'mld', 'mrt', 'net', 'pdb', 'prj', 'res', 
      &                 'vew' /
       
       
@@ -56,8 +56,8 @@ C Arrays mapping binary names to longer descriptions
      &                'Integrated Building Performance Simulator',
      &                'Database Manager',
      &                'Domain Flow Solver',
-     &                ' ',
-     &                'Topology Tool',
+     &                'Domain Flow Viewer',
+     &                ' ','Components DB Manager',
      &                'Climate Analysist Tool',
      &                'Radiance link',
      &                'Data Conversion Utility',
@@ -71,7 +71,6 @@ C Arrays mapping binary names to longer descriptions
      &                'Plant Database Tool',
      &                'Project Manager',
      &                'Results Analysis Tool',
-     &                ' ',
      &                'Hidden Line Viewer' /
      
       save cBinNames, cBinDesc
@@ -152,6 +151,7 @@ C Copyright information:
       call edisp(iuout,"development consortium as listed at:")
       call edisp(iuout,
      &  "http://www.esru.strath.ac.uk/Programs/ESP-r_central.htm.")      
+      call edisp(iuout,"and https://github.com/ESP-rCommunity.")      
 
 C Check if source was versioned (that is, was svn available, and 
 C is it a working copy)

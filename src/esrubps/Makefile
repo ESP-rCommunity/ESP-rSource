@@ -70,7 +70,7 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o \
 	  solar_collectors.o ground_temp_mains.o Lookup_data.o readTrnsys.o trnsys_wrapper.o trnsys_lib.o \
 	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o SiteUtilities.o RE-H2-ctl.o \
 	  ncm_overheating.o CFC_opt_props.o CFC_thermal_and_aux.o editCFC.o NCHE.o stratified_tank_1HX.o stratified_tank_2HX.o \
-	  AirFlowModelRoutines.o Res_elec_Ctl.o harmonizer_timing.o qrun.o azalt.o
+	  AirFlowModelRoutines.o Res_elec_Ctl.o harmonizer_timing.o qrun.o azalt.o sprite.o gremlin.o
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod aim2_timestep.mod start_up.mod parse_command_line.mod \
           h3kmodule.f90

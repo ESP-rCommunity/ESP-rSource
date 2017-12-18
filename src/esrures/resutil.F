@@ -39,6 +39,7 @@ C MENUTYPE 9: Psychrometric chart
 
       SUBROUTINE MOSTYLE
 
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/getmenu/menutype,igetind(65),igetflux(65)
 
       CHARACTER ITEM(15)*21
@@ -69,7 +70,11 @@ C Create menu.
       ITEM(15)='- Exit               '
 
       NITMS=15
-      INO=-2
+      if(MMOD.eq.8)then
+        INO=-1
+      else
+        INO=-2
+      endif
 
 C Instanciate help strings for the menu.
       helptopic='res_style_selection_menu'

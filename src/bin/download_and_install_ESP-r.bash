@@ -26,7 +26,7 @@ if [ "$platform" = "auto-detect" ]; then
 fi
 
 echo "  ";
-echo "This script grabs the cutting-edge ESP-r repositories from Github, assembles";
+echo "This script grabs the current standard ESP-r repositories from Github, assembles";
 echo "them for compiling and then, optionally, invokes the ESP-r Install script";
 echo "to build ESP-r, its databases, exemplar models and places the distribution";
 if [ "$platform" = "linux" ]  ||

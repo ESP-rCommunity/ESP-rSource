@@ -56,6 +56,9 @@ C espriou.h provides currentfile and MFFOLD.
       
       integer lnblnk  ! function definition
 
+C Passed in parameters.
+      character root*32,mpath*72,menu*72
+
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       
@@ -90,9 +93,6 @@ C Calendar.
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
-C Passed in parameters.
-      character root*32,mpath*72,menu*72
-
       logical XST,OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical OKI,concat,unixok,clkok
 
@@ -109,13 +109,15 @@ C Passed in parameters.
       character subpath*72,action*3,outs*124
       character lltmp*144,lguess*144,lldef*144  ! for working with EASKXORGTKF
       character lpath*72,fname*72 ! for use with fdroot
+      character cfgpath*144  ! full path to cfg folder for refocus
+      character thecfgis*72 ! cfg file only
 
       integer iyeart    ! for local editing
       integer iglib  ! for detecting GTK or X11
       integer lnmp,lncr,lnod ! for with of mpath, cfgroot, odir strings
       integer itrcc   ! for silently rescanning new cfg file
       character tcname*248   ! for editing image notes
-      character WORDS(12)*32,testw*32
+      character WORDS(12)*32,testw*32,folderreadme*96
       character MODE*4
 
 C For help messages
@@ -132,6 +134,7 @@ C Set folder separator (fs) to \ or / as required.
       else
         fs = char(92)
       endif
+      thecfgis='  '; cfgpath='  '
 
 C If act = 'i' then initial pass, if 'e' then provide editing menu.
 
@@ -217,6 +220,7 @@ C If sting > 4 char it might have a .cfg attached, otherwise add.
           else
             write(cfgroot,'(a)') LCFGF(1:32)
           endif
+          write(thecfgis,'(a,a)')LCFGF(1:lcfgr)
         else
           if(lcfgr.le.32)then
             write(cfgroot,'(a)') LCFGF(1:lcfgr)
@@ -224,6 +228,7 @@ C If sting > 4 char it might have a .cfg attached, otherwise add.
             write(cfgroot,'(a)') LCFGF(1:32)
           endif
           write(LCFGF,'(a,a)')LCFGF(1:lcfgr),'.cfg'
+          write(thecfgis,'(a,a)')LCFGF(1:lcfgr),'.cfg'
         endif
       else
         if(lcfgr.le.32)then
@@ -232,6 +237,7 @@ C If sting > 4 char it might have a .cfg attached, otherwise add.
           write(cfgroot,'(a)') LCFGF(1:32)
         endif
         write(LCFGF,'(a,a)')LCFGF(1:lcfgr),'.cfg'
+        write(thecfgis,'(a,a)')LCFGF(1:lcfgr),'.cfg'
       endif
 
 C Check existance of this file (should not overwrite an existing file).
@@ -273,8 +279,17 @@ C Create the folder mpath and inside that the standard model folders.
         call pausems(100)
         call usrmsg('  ','  ','-')
         write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'cfg'
+        write(folderreadme,'(5a)') mpath(1:lnmp),fs,'cfg',fs,
+     &    'Readme.txt'
         call runit(doit,'-')
         call pausems(100)
+        write(currentfile,'(a)') folderreadme(1:lnblnk(folderreadme))
+        IUNIT=IFIL+1
+        CALL EFOPSEQ(IUNIT,folderreadme,3,IER)
+        write(iunit,'(a)')'This folder holds the model configuration'
+        write(iunit,'(a)')'[cfg] files and master connection lists'
+        write(iunit,'(a)')'[cnn] for the project models.'
+        CALL ERPFREE(IUNIT,ISTAT)
 
 C Check that the control folder path is standard.
         call GETTOKENS(ctlpth,IW,WORDS)
@@ -283,11 +298,21 @@ C Check that the control folder path is standard.
         if(testw(1:lnw).eq.'ctl'.or.testw(lnw:lnw).eq.'.')then
           write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'ctl'
           write(ctlpth,'(3a)')'..',fs,'ctl'
+          write(folderreadme,'(5a)') mpath(1:lnmp),fs,'ctl',fs,
+     &    'Readme.txt'
         else
           write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+          write(folderreadme,'(5a)') mpath(1:lnmp),fs,testw(1:lnw),fs,
+     &    'Readme.txt'
         endif
         call runit(doit,'-')
         call pausems(100)
+        write(currentfile,'(a)') folderreadme(1:lnblnk(folderreadme))
+        IUNIT=IFIL+1
+        CALL EFOPSEQ(IUNIT,folderreadme,3,IER)
+        write(iunit,'(a)')'This folder holds control definitions for'
+        write(iunit,'(a)')'the model e.g. zone & flow & plant.'
+        CALL ERPFREE(IUNIT,ISTAT)
 
 C Check that the aim2 folder path is standard.
         call GETTOKENS(aimpth,IW,WORDS)
@@ -309,11 +334,21 @@ C Check that the zones folder path is standard or was not yet defined.
         if(testw(1:lnw).eq.'zones'.or.testw(lnw:lnw).eq.'.')then
           write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'zones'
           write(zonepth,'(3a)')'..',fs,'zones'
+          write(folderreadme,'(5a)') mpath(1:lnmp),fs,'zones',fs,
+     &    'Readme.txt'
         else
           write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+          write(folderreadme,'(5a)') mpath(1:lnmp),fs,testw(1:lnw),fs,
+     &    'Readme.txt'
         endif
         call runit(doit,'-')
         call pausems(100)
+        write(currentfile,'(a)') folderreadme(1:lnblnk(folderreadme))
+        IUNIT=IFIL+1
+        CALL EFOPSEQ(IUNIT,folderreadme,3,IER)
+        write(iunit,'(a)')'This folder holds zone-based model files'
+        write(iunit,'(a)')'e.g. geometry construction tmc operations'
+        CALL ERPFREE(IUNIT,ISTAT)
 
 C Check that the nets folder path is standard.
         call GETTOKENS(netpth,IW,WORDS)
@@ -322,11 +357,21 @@ C Check that the nets folder path is standard.
         if(testw(1:lnw).eq.'nets'.or.testw(lnw:lnw).eq.'.')then
           write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'nets'
           write(netpth,'(3a)')'..',fs,'nets'
+          write(folderreadme,'(5a)') mpath(1:lnmp),fs,'nets',fs,
+     &    'Readme.txt'
         else
           write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+          write(folderreadme,'(5a)') mpath(1:lnmp),fs,testw(1:lnw),fs,
+     &    'Readme.txt'
         endif
         call runit(doit,'-')
         call pausems(100)
+        write(currentfile,'(a)') folderreadme(1:lnblnk(folderreadme))
+        IUNIT=IFIL+1
+        CALL EFOPSEQ(IUNIT,folderreadme,3,IER)
+        write(iunit,'(a)')'This folder holds network decriptions for'
+        write(iunit,'(a)')'mass flows and electrical power. '
+        CALL ERPFREE(IUNIT,ISTAT)
 
 C Check that the images folder path is standard.
         call GETTOKENS(imgpth,IW,WORDS)
@@ -335,11 +380,22 @@ C Check that the images folder path is standard.
         if(testw(1:lnw).eq.'images'.or.testw(lnw:lnw).eq.'.')then
           write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'images'
           write(imgpth,'(3a)')'..',fs,'images'
+          write(folderreadme,'(5a)') mpath(1:lnmp),fs,'images',fs,
+     &    'Readme.txt'
         else
           write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+          write(folderreadme,'(5a)') mpath(1:lnmp),fs,testw(1:lnw),fs,
+     &    'Readme.txt'
         endif
         call runit(doit,'-')
         call pausems(100)
+        write(currentfile,'(a)') folderreadme(1:lnblnk(folderreadme))
+        IUNIT=IFIL+1
+        CALL EFOPSEQ(IUNIT,folderreadme,3,IER)
+        write(iunit,'(a)')'This folder holds images associated with the'
+        write(iunit,'(a)')'model e.g. site photos renderings and/or'
+        write(iunit,'(a)')'figures which clarify the model.'
+        CALL ERPFREE(IUNIT,ISTAT)
 
 C Check that the doc folder path is standard.
         call GETTOKENS(docpth,IW,WORDS)
@@ -348,14 +404,37 @@ C Check that the doc folder path is standard.
         if(testw(1:lnw).eq.'doc'.or.testw(lnw:lnw).eq.'.')then
           write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'doc'
           write(docpth,'(3a)')'..',fs,'doc'
+          write(folderreadme,'(5a)') mpath(1:lnmp),fs,'doc',fs,
+     &    'Readme.txt'
         else
           write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+          write(folderreadme,'(5a)') mpath(1:lnmp),fs,testw(1:lnw),fs,
+     &    'Readme.txt'
         endif
         call runit(doit,'-')
         call pausems(100)
+        write(currentfile,'(a)') folderreadme(1:lnblnk(folderreadme))
+        IUNIT=IFIL+1
+        CALL EFOPSEQ(IUNIT,folderreadme,3,IER)
+        write(iunit,'(a)')'This folder holds documentation associated'
+        write(iunit,'(a)')'with the model e.g. construction documents'
+        write(iunit,'(a)')'lists of assumptions or project goals.'
+        CALL ERPFREE(IUNIT,ISTAT)
+	
         write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'rad'
         call runit(doit,'-')
         call pausems(100)
+        write(folderreadme,'(5a)') mpath(1:lnmp),fs,'rad',fs,
+     &    'Readme.txt'
+        write(currentfile,'(a)') folderreadme(1:lnblnk(folderreadme))
+        IUNIT=IFIL+1
+        CALL EFOPSEQ(IUNIT,folderreadme,3,IER)
+        write(iunit,'(a)')'This folder holds Radiance scene files'
+        write(iunit,'(a)')'created from the model e.g. *.rif *.mat'
+        write(iunit,'(a)')'*.rad and view files.'
+        CALL ERPFREE(IUNIT,ISTAT)
+
+        write(radpth,'(3a)')'..',fs,'rad'
 
 C Check that the hvac folder path is standard.
         call GETTOKENS(hvacpth,IW,WORDS)
@@ -377,13 +456,22 @@ C Check that the dbs folder path is standard.
         if(testw(1:lnw).eq.'dbs'.or.testw(lnw:lnw).eq.'.')then
           write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'dbs'
           write(dbspth,'(3a)')'..',fs,'dbs'
+          write(folderreadme,'(5a)') mpath(1:lnmp),fs,'dbs',fs,
+     &    'Readme.txt'
         else
           write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+          write(folderreadme,'(5a)') mpath(1:lnmp),fs,testw(1:lnw),fs,
+     &    'Readme.txt'
         endif
         call runit(doit,'-')
         call pausems(100)
-
-        write(radpth,'(3a)')'..',fs,'rad'
+        write(currentfile,'(a)') folderreadme(1:lnblnk(folderreadme))
+        IUNIT=IFIL+1
+        CALL EFOPSEQ(IUNIT,folderreadme,3,IER)
+        write(iunit,'(a)')'This folder holds local databases used with'
+        write(iunit,'(a)')'the model e.g. materials & constructions'
+        write(iunit,'(a)')'which differ from the corporate databases.'
+        CALL ERPFREE(IUNIT,ISTAT)
 
 C Check that the bsm (BASESIMP) folder path is standard.
         call GETTOKENS(bsmpth,IW,WORDS)
@@ -419,7 +507,6 @@ C Write out the model log file within the model doc folder.
           write(lmodellog,'(4a)') docpth(1:lnblnk(docpth)),fs,
      &      cfgroot(1:lr),'.log'
         endif
-C        write(lmodellog,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.log'
         write(currentfile,'(a)') lmodellog(1:lnblnk(lmodellog))
         IUNIT=IFIL+1
         CALL EFOPSEQ(IUNIT,lmodellog,3,IER)
@@ -484,32 +571,111 @@ C Instanciate standard folder names for use within model configuration file.
       call runit(doit,'-')
       call pausems(100)
       write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'cfg'
+      write(cfgpath,'(3a)') cfgroot(1:lncr),fs,'cfg'
       call runit(doit,'-')
+      write(folderreadme,'(5a)') cfgroot(1:lncr),fs,'cfg',fs,
+     &  'Readme.txt'
+      write(currentfile,'(a)') folderreadme(1:lnblnk(folderreadme))
+      IUNIT=IFIL+1
+      CALL EFOPSEQ(IUNIT,folderreadme,3,IER)
+      write(iunit,'(a)')'This folder holds the model configuration'
+      write(iunit,'(a)')'[cfg] files and master connection lists'
+      write(iunit,'(a)')'[cnn] for the project models.'
+      CALL ERPFREE(IUNIT,ISTAT)
       call pausems(100)
+      
       write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'ctl'
       call runit(doit,'-')
+      write(folderreadme,'(5a)') cfgroot(1:lncr),fs,'ctl',fs,
+     &  'Readme.txt'
+      write(currentfile,'(a)') folderreadme(1:lnblnk(folderreadme))
+      IUNIT=IFIL+1
+      CALL EFOPSEQ(IUNIT,folderreadme,3,IER)
+      write(iunit,'(a)')'This folder holds control definitions for'
+      write(iunit,'(a)')'the model e.g. zone & flow & plant.'
+      CALL ERPFREE(IUNIT,ISTAT)
       call pausems(100)
+      
       write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'aim2'
       call runit(doit,'-')
       call pausems(100)
+      
       write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'zones'
       call runit(doit,'-')
+      write(folderreadme,'(5a)') cfgroot(1:lncr),fs,'zones',fs,
+     &  'Readme.txt'
+      write(currentfile,'(a)') folderreadme(1:lnblnk(folderreadme))
+      IUNIT=IFIL+1
+      CALL EFOPSEQ(IUNIT,folderreadme,3,IER)
+      write(iunit,'(a)')'This folder holds zone-based model files'
+      write(iunit,'(a)')'e.g. geometry construction tmc operations'
+      CALL ERPFREE(IUNIT,ISTAT)
       call pausems(100)
+      
       write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'nets'
       call runit(doit,'-')
+      write(folderreadme,'(5a)') cfgroot(1:lncr),fs,'nets',fs,
+     &  'Readme.txt'
+      write(currentfile,'(a)') folderreadme(1:lnblnk(folderreadme))
+      IUNIT=IFIL+1
+      CALL EFOPSEQ(IUNIT,folderreadme,3,IER)
+      write(iunit,'(a)')'This folder holds network decriptions for'
+      write(iunit,'(a)')'mass flows and electrical power. '
+      CALL ERPFREE(IUNIT,ISTAT)
       call pausems(100)
+      
       write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'images'
       call runit(doit,'-')
+      write(folderreadme,'(5a)') cfgroot(1:lncr),fs,'images',fs,
+     &  'Readme.txt'
+      write(currentfile,'(a)') folderreadme(1:lnblnk(folderreadme))
+      IUNIT=IFIL+1
+      CALL EFOPSEQ(IUNIT,folderreadme,3,IER)
+      write(iunit,'(a)')'This folder holds images associated with the'
+      write(iunit,'(a)')'model e.g. site photos renderings and/or'
+      write(iunit,'(a)')'figures which clarify the model.'
+      CALL ERPFREE(IUNIT,ISTAT)
       call pausems(100)
+      
       write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'doc'
       call runit(doit,'-')
+      write(folderreadme,'(5a)') cfgroot(1:lncr),fs,'doc',fs,
+     &  'Readme.txt'
+      write(currentfile,'(a)') folderreadme(1:lnblnk(folderreadme))
+      IUNIT=IFIL+1
+      CALL EFOPSEQ(IUNIT,folderreadme,3,IER)
+      write(iunit,'(a)')'This folder holds documentation associated'
+      write(iunit,'(a)')'with the model e.g. construction documents'
+      write(iunit,'(a)')'lists of assumptions or project goals.'
+      CALL ERPFREE(IUNIT,ISTAT)
       call pausems(100)
+      
       write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'rad'
+      write(folderreadme,'(5a)') cfgroot(1:lncr),fs,'rad',fs,
+     &  'Readme.txt'
       call runit(doit,'-')
+      write(currentfile,'(a)') folderreadme(1:lnblnk(folderreadme))
+      IUNIT=IFIL+1
+      CALL EFOPSEQ(IUNIT,folderreadme,3,IER)
+      write(iunit,'(a)')'This folder holds Radiance scene files'
+      write(iunit,'(a)')'created from the model e.g. *.rif *.mat'
+      write(iunit,'(a)')'*.rad and view files.'
+      CALL ERPFREE(IUNIT,ISTAT)
       call pausems(100)
+      
       write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'dbs'
       call runit(doit,'-')
+      write(folderreadme,'(5a)') cfgroot(1:lncr),fs,'dbs',fs,
+     &  'Readme.txt'
+      write(currentfile,'(a)') folderreadme(1:lnblnk(folderreadme))
+      IUNIT=IFIL+1
+      CALL EFOPSEQ(IUNIT,folderreadme,3,IER)
+      write(iunit,'(a)')'This folder holds local databases used with'
+      write(iunit,'(a)')'the model e.g. materials & constructions'
+      write(iunit,'(a)')'which differ from the corporate databases.'
+      CALL ERPFREE(IUNIT,ISTAT)
       call pausems(100)
+      
       write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'hvac'
       call runit(doit,'-')
       call pausems(100)
@@ -527,6 +693,7 @@ C can cause the path variable to have a string buffer overflow.
       if(lnod+lncr+6.lt.72)then
         call edisp(iuout,'  ')
         write(path,'(6a)')odir(1:lnod),fs,cfgroot(1:lncr),fs,'cfg',fs
+        write(cfgpath,'(5a)')odir(1:lnod),fs,cfgroot(1:lncr),fs,'cfg'
         call edisp(iuout,
      &    'New model configuration file is in folder:')
         call edisp(iuout,path)
@@ -797,11 +964,130 @@ C recognised as *std items and then written out in *std format.
           call pausems(100)
           CALL EMKCFG('-',IER)
         endif
-        return
+
+C Refocus prj on the model cfg folder and re-load the model cfg file
+C as is done in cadio.F
+        call pausems(1000)
+        call refocus(cfgpath,thecfgis,iret)
+        if(iret.eq.0)then
+          continue
+        elseif(iret.eq.-2)then
+          call edisp(iuout,
+     &    'Features using Radiance calls may not work as expected.')
+        endif
       endif
       return
       end
 
+C ********** refocus
+C refucus restarts prj within the model cfg folder and focused
+C on a specific cfg file. After the restart it calls a STOP on
+C the current prj. ier returned as -2 if user declines refocus.
+      subroutine refocus(cfgpath,thecfgis,ier)
+#include "building.h"
+#include "model.h"
+
+C Parameters
+      character cfgpath*144 ! full path to cfg folder for refocus
+      character thecfgis*72 ! cfg file only & cfg/cfg_file
+      integer ier  ! zero if ok -2 if user delines refocus
+
+      common/pophelp/h(60)
+      character h*72
+      common/OUTIN/IUOUT,IUIN
+
+      integer lnblnk  ! function definition
+      character doit*248
+      character tmode*8
+      logical unixok
+
+C Set folder separator (fs) to \ or / as required.
+      ier=0
+      call isunix(unixok)
+      write(6,*) 'using refocus'
+
+C Test if we can start a new prj within the model cfg folder.
+      if(unixok)then
+        h(1)='To provide full functionality prj should'
+        h(2)='restart in the model cfg folder. When prj'
+        h(3)='has restarted this instance of prj will'
+        h(4)='quit after a few seconds.'
+        CALL EASKABC(
+     &    'To provide full functionality prj needs to restart',
+     &    'focused on the model cfg folder','yes restart',
+     &    'continue','abort prj',IRT,4)
+        if(irt.eq.1)then
+          call pausems(1000)
+          call usrmsg('Invoking new prj focused on the model',
+     &      ' and this instance will close.','P')
+          write(doit,'(5a)') 'cd ',cfgpath(1:lnblnk(cfgpath)),
+     &      '; prj -file ',thecfgis(1:lnblnk(thecfgis)),' &'
+          call edisp248(iuout,doit,100)
+          call runit(doit,'-')
+          call pausems(1000)
+
+C Clear allocatable arrays
+          CALL DeallocateAllArrays
+          CALL EPAGEND
+          STOP
+        elseif(irt.eq.2)then
+          ier=-2  ! pass back to calling code
+          return
+        elseif(irt.eq.3)then
+          CALL DeallocateAllArrays
+          CALL EPAGEND
+          STOP
+        endif
+      else
+
+C For Non-unix place a & between the commands and also set the
+C text string tmode='bg' to partially mimic background mode.
+        call edisp(iuout,'proposed command:')
+        write(doit,'(4a)') 'cd ',cfgpath(1:lnblnk(cfgpath)),
+     &    ' & prj -file ',thecfgis(1:lnblnk(thecfgis))
+        call edisp248(iuout,doit,100)
+        call edisp(iuout,'  ')
+        call pausems(1000)
+        h(1)='To provide full functionality prj should'
+        h(2)='restart in the copied model cfg folder. When'
+        h(3)='prj has restarted this instance of prj will'
+        h(4)='persist until you close the DOS cmd window.'
+        CALL EASKABC(
+     &    'To provide full functionality prj needs to restart',
+     &    'focused on the model cfg folder','yes restart',
+     &    'continue','abort prj',IRT,4)
+        if(irt.eq.1)then
+
+C Separate two dos cmds with & but do not include & at end to force background
+C mode via runit parameter. The initial prj tends not to close unless the
+C DOS cmd window is Xed.
+          doit='  '
+          write(doit,'(4a)') 'cd ',cfgpath(1:lnblnk(cfgpath)),
+     &      ' & prj -file ',thecfgis(1:lnblnk(thecfgis))
+          call edisp248(iuout,doit,100)
+          call pausems(1000)
+C << see if we can implement a bg for tmode in esru_lib.F
+          tmode='bg'
+          call runit(doit,tmode)
+          call pausems(1000)
+
+C Clear allocatable arrays
+          CALL DeallocateAllArrays
+          CALL EPAGEND
+          STOP
+        elseif(irt.eq.2)then
+          ier=-2
+          return
+        elseif(irt.eq.3)then
+          CALL DeallocateAllArrays
+          CALL EPAGEND
+          STOP
+        endif
+      endif
+      return
+
+      end  ! of refocus
+     
 C ********** pfolders
 C Maintain model folders.
       subroutine pfolders(ier)
@@ -828,40 +1114,11 @@ C External text editor.
       logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical concat,unixok,changedit,browse
 
-C Global coordinates for whole model (zone & surface based). These are used
-C to accumulate information prior to the generation of the connection list.
-C      integer isznbedges ! nb of edges per surface in poly shaped zone
-C                         ! equivalent to nznver and nver
-C      integer iszlist    ! indices of coords making up edges of each surface
-C                         ! equivalent to NZJVN and jvn
-C      real szcoords      ! coordinates associated with each zone, equivalent
-C                         ! to X Y Z and VCOORD for shape=box ignore,
-C                         ! for shape=extrude the 1st value is X and 2nd is Y
-C                         ! For shape=poly the Z is also used.
-C      common/metageo/isznbedges(MCOM,MS),iszlist(MCOM,MS,MV),
-C     &               szcoords(MCOM,MTV,3)
-
-C Surface attributes (zone & surface based).
-      character iszlname*16  ! surface long name attribute
-      character iszname*12   ! surface short name attribute
-      character iszotf*32    ! see SSOTF below
-      character iszvfc*4     ! see SSVFC below
-      character iszmlcn*32   ! see SSMLCN below
-      character iszother*24  ! see SSOTHER below
-      character iszuse*12    ! see SSUSE below
-      character iszparent*12 ! see SSPARENT below
-      character isztype*16   ! gbxml surface type
-      COMMON/metasurf/iszlname(MCOM,MS),iszname(MCOM,MS),
-     &  iszotf(MCOM,MS),iszmlcn(MCOM,MS),iszvfc(MCOM,MS),
-     &  iszother(MCOM,MS,3),iszuse(MCOM,MS,2),iszparent(MCOM,MS),
-     &  isztype(MCOM,MS)
-
       character*72 path,LFIL,odir
       character doit*248,sfile*72,snpfile*72
       character longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
       character tmode*8,t24*24,outs*124
-      character loutstr*248
       character*33 ITEMS(25)
       character fs*1
       character subpath*72,action*3
@@ -870,7 +1127,7 @@ C Surface attributes (zone & surface based).
       integer nitems,INO ! max items and current menu item
 
 C Logicals for testing XML
-      logical found,closex,xst  ! equivalent of similar on other side
+      logical xst  ! equivalent of similar on other side
       
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -968,7 +1225,7 @@ C Remind user of available cfg files.
       WRITE(ITEMS(20),'(A)') 'o edit ASCII file              '
       WRITE(ITEMS(21),'(A)') 'p list files in esp-r/databases'
       WRITE(ITEMS(22),'(A)') 'q list files in esp-r/climate  '
-      WRITE(ITEMS(23),'(A)') 'r read XML test                '
+      WRITE(ITEMS(23),'(A)') 'r read                         '
       ITEMS(24)  =           '? help                         '
       ITEMS(25)  =           '- exit this menu               '
       nitems=25
@@ -998,23 +1255,8 @@ C Help text for this menu.
         CALL PHELPD('folders and files',nbhelp,'-',0,0,IER)
       elseif(ino.eq.nitems-2)then
 
-C Test read of XML files and tokens.
-	CALL EASKS(LFIL,' ','XML file name?',
-     &    72,' ','XML file',IER,nbhelp)
-        IUNIT=IFIL+1
-        INQUIRE (FILE=LFIL,EXIST=XST)
-        if(XST)then
-          call clrprb  ! clear the model common blocks prior to scan
-          write(longtfile,'(a)') LFIL(1:lnblnk(LFIL))
-          IUNIT=IFIL+1
-          call silentxmlread(iunit,longtfile,'-',theprimedirective,
-     &      ier)
-          call edisp(iuout,theprimedirective)
-          call edisp(iuout,modeltitle)
-          call edisp248(iuout,modeldocblock,80)
-          goto 42
-        endif
-	
+C Test read of a X file type.
+        call edisp(iuout,'No current test.')
       elseif(ino.eq.4)then
 
         if(.NOT.browse)then

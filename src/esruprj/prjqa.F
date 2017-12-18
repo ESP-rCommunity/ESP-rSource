@@ -224,7 +224,7 @@ C Remember if each zone is fully attributed.
       character ZN*12,SN*12
       character aok*17,CTLDOC*248,LCTLF*72
       character xfile*144,tg*1,delim*1,head*21
-      character outs*124,outs248*248
+      character outs*124,outs248*496
       character dstmp*24,mlc_name*32
       CHARACTER LAPROB*72,LPNF*72
       CHARACTER NDNAM*12,TOPTIC*12,msg*28,doit*248
@@ -276,7 +276,7 @@ C in the current model. A -1 means not applicable
       real foundRextra  ! extra CIBSE resistance for foundation
 
       character*10 wkd1, wkd2
-      character louts*248,loutsd*248
+      character louts*496,loutsd*496,louts600*600
       character lltmp*144,lguess*144,lldef*144  ! for working with EASKXORGTKF
       character lpath*72,fname*72 ! for use with fdroot
       character llclmdb*144
@@ -1165,8 +1165,8 @@ C         Write monthly values ...
           itrunc=1
           ipos=1
           do while (itrunc.ne.0)
-            call arlist(ipos,12,groundreflmonth,12,'S',outs248,
-     &                                                  loutln,itrunc)
+            call arlist2(ipos,12,groundreflmonth,12,'S',outs248,
+     &        loutln,itrunc)
             call edisp248(itu,outs248,100)
             ipos=itrunc+1
           end do
@@ -1192,7 +1192,7 @@ C         Write monthly values
           itrunc=1
           ipos=1
           do while (itrunc.ne.0)
-            call arlist(ipos,12,groundreflmonth,12,'S',outs248,
+            call arlist2(ipos,12,groundreflmonth,12,'S',outs248,
      &                                                  loutln,itrunc)
             call edisp248(itu,outs248,110)
             ipos=itrunc+1
@@ -2290,13 +2290,13 @@ C Put odd vertex in right column.
           DO I = 1,NZSUR(izz)
             icc=izstocn(izz,i)        ! find connection
             lsna=lnblnk(SSNAME(icc))  ! get length of surf name
-            write(louts,'(a,42I4)') '*edges ',NVER(I),
+            write(louts,'(a,i3,124I4)') '*edges ',NVER(I),
      &        (JVN(I,J),J=1,NVER(I))
             call SDELIM(louts,loutsd,'C',IW)  ! make comma separated
-            write(outs248,'(3a,f8.3,a)') 
+            write(louts600,'(3a,f8.3,a)') 
      &        loutsd(1:lnblnk(loutsd)),'   ',SSNAME(icc)(1:lsna),
      &        SSPERIM(icc),'m perimeter'
-            call edisp248(itu,outs248,100)
+            call edisp248(itu,louts600,100)
           enddo  ! of I
 
 C If thermal bridges are associated with a surface then report this.
@@ -2339,7 +2339,7 @@ C into outs248 for each non-zero bridges.
         endif
 
 C Check if the edges are proprly bounded. Uses G1 common.
-        call ckvert(0,IVALS(IZ),bound,iub,inv,ier)
+        call ckvert(0,IVALS(IZ),bound,iub,inv,'-',ier)
         if(.NOT.bound)then
           iprb=MAX0(iub,inv)
           WRITE(outs,'(A,i3,a)')  ' There are ',iub,

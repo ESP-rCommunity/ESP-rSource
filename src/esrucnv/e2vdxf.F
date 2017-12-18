@@ -89,13 +89,13 @@ C Write surface information to the viewer file. First invert edges.
   120     continue
 
 C Write to output file.
-          WRITE(ioout,'(a,a15)')'GEN ',ZN
+          WRITE(ioout,'(2a)')'GEN ',ZN
           WRITE(ioout,'(2I7)')NTV,NSUR
           DO 40 J=1,NTV
             WRITE(ioout,'(3F9.4)')X(J),Y(J),Z(J)
    40     continue
           DO 50 J=1,NSUR
-            WRITE(ioout,'(2X,I3,1X,21I3)')NVER(J),(JVN(J,K),K=1,NVER(J))
+            WRITE(ioout,'(I4,1X,124I4)')NVER(J),(JVN(J,K),K=1,NVER(J))
    50     continue
 
 C Deal with solar obstructions.
@@ -604,7 +604,7 @@ C Write surface information to the THF file.
           WRITE(ioout,'(I2)')NSUR
           DO 50 J=1,NSUR
             WRITE(ioout,'(a,a8)')'1 ',SMLCN(J)(1:8)
-            WRITE(ioout,'(I3,1X,21I3)')NVER(J),(JVN(J,K),K=1,NVER(J))
+            WRITE(ioout,'(I3,1X,124I4)')NVER(J),(JVN(J,K),K=1,NVER(J))
    50     continue
 
           if(nbobs(newfoc).ge.1)then

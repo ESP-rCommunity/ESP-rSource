@@ -402,6 +402,9 @@ C Call with parameter "IFRAME" which is the time step!
       COMMON/CFDPOL/POLCONCp(MCTM,ntcelx,ntcely,ntcelz),
      1              POLCONCf(MCTM,ntcelx,ntcely,ntcelz)
 
+      common/rpath/path
+      character*72 path,lpath
+
       integer IFRAME
 
       real Uftmp,Vftmp,Wftmp
@@ -422,7 +425,11 @@ C file name
 
 C Check and open data output file (?)
       IUNIT=IFIL+1
+      lpath=path
+      path='./'
       call EFOPSEQ(IUNIT,lflname,4,ier)
+      path=lpath
+      
 
 C Write the '.vtk' header (total of 4 lines)
 C It would be sexy to be able to enter the text for line 2

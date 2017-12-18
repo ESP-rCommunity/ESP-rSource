@@ -3231,7 +3231,9 @@ C real value.
         WRITE(CSTR,'(1PE14.6)',IOSTAT=ios,ERR=999)RVAL
       elseif(abs(rval).le.1000000.0.and.abs(rval).gt.10000.0)then
         WRITE(CSTR,'(G15.5)',IOSTAT=ios,ERR=999)RVAL
-      elseif(abs(rval).le.10000.0.and.abs(rval).gt.0.1)then
+      elseif(abs(rval).le.10000.0.and.abs(rval).gt.10.0)then
+        WRITE(CSTR,'(G14.5)',IOSTAT=ios,ERR=999)RVAL
+      elseif(abs(rval).le.10.0.and.abs(rval).gt.0.1)then
         WRITE(CSTR,'(G14.5)',IOSTAT=ios,ERR=999)RVAL
       elseif(abs(rval).le.0.1.and.abs(rval).gt.0.00001)then
         WRITE(CSTR,'(F10.7)',IOSTAT=ios,ERR=999)RVAL
@@ -3255,13 +3257,79 @@ C real value.
  999  if(IOS.eq.2)then
         WRITE(outs,*) ' REL16STR: permission issue: ',RELIN
       else
-        WRITE(outs,*) ' REL16STR: invalid real or > 12 char: ',RELIN
+        WRITE(outs,*) ' REL16STR: invalid real or > 16 char: ',RELIN
       endif
       call edisp(iuout,outs)
       IFLAG=1
       RETURN
 
       END
+
+
+C *********************** REL12STR
+C REL12STR converts a real into a string (12 char) with no leading
+C blanks. ISWD is the actual length of the resulting string. Takes
+C the magnitude of the number into account.
+      SUBROUTINE REL12STR(RELIN,FSTR,ISWD,IFLAG)
+      common/OUTIN/IUOUT,IUIN
+
+      CHARACTER*12 CSTR, FSTR
+      character outs*124
+      logical close
+
+      IFLAG=0
+      ISWD=0
+      fstr = ' '
+
+C Internal write to STR. If trivally close to zero set, otherwise
+C write out in an appropriate format given the magnitude of the
+C real value.
+      rval=relin
+      CALL ECLOSE(rval,0.00,0.000001,CLOSE)
+      if(close)then
+        rval=0.00
+        fstr='0.00'
+        iswd=4
+        return
+      endif
+      if(abs(rval).gt.1000000.0)then
+        WRITE(CSTR,'(1PE12.6)',IOSTAT=ios,ERR=999)RVAL
+      elseif(abs(rval).le.1000000.0.and.abs(rval).gt.10000.0)then
+        WRITE(CSTR,'(G12.5)',IOSTAT=ios,ERR=999)RVAL
+      elseif(abs(rval).le.10000.0.and.abs(rval).gt.10.0)then
+        WRITE(CSTR,'(G12.5)',IOSTAT=ios,ERR=999)RVAL
+      elseif(abs(rval).le.10.0.and.abs(rval).gt.0.1)then
+        WRITE(CSTR,'(G12.4)',IOSTAT=ios,ERR=999)RVAL
+      elseif(abs(rval).le.0.1.and.abs(rval).gt.0.00001)then
+        WRITE(CSTR,'(F10.6)',IOSTAT=ios,ERR=999)RVAL
+      elseif(rval.le.0.00001)then
+        WRITE(CSTR,'(1PE12.6)',IOSTAT=ios,ERR=999)RVAL
+      else
+        WRITE(CSTR,'(F14.4)',IOSTAT=ios,ERR=999)RVAL
+      endif
+      K=0
+      DO 99 I=1,LEN(cstr)
+        IF(cstr(I:I).NE.' '.OR.K.GE.1)THEN
+          if(ichar(cstr(I:I)).lt.32)goto 100
+          K=K+1
+          fstr(K:K)=cstr(I:I)
+        ENDIF
+ 99   CONTINUE
+
+  100 ISWD=max(1,LNBLNK(FSTR))
+      RETURN
+
+ 999  if(IOS.eq.2)then
+        WRITE(outs,*) ' REL12STR: permission issue: ',RELIN
+      else
+        WRITE(outs,*) ' REL12STR: invalid real or > 12 char: ',RELIN
+      endif
+      call edisp(iuout,outs)
+      IFLAG=1
+      RETURN
+
+      END
+
 C *********************** RELESTR
 C REL16STR converts a real into a string (16 char) with no leading
 C blanks. ISWD is the actual length of the resulting string. Takes
@@ -3428,6 +3496,81 @@ C      call edisp(iuout,outs)
 
       return
       END
+
+C ******************** ARLIST2 ********************
+C ARLIST2 takes the first (inst to inrl) items of a real array (rlist)
+C of array size (inrs) and builds a packed string (pckstr) with 12 char
+C string representations of the values and returns
+C pckstr and the actual character width (length). If itrunc
+C is zero then all items written, else the index of the last item
+C which was written. Delm is delimeter between items.
+
+      SUBROUTINE ARLIST2(inst,inrl,rlist,inrs,delm,pckstr,length,itrunc)
+C      COMMON/OUTIN/IUOUT,IUIN
+      dimension rlist(inrs)
+      character*(*) pckstr
+      CHARACTER item*12,delm*1  ! Note 12 character
+
+C      character outs*124  ! for debug statement
+
+      itrunc=0
+      LS=LEN(pckstr)
+      length=0
+
+C Proceed to fill as much of pckstr as possible, set ierr to one
+C if the array cannot be written out fully in the space available.
+      pckstr=' '
+      ix=1
+      ixl=0
+      do 43 i=inst,inrl
+        item=' '
+        rval=rlist(i)
+        call rel12str(rval,item,lna,ier)
+
+C Write next portion of pckstr and if not at the end write a
+C separating comma. If attempting to write past the end of
+C pckstr then set itrunc to the last successfully written
+C rlist index.
+        if(lna.eq.1)then
+          ixl=ix
+        else
+          ixl=ix+(lna-1)
+        endif
+        if(ixl+1.lt.LS)then
+          write(pckstr(ix:ixl),'(a)')item(1:lna)
+          if(i.lt.inrl)then
+            if(delm.eq.'T')then
+              write(pckstr(ixl+1:ixl+1),'(a)') CHAR(9)
+            elseif(delm.eq.'S')then
+              write(pckstr(ixl+1:ixl+1),'(a)') ' '
+            elseif(delm.eq.'C')then
+              write(pckstr(ixl+1:ixl+1),'(a)') ','
+            endif
+            ix=ix+lna+1
+          else
+            ix=ix+lna+1
+          endif
+        else
+          length=ix
+          itrunc = i-1
+          goto 1
+        endif
+  43  continue
+      length=ixl
+      return
+
+C The full array could not be packed into the string so return
+C the position this happened so calling code can deal with it.
+   1  continue
+
+C Debug.
+C      write(outs,*) 'ARLIST2: truncation writing array at item: ',
+C     &  itrunc,' & pos ',length
+C      call edisp(iuout,outs)
+
+      return
+      END
+
 
 C ******************** AELIST ********************
 C AELIST takes the first (inst to inrl) items of a real array (rlist)
@@ -4624,16 +4767,16 @@ C Only ask for end date if start-date successfully defined
           if ( bDateOK ) then
 
 C End date, set at least equal to the beginning day.
-            if ( .not. bMY_enabled .and. iedoy.le.ibdoy ) then
-              iedoy = ibdoy + 1
+            if ( .not. bMY_enabled .and. iedoy.lt.ibdoy ) then
+              iedoy = ibdoy
             elseif ( bMY_enabled ) then
 
 C Convert end-date into EDAYR friendly format and
 C check that end date is not before start-date.
               iedoy = iedoy - ( iEYr - iBYr ) * 365
-              if ( ( iEYr .eq. iBYr .and. iedoy .le. ibdoy ) .or.
+              if ( ( iEYr .eq. iBYr .and. iedoy .lt. ibdoy ) .or.
      &             ( iEYr .lt. iBYr ) ) then
-                iedoy=ibdoy+1
+                iedoy=ibdoy
                 iEyr=iBYr
                 if (iedoy .gt. 365 ) then
                   iedoy = 1
@@ -5604,21 +5747,22 @@ C the minimum RMN and the maximum RMX and provides a warning
 C message if RACT='W', a failure message if RACT='F' and does
 C no range checking if RACT='-'. Words may be separated by blanks,
 C commas, or tab: WORD,WORD,WORD or WORD WORD WORD or WORD, WORD, WORD
-C are all valid.
+C are all valid.  Will deal with input lines upto 1K wide.
 C Note: all reads are able to accept commented files.
       SUBROUTINE EGETWRA(IAF,RVA,IRVA,RMN,RMX,RACT,MSG,IER)
       common/OUTIN/IUOUT,IUIN
       DIMENSION RVA(*)
       CHARACTER*(*) MSG
-      CHARACTER OUTS*248,MSG1*124,RACT*1
+      CHARACTER OUTS*248,MSG1*124,RACT*1,lkouts*1000
       logical unixok
 
       IF(IRVA.LE.0)GOTO 99
 
 C Read a line from the file, if no problems set position to 0 and begin
 C to parse words.
-      CALL LSTRIPC(IAF,OUTS,0,ND,1,MSG,IER)
-      LN=max(1,LNBLNK(OUTS))
+      CALL STRIPC1K(IAF,lkouts,0,ND,1,MSG,IER)
+C      CALL LSTRIPC(IAF,OUTS,0,ND,1,MSG,IER)
+      LN=max(1,LNBLNK(lkouts))
       IF(IER.NE.0)RETURN
       K=0
       DO 12 KV=1,IRVA
@@ -5626,20 +5770,22 @@ C to parse words.
 C If character position is < actual length of string parse another
 C word, otherwise read another line from the file.
         IF(K.LT.LN)THEN
-          CALL EGETWR(OUTS,K,VAL,RMN,RMX,RACT,MSG,IERV)
+          CALL EGETWR(lkouts,K,VAL,RMN,RMX,RACT,MSG,IERV)
           IF(IERV.NE.0) THEN
-            CALL LSTRIPC(IAF,OUTS,0,ND,0,MSG,IER)
-            LN=max(1,LNBLNK(OUTS))
+            CALL STRIPC1K(IAF,lkouts,0,ND,0,MSG,IER)
+C            CALL LSTRIPC(IAF,OUTS,0,ND,0,MSG,IER)
+            LN=max(1,LNBLNK(lkouts))
             IF(IER.NE.0)RETURN
             K=0
-            CALL EGETWR(OUTS,K,VAL,RMN,RMX,RACT,MSG,IERV)
+            CALL EGETWR(lkouts,K,VAL,RMN,RMX,RACT,MSG,IERV)
           ENDIF
         ELSE
-          CALL LSTRIPC(IAF,OUTS,0,ND,0,MSG,IER)
-          LN=max(1,LNBLNK(OUTS))
+          CALL STRIPC1K(IAF,lkouts,0,ND,0,MSG,IER)
+C          CALL LSTRIPC(IAF,OUTS,0,ND,0,MSG,IER)
+          LN=max(1,LNBLNK(lkouts))
           IF(IER.NE.0)RETURN
           K=0
-          CALL EGETWR(OUTS,K,VAL,RMN,RMX,RACT,MSG,IERV)
+          CALL EGETWR(lkouts,K,VAL,RMN,RMX,RACT,MSG,IERV)
         ENDIF
         IF(IERV.NE.0) GOTO 1001
         RVA(KV)=VAL
@@ -5656,9 +5802,9 @@ C word, otherwise read another line from the file.
      &       I3,' in the string:')
       CALL EDISP(iuout,MSG1)
       if(LNM.ge.124)then
-        CALL EDISP248(iuout,OUTS,100)
+        CALL EDISP248(iuout,lkouts,100)
       else
-        CALL EDISP(iuout,OUTS)
+        CALL EDISP(iuout,lkouts)
       endif
       IER=1
       GOTO 100
@@ -5684,21 +5830,22 @@ C the minimum IRMN and the maximum IRMX and provides a warning
 C message if IACT='W', a failure message if IACT='F' and does
 C no range checking if IACT='-'. Words may be separated by blanks,
 C commas, or tab: WORD,WORD,WORD or WORD WORD WORD or WORD, WORD, WORD
-C are all valid.
+C are all valid.  Will deal with input lines upto 1K wide.
 C Note: all reads are able to accept commented files.
       SUBROUTINE EGETWIA(IAF,IVA,IRVA,IRMN,IRMX,IACT,MSG,IER)
       common/OUTIN/IUOUT,IUIN
       DIMENSION IVA(*)
       CHARACTER*(*) MSG
-      CHARACTER OUTS*248,MSG1*124,IACT*1,out*124
+      CHARACTER OUTS*248,MSG1*124,IACT*1,out*124,lkouts*1000
       logical unixok
 
       IF(IRVA.LE.0)GOTO 99
 
 C Read a line from the file, if no problems set position to 0 and begin
 C to parse words.
-      CALL LSTRIPC(IAF,OUTS,0,ND,1,MSG,IER)
-      LN=max(1,LNBLNK(OUTS))
+      CALL STRIPC1K(IAF,lkouts,0,ND,1,MSG,IER)
+C      CALL LSTRIPC(IAF,OUTS,0,ND,1,MSG,IER)
+      LN=max(1,LNBLNK(lkouts))
       IF(IER.NE.0)RETURN
       K=0
       DO 12 KV=1,IRVA
@@ -5706,20 +5853,22 @@ C to parse words.
 C If character position is < actual length of string parse another
 C word, otherwise read another line from the file.
         IF(K.LT.LN)THEN
-          CALL EGETWI(OUTS,K,IVAL,IRMN,IRMX,IACT,MSG,IERV)
+          CALL EGETWI(lkouts,K,IVAL,IRMN,IRMX,IACT,MSG,IERV)
           IF(IERV.NE.0) THEN
-            CALL LSTRIPC(IAF,OUTS,0,ND,0,MSG,IER)
-            LN=max(1,LNBLNK(OUTS))
+            CALL STRIPC1K(IAF,lkouts,0,ND,0,MSG,IER)
+C            CALL LSTRIPC(IAF,OUTS,0,ND,0,MSG,IER)
+            LN=max(1,LNBLNK(lkouts))
             IF(IER.NE.0)RETURN
             K=0
-            CALL EGETWI(OUTS,K,IVAL,IRMN,IRMX,IACT,MSG,IERV)
+            CALL EGETWI(lkouts,K,IVAL,IRMN,IRMX,IACT,MSG,IERV)
           ENDIF
         ELSE
-          CALL LSTRIPC(IAF,OUTS,0,ND,0,MSG,IER)
-          LN=max(1,LNBLNK(OUTS))
+          CALL STRIPC1K(IAF,lkouts,0,ND,0,MSG,IER)
+C          CALL LSTRIPC(IAF,OUTS,0,ND,0,MSG,IER)
+          LN=max(1,LNBLNK(lkouts))
           IF(IER.NE.0)RETURN
           K=0
-          CALL EGETWI(OUTS,K,IVAL,IRMN,IRMX,IACT,MSG,IERV)
+          CALL EGETWI(lkouts,K,IVAL,IRMN,IRMX,IACT,MSG,IERV)
         ENDIF
         IF(IERV.NE.0) GOTO 1001
         IVA(KV)=IVAL
@@ -5736,7 +5885,7 @@ C word, otherwise read another line from the file.
      &       I3,' in the string:')
       CALL EDISP(iuout,MSG1)
       if(LNM.ge.124)then
-        write(out,*) 'EGETWIA: error writing ',OUTS(1:72),'...'
+        write(out,*) 'EGETWIA: error writing ',lkouts(1:72),'...'
         CALL EDISP(iuout,out)
       else
         CALL EDISP(iuout,OUTS)
@@ -7055,7 +7204,7 @@ C ANOTZERO returns a non zero value with the same sign.
       REAL FUNCTION ANOTZERO(A)
 
 C      SMALL=1E-19
-      SMALL=1E-12
+      SMALL=1E-10
 
       if (abs(A).lt.(SMALL)) then
 
@@ -7150,7 +7299,8 @@ C ********* LISTAS
 C LISTAS: General read of an ascii file.
       SUBROUTINE LISTAS(iunit,LFIL,IER)
       COMMON/OUTIN/IUOUT,IUIN
-      character LFIL*72,outstr*124
+      character*(*) LFIL
+      character outstr*124
       logical XST
       integer ltf   ! position of last character in the string.
 

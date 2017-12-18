@@ -107,6 +107,11 @@ C
       COMMON/SCHMTT/SCHMT(MCTM),GFM(MCTM),VCRIT(MCTM),TBOIL(MCTM),
      &       TCRIT(MCTM),ISCHMT(MCTM)
       COMMON/CFDMFS1/ICFDNOD(MNZ),ICFDCNN(MNVLS,MNZ)
+      COMMON/CFDMFS2/MFNEWN(MNVLS,MNZ),NFNDN,NCFDOPNO(MNVLS,MNZ),
+     &               NFNPDN(MNZ)
+      COMMON/MFLOW1/NNOD,NCMP,NCNN
+      COMMON/ACT/ACTCNN(MCNN)
+      logical ACTCNN
 
 C Source / Sink model commons
       COMMON/CTDFAF/ICTDFAF,SRCE(MNVLS,MCTM,MNZ),ICCSRC
@@ -141,7 +146,7 @@ C Common blocks for blockages and small supply openings
       LOGICAL OK,LINVOL,CALLMA,CALPOL
       CHARACTER*12 POLNAM,SRCE,SSNAME
       REAL POL3D(ntcelx,ntcely,ntcelz),SRCSTR(MNVLS,MNZ)
-      logical unixok
+      logical unixok,NOTFOUND
 
 C Set itrc to zero for no debugging and 1 to turn on trace.
       itrc=0
@@ -184,23 +189,44 @@ C First get any explicitly defined source type boundary conditions
  699        CONTINUE
 
 C Now get any sourcing/sinking due to air flows from dfs-mfs conflation
-C Flow rate is -ve for flow going out from CFD domain
+C Flow rate is -ve for flow going out from CFD domain.
+C TODO - Doing this with the volume name is very yuck, should find a
+C        better way.
             IF(VOLNAME(IV,ICFD)(1:4).EQ.'SRC_')THEN
               DO 701 IX=1,NVOL(ICFD)
                 IF(VOLNAME(IV,ICFD)(5:12).EQ.VOLNAME(IX,ICFD)(1:8))THEN
-                  ICNN=ICFDCNN(IX,ICFD)
-                  IF(NODPS(ICNN).EQ.ICFDNOD(ICFD))THEN
-                    FLRATE=REAL(FLW2(ICNN)-FLW1(ICNN))
-                  ELSEIF(NODNE(ICNN).EQ.ICFDNOD(ICFD))THEN
-                    FLRATE=REAL(FLW1(ICNN)-FLW2(ICNN))
-                  ENDIF
+
+C First, look for an extra connection added for the CFD-MFS conflation
+C process.
+                  NOTFOUND=.TRUE.
+                  do IOPNO=1,NFNDN
+                    if (IX.eq.NCFDOPNO(IOPNO,ICFD)) then
+                      INOD=MFNEWN(IOPNO,ICFD)
+                      ICNN=1
+                      DO WHILE(ICNN.LE.NCNN.AND.NOTFOUND)
+                        IF(NODPS(ICNN).EQ.INOD.OR.NODNE(ICNN).EQ.INOD)
+     &                    THEN
+                          NOTFOUND=.FALSE.   
+                        ELSE
+                          ICNN=ICNN+1
+                        ENDIF
+                      END DO
+                    endif
+                  enddo
+
+C If this is not found, use the original connection.
+                  if (NOTFOUND) then
+                    ICNN=ICFDCNN(IX,ICFD)
+                  endif
+
+                  FLRATE=REAL(FLW2(ICNN)+FLW1(ICNN))
                   IF(FLRATE.GT.0.0)THEN
                     INOD=NODNE(ICNN)
                   ELSE
                     INOD=NODPS(ICNN)
                   ENDIF
                   IROWNO=NCTM*(INOD-1)+ICTM
-                  SRCSTR(IV,ICFD)=CNCAJAM(IROWNO)*FLRATE                  
+                  SRCSTR(IV,ICFD)=CNCAJAM(IROWNO)*FLRATE
                 ENDIF
  701          CONTINUE
             ENDIF

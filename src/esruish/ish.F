@@ -388,8 +388,9 @@ C and pause so user can view results. If paction = 'update_silent' then
 C do standard annual calculation and exit when completed. 
 C If paction= useupdate_silent then import existing ascii file if
 C available otherwise do standard annual calculation. If paction
-C is 'asci2bin' then create an empty binary and then import ascii
-C data and then exit. If paction is 'bin2asci' then scan the binary
+C is 'asci2bin' or 'ascii2bin' then create an empty binary and then
+C import ascii data and then exit.
+C If paction is 'bin2asci' 'bin2ascii'then scan the binary
 C and then call the ascii export facility and exit.
       if(pact(1:1).ne.' ')then
          paction=pact
@@ -403,7 +404,8 @@ C and then call the ascii export facility and exit.
            silent=.true.
          elseif(paction(1:16).eq.'useupdate_silent')then
            silent=.true.
-         elseif(paction(1:8).eq.'asci2bin')then
+         elseif(paction(1:8).eq.'asci2bin'.or.
+     &          paction(1:9).eq.'ascii2bin')then
            write(ascif,'(a)') pascif(1:lnblnk(pascif))
             if(ascif(1:4).eq.'UNKN')then
               call edisp(iuout,'ish: the action file is unknown!')
@@ -412,7 +414,8 @@ C and then call the ascii export facility and exit.
               stop
             endif
             silent=.true.
-         elseif(paction(1:8).eq.'bin2asci')then
+         elseif(paction(1:8).eq.'bin2asci'.or.
+     &          paction(1:9).eq.'bin2ascii')then
            write(ascif,'(a)') pascif(1:lnblnk(pascif))
             if(ascif(1:4).eq.'UNKN')then
               call edisp(iuout,'ish: the action file is unknown!')
@@ -546,6 +549,11 @@ C to also fill data structures for obstructions.
             iuout=6     ! reset in case corrupted
             mode='ALL '
             call ersys_mmode(lcfgf,ifcfg,iairp,mode,0,ier,silent)
+            if(ier.eq.3)then
+              call usrmsg('Model is to complex - exiting ish',' ','W')
+              call epagend
+              stop
+            endif
 
 C Open core of databases if not already done so.
             if(MLDBOK.and.MATDBOK.and.OPTKOK)then
@@ -985,6 +993,11 @@ C GTK version will be returning the name with the full path.
             call tstamp('>',lcfgf)
             mode='ALL '
             call ersys_mmode(lcfgf,ifcfg,iairp,mode,0,ier,silent)
+            if(ier.eq.3)then
+              call usrmsg('Model is to complex - exiting ish',' ','W')
+              call epagend
+              stop
+            endif
             if(MLDBOK.and.MATDBOK.and.OPTKOK)then
               continue
             else

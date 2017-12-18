@@ -37,11 +37,12 @@ C if act = 'D' return days PPD in GVAL,
 C if act = 'M' return days PMV in GVAL.
 C if act = 'E' return days PMV (effective temperature) in GVAL.
 
-      SUBROUTINE MOCMFT(IDAY,IZONE,act)
+      SUBROUTINE MOCMFT(IDAY,IZONE,IMRT,act)
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
 #include "schedule.h"
+#include "cfd.h"
 C #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -55,6 +56,7 @@ C #include "espriou.h"
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
+      COMMON/ZONPIK/NZ,NZNO(MCOM)
 
 C Comfort parameters and hash table.
       common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset
@@ -84,6 +86,34 @@ C For help messages
       character helpinsub*24   ! subroutine name
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
+
+      COMMON/FILEP/IFIL
+      character LMRT*72
+      real XC,YC,ZC
+      integer IIX,IIY,IIZ
+      common/CFDSV/IRECPC,ICFDSV,IEQSV(5+MCTM)
+      common/rpath/path
+
+      character path*72,LCMDFL*144,ltmpc*144,LTMP*72,lpath*72
+      integer igraphiclib  ! external definition
+      logical XST
+
+      COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),
+     1            Wf(ntcelx,ntcely,ntcelz),
+     2            P(ntcelx,ntcely,ntcelz),PP(ntcelx,ntcely,ntcelz),
+     3            TEf(ntcelx,ntcely,ntcelz),EDf(ntcelx,ntcely,ntcelz)
+      COMMON/TEMPf/Tf(ntcelx,ntcely,ntcelz),GAMH(ntcelx,ntcely,ntcelz),
+     1             RESORT,NSWPT,URFT,FSDTT,PRANDL,PFUN
+
+      COMMON/useSenPMV/useSenMRT(MCOM),useSenCFD(MCOM),IXCEL(MCOM),
+     &                 IYCEL(MCOM),IZCEL(MCOM)
+      logical useSenMRT,useSenCFD
+      COMMON/cfdsmper/ICDYS,ICDYF,CFTS,CFTF
+      integer IZLST(MCUB),ISLST(MCUB),NSEL
+      COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
+      CHARACTER LCFD*72
+
+      real PI,R,SA,CA,DX,DY
 
       DATA DESC/'very cold, danger        ','cold, shivering          ',
      &          'cool, unpleasant         ','slightly cool, acceptable',
@@ -195,6 +225,10 @@ C << revise for additional casual gain types >>
         endif
         iocuset=1
         IFILT=iocut
+
+        if (IER.ne.0) then
+          call edisp(iuout,' Error setting up comfort parameters.')
+        endif
         return
       endif
 
@@ -246,10 +280,11 @@ C Help text for menu.
       helptopic='res_comfort_menu'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
-      INO=-2
       if(mmod.eq.8)then
+	INO=-1
         CALL EMENU('Comfort assessment',ITEMS,NITMS,INO)
       else
+	INO=-2
         CALL EMENU('Comfort',ITEMS,NITMS,INO)
       endif
 
@@ -322,7 +357,7 @@ C Activity level, may be entered in MET units or in W/m^2.
 C Air speed.
         helptopic='res_comfort_air_velo'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        call easkr(WVEL,' ',' Air velocity ?',
+        call easkr(WVEL,' ',' Default air velocity ?',
      &    0.0,'W',5.0,'W',0.15,'air velocity',IER,nbhelp)
       elseif(ino.eq.8)then
 
@@ -437,7 +472,7 @@ C If output to file alter the edisp unit number.
         call edisp(itru,' ')
         write(outs,172,IOSTAT=IOS,ERR=1)ACTL,CLO,WVEL
   172   FORMAT(' Activity level ',F6.2,', Clothing level',F6.2,
-     &         ', Air speed',F6.2)
+     &         ', Default air speed',F6.2)
         call edisp(itru,outs)
 
         call edisp(itru,' Default mean radiant temperature')
@@ -453,8 +488,66 @@ C If output to file alter the edisp unit number.
         call edisp(itru,' ')
       endif
 
+      if (IMRT.ne.0) then
+C Put sensor MRT in GVAL.
+        call SENMRT(IDAY,IZONE,IMRT,ISET,0)
+
+C If there is a CFD domain for this zone, use air velocity and
+C temperature from the grid point closest to the MRT sensor location.
+c        write(6,*)'IFCFD(IZONE)',IFCFD(IZONE)
+        if (IFCFD(IZONE).gt.0) then
+
+          call OPCFD(ok,IER)
+          if (.not.ok.or.IER.ne.0) goto 924
+      
+C Read header data and set common block data.
+          lpath=path
+          call fdroot(LCMDFL,path,LTMP)
+          call RCFDLIBH(IZONE,IER)
+          path=lpath
+
+C TODO - currently, read CFD file to get axis vertices to initialise
+C CFD - building domain transformation matrices. In future, consider
+C adding this to the CFD library.
+          CALL RCFDVRTS(IZONE,IER)
+          CALL INIT_CFDTRANS(IER)
+          if (IER.ne.0) then
+            call edisp(iuout,' Problem reading CFD axis vertices')
+          else
+C Find CFD point closest to MRT sensor.              
+            CALL GRIDGEO
+            PI = 4.0 * ATAN(1.0)
+            R=PI/180.
+            SA=SIN(CANG(IMRT)*R)
+            CA=COS(CANG(IMRT)*R)
+            DX=(DXC(IMRT)/2.)*CA-(DYC(IMRT)/2.)*SA
+            DY=(DXC(IMRT)/2.)*SA+(DYC(IMRT)/2.)*CA
+            CALL CFDTRANS(2,XOC(IMRT)+DX,YOC(IMRT)+DY,
+     &                      ZOC(IMRT)+DZC(IMRT)/2,XC,YC,ZC,IER)
+            CALL FDCFDPT(XC,YC,ZC,IIX,IIY,IIZ,IER)
+            if (IER.ne.0) then
+              call edisp(iuout,' Problem finding CFD point')
+            else
+              IXCEL(IZONE)=IIX
+              IYCEL(IZONE)=IIY
+              IZCEL(IZONE)=IIZ
+              ok=.true.
+            endif
+          endif      
+c          write(outs,'(a,i1,a,i2,a)')
+c     &      ' CFD results at location of MRT sensor ',IMRT,
+c     &      ' in zone ',IZONE,' will be used for PMV calculations.'
+c          call edisp(iuout,outs)
+          goto 925
+ 924      write(outs,'(a,a,i1,a,i2,a)')' Error setting up CFD results',
+     &      ' for PMV calculations at MRT sensor ',IMRT,' in zone ',
+     &      IZONE,', CFD will not be used.'
+          call edisp(iuout,outs)
+        endif
+      endif
+      
 C For each timestep in the day get the QW values used by MOMNRD.
-      N=24*NTS
+ 925  N=24*NTS
       DO 40 JTS=1,N
         ISET=ISIM
         call GZTMS(IDAY,IZONE,ISET,JTS,TS,TSO,TAIR,TMCON,A1,A2,A5,RH) 
@@ -467,8 +560,34 @@ C For each timestep in the day get the QW values used by MOMNRD.
 C Get the current MRT in the zone.
         CALL MOMNRD(IZONE,TAIR,TS,QV,NSUR,TMRT)
 
+        WWVEL=WVEL
+        if (IMRT.ne.0) then
+          TMRT=GVAL(JTS)
+c          write(6,*)' using MRT'
+
+          if (ok) then
+C Check if there are CFD results available for this time step.
+            CALL GETIFRM(IDAY,JTS,IFRAME,IER)
+            if (IER.ne.0) IER=0; goto 185
+
+            CALL RDCFDAT(IFRAME)
+
+C Get CFD air temperature at point closest to MRT sensor.
+            TAIR=Tf(IXCEL(IZONE),IYCEL(IZONE),IZCEL(IZONE))
+C Get CFD air velocity at point closest to MRT sensor.
+            Uftmp=0.5*(Uf(IXCEL(IZONE),IYCEL(IZONE),IZCEL(IZONE))+
+     &                 Uf(IXCEL(IZONE)+1,IYCEL(IZONE),IZCEL(IZONE)))
+            Vftmp=0.5*(Vf(IXCEL(IZONE),IYCEL(IZONE),IZCEL(IZONE))+
+     &                 Vf(IXCEL(IZONE),IYCEL(IZONE)+1,IZCEL(IZONE)))
+            Wftmp=0.5*(Wf(IXCEL(IZONE),IYCEL(IZONE),IZCEL(IZONE))+
+     &                 Wf(IXCEL(IZONE),IYCEL(IZONE),IZCEL(IZONE)+1))
+            WWVEL=SQRT(Uftmp*Uftmp+Vftmp*Vftmp+Wftmp*Wftmp)
+c            write(6,*)'using CFD temp. and air vel.'
+          endif
+        endif
+
 C Current time.
-        call DATIME(JTS,TIME)
+ 185    call DATIME(JTS,TIME)
         RHX=RH/100.
 
 C Comment WK out since it is in input file for 2 node model.
@@ -480,7 +599,11 @@ C users values for wind velocity (WVEL) and clothing value (CLO).
 C It returns an index of comfort (ICMFRT) and three variants
 C of comfort.
 C The LET* comfort routines implemented by Cor Pernot, FAGO-TNO.
-      CALL LETDRIVR(TAIR,TMRT,WVEL,RHX,ACTL,CLO,SET,ICMFRT,PME,PMV,XPPD)
+c        write(6,*)'TAIR,TMRT,WWVEL,RHX,ACTL,CLO,',
+c     &             TAIR,TMRT,WWVEL,RHX,ACTL,CLO
+        CALL LETDRIVR(TAIR,TMRT,WWVEL,RHX,ACTL,CLO,
+     &                SET,ICMFRT,PME,PMV,XPPD)
+c        write(6,*)'PMV',PMV
 
 C If occupancy is assumed to be equivalent to a non-zero value
 C of one of the casual gain types test here.
@@ -546,9 +669,11 @@ C (to test for occupancy in the next pass).
       RETURN
    1  call isunix(unixok)
       if(IOS.eq.2)then
-        if(unixok)write(6,*)'MOCMFT: no permission to write string.'
+        if(unixok)write(iuout,*)
+     &    'MOCMFT: no permission to write string.'
       else
-        if(unixok)write(6,*)'MOCMFT: internal string handling error.'
+        if(unixok)write(iuout,*)
+     &    'MOCMFT: internal string handling error.'
       endif
       END
 
@@ -606,7 +731,7 @@ C If assumption of occupied all hours then return 1.
 C Filtered by user-defined times stored in common "timfltr".
       elseif(iocut.eq.-1)then
         ftime=istep/NTS
-        write(6,*)istep,ftime
+c        write(6,*)istep,ftime
         CALL EDAYR(iday,IDAYN,IMTHN)
         CALL EWEEKD(IDAYN,IMTHN,IYEAR,IDWK)
         if(IDWK.eq.6)then
@@ -720,6 +845,12 @@ C treated according to Standards prENV 1752 and ISO EN 7730.
 C PPD is the output of the subroutine [in %]. The input is the 
 C XX-value which is case dependent. 
 C If iflag is returned as -1 then outside bounds of algorithm.
+
+C 2017: Updated to use equations from BS EN ISO 7730:2005.
+C       Previous equations left commented, and metrics with no
+C       equivalent in BS EN ISO 7730:2005 noted as such.
+C       Note that draught is handled by a seperate subroutine as
+C       it requires more than one input to calculate.
       SUBROUTINE DISCOMF(iflag,XX,PPD)
 
 C At the time of testing lets know what input parameter we have: 
@@ -734,67 +865,96 @@ C Local thermal discomfort due to vertical air temperature difference
 C between head (@1.1m) and feet(@0.1m). 
 C Input (XX): Temperature difference in [K] or [C]. 
       if(iflag.eq.1) then 
-        if (XX.lt.1.0.or.XX.gt.8.0) then
+c        if (XX.lt.1.0.or.XX.gt.8.0) then
+c          iflag=-1
+c        else
+c          PPD=0.7038+0.2974*XX**2.7810-0.084*exp(XX)
+c        endif
+        write(6,*)'XX',XX
+        if (XX.gt.8.0) then
           iflag=-1
+        elseif (XX.lt.0.0) then
+          iflag=-2
         else
-          PPD=0.7038+0.2974*XX**2.7810-0.084*exp(XX) 
+          PPD=100/(1+EXP(5.76-0.856*XX))
         endif
 
 C Local thermal discomfort due to warm or cool floors.   
 C Input (XX): Floor temperature in [C]. 
       elseif(iflag.eq.2) then 
-        if (XX.lt.5.0.or.XX.gt.40.0) then
-          iflag=-1
-        else
-          PPD=59.5022 - (74.6871*XX) + (16.4158*LOG(XX)*(XX+9.3362)) 
-        endif
+c        if (XX.lt.5.0.or.XX.gt.40.0) then
+c          iflag=-1
+c        else
+c          PPD=59.5022 - (74.6871*XX) + (16.4158*LOG(XX)*(XX+9.3362)) 
+c        endif
+        PPD=100-94*EXP(-1.387+0.118*XX-0.0025*XX**2)
 
 C Local thermal discomfort due to radiant temperature asymmetry - warm ceiling.   
 C Input (XX): Radiant temperature assymetry in [K] or [C].
       elseif(iflag.eq.3) then 
         XX=abs(XX)
-        if (XX.gt.25.0) then
+c        if (XX.gt.25.0) then
+c          iflag=-1
+c        elseif (XX.lt.1.0) then
+c          PPD=0.5
+c        else
+c          PPD=-0.9525 + 0.1865*exp(2.0755*XX**0.35)  
+c        endif
+        if (XX.gt.23.0) then
           iflag=-1
-        elseif (XX.lt.1.0) then
-          PPD=0.5
         else
-          PPD=-0.9525 + 0.1865*exp(2.0755*XX**0.35)  
+          PPD=100/(1+EXP(2.84-0.174*XX))-5.5
         endif
 
 C Local thermal discomfort due to radiant temperature asymmetry - warm wall.   
 C Input (XX): Radiant temperature assymetry in [K] or [C].
       elseif(iflag.eq.4) then 
         XX=abs(XX)
-        if (XX.gt.30.0) then
+c        if (XX.gt.30.0) then
+c          iflag=-1
+c        elseif (XX.lt.7.5) then
+c          PPD=1.0
+c        else
+c          PPD=-0.1112 + 0.0539*exp(1.4686*XX**0.36)
+c        endif
+        if (XX.gt.35) then
           iflag=-1
-        elseif (XX.lt.7.5) then
-          PPD=1.0
         else
-          PPD=-0.1112 + 0.0539*exp(1.4686*XX**0.36)
+          PPD=100/(1+EXP(3.72-0.052*XX))-3.5
         endif
 
 C Local thermal discomfort due to radiant temperature asymmetry - cool ceiling.   
 C Input (XX): Radiant temperature assymetry in [K] or [C].
       elseif(iflag.eq.5) then 
         XX=abs(XX)
-        if (XX.gt.16.0) then
+c        if (XX.gt.16.0) then
+c          iflag=-1
+c        elseif (XX.lt.7.5) then
+c          PPD=1.0
+c        else
+c          PPD=-0.1056+0.0163*exp(1.5847*XX**0.49)
+c        endif
+        if (XX.gt.15) then
           iflag=-1
-        elseif (XX.lt.7.5) then
-          PPD=1.0
         else
-          PPD=-0.1056+0.0163*exp(1.5847*XX**0.49)
+          PPD=100/(1+EXP(9.93-0.5*XX))
         endif
 
 C Local thermal discomfort due to radiant temperature asymmetry - cool wall.   
 C Input (XX): Radiant temperature assymetry in [K] or [C].
       elseif(iflag.eq.6) then 
         XX=abs(XX)
-        if (XX.gt.16.0) then
+c        if (XX.gt.16.0) then
+c          iflag=-1
+c        elseif (XX.lt.6.0) then
+c          PPD=0.4
+c        else
+c          PPD=-1.2568+0.0189*exp(1.9469*XX**0.47)
+c        endif
+        if (XX.gt.15) then
           iflag=-1
-        elseif (XX.lt.6.0) then
-          PPD=0.4
         else
-          PPD=-1.2568+0.0189*exp(1.9469*XX**0.47)
+          PPD=100/(1+EXP(6.61-0.345*XX))
         endif
 
 C Dissatisfied due to ventilation rate. 
@@ -805,6 +965,7 @@ C Input (XX): Ventilation rate given in [L/(s*standard person)]
         else
           PPD=100.0
         endif
+C No equivalent in BS EN ISO 7730:2005
 
 C Dissatisfied due to CO2 above outdoors. 
 C Input: CO2 concentration as calculated by conc.F in [kg/kg].
@@ -820,6 +981,7 @@ C First convert kg/kg to mg/m3 using density at 20 [C]:
 C Now convert mg/m3 to ppm_volume: 
         XX=XX*24.45/44.0  
         PPD=395.0*exp(-15.15*XX**(-0.25)) 
+C No equivalent in BS EN ISO 7730:2005
 
 C Dissatisfied calculated from PMV (Predicted Mean Vote). Needed for general 
 C Thermal comfort assessment. 
@@ -836,21 +998,110 @@ C Check for a reasonable result.
       end 
 
 C ************************ DRAUGHT ************************
-C DRAUGHT: Local thermal discomfort due to draught. 
-C Useful only if k-epssilon turbulence model active from which 
-C the turbulence intensity 
-C is calculated 
-      SUBROUTINE DRAUGHT(Tair,Cvel,Tenergy,PPD) 
+C DRAUGHT: Local thermal discomfort due to draught from 
+C BS EN ISO 7730:2005
+C Useful only if k-epsilon turbulence model active from which 
+C the turbulence intensity is calculated.
+C Uses similar conventions to DISCOMF above.
+      SUBROUTINE DRAUGHT(IDAY,ITS,IZONE,IMRT,iflag,PPD,IER)
 
-      Tu=sqrt((2.0/3.0)*Tenergy)/(Cvel+1.0e-30)*100.0 
+#include "building.h"
+#include "geometry.h"
+#include "cfd.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      common/rpath/path
+      character path*72,LCMDFL*144,ltmpc*144,LTMP*72,lpath*72,outs*128
+
+      COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),
+     1            Wf(ntcelx,ntcely,ntcelz),
+     2            P(ntcelx,ntcely,ntcelz),PP(ntcelx,ntcely,ntcelz),
+     3            TEf(ntcelx,ntcely,ntcelz),EDf(ntcelx,ntcely,ntcelz)
+      COMMON/TEMPf/Tf(ntcelx,ntcely,ntcelz),GAMH(ntcelx,ntcely,ntcelz),
+     1             RESORT,NSWPT,URFT,FSDTT,PRANDL,PFUN
+
+      real PI,R,SA,CA,DX,DY,HI(3),XC,YC,ZC
+      integer IHI(3)
+
+C Read CFD header data and set common block data.
+      lpath=path
+      call fdroot(LCMDFL,path,LTMP)
+      call RCFDLIBH(IZONE,IER)
+      path=lpath
+
+C TODO - currently, read CFD file to get axis vertices to initialise
+C CFD - building domain transformation matrices. In future, consider
+C adding this to the CFD library.
+      CALL RCFDVRTS(IZONE,IER)
+      CALL INIT_CFDTRANS(IER)
+
+C Equation is for draught at the neck, so use a point in the centre of
+C the top face of the MRT sensor.      
+      PI = 4.0 * ATAN(1.0)
+      R=PI/180.
+      SA=SIN(CANG(IMRT)*R)
+      CA=COS(CANG(IMRT)*R)
+      DX=(DXC(IMRT)/2.)*CA-(DYC(IMRT)/2.)*SA
+      DY=(DXC(IMRT)/2.)*SA+(DYC(IMRT)/2.)*CA
+      HI(1)=XOC(IMRT)+DX
+      HI(2)=YOC(IMRT)+DY
+      HI(3)=ZOC(IMRT)+DZC(IMRT)    
+
+      CALL GRIDGEO
+      CALL CFDTRANS(2,HI(1),HI(2),HI(3),XC,YC,ZC,IER)
+      CALL FDCFDPT(XC,YC,ZC,IHI(1),IHI(2),IHI(3),IER)
+
+      if (IER.ne.0) then
+        write(outs,'(a)')
+     &    'DRAUGHT: Could not retrieve air flow variables.'
+        call edisp(iuout,outs)
+        goto 999
+      endif
+
+C Check if there are CFD results available for this time step.
+      CALL GETIFRM(IDAY,ITS,IFRAME,IER)
+      if (IER.ne.0) then
+        IER=0
+        iflag=-2
+        goto 999
+      endif
+  
+      CALL RDCFDAT(IFRAME)
+
+      Tair=Tf(IHI(1),IHI(2),IHI(3))
+      Cvel=sqrt(Uf(IHI(1),IHI(2),IHI(3))**2+Vf(IHI(1),IHI(2),IHI(3))**2+
+     &          Wf(IHI(1),IHI(2),IHI(3))**2)
+c      Tenergy=TEf(IHI(1),IHI(2),IHI(3))
+
+      if (Tair.lt.20.0.or.Tair.gt.26.0) then
+        iflag=-1
+        goto 999
+      endif
+      if (Cvel.gt.0.5) then
+        iflag=-1
+        goto 999
+      endif
+
+c      Tu=sqrt((2.0/3.0)*Tenergy)/(Cvel+1.0e-30)*100.0
+c What is this???                ^^^^^^^^^^^^^^^
+c      Tu=sqrt((2.0/3.0)*Tenergy)*100.0
+      Tu=40.0
+      if (Tu.lt.10.0.or.Tu.gt.60.0) then
+        iflag=-1
+        goto 999
+      endif
+
+      if (Cvel.lt.0.05) Cvel=0.05
+
       PPD=(34.0-Tair)*(Cvel-0.05)**0.62*(0.37*Cvel*Tu+3.14)
  
 C Check for a reasonable result.
       if(PPD.gt.100.0) PPD=100.0
       if(PPD.lt.0.0) PPD=0.0 
-      if(Tair.lt.19.0.or.Tair.gt.27.0) PPD=100.0 
+        
+      iflag=1
+ 999  return
 
-      return
       end
 
 C ************************ OFFSETTEMP ************************
@@ -902,3 +1153,253 @@ C Check the comfort range for summer and winther.
 
       return
       end 
+
+C ****** RCFDVRTS
+C RCFDVRTS reads a dfd file and assigns common variables:
+C ICFD - domain number
+C ICP - zone number
+C iorg - origin vertex
+C ixend - x axis end vertex
+C iyend - y axis end vertex
+C izend - z axis end vertex
+      SUBROUTINE RCFDVRTS(IZONE,IER)
+
+#include "building.h"
+#include "cfd.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
+      COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)      
+      CHARACTER LCFD*72
+
+      common/GRDVRTS/iorg,ixend,iyend,izend,izende
+      COMMON/cfddoms/NCDOM,ICDOM,ICFDZ(MNZ)
+      COMMON/ICFNOD/ICFD,ICP
+
+      CHARACTER OUTSTR*124,WORD*20
+
+C Set ICFD (domain number) and ICP (zone number)
+      ICFD=ICDOM
+      ICP=ICFDZ(ICFD)
+      
+      IUNIT=IFIL+1
+      CALL ERPFREE(IUNIT,IER)
+      CALL EFOPSEQ(IUNIT,LCFD(IZONE),0,IER)
+      if (IER.ne.0) then
+        call edisp(iuout,' RCFDVRTS: cannot open file')
+        return
+      endif
+      
+      do while (.true.)
+        CALL STRIPC(IUNIT,OUTSTR,0,ND,0,'DFD line',IER)
+        if (IER.ne.0) then
+          call edisp(iuout,' RCFDVRTS: error reading line')
+          exit
+        endif
+        K=0
+        CALL EGETW(OUTSTR,K,WORD,'W','DFD line 1st word',IER)
+        if (WORD(1:5).eq.'*vrts') then
+          CALL EGETWI(OUTSTR,K,itmp,0,0,'-','origin vert',IER)
+          iorg=itmp
+c          write(6,*)'iorg',iorg
+          CALL EGETWI(OUTSTR,K,itmp,0,0,'-','x end vert',IER)
+          ixend=itmp
+c          write(6,*)'ixend',ixend
+          CALL EGETWI(OUTSTR,K,itmp,0,0,'-','y end vert',IER)
+          iyend=itmp
+c          write(6,*)'iyend',iyend
+          CALL EGETWI(OUTSTR,K,itmp,0,0,'-','z end vert',IER)
+          izend=itmp
+c          write(6,*)'izend',izend
+          exit
+        endif
+      enddo
+
+      return
+      end
+
+C ****** FDCFDPT
+C FDCFDPT finds the CFD grid point that most closely matches coordinates
+C Xin, Yin, Zin. It returns the indices of this grid point in IU, IV and
+C IW.
+      SUBROUTINE FDCFDPT(Xin,Yin,Zin,IU,IV,IW,IER)
+
+#include "building.h"
+#include "cfd.h"      
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
+      COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
+     1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
+     2            DZHP(ntcelz),DZPL(ntcelz),
+     3            SEW(ntcelx),SNS(ntcely),SHL(ntcelz),
+     4            XU(ntcelx),YV(ntcely),ZW(ntcelz)
+
+      REAL Xin,Yin,Zin,prev
+      INTEGER IU,IV,IW
+
+      IU=0;IV=0;IW=0
+
+      prev=-999.
+      do I=1,NI
+        if (XP(I).ge.Xin) then
+          if (abs(XP(I)-Xin).lt.abs(prev-Xin)) then
+            IU=I
+          else
+            IU=I-1
+          endif
+          exit
+        endif
+        prev=XP(I)
+      enddo
+
+      if (IU.eq.0) then
+        CALL EDISP(IUOUT,' FDCFDPT: Cannot find X grid point')
+        IER=1
+        return
+      endif
+
+      prev=-999.
+      do J=1,NJ
+        if (YP(J).ge.Yin) then
+          if (abs(YP(J)-Yin).lt.abs(prev-Yin)) then
+            IV=J
+          else
+            IV=J-1
+          endif
+          exit
+        endif
+        prev=YP(J)
+      enddo
+
+      if (IV.eq.0) then
+        CALL EDISP(IUOUT,' FDCFDPT: Cannot find Y grid point')
+        IER=1
+        return
+      endif
+
+      prev=-999.
+      do K=1,NK
+        if (ZP(K).ge.Zin) then
+          if (abs(ZP(K)-Zin).lt.abs(prev-Zin)) then
+            IW=K
+          else
+            IW=K-1
+          endif
+          exit
+        endif
+        prev=ZP(K)
+      enddo
+
+      if (IW.eq.0) then
+        CALL EDISP(IUOUT,' FDCFDPT: Cannot find Z grid point')
+        IER=1
+        return
+      endif
+
+      return
+      end
+
+C ****** VERTdT
+C VERTdT finds the vertical air temperature difference between the top
+C and bottom of an MRT sensor. To do this it needs CFD results in the
+C same zone as the MRT sensor. Gets results for 1 day and puts them in
+C GVAL.
+
+      SUBROUTINE VERTdT(IDAY,IZONE,IMRT,IER)
+
+#include "building.h"
+#include "geometry.h"
+#include "cfd.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      common/rpath/path
+      character path*72,LCMDFL*144,ltmpc*144,LTMP*72,lpath*72,outs*128
+      COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
+      COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
+      COMMON/TEMPf/Tf(ntcelx,ntcely,ntcelz),GAMH(ntcelx,ntcely,ntcelz),
+     1             RESORT,NSWPT,URFT,FSDTT,PRANDL,PFUN
+
+      real PI,R,SA,CA,DX,DY,HI(3),LO(3),XC,YC,ZC
+      integer IHI(3),ILO(3)
+
+C Read CFD header data and set common block data.
+      lpath=path
+      call fdroot(LCMDFL,path,LTMP)
+      call RCFDLIBH(IZONE,IER)
+      path=lpath
+
+C TODO - currently, read CFD file to get axis vertices to initialise
+C CFD - building domain transformation matrices. In future, consider
+C adding this to the CFD library.
+      CALL RCFDVRTS(IZONE,IER)
+      CALL INIT_CFDTRANS(IER)
+
+C Get coordinates in the center of top and bottom faces of MRT sensor.
+      PI = 4.0 * ATAN(1.0)
+      R=PI/180.
+      SA=SIN(CANG(IMRT)*R)
+      CA=COS(CANG(IMRT)*R)
+      DX=(DXC(IMRT)/2.)*CA-(DYC(IMRT)/2.)*SA
+      DY=(DXC(IMRT)/2.)*SA+(DYC(IMRT)/2.)*CA
+      HI(1)=XOC(IMRT)+DX
+      HI(2)=YOC(IMRT)+DY
+      HI(3)=ZOC(IMRT)+DZC(IMRT)
+      LO(1)=XOC(IMRT)+DX
+      LO(2)=YOC(IMRT)+DY
+      LO(3)=ZOC(IMRT)      
+
+      CALL GRIDGEO
+      CALL CFDTRANS(2,HI(1),HI(2),HI(3),XC,YC,ZC,IER)
+      CALL FDCFDPT(XC,YC,ZC,IHI(1),IHI(2),IHI(3),IER)
+
+      CALL CFDTRANS(2,LO(1),LO(2),LO(3),XC,YC,ZC,IER)
+      CALL FDCFDPT(XC,YC,ZC,ILO(1),ILO(2),ILO(3),IER)
+
+      if (IER.ne.0) then
+        write(outs,'(a)')
+     &'VERTdT: Error finding head/foot vertical temperature difference.'
+        call edisp(iuout,outs)
+        goto 999
+      endif
+
+      if (IHI(1).eq.ILO(1).and.IHI(2).eq.ILO(2).and.IHI(3).eq.ILO(3))
+     &  then
+        write(outs,'(2a,i2,a,i2,a)')'VERTdT: The same CFD grid point',
+     &    ' is closest to the top and bottom surfaces of MRT sensor ',
+     &    IMRT,' in zone ',IZONE,'.'
+        CALL edisp(iuout,outs)
+        write(outs,'(2a)')          '        Either make the MRT',
+     &    ' sensor bigger, or make the CFD grid finer.'
+        CALL edisp(iuout,outs)
+        IER=1
+        goto 999
+      endif
+
+      N=24*NTS
+      DO JTS=1,N
+
+C Check if there are CFD results available for this time step.
+        CALL GETIFRM(IDAY,JTS,IFRAME,IER)
+        if (IER.ne.0) IER=0; goto 185
+  
+        CALL RDCFDAT(IFRAME)
+
+C Get CFD air temperature at point closest to MRT sensor upper face
+        THI=Tf(IHI(1),IHI(2),IHI(3))
+C Get CFD air temperature at point closest to MRT sensor lower face
+        TLO=Tf(ILO(1),ILO(2),ILO(3))
+        GVAL(JTS)=abs(THI-TLO)
+c        write(6,*)'THI,TLO,GVAL(JTS)',THI,TLO,GVAL(JTS)
+c        write(6,*)'HI(1),HI(2),HI(3)',HI(1),HI(2),HI(3)
+c        write(6,*)'IHI(1),IHI(2),IHI(3)',IHI(1),IHI(2),IHI(3)
+c        write(6,*)'LO(1),LO(2),LO(3)',LO(1),LO(2),LO(3)
+c        write(6,*)'ILO(1),ILO(2),ILO(3)',ILO(1),ILO(2),ILO(3)
+        cycle      
+ 185    GVAL(JTS)=-1.
+      enddo
+
+ 999  RETURN
+      END
+
+

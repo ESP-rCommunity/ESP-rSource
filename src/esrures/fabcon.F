@@ -42,6 +42,7 @@ C of inter-fabric temperature and condensation conditions.
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       CHARACTER*23 ITEM(10)
@@ -77,7 +78,11 @@ C Instanciate help for this menu.
       call gethelptext(helpinsub,helptopic,nbhelp)
 
       NITMS=10
-      INO=-2
+      if(MMOD.eq.8)then
+        INO=-1
+      else
+        INO=-2
+      endif
     4 CALL EMENU('Fabric',ITEM,NITMS,INO)
 
       IF(INO.EQ.1)then

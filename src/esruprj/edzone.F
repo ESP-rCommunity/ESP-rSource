@@ -919,6 +919,7 @@ C NOTE: If creating a new zone then we do not have to
 C invert any of the surfaces. If the entity bounding surfaces
 C are to be shared with another zone then they need to be
 C inverted. Currently, assume that the user will manually import.
+C << multi-zone ?? >>
         call choosepredef(name,objmenu,objbb,ier)
         if(ier.eq.2)then
           goto 293    ! nothing selected
@@ -2272,7 +2273,7 @@ C The original C code returned the square of distance
 C so unpack via sqrt call.
         d2l=(vdis1-(vdis+vdis1-vdis2)*
      &      (vdis+vdis1-vdis2)/vdis/4.0)
-        if(abs(d2l).lt.0.00003)then
+        if(abs(d2l).lt.0.0003)then
           offset=d2l   ! if really small d2l
         else
           offset=SQRT(d2l)

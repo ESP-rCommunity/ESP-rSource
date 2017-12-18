@@ -167,6 +167,8 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       INTEGER :: idwe1,idwe2
 
 C Anchor data in model.h.
+      common/ACTDOM/CFDOK
+      logical CFDOK
 
 C Simulation parameter presets.
       common/spfldes/spfdescr(MSPS)
@@ -176,7 +178,20 @@ C Simulation parameter presets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh      
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
-     &  smstres(MSPS),selres(MSPS),sipvres
+     &  smstres(MSPS),selres(MSPS),scfdres(MSPS),sipvres
+      character sblres*72,sflres*72,splres*72,smstres*72,
+     &  selres*72,scfdres*72,sipvres*72
+
+C Extended simulation parameters for each set.
+      common/spfldats/isstupex(MSPS),isbnstepex(MSPS),ispnstepex(MSPS),
+     &  issaveex(MSPS),isavghex(MSPS),iscfdactivate(MSPS),
+     &  isicfdys(MSPS),isicfdyf(MSPS),
+     &  scftims(MSPS),scftimf(MSPS)
+      INTEGER :: isstupex,isbnstepex,ispnstepex,issaveex,isavghex
+      INTEGER :: iscfdactivate      ! zero ignore domains
+      INTEGER :: isicfdys,isicfdyf  ! CFD simulation start & finish days
+      REAL :: scftims,scftimf       ! CFD simulation start & finish time
+
 
 C BASESIMP.
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
@@ -248,8 +263,7 @@ C Generic databases from esprdbfile.h.
       character*10 wkd1, wkd2
       character lipvdatf*72,act*1
       CHARACTER outs*124
-      character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,spfdescr*30,ltmp*72,louts*144
+      character spfdescr*30,ltmp*72,louts*144
       character bidirfile*72,bidirname*12
       character calename*32,calentag*12,calendayname*32,loutc*96
       CHARACTER CNTMFIL*72,CONTMNAM*12,CNTMDESC*124
@@ -716,12 +730,18 @@ C Simulation parameter presets.
           WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2)
      &'# sim setup: no. sets startup zone_ts plant_ts save_lv @ 1 ts/hr'
         endif
+
         WRITE(IFCFG,'(A,5i5)',IOSTAT=IOS,ERR=2) '*sps ',nsset,isstup,
      &     isbnstep,ispnstep,issave,isavgh
         do 333 iss=1,nsset
-          WRITE(IFCFG,'(4I4,2x,A,A)',IOSTAT=IOS,ERR=2)isstday(iss),
-     &      isstmon(iss),isfnday(iss),isfnmon(iss),
-     &      spfdescr(iss)(1:lnblnk(spfdescr(iss))),' # period & name'
+
+C Write extended *sps sets.
+          WRITE(IFCFG,'(9I4,2x,2A)',IOSTAT=IOS,ERR=2)
+     &      isstupex(iss),isbnstepex(iss),
+     &      ispnstepex(iss),issaveex(iss),isavghex(iss),isstday(iss),
+     &      isstmon(iss),isfnday(iss),isfnmon(iss),spfdescr(iss)
+     &      (1:lnblnk(spfdescr(iss))),' # period & name'
+
           if(INDCFG.ne.2)WRITE(IFCFG,'(A,A)',IOSTAT=IOS,ERR=2)'*sblr ',
      &       sblres(iss)(1:lnblnk(sblres(iss)))
           if(IAIRN.ge.1)WRITE(IFCFG,'(A,A)',IOSTAT=IOS,ERR=2)'*sflr ',
@@ -734,6 +754,14 @@ C Simulation parameter presets.
      &       smstres(iss)(1:lnblnk(smstres(iss)))
           if(ientxist.gt.0)WRITE(IFCFG,'(A,A)',IOSTAT=IOS,ERR=2)
      &      '*selr ',selres(iss)(1:lnblnk(selres(iss)))
+
+C Write the CFD attributes followed by results file name.
+          if(CFDOK)then
+            WRITE(IFCFG,'(A,3I4,2F7.3,2A)',IOSTAT=IOS,ERR=2)
+     &       '*scfdr ',iscfdactivate(iss),isicfdys(iss),isicfdyf(iss),
+     &       scftims(iss),scftimf(iss),' ',
+     &       scfdres(iss)(1:lnblnk(scfdres(iss)))
+          endif
           WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2)'*end_set'
  333    continue
         WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2)'*end_sps'

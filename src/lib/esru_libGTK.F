@@ -28,6 +28,7 @@ C  EASKE:   Ask user for a real in exponential format, otherwise as easkr.
 C  EASKF:   Ask user for a file name with prompt, error messages & help.
 C  EASKS:   Ask user for a string with prompt, error messages & help.
 C  EASKS248: Edit a long (248 char) string in sections.
+C  EASKS496: Edit a long (496 char) string in sections.
 C  EASKSCMD Ask user for a string with prompt, alt, error messages & help.
 C  EASKSCNCL Asking the user for a text string with prompt cancel error & help.
 C  EASKS2CMD Ask user for a string with prompt, 2 alts, error messages & help.
@@ -1428,6 +1429,278 @@ C When writing out the combined text, put a space between each section.
         call edisp(iuout,outs)
       else
         write(outs,*) 'EASKS248: error composing message or prompt.'
+        call edisp(iuout,outs)
+      endif
+      return
+      end
+
+C ************* EASKS496
+C EASKS496 edit a (496 char) string in a multi-line graphic box or via phrases.
+C << TO BE ADAPTED with logic from NonGTK EASKS496 >>
+C STRVAL is the string returned, ISTRW is its length.
+C PROMP1 & PROMP2 are the prompts using the same syntax as USRMSG.
+C If a space is typed then STRVAL is not changed.
+C ERMSG is a string placed at the top of the selection menu and to
+C any range checking or read errors to identify the value.
+C IER is the error state, if 0 then OK, if -3 then cancel button pressed.
+C NHELP is the number of help lines and H() is the array
+C of text strings to be printed out if '?','H','h' is typed
+C by the user.
+C DSTR is a string to use as a default.
+      SUBROUTINE EASKS496(STRVAL,PROMP1,PROMP2,ISTRW,DSTR,ERMSG,IER,
+     &   NHELP)
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      CHARACTER*(*) PROMP1,PROMP2,ERMSG,STRVAL,DSTR
+      CHARACTER t72*72,t72a*72,t72b*72,t72c*72,t72d*72
+      character t72e*72,t72f*72
+      character outstr*248,word*248,prompt*144,LASTS*248,outs*124
+      LOGICAL next,OK,DOK,unixok
+
+   20 IER=0
+      WORD=' '
+      last=max(1,lnblnk(STRVAL))
+      LASTS=STRVAL(1:last)
+      if (last.gt.6) then
+        if(STRVAL(1:7).eq.'UNKNOWN'.or.STRVAL(1:7).eq.'unknown'.or.
+     &     STRVAL(1:7).eq.'Unknown') STRVAL='  '
+      endif
+
+C Generate custom help text and use local var for NHELP.
+      call helpwithblank(ermsg,nhelp,newnbhelp,ier)
+
+      call edisp(iuout,'Current...')
+      call edisp248(iuout,STRVAL,72)
+      call edisp(iuout,' ')
+
+      IF(MMOD.EQ.8)THEN
+
+C For graphic version use the standard GTK widget as does easks.
+        IFLG=0
+        WORD=' '
+        CALL PHELPW(newnbhelp,IHW,IER)
+        call dupphelp(newnbhelp)
+        lmmod=mmod
+        LN1=max(1,lnblnk(PROMP1))
+        LN2=max(1,lnblnk(PROMP2))
+        if((LN1+LN2+1).lt.144)then
+          if(LN1.eq.1)then
+            write(prompt,'(a)') PROMP2(1:LN2)
+          else
+            write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          endif
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        endif
+
+C Debug.
+C        write(6,*) '< 248 askdialog prompt ',PROMPT(1:lnblnk(PROMPT))
+C        write(6,*) '< 248 askdialog string ',STRVAL(1:lnblnk(STRVAL))
+
+C << CHECK THIS AND SEE IF A VARIANT NEEDED >>
+        CALL askdialog248(PROMPT,STRVAL,IFLG)
+
+C Debug.
+C        write(6,*) 'askdialog STRVAL:',STRVAL,' iflg ',IFLG
+
+C PATCH to restore mmod (occassioanlly gets corrupted in linux)
+        if(lmmod.ne.mmod)mmod=lmmod
+
+C Strip off the last character (end of line mark) as well as any
+C leading blanks from string returned.
+        call c2fstr(STRVAL,WORD)
+C Debug
+C        write(6,*) word
+
+        IF(iflg.EQ.-3)THEN
+
+C A cancel answer detected, set ier to -3 and return.
+          CALL USRMSG('User requested a cancel for dialog',PROMPT,'-')
+          ier=-3
+          RETURN
+        ELSEIF(iflg.EQ.-2)THEN
+          LN=max(1,LNBLNK(DSTR))
+          WRITE(OUTSTR,'(3a)',iostat=ios,err=1)' The default is ',
+     &      DSTR(1:LN),'.'
+          DOK=.true.
+          CALL ASKOK(OUTSTR,' Is this ok?',OK,DOK,newnbhelp)
+          IF(OK)THEN
+            STRVAL=DSTR(1:LN)
+            RETURN
+          ELSE
+            GOTO 20
+          ENDIF
+        ENDIF
+        IF(WORD.EQ.' '.or.IFLG.eq.-1)THEN
+
+C A blank, carriage return or line feed encountered, assume user
+C wishes to use prior/existing string.
+          IF(LASTS.NE.' ')THEN
+            call isunix(unixok)
+            if(unixok)then
+              WRITE(IUOUT,55,iostat=ios,err=1)LASTS(1:last)
+   55         FORMAT(' The existing string (',a,') will be used.')
+            endif
+            STRVAL=LASTS(1:last)
+            RETURN
+          ELSE
+            CALL USRMSG(' The current string is blank!',
+     &                  ' Please re-enter.','W')
+            GOTO 20
+          ENDIF
+        ENDIF
+
+C Must have input a character string.
+        STRVAL=WORD(1:lnblnk(WORD))
+
+C Debug.
+C        write(6,*) 'eask496 returning ',STRVAL(1:lnblnk(STRVAL))
+
+        RETURN
+      ELSE
+
+C Find breakpoints near 72 144 216 and 248 characters.
+C If STRVAL null make into a blank string.
+        ipall=lnblnk(STRVAL)
+        if(ipall.le.1) STRVAL='  '
+        ip72=iprevblnk(STRVAL,72)
+        ip144=iprevblnk(STRVAL,ip72+71)
+        ip216=iprevblnk(STRVAL,ip144+71)
+        ip288=iprevblnk(STRVAL,ip216+71)
+        ip360=iprevblnk(STRVAL,ip288+71)
+        ip432=iprevblnk(STRVAL,ip360+71)
+        ip496=iprevblnk(STRVAL,496)
+
+C Create working strings for each section of text. Either as blanks
+C in the case of a short initial string or in lengths of ~72 char.
+C Remember the lengths in lt72 lt72a etc. in case user edits only
+C a portion of the text block. These working strings are used
+C with the text version.
+        t72a=' '; t72b=' '; t72c=' '
+        t72d=' '; t72e=' '; t72f=' '
+        write(t72,'(a)') STRVAL(1:ip72)
+        lt72=max(1,lnblnk(t72))
+        if(ip144.gt.ip72)write(t72a,'(a)') STRVAL(ip72+1:ip144)
+        lt72a=max(1,lnblnk(t72a))
+        if(ip216.gt.ip144)write(t72b,'(a)') STRVAL(ip144+1:ip216)
+        lt72b=max(1,lnblnk(t72b))
+        if(ip288.gt.ip216)write(t72c,'(a)') STRVAL(ip216+1:ip288)
+        lt72c=max(1,lnblnk(t72c))
+        if(ip360.gt.ip288)write(t72d,'(a)') STRVAL(ip288+1:ip360)
+        lt72d=max(1,lnblnk(t72d))
+        if(ip432.gt.ip360)write(t72e,'(a)') STRVAL(ip360+1:ip432)
+        lt72e=max(1,lnblnk(t72e))
+        if(ip496.gt.ip432)write(t72f,'(a)') STRVAL(ip432+1:ip496)
+        lt72f=max(1,lnblnk(t72f))
+
+C Logic supports stepwise scrolling within the text. 243 label
+C is the point for editing the initial portion of the text. 244 label
+C is the point for editing 2nd tranche of text.
+ 243    CALL EASKSCMD(t72,PROMP1,PROMP2,'>',next,ISTRW,DSTR,
+     &    'synp 1',IER,newnbhelp)
+
+C lt72 is the number of characters found after editing. If this is
+C less than 72 then cut characters from ipvsynop.
+        lt72=max(1,lnblnk(t72))
+        if(next)then
+
+C Edit second section.
+          CALL EASKS2CMD(t72a,PROMP1,PROMP2,'|<','>',
+     &      inext,ISTRW,DSTR,ERMSG,IER,newnbhelp)
+          lt72a=max(1,lnblnk(t72a))
+          if(inext.eq.1)then
+
+C If text to left requested go back to start.
+            goto 243
+          elseif(inext.eq.2)then
+
+C If text to right requested, load 3rd portion and offer option to
+C jump to earlier or next of text.
+            CALL EASKS2CMD(t72b,PROMP1,PROMP2,'|<','>',
+     &        inext,ISTRW,DSTR,ERMSG,IER,NHELP)
+            lt72b=max(1,lnblnk(t72b))
+            if(inext.eq.1)then
+
+C Go back to start.
+              next=.true.
+              goto 243
+            elseif(inext.eq.2)then
+
+C If text to right requested, load 4th portion and offer option to
+C jump to earlier or next of text.
+              CALL EASKS2CMD(t72c,PROMP1,PROMP2,'|<','>',
+     &          inext,ISTRW,DSTR,ERMSG,IER,NHELP)
+              lt72c=max(1,lnblnk(t72c))
+              if(inext.eq.1)then
+
+C Go back to start.
+                next=.true.
+                goto 243
+              elseif(inext.eq.2)then
+
+C If text to right requested, load 5th portion and offer option to
+C jump to earlier or next of text.
+                CALL EASKS2CMD(t72d,PROMP1,PROMP2,'|<','>',
+     &            inext,ISTRW,DSTR,ERMSG,IER,NHELP)
+                lt72d=max(1,lnblnk(t72d))
+                if(inext.eq.1)then
+
+C Go back to start.
+                  next=.true.
+                  goto 243
+                elseif(inext.eq.2)then
+
+C If text to right requested, load 6th portion and offer option to
+C jump to earlier or next of text.
+                  CALL EASKS2CMD(t72e,PROMP1,PROMP2,'|<','>',
+     &              inext,ISTRW,DSTR,ERMSG,IER,NHELP)
+                  lt72e=max(1,lnblnk(t72e))
+                  if(inext.eq.1)then
+
+C Go back to start.
+                    next=.true.
+                    goto 243
+                  elseif(inext.eq.2)then
+
+C Work with last portion of string, offer option to jump back
+C to the start.
+                    CALL EASKSCMD(t72f,PROMP1,PROMP2,'|<..',next,ISTRW,
+     &                DSTR,ERMSG,IER,NHELP)
+                    lt72f=max(1,lnblnk(t72f))
+                    if(next)then
+                      goto 243
+                    endif
+                  endif
+                endif
+              endif
+            endif
+          endif
+        endif
+
+C When writing out the combined text, put a space between each section.
+        call usrmsg(' ',' ','-')
+        itwid=lt72+lt72a+lt72b+lt72c+lt72d+lt72e+lt72f+6
+        if(itwid.le.496)then
+          write(STRVAL,'(13a)') t72(1:lt72),' ',t72a(1:lt72a),' ',
+     &      t72b(1:lt72b),' ',t72c(1:lt72c),' ',t72d(1:lt72d),' ',
+     &      t72e(1:lt72e),' ',t72f(1:lt72f)
+        else
+          itwid=496-(lt72+lt72a+lt72b+lt72d+lt72e+lt72f+6)
+          write(STRVAL,'(13a)') t72(1:lt72),' ',t72a(1:lt72a),' ',
+     &      t72b(1:lt72b),' ',t72c(1:lt72c),' ',t72d(1:lt72d),' ',
+     &      t72e(1:lt72e),' ',t72f(1:itwid)
+        endif
+      endif
+      return
+
+   1  if(IOS.eq.2)then
+        write(outs,*) 
+     &  'EASKS496: permissions exception while composing prompt.'
+        call edisp(iuout,outs)
+      else
+        write(outs,*) 'EASKS496: error composing message or prompt.'
         call edisp(iuout,outs)
       endif
       return

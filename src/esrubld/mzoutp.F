@@ -46,9 +46,10 @@ C tzph,tzpc are zone heating/cooling use over time.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES,CFRESF
+      character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72,
+     &  CFRESF*72
       character LTMP*72,outs*124,louts*248
-      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character tab*1
       DIMENSION MTHNAM(12)
       CHARACTER DS*7,DS1*10,DE*7,DE1*10,MTHNAM*3

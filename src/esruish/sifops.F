@@ -67,6 +67,7 @@ C with the db at simulation time.
       character month*3
       character outs*124,louts*248,hold*74,expfil*72
       character outl*248,outld*248,outstr*124,loutstr*248
+      character out1k*1000,out1kd*1000,lkoutstr*1000
       character message*64
       integer isourcecount  ! to help with sourcename list
       integer nboftmc       ! number of insolation sources returned from findtmc
@@ -112,19 +113,19 @@ C Display contents of the zone shading & insolation db.
          endif
          if(ishd(i).eq.1)then
             write(outs,'(5x,i2,4a)')
-     &                     i,' (',month(i),')',' Shading only'
+     &        i,' (',month(i),')',' Shading only'
             call edisp(iuout,outs)
          elseif(ishd(i).eq.2)then
             write(outs,'(5x,i2,4a)')
-     &                     i,' (',month(i),')',' Insolation only'
+     &        i,' (',month(i),')',' Insolation only'
             call edisp(iuout,outs)
          elseif(ishd(i).eq.3)then
             write(outs,'(5x,i2,4a)')
-     &                     i,' (',month(i),')',' Shading & insolation'
+     &        i,' (',month(i),')',' Shading & insolation'
             call edisp(iuout,outs)
          elseif(ishd(i).eq.0)then
             write(outs,'(5x,i2,4a)')
-     &                     i,' (',month(i),')',' No data'
+     &        i,' (',month(i),')',' No data'
             call edisp(iuout,outs)
          endif
    10 continue
@@ -362,28 +363,28 @@ C *** Export to ascii file requested.
 
 C Write direct and diffuse shading factors.
          write(iuj,'(a)',iostat=istat,err=1002) 
-     &                         '24 hour external surface shading'
+     &    '24 hour external surface shading'
          do 100 i = 1,nzsur(icomp)
             icn=izstocn(icomp,i)
             sn=ssname(icn)
             write(outl,'(12f7.4)') (pso(i,j),j=1,12)
             call sdelim(outl,outld,'S',iw)
             write(iuj,'(a)',iostat=istat,err=1002)
-     &                                     outld(1:lnblnk(outld))
+     &        outld(1:lnblnk(outld))
             write(outl,'(12f7.4,2a)') (pso(i,j),j=13,24),
      &        ' # direct - surface ',sn(1:lnblnk(sn))
             call sdelim(outl,outld,'S',iw)
             write(iuj,'(a)',iostat=istat,err=1002)
-     &                                     outld(1:lnblnk(outld))
+     &        outld(1:lnblnk(outld))
             write(outl,'(12f7.4)') (psof(i,j),j=1,12)
             call sdelim(outl,outld,'S',iw)
             write(iuj,'(a)',iostat=istat,err=1002)
-     &                                     outld(1:lnblnk(outld))
+     &        outld(1:lnblnk(outld))
             write(outl,'(12f7.4,2a)') (psof(i,j),j=13,24),
      &        ' # diffuse - surface ',sn(1:lnblnk(sn))
             call sdelim(outl,outld,'S',iw)
             write(iuj,'(a)',iostat=istat,err=1002)
-     &                                     outld(1:lnblnk(outld))
+     &        outld(1:lnblnk(outld))
  100     continue
  
 C Generate packed list of names of insolation sources.
@@ -400,36 +401,38 @@ C Write insolation factors. Note: string buffer outl will only
 C hold 62 indices before it hits an overflow state.
          if(ishd(mnth).eq.2.or.ishd(mnth).eq.3)then
             write(iuj,'(a)',iostat=istat,err=1002) 
-     &                        '24 hour internal surface insolation'
+     &        '24 hour internal surface insolation'
             write(iuj,'(2a)',iostat=istat,err=1002) 'record offsets',
      &        ' # to each insolation source (marked by non-zero)'
             if(nzsur(icomp).le.62)then
-              write(outl,'(62i4)') (ioffs(i),i=1,nzsur(icomp))
-            else
-              write(outl,'(80i3)') (ioffs(i),i=1,nzsur(icomp))
+              write(out1k,'(62i4)') (ioffs(i),i=1,nzsur(icomp))
+            elseif(nzsur(icomp).gt.62.and.(nzsur(icomp).le.99))then
+              write(out1k,'(99i3)') (ioffs(i),i=1,nzsur(icomp))
+            elseif(nzsur(icomp).gt.99)then
+              write(out1k,'(240i4)') (ioffs(i),i=1,nzsur(icomp))
             endif
-            call sdelim(outl,outld,'S',iw)
+            call sdelim(out1k,out1kd,'S',iw)
             write(iuj,'(a)',iostat=istat,err=1002)
-     &                                     outld(1:lnblnk(outld))
+     &        out1kd(1:lnblnk(out1kd))
             do 110 i=1,nwins
-               write(iuj,'(a,i3,3a)',iostat=istat,err=1002)
-     &           'surfaces insolated by source ',i,' ',sourcename(i),
-     &           ' # hourly columns, ranking via rows'
-               do 120 j=1,misur
-                  write(outl,'(24i3)')(insst(i,k,j),k=1,24)
-                  call sdelim(outl,outld,'S',iw)
-                  write(iuj,'(a)',iostat=istat,err=1002)
-     &                                     outld(1:lnblnk(outld))
-  120          continue
-               write(iuj,'(2a)',iostat=istat,err=1002)
-     &           'matched surface insolation factors',
-     &           ' # hourly columns, ranking via rows'
-               do 130 j=1,misur
-                  write(outl,'(24f6.3)')(pinsst(i,k,j),k=1,24)
-                  call sdelim(outl,outld,'S',iw)
-                  write(iuj,'(a)',iostat=istat,err=1002)
-     &                                     outld(1:lnblnk(outld))
-  130          continue
+              write(iuj,'(a,i3,3a)',iostat=istat,err=1002)
+     &          'surfaces insolated by source ',i,' ',sourcename(i),
+     &          ' # hourly columns, ranking via rows'
+              do 120 j=1,misur
+                write(outl,'(24i4)')(insst(i,k,j),k=1,24)
+                call sdelim(outl,outld,'S',iw)
+                write(iuj,'(a)',iostat=istat,err=1002)
+     &            outld(1:lnblnk(outld))
+  120         continue
+              write(iuj,'(2a)',iostat=istat,err=1002)
+     &          'matched surface insolation factors',
+     &          ' # hourly columns, ranking via rows'
+              do 130 j=1,misur
+                write(outl,'(24f6.3)')(pinsst(i,k,j),k=1,24)
+                call sdelim(outl,outld,'S',iw)
+                write(iuj,'(a)',iostat=istat,err=1002)
+     &            outld(1:lnblnk(outld))
+  130         continue
   110       continue
          endif
 
@@ -529,7 +532,7 @@ C the * month tag then we have only insolation.
                k=0
                do 160 j=1,12
                   call egetwr(loutstr,k,ret,0.,1.,'W',
-     &                                        'dir shading 01-12',ier)
+     &              'dir shading 01-12',ier)
                   if(ier.ne.0)goto 1004
                   pso(i,j)=ret
   160          continue
@@ -538,7 +541,7 @@ C the * month tag then we have only insolation.
                k=0
                do 170 j=13,24
                   call egetwr(loutstr,k,ret,0.,1.,'W',
-     &                                        'dir shading 12-24',ier)
+     &              'dir shading 12-24',ier)
                   if(ier.ne.0)goto 1004
                   pso(i,j)=ret
   170          continue
@@ -549,7 +552,7 @@ C the * month tag then we have only insolation.
                k=0
                do 180 j=1,12
                   call egetwr(loutstr,k,ret,0.,1.,'W',
-     &                                        'dif shading 01-12',ier)
+     &              'dif shading 01-12',ier)
                   if(ier.ne.0)goto 1004
                   psof(i,j)=ret
   180          continue
@@ -558,11 +561,10 @@ C the * month tag then we have only insolation.
                k=0
                do 190 j=13,24
                   call egetwr(loutstr,k,ret,0.,1.,'W',
-     &                                        'dif shading 12-24',ier)
+     &              'dif shading 12-24',ier)
                   if(ier.ne.0)goto 1004
                   psof(i,j)=ret
   190          continue
-
   150       continue
          else
             if(mnth.gt.12) goto 18  ! have reached past december
@@ -607,11 +609,11 @@ C Read the offsets line. Items with a zero are not insolation
 C sources, non-zero entries are offsets to use within the binary
 C file and the position in the list indicates with surface in
 C the zone is an insolation source.
-         call lstripc(iuj,loutstr,0,nd,1,'offsets data',ier)
+         call stripc1k(iuj,lkoutstr,0,nd,1,'offsets data',ier)
          if(ier.ne.0)goto 1004
          k=0
          do 200 i=1,nzsur(icomp)
-            call egetwi(loutstr,k,iret,0,0,'-','offset',ier)
+            call egetwi(lkoutstr,k,iret,0,0,'-','offset',ier)
             if(ier.ne.0)goto 1004
             ioffs(i)=iret
   200    continue
@@ -816,12 +818,12 @@ C Get insolation factors.
       do 20 i=1,nwins
          do 30 j=1,misur
             read(ifilsi,rec=irec,iostat=istat,err=1000)
-     &                                    (insst(i,k,j),k=1,24)
+     &        (insst(i,k,j),k=1,24)
             irec=irec+1
    30    continue
          do 40 j=1,misur
             read(ifilsi,rec=irec,iostat=istat,err=1000)
-     &                                    (pinsst(i,k,j),k=1,24)
+     &        (pinsst(i,k,j),k=1,24)
             irec=irec+1
    40    continue
    20 continue
@@ -896,7 +898,7 @@ C      write(6,*)irecx,nsurs,msurs
 C Record 3 reserved for future use, skip to 4.
       irec=4
       write(ifilsi,rec=irec,iostat=istat,err=1000)
-     &                           (ntmc(i),i=1,nzsur(icomp))
+     & (ntmc(i),i=1,nzsur(icomp))
 
 C Number of insolation sources in zone.
       nwins=0
@@ -921,7 +923,7 @@ C Write insolation factors.
          return
       endif
       write(ifilsi,rec=irec,iostat=istat,err=1000)
-     &                                (ioffs(i),i=1,nzsur(icomp))
+     &  (ioffs(i),i=1,nzsur(icomp))
       irec=irec+1
       do 20 i=1,nwins
          do 30 j=1,misur
@@ -930,12 +932,12 @@ C Debug.
 C            write(6,*)(insst(i,k,j),k=1,24)
 
             write(ifilsi,rec=irec,iostat=istat,err=1000)
-     &                                     (insst(i,k,j),k=1,24)
+     &        (insst(i,k,j),k=1,24)
             irec=irec+1
    30    continue
          do 40 j=1,misur
             write(ifilsi,rec=irec,iostat=istat,err=1000)
-     &                                     (pinsst(i,k,j),k=1,24)
+     &        (pinsst(i,k,j),k=1,24)
             irec=irec+1
    40    continue
    20 continue
@@ -984,6 +986,7 @@ C  ier (integer) is zero if no problems, -3 if empty.
       character*3 month(12)
       character outs*124,exportfile*72
       character outl*248,outld*248
+      character out1k*1000,out1kd*1000,lkoutstr*1000
       integer isourcecount  ! to help with sourcename list
 
       DATA month/'Jan','Feb','Mar','Apr','May','Jun','Jul',
@@ -1034,28 +1037,28 @@ C Open the ascii file for export.
 
 C Write direct and diffuse shading factors.
       write(iuj,'(a)',iostat=istat,err=1002) 
-     &                      '24 hour external surface shading'
+     &  '24 hour external surface shading'
       do 100 i = 1,nzsur(icomp)
          icn=izstocn(icomp,i)
          sn=ssname(icn)
          write(outl,'(12f7.4)') (pso(i,j),j=1,12)
          call sdelim(outl,outld,'S',iw)
          write(iuj,'(a)',iostat=istat,err=1002)
-     &                                  outld(1:lnblnk(outld))
+     &     outld(1:lnblnk(outld))
          write(outl,'(12f7.4,2a)') (pso(i,j),j=13,24),
      &      ' # direct - surface ',sn(1:lnblnk(sn))
          call sdelim(outl,outld,'S',iw)
          write(iuj,'(a)',iostat=istat,err=1002)
-     &                                  outld(1:lnblnk(outld))
+     &     outld(1:lnblnk(outld))
          write(outl,'(12f7.4)') (psof(i,j),j=1,12)
          call sdelim(outl,outld,'S',iw)
          write(iuj,'(a)',iostat=istat,err=1002)
-     &                                  outld(1:lnblnk(outld))
+     &     outld(1:lnblnk(outld))
          write(outl,'(12f7.4,2a)') (psof(i,j),j=13,24),
-     &      ' # diffuse - surface ',sn(1:lnblnk(sn))
+     &     ' # diffuse - surface ',sn(1:lnblnk(sn))
          call sdelim(outl,outld,'S',iw)
          write(iuj,'(a)',iostat=istat,err=1002)
-     &                                  outld(1:lnblnk(outld))
+     &     outld(1:lnblnk(outld))
  100  continue
  
 C Generate packed list of names of insolation sources.
@@ -1071,32 +1074,33 @@ C Generate packed list of names of insolation sources.
 C Write insolation factors. Note the record offset line is
 C sensitive to the number of surfaces in the zone.
 
-C << ioffs can be gt 200 if there are lots of windows so
-C << test ioffs prior to writing might be needed.
-C << could switch to larger text buffer
+C ioffs can be gt 200 if there are lots of windows so
+C test ioffs prior to writing might be needed.
 
       if(ishd(mnth).eq.2.or.ishd(mnth).eq.3)then
          write(iuj,'(a)',iostat=istat,err=1002) 
-     &                     '24 hour internal surface insolation'
+     &     '24 hour internal surface insolation'
          write(iuj,'(2a)',iostat=istat,err=1002) 'record offsets',
      &     ' # to each insolation source (marked by non-zero)'
          if(nzsur(icomp).le.62)then
-           write(outl,'(62i4)') (ioffs(i),i=1,nzsur(icomp))
-         else
-           write(outl,'(80i3)') (ioffs(i),i=1,nzsur(icomp))
+           write(out1k,'(62i4)') (ioffs(i),i=1,nzsur(icomp))
+         elseif(nzsur(icomp).gt.62.and.(nzsur(icomp).le.99))then
+           write(out1k,'(99i3)') (ioffs(i),i=1,nzsur(icomp))
+         elseif(nzsur(icomp).gt.99)then
+           write(out1k,'(240i4)') (ioffs(i),i=1,nzsur(icomp))
          endif
-         call sdelim(outl,outld,'S',iw)
+         call sdelim(out1k,out1kd,'S',iw)
          write(iuj,'(a)',iostat=istat,err=1002)
-     &                                  outld(1:lnblnk(outld))
+     &     out1kd(1:lnblnk(out1kd))
          do 110 i=1,nwins
             write(iuj,'(a,i3,3a)',iostat=istat,err=1002)
      &        'surfaces insolated by source ',i,' ',sourcename(i),
      &        ' # hourly columns, ranking via rows'
             do 120 j=1,misur
-               write(outl,'(24i3)')(insst(i,k,j),k=1,24)
+               write(outl,'(24i4)')(insst(i,k,j),k=1,24)
                call sdelim(outl,outld,'S',iw)
                write(iuj,'(a)',iostat=istat,err=1002)
-     &                                  outld(1:lnblnk(outld))
+     &           outld(1:lnblnk(outld))
   120       continue
             write(iuj,'(2a)',iostat=istat,err=1002)
      &        'matched surface insolation factors',
@@ -1105,7 +1109,7 @@ C << could switch to larger text buffer
                write(outl,'(24f6.3)')(pinsst(i,k,j),k=1,24)
                call sdelim(outl,outld,'S',iw)
                write(iuj,'(a)',iostat=istat,err=1002)
-     &                                  outld(1:lnblnk(outld))
+     &           outld(1:lnblnk(outld))
   130       continue
   110    continue
       endif

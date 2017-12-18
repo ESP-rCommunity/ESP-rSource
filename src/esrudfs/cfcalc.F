@@ -759,7 +759,7 @@ C INIT - Initialize simulation variables.
 #include "cfd.h"
 
       COMMON/INITIA/UINIT(MNZ),VINIT(MNZ),WINIT(MNZ),PINIT(MNZ),
-     &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ)
+     &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ),POLINIT(MNZ,MCTM)
 
       COMMON/VARp/Up(ntcelx,ntcely,ntcelz),Vp(ntcelx,ntcely,ntcelz),
      1            Wp(ntcelx,ntcely,ntcelz),TEp(ntcelx,ntcely,ntcelz),
@@ -790,12 +790,12 @@ C Initialize variables.
       DO 200 I=1,NI
         DO 2001 J=1,NJ
           DO 2002 K=1,NK
-            Up(I,J,K)=0.0
-            Uf(I,J,K)=0.0
-            Vp(I,J,K)=0.0
-            Vf(I,J,K)=0.0
-            Wp(I,J,K)=0.0
-            Wf(I,J,K)=0.0
+            Up(I,J,K)=UINIT(ICFD)
+            Uf(I,J,K)=UINIT(ICFD)
+            Vp(I,J,K)=VINIT(ICFD)
+            Vf(I,J,K)=VINIT(ICFD)
+            Wp(I,J,K)=WINIT(ICFD)
+            Wf(I,J,K)=WINIT(ICFD)
             DENp(I,J,K)=AIRDEN(TINIT(ICFD))
             DENf(I,J,K)=AIRDEN(TINIT(ICFD))
 C            P(I,J,K)=GRAV*DENf(I,J,K)*(ZP(KPREF)-ZP(K))
@@ -804,8 +804,8 @@ C            P(I,J,K)=GRAV*DENf(I,J,K)*(ZP(KPREF)-ZP(K))
             Tp(I,J,K)=TINIT(ICFD)
             Tf(I,J,K)=TINIT(ICFD)
             DO 2010 ICTM=1,NCTM
-              POLCONCp(ICTM,I,J,K)=0.0
-              POLCONCf(ICTM,I,J,K)=0.0
+              POLCONCp(ICTM,I,J,K)=POLINIT(ICFD,ICTM)
+              POLCONCf(ICTM,I,J,K)=POLINIT(ICFD,ICTM)
  2010       CONTINUE
             AGEf(I,J,K)=0.0 
             TEp(I,J,K)=TEINIT(ICFD)
@@ -868,7 +868,7 @@ C            and sets it uniform to the whole CFD domain
 #include "cfd.h"
 
       COMMON/INITIA/UINIT(MNZ),VINIT(MNZ),WINIT(MNZ),PINIT(MNZ),
-     &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ)
+     &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ),POLINIT(MNZ,MCTM)
 
       COMMON/NDMAP/NOPEN(MNZ),MFNODE(MCFND,MNZ),IOPENi(MCFND,MNZ),
      &             IOPENf(MCFND,MNZ),JOPENi(MCFND,MNZ),
@@ -2656,7 +2656,7 @@ C
       COMMON/NORM/RENORMU,RENORMV,RENORMW,RENORMT,RENORMK,RENORME 
       common/SOLVER/ILISOL
       COMMON/INITIA/UINIT(MNZ),VINIT(MNZ),WINIT(MNZ),PINIT(MNZ),
-     &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ)
+     &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ),POLINIT(MNZ,MCTM)
 
       common/KEYVOLS/NVOL(MNZ),IVOLF(MNVLS,MNZ),IVCELLS(MNVLS,MNZ,2),
      &               JVCELLS(MNVLS,MNZ,2),KVCELLS(MNVLS,MNZ,2)

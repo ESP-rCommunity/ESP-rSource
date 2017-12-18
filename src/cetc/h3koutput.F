@@ -69,14 +69,14 @@ c     NTSTEP is used to norlamlise the values to one hour.
       
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES,CFRESF
+      character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72,
+     &  CFRESF*72
 c     RFILE is the the results library filename.
       
       character*72 LBSIMP
       character LTMP*72,h*72,outs*124
-      character PFILE*72,MSTRFILE*72,LAFRES*72
       character tab*1
-      character*72 rfile
       CHARACTER DS*7,DS1*10,DE*7,DE1*10
       
       CALL EFDELET(101,ISTAT) !DELETES DECEMBER file from progress subroutine.
@@ -812,13 +812,13 @@ C     tzph,tzpc are zone heating/cooling use over time.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES,CFRESF
+      character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72,
+     &  CFRESF*72
       COMMON/rcmd/LCMDFL
       character LCMDFL*144
       character LTMP*72,h*72,outs*124,louts*248
-      character PFILE*72,MSTRFILE*72,LAFRES*72
       character tab*1
-      character*72 rfile
       DIMENSION MTHNAM(12)
       CHARACTER DS*7,DS1*10,DE*7,DE1*10,MTHNAM*3
       logical OK

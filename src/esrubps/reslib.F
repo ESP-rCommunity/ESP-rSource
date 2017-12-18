@@ -64,7 +64,9 @@ C Versions of results libraries.
       common/recver/izver,ipver,iever
 C      common/rpath/path
       common/user/browse
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES,CFRESF
+      character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72,
+     &  CFRESF*72
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/ffn/iflwn,icffs(mpcon)
       COMMON/FFC/IMFRES
@@ -73,6 +75,7 @@ C      common/rpath/path
 
 C Electrical results library name. 
       COMMON/ENETRES/ERESLIB
+      character ERESLIB*72
 
 C Electrical network results library details.
       COMMON/ENELIBRC/IELFIL,IELIBHL,IELIBW,IELSTREC,NETS,NTSREC,NHREC,
@@ -89,10 +92,13 @@ C Active domain common.
 
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
+C Toggle for extreme silent running (endless) mode.
+      logical endless,issilient
+      common/endlessmode/endless,issilient
+
       character outs*124,ltmp*72,longtfile*144
 C      character path*72
-      character*72 LAPROB,ERESLIB,CFRESF
-      character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72
+      character LAPROB*72
       dimension iflg(MCOM)
 
       logical OK,dok,MSTROK,MSTRZN,remote,browse
@@ -195,7 +201,11 @@ C      write(6,*)'nzrl iswid ncomp iswid+12 minwid ',nzrl,iswid,ncomp,
 C     &  iswid+12,iminwid
       if(iminwid.ne.nzrl)then
         write(outs,*)'Resetting results file record width to ',iminwid
-        call edisp(iuout,outs)
+        if(endless.or.issilient)then
+          continue
+        else
+          call edisp(iuout,outs)
+        endif
         nzrl=iminwid
         call pauses(1)   ! pause
       endif
@@ -592,7 +602,7 @@ C Write out the electrical results header to the file.
 
 C CFD results library.
       if (CFDOK) then
- 591    LTMP='libc'
+ 591    LTMP=CFRESF
         if(.not.spfileok) then
           iw=0
           call dealremote('di',remote,LTMP,IW)
@@ -600,8 +610,6 @@ C CFD results library.
           CFRESF=LTMP
         else
           if(autook) then 
-  
-C <<Should really get this name from the simulation parameters.>>
             iw=2
             if(remote)then
               call dealremote('ds',remote,LTMP,IW)

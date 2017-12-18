@@ -73,7 +73,12 @@ C Setup menu text.
 
 C Graphical display possible.
     2 NITMS=13
-      INO=-2
+      if(MMOD.eq.8)then
+        INO=-1
+      else
+        INO=-2
+      endif
+C      INO=-2
 
 C Instanciate help strings for the menu.
       helptopic='res_graphs_menu'

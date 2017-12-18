@@ -778,24 +778,28 @@ C If not in silent mode then confirm names with user.
       if (MODE.eq.'-') then
 
 C Ask for root name and use this for rif name.
- 15     tname=SCENERT(ISCENE)
-        dname=SCENERT(ISCENE)
+ 15     write(tname,'(a)') SCENERT(ISCENE)
+        write(dname,'(a)') SCENERT(ISCENE)
         CALL EASKS(tname,'Scene root name?',' ',28,dname,
      &    'root name',IER,nbhelp)
         IF(tname(1:2).EQ.'  ') GOTO 15
-        SCENERT(ISCENE)=tname
+        write(SCENERT(ISCENE),'(a)') tname(1:lnblnk(tname))
         write (RIFNAME(ISCENE),'(a,a)') 
-     &               SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'.rif'
+     &    SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'.rif'
         write (LBSRIF(ISCENE),'(a,a)') 
-     &             SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'_a.rif'
+     &    SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'_a.rif'
 
 C Ask for additional description.
- 25     tname72=SCENEDESC(ISCENE)
-        dname72=SCENEDESC(ISCENE)
+ 25     write(tname72,'(a)') SCENEDESC(ISCENE)
+        write(dname72,'(a)') SCENEDESC(ISCENE)
         CALL EASKS(tname72,'Description of the scene?',' ',72,
      &    dname72,'scene desc',IER,nbhelp)
         IF(tname72(1:2).EQ.'  ') GOTO 25
-        SCENEDESC(ISCENE)=tname72
+        write(SCENEDESC(ISCENE),'(a)') tname72(1:lnblnk(tname72))
+
+C Debug
+        write(6,*) 'scene root ',SCENERT(ISCENE)
+        write(6,*) 'scene desc ',SCENEDESC(ISCENE)
       endif
 
 C Call rifset to set up all remaining data.

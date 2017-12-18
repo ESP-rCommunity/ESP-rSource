@@ -42,7 +42,7 @@ C to the thermal domain for inclusion in the zone matrix.
       COMMON/ICFNOD/ICFD,ICP
       common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
-      COMMON/ypave/ypavg(MCOM)
+      COMMON/ypave/ypavg(MS)
       COMMON/ACCrec/IACC(MNZ)
 
       CHARACTER*72 LCFD

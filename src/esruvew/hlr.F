@@ -183,6 +183,10 @@ C     IF THIS EDGE IS OUTSIDE THE CONE OF VISION, IGNORE IT
 
                 KS1=IREPU1(I)
                 KS2=IREPU2(I)
+
+C TODO - quick hack to prevent crashing on huge models, needs greater investigation.
+                if ((KS1.eq.0).or.(KS2.eq.0)) cycle
+
 C***DIAG
 C***D      WRITE(20,9700)I,KS1,KS2
 C***D9700  FORMAT('***EDGE',I4,' FROM VERTEX',I4,' TO',I4)

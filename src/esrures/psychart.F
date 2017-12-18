@@ -29,6 +29,7 @@ C component status, act = 'u' for user supplied points.
       
       integer lnblnk  ! function definition
 
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/PPERS/IPSD1,IPSM1,IPSD2,IPSM2,IPSDS,IPSDF,NPTS,ipsav
@@ -148,7 +149,11 @@ C << forces a re-draw.
 
 C Display menu.
  2    NITMS=12
-      INO=-2
+      if(MMOD.eq.8)then
+        INO=-1
+      else
+        INO=-2
+      endif
 
 C Instanciate help strings for the menu and sub-dialogs.
       helptopic='res_psychromtric_menu'
@@ -742,7 +747,11 @@ C Initial menu entry setup.
       IPACT=CREATE
       CALL EKPAGE(IPACT)
    92 IER=0
-      ISVERT=-3
+      if(MMOD.eq.8)then
+        ISVERT=-1
+      else
+        ISVERT=-2
+      endif
 
 C Loop through the items until the page to be displayed. M is the 
 C current menu line index. Build up text strings for the menu. 

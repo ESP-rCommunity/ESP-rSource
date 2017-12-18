@@ -38,6 +38,17 @@ C Commom for the optimim start/stop simulation.
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
      &               isfnmon(MSPS)
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+
+C Extended simulation parameters for each set.
+      common/spfldats/isstupex(MSPS),isbnstepex(MSPS),ispnstepex(MSPS),
+     &  issaveex(MSPS),isavghex(MSPS),iscfdactivate(MSPS),
+     &  isicfdys(MSPS),isicfdyf(MSPS),
+     &  scftims(MSPS),scftimf(MSPS)
+      INTEGER :: isstupex,isbnstepex,ispnstepex,issaveex,isavghex
+      INTEGER :: iscfdactivate      ! zero ignore domains
+      INTEGER :: isicfdys,isicfdyf  ! CFD simulation start & finish days
+      REAL :: scftims,scftimf       ! CFD simulation start & finish time
 
       COMMON/RBEMDAT/SIMTSTP,NLINE,NCOLS,CURTM,BVAR(MBROW,MBCOL),
      &SENMAP(MBCOL)
@@ -58,6 +69,8 @@ C Work out the number of simulations required and their frequency: increment
 C back in time to current time or midnight if required.
 C If the simulation day > the current time (curr time > time of interest) then 
 C run plant backwards to a last possible time of 0.00 am if required.
+
+C Logic needed for extended *sps was used in input.F
         CALL EDAY(isstday(1),isstmon(1),IDYST)
         IF(INT(CURTM).LT.IDYST)THEN
           NSIMUL=INT((OPSSTIM(1)-0.0)*isbnstep)

@@ -15,7 +15,7 @@ C************Dynamic occupant subroutine**********************************
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
 
       common/FVALG/GFA(MCOM)
-      common/FVALA/TFA(MCOM)
+      common/FVALA/TFA(MCOM),QFA(MCOM)
       common/OCCCFD/TaCFD(MCOM),TTRACK(MCOM)
       common/occload/sklat(MCOM),skcon(MCOM),skrad(MCOM),ttcr(MCOM),
      &     ttsk(MCOM)

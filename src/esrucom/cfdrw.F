@@ -55,7 +55,7 @@ C Passed parameters.
       common/GRDVRTS/iorg,ixend,iyend,izend,izende
       common/CLVTXNO/ivxhigh(MV),ivxlow(MV),ihigh,ilow
       COMMON/INITIA/UINIT(MNZ),VINIT(MNZ),WINIT(MNZ),PINIT(MNZ),
-     &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ)
+     &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ),POLINIT(MNZ,MCTM)
       COMMON/LINRFC/URFCU(MNZ),URFCV(MNZ),URFCW(MNZ),URFCP(MNZ),
      &              URFCT(MNZ),URFCK(MNZ),URFCE(MNZ),URFCVS(MNZ),
      &              URFCC(MNZ,MCTM)
@@ -570,7 +570,7 @@ C      (used in the case of curvilinear Z)
      &              URFCT2(MNZ),URFCK2(MNZ),URFCE2(MNZ),URFCVS2(MNZ),
      &              URFCC2(MNZ,MCTM)
       COMMON/INITIA/UINIT(MNZ),VINIT(MNZ),WINIT(MNZ),PINIT(MNZ),
-     &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ)
+     &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ),POLINIT(MNZ,MCTM)
       common/EQTION/CALLU(MNZ),CALLV(MNZ),CALLW(MNZ),CALLT(MNZ),
      &             CALLC(MNZ),KEMDL(MNZ),BUOY(MNZ),BOUSSI(MNZ),
      &             ZEROT(MNZ),ZandKE(MNZ),MITzero(MNZ)
@@ -2037,8 +2037,8 @@ C Contaminant information.
         elseif (WORD(1:LNBLNK(WORD)).eq.
      &    POLNAM(1,ICFD)(1:LNBLNK(POLNAM(1,ICFD))))then
           CALPOL(1,ICFD)=.TRUE.
-C Contamination initial value currently not used.
-          CALL EGETW(OUTSTR,K,WORD,'-','Contam init',IER)
+          CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','Contam init',IER)
+          POLINIT(ICFD,1)=VAL
           CALL EGETW(OUTSTR,K,WORD,'W','relax type',IER)
           if (WORD(1:6).eq.'Linear') then
             CALL EGETWR(OUTSTR,K,VAL,0.,1.,'W','Contam Lrx',IER)
@@ -2065,8 +2065,8 @@ C Contamination initial value currently not used.
             K=0
             CALPOL(ICTM,ICFD)=.TRUE.
             CALL EGETW(OUTSTR,K,WORD,'-','Contam name',IER)
-C Contamination initial value currently not used.
-            CALL EGETW(OUTSTR,K,WORD,'-','Contam init',IER)
+            CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','Contam init',IER)
+            POLINIT(ICFD,ICTM)=VAL
             CALL EGETW(OUTSTR,K,WORD,'W','relax type',IER)
             if (WORD(1:6).eq.'Linear') then
               CALL EGETWR(OUTSTR,K,VAL,0.,1.,'W','Contam Lrx',IER)
@@ -2806,7 +2806,7 @@ C CFDDEFLT - Sets default values for all data items.
      &              URFCC2(MNZ,MCTM)
       COMMON/LINRFC1/URFCD(MNZ)
       COMMON/INITIA/UINIT(MNZ),VINIT(MNZ),WINIT(MNZ),PINIT(MNZ),
-     &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ)
+     &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ),POLINIT(MNZ,MCTM)
       common/cfdini/INITFL(MNZ)
       common/EQTION/CALLU(MNZ),CALLV(MNZ),CALLW(MNZ),CALLT(MNZ),
      &             CALLC(MNZ),KEMDL(MNZ),BUOY(MNZ),BOUSSI(MNZ),

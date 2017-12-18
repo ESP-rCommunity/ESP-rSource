@@ -24,6 +24,7 @@ C  SURFCONF - Calls CFMNGE each time step there is surface conflation.
 C  CFDLIBHEAD - Write header information to cfd results file.
 C  cfdlibdom - Write information describing the CFD domain model to results file
 C  cfdlib - Write results of CFD simulation to results file.
+C readcfd3dascii - read ascii information from one timestep.
 
 C ********************* CFMNGE *********************
 C CFMNGE - Manages CFD calcs and results output when BSim and CFD are conflated.
@@ -52,7 +53,7 @@ C CFMNGE - Manages CFD calcs and results output when BSim and CFD are conflated.
       common/cfdini/INITFL(MNZ)
       common/param2/TITLE(MNZ),CFTRFL(MNZ),LPHI(MNZ)
       COMMON/INITIA/UINIT(MNZ),VINIT(MNZ),WINIT(MNZ),PINIT(MNZ),
-     &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ)
+     &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ),POLINIT(MNZ,MCTM)
       common/cfdconf/ICFBLD(MNZ),ICFMFS(MNZ)
       common/htccfd/HCICFD(MCOM,MS)
       COMMON/Sbdary/NSB(MNZ),ISBi(MNSBZ,MNZ),ISBf(MNSBZ,MNZ),
@@ -349,6 +350,7 @@ C SURFCONF - Calls CFMNGE each time step there is surface conflation.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/BTIME/BTIMEP,BTIMEF
       common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
@@ -360,7 +362,13 @@ C SURFCONF - Calls CFMNGE each time step there is surface conflation.
 C To support writing ASCII file.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/CFSEUP/CFTIMS,CFTIMF,ICFDYS,ICFDYF,ICFAUX(MCOM)
+      real CFTIMS,CFTIMF    ! start and finish times for CFD assessment
+      integer ICFDYS,ICFDYF ! julian day-of-year at start and end of CFD
+      integer ICFAUX  ! helps to keep track of IFCFD()
+      integer ICFVIEW ! toggle for preview via dfv during assessment
+      integer ICFVIEWMINT,ICFVIEWMAXT  ! range of temperatures for dfv
+      COMMON/CFSEUP/CFTIMS,CFTIMF,ICFDYS,ICFDYF,ICFAUX(MCOM),ICFVIEW,
+     &  ICFVIEWMINT,ICFVIEWMAXT
       common/CFDSV/IRECPC,ICFDSV,IEQSV(5+MCTM)
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
      &      JHUMINDX,URFC(MCTM)
@@ -380,12 +388,12 @@ C To support writing ASCII file.
      2            DZHP(ntcelz),DZPL(ntcelz),
      3            SEW(ntcelx),SNS(ntcely),SHL(ntcelz),
      4            XU(ntcelx),YV(ntcely),ZW(ntcelz)
-
+      CHARACTER LCFD*72
       CHARACTER POLNAM*12
       character cfd3dascii*72
-
+      character doit*248
       LOGICAL areaSSO
-      CHARACTER*72 LCFD,outs
+      CHARACTER*72 outs
       character ICFDSTR*10,ICPSTR*10
 
 C This subroutine initiates a CFD analysis if (for the given time-step) there
@@ -473,47 +481,49 @@ C Calculate current simulation timestep. - possibly use to synchornise results.
 
 C Write out an ASCII file with CFD domain information as well as the current
 C data as would have been written in cfdlib. Intended to be read by utility
-C that displays a 3D rendering of the current solution.
-C << Will need to be controlled in some way so only invoked as required. >>
-          write(cfd3dascii,'(a,i4.4)') 'cfd3dascii_',NSINC
+C dfv that displays a 3D rendering of the current solution.
+          write(cfd3dascii,'(a,i1,a,i4.4)') 'cfd3dascii_',icfd,'_',
+     &      NSINC
           write(6,'(2a)') 'the file is ',cfd3dascii
           call efopseq(38,cfd3dascii,4,ier)
           write(38,'(a)') 'cfd3dascii'
           write(38,'(a,16i4)') 'head_1:',MCEL1D,ICFDSV,ICFD,NCOMP,
      &      (IEQSV(J),J=1,5+NCTM)
-          write(38,'(a,50i4)') 'head_2:',(abs(ICFAUX(I)),I=1,NCOMP)
+          write(38,'(a,120i4)') 'head_2:',(abs(ICFAUX(I)),I=1,NCOMP)
           write(38,'(a,2i4,2f9.5)')'head_3:',ICFDYS,ICFDYF,CFTIMS,CFTIMF
           write(38,'(a,i4)') 'head_4:',NCTM
+          write(6,'(a,i3,a,F7.4)') 'head_5: day ',IDYP,' at ',BTIMEF
+          write(38,'(a,i3,a,F7.4)') 'head_5: day ',IDYP,' at ',BTIMEF
           DO ICTM=1,NCTM
             write(38,'(2a)') 'POL: ',POLNAM(ICTM,ICFD)
           ENDDO
           write(38,'(a,i3)') 'zone:',ICOMP
           write(38,'(a,9i4)') 
      &      'all:',NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
-          write(38,'(a,50f9.5)') 'XU:',(XU(I),I=1,NI)
-          write(38,'(a,50f9.5)') 'YV:',(YV(I),I=1,NJ)
-          write(38,'(a,50f9.5)') 'ZW:',(ZW(I),I=1,NK)
+          write(38,'(a,120f9.5)') 'XU:',(XU(I),I=1,NI)
+          write(38,'(a,120f9.5)') 'YV:',(YV(I),I=1,NJ)
+          write(38,'(a,120f9.5)') 'ZW:',(ZW(I),I=1,NK)
           do 10 K=2,NK
             do 101 J=2,NJ
               write(38,'(a,i2.2,a,i2.2)') 'Cell_KJ: ',K,' ',J
               if (IEQSV(1).eq.1) then
-                write(38,'(a,50f9.5)') 'Uf:',(Uf(I,J,K),I=2,NI)
+                write(38,'(a,120f9.5)') 'Uf:',(Uf(I,J,K),I=2,NI)
               endif
               if (IEQSV(2).eq.1) then
-                write(38,'(a,50f9.5)') 'Vf:',(Vf(I,J,K),I=2,NI)
+                write(38,'(a,120f9.5)') 'Vf:',(Vf(I,J,K),I=2,NI)
               endif
               if (IEQSV(3).eq.1) then
-                write(38,'(a,50f9.5)') 'Wf:',(Wf(I,J,K),I=2,NI)
+                write(38,'(a,120f9.5)') 'Wf:',(Wf(I,J,K),I=2,NI)
               endif
               if (IEQSV(4).eq.1) then
-                write(38,'(a,50f9.5)') 'Tf:',(Tf(I,J,K),I=2,NI)
+                write(38,'(a,120f9.5)') 'Tf:',(Tf(I,J,K),I=2,NI)
               endif
               if (IEQSV(5).eq.1) then
-                write(38,'(a,50f9.5)') 'AGEf:',(AGEf(I,J,K),I=2,NI)
+                write(38,'(a,120f9.5)') 'AGEf:',(AGEf(I,J,K),I=2,NI)
               endif
               DO ICTM=1,NCTM
                 if (IEQSV(5+ICTM).eq.1) then
-                  write(38,'(a,50f9.5)') 'POL:',
+                  write(38,'(a,120f9.5)') 'POL:',
      &              (POLCONCf(ICTM,I,J,K),I=2,NI)
                 endif
               ENDDO      
@@ -521,6 +531,17 @@ C << Will need to be controlled in some way so only invoked as required. >>
  10       continue
           write(38,'(a)') 'end_cfd3dascii'
           CLOSE ( UNIT=38 )
+
+C At this point invoke dfv and pass it -file zone_dfs_file -actf cfd3dasii_file
+C -range <min> <max>
+          if(ICFVIEW.eq.1)then
+            write(doit,'(5a,2i4,a)')'dfv -file ',
+     &        LCFD(icp)(1:lnblnk(LCFD(icp))),' -actf ',
+     &        cfd3dascii(1:lnblnk(cfd3dascii)),' -range',ICFVIEWMINT,
+     &        ICFVIEWMAXT,' &'
+            call lusrmsg('visualize cfd via',doit,'-')
+            call runit(doit,'-')
+          endif
         endif
 
       ENDIF
@@ -529,8 +550,9 @@ C << Will need to be controlled in some way so only invoked as required. >>
       END
 
 C ********************* readcfd3dascii *********************
-C readcfd3dascii - read ascii information from one timestep.
-      SUBROUTINE readcfd3dascii(ICOMP,cfd3dascii)
+C readcfd3dascii - read ascii information from one timestep
+C with simulation day and timestep returned via ISIMDAY SIMTIMEF
+      SUBROUTINE readcfd3dascii(ICOMP,cfd3dascii,ISIMDAY,SIMTIMEF)
 #include "building.h"
 #include "cfd.h"
 
@@ -556,7 +578,13 @@ C espriou.h provides currentfile.
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
      &      JHUMINDX,URFC(MCTM)
       common/CFDSV/IRECPC,ICFDSV,IEQSV(5+MCTM)
-      COMMON/CFSEUP/CFTIMS,CFTIMF,ICFDYS,ICFDYF,ICFAUX(MCOM)
+      real CFTIMS,CFTIMF    ! start and finish times for CFD assessment
+      integer ICFDYS,ICFDYF ! julian day-of-year at start and end of CFD
+      integer ICFAUX  ! helps to keep track of IFCFD()
+      integer ICFVIEW ! toggle for preview via dfv during assessment
+      integer ICFVIEWMINT,ICFVIEWMAXT  ! range of temperatures for dfv
+      COMMON/CFSEUP/CFTIMS,CFTIMF,ICFDYS,ICFDYF,ICFAUX(MCOM),ICFVIEW,
+     &  ICFVIEWMINT,ICFVIEWMAXT
       
 C NCDOM - number of CFD domains
 C ICDOM - CFD domain selected for output
@@ -589,8 +617,8 @@ C For help messages
 
       helpinsub='readcfd3dascii'  ! set for cfiles
 
-C Set unit number.
-      IER=0; ICTM=0
+C Set unit number and initial values of ISIMDAY & SIMTIMEF.
+      IER=0; ICTM=0; ISIMDAY=0; SIMTIMEF=0.0
       iunit=38
       CALL EFOPSEQ(iunit,cfd3dascii,1,IER)
       IF(IER.LT.0)THEN
@@ -650,6 +678,17 @@ C Read head_3: ICFDYS,ICFDYF,CFTIMS,CFTIMF
 
 C Read head_4: NCTM
         CALL EGETWI(LOUTSTR,K,NCTM,0,0,'-','NCTM',IER)
+
+      elseif(WORD(1:7).eq.'head_5:')then
+
+C Read head_5: ISIMDAY SIMTIMEF
+        K=12
+        CALL EGETWI(LOUTSTR,K,ISIMDAY,0,0,'-','IDYP',IER)
+        CALL EGETW(LOUTSTR,K,WORD,'W',' at ',IER)
+        CALL EGETWR(LOUTSTR,K,SIMTIMEF,0.,24.,'W','CFTIMF',IER)
+
+C Debug.
+        write(6,*) 'for simulation day ',ISIMDAY,' & time ',SIMTIMEF
 
       elseif(WORD(1:4).eq.'POL:')then
 
@@ -753,7 +792,13 @@ C cfdlibhead - write header information to cfd results library.
       common/outin/iuout,iuin
       COMMON/ICFCHN/ICFMON(MNZ),ICFTMP,ICFLIB
       common/CFDSV/IRECPC,ICFDSV,IEQSV(5+MCTM)
-      COMMON/CFSEUP/CFTIMS,CFTIMF,ICFDYS,ICFDYF,ICFAUX(MCOM)
+      real CFTIMS,CFTIMF    ! start and finish times for CFD assessment
+      integer ICFDYS,ICFDYF ! julian day-of-year at start and end of CFD
+      integer ICFAUX  ! helps to keep track of IFCFD()
+      integer ICFVIEW ! toggle for preview via dfv during assessment
+      integer ICFVIEWMINT,ICFVIEWMAXT  ! range of temperatures for dfv
+      COMMON/CFSEUP/CFTIMS,CFTIMF,ICFDYS,ICFDYF,ICFAUX(MCOM),ICFVIEW,
+     &  ICFVIEWMINT,ICFVIEWMAXT
       COMMON/ICFNOD/ICFD,ICP
 
       integer ncomp,ncon
@@ -765,11 +810,15 @@ C cfdlibhead - write header information to cfd results library.
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
      &      JHUMINDX,URFC(MCTM)
 
+      common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
+
       CHARACTER outs*124, POLNAM*12
 
       LOGICAL CALLU,CALLV,CALLW,CALLT,CALLC,KEMDL,BUOY,BOUSSI
       LOGICAL ZEROT,ZandKE,MITzero
       LOGICAL CALLMA,CALPOL
+
+      integer, dimension(MCOM) :: domarr
 
 C Save record width as first data item and save level.
 C Save level 1 - velocity and temperature information saved.
@@ -800,10 +849,16 @@ C Indicate which equations are active=>results to save.
 C Debug.
 C      WRITE(6,*) ICFLIB,IREC,':',MCEL1D,ICFDSV,(IEQSV(J),J=1,5+NCTM)
 
-C Which zone(s) is CFD active in.
+C Which zone(s) is CFD active in (domain number).
+      do I=1,NCOMP
+        domarr(I)=0
+        do J=1,NCONF
+          if (I.eq.icfdnd(J)) domarr(I)=J
+        enddo
+      enddo
       IREC=IREC+1
       WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)
-     &                                (abs(ICFAUX(I)),I=1,NCOMP)
+     &                                (domarr(I),I=1,NCOMP)
 
 C Debug.
 C      WRITE(6,*) ICFLIB,IREC,':',(abs(ICFAUX(I)),I=1,NCOMP)

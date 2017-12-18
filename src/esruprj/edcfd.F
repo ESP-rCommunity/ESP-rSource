@@ -89,7 +89,6 @@ C #include "esprdbfile.h"
 
 #ifdef OSI
       integer iside,isize,ifont
-
 #else
       integer*8 iside,isize,ifont
 #endif
@@ -101,9 +100,9 @@ C For help messages
 
       helpinsub='CFDCOMP'  ! set for subroutine
 
-C ICFD=1 for the first CFD domain in the building, 2 for the second CFD domain, etc.
-C ICFD is set independantly in VERMAN in prj.F, any updates here should 
-C be corresponded there as well
+C ICFD=1 for the first CFD domain in the building, 2 for the second CFD
+C domain, etc. ICFD is set independantly in VERMAN in prj.F, any updates
+C here should be mirrored there as well.
       found=0
       do 234 iconf=1,nconf
         if ( icfdnd(iconf).eq.izone )then
@@ -236,37 +235,50 @@ C Present menu of options for editing CFD input file.
 
       IF(MMOD.EQ.8)THEN
 
+C Only display if domain geometry has been defined.
+        if (origin.and.xgrid.and.ygrid.and.zgrid) then
+
 C Recalculate gridding in case this has changed
-        CALL INICNT
-        CALL GRID(ier)
-        call NEW2OLD
+          CALL INICNT
+          CALL GRID(ier)
+          call NEW2OLD
+
+C Initialise building - CFD domain transformations.
+          CALL INIT_CFDTRANS(IER)
+          if (IER.ne.0) then
+            call usrmsg(' Cannot draw this CFD domain in 3D',' ','W')
+            IER=0
+            goto 10
+          endif
 
 C Display domain
-        CALL ESCZONE(izone)
-        CALL BNDOBJ(0,IER)
-        CALL ERCZONE(izone)
-        if (IFACES.lt.0) then
-          write(zngeo,'(a)')'zn '
-        else
-          write(zngeo,'(a)')'---'
-        endif
-        if(abs(IFACES).eq.1)then
-          call VGRID3D(zngeo,'xyz',izone)
-        elseif(abs(IFACES).eq.2)then
-          call VGRID3D(zngeo,'xzg',izone)
-        elseif(abs(IFACES).eq.3)then
-          call VGRID3D(zngeo,'yzg',izone)
-        elseif(abs(IFACES).eq.4)then
-          call VGRID3D(zngeo,'xyg',izone)
-        endif
-        if (ISHSB.eq.1) then
-          call VSB3D(0,izone)
-        endif
-        if (ISHAO.eq.1) then
-          call VAO3D(0,izone)        
-        endif
-        if (ISHBLK.eq.1) then
-          call VSBL3D(0,izone)  ! for testing of blockages
+          CALL ESCZONE(izone)
+          CALL BNDOBJ(0,IER)
+          CALL ERCZONE(izone)
+          if (IFACES.lt.0) then
+            write(zngeo,'(a)')'zn '
+          else
+            write(zngeo,'(a)')'---'
+          endif
+          if(abs(IFACES).eq.1)then
+            call VGRID3D(zngeo,'xyz',izone)
+          elseif(abs(IFACES).eq.2)then
+            call VGRID3D(zngeo,'xzg',izone)
+          elseif(abs(IFACES).eq.3)then
+            call VGRID3D(zngeo,'yzg',izone)
+          elseif(abs(IFACES).eq.4)then
+            call VGRID3D(zngeo,'xyg',izone)
+          endif
+          if (ISHSB.eq.1) then
+            call VSB3D(0,izone)
+          endif
+          if (ISHAO.eq.1) then
+            call VAO3D(0,izone)        
+          endif
+          if (ISHBLK.eq.1) then
+            call VSBL3D(0,izone)  ! for testing of blockages
+          endif
+
         endif
       
         WRITE(ETEXT,'(2A)')'Domain: ',
@@ -2980,6 +2992,7 @@ C IER=0 indicates no error.
 #include "cfd.h"
 #include "net_flow.h"
 
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/ICFNOD/ICFD,ICP
       common/KEYVOLS/NVOL(MNZ),IVOLF(MNVLS,MNZ),IVCELLS(MNVLS,MNZ,2),
      &               JVCELLS(MNVLS,MNZ,2),KVCELLS(MNVLS,MNZ,2)
@@ -3002,6 +3015,8 @@ C IER=0 indicates no error.
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/CFDMFS1/ICFDNOD(MNZ),ICFDCNN(MNVLS,MNZ)
+      COMMON/CFDVIS/ISHSB,ISHAO,IFACES,ISHBLK
+      common/param2/TITLE(MNZ),CFTRFL(MNZ),LPHI(MNZ)
       common/pophelp/h(60)   ! needed for dynamic popup
       character H*72
 
@@ -3014,6 +3029,14 @@ C IER=0 indicates no error.
       LOGICAL CALPOL,CALLMA,OK,DOK
       INTEGER SPMTYP,SSLINK1,SSLINK2
       integer NITMS,INO,NITMSS1,IIO,NITMSS2,IXO,NITUM,INUO,NITMSS3 ! max items and current menu item
+      character TITLE*72,CFTRFL*72,LPHI*72
+      CHARACTER ETEXT*82,zngeo*3
+
+#ifdef OSI
+      integer iside,isize,ifont
+#else
+      integer*8 iside,isize,ifont
+#endif
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -3127,13 +3150,55 @@ C Help text for this menu.
   7   helptopic='cfd_source_boundary_edit'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
+C If in graphic model show the current grid.
+      IF(MMOD.EQ.8)THEN
+
+C Recalculate gridding in case this has changed.
+        CALL INICNT
+        CALL GRID(ier)
+        call NEW2OLD
+
+C Display domain
+        if (IFACES.lt.0) then
+          write(zngeo,'(a)')'zn '
+        else
+          write(zngeo,'(a)')'---'
+        endif
+        if(abs(IFACES).eq.1)then
+          call VGRID3D(zngeo,'xyz',izone)
+        elseif(abs(IFACES).eq.2)then
+          call VGRID3D(zngeo,'xzg',izone)
+        elseif(abs(IFACES).eq.3)then
+          call VGRID3D(zngeo,'yzg',izone)
+        elseif(abs(IFACES).eq.4)then
+          call VGRID3D(zngeo,'xyg',izone)
+        endif
+        if (ISHSB.eq.1) then
+          call VSB3D(0,izone)
+        endif
+        if (ISHAO.eq.1) then
+          call VAO3D(0,izone)        
+        endif
+        if (ISHBLK.eq.1) then
+          call VSBL3D(0,izone)  ! for testing of blockages
+        endif
+      
+        WRITE(ETEXT,'(2A)')'Domain: ',
+     &    TITLE(izone)(1:lnblnk(TITLE(izone)))
+        iside=1; isize=1; ifont=1
+        call viewtext(ETEXT,iside,isize,ifont)
+      ENDIF
+
 C Display menu.
       INO=-1
       IF(VOLNAME(ISB,ICFD)(1:4).EQ.'SRC_')THEN
         CALL PHELPD('Warning',nbhelp,'-',0,0,IER)
       ENDIF
       CALL EMENU('Sources edit',ITMSS,NITMS,INO)
-      if (ITMSS(INO)(1:1).eq.' ') then
+      write(6,*)INO
+      if (INO.lt.1) then
+        goto 7
+      elseif (ITMSS(INO)(1:1).eq.' ') then
         goto 7
       elseif (INO.eq.1) then
 
@@ -4219,7 +4284,7 @@ C Curvilinear boundary vertex numbers.
 
       DIMENSION COG1(3),COG2(3),COG3(3),JJVN(MV)
 
-      CHARACTER act*1,HOLD*72,outs*124
+      CHARACTER act*1,HOLD*96,outs*124
 #ifdef OSI
       integer iix,iiy,iixx,iiyy,ixd,iyd,iik
 #else
@@ -4297,10 +4362,11 @@ C << Should Check that points are in the same plane and that X is increasing. >>
           endif
 
 C This write assumes not-very-complex zones and surfaces.
+C << needs to support lots more edges >>
           HOLD=' '
-          WRITE(HOLD,'(24I3)')(JJVN(J),J=1,ijvn)
+          WRITE(HOLD,'(32I3)')(JJVN(J),J=1,ijvn)
           CALL EASKS(HOLD,' Associated high vertices (confirm):',
-     &      '  ',72,' ','associated vertices',IIER,nbhelp)
+     &      '  ',96,' ','associated vertices',IIER,nbhelp)
         endif
       endif
       NV = iCountWords(HOLD)
@@ -4352,11 +4418,11 @@ C Ask for and display the bottom defining vertices (west to east).
             goto 51
           endif
 
-C This write statement assumes not-very-complex zones and polygons. 
+C This write statement assumes not-very-complex zones and polygons jjvn. 
           HOLD=' '
-          WRITE(HOLD,'(24I3)')(JJVN(J),J=1,ijvn)
+          WRITE(HOLD,'(32I3)')(JJVN(J),J=1,ijvn)
           CALL EASKS(HOLD,' Associated low vertices (confirm):',
-     &      '  ',72,' ','associated vertices',IIER,nbhelp)
+     &      '  ',96,' ','associated vertices',IIER,nbhelp)
         endif
       endif
       NV = iCountWords(HOLD)

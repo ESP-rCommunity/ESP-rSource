@@ -141,8 +141,14 @@ C Associate with real & reactive power item with a zone.
      &                  IACTIV(itd3)=itd4
                       if(DBTASK(ITD1)(1:8).eq.'HTCLSETP')
      &                  IHTCLSETP(itd3)=itd4
-                      if(DBTASK(ITD1)(1:6).eq.'DBTZNM')
-     &                  IDBTZNM(itd3)=itd4   ! measured zn dbT
+                      if(DBTASK(ITD1)(1:8).eq.'DBTZNOBS')
+     &                  IDBTZNOBS(itd3)=itd4   ! observed zn dbT
+                      if(DBTASK(ITD1)(1:7).eq.'ZNRHOBS')
+     &                  IZNRHOBS(itd3)=itd4   ! observed zn RH
+                      if(DBTASK(ITD1)(1:7).eq.'ZNHTOBS')
+     &                  IZNHTOBS(itd3)=itd4   ! observed zn heating
+                      if(DBTASK(ITD1)(1:7).eq.'ZNCLOBS')
+     &                  IZNCLOBS(itd3)=itd4   ! observed zn cooling
 
 C Bidirectional data are assigned per surface.
                       if(DBTASK(ITD1)(1:8).eq.'BIDIRSET')then
@@ -164,13 +170,13 @@ C Vertical solar radiation data (used in solar.F) are assigned per surface.
  975                    continue
                       endif
 
-C Measured surface temperature data to display in res are assigned
+C Observed surface temperature data to display in res are assigned
 C per surface.
-                      if(DBTASK(ITD1)(1:5).eq.'SURTM')then
+                      if(DBTASK(ITD1)(1:7).eq.'SURTOBS')then
                         DO 976 IS=1,NZSUR(itd3)
                           if(DBSN(itd1)(1:12).eq.
      &                       sname(itd3,IS)(1:12))then
-                            ISURTMEAS(itd3,IS)=itd4
+                            ISURTOBS(itd3,IS)=itd4
                           endif
  976                    continue
                       endif

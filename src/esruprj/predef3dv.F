@@ -382,6 +382,7 @@ C If IP1 is ever negative then jump to a later point.
           CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,iix,iiy)
           call edwline(iixlast,iiylast,iix,iiy)
+          call pausems(20)
           call forceflush()
   
 C Repeat until next point is the first, remember position and skip
@@ -398,6 +399,7 @@ C Complete the polygon.
           CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,iix,iiy)
           call edwline(iixlast,iiylast,iix,iiy)
+          call pausems(20)
           call forceflush()
 
 C Use COG of the mass surface in order to draw its name.
@@ -427,6 +429,7 @@ C Now draw the bounding surfaces. Follow the usual pattern.
             XX(loop2) = vertmass(k,1); YY(loop2) = vertmass(k,2)
             ZZ(loop2) = vertmass(k,3)
             call wiresymbol(xx(loop2),yy(loop2),zz(loop2),2,32)  ! indicate vertex
+            write(6,*) loop2,k,xx(loop2),yy(loop2),zz(loop2)
             IANXT(loop2) = loop2 + 1
           enddo ! of loop2
           N = nbboundv(loop)
@@ -466,6 +469,7 @@ C If IP1 is ever negative then jump to a later point.
           call eswline(iixlast,iiylast,iix,iiy)
           edges=edges+1
           call forceflush()
+          call pausems(20)
   
 C Repeat until next point is the first, remember position and skip
 C past any -1 values of IBNXT, save IP1 as IPT for testing.
@@ -486,6 +490,7 @@ C Complete the polygon.
           call u2pixel(AAX,AAY,iix,iiy)
           call eswline(iixlast,iiylast,iix,iiy)
           call forceflush()
+          call pausems(20)
 
 C Use COG of the bounding surface in order to draw its name.
           CALL VECTRN(CG,TEMAT,COG2,IER)
@@ -570,6 +575,7 @@ C If there are no edges to draw then jump.
               call winscl('-',iicol)
             endif
             call forceflush()
+            call pausems(20)
 
 C Repeat until....
             IPT = IP1

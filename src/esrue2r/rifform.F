@@ -369,6 +369,8 @@ C If use = 'i' then initial assumptions.
 C If use = 'f' then force files to account for change in root/dir name.
       subroutine rifset(ic,use)
 #include "building.h"
+#include "model.h"
+#include "geometry.h"
 #include "prj3dv.h"
 #include "e2r_common.h"
       
@@ -377,6 +379,7 @@ C If use = 'f' then force files to account for change in root/dir name.
       character pre*28
 
       character use*1
+      logical founddiffuse,foundembedded,foundxform
 
 C Make the initial part of new file names to follow scene root name.
       write(pre,'(a)') SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE)))
@@ -438,10 +441,25 @@ C Additional rif file (furniture or fixtures).
         write(rmfil,'(2a)') pre(1:lnblnk(pre)),'-misc.rad'
       endif
 
-C IES xforms file.
-      if(rmfil(1:7).eq.'UNKNOWN'.or.use.eq.'f')then
-        write(iesfil,'(2a)') pre(1:lnblnk(pre)),'-xform.rad'
+
+C Check if only embedded mentioned in model cfg file.
+      if(nbofies.gt.0)then
+        do loop=1,nbofies
+          if(iesfile(loop)(1:8).eq.'embedded')then
+            foundembedded=.true.
+          else
+            foundxform=.true.
+          endif
+        enddo
       endif
+
+C Need to deal with a model with mixed embedded and xformed stuff.
+      if(foundxform)then
+        write(iesfil,'(2a)') pre(1:lnblnk(pre)),'-xform.rad'
+      else
+        write(iesfil,'(a)') 'embedded'
+      endif
+
 
 C Additional material file.
       if(rmmfil(1:7).eq.'UNKNOWN'.or.use.eq.'f')then

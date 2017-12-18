@@ -680,6 +680,44 @@ C If vertices are to be labeled do it in the smallest font.
       END
 
 
+C-----VERTLBLRED ----------------------------------------------------------
+C VERTLBLRED writes out a red vertex label based on the coordinates passed
+C and the vertex number.
+      SUBROUTINE VERTLBLRED(iix,iiy,IP,ier)
+      integer ifs,itfs,imfs
+      COMMON/GFONT/IFS,ITFS,IMFS
+      CHARACTER VTEXT*4,VT*4
+#ifdef OSI
+      integer iix,iiy,iix1,iiy1,iicol
+#else
+      integer*8 iix,iiy,iix1,iiy1,iicol
+#endif
+
+      IER=0
+
+C If vertices are to be labeled do it in the smallest font.
+      IF(IFS.GT.0)CALL winfnt(0)
+      IF(IP.LE.9)THEN
+        WRITE(VT,'(a,i1)')'v',IP
+      ELSEIF(IP.GT.9.and.IP.le.99)THEN
+        WRITE(VT,'(a,i2)')'v',IP
+      ELSEIF(IP.GT.99)THEN
+        WRITE(VT,'(a,i3)')'v',IP
+      ENDIF
+      VTEXT=VT
+      iix1=iix+1; iiy1=iiy-1;
+      iicol=0
+      call winscl('z',iicol)
+      CALL wstxpt(iix1,iiy1,VTEXT)
+      IF(IFS.GT.0)CALL winfnt(IFS)
+      call forceflush()
+      iicol=0
+      call winscl('-',iicol)
+
+      RETURN
+      END
+
+
 C-----ORIGESP -----------------------------------------------------------
 C ORIGESP uses arrows to indicate the site origin.  It should only be
 C called after the model bounds and viewpoint information has been 

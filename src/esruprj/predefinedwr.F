@@ -29,6 +29,7 @@ C ******************************** CHOOSEPREDEF
 C choosepredef - selects a predefined object and returns its name
 C and bounding box. It calls predefscan to recover information to 
 C present in menus.
+C << multi-zone ?? >>
       subroutine choosepredef(objectname,objmenu,objbb,ier)
 #include "building.h"
 #include "esprdbfile.h"
@@ -57,9 +58,9 @@ C Predefined entity variables.
 
 C << use parameters when available >>
       dimension catname(6),cats(6)
-      dimension names(42),menus(42),itemcat(42)
+      dimension names(46),menus(46),itemcat(46)
       integer pointback(30) ! to point back to item in list
-      real bounding(42,3) ! width, depth, height
+      real bounding(46,3) ! width, depth, height
       character predef*144,fs*1
       integer loop
       logical unixok
@@ -164,7 +165,7 @@ C Now select from matching entries.
 
 C Decode which one and set name and ier.
         ifoc=IVALS(1); ifoc2=pointback(ifoc)
-        write(6,*) 'ifoc ',ifoc,ifoc2,menus(ifoc2),names(ifoc2)
+C        write(6,*) 'ifoc ',ifoc,ifoc2,menus(ifoc2),names(ifoc2)
         write(objmenu,'(a)') menus(ifoc2)  ! menu entry to pass across
         write(objectname,'(a)') names(ifoc2)  ! name to pass across
         objbb(1)=bounding(ifoc2,1)
@@ -208,8 +209,8 @@ C << use parameters when available >>
       character menus*32  ! list of menus for objects
       character itemcat*12 ! category for each object
       dimension catname(6),cats(6)
-      dimension names(42),menus(42),itemcat(42)
-      real bounding(42,3) ! width, depth, height for each    
+      dimension names(46),menus(46),itemcat(46)
+      real bounding(46,3) ! width, depth, height for each    
       integer IER         ! error return where zero is ok, 
                           ! ier=-1 file not found, ier=-2 no objects
 
@@ -245,7 +246,7 @@ C << use parameters when ready >>
         catname(loop)=' '
       enddo    
       numitems=0
-      do loop=1,42
+      do loop=1,46
         names(loop)='  '
         menus(loop)='  '
         itemcat(loop)='  '
@@ -322,6 +323,14 @@ C Read date stamp << not yet used >>.
         write(menus(numitems),'(a)') phrase(1:lnblnk(phrase))
         IF(IER.NE.0) CONT=.FALSE.
         continue  ! look for more key words
+      elseif(WORD(1:7).EQ.'*mzitem')then
+        numitems=numitems+1
+        CALL EGETW(LOUTSTR,K,WORD,'W','item name',IER)
+        write(names(numitems),'(a)') WORD(1:lnblnk(WORD))
+        CALL EGETRM(LOUTSTR,K,phrase,'W','category',IER)
+        write(menus(numitems),'(a)') phrase(1:lnblnk(phrase))
+        IF(IER.NE.0) CONT=.FALSE.
+        continue  ! look for more key words
       elseif(WORD(1:9).EQ.'*end_item')then
         continue  ! look for more key words
       elseif(WORD(1:6).EQ.'*incat')then
@@ -344,6 +353,8 @@ C work-in-progress.
         CALL EGETWR(LOUTSTR,K,VAL,0.0,999.,'W','bb Z',IER)
         bounding(numitems,3)=VAL
         IF(IER.NE.0) CONT=.FALSE.
+        continue  ! look for more key words
+      elseif(WORD(1:5).EQ.'*zone')then
         continue  ! look for more key words
       elseif(WORD(1:7).EQ.'*bounds')then
         continue  ! look for more key words
@@ -427,6 +438,7 @@ C Parameters
       character OUTS*124,loutstr*248,outstr*144
       character WORD*24,phrase*32
       logical CONT,foundit
+      logical iszone    ! set true if working with mzitem
       logical close
       integer loop,i,j,ibe,ix,ixx,nbv   ! for looping
       real verpre     ! version of file
@@ -466,6 +478,7 @@ C Open the file.
 C Clear variables.
       call clearobjcommons()
       CONT=.TRUE.  ! assume reads are ok
+      iszone=.false.  ! assume not a multi-zone item
 
 C Remember how many visual entities already exist
 C in the zone (so we known which added ones to rotate.
@@ -536,6 +549,20 @@ C Located the object requested.
           CALL EGETRM(LOUTSTR,K,phrase,'W','menu',IER)
           write(objdesc,'(a)') phrase(1:lnblnk(phrase))
           foundit=.true.
+          iszone=.false.  ! not a multi-zone item
+        endif
+      elseif(WORD(1:7).EQ.'*mzitem')then
+        CALL EGETW(LOUTSTR,K,WORD,'W','item name',IER)
+        if(WORD(1:12).ne.name(1:12))then
+          continue
+        else
+
+C Located the object requested.
+          write(objname,'(a)') WORD(1:lnblnk(WORD))
+          CALL EGETRM(LOUTSTR,K,phrase,'W','menu',IER)
+          write(objdesc,'(a)') phrase(1:lnblnk(phrase))
+          foundit=.true.
+          iszone=.true.  ! is a multi-zone item
         endif
       elseif(WORD(1:9).EQ.'*end_item')then
         if(foundit)then
@@ -591,6 +618,9 @@ C Remember vertices associated with mass and add transform.
 C Remember mass definitions. Apply prec to mass surface names.
         if(foundit)then
           nbmass=nbmass+1
+          if(iszone)then
+            CALL EGETW(LOUTSTR,K,WORD,'W','mass zone',IER)
+          endif
           WORD='            ' 
           CALL EGETW(LOUTSTR,K,WORD,'W','mass name',IER)
           write(msurname(nbmass),'(2a)') prec,WORD(1:11)
@@ -598,6 +628,10 @@ C Remember mass definitions. Apply prec to mass surface names.
           write(msurmat(nbmass),'(a)') phrase(1:lnblnk(phrase))
           CALL EGETW(LOUTSTR,K,WORD,'W','mass optics',IER)
           write(msuropt(nbmass),'(a)') WORD(1:lnblnk(WORD))
+          if(iszone)then
+            CALL EGETW(LOUTSTR,K,WORD,'W','mass other zone name',IER)
+            CALL EGETW(LOUTSTR,K,WORD,'W','mass other surf name',IER)
+          endif
           CALL EGETWI(LOUTSTR,K,iv,4,MV,'F','nb assoc v',IER)
           nbmassv(nbmass)=iv
           IF(IER.NE.0) CONT=.FALSE.
@@ -607,11 +641,23 @@ C Remember mass definitions. Apply prec to mass surface names.
           enddo
         endif
         continue  ! look for more key words
+      elseif(WORD(1:5).EQ.'*zone')then
+
+C Keep track of zones so can be appended to the existing model zones.
+        if(iszone)then
+          CALL EGETW(LOUTSTR,K,WORD,'W','zone name',IER)
+          CALL EGETW(LOUTSTR,K,WORD,'W','air or water',IER)
+          CALL EGETP(LOUTSTR,K,phrase,'W','description',IER)
+C << TODO data structures >>
+        endif
       elseif(WORD(1:5).EQ.'*surf')then
 
 C Remember boundary surface definitions. Apply prec to surface names.
         if(foundit)then
           nbbound=nbbound+1
+          if(iszone)then
+            CALL EGETW(LOUTSTR,K,WORD,'W','surf zone',IER)
+          endif
           WORD='            ' 
           CALL EGETW(LOUTSTR,K,WORD,'W','surf name',IER)
           write(bsurname(nbbound),'(2a)') prec,WORD(1:11)
@@ -619,6 +665,10 @@ C Remember boundary surface definitions. Apply prec to surface names.
           write(bsurmat(nbbound),'(a)') phrase(1:lnblnk(phrase))
           CALL EGETW(LOUTSTR,K,WORD,'W','surf optics',IER)
           write(bsuropt(nbbound),'(a)') WORD(1:lnblnk(WORD))
+          if(iszone)then
+            CALL EGETW(LOUTSTR,K,WORD,'W','other zone name',IER)
+            CALL EGETW(LOUTSTR,K,WORD,'W','other surf name',IER)
+          endif
           CALL EGETWI(LOUTSTR,K,iv,3,MV,'F','nb assoc v',IER)
           nbboundv(nbbound)=iv
           IF(IER.NE.0) CONT=.FALSE.
@@ -640,6 +690,10 @@ C Scan visp definition and instanciate model entity.
           CALL EGETWI(LOUTSTR,K,iv,6,6,'F','vis nb faces',IER)
           CALL EGETWR(LOUTSTR,K,VX,0.,1.,'W','vis opacity',IER)
           OPOV(icomp,nbv)=VX
+          if(iszone)then
+            CALL EGETW(LOUTSTR,K,WORD,'W','vis blk zone name',IFLAG)
+C << data structure >>
+          endif
           WORD='            ' 
           CALL EGETW(LOUTSTR,K,WORD,'W','vis blk name',IFLAG)
 
@@ -742,6 +796,10 @@ C Even if we are not focuse on it need to jump 2 lines.
           BANGOV(icomp,nbv,3)=VX
           CALL EGETWR(LOUTSTR,K,VX,0.,1.,'W','vis opacity',IER)
           OPOV(icomp,nbv)=VX
+          if(iszone)then
+            CALL EGETW(LOUTSTR,K,WORD,'W','vis blk zone name',IFLAG)
+C << data structure >>
+          endif
           WORD='            ' 
           CALL EGETW(LOUTSTR,K,WORD,'W','vis blk name',IFLAG)
 
@@ -783,6 +841,10 @@ C Visual entity with only one rotation.
           BANGOV(icomp,nbv,3)=0.0   ! there is no 3rd rotation
           CALL EGETWR(LOUTSTR,K,VX,0.,1.,'W','vis opacity',IER)
           OPOV(icomp,nbv)=VX
+          if(iszone)then
+            CALL EGETW(LOUTSTR,K,WORD,'W','vis blk zone name',IFLAG)
+C << data structure >>
+          endif
           WORD='            ' 
           CALL EGETW(LOUTSTR,K,WORD,'W','vis blk name',IFLAG)
 
@@ -803,7 +865,7 @@ C The name of the visual material might contain spaces so use EGETP.
 C Collection of entities making up an object. Update
 C limit if geometry.h changes.
         if(foundit)then
-          if(NBVOBJ(icomp)+1.gt.20)then
+          if(NBVOBJ(icomp)+1.gt.50)then
             call usrmsg('Maximum number of visual objects reached',
      &        'sorry about that.','W')
             ier=2
@@ -833,11 +895,11 @@ C Prepend prec to the name.
      &        lnblnk(VOBJLIST(icomp,nbvo,ibvo))
           enddo  ! ibvo
 C Debug.
-C          write(6,*) 'vis obj ',icomp,nbvo,iv,VOBJNAME(icomp,nbvo),
-C     &      LNVOBJNAME(icomp,nbvo),VOBJDESC(icomp,nbvo),
-C     &      LNVOBJDESC(icomp,nbvo),
-C     &      VOBJLIST(icomp,nbvo,1),LNVOBJLIST(icomp,nbvo,1),
-C     &      VOBJLIST(icomp,nbvo,2),LNVOBJLIST(icomp,nbvo,2)
+          write(6,*) 'vis obj ',icomp,nbvo,iv,VOBJNAME(icomp,nbvo),
+     &      LNVOBJNAME(icomp,nbvo),VOBJDESC(icomp,nbvo),
+     &      LNVOBJDESC(icomp,nbvo),
+     &      VOBJLIST(icomp,nbvo,1),LNVOBJLIST(icomp,nbvo,1),
+     &      VOBJLIST(icomp,nbvo,2),LNVOBJLIST(icomp,nbvo,2)
         endif
         continue  ! look for more key words
       else
@@ -1033,7 +1095,7 @@ C Re-display the zone on exit.
 C ******************** GEO2OBJ 
 C GEO2OBJ reads V1.1 zone geometry data and to fill predefined object
 C common blocks.
-
+C << ?? multi-zone >>
       SUBROUTINE GEO2OBJ(IUNIT,LGEOMF,ITRU,IER)
 #include "building.h"
 #include "model.h"
@@ -1109,6 +1171,8 @@ C Clear predefined object variables.
 
 C Indicate we got it from an ESP-r geometry file.
       write(objsource,'(a)') 'Derived from an ESP-r geometry file.'
+
+C << Point to jump back to if importing for multi-zone entity >>
 
 C Read header lines from file, the 1.1 version looks like: 
 C *Geometry 1.1,GEN,manager  # tag version, format, zone name (tbd allow spaces)
@@ -1661,12 +1725,12 @@ C The name of the construction might contain spaces so use EGETP.
             write(objvismat(nbobjvis),'(a)') phrase(1:lnblnk(phrase))
             objvistyp(nbobjvis)='vis3'
 C Debug.
-            write(6,*) 'vis3',nbobjvis,objvisname(nbobjvis),
-     &        objvismat(nbobjvis),objvisopaq(nbobjvis),
-     &        OBJBANGOV(nbobjvis,1),OBJBANGOV(nbobjvis,2),
-     &        OBJBANGOV(nbobjvis,3),OBJDXOV(nbobjvis),
-     &        OBJDYOV(nbobjvis),OBJDZOV(nbobjvis),OBJXOV(nbobjvis),
-     &        OBJYOV(nbobjvis),OBJZOV(nbobjvis)
+C            write(6,*) 'vis3',nbobjvis,objvisname(nbobjvis),
+C     &        objvismat(nbobjvis),objvisopaq(nbobjvis),
+C     &        OBJBANGOV(nbobjvis,1),OBJBANGOV(nbobjvis,2),
+C     &        OBJBANGOV(nbobjvis,3),OBJDXOV(nbobjvis),
+C     &        OBJDYOV(nbobjvis),OBJDZOV(nbobjvis),OBJXOV(nbobjvis),
+C     &        OBJYOV(nbobjvis),OBJZOV(nbobjvis)
             goto 73    ! check if there is another
 
           elseif(phrase(1:5).eq.'*visp')then
@@ -1776,12 +1840,12 @@ C The name of the visual material might contain spaces so use EGETP.
             write(objvismat(nbobjvis),'(a)') phrase(1:lnblnk(phrase))
             objvistyp(nbobjvis)='vis '
 C Debug.
-            write(6,*) 'vis ',nbobjvis,objvisname(nbobjvis),
-     &        objvismat(nbobjvis),objvisopaq(nbobjvis),
-     &        OBJBANGOV(nbobjvis,1),OBJBANGOV(nbobjvis,2),
-     &        OBJBANGOV(nbobjvis,3),OBJDXOV(nbobjvis),
-     &        OBJDYOV(nbobjvis),OBJDZOV(nbobjvis),OBJXOV(nbobjvis),
-     &        OBJYOV(nbobjvis),OBJZOV(nbobjvis)
+C            write(6,*) 'vis ',nbobjvis,objvisname(nbobjvis),
+C     &        objvismat(nbobjvis),objvisopaq(nbobjvis),
+C     &        OBJBANGOV(nbobjvis,1),OBJBANGOV(nbobjvis,2),
+C     &        OBJBANGOV(nbobjvis,3),OBJDXOV(nbobjvis),
+C     &        OBJDYOV(nbobjvis),OBJDZOV(nbobjvis),OBJXOV(nbobjvis),
+C     &        OBJYOV(nbobjvis),OBJZOV(nbobjvis)
             goto 73
 
           elseif(phrase(1:8).eq.'*vobject')then
@@ -1854,6 +1918,8 @@ C Errors for loutstr reads.
 C ******************** OBJQA 
 C OBJQ generates a QA report on a predefined object or writes a block
 C of text to patch into a predefined database.
+
+C << data structure needed for *mzitem QA >>
 
       SUBROUTINE OBJQA(ifilg,ASCIIF,ACT,IER)
 #include "building.h"
@@ -1981,6 +2047,8 @@ C        call edisp(iuout,outs)
             call edisp(iuout,outs)
           enddo  ! of ib
         endif
+
+C << adapt to support more complex edge lists? >>
         if(nbbedge.gt.0)then
           WRITE(outs,'(a,12I3)',IOSTAT=ios,ERR=13)'Bounding edges:',
      &      (edgejvn(J),J=1,nbbedge)
@@ -2020,6 +2088,9 @@ C        call edisp(iuout,outs)
       elseif(ACT(1:2).eq.'EX')then
 
 C If act is EX then export a block of text.
+
+C << make variant for *mzitem >>
+
         CALL EFOPSEQ(IFILG,ASCIIF,4,IER)
         write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# '
         write(ifilg,'(5a)') '*item,',objname(1:lnblnk(objname)),',',
@@ -2063,6 +2134,7 @@ C Write vertices with minimal white space comma separated.
         ENDDO
 
 C If there are mass surfaces write.
+C << adapt to support more complex mass surface edge lists? >>
         if(nbmass.gt.0)then
           write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# '
           do ib=1,nbmass
@@ -2078,7 +2150,7 @@ C If there are mass surfaces write.
           enddo
         endif
 
-C If there are boundary surface write.
+C If there are boundary surface write. << limit to number of edges! >>
         if(nbbound.gt.0)then
           write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# '
           do ib=1,nbbound
@@ -2171,7 +2243,7 @@ C Visual entities are in the next section.
      &          OBJDXOV(ib),OBJDYOV(ib),OBJDZOV(ib),
      &          OBJBANGOV(ib,1),OBJBANGOV(ib,2),OBJBANGOV(ib,3),
      &          objvisopaq(ib),' ',OBJVISNAME(ib)
-              write(6,*) outs(1:lnblnk(outs))
+C              write(6,*) outs(1:lnblnk(outs))
               lnvm=lnblnk(objvismat(ib))
               call SDELIM(outs,outsd,'C',IW)
               write(ifilg,'(4a,i3)',IOSTAT=IOS,ERR=13) 
@@ -2200,7 +2272,7 @@ C Visual entities are in the next section.
      &          OBJXVP(ib,6),OBJYVP(ib,6),OBJZVP(ib,6),
      &          OBJXVP(ib,7),OBJYVP(ib,7),OBJZVP(ib,7),
      &          OBJXVP(ib,8),OBJYVP(ib,8),OBJZVP(ib,8)
-              write(6,*) outs(1:lnblnk(outs))
+C              write(6,*) outs(1:lnblnk(outs))
               call SDELIM(outs,outsd,'C',IW)
               write(ifilg,'(2A)',IOSTAT=IOS,ERR=13) 
      &          outsd(1:lnblnk(outsd)),'  # 5-8 '
@@ -2210,7 +2282,7 @@ C Visual entities are in the next section.
      &          '*vis',tab,OBJXOV(ib),OBJYOV(ib),OBJZOV(ib),
      &          OBJDXOV(ib),OBJDYOV(ib),OBJDZOV(ib),
      &          OBJBANGOV(ib,1),objvisopaq(ib),' ',OBJVISNAME(ib)
-              write(6,*) outs
+C              write(6,*) outs
               call SDELIM(outs,outsd,'C',IW)
               write(ifilg,'(4a,i3)',IOSTAT=IOS,ERR=13) 
      &          outsd(1:lnblnk(outsd)),' ',objvismat(ib)(1:lnvm),
@@ -2294,6 +2366,7 @@ C Parameters
       character OUTS*124,OUTSTR*124,loutstr*248
       character WORD*24,phrase*32
       logical CONT,foundit
+      logical iszone    ! set true if working with mzitem
       integer loop  ! for looping
       real verpre     ! version of file
       real VAL,VAL1,VX,VY,VZ
@@ -2315,6 +2388,7 @@ C Open the file.
       endif
       write(currentfile,'(a)') LASCI(1:lnblnk(LASCI))
       foundit=.false.
+      iszone=.false.  ! assume not a multi-zone item
 
 C Clear common blocks prior to reading new object.
       call clearobjcommons()
@@ -2380,6 +2454,19 @@ C Save the line of text if in the focused item.
         if(foundit)then
           goto 42  ! process what has been found
         endif
+      elseif(WORD(1:7).EQ.'*mzitem')then
+        CALL EGETW(LOUTSTR,K,WORD,'W','item name',IER)
+        if(WORD(1:12).ne.name(1:12))then
+          continue
+        else
+
+C Located the object requested.
+          write(objname,'(a)') WORD(1:lnblnk(WORD))
+          CALL EGETRM(LOUTSTR,K,phrase,'W','menu',IER)
+          write(objdesc,'(a)') phrase(1:lnblnk(phrase))
+          foundit=.true.
+          iszone=.true.  ! is a multi-zone item
+        endif
       elseif(WORD(1:5).EQ.'*item')then
         CALL EGETW(LOUTSTR,K,WORD,'W','item name',IER)
         if(WORD(1:12).ne.name(1:12))then
@@ -2391,6 +2478,7 @@ C Located the object requested.
           CALL EGETRM(LOUTSTR,K,phrase,'W','menu',IER)
           write(objdesc,'(a)') phrase(1:lnblnk(phrase))
           foundit=.true.
+          iszone=.false.  ! is a multi-zone item
         endif
       elseif(WORD(1:9).EQ.'*end_item')then
         if(foundit)then
@@ -2455,6 +2543,9 @@ C Remember vertices associated with mass and add transform.
 C Remember mass definitions.
         if(foundit)then
           nbmass=nbmass+1
+          if(iszone)then
+            CALL EGETW(LOUTSTR,K,WORD,'W','mass zone',IER)
+          endif
           WORD='            ' 
           CALL EGETW(LOUTSTR,K,WORD,'W','mass name',IER)
           write(msurname(nbmass),'(a)') WORD(1:lnblnk(WORD))
@@ -2462,6 +2553,10 @@ C Remember mass definitions.
           write(msurmat(nbmass),'(a)') phrase(1:lnblnk(phrase))
           CALL EGETW(LOUTSTR,K,WORD,'W','mass optics',IER)
           write(msuropt(nbmass),'(a)') WORD(1:lnblnk(WORD))
+          if(iszone)then
+            CALL EGETW(LOUTSTR,K,WORD,'W','mass other zone',IER)
+            CALL EGETW(LOUTSTR,K,WORD,'W','mass other surf',IER)
+          endif
           CALL EGETWI(LOUTSTR,K,iv,3,MV,'F','nb assoc v',IER)
           nbmassv(nbmass)=iv
           IF(IER.NE.0) CONT=.FALSE.
@@ -2471,11 +2566,23 @@ C Remember mass definitions.
           enddo
         endif
         continue  ! look for more key words
+      elseif(WORD(1:5).EQ.'*zone')then
+
+C Keep track of zones so can be appended to the existing model zones.
+        if(iszone)then
+          CALL EGETW(LOUTSTR,K,WORD,'W','zone name',IER)
+          CALL EGETW(LOUTSTR,K,WORD,'W','air or water',IER)
+          CALL EGETP(LOUTSTR,K,phrase,'W','description',IER)
+C << TODO data structures >>
+        endif
       elseif(WORD(1:5).EQ.'*surf')then
 
 C Remember boundary surface definitions.
         if(foundit)then
           nbbound=nbbound+1
+          if(iszone)then
+            CALL EGETW(LOUTSTR,K,WORD,'W','surf zone',IER)
+          endif
           WORD='            ' 
           CALL EGETW(LOUTSTR,K,WORD,'W','surf name',IER)
           write(bsurname(nbbound),'(a)') WORD(1:lnblnk(WORD))
@@ -2483,6 +2590,10 @@ C Remember boundary surface definitions.
           write(bsurmat(nbbound),'(a)') phrase(1:lnblnk(phrase))
           CALL EGETW(LOUTSTR,K,WORD,'W','surf optics',IER)
           write(bsuropt(nbbound),'(a)') WORD(1:lnblnk(WORD))
+          if(iszone)then
+            CALL EGETW(LOUTSTR,K,WORD,'W','other zone name',IER)
+            CALL EGETW(LOUTSTR,K,WORD,'W','other surf name',IER)
+          endif
           CALL EGETWI(LOUTSTR,K,iv,3,MV,'F','nb assoc v',IER)
           nbboundv(nbbound)=iv
           IF(IER.NE.0) CONT=.FALSE.
@@ -2512,6 +2623,10 @@ C Scan visp definition and instanciate model entity.
           CALL EGETWI(LOUTSTR,K,iv,6,6,'F','vis nb faces',IER)
           CALL EGETWR(LOUTSTR,K,VX,0.,1.,'W','vis opacity',IER)
           objvisopaq(nbobjvis)=VX
+          if(iszone)then
+            CALL EGETW(LOUTSTR,K,WORD,'W','vis blk zone name',IFLAG)
+C << data structure >>
+          endif
           WORD='            ' 
           CALL EGETW(LOUTSTR,K,WORD,'W','vis blk name',IFLAG)
 
@@ -2611,6 +2726,10 @@ C Even if we are not focused on it need to jump 2 lines.
           objbangov(nbobjvis,3)=VX
           CALL EGETWR(LOUTSTR,K,VX,0.,1.,'W','vis opacity',IER)
           objvisopaq(nbobjvis)=VX
+          if(iszone)then
+            CALL EGETW(LOUTSTR,K,WORD,'W','vis blk zone name',IFLAG)
+C << data structure >>
+          endif
           WORD='            ' 
           CALL EGETW(LOUTSTR,K,WORD,'W','vis blk name',IFLAG)
 C Set name.
@@ -2648,6 +2767,10 @@ C Visual entity with only one rotation.
           objbangov(nbobjvis,3)=0.0
           CALL EGETWR(LOUTSTR,K,VX,0.,1.,'W','vis opacity',IER)
           objvisopaq(nbobjvis)=VX
+          if(iszone)then
+            CALL EGETW(LOUTSTR,K,WORD,'W','vis blk zone name',IFLAG)
+C << data structure >>
+          endif
           WORD='            ' 
           CALL EGETW(LOUTSTR,K,WORD,'W','vis blk name',IFLAG)
 

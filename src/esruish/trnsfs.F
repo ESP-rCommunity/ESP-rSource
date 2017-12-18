@@ -129,7 +129,7 @@ C Transformed y value should be close to zero; warn if not.
  9999       format('TRNSF1: Surface ',i3,' is probably not coplanar!')
             call edisp(icout,outs)
             write(outs,9998)i,xs,ys,zs
- 9998       format('Vertex ',i2,', which has coordinates ',3f11.6,',')
+ 9998       format('Vertex ',i3,', which has coordinates ',3f11.6,',')
             call edisp(icout,outs)
             write(outs,9997)yft(i)
  9997       format('has transformed Y value of ',f11.6,
@@ -457,7 +457,7 @@ C Trace output. Include context for the calculation.
         else
           msg=' for sky patch '
         endif
-        write(outs,'(3a,i2,a,i2,3a,i2,a,i2,a,i3)')
+        write(outs,'(3a,i3,a,i3,3a,i2,a,i2,a,i3)')
      &    '*** TRNSF3: projection of obstruction ',
      &    blockname(izone,ibn)(1:lnblockname(izone,ibn)),' (',ibn,
      &    ') face (',ibs,') on surface ',ZSDES(1:lnzsn),' (',iztsur,
@@ -588,12 +588,12 @@ C common block.
 
       if(tok)then
          call edisp(icout,' ')
-         write(outs,'(a,i2,a)')'*** CORNR: Block ',ibn,
+         write(outs,'(a,i3,a)')'*** CORNR: Block ',ibn,
      &                         ' site coordinates (XC,YC,ZC)'
          call edisp(icout,outs)
          call edisp(icout,'    X-Coord  Y-Coord  Z-Coord')
          do 9999 i=1,8
-            write(outs,'(i2,3f9.2)')i,xc(i),yc(i),zc(i)
+            write(outs,'(i3,3f9.2)')i,xc(i),yc(i),zc(i)
             call edisp(icout,outs)
  9999    continue
          iobstrtrace(iz,ibn)=1

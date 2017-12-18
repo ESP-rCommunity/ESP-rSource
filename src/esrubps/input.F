@@ -210,7 +210,10 @@ C default file names for databases
       COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       INTEGER :: icyear,icdngh
       REAL :: clat,clong
-
+      common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
+      integer :: isd1,ism1,isd2,ism2,isds,isdf,ntstep
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
 
 C Path to model and command line file name.
       common/rpath/path
@@ -222,6 +225,20 @@ C Path to model and command line file name.
       INTEGER :: iairn,icaas
       common/ffn/iflwn,icffs(mpcon)
       INTEGER :: iflwn,icffs
+      COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
+      CHARACTER*72 LCFD
+      integer :: IFCFD
+      common/ACTDOM/CFDOK
+      logical CFDOK
+
+      real CFTIMS,CFTIMF    ! start and finish times for CFD assessment
+      integer ICFDYS,ICFDYF ! julian day-of-year at start and end of CFD
+      integer ICFAUX  ! helps to keep track of IFCFD()
+      integer ICFVIEW ! toggle for preview via dfv during assessment
+      integer ICFVIEWMINT,ICFVIEWMAXT  ! range of temperatures for dfv
+      COMMON/CFSEUP/CFTIMS,CFTIMF,ICFDYS,ICFDYF,ICFAUX(MCOM),ICFVIEW,
+     &  ICFVIEWMINT,ICFVIEWMAXT
+
       real SNA
       COMMON/PREC1/SNA(MCOM,MS)
       common/prec7/itcnst
@@ -284,6 +301,10 @@ C Mechanical Ventilation systems.
 C For reading in of bi-directional data.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
+C Toggle for extreme silent running (endless) mode.
+      logical endless,issilient
+      common/endlessmode/endless,issilient
+
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 
       CHARACTER OUTSTR*124,MODE*4
@@ -331,6 +352,8 @@ C Status of multi-year climate database
       
       REAL :: clmloc
       INTEGER :: i,iaprob,iglib,irec,istat,itru,iua,llt,nclass
+      integer :: loop
+      real :: rtmp
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -407,9 +430,17 @@ C Find the path and local file name.
 C Use supplementary temporary unit number for IAPROB
         IAPROB=IFIL+22
         MODE='ALL '
-        call usrmsg('Scanning the model description...',' ','-')
+        if(endless.or.issilient)then
+          continue
+        else
+          call usrmsg('Scanning the model description...',' ','-')
+        endif
         CALL ERSYS_mmode(LCFGF,ifcfg,IAPROB,MODE,ITRC,IER,autook)
-        call usrmsg('Scanning the model description...done ',' ','-')
+        if(endless.or.issilient)then
+          continue
+        else
+          call usrmsg('Scanning the model description...done ',' ','-')
+        endif
 
 C Building and plant description now complete.
 C Unless error occured, initiate computation/setting-up of:
@@ -454,6 +485,25 @@ C Use any simulation parameters in the configuration file.
         call usesps(spsname,ier)
         if(ier.eq.2)then
           return
+        endif
+      else
+
+C Loop through zones to see if there is a cfd domain description.
+C If so... set default CFD assessment timing assumptions. These
+C will need to be updated once the user specifies the building
+C simulation period manually. Signal this by setting both ICFDYS
+C and ICFDYF to zero so building simulation period is suggested
+C in simcon.F
+        do loop=1,NCOMP
+          IF(ABS(IFCFD(loop)).GT.0) CFDOK=.true.
+        enddo
+        if(CFDOK)then
+C          ICFDYS=9
+C          ICFDYF=15
+          ICFDYS=0
+          ICFDYF=0
+          CFTIMS=1.0
+          CFTIMF=23.99  ! start and finish times for CFD assessment
         endif
       endif
 
@@ -545,7 +595,11 @@ C Report specified start-up period.
       write(outs,'(a,I3,a)')
      &     'A systems and building simulation start-up period of ',
      &     ITCNST,' days has been specified.'
-      call edisp(iuout,outs)
+      if(endless.or.issilient)then
+        continue
+      else
+        call edisp(iuout,outs)
+      endif
 
       IF(GRND3D)THEN
 
@@ -862,8 +916,12 @@ C Take into account weather file location.
             READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)CLMLOC
             WRITE(OUTSTR,1000)CLMLOC,ICYEAR
  1000       FORMAT(' Climate data: ',A30,': ',I5)
-            CALL EDISP(IUOUT,' ')
-            CALL EDISP(IUOUT,OUTSTR)
+            if(endless.or.issilient)then
+              continue
+            else
+              CALL EDISP(IUOUT,' ')
+              CALL EDISP(IUOUT,OUTSTR)
+            endif
             IRTYPE=0
             IF(ICDNGH.EQ.123)IRTYPE=1
    
@@ -1072,6 +1130,10 @@ C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
+C Toggle for extreme silent running (endless) mode.
+      logical endless,issilient
+      common/endlessmode/endless,issilient
+
       CHARACTER*72 LMOIST,LMSTR
       character outs*124,CXSTR*78,spflnam*72
       character dllsubr*12,dllmesg*124
@@ -1091,12 +1153,16 @@ C Zone-by-zone. Use IUNIT for geometry file.
 
 C Clear igarray() for inbuilt ground temps and iguarray()
 C for user defined ground temps. 
-       igttype=0
-       do 9 ij=1,mgrdp
-         igarray(ij)=0
-         if(ij.le.12) iguarray(ij)=0
-  9    continue
-      call usrmsg(' Checking zone descriptions... ',' ','-')
+      igttype=0
+      do 9 ij=1,mgrdp
+        igarray(ij)=0
+        if(ij.le.12) iguarray(ij)=0
+  9   continue
+      if(endless.or.issilient)then
+        continue
+      else
+        call usrmsg(' Checking zone descriptions... ',' ','-')
+      endif
       ILTHPS=.FALSE.
       BLDG3D=.FALSE.
       MSTROK=.FALSE.
@@ -1186,9 +1252,7 @@ C Now alter properties for uncertainty analysis.
           elseif (IMET.eq.2) then
             call FCTA(IZ)
           elseif (IMET.ge.3) then
-C            write (36,*) 'before mcsa sna= ',(SNA(1,J),J=1,7)
             call MCSA(IZ)
-C            write (36,*) 'after mcsa sna= ',(SNA(1,J),J=1,7)
           endif
         endif
 
@@ -1240,14 +1304,22 @@ C Assign two nodes per layer.
         CALL MZCOE1(IZ)
         IF(ICGC(IZ).EQ.1)CALL DAYFAC(IZ)
    10 CONTINUE
-      call usrmsg(' Checking zone descriptions...done ',' ','-')
+      if(endless.or.issilient)then
+        continue
+      else
+        call usrmsg(' Checking zone descriptions...done ',' ','-')
+      endif
       if (IREP.eq.1) return
 
 C Check connections between type 3 surfaces to ensure
 C no mismatch.
       IW=IWARN
       IWARN=0
-      call usrmsg(' Checking model topology...',' ','-')
+      if(endless.or.issilient)then
+        continue
+      else
+        call usrmsg(' Checking model topology...',' ','-')
+      endif
       call ckcurmatch(prob,iprob)
       if(prob.and.iprob.gt.1)then
         outs='More than one complaint about model contiguity'
@@ -1470,7 +1542,11 @@ C matched does not).
         endif
    20 continue
       IWARN=IWARN+IW
-      call usrmsg(' Checking model topology...done',' ','-')
+      if(endless.or.issilient)then
+        continue
+      else
+        call usrmsg(' Checking model topology...done',' ','-')
+      endif
 
 C Find out which was most often used in terms of ground temperatures.
       igmax=0
@@ -1496,17 +1572,9 @@ C      write(6,*) igumax,igumaxindex,iguarray
 
 C Nothing specified as a connection so use UK monthly mean
 C ground temperatures at 1.2m depth as given by Lacy.
-        GTMP(1)=7.28
-        GTMP(2)=6.5
-        GTMP(3)=6.56
-        GTMP(4)=7.33
-        GTMP(5)=9.06
-        GTMP(6)=11.39
-        GTMP(7)=13.5
-        GTMP(8)=14.33
-        GTMP(9)=14.11
-        GTMP(10)=11.72
-        GTMP(11)=10.72
+        GTMP(1)=7.28; GTMP(2)=6.5; GTMP(3)=6.56; GTMP(4)=7.33
+        GTMP(5)=9.06; GTMP(6)=11.39; GTMP(7)=13.5; GTMP(8)=14.33
+        GTMP(9)=14.11; GTMP(10)=11.72; GTMP(11)=10.72
         GTMP(12)=8.67
       elseif(igmax.gt.igumax)then
 
@@ -1554,6 +1622,7 @@ C espriou.h provides currentfile.
 
       COMMON/ICFNOD/ICFD,ICP
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
+      CHARACTER*72 LCFD
       common/ndcfd/NCFDND,ICFDND(MNZ),NCONF
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
       COMMON/cfcall/icfcal(MNZ)
@@ -1563,7 +1632,8 @@ C espriou.h provides currentfile.
 
 C Active domain common.
       common/ACTDOM/CFDOK
-
+      logical CFDOK
+      
 C Experimental Hydrogen controller. use with caution
 C Residential hydrogen cogen: control file
       common/resh2ctl/iresh2ctl,resh2flnam
@@ -1580,12 +1650,11 @@ C Input file information
                                 !- controller inputs
                                 
       CHARACTER OUTSTR*124,outs*72
-      CHARACTER*72 LCFD
       CHARACTER*72 lfil,CFTRFL,TITLE,LPHI
       CHARACTER*72 LBSIMP
 c      character dllsubr*12,dllmesg*124
 
-      logical CFDOK,dll
+      logical dll
 
 C Reset warning flag and check and see if running in dll mode.
       IER1=0
@@ -1709,7 +1778,7 @@ C the actions of the controller.
      &        '.rec'
             IACC(ICFD) = IFIL + 29 + (ICFD-1)*100
 C Debug
-C            write(6,*) 'MZUTIL (ICFD,lfil,IACC)',ICFD,lfil,iacc(ICFD)
+c            write(6,*) 'MZUTIL (ICFD,lfil,IACC)',ICFD,lfil,iacc(ICFD)
             call efopseq(IACC(ICFD),lfil,4,ier)
             if(ier.ne.0)then
               write(outs,'(a,i2,a)') 
@@ -1767,6 +1836,7 @@ C *Save option - 1,2,3,4
 C *Results - building results file
 C *Flow_results - air flow results file
 C *Plant_results - plant results file
+C *CFD results file
 
 C Climate and control are as specified in the configuration file.
 
@@ -1790,35 +1860,64 @@ C USESPS uses configuration presimuilation data.
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
      &               isfnmon(MSPS)
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
+
+      COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
+      CHARACTER*72 LCFD
+      integer :: ifcfd
+
+C Extended simulation parameters for each set.
+      common/spfldats/isstupex(MSPS),isbnstepex(MSPS),ispnstepex(MSPS),
+     &  issaveex(MSPS),isavghex(MSPS),iscfdactivate(MSPS),
+     &  isicfdys(MSPS),isicfdyf(MSPS),
+     &  scftims(MSPS),scftimf(MSPS)
+      INTEGER :: isstupex,isbnstepex,ispnstepex,issaveex,isavghex
+      INTEGER :: iscfdactivate      ! zero ignore domains
+      INTEGER :: isicfdys,isicfdyf  ! CFD simulation start & finish days
+      REAL :: scftims,scftimf       ! CFD simulation start & finish time
 
 C Once per hour storage of results, averaged over that hour.
       common/rdcgen/irdact
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
-     &  smstres(MSPS),selres(MSPS),sipvres
+     &  smstres(MSPS),selres(MSPS),scfdres(MSPS),sipvres
+      character sblres*72,sflres*72,splres*72,smstres*72,
+     &  selres*72,scfdres*72,sipvres*72
 
 C lafres  - fluid flow network results file
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES,CFRESF
+      character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72,
+     &  CFRESF*72
       COMMON/ENETRES/ERESLIB
+      character ERESLIB*72
       common/dllerr/dllsubr,dllmesg
 
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      common/ACTDOM/CFDOK
+      logical CFDOK
+
+      real CFTIMS,CFTIMF    ! start and finish times for CFD assessment
+      integer ICFDYS,ICFDYF ! julian day-of-year at start and end of CFD
+      integer ICFAUX  ! helps to keep track of IFCFD()
+      integer ICFVIEW ! toggle for preview via dfv during assessment
+      integer ICFVIEWMINT,ICFVIEWMAXT  ! range of temperatures for dfv
+      COMMON/CFSEUP/CFTIMS,CFTIMF,ICFDYS,ICFDYF,ICFAUX(MCOM),ICFVIEW,
+     &  ICFVIEWMINT,ICFVIEWMAXT
 
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical dll,match
 
-      character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      character*72 ERESLIB
       character outs*124, outs2*124
-      character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,spfdescr*30,name*30
+      character spfdescr*30,name*30
       character dllsubr*12,dllmesg*124
 
 C Check if running in dll mode.
       call isadll(dll)
       IER=0
 
-C Assign data.
+C Assign global data.
       if(isstup.ne.0)then
         ITCNST=isstup
         startupok=.true.
@@ -1847,9 +1946,7 @@ C calculate the length of the plant time increment in seconds.
         TIMSEC=3600.0/(FLOAT(NTSTEP)*FLOAT(NTSTPP))
         tstepok=.true.
       else
-
-C Prevent ntstpp from being zero.
-        NTSTPP=1
+        NTSTPP=1  ! Prevent ntstpp from being zero.
       endif
       if(issave.ge.0)then
         isave=issave
@@ -1867,12 +1964,63 @@ C Match period name in command line.
 C Determine if period supports multi-year simulations
           bMY_sim_enabled = bMY_period_support (i)
 
+C Update initial assumptions with data from this set.
+          if(isstupex(i).ne.0)then
+            ITCNST=isstupex(i)
+            startupok=.true.
+          endif
+          if(isbnstepex(i).ne.0)then
+            ntstep=isbnstepex(i)
+
+C Also check against user preference in simulation parameters for 
+C whether to save every timestep to the file.
+            if(isavghex(i).eq.1)then
+              irdact=1
+            else
+              irdact=0
+            endif
+            tstepok=.true.
+C Debug.
+C            write(6,*) 'in input irdact & isavgh are ',i,irdact,isavgh,
+C     &        isstday(i),isstmon(i),isfnday(i),isfnmon(i)
+          endif
+          if(ispnstepex(i).ne.0)then
+            NTSTPP=ispnstepex(i)
+            TIMSEC=3600.0/(FLOAT(NTSTEP)*FLOAT(NTSTPP))
+            tstepok=.true.
+          else
+            NTSTPP=1  ! Prevent ntstpp from being zero.
+          endif
+          if(issaveex(i).ge.0)then
+            isave=issaveex(i)
+            saveok=.true.
+          endif
+
           isd1=isstday(i)
           ism1=isstmon(i)
           CALL EDAY(isd1,ism1,isds)
           isd2=isfnday(i)
           ism2=isfnmon(i)
           CALL EDAY(isd2,ism2,isdf)
+
+C Loop through zones to see if there is a cfd domain description.
+          do loop=1,NCOMP
+            IF(ABS(IFCFD(loop)).GT.0) CFDOK=.true.
+          enddo
+
+C If there is a CFD domain set its attributes from sps.
+C Also if there is a directive to ignore reset CFDOK.
+C The CFSEUP attributes will be used in askaboutcfd.
+          if(CFDOK)then
+            CFTIMS=scftims(i)
+            CFTIMF=scftimf(i)  ! start and finish times for CFD assessment
+            ICFDYS=isicfdys(i)
+            ICFDYF=isicfdyf(i) ! julian day-of-year at start and end of CFD
+            if(iscfdactivate(i).eq.0) CFDOK=.false.
+          endif
+
+C Debug.
+C          write(6,*) 'input CFD stuff',CFDOK,ICFDYS,ICFDYF,CFTIMS,CFTIMF
           
           if ( bMY_sim_enabled ) then
 C Handle start/end year
@@ -1963,12 +2111,16 @@ C or from another location.
           if(ientxist.gt.0.and.(selres(i)(1:2).ne.'  '))then
             ERESLIB=selres(i)
           endif
+          if(scfdres(i)(1:2).ne.'  ')then
+            CFRESF=scfdres(i)  ! set cfd results file name
+          endif
 
 C Debug.
 C          write(6,*) ' input.F usesps rfile ',i,rfile
 C          write(6,*) ' input.F usesps lafres ',i,LAFRES
 C          write(6,*) ' input.F usesps pfile ',i,pfile
 C          write(6,*) ' input.F usesps splres ',i,splres
+C          write(6,*) ' input.F usesps scfdres ',i,scfdres
 
           if(match)goto 43
         endif

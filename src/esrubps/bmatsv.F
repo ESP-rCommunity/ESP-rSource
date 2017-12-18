@@ -124,7 +124,13 @@ C Air flow network
 
 C CFD
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
-      COMMON/CFSEUP/CFTIMS,CFTIMF,ICFDYS,ICFDYF,ICFAUX(MCOM)
+      real CFTIMS,CFTIMF    ! start and finish times for CFD assessment
+      integer ICFDYS,ICFDYF ! julian day-of-year at start and end of CFD
+      integer ICFAUX  ! helps to keep track of IFCFD()
+      integer ICFVIEW ! toggle for preview via dfv during assessment
+      integer ICFVIEWMINT,ICFVIEWMAXT  ! range of temperatures for dfv
+      COMMON/CFSEUP/CFTIMS,CFTIMF,ICFDYS,ICFDYF,ICFAUX(MCOM),ICFVIEW,
+     &  ICFVIEWMINT,ICFVIEWMAXT
       COMMON/calcdCFD/mICORcfd(MCOM),mHCcfd(MCOM)
 
 C Simulation start day required by cmp70c.
@@ -197,9 +203,9 @@ C CFD coupling toggles
 
 C Common for results file names (ag@20131221)
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
-     &  smstres(MSPS),selres(MSPS),sipvres
-      character sblres*72,sflres*72,splres*72
-      character smstres*72,selres*72,sipvres*72
+     &  smstres(MSPS),selres(MSPS),scfdres(MSPS),sipvres
+      character sblres*72,sflres*72,splres*72,smstres*72,
+     &  selres*72,scfdres*72,sipvres*72
 
 C Additional commons for SHOCC.
 
@@ -273,6 +279,10 @@ C BASESIMP.
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
       character LBSIMP*72
 
+C Toggle for extreme silent running (endless) mode.
+      logical endless,issilient
+      common/endlessmode/endless,issilient
+
 C Quick-run info
       integer iOldSeasonIndex     !- Flags for tracking changes between seasons.
       save iOldSeasonIndex
@@ -297,6 +307,10 @@ C water
 C Path to model 
       common/rpath/path
       character path*72
+
+C <SPR>
+      integer spr_problem
+C </SPR>
       
 C SUN F90 has spotty support for cpu_time intrinsic
 #ifdef F90
@@ -433,6 +447,16 @@ C Ensure all control commons are initialised to "off".
         call FMI_CLEARCTL()
       endif
 C </FMI>
+
+C <SPR>
+C Initialise sprites.
+      CALL SPRINIT
+C </SPR>
+
+C <GRM>
+C Initialise gremlins.
+      CALL GRMINIT
+C </GRM>
 
 C Initialize HVAC variables
       call ZERO_HVAC_VAR
@@ -910,7 +934,7 @@ C through Sunday 7.
 C Establish climatic data for present day and first
 C hour of future day: future day first.
 
-C The climate database contains records int he following
+C The climate database contains records in the following
 C order. Note: the database stores all records in
 C integer format.
 C col 1: Diffuse solar on the horizontal (W/m**2)
@@ -998,8 +1022,8 @@ C Future day
         irec=idyf
 
 C Get values for first hour of the future day.
-       read(iClim,rec=irec,iostat=istat,err=1000)
-     &   idiff,itmpf,idnrf,ivelf,idirf,ihumf
+        read(iClim,rec=irec,iostat=istat,err=1000)
+     &    idiff,itmpf,idnrf,ivelf,idirf,ihumf
 
 C Check for uncertainty associated with climate data.
         UAFLG=0.
@@ -1154,6 +1178,11 @@ C Set the future time-row hour value.
             if(nsinc.eq.1)btimep=1.0
             btimef=float(ihrp)+float(its)/float(ntstep)
 
+C <GRM>
+C Check on gremlins.
+            if (.not.bInStartup()) CALL GRMCTL(ier)
+C </GRM>
+
 C New day events in SHOCC occur when btimef first exceeds 24.0 ...
             if(btimef.gt.24.0)then
               if(ishday.eq.0)then
@@ -1236,89 +1265,94 @@ C Set `itsmus' if output is required at this time-row.
             call eclose(rem,0.00,0.0001,close)
             if (close.and.itrflg.eq.0) itsmus=1
 
-            outs='not yet'
-            DO 15 ICP=1,NCOMP
-              IF(ICFAUX(ICP).NE.0)THEN
+C Skip CFD if it has been disabled.
+            if (CFDOK) then
+
+              outs='not yet'
+              DO 15 ICP=1,NCOMP
+                IF(ICFAUX(ICP).NE.0)THEN
 C Check CFD coupling toggles to see if ACC has been turned off
 C or if 2-way CFD-BLD conflation has been activated.
 C (CFD-MFS conflation is checked in CFMNGE)
-                if(ACCON.eq.0)then
+                  if(ACCON.eq.0)then
 C ACC has been turned off, set conflation type to 1.
-                  if(abs(ICFAUX(ICP)).gt.1)
-     &                                  ICFAUX(ICP)=sign(1,ICFAUX(ICP))
-                endif
-                if(CFD2BLD.eq.2)then
+                    if(abs(ICFAUX(ICP)).gt.1)
+     &                ICFAUX(ICP)=sign(1,ICFAUX(ICP))
+                  endif
+                  if(CFD2BLD.eq.2)then
 C 2-way CFD-BLD conflation has been activated, set conflation type to 5.
-                  if(abs(ICFAUX(ICP)).eq.4)
-     &                                  ICFAUX(ICP)=sign(5,ICFAUX(ICP))
-                endif
+                    if(abs(ICFAUX(ICP)).eq.4)
+     &                ICFAUX(ICP)=sign(5,ICFAUX(ICP))
+                  endif
 
 C Activate CFD model during an intended period.
 C Do this by resetting IFCFD variable this is then checked below.
-                if(icfaux(icp).gt.0) then
-                  if(idyp.lt.isds) then
-                    IFCFD(ICP)=ICFAUX(ICP)
-                  else
-                    IFCFD(ICP)=0
+                  if(icfaux(icp).gt.0) then
+                    if(idyp.lt.isds) then
+                      IFCFD(ICP)=ICFAUX(ICP)
+                    else
+                      IFCFD(ICP)=0
+                    endif
                   endif
-                endif
 
 C 1st clause: Present day is within defined range.
-                IF((IDYP.GE.ICFDYS.AND.IDYP.LE.ICFDYF).or.
+                  IF((IDYP.GE.ICFDYS.AND.IDYP.LE.ICFDYF).or.
 
 C 2nd clause: Future time is the first time step of CFD start day, but
 C             present time is still the previous day.
 C             May need results for this time step.
      &    (IDYP.eq.(ICFDYS-1).and.CFTIMS.eq.1.0.and.btimef.eq.1.0))THEN
 
-                  IF(btimef.GE.CFTIMS.and.abs(IFCFD(ICP)).eq.0)THEN
+                    IF(btimef.GE.CFTIMS.and.abs(IFCFD(ICP)).eq.0)THEN
 C Ensure IFCFD is negative, necessary for SURFCONF.
-                    IFCFD(ICP)=-abs(ICFAUX(ICP))
-                  ELSEIF(btimef.GT.CFTIMF.and.IDYP.eq.ICFDYF)THEN
-                    IFCFD(ICP)=0
-                    ICFAUX(ICP)=0
-                    if(outs.eq.'not yet')then
-                      write(outs,'(2a)')'CFD has now run for the ',
-     &                                               'selected period.'
-                      call edisp(itu,outs)
-                      write(outs,'(2a)')'Disabling CFD for the ',
-     &                                   'remainder of the simulation.'
-                      call edisp(itu,outs)
-                    endif
+                      IFCFD(ICP)=-abs(ICFAUX(ICP))
+                    ELSEIF(btimef.GT.CFTIMF.and.IDYP.eq.ICFDYF)THEN
+                      IFCFD(ICP)=0
+                      ICFAUX(ICP)=0
+                      if(outs.eq.'not yet')then
+                        write(outs,'(2a)')'CFD has now run for the ',
+     &                    'selected period.'
+                        call edisp(itu,outs)
+                        write(outs,'(2a)')'Disabling CFD for the ',
+     &                    'remainder of the simulation.'
+                        call edisp(itu,outs)
+                      endif
+                    ENDIF
                   ENDIF
-                ENDIF
 
-              ENDIF
+                ENDIF
 C Set flag indicating that surface-convection correlation indices have
 C not yet been calculated.
-              mICORcfd(ICP) = 0
+                mICORcfd(ICP) = 0
 
 C Set flag indicating HCs have not been calculated by CFD for the 
 C current zone for the current time step: this will be reset if CFD is 
 C invoked.
-              mHCcfd(ICP) = 0
+                mHCcfd(ICP) = 0
 
 C Debug
-C             write(6,*) 'MZNUMA (ICP,IFCFD(ICP))',ICP,IFCFD(ICP)
+C               write(6,*) 'MZNUMA (ICP,IFCFD(ICP))',ICP,IFCFD(ICP)
 
 C Invoke CFD if there is `surface conflation' between the thermal domain
 C and CFD. 
-              IF( ABS(IFCFD(ICP)).eq.1 .or. 
-     &           (ABS(IFCFD(ICP)).eq.4 .or. 
-     &            ABS(IFCFD(ICP)).eq.5) )THEN
-                CALL SURFCONF(ICP)
-              ELSEIF(IFCFD(ICP).ne.0)then
-                write(outs,'(a,i2)')'Unrecognized conflation mode: ',
-     &                                                  ABS(IFCFD(ICP))
-                call edisp(itu,outs)
-                write(outs,'(a,I3,a)')'CFD for building zone ',ICP,
-     &                                                     ' disabled.'
-                call edisp(itu,outs)
-                IFCFD(ICP)=0
-                ICFAUX(ICP)=0
-                outs='not yet'
-              ENDIF
-  15        CONTINUE
+                IF( ABS(IFCFD(ICP)).eq.1 .or. 
+     &             (ABS(IFCFD(ICP)).eq.4 .or. 
+     &              ABS(IFCFD(ICP)).eq.5) )THEN
+                  CALL SURFCONF(ICP)
+                ELSEIF(IFCFD(ICP).ne.0)then
+                  write(outs,'(a,i2)')'Unrecognized conflation mode: ',
+     &              ABS(IFCFD(ICP))
+                  call edisp(itu,outs)
+                  write(outs,'(a,I3,a)')'CFD for building zone ',ICP,
+     &              ' disabled.'
+                  call edisp(itu,outs)
+                  IFCFD(ICP)=0
+                  ICFAUX(ICP)=0
+                  outs='not yet'
+                ENDIF
+  15          CONTINUE
+
+            endif
 
 C And compute all inside and 'outside' convection coefficients.
             call mzconv
@@ -1838,6 +1872,11 @@ C << NOTE: dummy call REP_UPDATE only has 3 parameters >>
      &                              iQuick_run)
 !            call REP_UPDATE(nsinc,btimep,myday, iStartupFlag) ! <- store logged data
 
+C <SPR>
+C Query sprites.
+            if (.not.bInStartup()) CALL SPRCTL(spr_problem,ier)
+C </SPR>
+
    30     continue
 
 C debug (begin)
@@ -1929,7 +1968,11 @@ C Unix variant.
      &      ectime(ietim)
 C NT variant.
 C         write(outs,'(I4,A)') iperc,' %   complete; '
-          call edisp(iuout,outs)
+          if(endless.or.issilient)then
+            continue
+          else
+            call edisp(iuout,outs)
+          endif
         end if
 
 C The GCEP simulation routine is called only once per hour, if a
@@ -1948,6 +1991,11 @@ C GSHP system is defined.
        endif
 
        endif seasonal_run_test
+
+C <SPR>
+C If there is a problem, stop the simulation here.
+        if (spr_problem.eq.1) call SPRSTOP(iday)
+C </SPR>
 
 C Day loop now complete.
    10 continue
@@ -2047,8 +2095,12 @@ C the impact of modifications on simulation times.
          CALL cpu_time(sec_c)
          write(outs,'(A,F7.2,A)')
      &        'XML postprocessor cpu runtime: ',sec_c-sec_b,' seconds'
-         CALL EDISP(IUOUT,outs)
-         CALL EDISP(IOUTS,' ')
+         if(endless.or.issilient)then
+           continue
+         else
+           CALL EDISP(IUOUT,outs)
+           CALL EDISP(IOUTS,' ')
+         endif
       endif
 #endif
 

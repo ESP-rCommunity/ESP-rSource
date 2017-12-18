@@ -54,6 +54,7 @@ C            file has been read present a list of zone names.
 C  ASKZONE: presents  a list of zones to select one from depending on topic.
 C  ASKMULTIZONE: presents a list of zones to select one or more from.
 C  EASKSUR: Presents a list of surfaces in a zone IZONE.
+C  EASKMSUR: Allows selection of multiple surfaces.
 C  asksnode: Presents a list of layers/nodes within a surface.
 C  FLNAME: Provides a name for a defined file type.
 C  ZSID:   Returns a compact description in ZSDESC of the zone:surface.
@@ -123,7 +124,19 @@ C Simulation parameter presets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
-     &  smstres(MSPS),selres(MSPS),sipvres
+     &  smstres(MSPS),selres(MSPS),scfdres(MSPS),sipvres
+      character sblres*72,sflres*72,splres*72,smstres*72,
+     &  selres*72,scfdres*72,sipvres*72
+
+C Extended simulation parameters for each set.
+      common/spfldats/isstupex(MSPS),isbnstepex(MSPS),ispnstepex(MSPS),
+     &  issaveex(MSPS),isavghex(MSPS),iscfdactivate(MSPS),
+     &  isicfdys(MSPS),isicfdyf(MSPS),
+     &  scftims(MSPS),scftimf(MSPS)
+      INTEGER :: isstupex,isbnstepex,ispnstepex,issaveex,isavghex
+      INTEGER :: iscfdactivate      ! zero ignore domains
+      INTEGER :: isicfdys,isicfdyf  ! CFD simulation start & finish days
+      REAL :: scftims,scftimf       ! CFD simulation start & finish time
 
 
 C HOT3000: BASESIMP.
@@ -281,8 +294,7 @@ C IES lighting distribution files from model.h
       character ctldoc*248,lctlf*72
       character GTGEOM*72,GTNAME*15,spflnam*72,lipvdatf*72
       character*10 wkd1, wkd2
-      character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,spfdescr*30
+      character spfdescr*30
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
      
@@ -349,12 +361,18 @@ C Clear pre-simulation sets.
       issave= -1
       sipvres=' '
       do i=1,MSPS
+        isstupex(i)=isstup  ! same as global to start with
+        isbnstepex(i)=isbnstep
+        ispnstepex(i)=ispnstep
+        issaveex(i)=issave
+        isavghex(i)=isavgh
         spfdescr(i)=' '
         sblres(i)=' '
         sflres(i)=' '
         splres(i)=' '
         smstres(i)=' '
         selres(i)=' '
+        scfdres(i)=' '
         isstday(i)=0
         isstmon(i)=0
         isfnday(i)=0
@@ -477,9 +495,9 @@ C Per-zone areas and U-values.
           zboundarytype(IX,IXS,3)=0
           zhasglaze(ix,ixs)=0.0
           zhasdoor(ix,ixs)=0.0
-          isznbedges(ix,ixs)=0
+          isznver(ix,ixs)=0
           do iivu=1,MV
-            iszlist(ix,ixs,iivu)=0
+            iszjvn(ix,ixs,iivu)=0
             szcoords(ix,ixs,1)=0.0
             szcoords(ix,ixs,2)=0.0
             szcoords(ix,ixs,3)=0.0
@@ -1355,7 +1373,7 @@ C update NCUB(IC).
 
 C Read surface data line(s).
         IRV=NZS
-        CALL EGETWRA(IUF,VA,IRV,0.,0.9999,'F','view factors',IER)
+        CALL EGETWRA(IUF,VA,IRV,0.,0.99999,'F','view factors',IER)
         DO 14 J=1,NZS
           VEWF(I,J)=VA(J)
    14   CONTINUE
@@ -1405,6 +1423,114 @@ C MS senstive, change is MS>99.
           call edisp(itru,outs)
           write(outs,'(4X,22I5)')(I,I=69,NZS)
           call edisp(itru,outs)
+        elseif(NZS.ge.111.and.NZS.le.132)then
+          write(outs,'(4X,22I5)')(I,I=1,22)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=23,44)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=45,66)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=67,88)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=89,110)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=111,NZS)
+          call edisp(itru,outs)
+        elseif(NZS.ge.133.and.NZS.le.154)then
+          write(outs,'(4X,22I5)')(I,I=1,22)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=23,44)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=45,66)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=67,88)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=89,110)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=111,132)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=133,NZS)
+          call edisp(itru,outs)
+        elseif(NZS.ge.155.and.NZS.le.176)then
+          write(outs,'(4X,22I5)')(I,I=1,22)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=23,44)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=45,66)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=67,88)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=89,110)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=111,132)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=133,154)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=155,NZS)
+          call edisp(itru,outs)
+        elseif(NZS.ge.177.and.NZS.le.198)then
+          write(outs,'(4X,22I5)')(I,I=1,22)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=23,44)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=45,66)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=67,88)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=89,110)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=111,132)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=133,154)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=155,176)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=177,NZS)
+          call edisp(itru,outs)
+        elseif(NZS.ge.199.and.NZS.le.220)then
+          write(outs,'(4X,22I5)')(I,I=1,22)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=23,44)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=45,66)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=67,88)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=89,110)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=111,132)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=133,154)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=155,176)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=177,198)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=199,NZS)
+          call edisp(itru,outs)
+        elseif(NZS.ge.221.and.NZS.le.242)then
+          write(outs,'(4X,22I5)')(I,I=1,22)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=23,44)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=45,66)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=67,88)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=89,110)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=111,132)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=133,154)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=155,176)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=177,198)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=199,220)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=221,NZS)
+          call edisp(itru,outs)
         endif
         call edisp(itru,' ')
 
@@ -1446,6 +1572,114 @@ C MS senstive, change if MS>99.
             call edisp(itru,outs)
             write(outs,'(1x,22F5.2)')(VEWF(I,J),J=89,NZS)
             call edisp(itru,outs)
+          elseif(NZS.ge.111.and.NZS.le.132)then
+            write(outs,9993)I,(VEWF(I,J),J=1,22)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=23,44)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=45,66)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=67,88)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=89,110)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=111,NZS)
+            call edisp(itru,outs)
+          elseif(NZS.ge.133.and.NZS.le.154)then
+            write(outs,9993)I,(VEWF(I,J),J=1,22)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=23,44)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=45,66)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=67,88)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=89,110)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=111,132)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=133,NZS)
+            call edisp(itru,outs)
+          elseif(NZS.ge.155.and.NZS.le.176)then
+            write(outs,9993)I,(VEWF(I,J),J=1,22)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=23,44)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=45,66)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=67,88)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=89,110)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=111,132)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=133,154)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=155,NZS)
+            call edisp(itru,outs)
+          elseif(NZS.ge.177.and.NZS.le.198)then
+            write(outs,9993)I,(VEWF(I,J),J=1,22)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=23,44)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=45,66)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=67,88)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=89,110)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=111,132)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=133,154)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=155,176)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=177,NZS)
+            call edisp(itru,outs)
+          elseif(NZS.ge.199.and.NZS.le.220)then
+            write(outs,9993)I,(VEWF(I,J),J=1,22)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=23,44)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=45,66)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=67,88)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=89,110)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=111,132)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=133,154)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=155,176)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=177,198)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=199,NZS)
+            call edisp(itru,outs)
+          elseif(NZS.ge.221.and.NZS.le.242)then
+            write(outs,9993)I,(VEWF(I,J),J=1,22)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=23,44)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=45,66)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=67,88)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=89,110)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=111,132)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=133,154)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=155,176)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=177,198)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=199,220)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=221,NZS)
+            call edisp(itru,outs)
           endif
  9994   CONTINUE
       endif
@@ -1474,8 +1708,16 @@ C If next line is *MRT_SENSOR
       endif
 
 
-C Need to figure out what fstsur & lstsur actually are with
-C reference to a standard zone!!!!
+C lstsur is the number of surfaces in the zone NZS.
+C Seems that the 6 surfaces of MRT sensors are considered as
+C NZS+1 - NZS+6, like this:
+C 1: -Y (back)
+C 2: +X (right)
+C 3: +Y (front)
+C 4: -X (left)
+C 5: +Z (top)
+C 6: -Z (bottom)
+
       fstsur=NZS+1
       lstsur=NZS
       nsurmf=NZS+6
@@ -1560,7 +1802,7 @@ C act character*1 if 'a' then area weighted, if 'r' ray traced.
 
       dimension rval(MS)
       character LMRT*72,LGEOM*72,act*1
-      character louts*248
+      character louts*496
 
       IER=0
 
@@ -1592,7 +1834,9 @@ C Write out the file data.
       endif
 
 C Write matrix, one line at a time. Begin by copying data to a single
-C dimension array and then generating & writing out as much as 248 chars.
+C dimension array and then generating & writing out as much as 496 chars.
+C Use arlist2 because 12 characters is plenty for representing view
+C factors.
       DO 930 I = 1,NZS
         do 32 j = 1,NZS
           rval(j)=VEWF(i,j)
@@ -1600,7 +1844,7 @@ C dimension array and then generating & writing out as much as 248 chars.
         itrunc=1
         ipos=1
         do while (itrunc.ne.0)
-          call arlist(ipos,NZS,rval,MS,'C',louts,loutlen,itrunc)
+          call arlist2(ipos,NZS,rval,MS,'C',louts,loutlen,itrunc)
           write(iuf,'(1x,a)',IOSTAT=ios,ERR=14) louts(1:loutlen)
           ipos=itrunc+1
         end do
@@ -1626,7 +1870,7 @@ C If there are any cubes the save this information as well.
       DO 1180 I=1,NCUB(ICOMP)
         WRITE(IUF,34)IVFOK(I),XOC(I),YOC(I),ZOC(I),DXC(I),DYC(I),
      &    DZC(I),CANG(I),CUBN(I),I
-  34    FORMAT(I4,6F7.3,F7.1,2X,A6,'   # sensor ',I2)
+  34    FORMAT(I4,6F8.3,F7.1,2X,A6,'   # sensor ',I2)
         if(IVFOK(I).eq.1)then
           WRITE(IUF,'(A)',IOSTAT=IOS,ERR=14)'*MRTVIEW'
         else
@@ -2070,7 +2314,7 @@ C Local variables:
       DIMENSION  XL(MV),YL(MV)
       real AIL,BIL,CIL  ! defines inner lines
       DIMENSION AIL(MVS),BIL(MVS),CIL(MVS)
-      CHARACTER OUTSTR*124
+      CHARACTER OUTSTR*124,LOUTSTR*700
       integer ITVX   ! number of vertices in polygon
       logical BCLOSE,ICLOSE,MCLOSE ! close to X or Y axis
       logical close  ! to avoid divide by zero
@@ -2293,12 +2537,12 @@ C Figure out if M'or M'' is  contained within polygon
 
 C Debug.
       IF(ITRC.GT.1)THEN
-        WRITE(OUTSTR,'(a,42F8.3)') ' AIL:',(AIL(I),I=1,NWVERT)
-        CALL EDISP(IUOUT,OUTSTR)
-        WRITE(OUTSTR,'(a,42F8.3)') ' BIL:',(BIL(I),I=1,NWVERT)
-        CALL EDISP(IUOUT,OUTSTR)
-        WRITE(OUTSTR,'(a,42F8.3)') ' CIL:',(CIL(I),I=1,NWVERT)
-        CALL EDISP(IUOUT,OUTSTR)
+        WRITE(LOUTSTR,'(a,82F8.3)') ' AIL:',(AIL(I),I=1,NWVERT)
+        CALL EDISP248(IUOUT,LOUTSTR,100)
+        WRITE(LOUTSTR,'(a,82F8.3)') ' BIL:',(BIL(I),I=1,NWVERT)
+        CALL EDISP248(IUOUT,LOUTSTR,100)
+        WRITE(LOUTSTR,'(a,82F8.3)') ' CIL:',(CIL(I),I=1,NWVERT)
+        CALL EDISP248(IUOUT,LOUTSTR,100)
       endif
 
 C Solve equation to get intersections of the inner polygon 
@@ -2339,12 +2583,12 @@ C vertical. Note: working within packed list.
   350 CONTINUE
       IF(ITRC.GT.1)THEN
         CALL EDISP(IUOUT,' Transformed frame coords: ')
-        WRITE(OUTSTR,'(a,42F8.3)') ' X coords:',(XXF(I),I=1,NWVERT)
-        CALL EDISP(IUOUT,OUTSTR)
-        WRITE(OUTSTR,'(a,42F8.3)') ' Y coords:',(YYF(I),I=1,NWVERT)
-        CALL EDISP(IUOUT,OUTSTR)
-        WRITE(OUTSTR,'(a,42F8.3)') ' Z coords:',(ZZF(I),I=1,NWVERT)
-        CALL EDISP(IUOUT,OUTSTR)
+        WRITE(LOUTSTR,'(a,82F8.3)') ' X coords:',(XXF(I),I=1,NWVERT)
+        CALL EDISP248(IUOUT,LOUTSTR,100)
+        WRITE(LOUTSTR,'(a,82F8.3)') ' Y coords:',(YYF(I),I=1,NWVERT)
+        CALL EDISP248(IUOUT,LOUTSTR,100)
+        WRITE(LOUTSTR,'(a,82F8.3)') ' Z coords:',(ZZF(I),I=1,NWVERT)
+        CALL EDISP248(IUOUT,LOUTSTR,100)
       ENDIF
 
   100 CONTINUE
@@ -2436,7 +2680,7 @@ C XT,YT,ZT =  transformed surf vertex arrays,
 #include "building.h"
       DIMENSION  XB(MV),YB(MV),ZB(MV),XT(MV),YT(MV),ZT(MV)
       DIMENSION  VP(3),EQN(4),TRNS(3)
-      CHARACTER sname*28,outs*144,out96*96
+      CHARACTER sname*28,outs*144,out96*124
 
 C Find transformation matrices that normalise face.
       call PLEQN(XB,YB,ZB,NB,VP,EQN,IERR)
@@ -2469,13 +2713,13 @@ C If error, return transformed points same as initial.
         CALL EDISP(ITRU,outs)
         CALL EDISP(ITRU,' Transforming coords: ')
         ipos=1
-        call arlist(ipos,NB,XT,MV,'S',out96,loutlen,itrunc)
+        call arlist2(ipos,NB,XT,MV,'S',out96,loutlen,itrunc)
         WRITE(outs,'(a,a)') ' X coords:',out96(1:loutlen)
         CALL EDISP(ITRU,outs)
-        call arlist(ipos,NB,YT,MV,'S',out96,loutlen,itrunc)
+        call arlist2(ipos,NB,YT,MV,'S',out96,loutlen,itrunc)
         WRITE(outs,'(a,a)') ' Y coords:',out96(1:loutlen)
         CALL EDISP(ITRU,outs)
-        call arlist(ipos,NB,ZT,MV,'S',out96,loutlen,itrunc)
+        call arlist2(ipos,NB,ZT,MV,'S',out96,loutlen,itrunc)
         WRITE(outs,'(a,a)') ' Z coords:',out96(1:loutlen)
         CALL EDISP(ITRU,outs)
       ENDIF
@@ -3830,7 +4074,7 @@ C If a long list include page facility text.
       ELSE
         WRITE(VERT(M+1),16)IPM,MPM
         WRITE(VERTS(M+1),16)IPM,MPM
-   16   FORMAT ('0 page --- part: ',I1,' of ',I1)
+   16   FORMAT ('0 page --- part: ',I2,' of ',I2)
       ENDIF
 
 C If MOD has been passed as a M then return -2 to indicate further processing
@@ -3911,6 +4155,189 @@ C Decode from the potential long list to the zone number via KEYIND.
         call usrmsg(' ',' ','-')
         RETURN
       ELSE
+C Not one of the legal menu choices.
+        IVERT=-1
+        goto 92
+      ENDIF
+      IVERT=-2
+      goto 3
+
+      END
+
+
+C ******************* EASKMSUR
+C EASKMSUR presents a list of surfaces in a zone IZONE returning array
+C of surface indices ISLIST. It assumes that a geometry file has been read in.
+C Designed to show attributes in list.
+      SUBROUTINE EASKMSUR(IZONE,INPICK,ISLIST,PROMPT1,PROMPT2,IER)
+#include "building.h"
+#include "geometry.h"
+#include "epara.h"
+
+      common/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      DIMENSION VERTS(35)
+      DIMENSION ISLIST(MS)    ! selected surface
+      DIMENSION ISCNLIST(MCON)! selected surface connection
+
+      CHARACTER*(*) PROMPT1,PROMPT2
+      CHARACTER H*72,VERTS*44,KEY*1,title*29,outs*124
+      LOGICAL SELECT
+      integer i,j,icc   ! for looping
+
+      IER=0
+      IF(IZONE.GT.NCOMP.OR.IZONE.EQ.0)THEN
+        CALL USRMSG(' ',' Zone number out of range!','W')
+        IER=1
+        RETURN
+      ENDIF
+      INPICK=0
+      DO I=1,MS
+        ISLIST(I)=0
+      ENDDO
+      DO I=1,MCON
+        ISCNLIST(I)=0
+      ENDDO
+
+C Initialise surface menu variables based on window size.
+C IVERT is the menu position, MVERT the current number of menu lines.
+      SELECT=.FALSE.
+      write(title,'(2a)')'  Surfaces in ',
+     &  zname(IZONE)(1:lnzname(IZONE))
+      MHEAD=1
+      VERTS(1)='  Name         Composition   Facing'
+      MCTL=3
+      ILEN=NZSUR(IZONE)
+      IPACT=CREATE
+      CALL EKPAGE(IPACT)
+
+C Initial menu entry setup.
+   92 IER=0
+      IVERT=-3
+
+C Loop through the items until the page to be displayed. M is the
+C current menu line index. Build up text strings for the menu.
+    3 M=MHEAD
+      DO 10 L=1,ILEN
+        IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
+          M=M+1
+          CALL EMKEY(L,KEY,IER)
+          icc=IZSTOCN(izone,L)
+          if(icc.lt.1)then
+            continue
+          else
+            lnsmlcn=lnblnk(SSMLCN(icc))
+            if(lnsmlcn.gt.16) lnsmlcn=16
+          endif
+   
+          if(icc.gt.0)then
+            lnn=lnblnk(SSNAME(icc))
+            lnsmlcn=lnblnk(SSMLCN(icc))
+            lnoth=lnblnk(SSOTHER(icc,1))
+            if((lnn+lnsmlcn+lnoth).lt.36)then
+              if(ISCNLIST(icc).eq.0)then
+                WRITE(VERTS(M),'(7a)')KEY,'  ',SSNAME(icc)(1:lnn),
+     &            '  ',SSMLCN(icc)(1:lnsmlcn),'  ',
+     &            SSOTHER(icc,1)(1:lnoth)
+              else
+                WRITE(VERTS(M),'(8a)')KEY,'  ',SSNAME(icc)(1:lnn),
+     &            '  ',SSMLCN(icc)(1:lnsmlcn),'  ',
+     &             SSOTHER(icc,1)(1:lnoth),' *'
+              endif
+            else
+              if(ISCNLIST(icc).eq.0)then
+                WRITE(VERTS(M),'(7a)')KEY,'  ',SSNAME(icc)(1:lnn),
+     &            '  ',SSMLCN(icc)(1:15),'  ',SSOTHER(icc,1)(1:lnoth)
+              else
+                WRITE(VERTS(M),'(7a)')KEY,'  ',SSNAME(icc)(1:lnn),
+     &            '  ',SSMLCN(icc)(1:15),'  ',SSOTHER(icc,1)(1:lnoth),
+     &            ' *'
+              endif
+            endif
+          else
+            WRITE(VERTS(M),'(2a)')KEY,' unresolved surface...'
+          endif
+        ENDIF
+   10 CONTINUE
+
+C Number of actual items displayed.
+      MVERT=M+MCTL
+
+C If a long list include page facility text.
+      IF(IPFLG.EQ.0)THEN
+        VERTS(M+1)='  _________________________  '
+      ELSE
+        WRITE(VERTS(M+1),16)IPM,MPM
+   16   FORMAT ('0 page --- part: ',I2,' of ',I2)
+      ENDIF
+
+      VERTS(M+2)  ='? help              '
+      VERTS(M+3)  ='- exit              '
+
+C Instanciate help message for this menu.
+      H(1)='Surface(s) in the zone may be selected via its name'
+      H(2)='in the list. Up to 4 surfaces can be deleted in one'
+      H(3)='action.'
+
+C Display the menu.
+      call usrmsg(PROMPT1,PROMPT2,'-')
+      CALL EMENU(title,VERTS,MVERT,IVERT)
+      IF(IVERT.LE.MHEAD)THEN
+        IVERT=-1
+        goto 3
+      ELSEIF(IVERT.EQ.MVERT)THEN
+
+C If no selection has been made before exit then return with 0.
+        IF(.NOT.SELECT)INPICK=0
+        call usrmsg(' ',' ','-')
+C       write(6,*)'ivlist',(ISLIST(J),J=1,10)
+        RETURN  ! return to the parent call
+      ELSEIF(IVERT.EQ.(MVERT-1))THEN
+        CALL PHELPD('zone geom mul surf section',3,'-',0,0,IER)
+      ELSEIF(IVERT.EQ.(MVERT-2))THEN
+
+C If there are enough items allow paging control via EKPAGE.
+        IF(IPFLG.EQ.1)THEN
+          IPACT=EDIT
+          CALL EKPAGE(IPACT)
+        ENDIF
+      ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
+
+C Decode from the potential long list to the zone number via KEYIND.
+        if(INPICK.ge.9)then
+          call edisp(iuout,
+     &      'Only 8 surfaces can be removed in one action.')
+          IVERT=-2
+          goto 3
+        endif
+        CALL KEYIND(MVERT,IVERT,IFOC,IO)
+        iccc=IZSTOCN(izone,IFOC)  ! get which connection
+        if(ISCNLIST(iccc).eq.1)then
+          ISCNLIST(iccc)=0        ! mark to remove *
+          do j=1,inpick
+            if(ISLIST(j).eq.ifoc) ISLIST(j)=0
+          enddo
+          INPICK=INPICK-1         ! decrement
+        else
+          SELECT=.TRUE.
+          INPICK=INPICK+1
+          ISLIST(INPICK)=IFOC
+          iccc=IZSTOCN(izone,IFOC)  ! get which connection
+          ISCNLIST(iccc)=1          ! mark for *
+          lnn=lnblnk(SSNAME(iccc))
+          lnsmlcn=lnblnk(SSMLCN(iccc))
+          lnoth=lnblnk(SSOTHER(iccc,1))
+          WRITE(outs,'(7a)')'Selected: ',SSNAME(iccc)(1:lnn),
+     &      '  ',SSMLCN(iccc)(1:lnsmlcn),'  ',
+     &      SSOTHER(iccc,1)(1:lnoth),' to delete.'
+          call edisp(iuout,outs)
+        endif
+      ELSE
+      
 C Not one of the legal menu choices.
         IVERT=-1
         goto 92

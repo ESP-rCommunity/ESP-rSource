@@ -1194,6 +1194,9 @@ C Path to model.
       integer*8 numberofzones
 #endif
 
+      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      INTEGER :: IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
       if(unixok)then
@@ -1294,6 +1297,8 @@ C << variant for non-unix >>
      &     runpath(1:lnrp)
         call edisp(iuout,outs)
       endif
+
+      iryear=IYEAR
 
       return
       end

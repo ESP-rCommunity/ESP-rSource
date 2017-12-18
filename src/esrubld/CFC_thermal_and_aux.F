@@ -2901,7 +2901,8 @@ C Use geometry.h for zname
 #include "geometry.h"
 #include "control.h"
 #include "CFC_common.h"
-#include "net_flow.h" ! supplies MNOD
+C net_flow supplies MNOD
+#include "net_flow.h"
 #include "tdf2.h"
       COMMON/OUTIN/IUOUT,IUIN
       integer iuout,iuin

@@ -26,6 +26,7 @@ C Iaqmenu controls indoor environmental quality choices.  All Mycotoxin
 C facilities are 'hidden' in the current version.
       SUBROUTINE iaqmenu
 
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
       COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
@@ -82,7 +83,11 @@ C Instanciate the help strings for this menu.
       helptopic='res_iaq_menu'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
-      INO=-2
+      if(MMOD.eq.8)then
+        INO=-1
+      else
+        INO=-2
+      endif
       CALL EMENU(' Indoor Quality',ITEM,NITMS,INO)
 
       IF(INO.EQ.1)then

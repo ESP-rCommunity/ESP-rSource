@@ -952,8 +952,8 @@ C and we don't get the setpoint.
             else
               UNMETHRS(IICOMP)=UNMETHRS(IICOMP)+(1.0/real(NTSTEP))
 C Debug.
-              write(6,'(a,f8.2,a,i3)')' heating capacity insufficient ',
-     &          UNMETHRS(IICOMP),' hours in zone ',IICOMP
+C              write(6,'(a,f8.2,a,i3)')' heating capacity insufficient ',
+C     &          UNMETHRS(IICOMP),' hours in zone ',IICOMP
             endif
           elseif ( QFUT.le.QH.and.TFUT.ge.TL)then  ! if within capacity and setpoint
             continue
@@ -1263,6 +1263,10 @@ C as an option.
 C <FMI>
       include "FMI.h"
 C </FMI>
+C <GRM>
+      include "gremlin.h"
+      integer imcf
+C </GRM>
 
       logical bInStartup  ! <- function true if simulation is in startup
       integer IER ! Error flag
@@ -1470,6 +1474,20 @@ C Set maximum heating capacity:
 
 C Set minimum heating capacity.
       QHN=BMISCD(ICF,IDTYP,IPER,3)
+
+C <GRM>
+      if (NMCF.gt.0) then
+        do imcf=1,NMCF
+
+C Gremlin mischief type 1: heating capacity = 0
+          if (MCFTYP(imcf).eq.1) then
+            QHM=0.
+            QHN=0.
+
+          endif
+        enddo
+      endif
+C </GRM>
 
 C Set maximum cooling capacity.
       if(cont_fun_cool_cap(IICOMP).gt.0.
@@ -4787,6 +4805,7 @@ C     ST???  = FUTURE/PRESENT/START TRIAL START TIMES,
       COMMON/BTIME/BTIMEP,BTIMEF
 
       LOGICAL tsclaw,rewnd,pasone,close
+      real ocdt
       
       CHARACTER OUTS*124
 

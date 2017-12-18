@@ -57,7 +57,8 @@ C READPIF - read performance information file and gather data.
 C ihflag = 0 write 13h30, ihflag = 1 write 0.5625
 C idhflg = 0 no day demarcations, idhflg = 1 write demarcation
 C          between tabular reporting days.
-C ilflag = 0 tabular labels on multi-lines, ilflag = 1 on one line.
+C ilflag = 0 tabular labels on multi-lines, ilflag = 1 on one line
+C          ilflag = 2 do not include # header lines in file.
       COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
       
 C exporttg common defn:

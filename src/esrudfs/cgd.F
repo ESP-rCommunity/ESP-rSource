@@ -158,6 +158,13 @@ C << how about an option to place grid on one face only ?? >>
 
         CALL EASKABCD('Options for 3D gridding:',' ','all faces',
      &    'south->north','east->west','high->low',IWO,nbhelp)
+
+C Initialise building - CFD domain transformations.
+        CALL INIT_CFDTRANS(IER)
+        if (IER.ne.0) then
+          call usrmsg(' Cannot draw this CFD domain in 3D',' ','W')
+          goto 1
+        endif
         if(iwo.eq.1)then
           call VGRID3D('zn ','xyz',ic)
         elseif(iwo.eq.2)then
@@ -173,6 +180,13 @@ C << how about an option to place grid on one face only ?? >>
 C 3D gridding with zone geometry and solids.
         CALL EASKABCD('Options for 3D gridding:',' ','all faces',
      &    'south->north','east->west','high->low',IWO,nbhelp)
+
+C Initialise building - CFD domain transformations.
+        CALL INIT_CFDTRANS(IER)
+        if (IER.ne.0) then
+          call usrmsg(' Cannot draw this CFD domain in 3D',' ','W')
+          goto 1
+        endif
         if(iwo.eq.1)then
           call VGRID3D('zn ','xyz',ic)
         elseif(iwo.eq.2)then
@@ -189,6 +203,13 @@ C 3D gridding with zone geometry and solids.
 C 3D gridding with zone geometry and solids and openings.
         CALL EASKABCD('Options for 3D gridding:',' ','all faces',
      &    'south->north','east->west','high->low',IWO,nbhelp)
+
+C Initialise building - CFD domain transformations.
+        CALL INIT_CFDTRANS(IER)
+        if (IER.ne.0) then
+          call usrmsg(' Cannot draw this CFD domain in 3D',' ','W')
+          goto 1
+        endif
         if(iwo.eq.1)then
           call VGRID3D('zn ','xyz',ic)
         elseif(iwo.eq.2)then
@@ -207,6 +228,13 @@ C 3D gridding with zone geometry and solids and openings.
 C 3D gridding without zone geometry.
         CALL EASKABCD('Options for 3D gridding:',' ','all faces',
      &    'south->north','east_.west','high->low',IWO,nbhelp)
+
+C Initialise building - CFD domain transformations.
+        CALL INIT_CFDTRANS(IER)
+        if (IER.ne.0) then
+          call usrmsg(' Cannot draw this CFD domain in 3D',' ','W')
+          goto 1
+        endif
         if(iwo.eq.1)then
           call VGRID3D('---','xyz',ic)
         elseif(iwo.eq.2)then
@@ -222,6 +250,13 @@ C 3D gridding without zone geometry.
 C 3D gridding without zone geometry and with solids.
         CALL EASKABCD('Options for 3D gridding:',' ','all faces',
      &    'south->north','east->west','high->low',IWO,nbhelp)
+
+C Initialise building - CFD domain transformations.
+        CALL INIT_CFDTRANS(IER)
+        if (IER.ne.0) then
+          call usrmsg(' Cannot draw this CFD domain in 3D',' ','W')
+          goto 1
+        endif
         if(iwo.eq.1)then
           call VGRID3D('---','xyz',ic)
         elseif(iwo.eq.2)then
@@ -238,6 +273,13 @@ C 3D gridding without zone geometry and with solids.
 C 3D gridding without zone geometry and with solids and openings.
         CALL EASKABCD('Options for 3D gridding:',' ','all faces',
      &    'south->north','east->west','high->low',IWO,nbhelp)
+
+C Initialise building - CFD domain transformations.
+        CALL INIT_CFDTRANS(IER)
+        if (IER.ne.0) then
+          call usrmsg(' Cannot draw this CFD domain in 3D',' ','W')
+          goto 1
+        endif
         if(iwo.eq.1)then
           call VGRID3D('---','xyz',ic)
         elseif(iwo.eq.2)then
@@ -464,7 +506,7 @@ C xax,yax   - text for horiz and vert axis.
 
       character title*30,xax*10,yax*1
 
-      dimension xgrd(MCEL1D),ygrd(MCEL1D)
+      dimension xgrd(NTCELX),ygrd(NTCELY)
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
@@ -660,31 +702,27 @@ C Loop through all X-Y plane grid lines.
           do 20 J=2,NJ  ! J traverses along west Y axis cells
 
 C Transform first point to screen coords.
-            XPP=ZXMN(izone)+XU(i); YPP=ZYMN(izone)+YV(j)
-            ZPP=ZZMN(izone)+0.
+            CALL CFDTRANS(1,XU(i),YV(j),0.,XPP,YPP,ZPP,IER)
             CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
             CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
             call u2pixel(X1,Y1,iixs,iiys)
 
 C Get half way point for west face cells.
             DY=YV(j+1)-YV(j); DHY= DY*0.5
-            XPP=ZXMN(izone)+XU(i); YPP=ZYMN(izone)+YV(j)+DHY
-            ZPP=ZZMN(izone)+0.
+            CALL CFDTRANS(1,XU(i),YV(j)+DHY,0.,XPP,YPP,ZPP,IER)
             CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
             CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
             call u2pixel(X1,Y1,iixhs,iiyhs)
 
 C Get half way point for south face cells.
             DX=XU(i+1)-XU(i); DHX= DX*0.5
-            XPP=ZXMN(izone)+XU(i)+DHX; YPP=ZYMN(izone)+YV(j)
-            ZPP=ZZMN(izone)+0.
+            CALL CFDTRANS(1,XU(i)+DHX,YV(j),0.,XPP,YPP,ZPP,IER)
             CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
             CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
             call u2pixel(X1,Y1,iixxhs,iixyhs)
 
 C Transform end point to screen coords.
-            XPP=ZXMN(izone)+XU(i); YPP=ZYMN(izone)+YV(j)
-            ZPP=ZZMN(izone)+ZW(NK)
+            CALL CFDTRANS(1,XU(i),YV(j),ZW(NK),XPP,YPP,ZPP,IER)
             CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
             CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
             call u2pixel(X1,Y1,iix,iiy)
@@ -758,16 +796,14 @@ C Loop through all Z-Y plane grid lines.
           do 40 J=2,NJ  ! is along the West Y face
 
 C Transform first point to screen coords.
-            XPP=ZXMN(izone)+0.; YPP=ZYMN(izone)+YV(j)
-            ZPP=ZZMN(izone)+ZW(k)
+            CALL CFDTRANS(1,0.,YV(j),ZW(k),XPP,YPP,ZPP,IER)
             CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
             CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
             call u2pixel(X1,Y1,iixs,iiys)
 
 C Get half way point for west face cells.
             DY=YV(j+1)-YV(j); DHY= DY*0.5
-            XPP=ZXMN(izone)+0.; YPP=ZYMN(izone)+YV(j)+DHY
-            ZPP=ZZMN(izone)+ZW(k)
+            CALL CFDTRANS(1,0.,YV(j)+DHY,ZW(k),XPP,YPP,ZPP,IER)
             CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
             CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
             call u2pixel(X1,Y1,iixhs,iiyhs)
@@ -804,8 +840,7 @@ C Get half way point for west face cells.
             endif
 
 C Transform 2nd point to screen coords.
-            XPP=ZXMN(izone)+XU(NI); YPP=ZYMN(izone)+YV(j)
-            ZPP=ZZMN(izone)+ZW(k)
+            CALL CFDTRANS(1,XU(NI),YV(j),ZW(k),XPP,YPP,ZPP,IER)
             CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
             CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
             call u2pixel(X1,Y1,iix,iiy)
@@ -840,16 +875,14 @@ C Loop through all Z-X plane grid lines.
           do 60 I=2,NI  ! along South face Z axis
 
 C Transform first point to screen coords.
-            XPP=ZXMN(izone)+XU(I); YPP=ZYMN(izone)+0.
-            ZPP=ZZMN(izone)+ZW(k)
+            CALL CFDTRANS(1,XU(i),0.,ZW(k),XPP,YPP,ZPP,IER)
             CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
             CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
             call u2pixel(X1,Y1,iixs,iiys)
 
 C Get half way point for south face cells.
             DX=XU(i+1)-XU(i); DHX= DX*0.5
-            XPP=ZXMN(izone)+XU(i)+DHX; YPP=ZYMN(izone)+0.
-            ZPP=ZZMN(izone)+ZW(k)
+            CALL CFDTRANS(1,XU(i)+DHX,0.,ZW(k),XPP,YPP,ZPP,IER)
             CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
             CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
             call u2pixel(X1,Y1,iixxhs,iixyhs)
@@ -872,8 +905,7 @@ C Get half way point for south face cells.
             endif
 
 C Transform end point to screen coords.
-            XPP=ZXMN(izone)+XU(I); YPP=ZYMN(izone)+YV(NJ)
-            ZPP=ZZMN(izone)+ZW(k)
+            CALL CFDTRANS(1,XU(i),YV(NJ),ZW(k),XPP,YPP,ZPP,IER)
             CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
             CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
             call u2pixel(X1,Y1,iix,iiy)
@@ -1068,15 +1100,14 @@ C Draw round solid boundaries and last character of label.
 
 C In YZ plane.
 C Transform local coords to screen coords and draw box around boundary.
-          XPP=ZXMN(izone)+XU(MNOD); YPP=ZYMN(izone)+YV(JSBi(Isbn,ICFD))
-          ZPP=ZZMN(izone)+ZW(KSBi(Isbn,ICFD))
+          CALL CFDTRANS(1,XU(MNOD),YV(JSBi(Isbn,ICFD)),
+     &                  ZW(KSBi(Isbn,ICFD)),XPP,YPP,ZPP,IER)
           CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iixs,iiys)
 
-          XPP=ZXMN(izone)+XU(MNOD) 
-          YPP=ZYMN(izone)+YV(JSBf(Isbn,ICFD)+1)
-          ZPP=ZZMN(izone)+ZW(KSBi(Isbn,ICFD))
+          CALL CFDTRANS(1,XU(MNOD),YV(JSBf(Isbn,ICFD)+1),
+     &                  ZW(KSBi(Isbn,ICFD)),XPP,YPP,ZPP,IER)
           CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1089,9 +1120,8 @@ C Transform local coords to screen coords and draw box around boundary.
 
           iixs=iix
           iiys=iiy
-          XPP=ZXMN(izone)+XU(MNOD)
-          YPP=ZYMN(izone)+YV(JSBf(Isbn,ICFD)+1)
-          ZPP=ZZMN(izone)+ZW(KSBf(Isbn,ICFD)+1)
+          CALL CFDTRANS(1,XU(MNOD),YV(JSBf(Isbn,ICFD)+1),
+     &                  ZW(KSBf(Isbn,ICFD)+1),XPP,YPP,ZPP,IER)
           CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1104,8 +1134,8 @@ C Transform local coords to screen coords and draw box around boundary.
 
           iixs=iix
           iiys=iiy
-          XPP=ZXMN(izone)+XU(MNOD); YPP=ZYMN(izone)+YV(JSBi(Isbn,ICFD))
-          ZPP=ZZMN(izone)+ZW(KSBf(Isbn,ICFD)+1)
+          CALL CFDTRANS(1,XU(MNOD),YV(JSBi(Isbn,ICFD)),
+     &                  ZW(KSBf(Isbn,ICFD)+1),XPP,YPP,ZPP,IER)
           CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1118,8 +1148,8 @@ C Transform local coords to screen coords and draw box around boundary.
 
           iixs=iix
           iiys=iiy
-          XPP=ZXMN(izone)+XU(MNOD); YPP=ZYMN(izone)+YV(JSBi(Isbn,ICFD))
-          ZPP=ZZMN(izone)+ZW(KSBi(Isbn,ICFD))
+          CALL CFDTRANS(1,XU(MNOD),YV(JSBi(Isbn,ICFD)),
+     &                  ZW(KSBi(Isbn,ICFD)),XPP,YPP,ZPP,IER)
           CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1131,9 +1161,10 @@ C Transform local coords to screen coords and draw box around boundary.
           call forceflush()
 
 C Label in center of boundary.
-          XX=ZXMN(izone)+XU(MNOD)
-          YY=ZYMN(izone)+(YV(JSBi(Isbn,ICFD))+YV(JSBf(Isbn,ICFD)))/2.
-          ZZ=ZZMN(izone)+(ZW(KSBi(Isbn,ICFD))+ZW(KSBf(Isbn,ICFD)))/2.
+          CALL CFDTRANS(1,XU(MNOD),
+     &                  (YV(JSBi(Isbn,ICFD))+YV(JSBf(Isbn,ICFD)))/2.,
+     &                  (ZW(KSBi(Isbn,ICFD))+ZW(KSBf(Isbn,ICFD)))/2.,
+     &                  XX,YY,ZZ,IER)
           CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1154,15 +1185,14 @@ c          write (temp,'(a,i2)') 'SB',Isbn
 
 C In XZ plane.
 C Transform local coords to screen coords and draw box around boundary.
-          XPP=ZXMN(izone)+XU(ISBi(Isbn,ICFD)); YPP=ZYMN(izone)+YV(MNOD)
-          ZPP=ZZMN(izone)+ZW(KSBi(Isbn,ICFD))
+          CALL CFDTRANS(1,XU(ISBi(Isbn,ICFD)),YV(MNOD),
+     &                  ZW(KSBi(Isbn,ICFD)),XPP,YPP,ZPP,IER)
           CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iixs,iiys)
 
-          XPP=ZXMN(izone)+XU(ISBf(Isbn,ICFD)+1)
-          YPP=ZYMN(izone)+YV(MNOD)
-          ZPP=ZZMN(izone)+ZW(KSBi(Isbn,ICFD))
+          CALL CFDTRANS(1,XU(ISBf(Isbn,ICFD)+1),YV(MNOD),
+     &                  ZW(KSBi(Isbn,ICFD)),XPP,YPP,ZPP,IER)
           CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1175,9 +1205,8 @@ C Transform local coords to screen coords and draw box around boundary.
 
           iixs=iix
           iiys=iiy
-          XPP=ZXMN(izone)+XU(ISBf(Isbn,ICFD)+1)
-          YPP=ZYMN(izone)+YV(MNOD)
-          ZPP=ZZMN(izone)+ZW(KSBf(Isbn,ICFD)+1)
+          CALL CFDTRANS(1,XU(ISBf(Isbn,ICFD)+1),YV(MNOD),
+     &                  ZW(KSBf(Isbn,ICFD)+1),XPP,YPP,ZPP,IER)
           CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1190,8 +1219,8 @@ C Transform local coords to screen coords and draw box around boundary.
 
           iixs=iix
           iiys=iiy
-          XPP=ZXMN(izone)+XU(ISBi(Isbn,ICFD)); YPP=ZYMN(izone)+YV(MNOD)
-          ZPP=ZZMN(izone)+ZW(KSBf(Isbn,ICFD)+1)
+          CALL CFDTRANS(1,XU(ISBi(Isbn,ICFD)),YV(MNOD),
+     &                  ZW(KSBf(Isbn,ICFD)+1),XPP,YPP,ZPP,IER)
           CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1204,8 +1233,8 @@ C Transform local coords to screen coords and draw box around boundary.
 
           iixs=iix
           iiys=iiy
-          XPP=ZXMN(izone)+XU(ISBi(Isbn,ICFD)); YPP=ZYMN(izone)+YV(MNOD)
-          ZPP=ZZMN(izone)+ZW(KSBi(Isbn,ICFD))
+          CALL CFDTRANS(1,XU(ISBi(Isbn,ICFD)),YV(MNOD),
+     &                  ZW(KSBi(Isbn,ICFD)),XPP,YPP,ZPP,IER)
           CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1217,9 +1246,9 @@ C Transform local coords to screen coords and draw box around boundary.
           call forceflush()
 
 C Label in center of boundary.
-          XX=ZXMN(izone)+(XU(ISBi(Isbn,ICFD))+XU(ISBf(Isbn,ICFD)))/2.
-          YY=ZYMN(izone)+YV(MNOD)
-          ZZ=ZZMN(izone)+(ZW(KSBi(Isbn,ICFD))+ZW(KSBf(Isbn,ICFD)))/2.
+          CALL CFDTRANS(1,(XU(ISBi(Isbn,ICFD))+XU(ISBf(Isbn,ICFD)))/2.,
+     &           YV(MNOD),(ZW(KSBi(Isbn,ICFD))+ZW(KSBf(Isbn,ICFD)))/2.,
+     &                  XX,YY,ZZ,IER)
           CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1237,16 +1266,14 @@ c          write (temp,'(a,i2)') 'SB',Isbn
 
 C In XY plane.
 C Transform local coords to screen coords and draw box around boundary.
-          XPP=ZXMN(izone)+XU(ISBi(Isbn,ICFD)) 
-          YPP=ZYMN(izone)+YV(JSBi(Isbn,ICFD))
-          ZPP=ZZMN(izone)+ZW(MNOD)
+          CALL CFDTRANS(1,XU(ISBi(Isbn,ICFD)),YV(JSBi(Isbn,ICFD)),
+     &                  ZW(MNOD),XPP,YPP,ZPP,IER)
           CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iixs,iiys)
 
-          XPP=ZXMN(izone)+XU(ISBf(Isbn,ICFD)+1)
-          YPP=ZYMN(izone)+YV(JSBi(Isbn,ICFD))
-          ZPP=ZZMN(izone)+ZW(MNOD)
+          CALL CFDTRANS(1,XU(ISBf(Isbn,ICFD)+1),YV(JSBi(Isbn,ICFD)),
+     &                  ZW(MNOD),XPP,YPP,ZPP,IER)
           CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1259,9 +1286,8 @@ C Transform local coords to screen coords and draw box around boundary.
 
           iixs=iix
           iiys=iiy
-          XPP=ZXMN(izone)+XU(ISBf(Isbn,ICFD)+1)
-          YPP=ZYMN(izone)+YV(JSBf(Isbn,ICFD)+1)
-          ZPP=ZZMN(izone)+ZW(MNOD)
+          CALL CFDTRANS(1,XU(ISBf(Isbn,ICFD)+1),YV(JSBf(Isbn,ICFD)+1),
+     &                  ZW(MNOD),XPP,YPP,ZPP,IER)
           CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1274,9 +1300,8 @@ C Transform local coords to screen coords and draw box around boundary.
 
           iixs=iix
           iiys=iiy
-          XPP=ZXMN(izone)+XU(ISBi(Isbn,ICFD))
-          YPP=ZYMN(izone)+YV(JSBf(Isbn,ICFD)+1)
-          ZPP=ZZMN(izone)+ZW(MNOD)
+          CALL CFDTRANS(1,XU(ISBi(Isbn,ICFD)),YV(JSBf(Isbn,ICFD)+1),
+     &                  ZW(MNOD),XPP,YPP,ZPP,IER)
           CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1289,9 +1314,8 @@ C Transform local coords to screen coords and draw box around boundary.
 
           iixs=iix
           iiys=iiy
-          XPP=ZXMN(izone)+XU(ISBi(Isbn,ICFD))
-          YPP=ZYMN(izone)+YV(JSBi(Isbn,ICFD))
-          ZPP=ZZMN(izone)+ZW(MNOD)
+          CALL CFDTRANS(1,XU(ISBi(Isbn,ICFD)),YV(JSBi(Isbn,ICFD)),
+     &                  ZW(MNOD),XPP,YPP,ZPP,IER)
           CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1303,9 +1327,9 @@ C Transform local coords to screen coords and draw box around boundary.
           call forceflush()
 
 C Label in center of boundary.
-          XX=ZXMN(izone)+(XU(ISBi(Isbn,ICFD))+XU(ISBf(Isbn,ICFD)))/2.
-          YY=ZYMN(izone)+(YV(JSBi(Isbn,ICFD))+YV(JSBf(Isbn,ICFD)))/2.
-          ZZ=ZZMN(izone)+ZW(MNOD)
+          CALL CFDTRANS(1,(XU(ISBi(Isbn,ICFD))+XU(ISBf(Isbn,ICFD)))/2.,
+     &                  (YV(JSBi(Isbn,ICFD))+YV(JSBf(Isbn,ICFD)))/2.,
+     &                  ZW(MNOD),XX,YY,ZZ,IER)
           CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1381,15 +1405,14 @@ c        write (outs,'(i10)') IWOPEN(Iaop,ICFD)
 
 C In YZ plane.
 C Transform local coords to screen coords and draw box around boundary.
-          XX=ZXMN(izone)+XU(MNOD)
-          YY=ZYMN(izone)+YV(JOPENi(Iaop,ICFD))
-          ZZ=ZZMN(izone)+ZW(KOPENi(Iaop,ICFD))
+          CALL CFDTRANS(1,XU(MNOD),YV(JOPENi(Iaop,ICFD)),
+     &                  ZW(KOPENi(Iaop,ICFD)),XX,YY,ZZ,IER)
           CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iixs,iiys)
-          XX=ZXMN(izone)+XU(MNOD)
-          YY=ZYMN(izone)+YV(JOPENf(Iaop,ICFD)+1)
-          ZZ=ZZMN(izone)+ZW(KOPENi(Iaop,ICFD))
+
+          CALL CFDTRANS(1,XU(MNOD),YV(JOPENf(Iaop,ICFD)+1),
+     &                  ZW(KOPENi(Iaop,ICFD)),XX,YY,ZZ,IER)
           CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1402,9 +1425,8 @@ C Transform local coords to screen coords and draw box around boundary.
 
           iixs=iix
           iiys=iiy
-          XX=ZXMN(izone)+XU(MNOD)
-          YY=ZYMN(izone)+YV(JOPENf(Iaop,ICFD)+1)
-          ZZ=ZZMN(izone)+ZW(KOPENf(Iaop,ICFD)+1)
+          CALL CFDTRANS(1,XU(MNOD),YV(JOPENf(Iaop,ICFD)+1),
+     &                  ZW(KOPENf(Iaop,ICFD)+1),XX,YY,ZZ,IER)
           CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1417,9 +1439,8 @@ C Transform local coords to screen coords and draw box around boundary.
 
           iixs=iix
           iiys=iiy
-          XX=ZXMN(izone)+XU(MNOD)
-          YY=ZYMN(izone)+YV(JOPENi(Iaop,ICFD))
-          ZZ=ZZMN(izone)+ZW(KOPENf(Iaop,ICFD)+1)
+          CALL CFDTRANS(1,XU(MNOD),YV(JOPENi(Iaop,ICFD)),
+     &                  ZW(KOPENf(Iaop,ICFD)+1),XX,YY,ZZ,IER)
           CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1432,9 +1453,8 @@ C Transform local coords to screen coords and draw box around boundary.
 
           iixs=iix
           iiys=iiy
-          XX=ZXMN(izone)+XU(MNOD)
-          YY=ZYMN(izone)+YV(JOPENi(Iaop,ICFD))
-          ZZ=ZZMN(izone)+ZW(KOPENi(Iaop,ICFD))
+          CALL CFDTRANS(1,XU(MNOD),YV(JOPENi(Iaop,ICFD)),
+     &                  ZW(KOPENi(Iaop,ICFD)),XX,YY,ZZ,IER)
           CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1446,11 +1466,10 @@ C Transform local coords to screen coords and draw box around boundary.
           call forceflush()
 
 C Label in center of boundary.
-          XX=ZXMN(izone)+XU(MNOD)
-          YY=ZYMN(izone)+
-     &                 (YV(JOPENi(Iaop,ICFD))+YV(JOPENf(Iaop,ICFD)))/2.
-          ZZ=ZZMN(izone)+
-     &                 (ZW(KOPENi(Iaop,ICFD))+ZW(KOPENf(Iaop,ICFD)))/2.
+          CALL CFDTRANS(1,XU(MNOD),
+     &                 (YV(JOPENi(Iaop,ICFD))+YV(JOPENf(Iaop,ICFD)))/2.,
+     &                 (ZW(KOPENi(Iaop,ICFD))+ZW(KOPENf(Iaop,ICFD)))/2.,
+     &                  XX,YY,ZZ,IER)
           CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1468,15 +1487,14 @@ C Label in center of boundary.
 
 C In XZ plane.
 C Transform local coords to screen coords and draw box around boundary.
-          XX=ZXMN(izone)+XU(IOPENi(Iaop,ICFD))
-          YY=ZYMN(izone)+YV(MNOD)
-          ZZ=ZZMN(izone)+ZW(KOPENi(Iaop,ICFD))
+          CALL CFDTRANS(1,XU(IOPENi(Iaop,ICFD)),YV(MNOD),
+     &                  ZW(KOPENi(Iaop,ICFD)),XX,YY,ZZ,IER)
           CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iixs,iiys)
-          XX=ZXMN(izone)+XU(IOPENf(Iaop,ICFD)+1)
-          YY=ZYMN(izone)+YV(MNOD)
-          ZZ=ZZMN(izone)+ZW(KOPENi(Iaop,ICFD))
+
+          CALL CFDTRANS(1,XU(IOPENf(Iaop,ICFD)+1),YV(MNOD),
+     &                  ZW(KOPENi(Iaop,ICFD)),XX,YY,ZZ,IER)
           CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1489,9 +1507,8 @@ C Transform local coords to screen coords and draw box around boundary.
 
           iixs=iix
           iiys=iiy
-          XX=ZXMN(izone)+XU(IOPENf(Iaop,ICFD)+1)
-          YY=ZYMN(izone)+YV(MNOD)
-          ZZ=ZZMN(izone)+ZW(KOPENf(Iaop,ICFD)+1)
+          CALL CFDTRANS(1,XU(IOPENf(Iaop,ICFD)+1),YV(MNOD),
+     &                  ZW(KOPENf(Iaop,ICFD)+1),XX,YY,ZZ,IER)
           CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1504,9 +1521,8 @@ C Transform local coords to screen coords and draw box around boundary.
 
           iixs=iix
           iiys=iiy
-          XX=ZXMN(izone)+XU(IOPENi(Iaop,ICFD))
-          YY=ZYMN(izone)+YV(MNOD)
-          ZZ=ZZMN(izone)+ZW(KOPENf(Iaop,ICFD)+1)
+          CALL CFDTRANS(1,XU(IOPENi(Iaop,ICFD)),YV(MNOD),
+     &                  ZW(KOPENf(Iaop,ICFD)+1),XX,YY,ZZ,IER)
           CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1519,9 +1535,8 @@ C Transform local coords to screen coords and draw box around boundary.
 
           iixs=iix
           iiys=iiy
-          XX=ZXMN(izone)+XU(IOPENi(Iaop,ICFD))
-          YY=ZYMN(izone)+YV(MNOD)
-          ZZ=ZZMN(izone)+ZW(KOPENi(Iaop,ICFD))
+          CALL CFDTRANS(1,XU(IOPENi(Iaop,ICFD)),YV(MNOD),
+     &                  ZW(KOPENi(Iaop,ICFD)),XX,YY,ZZ,IER)
           CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1533,11 +1548,10 @@ C Transform local coords to screen coords and draw box around boundary.
           call forceflush()
 
 C Label in center of boundary.
-          XX=ZXMN(izone)+
-     &                 (XU(IOPENi(Iaop,ICFD))+XU(IOPENf(Iaop,ICFD)))/2.
-          YY=ZYMN(izone)+YV(MNOD)
-          ZZ=ZZMN(izone)+
-     &                 (ZW(KOPENi(Iaop,ICFD))+ZW(KOPENf(Iaop,ICFD)))/2.
+          CALL CFDTRANS(1,
+     &                 (XU(IOPENi(Iaop,ICFD))+XU(IOPENf(Iaop,ICFD)))/2.,
+     &        YV(MNOD),(ZW(KOPENi(Iaop,ICFD))+ZW(KOPENf(Iaop,ICFD)))/2.,
+     &                  XX,YY,ZZ,IER)
           CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1554,15 +1568,14 @@ C Label in center of boundary.
 
 C In XY plane.
 C Transform local coords to screen coords and draw box around boundary.
-          XX=ZXMN(izone)+XU(IOPENi(Iaop,ICFD))
-          YY=ZYMN(izone)+YV(JOPENi(Iaop,ICFD))
-          ZZ=ZZMN(izone)+ZW(MNOD)
+          CALL CFDTRANS(1,XU(IOPENi(Iaop,ICFD)),YV(JOPENi(Iaop,ICFD)),
+     &                  ZW(MNOD),XX,YY,ZZ,IER)
           CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iixs,iiys)
-          XX=ZXMN(izone)+XU(IOPENf(Iaop,ICFD)+1)
-          YY=ZYMN(izone)+YV(JOPENi(Iaop,ICFD))
-          ZZ=ZZMN(izone)+ZW(MNOD)
+
+          CALL CFDTRANS(1,XU(IOPENf(Iaop,ICFD)+1),YV(JOPENi(Iaop,ICFD)),
+     &                  ZW(MNOD),XX,YY,ZZ,IER)
           CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1575,9 +1588,8 @@ C Transform local coords to screen coords and draw box around boundary.
 
           iixs=iix
           iiys=iiy
-          XX=ZXMN(izone)+XU(IOPENf(Iaop,ICFD)+1)
-          YY=ZYMN(izone)+YV(JOPENf(Iaop,ICFD)+1)
-          ZZ=ZZMN(izone)+ZW(MNOD)
+          CALL CFDTRANS(1,XU(IOPENf(Iaop,ICFD)+1),
+     &                  YV(JOPENf(Iaop,ICFD)+1),ZW(MNOD),XX,YY,ZZ,IER)
           CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1590,9 +1602,8 @@ C Transform local coords to screen coords and draw box around boundary.
 
           iixs=iix
           iiys=iiy
-          XX=ZXMN(izone)+XU(IOPENi(Iaop,ICFD))
-          YY=ZYMN(izone)+YV(JOPENf(Iaop,ICFD)+1)
-          ZZ=ZZMN(izone)+ZW(MNOD)
+          CALL CFDTRANS(1,XU(IOPENi(Iaop,ICFD)),YV(JOPENf(Iaop,ICFD)+1),
+     &                  ZW(MNOD),XX,YY,ZZ,IER)
           CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1605,9 +1616,8 @@ C Transform local coords to screen coords and draw box around boundary.
 
           iixs=iix
           iiys=iiy
-          XX=ZXMN(izone)+XU(IOPENi(Iaop,ICFD))
-          YY=ZYMN(izone)+YV(JOPENi(Iaop,ICFD))
-          ZZ=ZZMN(izone)+ZW(MNOD)
+          CALL CFDTRANS(1,XU(IOPENi(Iaop,ICFD)),YV(JOPENi(Iaop,ICFD)),
+     &                  ZW(MNOD),XX,YY,ZZ,IER)
           CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1619,11 +1629,10 @@ C Transform local coords to screen coords and draw box around boundary.
           call forceflush()
 
 C Label in center of boundary.
-          XX=ZXMN(izone)+
-     &                 (XU(IOPENi(Iaop,ICFD))+XU(IOPENf(Iaop,ICFD)))/2.
-          YY=ZYMN(izone)+
-     &                 (YV(JOPENi(Iaop,ICFD))+YV(JOPENf(Iaop,ICFD)))/2.
-          ZZ=ZZMN(izone)+ZW(MNOD)
+          CALL CFDTRANS(1,
+     &                 (XU(IOPENi(Iaop,ICFD))+XU(IOPENf(Iaop,ICFD)))/2.,
+     &                 (YV(JOPENi(Iaop,ICFD))+YV(JOPENf(Iaop,ICFD)))/2.,
+     &                 ZW(MNOD),XX,YY,ZZ,IER)
           CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
@@ -1705,72 +1714,56 @@ C        write(6,*) 'cords Z are:',ZW(Ki),ZW(Kf+1),zd
 
 C Transform local coords to screen coords and remember.
 C Lower front left hand corner of blockage.
-        XPP=ZXMN(izone)+XU(Ii)
-        YPP=ZYMN(izone)+YV(Ji)
-        ZPP=ZZMN(izone)+ZW(Ki)
+        CALL CFDTRANS(1,XU(Ii),YV(Ji),ZW(Ki),XPP,YPP,ZPP,IER)
         CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
         CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
         call u2pixel(X1,Y1,iixs,iiys)
         iixv(1)=iixs; iiyv(1)=iiys
 
 C Lower front right hand corner of blockage.
-        XPP=ZXMN(izone)+XU(If+1) 
-        YPP=ZYMN(izone)+YV(Ji)
-        ZPP=ZZMN(izone)+ZW(Ki)
+        CALL CFDTRANS(1,XU(If+1),YV(Ji),ZW(Ki),XPP,YPP,ZPP,IER)
         CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
         CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
         call u2pixel(X1,Y1,iix,iiy)
         iixv(2)=iix; iiyv(2)=iiy
 
 C Lower back right hand corner of blockage.
-        XPP=ZXMN(izone)+XU(If+1) 
-        YPP=ZYMN(izone)+YV(Jf+1)
-        ZPP=ZZMN(izone)+ZW(Ki)
+        CALL CFDTRANS(1,XU(If+1),YV(Jf+1),ZW(Ki),XPP,YPP,ZPP,IER)
         CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
         CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
         call u2pixel(X1,Y1,iix,iiy)
         iixv(3)=iix; iiyv(3)=iiy
 
 C Lower back left hand corner of blockage.
-        XPP=ZXMN(izone)+XU(Ii)
-        YPP=ZYMN(izone)+YV(Jf+1)
-        ZPP=ZZMN(izone)+ZW(Ki)
+        CALL CFDTRANS(1,XU(Ii),YV(Jf+1),ZW(Ki),XPP,YPP,ZPP,IER)
         CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
         CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
         call u2pixel(X1,Y1,iixs,iiys)
         iixv(4)=iixs; iiyv(4)=iiys
 
 C Upper back left corner of blockage.
-        XPP=ZXMN(izone)+XU(Ii)
-        YPP=ZYMN(izone)+YV(Jf+1)
-        ZPP=ZZMN(izone)+ZW(Kf+1)
+        CALL CFDTRANS(1,XU(Ii),YV(Jf+1),ZW(Kf+1),XPP,YPP,ZPP,IER)
         CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
         CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
         call u2pixel(X1,Y1,iix,iiy)
         iixv(5)=iix; iiyv(5)=iiy
 
 C Upper front left corner of blockage
-        XPP=ZXMN(izone)+XU(Ii)
-        YPP=ZYMN(izone)+YV(Ji)
-        ZPP=ZZMN(izone)+ZW(Kf+1)
+        CALL CFDTRANS(1,XU(Ii),YV(Ji),ZW(Kf+1),XPP,YPP,ZPP,IER)
         CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
         CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
         call u2pixel(X1,Y1,iix,iiy)
         iixv(6)=iix; iiyv(6)=iiy
 
 C Upper front right corner of blockage.
-        XPP=ZXMN(izone)+XU(If+1)
-        YPP=ZYMN(izone)+YV(Ji)
-        ZPP=ZZMN(izone)+ZW(Kf+1)
+        CALL CFDTRANS(1,XU(If+1),YV(Ji),ZW(Kf+1),XPP,YPP,ZPP,IER)
         CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
         CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
         call u2pixel(X1,Y1,iix,iiy)
         iixv(7)=iix; iiyv(7)=iiy
 
 C Upper back right corner of blockage.
-        XPP=ZXMN(izone)+XU(If+1)
-        YPP=ZYMN(izone)+YV(Jf+1)
-        ZPP=ZZMN(izone)+ZW(Kf+1)
+        CALL CFDTRANS(1,XU(If+1),YV(Jf+1),ZW(Kf+1),XPP,YPP,ZPP,IER)
         CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
         CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
         call u2pixel(X1,Y1,iix,iiy)
@@ -1778,9 +1771,7 @@ C Upper back right corner of blockage.
         call forceflush()
 
 C Label in center of blockage.
-        XX=ZXMN(izone)+XU(If+1)
-        YY=ZYMN(izone)+YV(Ji)
-        ZZ=ZZMN(izone)+ZW(Kf+1)
+        CALL CFDTRANS(1,XU(If+1),YV(Ji),ZW(Kf+1),XX,YY,ZZ,IER)
         CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
         CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
         call u2pixel(X1,Y1,iix,iiy)
@@ -1823,6 +1814,155 @@ C Draw around blockage in single or double lines is the usual order.
       return
       end
 
+C ************* INIT_CFDTRANS
+C INIT_CFDTRANS populates the CFD2GEOM common block, required for
+C subroutine CFDTRANS. It does this using data for the current CFD
+C domain (i.e. a domain must be read in before this subroutine is
+C called) and data in the "geometry" header.
+C
+C The convention is that the building geometry domain has axes x, y, and
+C z, and is global among all zones. CFD domains each have their own
+C local origins and u, v, and w axes. 
 
+C The translation of CFD coordinates into geometry coordinates can be
+C represented as:
+C Pg = Ogc + Ugc Pc
+C coordinates in the geometry domain of point P 
+C   [equals]
+C coordinates in the geometry domain of the origin of the CFD domain 
+C   [plus]
+C coordinates in the geometry domain of unit vectors for axes of the CFD
+C domain 
+C   [times]
+C coordinates in the CFD domain of point P
+C
+C Pg is a column vector in axes x, y, and z
+C Ogc is a column vector in axes x, y and z
+C Pc is a column vector in axes u, v and w
+C Ugc is a matrix of the form:
+C [ Uxu Uxv Uxw ]
+C [ Uyu Uyv Uyw ]
+C [ Uzu Uzv Uzw ]
+C where Uab is the coordinate in the a direction of the unit vector for
+C axis b.
+C
+C Rearranging this to do the opposite transformation, we get:
+C Pc = Ugc^-1 (Pg - Ogc)
+C coordinates in the CFD domain of point P
+C   [equals]
+C the inverse of
+C coordinates in the geometry domain of unit vectors for axes of the CFD
+C domain 
+C   [times] 
+C (
+C   coordinates in the geometry domain of point P
+C     [minus] 
+C   coordinates in the geometry domain of the origin of the CFD domain
+C )
+C
+C Because both domains have orthogonal axes, matrix Ugc must be an
+C orthogonal matrix, hence the inverse equals the transpose.
 
+      SUBROUTINE INIT_CFDTRANS(IER)
+#include "building.h"
+#include "geometry.h"
 
+      COMMON/OUTIN/IUOUT,IUIN
+
+      common/GRDVRTS/iorg,ixend,iyend,izend,izende
+      COMMON/ICFNOD/ICFD,ICP
+
+      common/CFD2GEOM/Ox,Oy,Oz,Uxu,Uxv,Uxw,Uyu,Uyv,Uyw,Uzu,Uzv,Uzw
+      real Ox,Oy,Oz,Uxu,Uxv,Uxw,Uyu,Uyv,Uyw,Uzu,Uzv,Uzw
+
+C Get coordinates of CFD origin vertex, in terms of the geometry domain.
+      Ox=VCOORD(ICP,iorg,1)
+      Oy=VCOORD(ICP,iorg,2)
+      Oz=VCOORD(ICP,iorg,3)
+
+C Get unit vector for i axis in terms of building geometry, from
+C coordinates of origin and end of axis vertices.
+      vdx=VCOORD(ICP,ixend,1)-Ox
+c      write(6,*)'vdx',vdx
+      vdy=VCOORD(ICP,ixend,2)-Oy
+c      write(6,*)'vdy',vdy
+      vdz=VCOORD(ICP,ixend,3)-Oz
+c      write(6,*)'vdz',vdz
+      CROWA = vdx*vdx + vdy*vdy + vdz*vdz
+      CROWA=SQRT(CROWA)
+      if (abs(crowa).lt.0.001) then
+        call edisp(iuout,'INIT_CFDTRANS: u axis has zero length')
+        IER=1
+      endif
+      Uxu=vdx/crowa
+      Uyu=vdy/crowa
+      Uzu=vdz/crowa
+
+C Similarly for j axis.
+      vdx=VCOORD(ICP,iyend,1)-Ox
+      vdy=VCOORD(ICP,iyend,2)-Oy
+      vdz=VCOORD(ICP,iyend,3)-Oz
+      CROWA = vdx*vdx + vdy*vdy + vdz*vdz
+      CROWA=SQRT(CROWA)
+      if (abs(crowa).lt.0.001) then
+        call edisp(iuout,'INIT_CFDTRANS: v axis has zero length')
+        IER=1
+      endif
+      Uxv=vdx/crowa
+      Uyv=vdy/crowa
+      Uzv=vdz/crowa
+
+C Similarly for k axis.
+      vdx=VCOORD(ICP,izend,1)-Ox
+      vdy=VCOORD(ICP,izend,2)-Oy
+      vdz=VCOORD(ICP,izend,3)-Oz
+      CROWA = vdx*vdx + vdy*vdy + vdz*vdz
+      CROWA=SQRT(CROWA)
+      if (abs(crowa).lt.0.001) then
+        call edisp(iuout,'INIT_CFDTRANS: w axis has zero length')
+        IER=1
+      endif
+      Uxw=vdx/crowa
+      Uyw=vdy/crowa
+      Uzw=vdz/crowa
+
+      return
+      end
+
+C ************* CFDTRANS
+C CFDTRANS translates a set of coordinates between the CFD domain and
+C the building geometry domain. This transformation can be done either
+C way, depending on the value of MODE:
+C 1 = CFD coords -> geometry coords
+C 2 = geometry coords -> CFD coords
+C 
+C Subroutine INIT_CFDTRANS must be called before this is used; this
+C populates common blocks CFD2GEOM and GEOM2CFD which are required for
+C this subroutine. Also see INIT_CFDTRANS for the calculation basis of
+C this subroutine.
+
+      SUBROUTINE CFDTRANS(MODE,Xin,Yin,Zin,Xout,Yout,Zout,IER)
+
+      integer MODE
+      real Xin,Yin,Zin,Xout,Yout,Zout      
+
+      COMMON/OUTIN/IUOUT,IUIN
+
+      common/CFD2GEOM/Ox,Oy,Oz,Uxu,Uxv,Uxw,Uyu,Uyv,Uyw,Uzu,Uzv,Uzw
+      real Ox,Oy,Oz,Uxu,Uxv,Uxw,Uyu,Uyv,Uyw,Uzu,Uzv,Uzw
+
+      if (MODE.eq.1) then
+        Xout=Ox+Uxu*Xin+Uxv*Yin+Uxw*Zin
+        Yout=Oy+Uyu*Xin+Uyv*Yin+Uyw*Zin
+        Zout=Oz+Uzu*Xin+Uzv*Yin+Uzw*Zin
+      elseif (MODE.eq.2) then
+        Xout=Uxu*(Xin-Ox)+Uyu*(Yin-Oy)+Uzu*(Zin-Oz)
+        Yout=Uxv*(Xin-Ox)+Uyv*(Yin-Oy)+Uzv*(Zin-Oz)
+        Zout=Uxw*(Xin-Ox)+Uyw*(Yin-Oy)+Uzw*(Zin-Oz)
+      else
+        call edisp(iuout,'CFDTRANS: Invalid MODE')
+        IER=1
+      endif
+
+      return
+      end

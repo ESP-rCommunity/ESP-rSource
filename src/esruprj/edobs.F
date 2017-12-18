@@ -56,7 +56,7 @@ C LPRFDB,IPRODB (for event profile database)
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
-      dimension IVALB(MB)
+      dimension IVALB(MB),ITEMP(MB)
       CHARACTER*33 VERT(35)
       character*32 PICK(MB)
       CHARACTER KEY*1,HOLD*24
@@ -486,7 +486,11 @@ C Build up text strings for the delete menu.
           CALL EPICKS(INPIC,IVALB,' ','Delete which obstruction(s):',
      &        30,nbobs(icomp),PICK,' delete options',IER,nbhelp)
           CALL EPMENRC
+
+C Use sorting for deletion of obstructions.
           if(inpic.gt.0)then
+            KFLAG = -1
+            call SORTI(IVALB,ITEMP,MB,KFLAG)
             do 143 ijb=1,INPIC
               ID=IVALB(ijb)
               IF(nbobs(icomp).LT.2)then
@@ -1980,7 +1984,7 @@ C LPRFDB,IPRODB (for event profile database)
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
-      dimension IVALB(MB)
+      dimension IVALB(MB),ITEMP(MB)
       CHARACTER*33 VERT(35)
       character*32 PICKV(MB),PICKO(MB)
       CHARACTER KEY*1
@@ -2611,6 +2615,8 @@ C deleted at one time.
      &        30,nbvis(icomp),PICKV,' delete options',IER,nbhelp)
             CALL EPMENRC
             if(inpic.gt.0)then
+              KFLAG = -1
+              call SORTI(IVALB,ITEMP,MB,KFLAG)
               do ijb=1,INPIC
                 ID=IVALB(ijb)
                 if(ID.eq.0)GOTO 92

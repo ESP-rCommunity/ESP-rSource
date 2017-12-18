@@ -80,8 +80,22 @@ C compact schedule is correctly written out.
 
 C Simulation parameter presets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
      &               isfnmon(MSPS)
+      common/spfldes/spfdescr(MSPS)
+      character spfdescr*30
+
+C Extended simulation parameters for each set.
+      common/spfldats/isstupex(MSPS),isbnstepex(MSPS),ispnstepex(MSPS),
+     &  issaveex(MSPS),isavghex(MSPS),iscfdactivate(MSPS),
+     &  isicfdys(MSPS),isicfdyf(MSPS),
+     &  scftims(MSPS),scftimf(MSPS)
+      INTEGER :: isstupex,isbnstepex,ispnstepex,issaveex,isavghex
+      INTEGER :: iscfdactivate      ! zero ignore domains
+      INTEGER :: isicfdys,isicfdyf  ! CFD simulation start & finish days
+      REAL :: scftims,scftimf       ! CFD simulation start & finish time
+
       COMMON/CLMDT1/CLMLOC
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
@@ -113,14 +127,15 @@ C kgiprndx total mass of each material used
 C << logic ?? for multiple layers of the same thing ?? >>
       real thkiprndx,riair,soltrn,solrefl,vistrn,visrefl
       real deniprndx,areaiprndx,kgiprndx
-      dimension iprndx(100),thkiprndx(100),optndx(100),iglassndx(100)
-      dimension riair(100),soltrn(100),solrefl(100),vistrn(100)
-      dimension visrefl(100),nameiprndx(100),deniprndx(100)
-      dimension areaiprndx(100),kgiprndx(100),sphtiprndx(100)
+      dimension iprndx(MMLC),thkiprndx(MMLC),optndx(MMLC)
+      dimension iglassndx(MMLC)
+      dimension riair(MMLC),soltrn(MMLC),solrefl(MMLC),vistrn(MMLC)
+      dimension visrefl(MMLC),nameiprndx(MMLC),deniprndx(MMLC)
+      dimension areaiprndx(MMLC),kgiprndx(MMLC),sphtiprndx(MMLC)
 
 C Each construction needs to remember, for each layer the index
 C of the material that was created or found for it.
-      dimension iconmatpointer(100,8)
+      dimension iconmatpointer(MMLC,8)
       dimension areamlc(MCOM)
 
 C To hold coordinates at the corners of surfaces (in case a complex
@@ -149,16 +164,18 @@ C << need to revise OPT to be 32 char >>
       dimension usethisone(MCON),truechild(MCON)
       integer jvn1,iduploop,foundone ! for use in avoiding child duplicate vertices
       integer iccsimilar   ! connection to use in case of similar
+      integer istd         ! which MLC has longest timeconstant
       dimension jvn1(MV)
 
       logical found,close,close1,foundmlc
-      logical closea,closeb,closec,closed,closee
+      logical closea,closeb,closec,closed,closee,closef
       logical haveobs,haveish,havehc,haveusrgrnd,havestdgrnd,XST
       logical loadonday,ok,dok
       logical newgeo  ! to use for testing if new/old geometry file
       logical findchildvert  ! to remember child vertices
       logical treatasmass    ! if true treat surface as internal mass
       logical processasfen   ! if true treat surface as fenistration
+      logical usectf,nooccupinday
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -185,22 +202,26 @@ C simicolon.
       com=','
       sim=';'
       newgeo=.false.  ! assume older format geometry.
+      usectf=.true.
 
 C Check the version number and set iver as well as a character variable
 C to represent a 2 char or 4 char indentation.
-      iver = 00
-      call eclose(ver,3.0,0.001,closea)
-      call eclose(ver,4.0,0.001,closeb)
-      call eclose(ver,5.0,0.001,closec)
-      call eclose(ver,6.0,0.001,closed)
-      call eclose(ver,7.2,0.001,closee)
-      if(closea) iver = 30; indent = '    '
-      if(closeb) iver = 40; indent = '    '
-      if(closec) iver = 50; indent = '    '
-      if(closed) iver = 60; indent = '    '
-      if(closee) iver = 72; indent = '    '
+      iver = 0
+      call eclose(ver,4.0,0.001,closea)
+      call eclose(ver,5.0,0.001,closeb)
+      call eclose(ver,6.0,0.001,closec)
+      call eclose(ver,7.2,0.001,closed)
+      call eclose(ver,8.0,0.001,closee)
+      call eclose(ver,8.5,0.001,closef)
+      if(closea) iver = 40; indent = '    '
+      if(closeb) iver = 50; indent = '    '
+      if(closec) iver = 60; indent = '    '
+      if(closed) iver = 72; indent = '    '
+      if(closee) iver = 80; indent = '    '
+      if(closef) iver = 85; indent = '    '
       if(iver.eq.0)then
-        call usrmsg('Only V3.0 4.0 5.0 6.0 7.2 IDF files recognized',
+        call usrmsg(
+     &    'Only V4.0 5.0 6.0 7.2 8.0 8.5 IDF files recognized',
      &    ' ','W')
         return
       endif
@@ -219,33 +240,26 @@ C have been filled (warn user if not).
 
 C First task is to loop through each of the mlc and get a
 C list of materials used in this problem. Clear the local
-C arrays. Assumes that there are no more than 100 materials
-C and constructions used in the model.
-      do 17 ii=1,100
+C arrays. 
+      do 17 ii=1,MMLC
         iprndx(ii)=-1
         thkiprndx(ii)=0.0
         iglassndx(ii)=0
         riair(ii)=0.0
-        soltrn(ii)=0.0
-        solrefl(ii)=0.0
-        vistrn(ii)=0.0
-        visrefl(ii)=0.0
+        soltrn(ii)=0.0; solrefl(ii)=0.0
+        vistrn(ii)=0.0; visrefl(ii)=0.0
         deniprndx(ii)=0.0   ! density of material
         areaiprndx(ii)=0.0  ! area of material
         sphtiprndx(ii)=0.0  ! specific heat of material
         kgiprndx(ii)=0.0    ! weight of material
         nameiprndx(ii)=' '
         optndx(ii)=' '
-        iconmatpointer(ii,1)=0
-        iconmatpointer(ii,2)=0
-        iconmatpointer(ii,3)=0
-        iconmatpointer(ii,4)=0
-        iconmatpointer(ii,5)=0
-        iconmatpointer(ii,6)=0
-        iconmatpointer(ii,7)=0
-        iconmatpointer(ii,8)=0
+        iconmatpointer(ii,1)=0; iconmatpointer(ii,2)=0
+        iconmatpointer(ii,3)=0; iconmatpointer(ii,4)=0
+        iconmatpointer(ii,5)=0; iconmatpointer(ii,6)=0
+        iconmatpointer(ii,7)=0; iconmatpointer(ii,8)=0
   17  continue
-      iij=0
+      iij=0; istd=0
 
 C Write header of file.
       call dstamp(dstmp)
@@ -256,10 +270,7 @@ C Write header of file.
      &  modeltitle(1:lnblnk(modeltitle))
       WRITE(ioout,'(2a)',iostat=ios,err=2) '!- DATE: ',dstmp
       WRITE(ioout,'(a)',iostat=ios,err=2)  ' '
-      if(iver.eq.30)then
-        WRITE(ioout,'(5a)',iostat=ios,err=2) '  VERSION',com,'3.0',sim,
-     &  '   !- Version Identifier'
-      elseif(iver.eq.40)then
+      if(iver.eq.40)then
         WRITE(ioout,'(5a)',iostat=ios,err=2) '  VERSION',com,'4.0',sim,
      &  '   !- Version Identifier'
       elseif(iver.eq.50)then
@@ -270,6 +281,12 @@ C Write header of file.
      &  '   !- Version Identifier'
       elseif(iver.eq.72)then
         WRITE(ioout,'(5a)',iostat=ios,err=2) '  VERSION',com,'7.2',sim,
+     &  '   !- Version Identifier'
+      elseif(iver.eq.80)then
+        WRITE(ioout,'(5a)',iostat=ios,err=2) '  VERSION',com,'8.0',sim,
+     &  '   !- Version Identifier'
+      elseif(iver.eq.85)then
+        WRITE(ioout,'(5a)',iostat=ios,err=2) '  VERSION',com,'8.5',sim,
      &  '   !- Version Identifier'
       endif
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
@@ -337,100 +354,151 @@ C blocks, otherwise set to `MinimalShadowing`.
         endif
       endif
 
+C Confirm use of CTF
+      dok=.false.
+      nbhelp=1  ! need to work up some help messages
+      call askok('Do you want to use ConductionTransferFunction',
+     &  '(a no forces ConductionFiniteDifference)?',usectf,dok,nbhelp)
+
 C Interpret warmup days. Use simulation parameter set value or calculate
 C via call to scntcnst. If newer idf also write out minimum warmup.
-      if(nsset.gt.0)then
-        WRITE(ioout,'(a,i2,2a)',iostat=ios,err=2) indent,isstup,sim,
-     &    '   !- Maximum Number of Warmup Days (from sim param set)'
-      else
-         call scntcnst(TDM,istd,TCM,ISTC)
-        if(iver.le.40)then
-          WRITE(ioout,'(a,i2,2a)',iostat=ios,err=2) indent,ISTC,sim,
-     &      '   !- Maximum Number of Warmup Days (from MLC TCM)'
-        elseif(iver.gt.40)then
-          WRITE(ioout,'(a,i2,2a)',iostat=ios,err=2) indent,ISTC,com,
-     &      '   !- Maximum Number of Warmup Days (from MLC TCM)'
-          if(ISTC.gt.4)then
-            ISTCMIN=ISTC/2
-          else
-            ISTCMIN=1
-          endif
-          WRITE(ioout,'(a,i2,2a)',iostat=ios,err=2) indent,ISTCMIN,sim,
-     &      '   !- Minimum Number of Warmup Days (from MLC TCM)'
-        endif
+C If using Conduction Transfer limit timesteps between 4 & 8. For
+C FiniteDifference set to 20.
+
+C << extended *sps logic needed >>
+
+      if(.NOT.usectf.and.isstup.lt.6)then
+
+C CFD method seems to want to force 20 steps per hour.
+        WRITE(ioout,'(a)',iostat=ios,err=2) ' '
+        WRITE(ioout,'(a)',iostat=ios,err=2) 
+     &    '!- Boosting to 6 warmup days'
+        isstup=6
       endif
 
-C Interpret timesteps. Use simulation parameter set value if <= 6 or set to one.
-      WRITE(ioout,'(a)',iostat=ios,err=2) ' '
-      WRITE(ioout,'(2a)',iostat=ios,err=2) '  Timestep',com
       if(nsset.gt.0)then
-        if(isbnstep.gt.8)then
-          WRITE(ioout,'(4a,i2,a)',iostat=ios,err=2) indent,'8',sim,
-     &      '   !- Time Step in Hour (sim param set was ',isbnstep,')'
-        elseif(isbnstep.lt.4)then
-          WRITE(ioout,'(4a,i2,a)',iostat=ios,err=2) indent,'4',sim,
-     &      '   !- Time Step in Hour (sim param set was ',isbnstep,')'
-        else
-          WRITE(ioout,'(a,i2,2a)',iostat=ios,err=2) indent,isbnstep,
-     &      sim,'   !- Time Step in Hour (from sim param set)'
-        endif
+
+C << extended *sps logic needed >>
+
+        WRITE(ioout,'(a,i2,2a)',iostat=ios,err=2) indent,isstup,com,
+     &    '   !- Maximum Number of Warmup Days (from sim param set)'
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'1',sim,
+     &    '   !- Minimum Number of Warmup Days (from MLC TCM)'
       else
-        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'4',sim,
-     &    '   !- Time Step in Hour (default)'
+        call scntcnst(TDM,istd,TCM,ISTC)
+        WRITE(ioout,'(a,i2,2a)',iostat=ios,err=2) indent,ISTC,com,
+     &    '   !- Maximum Number of Warmup Days (from MLC TCM)'
+        if(ISTC.gt.4)then
+         ISTCMIN=ISTC/2
+        else
+         ISTCMIN=2
+        endif
+        WRITE(ioout,'(a,i2,2a)',iostat=ios,err=2) indent,ISTCMIN,sim,
+     &    '   !- Minimum Number of Warmup Days (from MLC TCM)'
+      endif
+
+C << If there are more than one *sps ask the user which one to
+C << use when exporting.
+
+      if(.NOT.usectf)then
+
+C CFD method seems to want to force 20 steps per hour.
+        WRITE(ioout,'(a)',iostat=ios,err=2) ' '
+        WRITE(ioout,'(5a,i2,a)',iostat=ios,err=2) '  Timestep',com,
+     &    '20',sim,'   !- Time Step in Hour (default for CFD)',
+     &    isbnstep,')'
+      else
+
+C Interpret timesteps. Use simulation parameter set value if <= 6 or set to one.
+        WRITE(ioout,'(a)',iostat=ios,err=2) ' '
+        if(nsset.gt.0)then
+          if(isbnstep.gt.8)then
+           WRITE(ioout,'(5a,i2,a)',iostat=ios,err=2) '  Timestep',com,
+     &      '8',sim,
+     &      '  !- Time Step in Hour (sim param set was ',isbnstep,')'
+          elseif(isbnstep.lt.4)then
+           WRITE(ioout,'(5a,i2,a)',iostat=ios,err=2) '  Timestep',com,
+     &      '4',sim,
+     &      '  !- Time Step in Hour (sim param set was ',isbnstep,')'
+          else
+           WRITE(ioout,'(2a,i2,a)',iostat=ios,err=2) '  Timestep',com,
+     &      isbnstep,sim,'  !- Time Step in Hour (from sim param set)'
+          endif
+        else
+          WRITE(ioout,'(5a)',iostat=ios,err=2) '  Timestep',com,
+     &     '4',sim,'   !- Time Step in Hour (default)'
+        endif
       endif
 
 C Inside convection. If there are convection regime files
-C give note to user to check. Set `Detailed`.
-C << note there is also a zone field to over-ride >>
+C give note to user to check.
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
-      WRITE(ioout,'(2a)',iostat=ios,err=2) 
-     &  '  SurfaceConvectionAlgorithm:Inside',com
       if(havehc)then
-        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'Detailed',sim,
+        WRITE(ioout,'(5a)',iostat=ios,err=2)
+     &    '  SurfaceConvectionAlgorithm:Inside',com,'Detailed',sim,
      &    '   !- [please check equivalent ESP-r HC regime]'
       else
 
 C Newer idf files use TARP as default rather than Detailed.
-        if(iver.le.30)then
-          WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'Detailed',sim,
-     &      '   !- Algorithm (default)'
-        else
-          WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'TARP',sim,
-     &      '   !- Algorithm'
-        endif
+        WRITE(ioout,'(5a)',iostat=ios,err=2) 
+     &    '  SurfaceConvectionAlgorithm:Inside',com,'TARP',sim,
+     &    '   !- Algorithm'
       endif
 
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
-      WRITE(ioout,'(2a)',iostat=ios,err=2) 
-     &  '  SurfaceConvectionAlgorithm:Outside',com
-      if(iver.le.30)then
-        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'Detailed',sim,
-     &    '   !- Algorithm (default)'
-      else
-        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'TARP',sim,
-     &    '   !- Algorithm (default)'
-      endif
+      WRITE(ioout,'(5a)',iostat=ios,err=2) 
+     &  '  SurfaceConvectionAlgorithm:Outside',com,'TARP',sim,
+     &  '   !- Algorithm (default)'
 
 C Solution - assume no moisture solution.
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
-      if(iver.le.30)then
+      if(usectf)then
         WRITE(ioout,'(2a)',iostat=ios,err=2) 
      &    '  HeatBalanceAlgorithm,ConductionTransferFunction',sim
-      elseif(iver.gt.30)then
+      else
         WRITE(ioout,'(2a)',iostat=ios,err=2) 
-     &    '  HeatBalanceAlgorithm,ConductionTransferFunction',sim
+     &    '  HeatBalanceAlgorithm,ConductionFiniteDifference',sim
       endif
 
 C Interpret shading calculations. If shading used in ESP-r then
 C set to 28 days, otherwise set zero=default.
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
-      WRITE(ioout,'(2a)',iostat=ios,err=2) '  ShadowCalculation',com
       if(haveish)then
-        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'28',sim,
-     &    '   !- (to match ESP-r ish period)'
+        if(iver.lt.80)then
+          WRITE(ioout,'(5a)',iostat=ios,err=2) '  ShadowCalculation',
+     &      com,'28',com,'   !- (to match ESP-r ish period)'
+          WRITE(ioout,'(4a)',iostat=ios,err=2) indent,
+     &      '15000',sim,
+     &      '  !- Maximum Figures in Shadow Overlap Calculations'
+        else
+          WRITE(ioout,'(2a)',iostat=ios,err=2) '  ShadowCalculation',
+     &      com
+          WRITE(ioout,'(3a)',iostat=ios,err=2) indent,
+     &      'AverageOverDaysInFrequency',com
+          WRITE(ioout,'(3a)',iostat=ios,err=2) indent,
+     &      '28',com,'   !- (to match ESP-r ish period)'
+          WRITE(ioout,'(4a)',iostat=ios,err=2) indent,
+     &      '15000',sim,
+     &      '  !- Maximum Figures in Shadow Overlap Calculations'
+        endif
       else
-        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'20',sim,
-     &    '   !- Calculation frequency'
+        if(iver.lt.80)then
+          WRITE(ioout,'(5a)',iostat=ios,err=2) '  ShadowCalculation',
+     &      com,'20',com,'   !- Calculation frequency'
+          WRITE(ioout,'(4a)',iostat=ios,err=2) indent,
+     &      '15000',sim,
+     &      '  !- Maximum Figures in Shadow Overlap Calculations'
+        else
+          WRITE(ioout,'(2a)',iostat=ios,err=2) '  ShadowCalculation',
+     &      com
+          WRITE(ioout,'(3a)',iostat=ios,err=2) indent,
+     &      'AverageOverDaysInFrequency',com
+          WRITE(ioout,'(4a)',iostat=ios,err=2) indent,
+     &      '20',com,'   !- (default)'
+          WRITE(ioout,'(4a)',iostat=ios,err=2) indent,
+     &      '15000',sim,
+     &      '  !- Maximum Figures in Shadow Overlap Calculations'
+        endif
       endif
 
 C Run control - set all fields to no so only run period is assessed.
@@ -446,15 +514,12 @@ C Run control - set all fields to no so only run period is assessed.
      &  '   !- no design day - use weather file'
 
 C Interpret run period. Use simulation parameter set values or set default.
+C << add the simulatio parameter set name >>
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
-      if(iver.le.30)then
-        WRITE(ioout,'(2a)',iostat=ios,err=2) '  RunPeriod',com
-      elseif(iver.gt.30)then
-        WRITE(ioout,'(2a)',iostat=ios,err=2) '  RunPeriod',com
-        WRITE(ioout,'(3a)',iostat=ios,err=2) indent,com,
-     &    '   !- Name'
-      endif
-      if(nsset.gt.0)then
+      WRITE(ioout,'(2a)',iostat=ios,err=2) '  RunPeriod',com
+      if(nsset.gt.0)then 
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,
+     &    spfdescr(1)(1:lnblnk(spfdescr(1))),com,'   !- Name'
         WRITE(ioout,'(a,i2,a,i2,2a)',iostat=ios,err=2) indent,
      &    isstmon(1),com,isstday(1),com,
      &    '   !- Begin Month & Day Of Month (from sim param set)'
@@ -478,6 +543,8 @@ C Interpret day of week for start day from project year.
         WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'No',sim,
      &    '   !- Use WeatherFile Snow Indicators'
       else
+        WRITE(ioout,'(3a)',iostat=ios,err=2) indent,com,
+     &    '   !- Name'
         WRITE(ioout,'(5a)',iostat=ios,err=2) indent,'1',com,'1',com,
      &    '   !- Begin Month & Day Of Month (default)'
         WRITE(ioout,'(5a)',iostat=ios,err=2) indent,'12',com,
@@ -511,10 +578,10 @@ C the configuration file data for lat and long.
         READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)CLMLOC
         CALL ERPFREE(ICLIM,ISTAT)
         WRITE(ioout,'(4a)',iostat=ios,err=2) indent,
-     &    CLMLOC(1:lnblnk(CLMLOC)),com,'   !- LocationName'
+     &    CLMLOC(1:lnblnk(CLMLOC)),com,'   !- Name'
       else
         WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'not_yet_set',com,
-     &    '   !- LocationName'
+     &    '   !- Name'
       endif
       WRITE(ioout,'(a,f7.3,2a)',iostat=ios,err=2) indent,sitelat,com,
      &  '   !- Latitude {deg}'
@@ -580,8 +647,9 @@ C Check if there are user defined ground temps.
         WRITE(ioout,'(a,i2)',iostat=ios,err=2)
      &    '!- standard ground profile ',igrp
       else
-        WRITE(ioout,'(a)',iostat=ios,err=2) 
-     &    '!- no ground connections in ESP-r'
+        WRITE(ioout,'(4a)',iostat=ios,err=2) 
+     &    '3.6630,4.5020,6.4738,8.4398,12.343,14.560,15.374,14.612,',
+     &    '12.434,9.5459,6.5633,4.4524',sim,'  !- assumed'
       endif
 
       if((.NOT.haveusrgrnd).and.(.NOT.havestdgrnd))then
@@ -843,12 +911,12 @@ C Take up to 12 char from NAM and the remove any blanks via st2name.
             WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,A,com,
      &        '   !- Solar Absorptance'
             WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,A,sim,
-     &        '   !-  Visible Absorptance'
+     &        '   !- Visible Absorptance'
           else
             WRITE(ioout,'(4a)',iostat=ios,err=3) indent,
      &        'SpectralAverage',com,'   !- Optical Data Type'
             WRITE(ioout,'(3a)',iostat=ios,err=3) indent,com,
-     &        '   !- Window Glass Spectral Data Set Name'
+     &        '             !- Window Glass Spectral Data Set Name'
             WRITE(ioout,'(a,f7.4,2a)',iostat=ios,err=3) indent,
      &        thkiprndx(iy),com,'   !- Thickness {m}'
             WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,
@@ -976,9 +1044,9 @@ C within the model.
           mlckg=mlckg+kg   ! add up kg for the mlc
           cxm=cxm+(kg*sphtiprndx(ilamat))
           kgiprndx(ilamat)=kgiprndx(ilamat)+kg
-          write(6,*) 'material ',layname,ilamat,tareamlc,
-     &      DTHK(ino,il),deniprndx(ilamat),kg,kgiprndx(ilamat),
-     &      areaiprndx(ilamat),sphtiprndx(ilamat),kg*sphtiprndx(ilamat)
+C          write(6,*) 'material ',layname,ilamat,tareamlc,
+C     &      DTHK(ino,il),deniprndx(ilamat),kg,kgiprndx(ilamat),
+C     &      areaiprndx(ilamat),sphtiprndx(ilamat),kg*sphtiprndx(ilamat)
           if(il.eq.1)then
             if(il.eq.LAYERS(INO))then
               WRITE(ioout,'(4a)',iostat=ios,err=4) indent,
@@ -997,20 +1065,21 @@ C within the model.
   37    continue
 
 C For each MLC report J/degC capacitance.
-        WRITE(ioout,'(3a,F7.3,a,F7.3,a,F9.3,a)',iostat=ios,err=4) 
+        WRITE(ioout,'(3a,F7.3,a,F9.2,a,F9.2,a)',iostat=ios,err=4) 
      &    '!- ',mlc_name(1:lnblnk(mlc_name)),com,tareamlc,com,mlckg,
      &    com,cxm/1000.0,' !- m2 kg kJ/degC'    
-        WRITE(6,'(3a,F7.3,a,F7.3,a,F9.3,a)',iostat=ios,err=4) 
-     &    '!- ',mlc_name(1:lnblnk(mlc_name)),com,tareamlc,com,
-     &    mlckg,com,cxm/1000.0,' !- m2 kg kJ/degC'    
+C        WRITE(6,'(3a,F7.3,a,F9.2,a,F9.2,a)',iostat=ios,err=4) 
+C     &    '!- ',mlc_name(1:lnblnk(mlc_name)),com,tareamlc,com,
+C     &    mlckg,com,cxm/1000.0,' !- m2 kg kJ/degC'    
   36  continue
   
 C Summary of materials found.
+      WRITE(ioout,'(a)',iostat=ios,err=7) ' '
       WRITE(ioout,'(a)',iostat=ios,err=4) 
      &  '!- ======= Material summary ======'
       do ij = 1,nmat
-        write(6,*)'!- ',nameiprndx(ij),ij,areaiprndx(ij),
-     &   kgiprndx(ij),' name index area kg'
+C        write(6,*)'!- ',nameiprndx(ij),ij,areaiprndx(ij),
+C     &   kgiprndx(ij),' name index area kg'
         write(ioout,*)'!- ',nameiprndx(ij),ij,areaiprndx(ij),
      &   kgiprndx(ij),' name index area kg'
       enddo
@@ -1021,46 +1090,27 @@ C Typical schedule types.
       WRITE(ioout,'(a)',iostat=ios,err=7) ' '
       WRITE(ioout,'(a)',iostat=ios,err=7) 
      &  '!- ============= typical schedule types'
-      if(iver.le.30)then
-        WRITE(ioout,'(5a)',iostat=ios,err=7) '  ScheduleTypeLimits',
-     &    com,'Any Number',sim,'   !- Name'
-      else
-        WRITE(ioout,'(5a)',iostat=ios,err=7) '  ScheduleTypeLimits',
-     &    com,'Any Number',sim,'   !- Name'
-      endif
-      if(iver.le.30)then
-        WRITE(ioout,'(9a)',iostat=ios,err=7) '  ScheduleTypeLimits',
-     &    com,'Fraction',com,
-     &    '0.0:1.0',com,'Continuous',sim,'  !- Name Range Numeric Type'
-      else
-        WRITE(ioout,'(11a)',iostat=ios,err=7) '  ScheduleTypeLimits',
-     &    com,'Fraction',com,'0.0',com,'1.0',com,
-     &    'Continuous',sim,'  !- Name Range Numeric Type'
-      endif
-      if(iver.le.30)then
-        WRITE(ioout,'(9a)',iostat=ios,err=7) '  ScheduleTypeLimits',
-     &    com,'Temperature type',com,
-     &    '-60:20.0',com,'Continuous',sim,' !- Name Range Numeric Type'
-      else
-        WRITE(ioout,'(11a)',iostat=ios,err=7) '  ScheduleTypeLimits',
-     &    com,'Temperature type',com,'-60',com,'20.0',com,
-     &    'Continuous',sim,' !- Name Range Numeric Type'
-      endif
-      if(iver.le.30)then
-        WRITE(ioout,'(9a)',iostat=ios,err=7) '  ScheduleTypeLimits',
-     &    com,'On/Off type',com,
-     &    '0.0:40.0',com,'Discrete',sim,'   !- Name Range Numeric Type'
-      else
-        WRITE(ioout,'(11a)',iostat=ios,err=7) '  ScheduleTypeLimits',
-     &    com,'On/Off type',com,'0.0',com,'40.0',com,
-     &    'Discrete',sim,'   !- Name Range Numeric Type'
-      endif
+      WRITE(ioout,'(5a)',iostat=ios,err=7) '  ScheduleTypeLimits',
+     &  com,'Any Number',sim,'   !- Name'
+
+      WRITE(ioout,'(11a)',iostat=ios,err=7) '  ScheduleTypeLimits',
+     &  com,'Fraction',com,'0.0',com,'1.0',com,
+     &  'Continuous',sim,'  !- Name Range Numeric Type'
+     
+      WRITE(ioout,'(11a)',iostat=ios,err=7) '  ScheduleTypeLimits',
+     &  com,'Temperature type',com,'-60',com,'20.0',com,
+     &  'Continuous',sim,' !- Name Range Numeric Type'
+
+      WRITE(ioout,'(11a)',iostat=ios,err=7) '  ScheduleTypeLimits',
+     &  com,'On/Off type',com,'0.0',com,'40.0',com,
+     &  'Discrete',sim,'   !- Name Range Numeric Type'
 
 C Write out a generic nothing-is-happening schedule for zones which
 C have a null or all zero operation file.
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         WRITE(ioout,'(a)',iostat=ios,err=7) 
      &    '! Schedules for zones where nothing happens'
+        WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         WRITE(ioout,'(2a)',iostat=ios,err=7) '  Schedule:Compact',com
         WRITE(ioout,'(3a)',iostat=ios,err=5) '    NOTHING',com,
      &    '   !- Name'
@@ -1084,6 +1134,7 @@ C Write out a generic it always-happens schedule.
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         WRITE(ioout,'(a)',iostat=ios,err=7) 
      &    '! Schedules for zones where something always happens'
+        WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         WRITE(ioout,'(2a)',iostat=ios,err=7) '  Schedule:Compact',com
         WRITE(ioout,'(3a)',iostat=ios,err=5) '    CONSTANT',com,
      &    '   !- Name'
@@ -1179,12 +1230,12 @@ C Write out a place-holder small power for the zone.
      &      totcgnsl,com
           fraclatent = 0.0
           WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=5) indent,
-     &      fraclatent,com,'   !- Fraction latent'
+     &      fraclatent,com,'   !- Fraction Latent'
           radsplit=0.5
           WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) indent,
-     &      radsplit,com,'   !- Radiant fraction'
+     &      radsplit,com,'   !- Fraction Radiant'
           WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
-     &      '0.0',com,'   !- Fraction lost'
+     &      '0.0',com,'   !- Fraction Lost'
 
 C << V2.0 includes General as the End-Use Subcategory
           WRITE(ioout,'(3a)',iostat=ios,err=5) indent,
@@ -1278,8 +1329,9 @@ C Write out the initial portion of lighting compact schedule.
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         WRITE(ioout,'(2a)',iostat=ios,err=7) '  Schedule:Compact',
      &    com
+        lll=lnblnk(lodlabel(mz,2))
         WRITE(ioout,'(6a)',iostat=ios,err=5) indent,
-     &    zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,2),com,
+     &    zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,2)(1:lll),com,
      &    '   !- Name'
         WRITE(ioout,'(3a)',iostat=ios,err=7) '    Fraction',com,
      &    '   !- Schedule Type Limits Name' 
@@ -1348,8 +1400,9 @@ C << revise for additional gain types >>
      &    zname(mz)(1:lnzname(mz)),'  Lights',com,'   !- Name'
         WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &    zname(mz)(1:lnzname(mz)),com,'   !- Zone Name'
+        lll=lnblnk(lodlabel(mz,2))
         WRITE(ioout,'(6a)',iostat=ios,err=5) indent,
-     &    zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,2),com,
+     &    zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,2)(1:lll),com,
      &    '   !- Schedule Name'
         totcgnsl=loadcasp(mz,2,1)+loadcasp(mz,2,2)
         WRITE(ioout,'(3a)',iostat=ios,err=7) '    LightingLevel',
@@ -1371,16 +1424,17 @@ C V3.0 ends with
         WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) indent,
      &    loadradfrac(mz,2),com,'   !- Fraction Radiant'
         WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
-     &    '0.0',com,'   !- Fraction visible'
+     &    '0.0',com,'   !- Fraction Visible'
         WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &    '0.0',sim,'   !- Fraction Replaceable'
-
 
 C Write out the initial portion of small power compact schedule.
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         WRITE(ioout,'(2a)',iostat=ios,err=7) '  Schedule:Compact',com
+        lll=lnblnk(lodlabel(mz,3))
         WRITE(ioout,'(6a)',iostat=ios,err=5) indent,
-     &    zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,3),com,'   !- Name'
+     &    zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,3)(1:lll),com,
+     &    '   !- Name'
         WRITE(ioout,'(3a)',iostat=ios,err=7) '    Fraction',com,
      &    '   !- Schedule Type Limits Name' 
         WRITE(ioout,'(2a)',iostat=ios,err=7) '    Through: 12/31',com
@@ -1454,14 +1508,15 @@ C the only write a brief note and jump to people.
 
         WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &    zname(mz)(1:lnzname(mz)),com,'   !- Zone Name'
+        lll=lnblnk(lodlabel(mz,3))
         WRITE(ioout,'(6a)',iostat=ios,err=5) indent,
      &    zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,3),com,
      &    '   !- Schedule Name'
         WRITE(ioout,'(3a)',iostat=ios,err=7) '    EquipmentLevel',
      &    com,'   !- Design Level Calculation Method'
         totcgnsl=loadcasp(mz,3,1)+loadcasp(mz,3,2)
-        WRITE(ioout,'(a,F12.4,a)',iostat=ios,err=7) indent,
-     &    totcgnsl,com
+        WRITE(ioout,'(a,F12.4,2a)',iostat=ios,err=7) indent,
+     &    totcgnsl,com,'   !- Design Level {W}'
         WRITE(ioout,'(3a)',iostat=ios,err=7) '    ',com,
      &    '   !- Watts per Zone Floor Area {W/m2}'
         WRITE(ioout,'(3a)',iostat=ios,err=7) '    ',com,
@@ -1476,16 +1531,16 @@ C << check this out, it might be inverted >>
           fraclatent = (totcgnsl/loadcasp(mz,3,2))*0.01
         endif
         WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=5) indent,
-     &    fraclatent,com,'   !- Fraction latent'
+     &    fraclatent,com,'   !- Fraction Latent'
 
 C Set radiant from initial scan.
 C Further logic required if there is more than one radiant/convective split.
         WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) indent,
-     &    loadradfrac(mz,3),com,'   !- Radiant fraction'
+     &    loadradfrac(mz,3),com,'   !- Fraction Radiant'
         WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
-     &    '0.0',com,'   !- Fraction lost'
+     &    '0.0',com,'   !- Fraction Lost'
         WRITE(ioout,'(3a)',iostat=ios,err=5) indent,
-     &    sim,'   !- EndUse Category'
+     &    sim,'   !- End-Use Category'
 
 
 C --------------------------------------
@@ -1497,8 +1552,10 @@ C Write out the initial portion of people compact schedule.
      &    '!- occupants schedule/activity level/PEOPLE definition... '
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         WRITE(ioout,'(2a)',iostat=ios,err=7) '  Schedule:Compact',com
+        lll=lnblnk(lodlabel(mz,1))
         WRITE(ioout,'(6a)',iostat=ios,err=5) indent,
-     &    zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,1),com,'   !- Name'
+     &    zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,1)(1:lll),com,
+     &    '   !- Name'
         WRITE(ioout,'(3a)',iostat=ios,err=7) '    Fraction',com,
      &    '   !- Schedule Type Limits Name' 
         WRITE(ioout,'(2a)',iostat=ios,err=7) '    Through: 12/31',com
@@ -1519,36 +1576,48 @@ C Also do placeholder of there are no gains of this type on this day.
 C Write day type name if start of the day type.
             WRITE(ioout,'(3a)',iostat=ios,err=7) 
      &        '    For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
-            do 57 J=1,NCAS(ID)
-              CGNS=0.
-              CGNL=0.
+            if(NCAS(ID).eq.0)then
+              WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
+     &          '24:00',com,'0.0',com
+            else
+              nooccupinday=.true.  ! assume no occupant periods
+              do 57 J=1,NCAS(ID)
+                CGNS=0.0; CGNL=0.
 
 C << overloaded ICGT here >>
-              ity=iabs(ICGT(ID,J))
-              totcgnsl=loadcasp(mz,ity,1)+loadcasp(mz,ity,2)
-              if(ity.eq.1)then
-                if (ICGT(ID,J).lt.-1) then
-                  CGNS=CMGS(ID,J)*ZBASEA(mz)
-                  CGNL=CMGL(ID,J)*ZBASEA(mz)
-                else
-                  CGNS=CMGS(ID,J)
-                  CGNL=CMGL(ID,J)
-                endif
-                call eclose(totcgnsl,0.0,0.001,close)
-                if(close)then
-                  totfrac=0.0
-                else
-                  totfrac=(CGNS+CGNL)/totcgnsl
-                endif
+                ity=iabs(ICGT(ID,J))
+                totcgnsl=loadcasp(mz,ity,1)+loadcasp(mz,ity,2)
+                if(ity.eq.1)then
+                  nooccupinday=.false.  ! found an occupant period
+                  if (ICGT(ID,J).lt.-1) then
+                    CGNS=CMGS(ID,J)*ZBASEA(mz)
+                    CGNL=CMGL(ID,J)*ZBASEA(mz)
+                  else
+                    CGNS=CMGS(ID,J)
+                    CGNL=CMGL(ID,J)
+                  endif
+                  call eclose(totcgnsl,0.0,0.001,close)
+                  if(close)then
+                    totfrac=0.0
+                  else
+                    totfrac=(CGNS+CGNL)/totcgnsl
+                  endif
 
 C Debug.
-C                write(6,*) 'People wkd CGNS CGNL totcgnsl totfrac',
-C     &            CGNS,CGNL,totcgnsl,totfrac
+C                  write(6,*) 'People wkd CGNS CGNL totcgnsl totfrac',
+C     &             CGNS,CGNL,totcgnsl,totfrac
 
-                WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &            '    Until: ',ICGF(ID,J),':00',com,totfrac,com
+                  WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
+     &              '    Until: ',ICGF(ID,J),':00',com,totfrac,com
+                endif
+ 57           continue
+
+C If a day type had no occupants put in a place holder.
+              if(nooccupinday)then
+                WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
+     &            '24:00',com,'0.0',com
               endif
- 57         continue
+            endif
           endif
  144    continue
 
@@ -1617,8 +1686,9 @@ C Now write out the people.
 
         WRITE(ioout,'(4a)',iostat=ios,err=5) '    ',
      &    zname(mz)(1:lnzname(mz)),com,'   !- Zone Name'
+        lll=lnblnk(lodlabel(mz,1))
         WRITE(ioout,'(6a)',iostat=ios,err=5) '    ',
-     &    zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,1),com,
+     &    zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,1)(1:lll),com,
      &    '   !- Number of People Schedule Name'
         WRITE(ioout,'(3a)',iostat=ios,err=7) '    people',com,
      &    '   !- Number of People Calculation Method'
@@ -1640,7 +1710,7 @@ C Further logic required if there is more than one radiant/convective split.
      &    '   !- Activity Level Schedule Name (W/person)'
         if(iver.gt.50)then
           WRITE(ioout,'(3a)',iostat=ios,err=5) '    ',com,
-     &      '   !- Carbon Dioside Generation Rate {m3/s-W}'
+     &      '   !- Carbon Dioxide Generation Rate {m3/s-W}'
         endif
         WRITE(ioout,'(3a)',iostat=ios,err=7) '    ',com,
      &    '   !- Enable ASHRAE 55 Comfort Warnings'
@@ -1735,35 +1805,44 @@ C Begin by clearing the assumptions.
           truechild(icc)=.true.
  164    continue
 
-C Next pass is to identify surfaces to ignore (e.g. if grandchildren exist).
-        DO 165 IS=1,NSUR
-          icc=izstocn(mz,is)
-          if(nbgchild(icc).gt.0.and.igchild(icc,1).gt.0)then
-            usethisone(ichild(icc,1))=.false.  ! use only granchchild
-          endif
- 165    continue
-
-C Next pass to identify whether a surface is a true child in E+ context.
+C Next pass to identify whether a surface is a true child in E+ context
+C (it shares edges with only one other surface). A frame would typically
+C fail this test so explicitly identify them and set.
         DO 166 IS=1,NSUR
           icc=izstocn(mz,is)
 
+C If surfaced marked as a FRAME and it is a child of another
+C surface and it has a child surface then treat the frame
+C surface as a true child.
+          if((SSUSE(icc,1)(1:5).eq.'FRAME'.or.
+     &       SSUSE(icc,1)(1:7).eq.'F-FRAME').and.
+     &       nbchild(icc).gt.0.and.iparent(icc).gt.0)then
+            write(6,'(3a,i2,a,2i3)') ' Frame surface ',SSNAME(icc),
+     &        ' nb children ',nbchild(icc),
+     &        ' cnn is ',ichild(icc,1),iparent(icc)
+            truechild(icc)=.true.  ! treat FRAME as true child
+            write(6,*) SSNAME(icc),' truechild is ',truechild(icc)
+            goto 166  ! jump for next cycle of the loop
+          endif
+
 C See if this surface happens to be a child in the strict sense.
+C A non-zero iedgshr is the connection index of other surface.
           mentioned=0
           do 778 iprr=1,NZNVER(icc)   ! loop to see only parent mentioned
             if(iedgshr(icc,iprr).eq.0)then
               truechild(icc)=.false.  ! an edge to non-parallel surface
             endif
             if(iedgshr(icc,iprr).ne.0.and.mentioned.eq.0)then
-              mentioned=iedgshr(icc,iprr)
+              mentioned=iedgshr(icc,iprr) ! first mention of edge
             elseif(iedgshr(icc,iprr).ne.0.and.mentioned.ne.0)then
               if(iedgshr(icc,iprr).ne.mentioned)then
-                truechild(icc)=.false.  ! edge to more than one
+                truechild(icc)=.false.  ! edges to more than one other surface
               endif
             endif
  778      continue
 
 C Debug.
-C          write(6,*) 'self truechild is ',truechild(icc)
+          write(6,*) SSNAME(icc),' truechild is ',truechild(icc)
  166    continue
 
         DO 64 IS=1,NSUR
@@ -1771,28 +1850,29 @@ C          write(6,*) 'self truechild is ',truechild(icc)
 
 C Info about children of this surface.
 C Debug.
-C          write(6,'(3a,i2,a,i3,a,i2,a,i3)')  ' for surface named ',
-C     &      SSNAME(icc),' nb children ',nbchild(icc),
-C     &      ' cnn is ',ichild(icc,1),' nb gc ',nbgchild(icc),
-C     &      ' cnn is ',igchild(icc,1)
+          write(6,'(3a,i2,a,i3,a,i2,a,i3)')  ' for surface named ',
+     &      SSNAME(icc),' nb children ',nbchild(icc),
+     &      ' cnn is ',ichild(icc,1),' nb gc ',nbgchild(icc),
+     &      ' cnn is ',igchild(icc,1)
           if(ichild(icc,1).gt.0) then
-C            write(6,*) ' child named ',SSNAME(ichild(icc,1))
+            write(6,*) ' child named ',SSNAME(ichild(icc,1))
           else
             usethisone(icc)=.true.  ! no children so use
           endif
 
 C Debug.
-C          write(6,*) ' edge dup ',nbedgdup(icc)
-C          write(6,*) ' edge share ',nbedgshr(icc)
-C          write(6,'(a,10i4)') 'p share ',iedgshr(icc,1),iedgshr(icc,2),
-C     &    iedgshr(icc,3),iedgshr(icc,4),iedgshr(icc,5),iedgshr(icc,6),
-C     &    iedgshr(icc,7),iedgshr(icc,8),iedgshr(icc,9),iedgshr(icc,10)
+          write(6,*) ' edge dup ',nbedgdup(icc)
+          write(6,*) ' edge share ',nbedgshr(icc)
+          write(6,'(a,10i4)') 'p share ',iedgshr(icc,1),iedgshr(icc,2),
+     &    iedgshr(icc,3),iedgshr(icc,4),iedgshr(icc,5),iedgshr(icc,6),
+     &    iedgshr(icc,7),iedgshr(icc,8),iedgshr(icc,9),iedgshr(icc,10)
 
   64    continue
 
 C For each surface determine appropriate coordinates prior to
 C writing out any data.
         DO 60 IS=1,NSUR
+          call zsid(mz,is,ZSDES,ZSDESC,ZSDESS)
           icc=izstocn(mz,is)
           if(.NOT.usethisone(icc))goto 60  ! jump past this
 
@@ -1808,37 +1888,19 @@ C If there are no children remember all coordinates.
             iedgcnt=NVER(IS)
             findchildvert=.false.  ! child verts not relevant
 
-          elseif(nbgchild(icc).gt.0)then
-
-C There one or more grand children of this surface. Warn
-C the user.
-C << logic might assume that child surfaces are glazing when in
-C << fact they might be frames with glazing inside. Check the
-C << surface use attribute if the child is type FRAME.
-            if(ichild(icc,1).gt.0.and.igchild(icc,1).gt.0)then
-              write(outs,*) 'Surface ',SSNAME(icc),
-     &          ' has a child named ',SSNAME(ichild(icc,1)),
-     &          ' and a gchild named ',SSNAME(igchild(icc,1)),
-     &          ' E+ does not do gc.'
-              call edisp(iuout,outs)
-
-C ignore child vert + dup vert
-              findchildvert=.true.  ! do remember child verts
-            endif
-
           elseif(nbchild(icc).gt.0)then
           
 C There one or more children of this surface. If the child surface
 C is a true child then ignore child vert + dup vert.
             do 63 ich=1,nbchild(icc)
               if(truechild(ichild(icc,1)))then
-                findchildvert=.true.  ! do remember child verts
+                findchildvert=.true.  ! do scan child verts
               else
-                do 69 iedg=1,NVER(IS)
+                do iedg=1,NVER(IS)    ! add all verts
                   COORD(iedg,1)=X(JVN(IS,iedg))
                   COORD(iedg,2)=Y(JVN(IS,iedg))
                   COORD(iedg,3)=Z(JVN(IS,iedg))
-  69            continue
+                enddo
                 iedgcnt=NVER(IS)
                 findchildvert=.false. ! use all verts
               endif
@@ -1846,44 +1908,98 @@ C is a true child then ignore child vert + dup vert.
           endif
 
 C If we have been asked to exclude the child vertices and dup vertices
-C then make up the list now.
+C then make up the list of vertices to exclude now.
           if(findchildvert)then
             iccc=ichild(icc,1) ! connection for child
-            do 774 iprr=1,MV   ! loop to identify child verts
+            do iprr=1,MV   ! loop to identify child verts
               if(iprr.le.NZNVER(iccc))then
                 jvn1(iprr)=NZJVN(iccc,iprr)
               else
                 jvn1(iprr)=0
               endif
-  774       continue
+            enddo
             iedgcnt=0
             foundone=0                         ! where the logic beings
-            do 748 iedg=1,NZNVER(icc)          ! loop this surface edges
-              do 749 ichildloop=1,NZNVER(iccc) ! loop child surface edges
-                if(jvn1(ichildloop).eq.jvn(is,iedg))then
-                  foundone=jvn1(ichildloop)    ! found shared vertex
+
+C For the special case of a FRAME which is a child of another
+C surface and which has a child we only want to exclude the
+C vertices linked to the child of the frame.
+            if((SSUSE(icc,1)(1:5).eq.'FRAME'.or.
+     &         SSUSE(icc,1)(1:7).eq.'F-FRAME').and.
+     &         nbchild(icc).gt.0.and.iparent(icc).gt.0)then
+C Debug
+C             write(6,*)'working on frame',icc,iccc      
+              do iedg=1,NZNVER(icc)        ! loop this surface edges
+                foundone=0  ! reset
+                if(iedgshr(icc,iedg).eq.iparent(icc))then
+C                  write(6,*) 'is parent v',JVN(IS,iedg)
+                  continue
+                else
+C This is an edge not shared with frame parent so include in list.
+                  do ichildloop=1,NZNVER(iccc) ! loop child surface edges
+                    if(jvn1(ichildloop).eq.jvn(is,iedg))then
+                      foundone=jvn1(ichildloop)    ! found shared vertex
+                    endif
+                  enddo
                 endif
-  749         continue
-              if(iedg.gt.1)then               ! also check for duplicate vertex
-                do 750 iduploop=1,iedg-1
-                  if(JVN(IS,iedg).eq.JVN(IS,iduploop))then
-                    foundone=JVN(IS,iduploop)   ! found duplicate vertex
+                if(iedg.gt.1)then               ! also check for duplicate vertex
+                  do iduploop=1,iedg-1
+                    if(JVN(IS,iedg).eq.JVN(IS,iduploop))then
+                      foundone=JVN(IS,iduploop)   ! found duplicate vertex
+                    endif
+                  enddo
+                endif
+                if(foundone.eq.0)then  ! no child match or duplicate so include
+                  iedgcnt=iedgcnt+1
+                  COORD(iedgcnt,1)=X(JVN(IS,iedg))
+                  COORD(iedgcnt,2)=Y(JVN(IS,iedg))
+                  COORD(iedgcnt,3)=Z(JVN(IS,iedg))
+                endif
+              enddo
+            else
+
+C Otherwise identify verts in child that are shared with this surface.
+              do 748 iedg=1,NZNVER(icc)          ! loop this surface edges
+                foundone=0  ! reset
+                do ichildloop=1,NZNVER(iccc) ! loop child surface edges
+                  if(jvn1(ichildloop).eq.jvn(is,iedg))then
+                    foundone=jvn1(ichildloop)    ! found shared vertex
                   endif
-  750           continue
-              endif
-              if(foundone.eq.0)then  ! no child match or duplicate so include
-                COORD(iedg,1)=X(JVN(IS,iedg))
-                COORD(iedg,2)=Y(JVN(IS,iedg))
-                COORD(iedg,3)=Z(JVN(IS,iedg))
-                iedgcnt=iedgcnt+1
-              endif
-  748       continue
+                enddo
+                if(iedg.gt.1)then               ! also check for duplicate vertex
+                  do iduploop=1,iedg-1
+                    if(JVN(IS,iedg).eq.JVN(IS,iduploop))then
+                      foundone=JVN(IS,iduploop)   ! found duplicate vertex
+                    endif
+                  enddo
+                endif
+                if(foundone.eq.0)then  ! no child match or duplicate so include
+                  iedgcnt=iedgcnt+1
+C                  write(6,*) 'keeping v',JVN(IS,iedg),iedgcnt
+                  COORD(iedgcnt,1)=X(JVN(IS,iedg))
+                  COORD(iedgcnt,2)=Y(JVN(IS,iedg))
+                  COORD(iedgcnt,3)=Z(JVN(IS,iedg))
+                endif
+  748         continue
+            endif
           endif
 
 C Debug.
-C          do 747 iedg=1,iedgcnt
-C            write(6,*) COORD(iedg,1),COORD(iedg,2),COORD(iedg,3)
-C  747     continue
+          do iedg=1,iedgcnt
+            write(6,*) mz,is,SSNAME(icc),iedg,COORD(iedg,1),
+     &        COORD(iedg,2),COORD(iedg,3)
+          enddo
+
+C Occassionally geometry is not correctly translated for frames around
+C glazing and if there are < 3 edges EPP gets a severe error.
+          if(iedgcnt.lt.3)then
+            write(outs,'(3a)') 'Skipping surface ',
+     &        ZSDES(1:lnblnk(ZSDES)),' which has less than 3 edges.'
+            WRITE(ioout,'(a)') ' '
+            WRITE(ioout,'(2a)',iostat=ios,err=6) 
+     &        '!- ',outs(1:lnblnk(outs))
+            goto 60   ! jump to next surface
+          endif
 
 C A constant boundary condition is defined with an OtherSideCoefficients
 C entity. This should be uniquely named e.g. for the zone and surface.
@@ -2037,13 +2153,25 @@ C Opaque surface without or with a parent and might not be a true child.
                 WRITE(ioout,'(2a)',iostat=ios,err=6) 
      &            '  BuildingSurface:Detailed',com
               else
-                if(truechild(icc))then
+
+C Check for case of a FRAME it should be a BuildingSurface.
+                if((SSUSE(icc,1)(1:5).eq.'FRAME'.or.
+     &              SSUSE(icc,1)(1:7).eq.'F-FRAME').and.
+     &              nbchild(icc).gt.0.and.iparent(icc).gt.0)then
                   WRITE(ioout,'(3a)',iostat=ios,err=6) 
+     &              '  BuildingSurface:Detailed',com,
+     &              '   !- (a frame)'
+                else
+
+C Normal test for FenestrationSurface of BuildingSurface.
+                  if(truechild(icc))then
+                    WRITE(ioout,'(3a)',iostat=ios,err=6) 
      &              '  FenestrationSurface:Detailed',com,
      &              '   !- (a door)'
-                else
-                  WRITE(ioout,'(2a)',iostat=ios,err=6) 
+                  else
+                    WRITE(ioout,'(2a)',iostat=ios,err=6) 
      &              '  BuildingSurface:Detailed',com
+                  endif
                 endif
               endif
             endif
@@ -2167,13 +2295,21 @@ C as E+ rules).
      &           SSPARENT(icc)(1:2).eq.'- ')then
                 processasfen=.false.
               else
-
+              
+C Check for case of a FRAME.
+                if((SSUSE(icc,1)(1:5).eq.'FRAME'.or.
+     &              SSUSE(icc,1)(1:7).eq.'F-FRAME').and.
+     &              nbchild(icc).gt.0.and.iparent(icc).gt.0)then
+                  processasfen=.false.
+                else
+                
 C ESP-r thinks there is a parent so double check whether E+ rules
 C say this surface is a true child.
-                if(truechild(icc))then
-                  processasfen=.true.
-                else
-                  processasfen=.false.
+                  if(truechild(icc))then
+                    processasfen=.true.
+                  else
+                    processasfen=.false.
+                  endif
                 endif
               endif
                 
@@ -2379,8 +2515,9 @@ C Otherwise give name of the other side surface. (suggested by Georgios)
 
 C Vertex information. The logic above will have sorted out the number
 C of edges to write.
+C << BUT IF iedgcnt < 3 we need to do something different! >>
           nvertex=iedgcnt
-          WRITE(ioout,'(a,i2,2a)',iostat=ios,err=6) indent,nvertex,
+          WRITE(ioout,'(a,i3,2a)',iostat=ios,err=6) indent,nvertex,
      &      com,'   !- Number of Vertices'
           do 42 iss=1,nvertex
             if(iss.lt.nvertex)then
@@ -2453,31 +2590,15 @@ C To avoid possible duplicate names pre-pend the zone name to block.
       call edisp(iuout,'Completed export of data to EnergyPlus.')
 
 C Reports - report details and dxf for surfaces
-      if(iver.le.30)then
-        WRITE(ioout,'(a)',iostat=ios,err=2) ' '
-        WRITE(ioout,'(2a)',iostat=ios,err=2) '  Output:Reports',com
-        WRITE(ioout,'(8a)',iostat=ios,err=2) indent,'Surfaces',com,
-     &    'Details',com,'ThickPolyline',sim,
-     &    '   !- Type, Name and Specifications for reports'
+      WRITE(ioout,'(a)',iostat=ios,err=2) ' '
+      WRITE(ioout,'(7a)',iostat=ios,err=2)'  Output:Surfaces:List',
+     &  com,'Details',com,'ThickPolyline',sim,
+     &  '   !- Type, Name and Specifications for reports'
      
-        WRITE(ioout,'(a)',iostat=ios,err=2) ' '
-        WRITE(ioout,'(2a)',iostat=ios,err=2) '  Output:Reports',com
-        WRITE(ioout,'(8a)',iostat=ios,err=2) indent,'Surfaces',com,
-     &    'DXF',com,'ThickPolyline',sim,
-     &    '   !- Type, Name and Specifications for reports'
-      else
-
-C From version 4.0 onwards different syntax.
-        WRITE(ioout,'(a)',iostat=ios,err=2) ' '
-        WRITE(ioout,'(7a)',iostat=ios,err=2)'  Output:Surfaces:List',
-     &    com,'Details',com,'ThickPolyline',sim,
-     &    '   !- Type, Name and Specifications for reports'
-     
-        WRITE(ioout,'(a)',iostat=ios,err=2) ' '
-        WRITE(ioout,'(7a)',iostat=ios,err=2)'  Output:Surfaces:Drawing',
-     &    com,'DXF',com,'ThickPolyline',sim,
-     &    '   !- Type, Name and Specifications for reports'
-      endif
+      WRITE(ioout,'(a)',iostat=ios,err=2) ' '
+      WRITE(ioout,'(7a)',iostat=ios,err=2)'  Output:Surfaces:Drawing',
+     &  com,'DXF',com,'ThickPolyline',sim,
+     &  '   !- Type, Name and Specifications for reports'
 
 C Include directive for EnergyPlus to dump out additional diagnotics
 C for geometry and do not mirror detached shading objects (OBS). 
@@ -2489,12 +2610,24 @@ C for geometry and do not mirror detached shading objects (OBS).
 
 C Include minimal meters: ambient db and zone air temperatures.
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
-      WRITE(ioout,'(8a)',iostat=ios,err=2) '  Output:Variable',com,
+      if(iver.lt.80)then
+        WRITE(ioout,'(8a)',iostat=ios,err=2) '  Output:Variable',com,
      &  '*',com,'outdoor dry bulb',com,'hourly',sim
+      else
+        WRITE(ioout,'(8a)',iostat=ios,err=2) '  Output:Variable',com,
+     &  '*',com,'Site Outdoor Air Drybulb Temperature',com,'hourly',sim
+      endif
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
       WRITE(ioout,'(8a)',iostat=ios,err=2) '  Output:Variable',com,
      &  '*',com,'Zone Mean Air Temperature',com,'hourly',sim
-
+      if(iver.ge.80)then
+        WRITE(ioout,'(8a)',iostat=ios,err=2) '  Output:Variable',com,
+     &  '*',com,'Zone Air Temperature',com,'hourly',sim
+        WRITE(ioout,'(8a)',iostat=ios,err=2) '  Output:Variable',com,
+     &  '*',com,'Surface Inside Face Temperature',com,'hourly',sim
+        WRITE(ioout,'(8a)',iostat=ios,err=2) '  Output:Variable',com,
+     &  '*',com,'Surface Outside Face Temperature',com,'hourly',sim
+      endif
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
      
       return

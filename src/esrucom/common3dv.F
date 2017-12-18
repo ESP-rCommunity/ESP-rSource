@@ -1440,7 +1440,7 @@ C to normal size.
               write(stemp,'(A)')GSNAME(igs)
               iixc=iixc/NBP
               iiyc=iiyc/NBP
-              iid2=iiyc+(3*(NAMEFT+1))
+              iid2=iiyc+3
               CALL wstxpt(iixc,iid2,stemp)
               IF(IFS.GT.0)CALL winfnt(IFS)
             endif
@@ -1707,7 +1707,7 @@ C Write to output file.
             WRITE(IUO,'(3F8.3)')X(J),Y(J),Z(J)
    40     CONTINUE
           DO 50 J=1,NSUR
-            WRITE(IUO,'(2X,I3,1X,21I3)')NVER(J),(JVNZ(J,K),K=1,NVER(J))
+            WRITE(IUO,'(I5,1X,99I4)')NVER(J),(JVNZ(J,K),K=1,NVER(J))
    50     CONTINUE
         ENDIF
 
@@ -1754,7 +1754,7 @@ C Write obstructions to output file.
               WRITE(IUO,'(3F8.3)')XB(J),YB(J),ZB(J)
   240       CONTINUE
             DO 250 J=1,6
-              WRITE(IUO,'(a,21I3)') '  4 ',(JVNB(J,K),K=1,4)
+              WRITE(IUO,'(a,99I4)') '  4 ',(JVNB(J,K),K=1,4)
   250       CONTINUE
   301     CONTINUE
         ENDIF

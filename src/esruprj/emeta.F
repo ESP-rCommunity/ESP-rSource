@@ -77,6 +77,7 @@ C Calendar commons.
 
 C Simulation parameter sets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
 C Passed in parameters.
       character action*8,root*32,mpath*72,menu*72
@@ -464,6 +465,7 @@ C hasname (string array) the surface name for each surface (so fillsur does not 
       logical closev       !  mass is close to vertical
       LOGICAL QUIET
       logical anunknownmlc ! if true then there was an unknown MLC
+      integer llpos,lrpos,ulpos,urpos     ! closest to BB corners for parent
 
 C Strings for surface attributes to pass to insrec.
       character rsname*12,rsotf*32,rsmlcn*32,rsuse1*12,rsuse2*12
@@ -620,9 +622,9 @@ C Remember first zone point as rotation point.
         rotateit(ICOMP,2)=X(1)
         rotateit(ICOMP,3)=Y(1)
         DO 10 I=1,NZSUR(ICOMP)
-          NVER(I)=isznbedges(ICOMP,I)
+          NVER(I)=isznver(ICOMP,I)
           DO 12 KV=1,NVER(I)
-            JVN(I,KV)=iszlist(ICOMP,I,KV)
+            JVN(I,KV)=iszjvn(ICOMP,I,KV)
    12     CONTINUE
    10   CONTINUE
         IUZBASEA(icomp)=0
@@ -831,7 +833,7 @@ C parent surface.  Later add logic to better place the door..
             call georead(IFIL+2,LGEOM(ICOMP),ICOMP,1,iuout,IER)
             newsurf=nsur+1
             isurf=ids
-            CALL SURLEHI(isurf,XYMAX,ZMAX)  ! get width of parent
+            CALL SURLEHI(isurf,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)  ! get width of parent
             XOCB=XYMAX-(zhasdoor(icomp,ids)+0.3)
             ZOC=0.0
             XW=zhasdoor(icomp,ids)
@@ -1209,6 +1211,7 @@ C Obstruction blocks via geometry.h.
 
 C Simulation parameter sets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
 C IPV description via ipvdata.h.
       common/cctlnm/ctldoc,lctlf
@@ -1235,6 +1238,7 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
 
       integer inumXMLmetrics !counts for the number of xml metrics defined
 
+C << update outstr etc to deal with complex surface edge jvn lists >>
       CHARACTER OUTSTR*248,WORD*32,outs*124,outs2*124
       character dstmp*24
       character word248*248
@@ -1346,9 +1350,9 @@ C For each of the possible ESP-r zones, clear values.
             zboundarytype(iz,isu,3)=0
             sname(iz,isu)=' '
             zhasglaze(iz,isu)=0.0; zhasdoor(iz,isu)=0.0
-            isznbedges(iz,isu)=0
+            isznver(iz,isu)=0
             do 54 ivu=1,MV
-              iszlist(iz,isu,ivu)=0
+              iszjvn(iz,isu,ivu)=0
   54        continue
   39      continue
           do 59 imu=1,4
@@ -1864,7 +1868,7 @@ C that was just scanned. The *list line holds the number of
 C edges and then the index of each coordinate (as in the normal
 C geometry file).
         CALL EGETWI(OUTSTR,K,ival1,3,MV,'W','nb of edges',IER)
-        isznbedges(nsz,NS)=ival1
+        isznver(nsz,NS)=ival1
 
 C Now proceed to read vertices on one or more lines.
         DO 12 KV=1,ival1
@@ -1875,7 +1879,7 @@ C Now proceed to read vertices on one or more lines.
             K=0
             CALL EGETWI(OUTSTR,K,ival2,0,MTV,'F','vertex',IERV)
           ENDIF
-          iszlist(nsz,NS,KV)=ival2
+          iszjvn(nsz,NS,KV)=ival2
    12   CONTINUE
         goto 43
       elseif(WORD(1:5).eq.'*mass')then
@@ -2207,6 +2211,9 @@ C Scan for prior X and Y coordinates rotated around if there are 3 items on the 
       elseif(WORD(1:15).eq.'*sim_parameters')then
 
 C Get the assessment independant simulation parameters.
+
+C << logic for extended *sps needed >>
+
         CALL EGETWI(OUTSTR,K,simstartup,0,300,'W','startup',IER)
         isstup=simstartup
         CALL EGETWI(OUTSTR,K,simzonetimestep,1,60,'W','zone_ts',IER)
@@ -2584,6 +2591,7 @@ C common zndata (VCOORD,NZNVER,NZJVN) via geometry.h
 
 C Simulation parameter sets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
 C IPV description via ipvdata.h.
 
@@ -2611,7 +2619,7 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
 
       integer inumXMLmetrics !counts for the number of xml metrics defined
 
-      CHARACTER outs*124,outsd*124
+      CHARACTER outs*124,outsd*124,louts*496,loutsd*496
       character dstmp*24
 
       character act*1      ! action requested.
@@ -2779,6 +2787,9 @@ C Snow depth file (if ground reflectivity model 3)
       endif
 
 C Simulation parameter sets.
+
+C << Logic for extended *sps needed >>
+
       if(nsset.gt.0)then
         havesimparameters=.true.
         simstartup=isstup
@@ -3161,15 +3172,16 @@ C << on a separate line with a tag.
             write(ifilg,'(2a)',IOSTAT=IOS,ERR=13)
      &        outsd(1:lnblnk(outsd)),'  # surface attributes '
 
-            write(outs,'(a,25I4)',IOSTAT=ios,ERR=13) '*list ',
+            write(louts,'(a,124I4)',IOSTAT=ios,ERR=13) '*list ',
      &        NZNVER(icc),(NZJVN(icc,J),J=1,NZNVER(icc))
-            call SDELIM(outs,outsd,'C',IW)
+            call SDELIM(louts,loutsd,'C',IW)
             write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13)
-     &        outsd(1:lnblnk(outsd)),'  # ',isu
+     &        loutsd(1:lnblnk(outsd)),'  # ',isu
  144      continue
 
 C Shading calculation directives in the form of:
 C *shad_calc,all_applic,20 # list of surfs
+C << may need to adapt 82i4 format statement? >>
           if(nsurfcalc(nsz).eq.0)then
             write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# shading directives'
             write(ifilg,'(a)',IOSTAT=ios,ERR=13)
@@ -3180,19 +3192,20 @@ C *shad_calc,all_applic,20 # list of surfs
               write(ifilg,'(a,i3,a)',IOSTAT=ios,ERR=13)
      &        '*shad_calc,all_applicable ',nsurfcalc(nsz),
      &        ' # list of surfs'
-              write(ifilg,'(42i3)',IOSTAT=ios,ERR=14)
+              write(ifilg,'(82i4)',IOSTAT=ios,ERR=14)
      &        (lstsfcalc(nsz,J),J=1,nsurfcalc(nsz))
             elseif(iaplic(nsz,1).eq.0)then
-              write(ifilg,'(a,i3,a)',IOSTAT=ios,ERR=13)
+              write(ifilg,'(a,i4,a)',IOSTAT=ios,ERR=13)
      &        '*shad_calc,list',nsurfcalc(nsz),
      &        ' # list of surfs'
-              write(ifilg,'(42i3)',IOSTAT=ios,ERR=14)
+              write(ifilg,'(82i4)',IOSTAT=ios,ERR=14)
      &        (lstsfcalc(nsz,J),J=1,nsurfcalc(nsz))
             endif
           endif
 
 C Insolation calculation directives.
 C *insol_calc,all_applic,2 # insolation sources
+C << may need to adapt 82i4 format statement >>
           write(ifilg,'(a)',IOSTAT=IOS,ERR=13)
      &      '# insolation directives'
           if(nsurfinso(nsz).eq.0)then
@@ -3203,13 +3216,13 @@ C *insol_calc,all_applic,2 # insolation sources
               write(ifilg,'(a,i3,a)',IOSTAT=ios,ERR=13)
      &        '*insol_calc,all_applicable ',nsurfinso(nsz),
      &        ' # insolation sources'
-              write(ifilg,'(42i3)',IOSTAT=ios,ERR=14)
+              write(ifilg,'(82i4)',IOSTAT=ios,ERR=14)
      &        (isurfinso(nsz,J),J=1,nsurfinso(nsz))
             elseif(iaplic(nsz,2).eq.0)then
-              write(ifilg,'(a,i3,a)',IOSTAT=ios,ERR=13)
+              write(ifilg,'(a,i4,a)',IOSTAT=ios,ERR=13)
      &        '*insol_calc,list',nsurfinso(nsz),
      &        ' # insolation sources'
-              write(ifilg,'(42i3)',IOSTAT=ios,ERR=14)
+              write(ifilg,'(82i4)',IOSTAT=ios,ERR=14)
      &        (isurfinso(nsz,J),J=1,nsurfinso(nsz))
             endif
           endif

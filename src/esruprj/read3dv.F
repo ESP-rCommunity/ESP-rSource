@@ -332,10 +332,14 @@ C IAPNT = Pointer to first vertex of polygon
         NAP = NVER(I)
         DO 1100 J = 1,NVER(I)
           K = JVN(I,J)
-          AX(J) = X(K)
-          AY(J) = Y(K)
-          AZ(J) = Z(K)
-          IANXT(J) = J + 1
+          if(K.gt.0)then
+            AX(J) = X(K)
+            AY(J) = Y(K)
+            AZ(J) = Z(K)
+            IANXT(J) = J + 1
+          else
+            AX(J) = 0.0; AY(J) = 0.0; AZ(J) = 0.0 ! if JVN malformed
+          endif
  1100   CONTINUE
 
         IANXT(NVER(I)) = IAPNT
@@ -649,8 +653,7 @@ C Draw arrow to surface then down and horizontal to the text.
                   iiyc=iiyc+5
                   iixc=iixc+7
                 ENDIF
-C Make some concession to the size of the font.
-                iid4=iiyc+(3*(NAMEFT+1))
+                iid4=iiyc+3
                 CALL wstxpt(iixc,iid4,stemp)
                 IF(IFS.GT.0)CALL winfnt(IFS)
               endif

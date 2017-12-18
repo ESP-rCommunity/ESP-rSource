@@ -32,7 +32,7 @@ C Maximum number of timesteps in an hour.
       PARAMETER (MHTS=60)
       
 C Array size for maximum items available of temporal definition
-      PARAMETER (MTI=29)
+      PARAMETER (MTI=31)
 
 C Related to TDF header.
       integer NWPR   ! Number of words per record in the TAB file.
@@ -126,8 +126,8 @@ C is the 6th item in the temporal file.
       integer IBIDIRS   ! if non-zero bidirectional data available
       integer IVERSOL   ! if non-zero surface vertical global solar used
       integer IHTCLSETP ! if non-zero heating and cooling setpoints used
-      integer IDBTZNM   ! if non-zero measured room db T available for viewing
-      integer ISURTMEAS ! if non-zero measured surface T available for viewing
+      integer IDBTZNOBS   ! if non-zero observed room db T available for viewing
+      integer ISURTOBS  ! if non-zero observed surface T available for viewing
       integer IMFNTDFP  ! if non-zero measured fluid mass flow node node pressure
       integer IMFNTDFF  ! flag set to 1 if measured pressure data is present
       integer IPERVSEN  ! if non-zero holds sensor state
@@ -136,11 +136,14 @@ C is the 6th item in the temporal file.
       integer IELECPWR  ! flag indicating electrical power data (real and reactive)
                         ! is available for a zone
       integer IRAININD  ! if non-zero rain indicator is present
+      integer IZNRHOBS  ! if non-zero observed zone rh available for viewing
+      integer IZNHTOBS  ! if non-zero observed zone heating available for viewing
+      integer IZNCLOBS  ! if non-zero observed zone cooling available for viewing
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
      &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM),ISURTMEAS(MCOM,MS),IMFNTDFP(MNOD),IMFNTDFF,
+     &       IDBTZNOBS(MCOM),ISURTOBS(MCOM,MS),IMFNTDFP(MNOD),IMFNTDFF,
      &       IPERVSEN,IStorageHeater(MCOM),IELECPWR(MCOM),ICFCCTL(MCOM),
-     &       IRAININD
+     &       IRAININD,IZNRHOBS(MCOM),IZNHTOBS(MCOM),IZNCLOBS(MCOM)

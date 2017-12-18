@@ -34,6 +34,7 @@ C            the path is local or absolute or standard database folder.
 C ******************** ERSYS_mmode
 C ERSYS_mmode is a legacy interface to ERSYS_mmode, below. It allows
 C existing code to call ERSYS_mmode in its traditional verbose mode.
+C IER=3 signals model is overly complex for current executables.
 
       SUBROUTINE ERSYS(FILE,IUC,IUF,MODE,ITRC,IER)
       IMPLICIT NONE
@@ -136,6 +137,10 @@ C           component. NB fluid flow network and plant energy
 C           network need not be matched.
 
 C BDMDS,dbdsdesc - name file project demands file and related description.
+C IER=3 signals model is overly complex for current executables.
+
+C << add logic to gracefully react to a zone which is more
+C << complex that ESP-r can deal with.
 
       SUBROUTINE ERSYS_mmode(FILE,IUC,IUF,MODE,ITRC,IER,bSilent)
 
@@ -203,6 +208,7 @@ C Parameters
       character MODE*4   ! if ALL then causes additional data structure to be read
       integer ITRC       ! level of reporting during the file scan
       integer IER        ! return zero if ok, 2 if cfg file could not be opened
+                         ! 3 if excess model complexity
       logical bSilent    ! Flag indicating verbosity.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -398,8 +404,20 @@ C Simulation parameter presets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
-     &  smstres(MSPS),selres(MSPS),sipvres
-      character :: selres*72,spfdescr*30
+     &  smstres(MSPS),selres(MSPS),scfdres(MSPS),sipvres
+      character sblres*72,sflres*72,splres*72,smstres*72,
+     &  selres*72,scfdres*72,sipvres*72
+      character :: spfdescr*30
+
+C Extended simulation parameters for each set.
+      common/spfldats/isstupex(MSPS),isbnstepex(MSPS),ispnstepex(MSPS),
+     &  issaveex(MSPS),isavghex(MSPS),iscfdactivate(MSPS),
+     &  isicfdys(MSPS),isicfdyf(MSPS),
+     &  scftims(MSPS),scftimf(MSPS)
+      INTEGER :: isstupex,isbnstepex,ispnstepex,issaveex,isavghex
+      INTEGER :: iscfdactivate      ! zero ignore domains
+      INTEGER :: isicfdys,isicfdyf  ! CFD simulation start & finish days
+      REAL :: scftims,scftimf       ! CFD simulation start & finish time
 
 C BASESIMP.
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
@@ -557,7 +575,6 @@ C Simulation parameters
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)
       CHARACTER NDNAM*12
-      character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character hvacfile*72,LBSIMP*72,LFClds*72
       character gshpfile*72
       character gcepfile*72
@@ -1167,9 +1184,9 @@ C set the LPREDEF common block string via call to findwhichdbpath.
         call findwhichdbpath('pre',lworking,ier)
 
 C Debug.
-        write(6,*) lworking
-        write(6,*) lpredef
-        write(6,*) ' ersys ipathpredef is ',ipathpredef
+C        write(6,*) lworking
+C        write(6,*) lpredef
+C        write(6,*) ' ersys ipathpredef is ',ipathpredef
 
       elseif(WORD(1:10).eq.'*stdpredef')then
         ipathpredef=2  ! standard folder for predefined objects database
@@ -1249,7 +1266,7 @@ c bSHOCCed true and then check and see if the file exists.
       elseif(WORD(1:5).eq.'*hvac')then
 
 C hvac file, test and see if it exists.
-        CALL EGETRM(LOUTSTR,K,hvacfile,'W','config control',IER)
+        CALL EGETRM(LOUTSTR,K,hvacfile,'W','config hvac',IER)
         XST=.FALSE.
         call FINDFIL(hvacfile,XST)
         if(XST)then
@@ -2194,21 +2211,44 @@ C If 6 items on line also read whether to save only 1stph.
         endif
         bMY_sim_sps = .false. 
         do 333 iss=1,nsset
+
+C The following code ensures thea the sXXres varaibles are initialzied
+C to empty strings even if they are not defind in the input file.
+          write(sblres(iss), '(A)')  '  '
+          write(sflres(iss), '(A)')  '  '
+          write(smstres(iss), '(A)') '  '
+          write(splres(iss), '(A)')  '  '
+          write(selres(iss), '(A)')  '  '
+          write(scfdres(iss), '(A)')  '  '
           
-          CALL STRIPC(IUC,OUTSTR,0,ND,1,'sim set',IER)
+C Count number of items to see if legacy set or extended set.
+          CALL STRIPC(IUC,OUTSTR,99,ND,1,'sim set',IER)
 
           if (OUTSTR(1:14) .eq. '*start_my_sets' ) then
             bMY_sim_sps = .true.
-            CALL STRIPC(IUC,OUTSTR,0,ND,1,'sim set',IER)
+            CALL STRIPC(IUC,OUTSTR,99,ND,1,'sim set',IER)
           elseif ( OUTSTR(1:12) .eq. '*end_my_sets') then
             bMY_sim_sps = .false.
-            CALL STRIPC(IUC,OUTSTR,0,ND,1,'sim set',IER)
+            CALL STRIPC(IUC,OUTSTR,99,ND,1,'sim set',IER)
           endif
           
 C Set flag indicating if set describes a multi-year period
           bMY_period_support (iss) = bMY_sim_sps
-          
+C          write(6,*) 'sps number items ',ND
           K=0
+          if(ND.le.6)then
+
+C No extended sps data found so set to global values.
+            isstupex(iss)=isstup; isbnstepex(iss)=isbnstep
+            ispnstepex(iss)=ispnstep
+            issaveex(iss)=issave; isavghex(iss)=isavgh
+          else
+            CALL EGETWI(OUTSTR,K,isstupex(iss),1,300,'W','startup',IER)
+            CALL EGETWI(OUTSTR,K,isbnstepex(iss),1,60,'W','bld ts',IER)
+            CALL EGETWI(OUTSTR,K,ispnstepex(iss),1,100,'W','pl ts',IER)
+            CALL EGETWI(OUTSTR,K,issaveex(iss),0,5,'W','save lv',IER)
+            CALL EGETWI(OUTSTR,K,isavghex(iss),0,1,'W','save hr',IER)
+          endif
           CALL EGETWI(OUTSTR,K,isstday(iss),1,31,'W','start day',IER)
           CALL EGETWI(OUTSTR,K,isstmon(iss),1,12,'W','start month',IER)
           if ( bMY_sim_sps )
@@ -2238,6 +2278,21 @@ C (ie ambigious) set names
             CALL EGETRM(OUTSTR,K,smstres(iss),'W','moist res',IER)
           elseif(WORD(1:5).eq.'*selr')then
             CALL EGETRM(OUTSTR,K,selres(iss),'W','elect res',IER)
+          elseif(WORD(1:6).eq.'*scfdr')then
+
+C Read cfd assessment attributes and then the file name.
+C isicfdys(iss),isicfdyf(iss),scftims(iss),scftimf(iss)
+            CALL EGETWI(OUTSTR,K,iscfdactivate(iss),0,1,'W',
+     &        'activate',IER)
+            CALL EGETWI(OUTSTR,K,isicfdys(iss),1,365,'W',
+     &        'cfd start',IER)
+            CALL EGETWI(OUTSTR,K,isicfdyf(iss),1,365,'W',
+     &        'cfd finish',IER)
+            CALL EGETWR(OUTSTR,K,scftims(iss),0.,24.,'W',
+     &        'cfd start time',IER)
+            CALL EGETWR(OUTSTR,K,scftimf(iss),0.,24.,'W',
+     &        'cfd finish time',IER)
+            CALL EGETRM(OUTSTR,K,scfdres(iss),'W','cfd res',IER)
           elseif(WORD(1:5).eq.'*spvr')then
             continue
           elseif(WORD(1:8).eq.'*end_set')then
@@ -2486,9 +2541,7 @@ C Store profile in array.
           DO 27 jMon=1,12
             eGrdTp(jMon)=getVal(jMon)
   27      CONTINUE
-   
- 
-  
+
         elseif(WORD(1:4).eq.'*cvs')then
 
 C 3D ground control volumes file.
@@ -2578,6 +2631,17 @@ C Number of building zones.
       IF(IER.NE.0)goto 1
       K=0
       CALL EGETWI(OUTSTR,K,NCOMP,0,MCOM,'W','zones',IER)
+
+C If greater complexity than executables can deal with
+C set ier=3 and generate a message.
+      if(ncomp.gt.MCOM)then
+        write(outs,'(a,i3,a,i3,a)') 'Model complexity ',ncomp,
+     &    ' zones is GREATER THAN ',MCOM,'!'
+        call edisp(iuout,outs)
+        call edisp(iuout,'Either re-compile or simplify model.')
+        IER=3
+        RETURN
+      endif
       IF(IER.NE.0) GOTO 1
 
 C Reporting.
@@ -2624,7 +2688,7 @@ C toggles to set water filled zones.
             CALL EGETW(OUTSTR,K,WORD2,'W','air or water',IFLAG)
             if(WORD2(1:5).eq.'water'.or.WORD2(1:5).eq.'Water')then
 C Debug.
-              write(6,*) 'zone ',NCCODE(ICOMP),' is water filled.'
+C              write(6,*) 'zone ',NCCODE(ICOMP),' is water filled.'
               znotair(icomp)=.TRUE.
               zfldK=0.6; zfldD=998.2; zfldC=4190.0; zfldA=0.0
               zSWAp(icomp)=0.0; zSWAf(icomp)=0.0
@@ -2846,7 +2910,11 @@ C Warn user about old utility file.
       endif
 
 C Geometry file, get or derive the zone name via reading the file.
-C Make temporary use of file unit IUF. 
+C Make temporary use of file unit IUF.
+
+C << if ICOMP > MCOM then georead should return ier=3
+C << if number of surfaces > MS georead should return ier=4
+ 
  142  do 22 ICOMP=1,NCOMP
         zname(ICOMP)='UNKNOWN'
         call FINDFIL(LGEOM(ICOMP),XST)

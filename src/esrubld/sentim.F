@@ -79,6 +79,7 @@ C Common blocks UA3 UA4 within uncertainty.h
 
       integer lstur, lfnur
       character strval*12,uhphrase*42
+      character urunvalsd*1000
 
       CHARACTER ITEM(7)*20
 
@@ -156,11 +157,16 @@ C Common blocks UA3 UA4 within uncertainty.h
       character urunvals*1000 ! attribute changed-to value of each uncertainty change for the run.
       COMMON/USETN/USETNAME(MNRS),uheader,urunvals
 
+C Logical flag for uncertainty header has been printed.
+      logical uncertheadprinted
+      common/uncerthead/uncertheadprinted
+
       logical headerdone
       common/uhead/headerdone
 
       integer lstur, lfnur
       character strval*12,uhphrase*42
+      character urunvalsd*1000  ! to comma separate output
 
       character ITEM(7)*20
       real ACNG
@@ -216,14 +222,14 @@ C Make specific header string for each change (to match urunvals)
           lnloc=lnblnk(LLOC(ICL))
           if(lncng.gt.18)lncng=18
           uhphrase=' '
-          write(uhphrase,'(4a,i2.2,a,i2.2)')LCNG(ICC)(1:lncng),':',
-     &      LLOC(ICL)(1:lnloc),':',ICF,':',ICP
+          write(uhphrase,'(4a,i2.2,a,i2.2,a)')LCNG(ICC)(1:lncng),
+     &      ':',LLOC(ICL)(1:lnloc),':',ICF,':',ICP,','
           luhphrase=lnblnk(uhphrase)
           write(36,'(a)') uhphrase
           lfnuh=lstuh+luhphrase
           if(lfnuh.lt.1000)then
             write(uheader(lstuh:lfnuh),'(a)')uhphrase(1:luhphrase)
-            lstuh=lfnuh+2
+            lstuh=lfnuh+1
           endif
           strval=' '        ! clear string buffer for the value changed
 
@@ -328,8 +334,14 @@ C Uncertainty defined and leaving valid time period.
 C Write current header buffer and values buffer. Test if the
 C whole header might have been written. 
       if(.NOT.headerdone)then
-        write (37,'(2a)') 'uheader ',uheader(1:lnblnk(uheader))
-        write (37,'(2a)') 'urunvals ',urunvals(1:lnblnk(urunvals))
+        if(.NOT.uncertheadprinted)then
+          write(37,'(2a)') 'uheader ',uheader(1:lnblnk(uheader))
+          uncertheadprinted=.true.
+        endif
+
+C Add comma separations to the data.
+        call SDELIM(urunvals,urunvalsd,'C',IW)
+        write (37,'(2a)') 'urunvals ',urunvalsd(1:lnblnk(urunvalsd))
         do I=1,7
           if (nint(UACTL(I,5)).eq.NIACT)then
             headerdone=.true.
@@ -409,11 +421,15 @@ C urunvals and also the intermediate state of uheader.
       character urunvals*1000 ! attribute changed-to value of each uncertainty change for the run.
       COMMON/USETN/USETNAME(MNRS),uheader,urunvals
 
+      logical uncertheadprinted
+      common/uncerthead/uncertheadprinted
+
       logical headerdone
       common/uhead/headerdone
 
       integer lstur, lfnur
       character strval*10,uhphrase*42
+      character urunvalsd*1000
 
       if(urunvals(1:2).eq.'  ')then
         lstur=1; lfnur=1  ! reset counters for urunvals buffer
@@ -444,7 +460,7 @@ C Set time marker to whole day (i.e. -1)
 
 C Make specific header string for each change (to match urunvals)
         do ih=1,24
-          write(uhphrase,'(a,i2.2)') 'amb_db',ih
+          write(uhphrase,'(a,i2.2,a)') 'amb_db',ih,','
           luhphrase=8
           lfnuh=lstuh+luhphrase
           if(lfnuh.lt.1000)then
@@ -452,79 +468,101 @@ C Make specific header string for each change (to match urunvals)
             lstuh=lfnuh+1
           endif
         enddo
-        if(.NOT.headerdone) write (37,'(2a)') 'uheader ',
-     &    uheader(1:lnblnk(uheader))
+        if(.NOT.headerdone)then
+          if(.NOT.uncertheadprinted)then
+	    write (37,'(2a)') 'uheader ',uheader(1:lnblnk(uheader))
+            uncertheadprinted=.true.
+          endif
+        endif
       endif
       if (nint(UACLIM(2,1)).gt.0) then
         write (36,'(a,24i5)') 'sol dir',(idnr(IX),IX=1,24)
         do ih=1,24
-          write(uhphrase,'(a,i2.2)') 'sol_dir',ih
+          write(uhphrase,'(a,i2.2,a)') 'sol_dir',ih,','
           luhphrase=9
           lfnuh=lstuh+luhphrase
           if(lfnuh.lt.1000)then
             write(uheader(lstuh:lfnuh),'(a)')uhphrase(1:luhphrase)
-            lstuh=lfnuh+2
+            lstuh=lfnuh+1
           endif
         enddo
-        if(.NOT.headerdone) write (37,'(2a)') 'uheader ',
-     &    uheader(1:lnblnk(uheader))
+        if(.NOT.headerdone)then
+          if(.NOT.uncertheadprinted)then
+	    write (37,'(2a)') 'uheader ',uheader(1:lnblnk(uheader))
+            uncertheadprinted=.true.
+          endif
+        endif
       endif
       if (nint(UACLIM(3,1)).gt.0) then
         write (36,'(a,24i5)') 'sol dif',(idif(IX),IX=1,24)
         do ih=1,24
-          write(uhphrase,'(a,i2.2)') 'sol_dif',ih
+          write(uhphrase,'(a,i2.2,a)') 'sol_dif',ih,','
           luhphrase=9
           lfnuh=lstuh+luhphrase
           if(lfnuh.lt.1000)then
             write(uheader(lstuh:lfnuh),'(a)')uhphrase(1:luhphrase)
-            lstuh=lfnuh+2
+            lstuh=lfnuh+1
           endif
         enddo
-        if(.NOT.headerdone) write (37,'(2a)') 'uheader ',
-     &    uheader(1:lnblnk(uheader))
+        if(.NOT.headerdone)then
+          if(.NOT.uncertheadprinted)then
+	    write (37,'(2a)') 'uheader ',uheader(1:lnblnk(uheader))
+            uncertheadprinted=.true.
+          endif
+        endif
       endif
       if (nint(UACLIM(4,1)).gt.0) then
         write (36,'(a,24i5)') 'wind vel',(ivel(IX),IX=1,24)
         do ih=1,24
-          write(uhphrase,'(a,i2.2)') 'wind_v',ih
+          write(uhphrase,'(a,i2.2,a)') 'wind_v',ih,','
           luhphrase=8
           lfnuh=lstuh+luhphrase
           if(lfnuh.lt.1000)then
             write(uheader(lstuh:lfnuh),'(a)')uhphrase(1:luhphrase)
-            lstuh=lfnuh+2
+            lstuh=lfnuh+1
           endif
         enddo
-        if(.NOT.headerdone) write (37,'(2a)') 'uheader ',
-     &    uheader(1:lnblnk(uheader))
+        if(.NOT.headerdone)then
+          if(.NOT.uncertheadprinted)then
+	    write (37,'(2a)') 'uheader ',uheader(1:lnblnk(uheader))
+            uncertheadprinted=.true.
+          endif
+        endif
       endif
       if (nint(UACLIM(5,1)).gt.0) then
         write (36,'(a,24i5)') 'wind dir',(idir(IX),IX=1,24)
         do ih=1,24
-          write(uhphrase,'(a,i2.2)') 'wind_d',ih
+          write(uhphrase,'(a,i2.2,a)') 'wind_d',ih,','
           luhphrase=8
           lfnuh=lstuh+luhphrase
           if(lfnuh.lt.1000)then
             write(uheader(lstuh:lfnuh),'(a)')uhphrase(1:luhphrase)
-            lstuh=lfnuh+2
+            lstuh=lfnuh+1
           endif
         enddo
         if(.NOT.headerdone)then
-          write (37,'(2a)') 'uheader ',uheader(1:lnblnk(uheader))
+          if(.NOT.uncertheadprinted)then
+	    write (37,'(2a)') 'uheader ',uheader(1:lnblnk(uheader))
+            uncertheadprinted=.true.
+          endif
         endif
       endif
       if (nint(UACLIM(6,1)).gt.0) then
         write (36,'(a,24i5)') 'rel hum',(ihum(IX),IX=1,24)
         do ih=1,24
-          write(uhphrase,'(a,i2.2)') 'rel_hu',ih
+          write(uhphrase,'(a,i2.2,a)') 'rel_hu',ih,','
           luhphrase=8
           lfnuh=lstuh+luhphrase
           if(lfnuh.lt.1000)then
             write(uheader(lstuh:lfnuh),'(a)')uhphrase(1:luhphrase)
-            lstuh=lfnuh+2
+            lstuh=lfnuh+1
           endif
         enddo
         if(.NOT.headerdone)then
-          write (37,'(2a)') 'uheader ',uheader(1:lnblnk(uheader))
+          if(.NOT.uncertheadprinted)then
+	    write (37,'(2a)') 'uheader ',uheader(1:lnblnk(uheader))
+            uncertheadprinted=.true.
+          endif
         endif
       endif
 
@@ -600,7 +638,10 @@ C Add to urunvals
               lstur=lfnur+2
             endif
  20       continue
-          write (37,'(2a)') 'urunvals ',urunvals(1:lnblnk(urunvals))
+
+C Add comma separations to the data.
+          call SDELIM(urunvals,urunvalsd,'C',IW)
+          write (37,'(2a)') 'urunvals ',urunvalsd(1:lnblnk(urunvalsd))
         elseif (nint(UACLIM(I,1)).eq.2) then 
           ACNG=UACLIM(I,2)
           if (I.eq.1) then
@@ -653,7 +694,8 @@ C Add to urunvals
               lstur=lfnur+2
             endif
  30       continue
-          write (37,'(2a)') 'urunvals ',urunvals(1:lnblnk(urunvals))
+          call SDELIM(urunvals,urunvalsd,'C',IW)
+          write (37,'(2a)') 'urunvals ',urunvalsd(1:lnblnk(urunvalsd))
         endif
  10   continue
 

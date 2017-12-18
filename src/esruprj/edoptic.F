@@ -2067,7 +2067,7 @@ C For help messages
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
 
-      helpinsub='SETUPIES'  ! set for subroutine
+      helpinsub='setupies'  ! set for subroutine
 
 C Locate the IES files via the installed path.
       call isunix(unixok)
@@ -2079,6 +2079,8 @@ C Locate the IES files via the installed path.
 
 C Assume the radiance files in the models rad folder and work
 C there.
+      helptopic='optical_ies'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       if(unixok)then
 
 C If unix assume user owns the model and will use the ../rad folder.
@@ -2310,6 +2312,174 @@ C       call usemodelradfile('ies',lltmp,istat)
        
        return
        end
+
+      
+C SETUPDIFFUSE: Define/manage lampcolor diffuse light source
+C types (a set named light types are written to the radiance 
+C model files) for passing to Radiance. It makes use of the
+C surface anchor list facility to hold users selections.
+      subroutine setupdiffuse()
+#include "building.h"
+#include "model.h"
+#include "epara.h"
+#include "e2r_common.h"
+
+C espriou.h provides current file.
+#include "espriou.h"
+      
+      integer lnblnk  ! function definition
+
+      COMMON/OUTIN/IUOUT,IUIN
+      common/FILEP/IFIL
+      
+      logical unixok,ok,dok
+      character outs*124,fs*1
+      character lltmp*144,loutstr*248
+      character t12*12,t32*32,t2*2,hold*32,doitl*256
+      character WORD*48
+      character subpath*72,action*3
+      integer loop,loop2,iiessteps(5)
+      real RVC(13)
+      logical isfeet
+      character ITEMS*24
+      dimension ITEMS(8),IVALS(8)
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='setupdiffuse'  ! set for subroutine
+
+C Locate the IES files via the installed path.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+      helptopic='lampcolor'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
+C Present a list of names of pre-defined light sources which
+C will be written into model radiance files.
+  42  continue
+      ITEMS(1)='800 lumin-bulb 50mm diam'
+      ITEMS(2)='1k lumin-bulb 50mm diam '
+      ITEMS(3)='2k lumin-bulb 50mm diam '
+      ITEMS(4)='1k lumin 100mm square   '
+      ITEMS(5)='1k lumin 200mm square   '
+      ITEMS(6)='2k lumin 200mm square   '
+      ITEMS(7)='3.4k lumin 600mm sqauare'
+      ITEMS(8)='3.2k lumin 1.3x0.36m    '
+      INPIC=1
+      CALL EPICKS(INPIC,IVALS,' ','Diffuse light sources:',
+     &  24,8,ITEMS,'diffuse list',IER,nbhelp)
+      IF(INPIC.EQ.0)return
+      IF(IVALS(1).eq.7)return
+
+C Setup the initial values depending on which selected.
+      if(IVALS(1).eq.1)then
+        write(t12,'(a)') '800lum-bulb'
+        write(t32,'(a)') '800 lumin 50mm bulb'
+        V1=0.05; V2=0.05; V3=0.05; t2='X '
+      elseif(IVALS(1).eq.2)then
+        write(t12,'(a)') '1klum-bulb'
+        write(t32,'(a)') '1000 lumin 50mm bulb'
+        V1=0.05; V2=0.05; V3=0.05; t2='X '
+      elseif(IVALS(1).eq.3)then
+        write(t12,'(a)') '2klum-bulb'
+        write(t32,'(a)') '2000 lumin 50mm bulb'
+        V1=0.05; V2=0.05; V3=0.05; t2='X '
+      elseif(IVALS(1).eq.4)then
+        write(t12,'(a)') '1klum100mmsq'
+        write(t32,'(a)') '1000 lumin 100mm x 100mm surf'
+        V1=0.1; V2=0.1; V3=0.02; t2='X '
+      elseif(IVALS(1).eq.5)then
+        write(t12,'(a)') '1klum200mmsq'
+        write(t32,'(a)') '1000 lumin 200mm x 200mm surf'
+        V1=0.2; V2=0.2; V3=0.02; t2='X '
+      elseif(IVALS(1).eq.6)then
+        write(t12,'(a)') '2klum200mmsq'
+        write(t32,'(a)') '2000 lumin 200mm x 200mm surf'
+        V1=0.2; V2=0.2; V3=0.02; t2='X '
+      elseif(IVALS(1).eq.7)then
+        write(t12,'(a)') '3.4klum600sq'
+        write(t32,'(a)') '3400 lumin 600mm square surf'
+        V1=0.6; V2=0.6; V3=0.02; t2='X '
+      elseif(IVALS(1).eq.8)then
+        write(t12,'(a)') '3.2klumpanel'
+        write(t32,'(a)') '3200 lumin 1.3x0.36m susp panel'
+        V1=1.3; V2=0.36; V3=0.06; t2='X '
+      endif
+
+C Ask what short root name to give to the IES entry intial value
+C based on info in IES file.
+      CALL EASKS(t12,'Root name <12 char for this diffuse source:',
+     &  ' ',12,'lamp','diffuse root name',IER,nbhelp)
+
+C Ask for a menu entry associated with the IES entry.
+      CALL EASKS(t32,'Menu entry <32 char for this source:',
+     &  ' ',32,'t8 lamp fixture','diffuse menu',IER,nbhelp)
+
+C Ask for which site axis X Y is along the length of fixture.
+      CALL EASKS(t2,'Which site axis X or Y is along the longest',
+     &  'dimension of the fixture?',2,'X','ies axis',IER,nbhelp)
+
+C Ask about dimensions of the IES entry
+      write(hold,'(3F7.3)') V1,V2,V3
+      CALL EASKS(HOLD,'Length Width Height (m) of the fixture:',
+     &  '(check in the IES file):',32,' 1.0 0.1 0.1 ','IES L W H',
+     &  IER,nbhelp)
+      K=0
+      CALL EGETWR(HOLD,K,V1,0.0,0.0,'-','ies len',IER)
+      CALL EGETWR(HOLD,K,V2,0.0,0.0,'-','ies wid',IER)
+      CALL EGETWR(HOLD,K,V3,0.0,0.0,'-','ies ht',IER)
+     
+C Gow many output steps to create and for each give a percentage
+C (suggest 100 75 50 25 1)
+      IWS=2
+      call EASKATOG('Control options:',' ',
+     &  'always ON','ON-OFF','Stepped 100:50:20:1',
+     &  'Stepped 100:75:50:25:1','cancel',' ',' ',IWS,nbhelp)
+
+C Update the common blocks:
+      nbofies=nbofies+1
+      write(iesname(nbofies),'(a)') t12
+      write(iesmenu(nbofies),'(a)') t32
+      write(iesalong(nbofies),'(a)') t2(1:1)
+      write(iesfile(nbofies),'(a)') 'embedded'
+      ieslen(nbofies)=V1; ieswid(nbofies)=V2; iesht(nbofies)=V3
+      if(IWS.eq.1)then
+        iespercents(nbofies)=1
+        iessteps(nbofies,1)=1.0; iessteps(nbofies,2)=0.01
+        iiessteps(1)=100; iiessteps(2)=001
+      elseif(IWS.eq.2)then
+        iespercents(nbofies)=2
+        iessteps(nbofies,1)=1.0; iessteps(nbofies,2)=0.01
+        iiessteps(1)=100; iiessteps(2)=001
+      elseif(IWS.eq.3)then
+        iespercents(nbofies)=4
+        iessteps(nbofies,1)=1.0; iessteps(nbofies,2)=0.50
+        iessteps(nbofies,3)=0.20; iessteps(nbofies,4)=0.01
+        iiessteps(1)=100; iiessteps(2)=50
+        iiessteps(3)=20; iiessteps(4)=01
+      elseif(IWS.eq.4)then
+        iespercents(nbofies)=5
+        iessteps(nbofies,1)=1.0; iessteps(nbofies,2)=0.75
+        iessteps(nbofies,3)=0.50; iessteps(nbofies,4)=0.25
+        iessteps(nbofies,4)=0.01
+        iiessteps(1)=100; iiessteps(2)=75
+        iiessteps(3)=50; iiessteps(4)=25; iiessteps(5)=01
+      endif
+      CALL EMKCFG('-',IER)  ! update model file
+
+      CALL EASKAB('Do another diffuse source entity?',
+     &  ' ','proceed','finish',IW,0)
+      if(IW.eq.1) goto 42
+      return
+       
+      end
 
 
 C ******** usemodelradfile
