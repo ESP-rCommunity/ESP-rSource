@@ -95,6 +95,8 @@ C Deterimine of summary or details
         bBuild_Info = .true.
       elseif ( cType(1:7) == "summary" ) then
         bBuild_Info = .false. 
+      elseif ( cType(1:7) == "silent" ) then
+        continue
       else
 C cType is set programmically,
 C and needs only rudementry error trapping.
@@ -142,8 +144,9 @@ C.......Release version
         
       endif 
       
-      
-      
+C If cType is silent return at this point.
+      if ( cType(1:6) == "silent" ) return
+
 C Copyright information:
       call edisp(iuout," ")      
       call edisp(iuout,      
@@ -261,11 +264,7 @@ C.........Compiliers ( eg: gcc/g++/g77)
 
         endif 
             
-          
-          
-          
       endif
-
 
       return
       end

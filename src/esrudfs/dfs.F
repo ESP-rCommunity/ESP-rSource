@@ -323,6 +323,7 @@ C Setup and pass in parameters to win3d.
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
+C        write(6,*) 'igw igwh igl igb',igw,igwh,igl,igb
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
@@ -336,6 +337,10 @@ C Setup and pass in parameters to win3d.
         mdispl=0; nifgrey=0; ncset=0; ngset=0; nzonec=0
         call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
         call startbuffer()
+      ELSE
+        
+C Set reasonable defaults for text mode.
+        igw=395; igwh=232; igl=77; igb=292
       ENDIF
 
 C << set trace on for debugging purposes >>

@@ -1154,9 +1154,9 @@ C *********************************************************************
       COMMON/VTHP11/NTHF,IBTHAL(MTHF,3)
       COMMON/VTHP12/NTHEQ(MTHF),BTHDT(MTHF,MTHEQ,MDATA)
       COMMON/VTHP31/INTHPS,INTHPZ(MCOM)
+      LOGICAL INTHPS,INTHPZ
 
       CHARACTER FLTHRM*72,OUTSTR*124
-      LOGICAL INTHPS,INTHPZ
 
       IER=0
 

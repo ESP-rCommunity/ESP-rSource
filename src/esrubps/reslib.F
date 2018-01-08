@@ -71,6 +71,7 @@ C      common/rpath/path
       common/ffn/iflwn,icffs(mpcon)
       COMMON/FFC/IMFRES
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
+      LOGICAL MSTROK,MSTRZN
       COMMON/MOIST09/IMSTR
 
 C Electrical results library name. 
@@ -101,7 +102,7 @@ C      character path*72
       character LAPROB*72
       dimension iflg(MCOM)
 
-      logical OK,dok,MSTROK,MSTRZN,remote,browse
+      logical OK,dok,remote,browse
 C      logical unixok
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical CFDOK,concat

@@ -469,7 +469,8 @@ C season (1 char) '-' do not bother 's' indicate season.
       SUBROUTINE CLMDRW(IPICK,mxmn,onleft,onright,season)
 
 C Manual inclusion of a parameter from building.h
-      parameter (MSPS=10)
+      integer MSPS,MIPVA
+      parameter (MSPS=30)
       parameter (MIPVA=MSPS)
 
 #include "seasons.h"

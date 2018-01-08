@@ -420,7 +420,7 @@ C Check that the doc folder path is standard.
         write(iunit,'(a)')'with the model e.g. construction documents'
         write(iunit,'(a)')'lists of assumptions or project goals.'
         CALL ERPFREE(IUNIT,ISTAT)
-	
+
         write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'rad'
         call runit(doit,'-')
         call pausems(100)
@@ -1671,13 +1671,15 @@ C ITRU unit number for user output. IER=0 indicates no error.
 C CFD
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       common/GR3D100/BLDG3D,ZONE3D(MCOM)
+      LOGICAL BLDG3D,ZONE3D
       common/GR3D108/L3DCVS(MCOM),L3DCNC(MCOM),L3DNDC(MCOM),L3DTAQ(MCOM)
       common/MOIST01/MSTROK,MSTRZN(MCOM)
+      LOGICAL MSTROK,MSTRZN
       common/MOIST02/LMOIST(MCOM)
       COMMON/GRSD100/IndxSt
       COMMON/GRSD101/LGrdSt
 
-      logical browse,BLDG3D,ZONE3D,MSTROK,MSTRZN
+      logical browse
       logical newgeo  ! to use for testing if new/old geometry file.
       character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       dimension ITEMS(25)

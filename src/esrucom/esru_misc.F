@@ -170,21 +170,29 @@ C Anchor data in model.h.
 
 C Non-linear thermophysical properties.
       COMMON/VTHP18/LNLTHP
+      CHARACTER LNLTHP*72
       COMMON/VTHP31/INTHPS,INTHPZ(MCOM)
+      LOGICAL INTHPS,INTHPZ
 C 1D node distribution.
       COMMON/GR1D05/LGRD1D
+      CHARACTER LGRD1D*72
       COMMON/GR1D06/IGR1D
+      LOGICAL IGR1D
       COMMON/GRND108/LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
+      CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
 
 C 3D ground.
       COMMON/GRND100/GRND3D
+      LOGICAL GRND3D
 
 C 3D zones.
       common/GR3D100/BLDG3D,ZONE3D(MCOM)
+      LOGICAL BLDG3D,ZONE3D
       common/GR3D108/L3DCVS(MCOM),L3DCNC(MCOM),L3DNDC(MCOM),L3DTAQ(MCOM)
 
 C Moisture.
       common/MOIST01/MSTROK,MSTRZN(MCOM)
+      LOGICAL MSTROK,MSTRZN
       common/MOIST02/LMOIST(MCOM)
 
 C Water filled zones.
@@ -288,15 +296,12 @@ C IES lighting distribution files from model.h
       CHARACTER LCFD*72
       CHARACTER*72 LAPROB,LPNF
 
-      CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
       character hvacfile*72,LBSIMP*72
       character ctldoc*248,lctlf*72
       character GTGEOM*72,GTNAME*15,spflnam*72,lipvdatf*72
       character*10 wkd1, wkd2
       character spfdescr*30
-      LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
-      LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
      
       INTEGER :: i,icc,ibe,ibu,j,ixs,ix,iivu,isystcurrent,imu
       INTEGER :: ies

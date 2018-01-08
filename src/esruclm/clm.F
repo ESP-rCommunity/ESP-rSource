@@ -293,6 +293,10 @@ C Setup and pass in parameters to win3d.
         nzonec=0
         call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
         call startbuffer()
+      ELSE
+        
+C Set reasonable defaults for text mode.
+        igw=349; igwh=265; igl=77; igb=325
       ENDIF
 
       blank='  '

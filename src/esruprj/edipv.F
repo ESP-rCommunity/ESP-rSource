@@ -1688,6 +1688,7 @@ C << add logic to allow for two extreme seasons
 C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
+      LOGICAL MSTROK,MSTRZN
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
 C Simulation parameter sets.
@@ -1716,7 +1717,6 @@ C Extended simulation parameters for each set.
       character act*6,lipvdatf*72,cr*32,tag*3
       character spfdescr*30
       CHARACTER LAPROB*72
-      logical MSTROK,MSTRZN
 
       if(nipvassmt.eq.1.or.nipvassmt.eq.3.or.nipvassmt.eq.5)then
         continue

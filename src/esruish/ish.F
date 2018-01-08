@@ -357,6 +357,7 @@ C Open the text display box equal to limtty if mmod = 8.
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
+C        write(6,*) 'igw igwh igl igb',igw,igwh,igl,igb
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
@@ -375,6 +376,10 @@ C Open the text display box equal to limtty if mmod = 8.
         nzonec=0
         call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
         call startbuffer()
+      else
+
+C Set reasonable defaults for text mode.
+        igw=503; igwh=256; igl=29; igb=277
       endif
       if(mmod.ne.-6)icout=iuout
 

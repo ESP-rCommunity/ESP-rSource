@@ -2566,7 +2566,7 @@ C GS (52 char) list of optical database items to select from.
       COMMON/GPICK/GS(MGOPT),nopt
 
       LOGICAL FOUND
-      CHARACTER GS*52,WORD*20,outs*124,OUTSTR*124,GTYPE*12
+      CHARACTER GS*52,WORD*20,outs*124,OUTSTR*124,GTYPE*12,msg*48
       character lworking*144,fs*1
       integer lndbp   ! for length of standard database path
       logical unixok  ! to check for database path file separators
@@ -2657,7 +2657,11 @@ C Check the next line for general properties as well as flag for TMC data.
       CALL EGETWR(OUTSTR,K,SRF,0.,0.999,'W','solar refl',IER)
       CALL EGETWR(OUTSTR,K,SAB,0.,0.999,'W','solar abs',IER)
       CALL EGETWR(OUTSTR,K,UVAL,-10.,9.99,'W','U value',IER)
-      IF(IER.NE.0)GOTO 99
+      IF(IER.NE.0)then
+        call edisp(iuout,OUTSTR)
+        write(msg,'(2a)')'nb layers or vis or solar in ',GTYPE
+        GOTO 99
+      endif
 
 C Reporting.
       IF(ITRC.GE.1)THEN
@@ -2688,7 +2692,10 @@ C documentation purposes).
       CALL EGETWR(OUTSTR,K,HG(3),0.,0.999,'W','ht gn @ 55',IER)
       CALL EGETWR(OUTSTR,K,HG(4),0.,0.999,'W','ht gn @ 70',IER)
       CALL EGETWR(OUTSTR,K,HG(5),0.,0.999,'W','ht gn @ 80',IER)
-      IF(IER.NE.0)GOTO 99
+      IF(IER.NE.0)then
+        write(msg,'(2a )')'dir t or ht gn in ',GTYPE
+        GOTO 99
+      endif
 
       IF(ITRC.GE.1)THEN
         IF(FOUND.OR.SOPT(1:3).EQ.'ALL')THEN
@@ -2724,7 +2731,10 @@ C If an old format database skip the first two fields.
         AB(IL,4)=VAL
         CALL EGETWR(OUTSTR,K,VAL,0.,0.999,'W','abs @80',IER)
         AB(IL,5)=VAL
-        IF(IER.NE.0)GOTO 99
+        IF(IER.NE.0)then
+          write(msg,'(2a )')'layer absorption in ',GTYPE
+          GOTO 99
+        endif
 
 C Reporting.
         IF(ITRC.GE.1)THEN
@@ -2790,7 +2800,8 @@ C End of file reached.
       RETURN
 
 C Error conditions.
-  99  CALL USRMSG(' Problem with optical db near...',OUTSTR,'W')
+  99  CALL USRMSG(' Problem with optical db near...',msg,'W')
+      call edisp(iuout,OUTSTR)
       IER=1
       GOTO 73
 
@@ -2933,6 +2944,7 @@ C Open Ooptical Properties db and read into common.
         call usrmsg('Optical Properties db not found or',
      &              'there was a problem reading it!','W')
         OPTKOK=.FALSE.
+        IER=0
       else
         OPTKOK=.TRUE.
       endif

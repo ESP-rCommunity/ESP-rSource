@@ -1002,13 +1002,14 @@ C #include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/GR1D05/LGRD1D
+      CHARACTER LGRD1D*72
       COMMON/GR1D06/IGR1D
+      LOGICAL IGR1D
       common/cctlnm/ctldoc,lctlf
 
-      CHARACTER*72 LGRD1D
       CHARACTER ctldoc*248,LCTLF*72
 
-      logical QUIET,IGR1D,XST
+      logical QUIET,XST
 
       QUIET=.true.
       ITRC=0

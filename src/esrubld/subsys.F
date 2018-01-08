@@ -2168,6 +2168,7 @@ C Common for relative humidity control (ideal)
       COMMON/RHCTLDAT/ZLLDF(MCOM),ZLLDP(MCOM)
 
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
+      LOGICAL MSTROK,MSTRZN
       COMMON/MOIST17/RHmax
       COMMON/MOIST53/Ppair(MCOM),Fpair(MCOM),Spair(MCOM)
       COMMON/MOIST54/Pfair(MCOM),Ffair(MCOM),Sfair(MCOM)
@@ -2175,7 +2176,6 @@ C Common for relative humidity control (ideal)
 c Common for time step computed parameters of HVAC system
 c in common/hvac_timestep_parameters is included via hvac_parameters.h.
       character outs*124
-      LOGICAL MSTROK,MSTRZN
       real ADDMOIST
 
 C Moisture modelling is invoked for the current zone.

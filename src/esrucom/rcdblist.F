@@ -36,7 +36,8 @@ C Scan list of weather databases and present selection to user.
 #include "espriou.h"
 
 C Manual inclusion of a parameter from building.h
-      parameter (MSPS=10)
+      integer MSPS,MIPVA
+      parameter (MSPS=30)
       parameter (MIPVA=MSPS)
 
 #include "seasons.h"
@@ -522,7 +523,8 @@ C  if 'e' then found 'end' so close unit number (92)
       subroutine itemclimatelist(idblfil,act,actreturn,clmdb,ier)
 
 C Manual inclusion of a parameter from building.h
-      parameter (MSPS=10)
+      integer MSPS,MIPVA
+      parameter (MSPS=30)
       parameter (MIPVA=MSPS)
 
 #include "seasons.h"

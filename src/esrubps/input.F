@@ -266,11 +266,14 @@ C Defaults.
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
       INTEGER :: icvs,icnc,indc,indd,itaq,itlw,ilwv,itf3
       COMMON/GRND100/GRND3D
+      LOGICAL GRND3D
       COMMON/GRND101/NNODTG,ITCNSTG,TEMP3G(MCOM),AREAGD(MCOM)
       INTEGER :: NNODTG,ITCNSTG
       REAL :: TEMP3G,AREAGD
       COMMON/GRND108/LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
+      CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
+      LOGICAL MSTROK,MSTRZN
       COMMON/GRSD100/IndxSt
       INTEGER :: IndxSt
       COMMON/GRSD101/LGrdSt
@@ -305,7 +308,7 @@ C Toggle for extreme silent running (endless) mode.
       logical endless,issilient
       common/endlessmode/endless,issilient
 
-      CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
+      CHARACTER*72 LGrdSt
 
       CHARACTER OUTSTR*124,MODE*4
       CHARACTER outs*124,louts*248,spsname*30,L144*144
@@ -318,7 +321,6 @@ C HVAC AIM-2
 
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST,CFCDBOK
-      LOGICAL GRND3D,MSTROK,MSTRZN
       logical dll,closemat1,closemat2,unixok,concat
       logical closecfc1,closecfc2
 
@@ -1108,6 +1110,7 @@ C         if = 0 then use compiled pattern.
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       COMMON/GR3D100/BLDG3D,ZONE3D(MCOM)
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
+      LOGICAL MSTROK,MSTRZN
       COMMON/MOIST02/LMOIST(MCOM)
       COMMON/MOIST03/MNDS,MNDZ(MCOM),MNDC(MCOM,MS),MNDL(MCOM,MS,ME)
 
@@ -1137,7 +1140,7 @@ C Toggle for extreme silent running (endless) mode.
       CHARACTER*72 LMOIST,LMSTR
       character outs*124,CXSTR*78,spflnam*72
       character dllsubr*12,dllmesg*124
-      LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
+      LOGICAL BLDG3D,ZONE3D
       LOGICAL ILTHPS,ILTHPZ,CLOSE
       logical dll,prob
       dimension igarray(mgrdp),iguarray(12)

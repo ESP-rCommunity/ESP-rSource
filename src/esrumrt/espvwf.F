@@ -321,6 +321,7 @@ C Setup and pass in parameters to win3d.
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
+C        write(6,*) 'igw igwh igl igb',igw,igwh,igl,igb
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
@@ -343,7 +344,10 @@ C Setup and pass in parameters to win3d.
 C Debug.
 C        write(6,*) 'mdispl,ifgrey,ncset,ngset,nzonec ',
 C     &    mdispl,nifgrey,ncset,ngset,nzonec
-
+      ELSE
+        
+C Set reasonable defaults for text mode.
+        igw=434; igwh=223; igl=41; igb=257
       ENDIF
       CALL ESPrVersion("summary",cAppName,IUOUT)
 

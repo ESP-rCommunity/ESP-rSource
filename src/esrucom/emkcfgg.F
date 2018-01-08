@@ -108,15 +108,21 @@ C Special materials file flag
 
 C Non-linear thermophysical properties.
       COMMON/VTHP18/LNLTHP
+      CHARACTER LNLTHP*72
       COMMON/VTHP31/INTHPS,INTHPZ(MCOM)
+      LOGICAL INTHPS,INTHPZ
 
 C 1D node distribution.
       COMMON/GR1D05/LGRD1D
+      CHARACTER LGRD1D*72
       COMMON/GR1D06/IGR1D
+      LOGICAL IGR1D
 
 C 3D ground.
       COMMON/GRND100/GRND3D
+      LOGICAL GRND3D
       COMMON/GRND108/LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
+      CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
 
 C Ground topology.
       COMMON/GTFIL/GTGEOM
@@ -127,10 +133,12 @@ C CFD
 
 C 3D zones.
       common/GR3D100/BLDG3D,ZONE3D(MCOM)
+      LOGICAL BLDG3D,ZONE3D
       common/GR3D108/L3DCVS(MCOM),L3DCNC(MCOM),L3DNDC(MCOM),L3DTAQ(MCOM)
 
 C Moisture.
       common/MOIST01/MSTROK,MSTRZN(MCOM)
+      LOGICAL MSTROK,MSTRZN
       common/MOIST02/LMOIST(MCOM)
 
 C Structured mesh.
@@ -254,7 +262,6 @@ C Generic databases from esprdbfile.h.
       CHARACTER LAPROB*72
       CHARACTER CXSTR*78
       CHARACTER LPNF*72
-      CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER ctldoc*248,LCTLF*72,H*72
       CHARACTER spflnam*72
@@ -276,8 +283,6 @@ C An array of mass flow nodes for writing.
       dimension iav(99)
 
       logical dogrnd
-      LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
-      LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
       character dstmp*24
 
 C Control for writing out multi-climate sim presets

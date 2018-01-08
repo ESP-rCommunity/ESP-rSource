@@ -353,6 +353,10 @@ C Setup and pass in parameters to win3d.
         mdispl=0; nifgrey=0; ncset=0; ngset=0; nzonec=0
         call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
         call startbuffer()
+      ELSE
+        
+C Set reasonable defaults for text mode.
+        igw=538; igwh=335; igl=29; igb=369
       ENDIF
 
 C Echo version number.

@@ -372,6 +372,7 @@ C Setup and pass in parameters to win3d.
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
+C        write(6,*) 'igw igwh igl igb',igw,igwh,igl,igb
         if(iglib.eq.1)then
           call opencpw
           call opensetup
@@ -388,6 +389,10 @@ C in the c-interface code.
         CALL NWKGFLG(INGOF)
         ISE=1; ICO=0; IDA=0
         CALL NWKSMOD(ISE,ICO,IDA)
+      ELSE
+        
+C Set reasonable defaults for text mode.
+        igw=516; igwh=433; igl=65; igb=467
       ENDIF
 
       CALL ESPrVersion("summary",cAppName,IUOUT)

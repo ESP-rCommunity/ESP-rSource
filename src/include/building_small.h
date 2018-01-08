@@ -39,8 +39,8 @@ C Ground topology.
 C Construction.
       PARAMETER (ME=12)        !- Elements/construction. - Increased from 8 to 16 to support CFCs - (Bart Lomanowski)
       PARAMETER (MN=36)        !- Nodes/construction.    - Increased from 35 to 50 to support CFCs - (Bart Lomanowski)
-      PARAMETER (MGP=8)       !- Air gaps/construction. - Increased from 3 to 8 to support CFCs - (Bart Lomanowski)
-      PARAMETER (MMLC=120)     !- Multilayered constructions in model.
+      PARAMETER (MGP=8)        !- Air gaps/construction. - Increased from 3 to 8 to support CFCs - (Bart Lomanowski)
+      PARAMETER (MMLC=200)     !- Multilayered constructions in model.
       PARAMETER (MHCV=MN+ME)   !- Control volumes per construction.
 
 C Glazing.

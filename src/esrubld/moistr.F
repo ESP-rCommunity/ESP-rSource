@@ -59,10 +59,11 @@ C *********************************************************************
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/VTHP30/ILTHPS,ILTHPZ(MCOM)
       COMMON/VTHP31/INTHPS,INTHPZ(MCOM)
+      LOGICAL INTHPS,INTHPZ
       COMMON/MOIST11/MITRM,RITRMP,RITRMF
 
       LOGICAL CONVP,CONVF
-      LOGICAL ILTHPS,ILTHPZ,INTHPS,INTHPZ
+      LOGICAL ILTHPS,ILTHPZ
       CHARACTER MSG*72
 
 C Set the present vapour pressure distribution equal to the previuos time
@@ -1516,9 +1517,9 @@ C **********************************************************************
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       COMMON/GR1D03/BCNV,ILUMP(MCOM,MS)
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
+      LOGICAL MSTROK,MSTRZN
       COMMON/MOIST03/MNDS,MNDZ(MCOM),MNDC(MCOM,MS),MNDL(MCOM,MS,ME)
 
-      LOGICAL MSTROK,MSTRZN
       CHARACTER MSG*72
 
       IER=0

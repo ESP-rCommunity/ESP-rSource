@@ -1225,7 +1225,8 @@ C for the given period.
       SUBROUTINE SYNOPDEGS
 
 C Manual inclusion of a parameter from building.h
-      parameter (MSPS=10)
+      integer MSPS,MIPVA
+      parameter (MSPS=30)
       parameter (MIPVA=MSPS)
 
 #include "seasons.h"

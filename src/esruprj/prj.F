@@ -495,6 +495,10 @@ C Setup and pass in parameters to win3d.
         nzonec=0
         call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
         call startbuffer()
+      ELSE
+        
+C Set reasonable defaults for text mode.
+        igw=548; igwh=336; igl=41; igb=357
       ENDIF
 
 C Generate the version report.
@@ -1678,6 +1682,7 @@ C to include the path and create a string to drive the modules.
       common/C1/NCOMP,NCON
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
+      LOGICAL MSTROK,MSTRZN
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
       common/IPVF/lipvdatf
@@ -1731,7 +1736,7 @@ C dd is character array for selecting simulation parameter sets.
       character brw*11,outs*124
       character descra*7,descrb*7,descrst*10,descrfn*10
 
-      logical DOK,OK,MSTROK,MSTRZN,XST,modparms
+      logical DOK,OK,XST,modparms
       logical browse,concat,hri,defok,unixok,LIBXST
       logical mlcok,bndryok,bndrysxc,confok,geofok,oprfok,prob
       logical tmcok,shdok
@@ -2597,7 +2602,7 @@ C              write(6,*) 'temporal data found so save each timestep'
           if(scfdres(isset)(1:2).eq.'  ')then
             cr=cfgroot
             lr=lnblnk(cfgroot)
-	    WRITE(scfdres(isset),'(A,A4)') cr(1:lr),'.dfr'
+            WRITE(scfdres(isset),'(A,A4)') cr(1:lr),'.dfr'
           endif
           t72=scfdres(isset)
           CALL EASKS(t72,' ','CFD results library?',72,
@@ -4427,7 +4432,7 @@ C Set up menu for different variants
       ITEMS2(10)= 'h view factors and radiant sensors'
       ITEMS2(11)= 'i - future option -'
       ITEMS2(12)= 'j zone constructions'
-      ITEMS2(13)= 'k zone materials properties'
+      ITEMS2(13)= 'k materials or MLC properties'
       ITEMS2(14)= 'l computational fluid dynamics'
       ITEMS2(15)= 'm convection regimes'
       ITEMS2(16)= 'n active materials/advanced optics'
@@ -4717,6 +4722,8 @@ C Currently set true if graphic network file, false otherwise.
 C ivalsv keeps track of new viewfactor files which need analysys
 C ivalsg keeps track of whether a geometry file has alread been copied.
       dimension ivalsv(MCOM),ivalsg(MCOM)
+      integer nbitem,items
+      dimension items(MCOM)
 
       character CNTMFIL*72
       CHARACTER*72 LIPVDATF,NNAME,H,msg1,MSG2,LCFD
@@ -4726,21 +4733,12 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
       CHARACTER APE*6,EXT*4,OUTS*124,doit*248,tmode*8
       CHARACTER SALT*31,CNTMDESC*124
       character ipvaction*3  ! to signal external ipv file
-      character lworking*144,fs*1
       integer irootlen,iapelin  ! string buffer lengths
-      LOGICAL XST,OK,DOK,modsit,moddb,QUIET,docnn,silent,donegeo
+      LOGICAL XST,OK,DOK,modsit,moddb,docnn,silent
       logical unixok
       logical newgeo  ! to use for testing if new/old geometry file.
       logical updatetitle ! if true the edit IPV titles.
       integer IW  ! for radio button
-
-C Set folder separator (fs) to \ or / as required.
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
 
       M=ILM
       call isunix(unixok)
@@ -4753,7 +4751,7 @@ C Change name of configuration file.
       IF(LRCR.eq.0)THEN
         EXT='.cfg'
         CALL FNCNGR(LCFGF,APE,EXT,NNAME)
-        LCFGF=NNAME
+        write(LCFGF,'(a)') NNAME(1:lnblnk(NNAME))
       ENDIF
 
       IF(M.EQ.1)THEN
@@ -4781,7 +4779,7 @@ C geometry and attribution
             call eclose(gversion(icomp),1.1,0.01,newgeo)
             call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
             CALL FNCNGR(LGEOM(ICOMP),APE,EXT,NNAME)
-            LGEOM(ICOMP)=NNAME
+            write(LGEOM(ICOMP),'(a)') NNAME(1:lnblnk(NNAME))
             if(igupgrade.eq.2.and.(.NOT.newgeo))then
               gversion(icomp) =1.1
               newgeo = .true.
@@ -4816,7 +4814,7 @@ C << ascii version of the shading file and copy that as well.
               endif
 C              CALL USRMSG('Copying shading file via:',doit,'-')
               CALL RUNIT(doit,'-')
-              LSHAD(ICOMP)=NNAME
+              write(LSHAD(ICOMP),'(a)') NNAME(1:lnblnk(NNAME))
             endif
 
 C If there is an existing viewfactor file copy it to new name
@@ -4835,7 +4833,7 @@ C so that subsequent changes are applied to the new file.
               endif
 C              CALL USRMSG('Copying view factor file via:',doit,'-')
               CALL RUNIT(doit,'-')
-              LVIEW(ICOMP)=NNAME
+              write(LVIEW(ICOMP),'(a)') NNAME(1:lnblnk(NNAME))
 
 C ? after copy it is probably not necessary to re-run the viewfactor analysis.
 C              ivalsv(ic)=ivals(IC)
@@ -4857,7 +4855,7 @@ C so that subsequent changes are applied to the new file.
               endif
 C              CALL USRMSG('Copying hc regime file via:',doit,'-')
               CALL RUNIT(doit,'-')
-              LHCCO(ICOMP)=NNAME
+              write(LHCCO(ICOMP),'(a)') NNAME(1:lnblnk(NNAME))
             endif
 
 C If there is a casual gain control file copy the exiting file
@@ -4877,7 +4875,7 @@ C so that subsequent changes are applied to the new file.
 C              CALL USRMSG('Copying casual gain ctl file via:',
 C     &                    doit,'-')
               CALL RUNIT(doit,'-')
-              LCGCIN(ICOMP)=NNAME
+              write(LCGCIN(ICOMP),'(a)') NNAME(1:lnblnk(NNAME))
             endif
 
 C If there is an obstruction file copy the exiting file
@@ -4896,7 +4894,7 @@ C so that subsequent changes are applied to the new file.
               endif
 C              CALL USRMSG('Copying obstruction file via:',doit,'-')
               CALL RUNIT(doit,'-')
-              ZOBS(ICOMP)=NNAME
+              write(ZOBS(ICOMP),'(a)') NNAME(1:lnblnk(NNAME))
             elseif(IOBS(icomp).eq.2)then
               continue
             endif
@@ -4967,6 +4965,7 @@ C Selection strings for site exposure.
         MODSIT=.true.
         msg1='updating model for site exposure changes...'
         docnn=.true.
+
       ELSEIF(M.EQ.4)THEN
 
 C Shading and insolation choices. First find out if any of the
@@ -5032,7 +5031,7 @@ C << need to deal with file separator more generically >>
                 endif
                 EXT='.shd'
                 CALL FNCNGR(LSHAD(ICOMP),APE,EXT,NNAME)
-                LSHAD(ICOMP)=NNAME
+                write(LSHAD(ICOMP),'(a)') NNAME(1:lnblnk(NNAME))
 
 C Create a small place-holder file that subsequent calculation
 C procedure can overwrite. Mark for performing shading calculatons.
@@ -5076,7 +5075,7 @@ C Older format geometry file so use separate zone obstructions file.
                   endif
                   EXT='.obs'
                   CALL FNCNGR(ZOBS(ICOMP),APE,EXT,NNAME)
-                  ZOBS(ICOMP)=NNAME
+                  write(ZOBS(ICOMP),'(a)') NNAME(1:lnblnk(NNAME))
                   silent=.true.
                   CALL ECROBS(ITRC,ITRU,IUF,ICOMP,silent,IER)
                   IF(IOBS(ICOMP).eq.0)then
@@ -5197,7 +5196,7 @@ C << if newer format geometry then alternative logic needed >>
                   EXT='.obs'
                   CALL EGOMST(IUF,icomp,ZOBS(ICOMP),0,ITRC,ITRU,IER)
                   CALL FNCNGR(ZOBS(ICOMP),APE,EXT,NNAME)
-                  ZOBS(ICOMP)=NNAME
+                  write(ZOBS(ICOMP),'(a)') NNAME(1:lnblnk(NNAME))
                   CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
                 elseif(IOBS(ICOMP).eq.2)then
                   continue
@@ -5220,7 +5219,7 @@ C << logic that does not bother with obs file copying.
                   endif
                   EXT='.obs'
                   CALL FNCNGR(ZOBS(ICOMP),APE,EXT,NNAME)
-                  ZOBS(ICOMP)=NNAME
+                  write(ZOBS(ICOMP),'(a)') NNAME(1:lnblnk(NNAME))
                   silent=.true.
                   CALL ECROBS(ITRC,ITRU,IUF,ICOMP,silent,IER)
                 endif
@@ -5238,7 +5237,7 @@ C fileis so create a base name for shading file and then tweak the name via fncn
                 endif
                 EXT='.shd'
                 CALL FNCNGR(LSHAD(ICOMP),APE,EXT,NNAME)
-                LSHAD(ICOMP)=NNAME
+                write(LSHAD(ICOMP),'(a)') NNAME(1:lnblnk(NNAME))
 
 C Create a small place-holder file that subsequent calculation
 C procedure can overwrite. Mark to update shading files.
@@ -5261,6 +5260,7 @@ C << version of the zone shading file and copy it to the new name.
             msg1='shading changes not selected'
           endif
         endif
+
       ELSEIF(M.EQ.5)THEN
 
 C View factors and radiant sensors
@@ -5289,7 +5289,7 @@ C before calling mrt.
                 EXT='.vwf'
                 CALL ERMRT(ITRC,ITRU,IUF,LVIEW(ICOMP),ICOMP,IER)
                 CALL FNCNGR(LVIEW(ICOMP),APE,EXT,NNAME)
-                LVIEW(ICOMP)=NNAME
+                write(LVIEW(ICOMP),'(a)') NNAME(1:lnblnk(NNAME))
                 CALL EMKMRT(LVIEW(ICOMP),LGEOM(ICOMP),
      &            NZSUR(ICOMP),IUF,ICOMP,'v',IER)
               elseif(IVF(icomp).eq.0)then
@@ -5303,7 +5303,7 @@ C before calling mrt.
                 endif
                 EXT='.vwf'
                 CALL FNCNGR(LVIEW(ICOMP),APE,EXT,NNAME)
-                LVIEW(ICOMP)=NNAME
+                write(LVIEW(ICOMP),'(a)') NNAME(1:lnblnk(NNAME))
 
 C In both cases create an initial viewfactor file. If ray tracing
 C required, save the list of zones to be done after the
@@ -5325,6 +5325,7 @@ C configuration file has been updated.
             docnn=.true.
           endif
         endif
+
       ELSEIF(M.EQ.6)THEN
 
 C Climate, latitiude and longitude. First check if the model
@@ -5364,7 +5365,7 @@ C If there is an IPV file also update it.
             endif
 C          CALL USRMSG('Copying IPV file via:',doit,'-')
             CALL RUNIT(doit,'-')
-            LIPVDATF=NNAME
+            write(LIPVDATF,'(a)') NNAME(1:lnblnk(NNAME))
             updatetitle=.true.
           else
             updatetitle=.false.   ! nothing to do
@@ -5389,6 +5390,7 @@ C Update the titles.
         endif
         docnn=.true.
         msg1='updating model for climate changes...'
+
       ELSEIF(M.EQ.7)THEN
 
 C Pressure distribution
@@ -5429,161 +5431,22 @@ C Slot for future option.
 
 C Variant zone constructions (this includes geometry, construction
 C and tmc file variants for each zone selected.
-        inpic=0
-        call askmultizone(inpic,ivals,
+        nbitem=0
+        call askmultizone(nbitem,items,
      &    ' Select zones for construction variant?',
      &    'Zone construction variant','c',ier)
-        if(inpic.gt.0)then
-          DO 147 IC=1,inpic
-            IUNIT=12
-            QUIET=.FALSE.
-            ICOMP=ivals(IC)
-            IF(ICOMP.EQ.0)GOTO 147
-            call FINDFIL(LTHRM(ICOMP),XST)
-            IF(.NOT.XST)THEN
-              CALL EDISP(IUOUT,
-     &          '* Construction file does not exist...skipping.')
-              goto 147
-            ENDIF
+        if(nbitem.gt.0)then
 
-C Check if geometry file has already been updated.
-            donegeo=.false.
-            DO 149 icg=1,inpic
-              if(icomp.eq.ivalsg(icg))donegeo=.true.
- 149        continue
-            if(.NOT.donegeo)then
-              EXT='.geo'
-              call eclose(gversion(icomp),1.1,0.01,newgeo)
-              call georead(IUNIT,LGEOM(ICOMP),ICOMP,IR,ITRU,IER)
-              CALL FNCNGR(LGEOM(ICOMP),APE,EXT,NNAME)
-              LGEOM(ICOMP)=NNAME
-              if(igupgrade.eq.2.and.(.NOT.newgeo))then
-                gversion(icomp) =1.1
-                newgeo = .true.
-              endif
-              if(newgeo)then
-                call geowrite(IUNIT,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
-              else
-                call emkgeo(IUNIT,LGEOM(ICOMP),ICOMP,3,IER)
-              endif
-              WRITE(MSG1,'(2A)')
-     &        '* New geometry file written out for zone ',ZNAME(ICOMP)
-              CALL EDISP(IUOUT,MSG1)
-            endif
-            ITRU=6
-            CALL ECONST(LTHRM(ICOMP),IUNIT,ICOMP,ITRC,ITRU,IER)
-            EXT='.con'
-            CALL FNCNGR(LTHRM(ICOMP),APE,EXT,NNAME)
-            LTHRM(ICOMP)=NNAME
-            CALL EMKCON(LTHRM(ICOMP),IUNIT,ICOMP,QUIET,IER)
-            WRITE(MSG1,'(2A)')
-     &              '* New constructions file written out for zone ',
-     &              ZNAME(ICOMP)
-            CALL EDISP(IUOUT,MSG1)
-            call FINDFIL(LTWIN(ICOMP),XST)
-            IF(.NOT.XST)GOTO 147
-            IFU=13
-            CALL ERTWIN(ITRC,ITRU,IFU,LTWIN(ICOMP),ICOMP,IER)
-            EXT='.tmc'
-            CALL FNCNGR(LTWIN(ICOMP),APE,EXT,NNAME)
-            LTWIN(ICOMP)=NNAME
-            CALL MKTWIN(IFU,ICOMP,QUIET,IER)
-            WRITE(MSG1,'(2A)')
-     &      'New  transparent constructions file written out for zone '
-     &      ,ZNAME(ICOMP)
-            CALL EDISP(IUOUT,MSG1)
- 147      CONTINUE
-          docnn=.true.
-          msg1='updating model for construction changes...'       
-          call edisp(iuout,
-     &      '* Subsequent changes will be written to the new files.')
+C Call VER_GEO_CON_TMC passing nbitem, items and APE
+C Also ivalsg array of possibly already done zone geometry files.
+          call VER_GEO_CON_TMC(nbitem,items,ivalsg,APE,docnn)
         endif
+
       ELSEIF(M.EQ.10)THEN
 
-C Construction data file variant. Depending on location expand path to file.
+C Construction and materials databases file variant.
+        call VER_MLC_MAT(APE)
 
-C << probably should only allow a variant if a local database >>
-        if(ipathmul.eq.0.or.ipathmul.eq.1)then
-          lworking=LFMUL
-        elseif(ipathmul.eq.2)then
-          lndbp=lnblnk(standarddbpath)
-          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
-     &      LFMUL(1:lnblnk(LFMUL))
-        endif
-        LFMULEN=LNBLNK(lworking)
-        IF(LFMUL(LFMULEN:LFMULEN).EQ.'1')THEN
-          EXT='.db1'
-        ELSEIF(LFMUL(LFMULEN:LFMULEN).EQ.'2')THEN
-          EXT='.db2'
-        ELSEIF(LFMUL(LFMULEN:LFMULEN).EQ.'3')THEN
-          EXT='.db3'
-        ELSEIF(LFMUL(LFMULEN:LFMULEN).EQ.'a')THEN
-          EXT='.asc'
-        else
-          EXT='.dbs'
-        endif
-
-C Find last token in lworking and return in msg2.
-        call isunix(unixok)
-        call fdroot(lworking,msg1,MSG2)
-        WRITE(NNAME,'(2a)')DBSPTH(1:LNBLNK(DBSPTH)),MSG2
-        CALL FNCNGR(NNAME,APE,EXT,NNAME)
-        if(unixok)then
-          WRITE(DOIT,'(4A)')'cp ',lworking(1:LNBLNK(lworking)),' ',
-     &       NNAME(1:LNBLNK(NNAME))
-        else
-          WRITE(DOIT,'(4A)')'copy /y ',lworking(1:LNBLNK(lworking)),' ',
-     &       NNAME(1:LNBLNK(NNAME))
-        endif
-        write(LFMUL,'(a)') NNAME(1:lnblnk(NNAME))  ! truncation risk
-        CALL EDISP(IUOUT,' ')
-        CALL EDISP(IUOUT,'Copying database via ...')
-        CALL EDISP(IUOUT,DOIT)
-        CALL RUNIT(DOIT,'-')
-        call edisp(iuout,' Updating model for construction changes...')
-        CALL EDISP(IUOUT,' ')
-
-C Also make automatically materials database variant
-C << probably should only allow a variant if a local database >>
-        if(ipathmat.eq.0.or.ipathmat.eq.1)then
-          lworking=LFMAT
-        elseif(ipathmat.eq.2)then
-          lndbp=lnblnk(standarddbpath)
-          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
-     &      LFMAT(1:lnblnk(LFMAT))
-        endif
-        LFMATEN=LNBLNK(lworking)
-        IF(LFMAT(LFMATEN:LFMATEN).EQ.'1')THEN
-          EXT='.db1'
-        ELSEIF(LFMAT(LFMATEN:LFMATEN).EQ.'2')THEN
-          EXT='.db2'
-        ELSEIF(LFMAT(LFMATEN:LFMATEN).EQ.'3')THEN
-          EXT='.db3'
-        ELSEIF(LFMAT(LFMATEN:LFMATEN).EQ.'a')THEN
-          EXT='.asc'
-        else
-          EXT='.dbs'
-        endif
-
-C Find last token in lworking and return in msg2.
-        call isunix(unixok)
-        call fdroot(lworking,msg1,MSG2)
-        WRITE(NNAME,'(2a)')DBSPTH(1:LNBLNK(DBSPTH)),MSG2
-        CALL FNCNGR(NNAME,APE,EXT,NNAME)  ! ?? why call this
-        if(unixok)then
-          WRITE(DOIT,'(4A)')'cp ',LFMAT(1:LNBLNK(LFMAT)),' ',
-     &       NNAME(1:LNBLNK(NNAME))
-        else
-          WRITE(DOIT,'(4A)')'copy /y ',LFMAT(1:LNBLNK(LFMAT)),' ',
-     &       NNAME(1:LNBLNK(NNAME))
-        endif
-        write(LFMAT,'(a)') NNAME(1:lnblnk(NNAME))
-        CALL EDISP(IUOUT,' ')
-        CALL EDISP(IUOUT,'Copying database via ...')
-        CALL EDISP(IUOUT,DOIT)
-        CALL RUNIT(DOIT,'-')
-        call edisp(iuout,' Updating model for constructions changes...')
-        CALL EDISP(IUOUT,' ')
       ELSEIF(M.EQ.11)THEN
 
 C CFD domain
@@ -5604,7 +5467,7 @@ C CFD domain
             ITU=6
             CALL DFDREAD(ICOMP,itrc,itu,IER)
             CALL FNCNGR(LCFD(ICOMP),APE,EXT,NNAME)
-            LCFD(ICOMP)=NNAME
+            write(LCFD(ICOMP),'(a)') NNAME(1:lnblnk(NNAME))
             IUF=12
             CALL DFDSV(IUF,ICOMP,IER)
  178      CONTINUE
@@ -5639,7 +5502,7 @@ C zones (which already have htc files).
             IUF=12
             CALL ehtcff(LHCCO(ICOMP),IUF,ITRU,IER)
             CALL FNCNGR(LHCCO(ICOMP),APE,EXT,NNAME)
-            LHCCO(ICOMP)=NNAME
+            write(LHCCO(ICOMP),'(a)') NNAME(1:lnblnk(NNAME))
             CALL EMKHTC(LHCCO(ICOMP),ICOMP,IUF,ITRU,IER)
  188      CONTINUE
           msg1='updating model for convective regime changes...'
@@ -5686,7 +5549,7 @@ C variant integrated performance view
             endif
 C          CALL USRMSG('Copying file via:',doit,'-')
             CALL RUNIT(doit,'-')
-            LIPVDATF=NNAME
+            write(LIPVDATF,'(a)') NNAME(1:lnblnk(NNAME))
             updatetitle=.true.
           else
             updatetitle=.false.   ! nothing to do
@@ -5715,7 +5578,7 @@ C Update the titles.
      &        '* IPV file does not exist, creating one!')        
             WRITE(LIPVDATF,'(2A)')cfgroot(1:lnblnk(cfgroot)),'.ipv'
             CALL FNCNGR(LIPVDATF,APE,EXT,NNAME)
-            LIPVDATF=NNAME
+            write(LIPVDATF,'(a)') NNAME(1:lnblnk(NNAME))
           endif
           CALL IPVDAT('I')
           CALL EASKS(ipvtitl,' Enter project title for this variant?',
@@ -5756,7 +5619,7 @@ C into commons and then written out again
             write(doit,'(4A)')'copy /y ',LAPROB(1:lnblnk(LAPROB)),
      &        ' ',NNAME
           endif
-          LAPROB=NNAME
+          write(LAPROB,'(a)') NNAME(1:lnblnk(NNAME))
           call terminalmode(childterminal,tmode)
 C          CALL USRMSG('Copying flow network via:',doit,'-')
           call runit(doit,tmode)
@@ -5807,7 +5670,7 @@ C << written out as fort.83 in ../cfg and not as ../nets/.ctm
           call edisp(iuout,outs)
         endif
         CALL FNCNGR(CNTMFIL,APE,EXT,NNAME)
-        CNTMFIL=NNAME
+        write(CNTMFIL,'(a)') NNAME(1:lnblnk(NNAME))
         IUNIT=72
         CALL CTWRIT(iunit)
         msg1='updating model for contaminants network changes...'
@@ -5816,39 +5679,18 @@ C << written out as fort.83 in ../cfg and not as ../nets/.ctm
       ELSEIF(M.EQ.22)THEN
 
 C Versioning of zone operations. First ask which zones that
-C will have different zone operations. Loop through each of
-C these, read the current operations file, derive a new file
-C name from fncngr call and then call prjfmk with the index
-C of the zone (to write out the common block data to the
-C alternative file name.
-        inpic=0
-        call askmultizone(inpic,ivals,
-     &    ' Select zones for schedules variant?',
-     &    'Zone schedules variant','o',ier)
-        if(inpic.gt.0)then
-          EXT='.opr'
-          IUO=12
-          DO 148 IC=1,inpic
-            ICOMP=ivals(IC)
-            IF(ICOMP.EQ.0)GOTO 148
-            call FINDFIL(LPROJ(ICOMP),XST)
-            IF(.NOT.XST)THEN
-              CALL EDISP(IUOUT,'* Operations file does not exist!')
-              RETURN
-            ENDIF
-            CALL EROPER(ITRC,ITRU,IUO,ICOMP,IER)
-            CALL FNCNGR(LPROJ(ICOMP),APE,EXT,NNAME)
-            LPROJ(ICOMP)=NNAME
-            CALL PRJFMK(ITRC,ITRU,IUO,ICOMP,IER,ICOMP)
-            WRITE(MSG1,'(2A)')'* New operations file written out for ',
-     &      ZNAME(ICOMP)
-            CALL EDISP(IUOUT,MSG1)
- 148      CONTINUE
-          msg1='updating model for zone operation changes...'
-          docnn=.true.
-          call edisp(iuout,
-     &      '* Subsequent changes will be applied to the new files.')
+C will have different zone operations. Use VER_OPR to
+C loop through each of these, read the current operations file,
+C derive a new file name from fncngr call and then call prjfmk 
+C to write out the common block data to the alternative file name.
+        nbitem=0
+        call askmultizone(nbitem,items,
+     &    'Select zones for schedules variant?',
+     &    'Zone construction variant','c',ier)
+        if(nbitem.gt.0)then
+          call VER_OPR(nbitem,items,APE,docnn)
         endif
+
       ELSEIF(M.EQ.23)THEN
 
 C A version with different control file. If there is a current
@@ -5863,7 +5705,7 @@ C common block data.
           RETURN
         ENDIF
         CALL FNCNGR(LCTLF,APE,EXT,NNAME)
-        LCTLF=NNAME
+        write(LCTLF,'(a)') NNAME(1:lnblnk(NNAME))
         CALL CTLWRT(IUNIT,IER)
         msg1='Updating model for zone controls changes...'
         docnn=.true.
@@ -5911,26 +5753,26 @@ C moisture, electrical cfd and IPV
         DO 123 ISPS=1,NSSET
           EXT='.res'
           CALL FNCNGR(SBLRES(ISPS),APE,EXT,NNAME)
-          if(NNAME(1:4).ne.'not_')SBLRES(ISPS)=NNAME
+          write(SBLRES(ISPS),'(a)') NNAME(1:lnblnk(NNAME))
           EXT='.mfr'
           CALL FNCNGR(SFLRES(ISPS),APE,EXT,NNAME)
-          if(NNAME(1:4).ne.'not_')SFLRES(ISPS)=NNAME
+          write(SFLRES(ISPS),'(a)') NNAME(1:lnblnk(NNAME))
           EXT='.plr'
           CALL FNCNGR(SPLRES(ISPS),APE,EXT,NNAME)
-          if(NNAME(1:4).ne.'not_')SPLRES(ISPS)=NNAME
+          write(SPLRES(ISPS),'(a)') NNAME(1:lnblnk(NNAME))
           EXT='.msr'
           CALL FNCNGR(SMSTRES(ISPS),APE,EXT,NNAME)
-          if(NNAME(1:4).ne.'not_')SMSTRES(ISPS)=NNAME
+          write(SMSTRES(ISPS),'(a)') NNAME(1:lnblnk(NNAME))
           EXT='.res'
           CALL FNCNGR(SELRES(ISPS),APE,EXT,NNAME)
-          if(NNAME(1:4).ne.'not_')SELRES(ISPS)=NNAME
+          write(SELRES(ISPS),'(a)') NNAME(1:lnblnk(NNAME))
           EXT='.dfr'
           CALL FNCNGR(SCFDRES(ISPS),APE,EXT,NNAME)
-          if(NNAME(1:4).ne.'not_')SCFDRES(ISPS)=NNAME
+          write(SCFDRES(ISPS),'(a)') NNAME(1:lnblnk(NNAME))
  123    CONTINUE
         EXT='.rep'
         CALL FNCNGR(SIPVRES,APE,EXT,NNAME)
-        SIPVRES=NNAME
+        write(SIPVRES,'(a)') NNAME(1:lnblnk(NNAME))
         LRCR=2
 
 C Check length of cfgroot string. Figure out how to include the
@@ -5947,7 +5789,7 @@ C If a variant connections file also required set this up.
         if(docnn)then
           EXT='.cnn'
           CALL FNCNGR(LCNN,APE,EXT,NNAME)
-          LCNN=NNAME
+          write(LCNN,'(a)') NNAME(1:lnblnk(NNAME))
         endif
         call usrmsg(msg1,' ','-')
         CALL EMKCFG('-',IER)
@@ -5983,8 +5825,8 @@ C FNCNGR changes the name of file ORIGNAM by appending APP
 C before an extension EXT, returning NEWNAM as the new file name
       SUBROUTINE FNCNGR(ORIGNAM,APP,EXT,NEWNAM)
 
-      CHARACTER*(*) ORIGNAM,NEWNAM
-      CHARACTER APP*6,EXT*4,LEXT*6
+      CHARACTER*(*) ORIGNAM,NEWNAM,EXT
+      CHARACTER APP*6,LEXT*6
 
       LCFIL=LNBLNK(ORIGNAM)
       LA=LNBLNK(APP)
@@ -5993,6 +5835,27 @@ C before an extension EXT, returning NEWNAM as the new file name
         IF(ORIGNAM(LCFIL-3:LCFIL).EQ.EXT(1:4))THEN
           IF(LCFIL.GT.(72-3))LCFIL=69
           WRITE(NEWNAM,'(3A)')ORIGNAM(1:LCFIL-4),APP(1:la),EXT(1:lx)
+        ELSEIF(ORIGNAM(LCFIL-4:LCFIL).EQ.EXT(1:5))THEN
+          IF(LCFIL.GT.(72-4))LCFIL=68
+          WRITE(NEWNAM,'(3A)')ORIGNAM(1:LCFIL-5),APP(1:la),EXT(1:lx)
+        ELSEIF(ORIGNAM(LCFIL-5:LCFIL).EQ.EXT(1:6))THEN
+          IF(LCFIL.GT.(72-5))LCFIL=67
+          WRITE(NEWNAM,'(3A)')ORIGNAM(1:LCFIL-6),APP(1:la),EXT(1:lx)
+        ELSEIF(ORIGNAM(LCFIL-6:LCFIL).EQ.EXT(1:7))THEN
+          IF(LCFIL.GT.(72-6))LCFIL=66
+          WRITE(NEWNAM,'(3A)')ORIGNAM(1:LCFIL-7),APP(1:la),EXT(1:lx)
+        ELSEIF(ORIGNAM(LCFIL-7:LCFIL).EQ.EXT(1:8))THEN
+          IF(LCFIL.GT.(72-7))LCFIL=65
+          WRITE(NEWNAM,'(3A)')ORIGNAM(1:LCFIL-8),APP(1:la),EXT(1:lx)
+        ELSEIF(ORIGNAM(LCFIL-8:LCFIL).EQ.EXT(1:9))THEN
+          IF(LCFIL.GT.(72-8))LCFIL=64
+          WRITE(NEWNAM,'(3A)')ORIGNAM(1:LCFIL-9),APP(1:la),EXT(1:lx)
+        ELSEIF(ORIGNAM(LCFIL-9:LCFIL).EQ.EXT(1:10))THEN
+          IF(LCFIL.GT.(72-9))LCFIL=63
+          WRITE(NEWNAM,'(3A)')ORIGNAM(1:LCFIL-10),APP(1:la),EXT(1:lx)
+        ELSEIF(ORIGNAM(LCFIL-10:LCFIL).EQ.EXT(1:11))THEN
+          IF(LCFIL.GT.(72-10))LCFIL=62
+          WRITE(NEWNAM,'(3A)')ORIGNAM(1:LCFIL-11),APP(1:la),EXT(1:lx)
         ELSE
 
 C For ascii files with extension .asc write name assuming a full
@@ -6017,6 +5880,279 @@ C ".db3.a"
 
       RETURN
       END
+
+C ********************* VER_MLC_MAT 
+C VER_MLC_MAT supports the creation of model variants MLC and
+C materials databases. Passed APE (4-6 char variant string).
+C It copies model files and gives them new names.   
+      SUBROUTINE VER_MLC_MAT(APE)
+#include "building.h"
+#include "model.h"
+#include "esprdbfile.h"
+      integer lnblnk  ! function definition
+
+      common/OUTIN/IUOUT,IUIN
+      character lworking*144,fs*1,EXT*11,APE*6,doit*248
+      character NNAME*144
+      character*72 msg1,MSG2
+      logical unixok
+      integer lndbp,ist,istm,LFMULEN,LFMATEN
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Construction data file variant. Depending on location expand path to file.
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        lworking=LFMUL
+      elseif(ipathmul.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LFMUL(1:lnblnk(LFMUL))
+      endif
+
+C See if the MLC database follows a known naming pattern.
+      LFMULEN=LNBLNK(lworking)
+      istm=LFMULEN-7
+      IF(lworking(LFMULEN:LFMULEN).EQ.'1')THEN
+        EXT='.db1'
+      ELSEIF(lworking(LFMULEN:LFMULEN).EQ.'2')THEN
+        EXT='.db2'
+      ELSEIF(lworking(LFMULEN:LFMULEN).EQ.'3')THEN
+        EXT='.db3'
+      ELSEIF(lworking(LFMULEN:LFMULEN).EQ.'4')THEN
+        EXT='.db4'
+      ELSEIF(lworking(LFMULEN:LFMULEN).EQ.'5')THEN
+        EXT='.db5'
+      ELSEIF(lworking(LFMULEN:LFMULEN).EQ.'a')THEN
+        EXT='.asc'
+      ELSEIF(lworking(istm:LFMULEN).EQ.'constrdb')THEN
+        EXT='.constrdb'
+      else
+        EXT='.dbs'
+      endif
+
+C Find last token in lworking and return in msg2.
+      call isunix(unixok)
+      call fdroot(lworking,msg1,MSG2)
+      WRITE(NNAME,'(3a)')DBSPTH(1:LNBLNK(DBSPTH)),fs,MSG2
+      CALL FNCNGR(NNAME,APE,EXT,NNAME)
+      if(unixok)then
+        WRITE(DOIT,'(4A)')'cp ',lworking(1:LNBLNK(lworking)),' ',
+     &     NNAME(1:LNBLNK(NNAME))
+      else
+        WRITE(DOIT,'(4A)')'copy /y ',lworking(1:LNBLNK(lworking)),' ',
+     &     NNAME(1:LNBLNK(NNAME))
+      endif
+      write(LFMUL,'(a)') NNAME(1:lnblnk(NNAME))  ! truncation risk
+      CALL EDISP(IUOUT,' ')
+      CALL EDISP(IUOUT,'Copying database via ...')
+      CALL EDISP(IUOUT,DOIT)
+      CALL RUNIT(DOIT,'-')
+      call edisp(iuout,' Updating model for construction changes...')
+
+C Also make automatically materials database variant
+      if(ipathmat.eq.0.or.ipathmat.eq.1)then
+        lworking=LFMAT
+      elseif(ipathmat.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LFMAT(1:lnblnk(LFMAT))
+      endif
+
+C See if the material database follows a known naming pattern.
+      LFMATEN=LNBLNK(lworking)
+      ist=LFMATEN-2
+      istm=LFMATEN-9
+      IF(lworking(ist:LFMATEN).EQ.'1.a')THEN
+        EXT='.db1.a'
+      ELSEIF(lworking(ist:LFMATEN).EQ.'2.a')THEN
+        EXT='.db2.a'
+      ELSEIF(lworking(ist:LFMATEN).EQ.'3.a')THEN
+        EXT='.db3.a'
+      ELSEIF(lworking(ist:LFMATEN).EQ.'4.a')THEN
+        EXT='.db4.a'
+      ELSEIF(lworking(istm:LFMATEN).EQ.'materialdb')THEN
+        EXT='.materialdb'
+      ELSEIF(lworking(LFMATEN:LFMATEN).EQ.'a')THEN
+        EXT='.asc'
+      else
+        EXT='.dbs'
+      endif
+
+C Find last token in lworking and return in msg2.
+      call isunix(unixok)
+      call fdroot(lworking,msg1,MSG2)
+      WRITE(NNAME,'(3a)')DBSPTH(1:LNBLNK(DBSPTH)),fs,MSG2
+      CALL FNCNGR(NNAME,APE,EXT,NNAME)  ! ?? why call this
+      if(unixok)then
+        WRITE(DOIT,'(4A)')'cp ',lworking(1:LNBLNK(lworking)),' ',
+     &    NNAME(1:LNBLNK(NNAME))
+      else
+        WRITE(DOIT,'(4A)')'copy /y ',lworking(1:LNBLNK(lworking)),' ',
+     &    NNAME(1:LNBLNK(NNAME))
+      endif
+      write(LFMAT,'(a)') NNAME(1:lnblnk(NNAME))
+      CALL EDISP(IUOUT,' ')
+      CALL EDISP(IUOUT,'Copying database via ...')
+      CALL EDISP(IUOUT,DOIT)
+      CALL RUNIT(DOIT,'-')
+      call edisp(iuout,' Updating model for constructions changes...')
+      return
+      end
+
+C ********************* VER_GEO_CON_TMC 
+C VER_GEO_CON_TMC supports the creation of model variants zone
+C files (geo con tmc). Passed number of zones and list of zones
+C to copy, array of zone geometry file that might have previously
+C been sorted and APE (4-6 char variant string).
+C It copies model files and gives them new names.   
+      SUBROUTINE VER_GEO_CON_TMC(nbitem,items,ivalsg,APE,docnn)
+#include "building.h"
+#include "model.h"
+#include "geometry.h"
+      integer lnblnk  ! function definition
+      integer nbitem,items
+      dimension items(MCOM)
+      dimension ivalsg(MCOM)
+      character APE*6
+      logical docnn
+
+      common/OUTIN/IUOUT,IUIN
+      character EXT*11
+      character NNAME*144
+      character*72 msg1
+      logical unixok,xst,newgeo,QUIET,donegeo
+      integer iunit,icomp,ic,itrc,itru
+
+C Set folder separator (fs) to \ or / as required.
+      itru=iuout
+      ITRC=0
+      call isunix(unixok)
+      if(nbitem.le.0)then
+        return
+      endif
+      DO 147 IC=1,nbitem
+        IUNIT=12
+        QUIET=.FALSE.
+        ICOMP=items(IC)
+        IF(ICOMP.EQ.0)GOTO 147
+        call FINDFIL(LTHRM(ICOMP),XST)
+        IF(.NOT.XST)THEN
+          CALL EDISP(IUOUT,
+     &      '* Construction file does not exist...skipping.')
+          goto 147
+        ENDIF
+
+
+C Check if geometry file has already been updated.
+        donegeo=.false.
+        DO 149 icg=1,nbitem
+          if(icomp.eq.ivalsg(icg))donegeo=.true.
+ 149    continue
+        if(.NOT.donegeo)then
+          EXT='.geo'
+          call eclose(gversion(icomp),1.1,0.01,newgeo)
+          call georead(IUNIT,LGEOM(ICOMP),ICOMP,IR,ITRU,IER)
+          CALL FNCNGR(LGEOM(ICOMP),APE,EXT,NNAME)
+          write(LGEOM(ICOMP),'(a)') NNAME(1:lnblnk(NNAME))
+          if(igupgrade.eq.2.and.(.NOT.newgeo))then
+            gversion(icomp) =1.1
+            newgeo = .true.
+          endif
+          if(newgeo)then
+            call geowrite(IUNIT,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+          else
+            call emkgeo(IUNIT,LGEOM(ICOMP),ICOMP,3,IER)
+          endif
+          WRITE(MSG1,'(2A)')
+     &      '* New geometry file written out for zone ',ZNAME(ICOMP)
+          CALL EDISP(IUOUT,MSG1)
+        endif
+        CALL ECONST(LTHRM(ICOMP),IUNIT,ICOMP,ITRC,ITRU,IER)
+        EXT='.con'
+        CALL FNCNGR(LTHRM(ICOMP),APE,EXT,NNAME)
+        write(LTHRM(ICOMP),'(a)') NNAME(1:lnblnk(NNAME))
+        CALL EMKCON(LTHRM(ICOMP),IUNIT,ICOMP,QUIET,IER)
+        WRITE(MSG1,'(2A)')
+     &    '* New constructions file written out for zone ',
+     &    ZNAME(ICOMP)
+        CALL EDISP(IUOUT,MSG1)
+        call FINDFIL(LTWIN(ICOMP),XST)
+        IF(.NOT.XST)GOTO 147
+        IFU=13
+        CALL ERTWIN(ITRC,ITRU,IFU,LTWIN(ICOMP),ICOMP,IER)
+        EXT='.tmc'
+        CALL FNCNGR(LTWIN(ICOMP),APE,EXT,NNAME)
+        write(LTWIN(ICOMP),'(a)') NNAME(1:lnblnk(NNAME))
+        CALL MKTWIN(IFU,ICOMP,QUIET,IER)
+        WRITE(MSG1,'(2A)')
+     &    'New  transparent constructions file written out for zone '
+     &    ,ZNAME(ICOMP)
+        CALL EDISP(IUOUT,MSG1)
+ 147  CONTINUE
+      docnn=.true.
+      call edisp(iuout,
+     &  '* Subsequent changes will be written to the new files.')
+
+      return
+      end
+
+C ********************* VER_OPR 
+C VER_OPR supports the creation of model variants zone operation
+C file. Passed number of zones and list of zones
+C to copy and APE (4-6 char variant string).
+C It copies model files and gives them new names.   
+      SUBROUTINE VER_OPR(nbitem,items,APE,docnn)
+#include "building.h"
+#include "model.h"
+#include "geometry.h"
+      integer lnblnk  ! function definition
+      integer nbitem,items
+      dimension items(MCOM)
+      character APE*6
+
+      common/OUTIN/IUOUT,IUIN
+      character EXT*11
+      character NNAME*144
+      character*72 msg1
+      logical unixok,xst,docnn
+      integer iuo,icomp,ic,itrc,itru
+
+C Set folder separator (fs) to \ or / as required.
+      itru=iuout
+      ITRC=0
+      call isunix(unixok)
+      if(nbitem.le.0)then
+        return
+      endif
+      EXT='.opr'
+      IUO=12
+      DO 148 IC=1,nbitem
+        ICOMP=items(IC)
+        IF(ICOMP.EQ.0)GOTO 148
+        call FINDFIL(LPROJ(ICOMP),XST)
+        IF(.NOT.XST)THEN
+          CALL EDISP(IUOUT,'* Operations file does not exist!')
+          RETURN
+        ENDIF
+        CALL EROPER(ITRC,ITRU,IUO,ICOMP,IER)
+        CALL FNCNGR(LPROJ(ICOMP),APE,EXT,NNAME)
+        write(LPROJ(ICOMP),'(a)') NNAME(1:lnblnk(NNAME))
+        CALL PRJFMK(ITRC,ITRU,IUO,ICOMP,IER,ICOMP)
+        WRITE(MSG1,'(2A)')'* New operations file written out for ',
+     &    ZNAME(ICOMP)
+        CALL EDISP(IUOUT,MSG1)
+ 148  CONTINUE
+      docnn=.true.
+      call edisp(iuout,
+     &  '* Subsequent changes will be applied to the new files.')
+      return
+      end
 
 C In support of floating point exceptions.
 #ifdef SUN

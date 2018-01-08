@@ -1854,9 +1854,13 @@ C ICLIM,LCLIM (for climate file)
       common/user/browse
       common/IPVF/lipvdatf
       COMMON/GR1D05/LGRD1D
+      CHARACTER LGRD1D*72
       COMMON/GR1D06/IGR1D
+      LOGICAL IGR1D
       COMMON/GRND100/GRND3D
+      LOGICAL GRND3D
       COMMON/GRND108/LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
+      CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ
       COMMON/GRSD100/IndxSt
       INTEGER :: IndxSt
       COMMON/GRSD101/LGrdSt
@@ -1864,7 +1868,9 @@ C ICLIM,LCLIM (for climate file)
       LOGICAL :: BLDG3D,ZONE3D
       common/GR3D108/L3DCVS(MCOM),L3DCNC(MCOM),L3DNDC(MCOM),L3DTAQ(MCOM)
       COMMON/VTHP18/LNLTHP
+      CHARACTER LNLTHP*72
       COMMON/VTHP31/INTHPS,INTHPZ(MCOM)
+      LOGICAL INTHPS,INTHPZ
       common/MOIST01/MSTROK,MSTRZN(MCOM)
       LOGICAL :: MSTROK,MSTRZN
       common/MOIST02/LMOIST(MCOM)
@@ -1893,7 +1899,6 @@ C The string buffer doit and option used for tar command.
       character path*72
       character curdir*84
       character LAPROB*72
-      CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character tp*42,tr*32
       character ctldoc*248,LCTLF*72,LGrdSt*72
       character GTGEOM*72,lipvdatf*72
@@ -1907,7 +1912,6 @@ C The string buffer doit and option used for tar command.
       character outs*124
 
       logical browse,XST,unixok
-      LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C Patdot is true if path is ./, patcfg is true if path is cfg,

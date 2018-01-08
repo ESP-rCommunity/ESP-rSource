@@ -806,6 +806,7 @@ C network file.
 
       COMMON/GRSD100/IndxSt
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
+      LOGICAL MSTROK,MSTRZN
       COMMON/VERSOL/ipkzon(mzs),ipksf(mzs),ivsolfil,vsol,VTSOL,vsnam
       common/filep/ifil
       COMMON/Vld30/Tinitial
@@ -858,7 +859,6 @@ c This common block is used to define the sky temperature calculation method
       character SALT*51,spflnam*72,outs*124
       character HCALT*42
 
-      logical MSTROK,MSTRZN
       logical VTSOL
       integer NITMS,INO  ! max items and current menu item
 
@@ -1811,8 +1811,8 @@ C the cfd assessments some of common block CFSEUP will have
 C been filled in.
       subroutine askaboutcfd
 
-#include "building.h"
 #include "cfd.h"
+#include "building.h"
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
@@ -1833,7 +1833,7 @@ C CFD commons.
       integer ICFVIEW ! toggle for preview via dfv during assessment
       integer ICFVIEWMINT,ICFVIEWMAXT  ! range of temperatures for dfv
       COMMON/CFSEUP/CFTIMS,CFTIMF,ICFDYS,ICFDYF,ICFAUX(MCOM),ICFVIEW,
-     &  CFVIEWMINT,ICFVIEWMAXT
+     &  ICFVIEWMINT,ICFVIEWMAXT
       common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
       character outs*124
       logical OK,dok
@@ -1995,12 +1995,16 @@ C TSC data.
 
       COMMON/VTHP30/ILTHPS,ILTHPZ(MCOM)
       COMMON/VTHP31/INTHPS,INTHPZ(MCOM)
+      LOGICAL INTHPS,INTHPZ
       COMMON/GR1D04/GAM,RGAM
       COMMON/GR1D06/IGR1D
+      LOGICAL IGR1D
       COMMON/GR3D100/BLDG3D,ZONE3D(MCOM)
       LOGICAL :: BLDG3D,ZONE3D
       COMMON/GRND100/GRND3D
+      LOGICAL GRND3D
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
+      LOGICAL MSTROK,MSTRZN
       COMMON/GRSD100/IndxSt
       common/glbctl/global,glbrwd
 
@@ -2024,8 +2028,8 @@ C Toggle for extreme silent running (endless) mode.
       character PERST1*14,PERST2*44,PERST3*44
       character outs*124,louts*248
 
-      LOGICAL OK,dok,IGR1D,GRND3D,MSTROK,MSTRZN
-      LOGICAL ILTHPS,ILTHPZ,INTHPS,INTHPZ,global,glbrwd
+      LOGICAL OK,dok
+      LOGICAL ILTHPS,ILTHPZ,global,glbrwd
 
 C For help messages
       character helpinsub*24   ! subroutine name

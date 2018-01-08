@@ -497,6 +497,7 @@ C which the heat pipe connects.
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       COMMON/GR1D04/GAM,RGAM
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
+      LOGICAL MSTROK,MSTRZN
       COMMON/MOIST16/PATMpa
       COMMON/MOIST53/Ppair(MCOM),Fpair(MCOM),Spair(MCOM)
       COMMON/MOIST70/ACAP
@@ -525,7 +526,7 @@ C Thermal bridge common block is described in esruprj/edgeo.F
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
 
       character outs*144,LCFD*72
-      logical atrace,MSTROK,MSTRZN
+      logical atrace
       
 C Heat lost from zone surface if zone represents quantum storage heater
       COMMON/QBCL31/QX31S(MCOM,MS,2),QX31V(MCOM,2),QX31Vcon(MCOM,2)

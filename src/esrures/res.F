@@ -385,10 +385,18 @@ C Setup and pass in parameters to win3d.
 c Debug
 C        write(6,*) 'colurs ',nifgrey,ncset,ngset,nzonec
         call startbuffer()
+      ELSE
+        
+C Set reasonable defaults for text mode.
+        igw=418; igwh=268; igl=107; igb=341
       ENDIF
       ITRC=1
       IF(MMOD.NE.-6)ICOUT=IUOUT
-      CALL ESPrVersion("summary",cAppName,IUOUT)
+      if(aut(1:6).eq.'silent')then
+        CALL ESPrVersion("silent",cAppName,IUOUT)
+      else
+        CALL ESPrVersion("summary",cAppName,IUOUT)
+      endif
 
 C Find the users home folder then get users custom settings.
 C Make temporary use of file unit ixunit.

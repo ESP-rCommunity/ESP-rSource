@@ -102,7 +102,8 @@ C week or season (scanned from climatelist file).
       subroutine selper(ier)
 
 C Manual inclusion of a parameter from building.h
-      parameter (MSPS=10)
+      integer MSPS,MIPVA
+      parameter (MSPS=30)
       parameter (MIPVA=MSPS)
 
 #include "seasons.h"
@@ -1402,7 +1403,8 @@ C << to configuration file as well as climatelist and climate block
       subroutine mkitemclimatelist(iuf,ier)
 
 C Manual inclusion of a parameter from building.h
-      parameter (MSPS=10)
+      integer MSPS,MIPVA
+      parameter (MSPS=30)
       parameter (MIPVA=MSPS)
       
 #include "seasons.h"
