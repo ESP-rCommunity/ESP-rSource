@@ -97,6 +97,7 @@ preserve_espr_dir="yes"    # save existing ESP-r directory by default
 gnu_version="gcc4"         # flag indicating which version of gcc is in use
 make_msg_file=".make_msg"  # Dump make messages?
 compiler_version="none"    # append string to compilers?
+opt="-O1"                  # optimization to be applied
 xLibs="X11"                # Default x-library
 enable_cosim="no"          # Co-simulation with TRNSYS
 extendedDebug="no"         # Enable agressive debugging / warnings /FPE?
@@ -126,7 +127,7 @@ SCRIPTdir="${HOMEdir}/src/bin"
 #-----------------------------------------------------------
 
 # Buildable targets:
-programs="aco b2e bps dbm dfs cdb c2e clm e2r ecnv eco enet grd ish mfs mld mrt pdb prj res stats vew"
+programs="aco b2e bps dbm dfs dfv cdb c2e clm e2r ecnv eco enet grd ish mfs mld mrt pdb prj res stats vew"
 # (bld plt are not currently built)
 
 # Add leading and trailing spaces for regexp matching
@@ -187,6 +188,10 @@ if [ $# -ne 0 ]; then
         --FMI)          FMI_support="yes";         shift;;
         --co-sim) shift; COSIMdir=$1; input="yes";  enable_cosim="yes";  shift;;
         --gcc4)         gnu_version="gcc4";        shift;;
+        --opt0)         opt="-O0";        shift;;
+        --opt1)         opt="-O1";        shift;;
+        --opt2)         opt="-O2";        shift;;
+        --opt3)         opt="-O3";        shift;;
         --intel)        use_intel="yes";           shift;;
         --X11)          xLibs="X11";               shift;;
         --GTK)          xLibs="GTK";               shift;;
@@ -289,8 +294,8 @@ if [ $help -eq 1 ]; then
   echo " "
   echo "    --compiler-version <STRING>: Append <STRING> to the default"
   echo "        compiler binaries. For instance, to invoke the compiler"
-  echo "        binaries gcc-4.3, g++-4.3, and gfortran-4.3, specify "
-  echo "        '--compiler_version -4.3'."
+  echo "        binaries gcc-4.5, g++-4.5, and gfortran-4.5, specify "
+  echo "        '--compiler_version -4.5'."
   echo " "
   echo "    -d <PATH>,  --destination <PATH>: Install ESP-r in"
   echo "        <PATH>/esp-r directory. The default path is:"
@@ -311,6 +316,11 @@ if [ $help -eq 1 ]; then
   echo " "
   echo "    --gcc4: Use the GCC4 compilers (gcc, g++ and gFortran)."
   echo "         (this option is enabled by default)."
+  echo " "
+  echo "    --opt0: no compiler optimization"
+  echo "    --opt1: -O1 compiler optimization ~x1.5 speed"
+  echo "    --opt2: -O2 compiler optimization ~x1.7 speed"
+  echo "    --opt3: -O3 compiler optimization ~x1.8 speed"
   echo " "
   echo "    -h, --help:  Display this help message."
   echo " "
@@ -373,9 +383,9 @@ if [ $help -eq 1 ]; then
   echo " "
   echo " Notes:"
   echo " "
-  echo " 1. The latest ESP-r release (12.3) no longer compiles with GCC3 / g77"
-  echo "    which are now regarded as obsolete. Use GCC4 / gFortran compilers"
-  echo "    instead. The current reference version is GCC 4.3.2"
+  echo " 1. The latest ESP-r release (12.7) no longer compiles with GCC3 / g77"
+  echo "    which are now regarded as obsolete. Use GCC4 or GCC5 / gFortran compilers"
+  echo "    instead. The current reference version is GCC 5.4.0"
   echo " "
   echo " 2. There are two versions of ESP-r - the standard full distribution"
   echo "    based on the X11 graphic libraries and a beta version which uses the"
@@ -958,6 +968,75 @@ case $xLibs in
   noX) targets=" libnoX $targets";;
 esac
 
+#----------------------------------------------------------------------
+# Prompt for small medium large header files
+#----------------------------------------------------------------------
+
+if [ "$mode" = "interactive" ]; then
+
+  # Which modes are actually available, given our platform/compiler
+  # combination?
+  small_prompt="1"
+  medium_prompt="2"
+  large_prompt="3"
+  default="$medium_prompt"
+
+  A=none;
+  while [ "$A" != "$small_prompt" ] &&
+        [ "$A" != "$medium_prompt" ] &&
+        [ "$A" != "$large_prompt" ]
+  do
+     if [ "$A" != "none" ]; then
+        echo ""
+        echo " Please choose level of model complexity to support:"
+        echo ""
+     fi
+     echo " Model complexity: [$default] "
+     if [ "$small_prompt" != "-" ]; then
+        echo "  (1) limited model complexity (e.g. Raspberry Pi)";
+     fi
+     if [ "$medium_prompt" != "-" ]; then
+        echo "  (2) medium model complexity (e.g. older computers)";
+     fi
+     if [ "$noX_prompt" != "-" ]; then
+        echo "  (3) complex models supported (e.g. newer computers)";
+     fi
+     read A
+     if [ "$A" = "-" ]; then
+        A=none;
+     fi
+     if [ "$A" = "" ]; then
+        A="$default"
+     fi
+  done
+  case "$A" in
+     "$small_prompt") 
+       cp ${SRCdir}/include/building_small.h ${SRCdir}/include/building.h
+       cp ${SRCdir}/include/cfd_small.h ${SRCdir}/include/cfd.h
+       cp ${SRCdir}/include/control_small.h ${SRCdir}/include/control.h
+       cp ${SRCdir}/include/net_flow_small.h ${SRCdir}/include/net_flow.h
+       ;;
+     "$medium_prompt") 
+       cp ${SRCdir}/include/building_medium.h ${SRCdir}/include/building.h
+       cp ${SRCdir}/include/cfd_medium.h ${SRCdir}/include/cfd.h
+       cp ${SRCdir}/include/control_medium.h ${SRCdir}/include/control.h
+       cp ${SRCdir}/include/net_flow_medium.h ${SRCdir}/include/net_flow.h
+       ;;
+     "$large_prompt") 
+       cp ${SRCdir}/include/building_large.h ${SRCdir}/include/building.h
+       cp ${SRCdir}/include/cfd_large.h ${SRCdir}/include/cfd.h
+       cp ${SRCdir}/include/control_large.h ${SRCdir}/include/control.h
+       cp ${SRCdir}/include/net_flow_large.h ${SRCdir}/include/net_flow.h
+       ;;
+  esac
+  complexity="$A"
+else
+  cp ${SRCdir}/include/building_large.h ${SRCdir}/include/building.h
+  cp ${SRCdir}/include/cfd_large.h ${SRCdir}/include/cfd.h
+  cp ${SRCdir}/include/control_large.h ${SRCdir}/include/control.h
+  cp ${SRCdir}/include/net_flow_large.h ${SRCdir}/include/net_flow.h
+fi
+
 #---------------------------------------------------------
 # Query about debugging, installation of training and
 # database files
@@ -1309,12 +1388,34 @@ fi
 if [ "$xLibs" = "GTK" ]; then
   fDefType="$fDefType -DGTK"
 fi
+# Append optimization flag as necessary
+if [ "$opt" = "-O0" ]; then
+  fDefType="$fDefType -O0"
+fi
+if [ "$opt" = "-O1" ]; then
+  fDefType="$fDefType -O1"
+fi
+if [ "$opt" = "-O2" ]; then
+  fDefType="$fDefType -O2"
+fi
+if [ "$opt" = "-O3" ]; then
+  fDefType="$fDefType -O3"
+fi
 
-# Assign fortran compilation flags
+# Assign fortran compilation flags alter mcmodel depending on size
+# so that common blocks can be handled in memory
 case $compiler in
    # Note '-C' flag causes some grief on older sun F90 compilers (~v5.0)
    sunF90) FFLAGS="$LOCAL_INCLUDES $fDefType -DF90 $debug_flag $ExtendedDebugFlags -C " ;;
-   GNU)    FFLAGS="$LOCAL_INCLUDES $fDefType $debug_flag $ExtendedDebugFlags -fno-automatic ";
+   GNU)    FFLAGS="$LOCAL_INCLUDES $fDefType $debug_flag $ExtendedDebugFlags -fno-automatic";
+# mcmodel=medium (needed for larger data structures) is only available on 64-bit machines.
+           if [ "$machine" = "x86_64" ]; then
+             if [ "$complexity" = "$medium_prompt" ]; then 
+               FFLAGS="$FFLAGS -mcmodel=medium"
+             elif [ "$complexity" = "$large_prompt" ]; then 
+               FFLAGS="$FFLAGS -mcmodel=medium"
+             fi
+           fi
            case $gnu_version in
              gcc4) FFLAGS="$FFLAGS -DGCC4"            ;;
            esac ;;
@@ -2059,6 +2160,7 @@ do
      ecnv)   result="${SRCdir}/esrucnv/ecnv${EXE}"      ;;
      vew)    result="${SRCdir}/esruvew/viewer${EXE}"      ;;
      enet)    result="${SRCdir}/esrunet/enet${EXE}"      ;;
+     dfv)    result="${SRCdir}/esrudfs/dfv${EXE}"      ;;
      bpsdll) result="${SRCdir}/esrubps/bps.dll"   ;;
      harmonizer) result="${SRCdir}/harmonizer/harmonizer.exe"   ;;
      harmonizerdll) result="${SRCdir}/harmonizer/harmonizer.dll"   ;;
