@@ -165,10 +165,13 @@ C          ilflag = 2 do not include # header lines in file.
 
       dimension YMAX(MZS), YMIN(MZS), YTOT(MZS), YTOTSD(MZS)
       dimension YAVE(MZS), YSTD(MZS), NY(MZS)
-      character outs*124,louts*248,loutsd*248,louts1k*1000,louts1kd*1000
+      character outs*124,louts*248,loutsd*248
+      character louts1k*1000,louts1kd*1000,louts2k*2000,louts2kd*2000
       character RSNAME*40
-      character HEAD1*1000, HEAD2*1000,dg*1,dq*1
+      character HEAD1*2000,HEAD2*1000
+      character dg*1,dq*1
       character LTIME*5,LJTIME*8
+      integer ln19,ln18,ln16  ! to manage single line "d header.
 
       logical display, TOTALS
 
@@ -315,15 +318,18 @@ C don't do this if printing to file.
             if (delim.eq.'X') then
               louts  ='*time '
               louts1k='*time '
+              louts2k='*time '
               K=7; K4=7   ! initial value for buffers
             else
               if(ILFLAG.le.1)then
                 louts  ='#Time '
                 louts1k='#Time '
+                louts2k='#Time '
                 K=7; K4=7   ! initial value for buffers
               else
                 louts  ='Time '
                 louts1k='Time '
+                louts2k='Time '
                 K=6; K4=6   ! case of ILFLAG=2
               endif
             endif
@@ -331,50 +337,77 @@ C don't do this if printing to file.
             if (delim.eq.'X') then
               louts  ='*time '
               louts1k='*time '
+              louts2k='*time '
               K=7; K4=7   ! initial value for buffers
             else
               louts  ='Time '
               louts1k='Time '
+              louts2k='Time '
               K=6; K4=6   ! initial value for buffers
             endif
           else
             louts  ='Time '
             louts1k='Time '
+            louts2k='Time '
             K=6; K4=6   ! initial value for buffers
           endif
 
 C Logic for single or multiple header lines. For single
 C header line write 16 char column title in double quotes
 C and make them comma separated.
+C Example: "Base case       ",
+C the 16 char of string + 2 " plus the , is 19
           HEAD1='  '; HEAD2='  '
+          ln19=19; ln18=18; ln16=16  ! for full 16 char
           if(irows.eq.1)then
             do IH=1,NC
-              IADS=((IH-1)*19)+1
-              IADF=IADS+18
+              lnrs=lnblnk(RSNAME(IGETNO(IH,5)))
+              ln19=lnrs+3; ln18=lnrs+2; ln16=lnrs  ! for current
+              IADS=((IH-1)*ln19)+1
+              IADF=IADS+ln18
               write (HEAD1(IADS:IADF),'(4a)')
-     &          dq,RSNAME(IGETNO(IH,5))(1:16),dq,','
+     &          dq,RSNAME(IGETNO(IH,5))(1:ln16),dq,','
               lnhead=lnblnk(HEAD1)
+C              write(6,'(5i5,2a)') ih,iads,iadf,ke4,lnhead,' ',
+C     &          HEAD1(1:lnhead)
             enddo  ! of IH
             KE=K+IADF; KE4=K4+IADF
             if(KE.le.248)then
               write (louts(K:KE),'(a)') HEAD1(1:lnhead)
             endif
-            if(KE4.le.1000)then
-              write (louts1k(K4:KE4),'(a)') HEAD1(1:lnhead)
+
+C In case the header gets very long write to both 1K and 2K buffers
+C            write(6,*) 'k4 ke4 lnhead ',k4,ke4,lnhead
+            if(KE4.lt.1000)then
+              if(lnhead.lt.1000)then
+                write (louts1k(K4:KE4),'(a)') HEAD1(1:lnhead)
+              endif
+              write (louts2k(K4:lnhead+K4),'(a)') HEAD1(1:lnhead)
+            else
+              write (louts2k(K4:lnhead+K4),'(a)') HEAD1(1:lnhead)
             endif
 
 C Print titles on first day and only on subsequent ones if day
 C demarcations are omitted.
 C Debug.
-            write(6,*) louts(1:lnblnk(louts))
-            write(6,*) ' '
-            write(6,*) louts1k(1:lnblnk(louts1k))
-            write(6,*) ' '
+C            write(6,*) louts(1:lnblnk(louts))
+C            write(6,*) ' '
+C            write(6,*) louts1k(1:lnblnk(louts1k))
+C            write(6,*) ' '
+C            write(6,*) louts2k(1:lnblnk(louts2k))
+C            write(6,*) ' '
 
             if (IDAY.eq.IODS)then
               if(ixopen.eq.1)then
+
+C If lnb2 > lnb then write out louts2k.
                 lnb=lnblnk(louts1k)   ! write directly to file
-                write(itru,'(A)',iostat=ios,err=1)louts1k(1:lnb)
+                lnb2=lnblnk(louts2k)   ! write directly to file
+                if(lnb2.gt.lnb)then
+                  write(itru,'(A)',iostat=ios,err=1)louts2k(1:lnb2)
+                else
+                  write(itru,'(A)',iostat=ios,err=1)louts1k(1:lnb)
+                endif
               else
                 if(NC.le.12)then
                   call edisp(itru,louts)
@@ -386,8 +419,15 @@ C Debug.
               endif
             else
               if (IDHFLG.eq.1.and.ixopen.eq.1)then
+
+C If lnb2 > lnb then write out louts2k.
                 lnb=lnblnk(louts1k)   ! write directly to file
-                write(itru,'(A)',iostat=ios,err=1)louts1k(1:lnb)
+                lnb2=lnblnk(louts2k)   ! write directly to file
+                if(lnb2.gt.lnb)then
+                  write(itru,'(A)',iostat=ios,err=1)louts2k(1:lnb2)
+                else
+                  write(itru,'(A)',iostat=ios,err=1)louts1k(1:lnb)
+                endif
               elseif (IDHFLG.eq.1.and.ixopen.eq.0)then
                 if(NC.le.12)then
                   call edisp(itru,louts)
@@ -415,13 +455,23 @@ C Show two heading lines with items separated with |
             if(KE.le.248)then
               write (louts(K:KE),'(a)') HEAD1(1:lnhead)
             endif
-            if(KE4.le.1000)then
-              write (louts1k(K4:KE4),'(a)') HEAD1(1:lnhead)
+            if(KE4.lt.1000)then
+              if(lnhead.lt.1000)then
+                write (louts1k(K4:KE4),'(a)') HEAD1(1:lnhead)
+              endif
+              write (louts2k(K4:KE4),'(a)') HEAD1(1:lnhead)
+            else
+              write (louts2k(K4:KE4),'(a)') HEAD1(1:lnhead)
             endif
             if (IDAY.eq.IODS)then
               if(ixopen.eq.1)then
                 lnb=lnblnk(louts1k)   ! write directly to file
-                write(itru,'(A)',iostat=ios,err=1)louts1k(1:lnb)
+                lnb2=lnblnk(louts2k)   ! write directly to file
+                if(lnb2.gt.lnb)then
+                  write(itru,'(A)',iostat=ios,err=1)louts2k(1:lnb2)
+                else
+                  write(itru,'(A)',iostat=ios,err=1)louts1k(1:lnb)
+                endif
               else
                 if(NC.le.12)then
                   call edisp(itru,louts)
@@ -434,7 +484,12 @@ C Show two heading lines with items separated with |
             else
               if (IDHFLG.eq.1.and.ixopen.eq.1)then
                 lnb=lnblnk(louts1k)   ! write directly to file
-                write(itru,'(A)',iostat=ios,err=1)louts1k(1:lnb)
+                lnb2=lnblnk(louts2k)   ! write directly to file
+                if(lnb2.gt.lnb)then
+                  write(itru,'(A)',iostat=ios,err=1)louts2k(1:lnb2)
+                else
+                  write(itru,'(A)',iostat=ios,err=1)louts1k(1:lnb)
+                endif
               elseif (IDHFLG.eq.1.and.ixopen.eq.0)then
                 if(NC.le.12)then
                   call edisp(itru,louts)
@@ -449,21 +504,32 @@ C            write(6,*) louts(1:lnblnk(louts))
 C            write(6,*) ' '
 C            write(6,*) louts1k(1:lnblnk(louts1k))
 C            write(6,*) ' '
+C            write(6,*) louts2k(1:lnblnk(louts2k))
+C            write(6,*) ' '
 
 C Clear the 2nd heading line start.
             louts  ='     '
             louts1k='     '
+            louts2k='     '
 
             if(KE.le.248)then
               write (louts(K4:KE4),'(a)') HEAD2(1:lnhead2)
             endif
-            if(KE4.le.1000)then
+            if(KE4.lt.1000)then
               write (louts1k(K4:KE4),'(a)') HEAD2(1:lnhead2)
+              write (louts2k(K4:KE4),'(a)') HEAD2(1:lnhead2)
+            else
+              write (louts2k(K4:KE4),'(a)') HEAD2(1:lnhead2)
             endif
             if (IDAY.eq.IODS)then
               if(ixopen.eq.1)then
                 lnb=lnblnk(louts1k)   ! write directly to file
-                write(itru,'(A)',iostat=ios,err=1)louts1k(1:lnb)
+                lnb2=lnblnk(louts2k)   ! write directly to file
+                if(lnb2.gt.lnb)then
+                  write(itru,'(A)',iostat=ios,err=1)louts2k(1:lnb2)
+                else
+                  write(itru,'(A)',iostat=ios,err=1)louts1k(1:lnb)
+                endif
               else
                 if(NC.le.12)then
                   call edisp(itru,louts)
@@ -476,7 +542,12 @@ C Clear the 2nd heading line start.
             else
               if (IDHFLG.eq.1.and.ixopen.eq.1)then
                 lnb=lnblnk(louts1k)   ! write directly to file
-                write(itru,'(A)',iostat=ios,err=1)louts1k(1:lnb)
+                lnb2=lnblnk(louts2k)   ! write directly to file
+                if(lnb2.gt.lnb)then
+                  write(itru,'(A)',iostat=ios,err=1)louts2k(1:lnb2)
+                else
+                  write(itru,'(A)',iostat=ios,err=1)louts1k(1:lnb)
+                endif
               elseif (IDHFLG.eq.1.and.ixopen.eq.0)then
                 if(NC.le.12)then
                   call edisp(itru,louts)
@@ -500,15 +571,18 @@ C Display data. Create both data strings for this timestep and
 C include users time preferences.
             louts='   '
             louts1k='   '
+            louts2k='   '
             if (IHFLAG.eq.0) then 
               call STIME(J,LTIME)
               write (louts,'(a)') LTIME
               write (louts1k,'(a)') LTIME
+              write (louts2k,'(a)') LTIME
               K=6
             elseif (IHFLAG.eq.1) then
               RDOTY=REAL(IDAY)+(ATIME/24.)
               write (louts,'(f11.6)') RDOTY
               write (louts1k,'(f11.6)') RDOTY
+              write (louts2k,'(f11.6)') RDOTY
               K=11
             elseif (IHFLAG.eq.2) then
 
@@ -518,6 +592,8 @@ C Write in format that spreadsheets understand as time.
               write (louts,'(i4,a,i2.2,a,i2.2,2a)') 
      &          IYEAR,'-',IM,'-',ID,' ',LJTIME
               write (louts1k,'(i4,a,i2.2,a,i2.2,2a)') 
+     &          IYEAR,'-',IM,'-',ID,' ',LJTIME
+              write (louts2k,'(i4,a,i2.2,a,i2.2,2a)') 
      &          IYEAR,'-',IM,'-',ID,' ',LJTIME
               K=20
             endif
@@ -534,23 +610,31 @@ C First write data to the 248 char string buffer.
               endif
  410        continue
 
-C If writing to file then write data to the 1k char string buffer.
+C If writing to file then write data to the 1k or 2k char string buffer.
             if(ixopen.eq.1)then
               k=klast   ! re-establish k position value
               do 411 IG=1,NC
                 KE=K+9
                 if(KE.le.1000)then
                   write (louts1k(K:KE),'(f9.4)') VAL2(IG,J)
+                  write (louts2k(K:KE),'(f9.4)') VAL2(IG,J)
                   K=K+9
+                else
+                  write (louts2k(K:KE),'(f9.4)') VAL2(IG,J)
                 endif
  411          continue
             endif
 
             if(ixopen.eq.1)then
               lnb=lnblnk(louts1k)   ! write directly to file
+              lnb2=lnblnk(louts2k)   ! write directly to file
 
               if(delim.eq.'-')then
-                write(itru,'(A)',iostat=ios,err=1)louts1k(1:lnb)
+                if(lnb2.gt.lnb)then
+                  write(itru,'(A)',iostat=ios,err=1)louts2k(1:lnb2)
+                else
+                  write(itru,'(A)',iostat=ios,err=1)louts1k(1:lnb)
+                endif
               else
 
 C If delimiter set to alternative then process text before writing.
@@ -560,11 +644,18 @@ C stamp that needs the 10th character to be a literal space.
                 dg=delim
                 if (delim.eq.'X') dg='C'
                 call SDELIM(louts1k,louts1kd,dg,IW)
+                call SDELIM(louts2k,louts2kd,dg,IW)
                 if(IHFLAG.eq.2) then
                   write(louts1kd(10:10),'(1a)') ' '
+                  write(louts2kd(10:10),'(1a)') ' '
                 endif
                 lnb=lnblnk(louts1kd)   ! write directly to file
-                write(itru,'(A)',iostat=ios,err=1) louts1kd(1:lnb)
+                lnb2=lnblnk(louts2kd)   ! write directly to file
+                if(lnb2.gt.lnb)then
+                  write(itru,'(A)',iostat=ios,err=1)louts2kd(1:lnb2)
+                else
+                  write(itru,'(A)',iostat=ios,err=1) louts1kd(1:lnb)
+                endif
               endif
             else
 

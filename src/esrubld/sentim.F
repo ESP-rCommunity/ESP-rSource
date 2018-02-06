@@ -162,7 +162,11 @@ C Logical flag for uncertainty header has been printed.
       common/uncerthead/uncertheadprinted
 
       logical headerdone
-      common/uhead/headerdone
+      logical itemunique  ! should we include in fort.37
+      integer itemsinheader,nbpastitems,nbdatahits
+      character pastphrase*42
+      common/uhead/headerdone,itemunique(20),pastphrase(20),
+     &  itemsinheader,nbpastitems,nbdatahits
 
       integer lstur, lfnur
       character strval*12,uhphrase*42
@@ -225,7 +229,7 @@ C Make specific header string for each change (to match urunvals)
           write(uhphrase,'(4a,i2.2,a,i2.2,a)')LCNG(ICC)(1:lncng),
      &      ':',LLOC(ICL)(1:lnloc),':',ICF,':',ICP,','
           luhphrase=lnblnk(uhphrase)
-          write(36,'(a)') uhphrase
+C          write(36,'(a)') uhphrase
           lfnuh=lstuh+luhphrase
           if(lfnuh.lt.1000)then
             write(uheader(lstuh:lfnuh),'(a)')uhphrase(1:luhphrase)
@@ -332,7 +336,11 @@ C Uncertainty defined and leaving valid time period.
  10   continue
 
 C Write current header buffer and values buffer. Test if the
-C whole header might have been written. 
+C whole header might have been written.
+
+C << If we have a mix of uncertainties and this is not the
+C << last one perhaps we should not set uncertheadprinted TRUE ??
+
       if(.NOT.headerdone)then
         if(.NOT.uncertheadprinted)then
           write(37,'(2a)') 'uheader ',uheader(1:lnblnk(uheader))
@@ -340,12 +348,15 @@ C whole header might have been written.
         endif
 
 C Add comma separations to the data.
+
+C << are we ready to write urunvals? >>
+
         call SDELIM(urunvals,urunvalsd,'C',IW)
         write (37,'(2a)') 'urunvals ',urunvalsd(1:lnblnk(urunvalsd))
         do I=1,7
           if (nint(UACTL(I,5)).eq.NIACT)then
             headerdone=.true.
-            write(36,*) 'set headerdone in UAT01a'
+C            write(36,*) 'set headerdone in UAT01a'
           endif
         enddo
       endif
@@ -425,7 +436,11 @@ C urunvals and also the intermediate state of uheader.
       common/uncerthead/uncertheadprinted
 
       logical headerdone
-      common/uhead/headerdone
+      logical itemunique  ! should we include in fort.37
+      integer itemsinheader,nbpastitems,nbdatahits
+      character pastphrase*42
+      common/uhead/headerdone,itemunique(20),pastphrase(20),
+     &  itemsinheader,nbpastitems,nbdatahits
 
       integer lstur, lfnur
       character strval*10,uhphrase*42
@@ -466,11 +481,16 @@ C Make specific header string for each change (to match urunvals)
           if(lfnuh.lt.1000)then
             write(uheader(lstuh:lfnuh),'(a)')uhphrase(1:luhphrase)
             lstuh=lfnuh+1
+            itemsinheader=itemsinheader+1
           endif
         enddo
+
+C << If we have a mix of uncertainties and this is not the last
+C << one then perhaps this should not be set??
+
         if(.NOT.headerdone)then
           if(.NOT.uncertheadprinted)then
-	    write (37,'(2a)') 'uheader ',uheader(1:lnblnk(uheader))
+            write (37,'(2a)') 'uheader ',uheader(1:lnblnk(uheader))
             uncertheadprinted=.true.
           endif
         endif
@@ -484,11 +504,12 @@ C Make specific header string for each change (to match urunvals)
           if(lfnuh.lt.1000)then
             write(uheader(lstuh:lfnuh),'(a)')uhphrase(1:luhphrase)
             lstuh=lfnuh+1
+            itemsinheader=itemsinheader+1
           endif
         enddo
         if(.NOT.headerdone)then
           if(.NOT.uncertheadprinted)then
-	    write (37,'(2a)') 'uheader ',uheader(1:lnblnk(uheader))
+            write (37,'(2a)') 'uheader ',uheader(1:lnblnk(uheader))
             uncertheadprinted=.true.
           endif
         endif
@@ -502,11 +523,12 @@ C Make specific header string for each change (to match urunvals)
           if(lfnuh.lt.1000)then
             write(uheader(lstuh:lfnuh),'(a)')uhphrase(1:luhphrase)
             lstuh=lfnuh+1
+            itemsinheader=itemsinheader+1
           endif
         enddo
         if(.NOT.headerdone)then
           if(.NOT.uncertheadprinted)then
-	    write (37,'(2a)') 'uheader ',uheader(1:lnblnk(uheader))
+            write (37,'(2a)') 'uheader ',uheader(1:lnblnk(uheader))
             uncertheadprinted=.true.
           endif
         endif
@@ -520,11 +542,12 @@ C Make specific header string for each change (to match urunvals)
           if(lfnuh.lt.1000)then
             write(uheader(lstuh:lfnuh),'(a)')uhphrase(1:luhphrase)
             lstuh=lfnuh+1
+            itemsinheader=itemsinheader+1
           endif
         enddo
         if(.NOT.headerdone)then
           if(.NOT.uncertheadprinted)then
-	    write (37,'(2a)') 'uheader ',uheader(1:lnblnk(uheader))
+            write (37,'(2a)') 'uheader ',uheader(1:lnblnk(uheader))
             uncertheadprinted=.true.
           endif
         endif
@@ -538,11 +561,12 @@ C Make specific header string for each change (to match urunvals)
           if(lfnuh.lt.1000)then
             write(uheader(lstuh:lfnuh),'(a)')uhphrase(1:luhphrase)
             lstuh=lfnuh+1
+            itemsinheader=itemsinheader+1
           endif
         enddo
         if(.NOT.headerdone)then
           if(.NOT.uncertheadprinted)then
-	    write (37,'(2a)') 'uheader ',uheader(1:lnblnk(uheader))
+            write (37,'(2a)') 'uheader ',uheader(1:lnblnk(uheader))
             uncertheadprinted=.true.
           endif
         endif
@@ -556,11 +580,12 @@ C Make specific header string for each change (to match urunvals)
           if(lfnuh.lt.1000)then
             write(uheader(lstuh:lfnuh),'(a)')uhphrase(1:luhphrase)
             lstuh=lfnuh+1
+            itemsinheader=itemsinheader+1
           endif
         enddo
         if(.NOT.headerdone)then
           if(.NOT.uncertheadprinted)then
-	    write (37,'(2a)') 'uheader ',uheader(1:lnblnk(uheader))
+            write (37,'(2a)') 'uheader ',uheader(1:lnblnk(uheader))
             uncertheadprinted=.true.
           endif
         endif
@@ -571,7 +596,7 @@ C Test if this is the last uncertainty item, if so header is complete.
         do I=1,6
           if (nint(UACLIM(I,4)).eq.NIACT)then
             headerdone=.true.
-            write(36,*) 'set headerdone in UAT03a'
+C            write(36,*) 'set headerdone in UAT03a'
           endif
         enddo
       endif
@@ -640,6 +665,9 @@ C Add to urunvals
  20       continue
 
 C Add comma separations to the data.
+
+C << are we ready to write urunvals ?? >>
+
           call SDELIM(urunvals,urunvalsd,'C',IW)
           write (37,'(2a)') 'urunvals ',urunvalsd(1:lnblnk(urunvalsd))
         elseif (nint(UACLIM(I,1)).eq.2) then 

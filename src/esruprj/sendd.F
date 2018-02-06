@@ -213,6 +213,7 @@ C Recover the material property and hence uncertainty.
      &        LELM(IVALE(I))(1:16)
             call st2name(t24,LCNG(ICDEF))
           else
+C Return iallow 1=% 2=absolute 3=explicit
             IDMAT(ICDEF,3)=IALLOW
             DATU(ICDEF,1)=XLOW
             if (IALLOW.eq.3) then
@@ -239,6 +240,7 @@ C Common blocks UA3 within uncertainty.h
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/UA31/MATNAM(MNCNG,2)
+      COMMON/UA32/IMISCD(MNCNG,2)
 
       real DFLTRANGE     ! topic & attribute increments
       integer IDFLTR     ! 1=% 2=abs
@@ -335,19 +337,26 @@ C If no type has been selected then return to main SA menu.
 
 C Everything is OK re selection therefore add type selection to common.
         IDMAT(ICDEF,1)=IPRMAT(ISEL,IVALE(1))
-          
+
+C Remember which layer in the MLC ->IMISCD(?,1)
+        IMISCD(ICDEF,1)=IVALE(1)
+        write(6,*) ' icdef idmat imiscd',ICDEF,IDMAT(ICDEF,1),
+     &    IVALE(1),IMISCD(ICDEF,1)
+	
       else
         call edisp(iuout,'Not enabled yet.')
         IER=101
         return
       endif
 
-      IALLOW=3
+      IALLOW=3     ! ask % abs or explicit
       XMPERC=10.0  ! default %
       XMABS=10.0
       XLOW=0.0
       XHIGH=100.0
       call SDDBOUND(IALLOW,XMPERC,XMABS,XLOW,XHIGH,IER)
+
+C Return iallow 1=% 2=absolute 3=explicit
       IDMAT(ICDEF,3)=IALLOW
       DATU(ICDEF,1)=XLOW
       if (IALLOW.eq.3) then
@@ -409,12 +418,14 @@ C Now determine the climatic parameter which is uncertain.
       endif
       IDMAT(ICDEF,1)=IVALP(1)
 
-      IALLOW=2
+      IALLOW=2     ! ask % or asb
       XMPERC=10.0  ! default %
       XMABS=10.0
       XLOW=0.0
       XHIGH=100.0
       call SDDBOUND(IALLOW,XMPERC,XMABS,XLOW,XHIGH,IER)
+
+C Return iallow 1=% 2=absolute 3=explicit
       IDMAT(ICDEF,3)=IALLOW
       DATU(ICDEF,1)=XLOW
       if (IALLOW.eq.3) then
@@ -480,12 +491,14 @@ C Operations file data.
         IDMAT(ICDEF,2)=IRT
       endif
 
-      IALLOW=3
+      IALLOW=3     ! ask % or abs or explicit
       XMPERC=10.0  ! default %
       XMABS=10.0
       XLOW=0.0
       XHIGH=100.0
       call SDDBOUND(IALLOW,XMPERC,XMABS,XLOW,XHIGH,IER)
+
+C Return iallow 1=% 2=absolute 3=explicit
       IDMAT(ICDEF,3)=IALLOW
       DATU(ICDEF,1)=XLOW
       if (IALLOW.eq.3) then
@@ -513,7 +526,7 @@ C Check for htc file - can use scaling on calculated coefficievts that way.
 
       call edisp(iuout,' Convection coefficient selection. ')
       call EASKAB('Only Halcrow time invarient enabled ! ','  ',
-     &                'Continue and define distribution','Cancel',IRT,0)
+     &            'Continue and define distribution','Cancel',IRT,0)
       if (IRT.eq.2) then
         IER=101
         return
@@ -598,7 +611,7 @@ C For help messages
         endif
       endif
 
-      IALLOW=2
+      IALLOW=2     ! ask % or asb
       XMPERC=10.0  ! default %
       XMABS=1.0    ! ? 1m^3
       if (IRT.eq.1) then
@@ -611,6 +624,8 @@ C For help messages
       XLOW=0.0
       XHIGH=100.0
       call SDDBOUND(IALLOW,XMPERC,XMABS,XLOW,XHIGH,IER)
+
+C Return iallow 1=% 2=absolute 3=explicit
       IDMAT(ICDEF,3)=IALLOW
       DATU(ICDEF,1)=XLOW
       if (IALLOW.eq.3) then
@@ -686,12 +701,14 @@ C        4=max cooling, 5=min cooling, 6=heating SP, 7=cooling SP.
      &  'Cooling SP',IRT,nbhelp)
       IMISCD(ICDEF,2)=IRT
 
-      IALLOW=2
+      IALLOW=2     ! ask % or asb
       XMPERC=10.0  ! default %
       XMABS=10.0
       XLOW=0.0
       XHIGH=100.0
       call SDDBOUND(IALLOW,XMPERC,XMABS,XLOW,XHIGH,IER)
+
+C Return iallow 1=% 2=absolute 3=explicit
       IDMAT(ICDEF,3)=IALLOW
       DATU(ICDEF,1)=XLOW
       if (IALLOW.eq.3) then

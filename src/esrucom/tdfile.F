@@ -1112,6 +1112,7 @@ C espriou.h provides current file.
       CHARACTER act*1
       CHARACTER outs*144
       character outstr*248,LOUTSTR*1000,WORD*20,TMP*4,tail*8,msgl2*86
+      character errmsg*42
       integer ier
       real toler  ! what is half of the timestep
 
@@ -1213,11 +1214,17 @@ C item to 0.
       CALL EGETW(OUTSTR,K,WORD,'W','header tags',IFLAG)
       if(WORD(1:7).eq.'*tdaid1')then
         CALL EGETRM(OUTSTR,K,tdaide(1),'W','tdaide',IER)
-        IF(IER.NE.0)goto 1
+        IF(IER.NE.0)then
+	  errmsg='reading token after tdaid1'
+          goto 1
+        endif
         goto 34
       elseif(WORD(1:7).eq.'*tdaid2')then
         CALL EGETRM(OUTSTR,K,tdaide(2),'W','tdaide',IER)
-        IF(IER.NE.0)goto 1
+        IF(IER.NE.0)then
+	  errmsg='reading token after tdaid2'
+          goto 1
+        endif
         goto 34
       elseif(WORD(1:6).eq.'*items')then
         i=i+1
@@ -1226,23 +1233,38 @@ C item to 0.
         CALL EGETW(OUTSTR,K,WORD,'W','item tags',IFLAG)
         if(WORD(1:4).eq.'*tag')then
           CALL EGETRM(OUTSTR,K,TAG(I),'W','*tag',IER)
-          IF(IER.NE.0)goto 1
+          IF(IER.NE.0)then
+	    errmsg='reading token after *tag'
+            goto 1
+          endif
           goto 44
         elseif(WORD(1:5).eq.'*type')then
           CALL EGETRM(OUTSTR,K,TTYPE(I),'W','*type',IER)
-          IF(IER.NE.0)goto 1
+          IF(IER.NE.0)then
+	    errmsg='reading token after *type'
+            goto 1
+          endif
           goto 44
         elseif(WORD(1:5).eq.'*form')then
           CALL EGETWR(OUTSTR,K,xdum,0.0,0.0,'-','*form',IER)
-          IF(IER.NE.0)goto 1
+          IF(IER.NE.0)then
+	    errmsg='reading token after *form'
+            goto 1
+          endif
           goto 44
         elseif(WORD(1:5).eq.'*menu')then
           CALL EGETRM(OUTSTR,K,TMENU(I),'W','*menu',IER)
-          IF(IER.NE.0)goto 1
+          IF(IER.NE.0)then
+	    errmsg='reading token after *menu'
+            goto 1
+          endif
           goto 44
         elseif(WORD(1:5).eq.'*aide')then
           CALL EGETRM(OUTSTR,K,TAIDE(I),'W','*aide',IER)
-          IF(IER.NE.0)goto 1
+          IF(IER.NE.0)then
+	    errmsg='reading token after *aide'
+            goto 1
+          endif
           goto 44
         elseif(WORD(1:6).eq.'*other')then
           CALL EGETWI(OUTSTR,K,NTSTAT(I),0,0,'-','NTSTAT',IER)
@@ -1475,7 +1497,9 @@ C Update the scratch file. If ndata has been lost, reset from nitdf.
       goto 34
 
 C Export file write errors.
- 1    CALL LUSRMSG('Error in importing data',OUTSTR,'W')
+ 1    call edisp(iuout,errmsg)
+      call edisp(iuout,outstr)
+      CALL LUSRMSG('Error in importing data',OUTSTR,'W')
       IER=1
       goto 99
  103  CALL LUSRMSG('Error in writing importing data',OUTSTR,'W')

@@ -1,9 +1,8 @@
-
 C This file contains the following routines:
 C This code is still under testing and develping 
 C DynamicOcc: return the latent and sensible load from one typical occupant
 C Indentation and tabs corrected 18 July 2016.
-	
+
 C************Dynamic occupant subroutine**********************************
       Subroutine DynamicOcc(ICOMP,METAo,CLOTHO)
 #include "building.h"

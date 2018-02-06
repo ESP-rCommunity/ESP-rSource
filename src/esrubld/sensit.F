@@ -49,6 +49,23 @@ C Common blocks UA4 within uncertainty.h
       COMMON/UAMET/IUNCMET
       COMMON/UAFCT/IADIR(MNFA),NFA
 
+C Uncertainties
+      character USETNAME*96   ! the synopsis for each MC-run
+      character uheader*1000  ! header including name of each uncertainty changed
+      character urunvals*1000 ! attribute changed-to value of each uncertainty
+                              ! change for the run.
+      COMMON/USETN/USETNAME(MNRS),uheader,urunvals
+
+C Logical flag for uncertainty header has been printed.
+      logical uncertheadprinted
+      common/uncerthead/uncertheadprinted
+      logical headerdone
+      logical itemunique  ! should we include in fort.37
+      integer itemsinheader,nbpastitems,nbdatahits
+      character pastphrase*42
+      common/uhead/headerdone,itemunique(20),pastphrase(20),
+     &  itemsinheader,nbpastitems,nbdatahits
+
       character ITEM(3)*18,outs*124
 
       DIMENSION IVAL(3)
@@ -103,6 +120,19 @@ C and set number of simulations.
       IMET=IVAL(1)
       read (IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver
       write(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver,IMET
+
+C Clear the header text buffer and counter of uncertainty items so that
+C it is only written once at the top of the fort.37 file.
+      uheader='  '
+      urunvals='  '
+      headerdone=.false.; itemsinheader=0; nbpastitems=0
+      uncertheadprinted=.false.; nbdatahits=0
+      do loop=1,20
+        itemunique(loop)=.FALSE.
+        pastphrase(loop)='  '
+      enddo
+C      write(36,*)'Clearing uheader & headerdone & itemsinheader'
+
  20   if (IMET.eq.1) then 
 
 C Diferential. Set IMET and NSRIM.
@@ -219,7 +249,7 @@ C Depending on change type call editing routine.
       if (IDTYPU(IACTD(IACT,1)).eq.1) then 
         call UAE01(IZONE,IACT,DIR)  ! thermophysical properties
       elseif (IDTYPU(IACTD(IACT,1)).eq.2) then 
-        call UAE02(IZONE,IACT,DIR)  ! layer thickness
+        call UAE02(IZONE,IACT,DIR)  ! MLC layer thickness
       elseif (IDTYPU(IACTD(IACT,1)).eq.3) then 
         call UAT03(IACT,DIR)        ! weather data
       elseif (IDTYPU(IACTD(IACT,1)).eq.4) then 
@@ -268,6 +298,8 @@ C Common blocks UA3 UA4 within uncertainty.h
 #include "uncertainty.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
 
       COMMON/UA5/IMET,ISIM,NRSIM
       COMMON/UATD/UACLIM(6,4),UACTL(7,5),UAMCSA(MNACT)
@@ -283,7 +315,11 @@ C Logical flag for uncertainty header has been printed.
       common/uncerthead/uncertheadprinted
 
       logical headerdone
-      common/uhead/headerdone
+      logical itemunique  ! should we include in fort.37
+      integer itemsinheader,nbpastitems,nbdatahits
+      character pastphrase*42
+      common/uhead/headerdone,itemunique(20),pastphrase(20),
+     &  itemsinheader,nbpastitems,nbdatahits
       
       common/reclen/nzrl,nprl,nerl
       character RSNAME*40,outs*124,message*96,phrase*12,uhphrase*42
@@ -323,10 +359,12 @@ C Change parameters by a random amount (defined above). Clear
 C strings for a synopsis of this run (up to a ~dozen actions).
       message='  '; lstm=1; lfnm=1
       phrase=' '; lphrase=1
-      uheader=' '   ! clear the header
       uhphrase=' '; luhphrase=1
-      urunvals=' '  ! clear string buffer for attribute changes
-      headerdone=.false.  ! mark that no headers have been generated
+      if(IZONE.eq.1)then
+        urunvals='  '  ! clear string buffer for attribute changes if first zone
+        nbdatahits=0
+      endif
+
       do 10 IACT=1,NIACT
 
 C DIR is the direction of the alteration: +ive =up or high, -ive = down or low.
@@ -342,7 +380,7 @@ C combined name of the uncertainty:location. Append to the header buffer.
         write(uhphrase,'(4a)')LCNG(IACTD(IACT,1))(1:lncng),':',
      &    LLOC(IACTD(IACT,2))(1:lnloc),','
         luhphrase=lnblnk(uhphrase)
-        write(36,'(a)') uhphrase(1:luhphrase)
+C        write(36,'(a)') uhphrase(1:luhphrase)
 
 C Synopsis of specific changes to identify the run.
         write(phrase,'(a,i2.2,F5.2)') 'U',IACT,DIR
@@ -393,22 +431,32 @@ C          call UAT05(IACT,DIR)
  10   continue
       write(36,*) 'synopsis ',message(1:lnblnk(message))
 
-C After the NIACT loop the header should be filled so write it out.
+C After the NIACT loop the header should be filled so write it out
+C if we are at the last zone in the model.
 C Bother uheader and urnubals will be blank for the case of weather
 C data as information is written each day rather than once at the
 C start of the run.
-C TODO do not need to write the header for the subsequent result sets.
-C TODO think of how to do this....
       if(.NOT.uncertheadprinted)then
-        write(37,'(a)') uheader(1:lnblnk(uheader))
-        uncertheadprinted=.true.
+        if(IZONE.eq.NCOMP)then
+
+C Remove the trailing comma from the header line.
+          lnhead=lnblnk(uheader)
+          write(36,'(2a)') 'writing: ',uheader(1:lnhead-1)
+          write(37,'(a)') uheader(1:lnhead-1)
+          uncertheadprinted=.true.
+        endif
       endif
 
 C Add comma separations to the data.
-      urunvalsd=' '
-      call SDELIM(urunvals,urunvalsd,'C',IW)
-      write(37,'(a)') urunvalsd(1:lnblnk(urunvalsd))
-C      headerdone=.true.
+
+C Are we ready to write urunvalsd?
+      if(IZONE.eq.NCOMP)then
+        urunvalsd='  '
+        call SDELIM(urunvals,urunvalsd,'C',IW)
+        write(37,'(a)') urunvalsd(1:lnblnk(urunvalsd))
+        urunvals='  '  ! clear string buffer prior to next run
+        urunvalsd='  '
+      endif
 
 C See what the current position of IREC is and update RSNAME to the
 C synopsis of changes recorded above.
@@ -416,6 +464,9 @@ C synopsis of changes recorded above.
       IREC=1
       read (IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver,IMET
       WRITE(6,*) 'checking ',NSIM,nzrl,izver,IMET
+
+C << work out how to include message(1:40) for the first assessment
+C << of a multi-set simulation.
 
 C Remember the synopsis for this run.
 C TODO consider only writing header for NSIM .le. 1 ??
@@ -538,6 +589,8 @@ C Common blocks UA2 UA3 UA4 within uncertainty.h
 #include "uncertainty.h"
 #include "esprdbfile.h"
 
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
 C      COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
@@ -552,10 +605,15 @@ C      COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
       COMMON/USETN/USETNAME(MNRS),uheader,urunvals
 
       logical headerdone
-      common/uhead/headerdone
+      logical itemunique  ! should we include in fort.37
+      logical isunique    ! for test against past
+      integer itemsinheader,nbpastitems,nbdatahits
+      character pastphrase*42
+      common/uhead/headerdone,itemunique(20),pastphrase(20),
+     &  itemsinheader,nbpastitems,nbdatahits
 
       integer lstur, lfnur
-      character strval*12,uhphrase*42
+      character strval*12,uhphrase*42,uhroot*42
       CHARACTER CSTR*25
 
       DIMENSION IEL(ME)
@@ -616,13 +674,65 @@ C Make specific header string for each change (to match urunvals)
                write(uhphrase,'(4a,i2.2,a,i3.3,a)')LCNG(ICC)(1:lncng),
      &           ':',LLOC(ICL)(1:lnloc),':',IZ,':',IS,','
                luhphrase=lnblnk(uhphrase)
-               write(36,'(a)') uhphrase
-      
-               lfnuh=lstuh+luhphrase
-               if(lfnuh.lt.1000)then
-                 write(uheader(lstuh:lfnuh),'(a)')uhphrase(1:luhphrase)
-                 lstuh=lfnuh
+               write(36,'(a)') uhphrase(1:luhphrase)
+
+C Remember the root name of the phrase so that subsequent duplicates can
+C be ignored in the fort.37 file. If the initial item the increment counters
+C otherwise search pastphrase(s) for match.
+               uhroot=' '
+               write(uhroot,'(4a)')LCNG(ICC)(1:lncng),
+     &           ':',LLOC(ICL)(1:lnloc),','
+               luhroot=lnblnk(uhroot)
+C               write(36,'(a)') uhroot(1:luhroot)
+               if(itemsinheader.eq.0)then
+                 nbpastitems=nbpastitems+1
+                 write(pastphrase(nbpastitems),'(a)') uhroot(1:luhroot)
+                 itemunique(1)=.TRUE.
+C                 write(36,*) 'unique item',nbpastitems,uhroot(1:luhroot)
+               elseif(itemsinheader.eq.1)then
+                 lnpast=lnblnk(pastphrase(1))
+                 if(uhroot(1:luhroot).eq.pastphrase(1)(1:lnpast))then
+                   itemunique(itemsinheader+1)=.FALSE.
+                 else
+                   itemunique(itemsinheader+1)=.TRUE.
+                   nbpastitems=nbpastitems+1
+                  write(pastphrase(nbpastitems),'(a)') uhroot(1:luhroot)
+C                  write(36,*)'unique item',nbpastitems,uhroot(1:luhroot)
+                 endif
+               else
+
+C If we ever get a match unset isunique.
+                 isunique=.true.
+                 do loop=1,nbpastitems
+                   lnpast=lnblnk(pastphrase(loop))
+                   if(uhroot(1:luhroot).eq.
+     &                pastphrase(loop)(1:lnpast))then
+                     isunique=.false.
+                   endif
+                 enddo
+                 if(isunique)then
+                   itemunique(itemsinheader+1)=.TRUE.
+                   nbpastitems=nbpastitems+1
+                   write(pastphrase(nbpastitems),'(a)')
+     &               uhroot(1:luhroot)
+                   write(36,*)'unique item',nbpastitems,
+     &               uhroot(1:luhroot)
+                 endif
                endif
+
+C If unique then include it in the header.
+               write(36,*) 'itemunique array ',itemunique
+               if(itemunique(itemsinheader+1))then
+                 lfnuh=lstuh+luhroot
+                 if(lfnuh.lt.1000)then
+                   write(uheader(lstuh:lfnuh),'(a)') uhroot(1:luhroot)
+                   lstuh=lfnuh
+                   if(.NOT.headerdone)itemsinheader=itemsinheader+1
+                 endif
+               else
+                 if(.NOT.headerdone)itemsinheader=itemsinheader+1
+               endif
+      
                strval=' '        ! clear string buffer for the value changed
 
 C Edit data.
@@ -656,12 +766,21 @@ C Edit data.
                write(36,'(3f9.3,4f5.2)')CON(IS,IE),DEN(IS,IE),
      &               SHT(IS,IE),EMISI(IS), EMISE(IS),ABSI(IS),ABSE(IS)
 
-C Add to urunvals
-               lstrval=lnblnk(strval)
-               lfnur=lstur+lstrval
-               if(lfnur.lt.1000)then
-                 write(urunvals(lstur:lfnur),'(a)') strval(1:lstrval)
-                 lstur=lfnur+2
+C Increment counter of data so as to check against itemunique array.
+               nbdatahits=nbdatahits+1
+C               write(36,*) 'UAE01 setting nbdatahits',nbdatahits
+
+C Add to urunvals if previously marked as unique.
+               if(itemunique(nbdatahits))then
+
+C << Test of writing out DIR to fort.37. Comment out next line if it does not work.
+                 call relstr(DIR,strval,lna,ier)
+                 lstrval=lnblnk(strval)
+                 lfnur=lstur+lstrval
+                 if(lfnur.lt.1000)then
+                   write(urunvals(lstur:lfnur),'(a)') strval(1:lstrval)
+                   lstur=lfnur+2
+                 endif
                endif
 
 C Now copy the altered data into the zonal commons.
@@ -751,10 +870,13 @@ C Call routine to copy surface data into common PREC12.
        endif
  10   continue
 
-C If this was the last uncertainty i.e. if IACT=NIACT header is done.
+C If this was the last uncertainty i.e. if IACT=NIACT
+C and we have done all the zones then the header is done.
       if(IACT.eq.NIACT)then
-        write(36,*) 'set header buffer done in UAE01'
-        headerdone=.true.
+        if(IZONE.eq.NCOMP)then
+          write(36,*) 'set header buffer done in UAE01 ',itemsinheader
+          headerdone=.true.
+        endif
       endif
       RETURN
       END
@@ -763,10 +885,9 @@ C ******************** UAE02 ********************
 C UAE02 edits layer thicknesses in memory. The editing of whole MLC's 
 C will also be added.
 C Naming convention:
-C IZONE, ISURF: focus zone and surface (the data files for this zone 
-C               have just been rescaned). 
+C IZONE, focus zone (the data files for this zone have just been rescaned). 
 C IZ, IS: current zone and surface being checked (these are listed in 
-C               the common/ua2/ arrays).
+C         the common/ua2/ arrays).
 
       SUBROUTINE UAE02(IZONE,IACT,DIR)
 #include "building.h"
@@ -776,6 +897,8 @@ C Common blocks UA2 UA3 UA4 within uncertainty.h
 #include "esprdbfile.h"
 #include "material.h"
 
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
 
@@ -789,13 +912,18 @@ C Common blocks UA2 UA3 UA4 within uncertainty.h
       COMMON/USETN/USETNAME(MNRS),uheader,urunvals
 
       logical headerdone
-      common/uhead/headerdone
+      logical itemunique  ! should we include in fort.37
+      logical isunique    ! for test against past
+      integer itemsinheader,nbpastitems,nbdatahits
+      character pastphrase*42
+      common/uhead/headerdone,itemunique(20),pastphrase(20),
+     &  itemsinheader,nbpastitems,nbdatahits
 
 C      CHARACTER TITL*72,NAM*72,CSTR*25
       CHARACTER MATNAM*32,CSTR*25
 
       integer lstur, lfnur
-      character strval*12,uhphrase*42
+      character strval*12,uhphrase*42,uhroot*42
 
 C Data stored in UA02 has the following meaning in this routine:
 C IDMAT(?,1): The material in the chosen MLC, if this is 0 then 
@@ -850,13 +978,62 @@ C Make specific header string for each change (to match urunvals)
             write(uhphrase,'(4a,i2.2,a,i3.3,a)')LCNG(ICC)(1:lncng),
      &        ':',LLOC(ICL)(1:lnloc),':',IZ,':',IS,','
             luhphrase=lnblnk(uhphrase)
-            write(36,'(a)') uhphrase
-      
-            lfnuh=lstuh+luhphrase
-            if(lfnuh.lt.1000)then
-              write(uheader(lstuh:lfnuh),'(a)') uhphrase(1:luhphrase)
-              lstuh=lfnuh
+            write(36,'(a)') uhphrase(1:luhphrase)
+
+C Remember the root name of the phrase so that subsequent duplicates can
+C be ignored in the fort.37 file. If the initial item the increment counters
+C otherwise search pastphrase(s) for match.
+            uhroot=' '
+            write(uhroot,'(4a)')LCNG(ICC)(1:lncng),
+     &        ':',LLOC(ICL)(1:lnloc),','
+            luhroot=lnblnk(uhroot)
+C            write(36,'(a)') uhroot(1:luhroot)
+            if(itemsinheader.eq.0)then
+              nbpastitems=nbpastitems+1
+              write(pastphrase(nbpastitems),'(a)') uhroot(1:luhroot)
+              itemunique(1)=.TRUE.
+C              write(36,*) 'unique item',nbpastitems,uhroot(1:luhroot)
+            elseif(itemsinheader.eq.1)then
+              lnpast=lnblnk(pastphrase(1))
+              if(uhroot(1:luhroot).eq.pastphrase(1)(1:lnpast))then
+                itemunique(itemsinheader+1)=.FALSE.
+              else
+                itemunique(itemsinheader+1)=.TRUE.
+                nbpastitems=nbpastitems+1
+                write(pastphrase(nbpastitems),'(a)') uhroot(1:luhroot)
+C                write(36,*) 'unique item',nbpastitems,uhroot(1:luhroot)
+              endif
+            else
+
+C If we ever get a match unset isunique.
+              isunique=.true.
+              do loop=1,nbpastitems
+                lnpast=lnblnk(pastphrase(loop))
+                if(uhroot(1:luhroot).eq.pastphrase(loop)(1:lnpast))then
+                  isunique=.false.
+                endif
+              enddo
+              if(isunique)then
+                itemunique(itemsinheader+1)=.TRUE.
+                nbpastitems=nbpastitems+1
+                write(pastphrase(nbpastitems),'(a)') uhroot(1:luhroot)
+                write(36,*)'unique item',nbpastitems,uhroot(1:luhroot)
+              endif
             endif
+
+C If unique then include it in the header otherwise at least keep track of itemsinheader
+            write(36,*) 'itemunique array ',itemunique
+            if(itemunique(itemsinheader+1))then
+              lfnuh=lstuh+luhroot
+              if(lfnuh.lt.1000)then
+                write(uheader(lstuh:lfnuh),'(a)') uhroot(1:luhroot)
+                lstuh=lfnuh
+                if(.NOT.headerdone)itemsinheader=itemsinheader+1
+              endif
+            else
+              if(.NOT.headerdone)itemsinheader=itemsinheader+1
+            endif
+
             strval=' '        ! clear string buffer for the value changed
 
 C Either edit layer thickness or whole construction.
@@ -870,13 +1047,17 @@ C Either edit layer thickness or whole construction.
              if (IDMAT(ICC,3).eq.1) then
 
 C Percentage change. Ensure it does not go below 1mm. 
+              write (36,'(a,3f9.4)') 'DATU DIR % factor: ',DATU(ICC,1),
+     &          DIR,(((DATU(ICC,1)/100.)*DIR)+1.0)
                THRMLI(IZ,IS,IE,4)=THRMLI(IZ,IS,IE,4)*
-     &                            (((DATU(ICC,1)/100.)*DIR)+1.0)
+     &           (((DATU(ICC,1)/100.)*DIR)+1.0)
                if(THRMLI(IZ,IS,IE,4).lt.0.001)THRMLI(IZ,IS,IE,4)=0.001
                call relstr(THRMLI(IZ,IS,IE,4),strval,lna,ier)
              elseif (IDMAT(ICC,3).eq.2) then
 
 C Absolute change. Ensure it does not go below 1mm. 
+              write (36,'(a,3f9.4)') 'DATU DIR abs factor: ',
+     &          DATU(ICC,1),DIR,(DATU(ICC,1)*DIR)
                THRMLI(IZ,IS,IE,4)=THRMLI(IZ,IS,IE,4)+
      &                            (DATU(ICC,1)*DIR)
                if(THRMLI(IZ,IS,IE,4).lt.0.001)THRMLI(IZ,IS,IE,4)=0.001
@@ -884,12 +1065,14 @@ C Absolute change. Ensure it does not go below 1mm.
              elseif (IDMAT(ICC,3).eq.3) then
 
 C Explicit change. Ensure it does not go below 1mm.
+              write (36,'(a,3f9.4)') 'DATU DIR expl factor: ',
+     &          DATU(ICC,1),DIR,(DATU(ICC,1)-THRMLI(IZ,IS,IE,4))*DIR
               if (DIR.gt.0.) then
                 THRMLI(IZ,IS,IE,4)=THRMLI(IZ,IS,IE,4)+
-     &                             (DATU(ICC,1)-THRMLI(IZ,IS,IE,4))*DIR
+     &            (DATU(ICC,1)-THRMLI(IZ,IS,IE,4))*DIR
               else
                 THRMLI(IZ,IS,IE,4)=THRMLI(IZ,IS,IE,4)-
-     &                             (DATU(ICC,2)-THRMLI(IZ,IS,IE,4))*DIR
+     &            (DATU(ICC,2)-THRMLI(IZ,IS,IE,4))*DIR
                 if(THRMLI(IZ,IS,IE,4).lt.0.001)THRMLI(IZ,IS,IE,4)=0.001
               endif
               call relstr(THRMLI(IZ,IS,IE,4),strval,lna,ier)
@@ -897,12 +1080,21 @@ C Explicit change. Ensure it does not go below 1mm.
              write (36,'(a)') 'to:'
              write (36,'(a,f9.4)') 'THRMLI: ',THRMLI(IZ,IS,IE,4)
 
-C Add to urunvals
-             lstrval=lnblnk(strval)
-             lfnur=lstur+lstrval
-             if(lfnur.lt.1000)then
-               write(urunvals(lstur:lfnur),'(a)') strval(1:lstrval)
-               lstur=lfnur+2
+C Increment counter of data so as to check against itemunique array.
+             nbdatahits=nbdatahits+1
+C             write(36,*) 'UAE02 setting nbdatahits',nbdatahits
+
+C Add to urunvals if previously marked as unique.
+             if(itemunique(nbdatahits))then
+
+C << Test of writing out DIR to fort.37. Comment out next line if it does not work.
+               call relstr(DIR,strval,lna,ier)
+               lstrval=lnblnk(strval)
+               lfnur=lstur+lstrval
+               if(lfnur.lt.1000)then
+                 write(urunvals(lstur:lfnur),'(a)') strval(1:lstrval)
+                 lstur=lfnur+2
+               endif
              endif
 
 C Now copy the altered data into the zonal commons.
@@ -985,10 +1177,13 @@ C Explicit change. Ensure it does not go below 1mm.
        endif
  10   continue
 
-C If this was the last uncertainty i.e. if IACT=NIACT header is done.
+C If this was the last uncertainty i.e. if IACT=NIACT header
+C and we are on the last zone then the header is done.
       if(IACT.eq.NIACT)then
-        write(36,*) 'set header buffer done in UAE02'
-        headerdone=.true.
+        if(IZONE.eq.NCOMP)then
+          write(36,*) 'set header buffer done in UAE02 ',itemsinheader
+          headerdone=.true.
+        endif
       endif
 
       RETURN
@@ -1017,10 +1212,15 @@ C Common blocks UA2 UA3 UA4 within uncertainty.h
       COMMON/USETN/USETNAME(MNRS),uheader,urunvals
 
       logical headerdone
-      common/uhead/headerdone
+      logical itemunique  ! should we include in fort.37
+      logical isunique    ! for test against past
+      integer itemsinheader,nbpastitems,nbdatahits
+      character pastphrase*42
+      common/uhead/headerdone,itemunique(20),pastphrase(20),
+     &  itemsinheader,nbpastitems,nbdatahits
 
       integer lstur, lfnur
-      character strval*12,uhphrase*42
+      character strval*12,uhphrase*42,uhroot*42
 
 C Data stored in UA04 has the following meaning in this routine:
 C IDMAT(?,1): Casual gain type(1/2/3)/ scheduled air flow(0)
@@ -1083,13 +1283,64 @@ C Make specific header string for each change (to match urunvals)
             write(uhphrase,'(4a,i2.2,a)')LCNG(ICC)(1:lncng),':',
      &        LLOC(ICL)(1:lnloc),':',IZ,','
             luhphrase=lnblnk(uhphrase)
-            write(36,'(a)') uhphrase
-      
-            lfnuh=lstuh+luhphrase
-            if(lfnuh.lt.1000)then
-              write(uheader(lstuh:lfnuh),'(a)') uhphrase(1:luhphrase)
-              lstuh=lfnuh
+            write(36,'(a)') uhphrase(1:luhphrase)
+
+C Remember the root name of the phrase so that subsequent duplicates can
+C be ignored in the fort.37 file. If the initial item the increment counters
+C otherwise search pastphrase(s) for match.
+            uhroot=' '
+            lncng=lnblnk(LCNG(ICC))
+            lnloc=lnblnk(LLOC(ICL))
+            write(uhroot,'(4a)')LCNG(ICC)(1:lncng),
+     &        ':',LLOC(ICL)(1:lnloc),','
+            luhroot=lnblnk(uhroot)
+            write(36,'(a)') uhroot(1:luhroot)
+            if(itemsinheader.eq.0)then
+              nbpastitems=nbpastitems+1
+              write(pastphrase(nbpastitems),'(a)') uhroot(1:luhroot)
+              itemunique(1)=.TRUE.
+              write(36,*) 'unique item',nbpastitems,uhroot(1:luhroot)
+            elseif(itemsinheader.eq.1)then
+              lnpast=lnblnk(pastphrase(1))
+              if(uhroot(1:luhroot).eq.pastphrase(1)(1:lupast))then
+                itemunique(itemsinheader+1)=.FALSE.
+              else
+                itemunique(itemsinheader+1)=.TRUE.
+                nbpastitems=nbpastitems+1
+                write(pastphrase(nbpastitems),'(a)') uhroot(1:luhroot)
+                write(36,*) 'unique item',nbpastitems,uhroot(1:luhroot)
+              endif
+            else
+
+C If we ever get a match unset isunique.
+              isunique=.true.
+              do loop=1,nbpastitems
+                lnpast=lnblnk(pastphrase(loop))
+                if(uhroot(1:luhroot).eq.pastphrase(loop)(1:lnpast))then
+                  isunique=.false.
+                endif
+              enddo
+              if(isunique)then
+                itemunique(itemsinheader+1)=.TRUE.
+                nbpastitems=nbpastitems+1
+                write(pastphrase(nbpastitems),'(a)') uhroot(1:luhroot)
+                write(36,*)'unique item',nbpastitems,uhroot(1:luhroot)
+              endif
             endif
+
+C If unique then include it in the header.
+            write(36,*) 'itemunique array ',itemunique
+            if(itemunique(itemsinheader+1))then
+              lfnuh=lstuh+luhroot
+              if(lfnuh.lt.1000)then
+                write(uheader(lstuh:lfnuh),'(a)') uhroot(1:luhroot)
+                lstuh=lfnuh
+                if(.NOT.headerdone)itemsinheader=itemsinheader+1
+              endif
+            else
+              if(.NOT.headerdone)itemsinheader=itemsinheader+1
+            endif
+      
             strval=' '        ! clear string buffer for the value changed
 
 C Percentage change. 
@@ -1133,14 +1384,22 @@ C to specify individual periods later.
  104          continue
             endif
 
-C Add to urunvals
-            lstrval=lnblnk(strval)
-            lfnur=lstur+lstrval
-            if(lfnur.lt.1000)then
-              write(urunvals(lstur:lfnur),'(a)') strval(1:lstrval)
-              lstur=lfnur+2
+C Increment counter of data so as to check against itemunique array.
+             nbdatahits=nbdatahits+1
+C             write(36,*) 'UAE04 setting nbdatahits',nbdatahits
+
+C Add to urunvals if previously marked as unique.
+            if(itemunique(nbdatahits))then
+
+C << Test of writing out DIR to fort.37. Comment out next line if it does not work.
+              call relstr(DIR,strval,lna,ier)
+              lstrval=lnblnk(strval)
+              lfnur=lstur+lstrval
+              if(lfnur.lt.1000)then
+                write(urunvals(lstur:lfnur),'(a)') strval(1:lstrval)
+                lstur=lfnur+2
+              endif
             endif
-    
           else
 
 C Edit casual gains.
@@ -1160,13 +1419,62 @@ C Make specific header string for each change (to match urunvals)
             write(uhphrase,'(4a,i2.2,a)')LCNG(ICC)(1:lncng),':',
      &        LLOC(ICL)(1:lnloc),':',IZ,','
             luhphrase=lnblnk(uhphrase)
-            write(36,'(a)') uhphrase
-      
-            lfnuh=lstuh+luhphrase
-            if(lfnuh.lt.1000)then
-              write(uheader(lstuh:lfnuh),'(a)') uhphrase(1:luhphrase)
-              lstuh=lfnuh
+            write(36,'(a)') uhphrase(1:luhphrase)
+
+C Remember the root name of the phrase so that subsequent duplicates can
+C be ignored in the fort.37 file. If the initial item the increment counters
+C otherwise search pastphrase(s) for match.
+            uhroot=' '
+            write(uhroot,'(4a)')LCNG(ICC)(1:lncng),
+     &        ':',LLOC(ICL)(1:lnloc),','
+            luhroot=lnblnk(uhroot)
+            write(36,'(a)') uhroot(1:luhroot)
+            if(itemsinheader.eq.0)then
+              nbpastitems=nbpastitems+1
+              write(pastphrase(nbpastitems),'(a)') uhroot(1:luhroot)
+              itemunique(1)=.TRUE.
+              write(36,*) 'unique item',nbpastitems,uhroot(1:luhroot)
+            elseif(itemsinheader.eq.1)then
+              lnpast=lnblnk(pastphrase(1))
+              if(uhroot(1:luhroot).eq.pastphrase(1)(1:lnpast))then
+                itemunique(itemsinheader+1)=.FALSE.
+              else
+                itemunique(itemsinheader+1)=.TRUE.
+                nbpastitems=nbpastitems+1
+                write(pastphrase(nbpastitems),'(a)') uhroot(1:luhroot)
+                write(36,*) 'unique item',nbpastitems,uhroot(1:luhroot)
+              endif
+            else
+
+C If we ever get a match unset isunique.
+              isunique=.true.
+              do loop=1,nbpastitems
+                lnpast=lnblnk(pastphrase(loop))
+                if(uhroot(1:luhroot).eq.pastphrase(loop)(1:lnpast))then
+                  isunique=.false.
+                endif
+              enddo
+              if(isunique)then
+                itemunique(itemsinheader+1)=.TRUE.
+                nbpastitems=nbpastitems+1
+                write(pastphrase(nbpastitems),'(a)') uhroot(1:luhroot)
+                write(36,*)'unique item',nbpastitems,uhroot(1:luhroot)
+              endif
             endif
+
+C If unique then include it in the header.
+            write(36,*) 'itemunique array ',itemunique
+            if(itemunique(itemsinheader+1))then
+              lfnuh=lstuh+luhroot
+              if(lfnuh.lt.1000)then
+                write(uheader(lstuh:lfnuh),'(a)') uhroot(1:luhroot)
+                lstuh=lfnuh
+                if(.NOT.headerdone)itemsinheader=itemsinheader+1
+              endif
+            else
+              if(.NOT.headerdone)itemsinheader=itemsinheader+1
+            endif
+      
             strval=' '        ! clear string buffer for the value changed
 
 C What data type to change? (see comments at start of routine).
@@ -1306,12 +1614,21 @@ C Shift the start time of subsequent periods.
               write (36,*)'Editing request unknown.'
             endif
 
-C Add to urunvals
-            lstrval=lnblnk(strval)
-            lfnur=lstur+lstrval
-            if(lfnur.lt.1000)then
-              write(urunvals(lstur:lfnur),'(a)') strval(1:lstrval)
-              lstur=lfnur+2
+C Increment counter of data so as to check against itemunique array.
+            nbdatahits=nbdatahits+1
+C            write(36,*) 'UAE04 setting nbdatahits',nbdatahits
+
+C Add to urunvals if previously marked as unique.
+            if(itemunique(nbdatahits))then
+
+C << Test of writing out DIR to fort.37. Comment out next line if it does not work.
+              call relstr(DIR,strval,lna,ier)
+              lstrval=lnblnk(strval)
+              lfnur=lstur+lstrval
+              if(lfnur.lt.1000)then
+                write(urunvals(lstur:lfnur),'(a)') strval(1:lstrval)
+                lstur=lfnur+2
+              endif
             endif
           endif
         endif
@@ -1319,8 +1636,10 @@ C Add to urunvals
 
 C If this was the last uncertainty i.e. if IACT=NIACT header is done.
       if(IACT.eq.NIACT)then
-        write(36,*) 'set header buffer done in UAE04'
-        headerdone=.true.
+        if(IZONE.eq.NCOMP)then
+          write(36,*) 'set header buffer done in UAE04 ',itemsinheader
+          headerdone=.true.
+        endif
       endif
 
       RETURN
@@ -1402,6 +1721,8 @@ C UAZ01 edits zone air volume in memory or surface area.
 #include "geometry.h"
 C Common blocks UA2 UA3 UA4 within uncertainty.h
 #include "uncertainty.h"
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -1419,13 +1740,18 @@ C Common blocks UA2 UA3 UA4 within uncertainty.h
       COMMON/USETN/USETNAME(MNRS),uheader,urunvals
 
       logical headerdone
-      common/uhead/headerdone
+      logical itemunique  ! should we include in fort.37
+      logical isunique    ! for test against past
+      integer itemsinheader,nbpastitems,nbdatahits
+      character pastphrase*42
+      common/uhead/headerdone,itemunique(20),pastphrase(20),
+     &  itemsinheader,nbpastitems,nbdatahits
 
       integer lstur, lfnur
-      character strval*12,uhphrase*42
+      character strval*12,uhphrase*42,uhroot*42
       character urunvalsd*1000
 
-C Data stored in UA03 has the following meaning in this routine:
+C Data stored in UAZ01 has the following meaning in this routine:
 C IDMAT(?,1): 1=air, 2=surface area
 C IDMAT(?,2): 1=volume, ...
 C IDMAT(?,3): Change type (%; +/-; explicit).
@@ -1469,13 +1795,62 @@ C Make specific header string for each change (to match urunvals)
             write(uhphrase,'(4a,i2.2,a,i3.3,a)')LCNG(ICC)(1:lncng),
      &        ':',LLOC(ICL)(1:lnloc),':',IZ,':',IS,','
             luhphrase=lnblnk(uhphrase)
-            write(36,'(a)') uhphrase
-      
-            lfnuh=lstuh+luhphrase
-            if(lfnuh.lt.1000)then
-              write(uheader(lstuh:lfnuh),'(a)') uhphrase(1:luhphrase)
-              lstuh=lfnuh
+            write(36,'(a)') uhphrase(1:luhphrase)
+
+C Remember the root name of the phrase so that subsequent duplicates can
+C be ignored in the fort.37 file. If the initial item the increment counters
+C otherwise search pastphrase(s) for match.
+            uhroot=' '
+            write(uhroot,'(4a)')LCNG(ICC)(1:lncng),
+     &        ':',LLOC(ICL)(1:lnloc),','
+            luhroot=lnblnk(uhroot)
+            write(36,'(a)') uhroot(1:luhroot)
+            if(itemsinheader.eq.0)then
+              nbpastitems=nbpastitems+1
+              write(pastphrase(nbpastitems),'(a)') uhroot(1:luhroot)
+              itemunique(1)=.TRUE.
+              write(36,*) 'unique item',nbpastitems,uhroot(1:luhroot)
+            elseif(itemsinheader.eq.1)then
+              lnpast=lnblnk(pastphrase(1))
+              if(uhroot(1:luhroot).eq.pastphrase(1)(1:lnpast))then
+                itemunique(itemsinheader+1)=.FALSE.
+              else
+                itemunique(itemsinheader+1)=.TRUE.
+                nbpastitems=nbpastitems+1
+                write(pastphrase(nbpastitems),'(a)') uhroot(1:luhroot)
+                write(36,*) 'unique item',nbpastitems,uhroot(1:luhroot)
+              endif
+            else
+
+C If we ever get a match unset isunique.
+              isunique=.true.
+              do loop=1,nbpastitems
+                lnpast=lnblnk(pastphrase(loop))
+                if(uhroot(1:luhroot).eq.pastphrase(loop)(1:lnpast))then
+                  isunique=.false.
+                endif
+              enddo
+              if(isunique)then
+                itemunique(itemsinheader+1)=.TRUE.
+                nbpastitems=nbpastitems+1
+                write(pastphrase(nbpastitems),'(a)') uhroot(1:luhroot)
+                write(36,*)'unique item',nbpastitems,uhroot(1:luhroot)
+              endif
             endif
+
+C If unique then include it in the header.
+            write(36,*) 'itemunique array ',itemunique
+            if(itemunique(itemsinheader+1))then
+              lfnuh=lstuh+luhroot
+              if(lfnuh.lt.1000)then
+                write(uheader(lstuh:lfnuh),'(a)') uhroot(1:luhroot)
+                lstuh=lfnuh
+                if(.NOT.headerdone)itemsinheader=itemsinheader+1
+              endif
+            else
+              if(.NOT.headerdone)itemsinheader=itemsinheader+1
+            endif
+      
             strval=' '        ! clear string buffer for the value changed
             if (IDMAT(ICC,2).eq.1) then 
               write (36,*) 'Zone: ',IZ,' Volume: ',VOL(IZ)
@@ -1505,13 +1880,63 @@ C Make specific header string for each change (to match urunvals)
               write(uhphrase,'(4a,i2.2,a,i3.3,a)')LCNG(ICC)(1:lncng),
      &          ':',LLOC(ICL)(1:lnloc),':',IZ,':',IS,','
               luhphrase=lnblnk(uhphrase)
-              write(36,'(a)') uhphrase
-      
-              lfnuh=lstuh+luhphrase
-              if(lfnuh.lt.1000)then
-                write(uheader(lstuh:lfnuh),'(a)') uhphrase(1:luhphrase)
-                lstuh=lfnuh
+              write(36,'(a)') uhphrase(1:luhphrase)
+
+C Remember the root name of the phrase so that subsequent duplicates can
+C be ignored in the fort.37 file. If the initial item the increment counters
+C otherwise search pastphrase(s) for match.
+              uhroot=' '
+              write(uhroot,'(4a)')LCNG(ICC)(1:lncng),
+     &          ':',LLOC(ICL)(1:lnloc),','
+              luhroot=lnblnk(uhroot)
+              write(36,'(a)') uhroot(1:luhroot)
+              if(itemsinheader.eq.0)then
+                nbpastitems=nbpastitems+1
+                write(pastphrase(nbpastitems),'(a)') uhroot(1:luhroot)
+                itemunique(1)=.TRUE.
+                write(36,*) 'unique item',nbpastitems,uhroot(1:luhroot)
+              elseif(itemsinheader.eq.1)then
+                lnpast=lnblnk(pastphrase(1))
+                if(uhroot(1:luhroot).eq.pastphrase(1)(1:lnpast))then
+                  itemunique(itemsinheader+1)=.FALSE.
+                else
+                  itemunique(itemsinheader+1)=.TRUE.
+                  nbpastitems=nbpastitems+1
+                write(pastphrase(nbpastitems),'(a)') uhroot(1:luhroot)
+                write(36,*) 'unique item',nbpastitems,uhroot(1:luhroot)
+                endif
+              else
+
+C If we ever get a match unset isunique.
+                isunique=.true.
+                do loop=1,nbpastitems
+                  lnpast=lnblnk(pastphrase(loop))
+                  if(uhroot(1:luhroot).eq.
+     &               pastphrase(loop)(1:lnpast))then
+                    isunique=.false.
+                  endif
+                enddo
+                if(isunique)then
+                  itemunique(itemsinheader+1)=.TRUE.
+                  nbpastitems=nbpastitems+1
+                  write(pastphrase(nbpastitems),'(a)') uhroot(1:luhroot)
+                  write(36,*)'unique item',nbpastitems,uhroot(1:luhroot)
+                endif
               endif
+
+C If unique then include it in the header.
+              write(36,*) 'itemunique array ',itemunique
+              if(itemunique(itemsinheader+1))then
+                lfnuh=lstuh+luhroot
+                if(lfnuh.lt.1000)then
+                  write(uheader(lstuh:lfnuh),'(a)') uhroot(1:luhroot)
+                  lstuh=lfnuh
+                  if(.NOT.headerdone)itemsinheader=itemsinheader+1
+                endif
+              else
+                if(.NOT.headerdone)itemsinheader=itemsinheader+1
+              endif
+      
               strval=' '        ! clear string buffer for the value changed
               write (36,'(a,f9.4,2i3)') 'From Area: ',SNA(IZ,IS),IZ,IS
               if (IDMAT(ICC,2).eq.1) then 
@@ -1532,12 +1957,21 @@ C Update emissivity area weighting to reflect change in SNA
               emarea(IZ)=emarea(IZ)+sna(IZ,kk)*ei(IZ,kk)
             enddo
 
-C Add to urunvals
-            lstrval=lnblnk(strval)
-            lfnur=lstur+lstrval
-            if(lfnur.lt.1000)then
-              write(urunvals(lstur:lfnur),'(a)') strval(1:lstrval)
-              lstur=lfnur+2
+C Increment counter of data so as to check against itemunique array.
+            nbdatahits=nbdatahits+1
+C            write(36,*) 'UAZ01 setting nbdatahits',nbdatahits
+
+C Add to urunvals if previously marked as unique.
+            if(itemunique(nbdatahits))then
+
+C << Test of writing out DIR to fort.37. Comment out next line if it does not work.
+              call relstr(DIR,strval,lna,ier)
+              lstrval=lnblnk(strval)
+              lfnur=lstur+lstrval
+              if(lfnur.lt.1000)then
+                write(urunvals(lstur:lfnur),'(a)') strval(1:lstrval)
+                lstur=lfnur+2
+              endif
             endif
           endif
         endif
@@ -1545,8 +1979,10 @@ C Add to urunvals
 
 C If this was the last uncertainty i.e. if IACT=NIACT header is done.
       if(IACT.eq.NIACT)then
-        write(36,*) 'set header buffer done in UAZ01'
-        headerdone=.true.
+        if(IZONE.eq.NCOMP)then
+          write(36,*) 'set header buffer done in UAZ01 ',itemsinheader
+          headerdone=.true.
+        endif
       endif
 
       RETURN

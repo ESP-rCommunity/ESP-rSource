@@ -29,6 +29,9 @@ C             routine.
 C   DISPC     Generates a list of the unique materials used in
 C             the model.
 C   CALIB:    Top level facility for invoking sensitivity assessments.
+C EGETJSNTAGPHR parses a json tag and phrase from a STRING
+C EGETJSNTAGR parses a json tag and real number from the STRING
+C splitstratchar splits a string at a specific character returning 2 str.
 
 C ***************** UNCERTA *********************
       subroutine UNCERTA()
@@ -184,6 +187,7 @@ C Common blocks UA1 UA2 UA3 UA4 within uncertainty.h
 
 C muadel should be equivalent to max(MNCNG,MNIL,MNACT))
       parameter (muadel=50)
+      COMMON/UA32/IMISCD(MNCNG,2)
 
       character ta15(MNCNG)*24
       CHARACTER KEY*1,MLCITM(35)*31
@@ -310,6 +314,8 @@ C Present list of currently defined then remove chosen from it.
               IDMAT(ID,3)=IDMAT(ID+1,3)
               DATU(ID,1)=DATU(ID+1,1)
               DATU(ID,2)=DATU(ID+1,2)
+              IMISCD(ID,1)=IMISCD(ID+1,1)
+              IMISCD(ID,2)=IMISCD(ID+1,2)
  700        continue
             NICNG=NICNG-1
           endif
@@ -1087,7 +1093,7 @@ C      CHARACTER MLCITM(35)*40,KEY*1,NAM*72,TITL*72
 C If the common block MLC has not yet been filled then read in the
 C composite construction database.
       IF(.NOT.MLDBOK)THEN
-        CALL ERMLDB(ITRC,ITRU,IER)
+        CALL ERMLDB(0,ITRU,IER)
         IF(IER.eq.4)THEN
           CALL ERMLDB2(0,iuout,IER)
           if(IER.eq.0)then
@@ -1195,14 +1201,17 @@ C TDF related.
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
       COMMON/UA31/MATNAM(MNCNG,2)
+      COMMON/UA32/IMISCD(MNCNG,2)
 
       logical DOK,OK
       logical browse
       logical havefile,unixok,LIBXST
+      logical located
       LOGICAL concat,remote,anymeasured
       logical domlc,dogeo,doopr  ! tasks to do
-      character*72 tfile
+      character*72 tfile,OLDLCFGF
       character longtfile*144,longtfiledos*144
+      character loutstr*248
       character tmode*8,doit*248
       character outs*124,fs*1,aut*12,key*1
       character descra*7,descrb*7,descrst*10,descrfn*10
@@ -1222,16 +1231,20 @@ C TDF related.
       integer iobsdatzone(20)
       character simdatfilename(20)*72
       character simdatscript(20)*72
+      CHARACTER LTEMP*72,DTEMP*72
       integer loopo,loop
       integer nbitem,items
       dimension items(MCOM)
       dimension ivalsg(MCOM)
-      character APE*6,EXT*4
+      character APE*6,EXT*4,MODE*4
       character NNAME*144
-      logical docnn
+      character buffer*96,first*42,second*42,CH*1
+      character jtag*42,phrase*96
+      logical docnn,XST,QUIET
 
 C dd is character array for selecting simulation parameter sets.
       character dd(MSPS+2)*55,brw*11
+      character dq*1,lcurley*1,rcurley*1,lsquare*1,rsquare*1
       
       INTEGER :: itrc,itru,ic,istat,ii
       INTEGER :: ijdstart,ijdfinish,IRT,isauto
@@ -1255,6 +1268,11 @@ C Set folder separator (fs) to \ or / as required.
       endif
       aut=' silent'
       remote=.false.
+      dq = char(34)  ! double quote
+      lcurley = char(123)  ! {
+      rcurley = char(125)  ! }
+      lsquare = char(91)   ! [
+      rsquare = char(93)   ! ]
 
 C Calibration. First check if there is an uncertainty definition
 C in the model. If there is list its directives.
@@ -1449,7 +1467,7 @@ C      write(6,*) 'obs are which temporal index'
 C      write(6,*) nbiobservitem,':',iobservitem
       do loop=1,nbiobservitem
         itis=iobservitem(loop)
-        WRITE(outs,'(i2,a,i2,8a,i2)')loop,':',itis,DBTAG(itis),
+        WRITE(outs,'(i2,a,i2,7a,i2)')loop,':',itis,DBTAG(itis),
      &  DBTASK(itis),' ',DBZN(itis),' ',DBSN(itis),' zindx',
      &  iobsdatzone(itis)
         call edisp(iuout,outs)
@@ -1504,6 +1522,71 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht
         endif
       enddo  ! of loop
 
+C Check to see if there is already a model cfg file with
+C _cal in the name. If someone previously ran this facility
+C there offer to skip the creation of variant and go straight
+C to the run assessment phase.
+      write(APE,'(a)') '_cal'
+      EXT='.cfg'
+      CALL FNCNGR(LCFGF,APE,EXT,NNAME)
+      XST=.false.
+      INQUIRE (FILE=NNAME,EXIST=XST)
+  79  if(XST)then
+        call edisp(iuout,
+     &    'A model cfg file for calibration already exists.')
+        call edisp(iuout,NNAME)
+        CALL EASKABCD(' ','Options:',
+     &    're-generate model files','do calibration runs with it',
+     &    'read json file','cancel',ioption,nbhelp)
+        if(ioption.eq.1)then
+          continue
+        elseif(ioption.eq.2)then
+
+C Switch focus to the calibration variant.
+          call edisp(iuout,'Using calibration variant of the model')
+          write(OLDLCFGF,'(a)') LCFGF(1:lnblnk(LCFGF))
+          write(LCFGF,'(a)') NNAME(1:lnblnk(NNAME))
+          MODE='ALL '
+          IUF=IPRODB   ! assign second file unit to the events db unit
+          CALL ERSYS(LCFGF,IFCFG,IUF,MODE,itrc,IER)
+          if(ier.eq.0)then
+            goto 42
+          else
+            call usrmsg('Unable to scan calibration cfg file',
+     &        'reverting to last cfg file.','W')
+            write(LCFGF,'(a)') OLDLCFGF(1:lnblnk(OLDLCFGF))
+            MODE='ALL '
+            IUF=IPRODB   ! assign second file unit to the events db unit
+            CALL ERSYS(LCFGF,IFCFG,IUF,MODE,itrc,IER)
+            return
+          endif
+        elseif(ioption.eq.3)then
+
+C Switch focus to the calibration variant and jump to 43.
+          call edisp(iuout,'Using calibration variant of the model')
+          write(OLDLCFGF,'(a)') LCFGF(1:lnblnk(LCFGF))
+          write(LCFGF,'(a)') NNAME(1:lnblnk(NNAME))
+          MODE='ALL '
+          IUF=IPRODB   ! assign second file unit to the events db unit
+          CALL ERSYS(LCFGF,IFCFG,IUF,MODE,itrc,IER)
+          if(ier.eq.0)then
+            goto 43
+          else
+            call usrmsg('Unable to scan calibration cfg file',
+     &        'reverting to last cfg file.','W')
+            write(LCFGF,'(a)') OLDLCFGF(1:lnblnk(OLDLCFGF))
+            MODE='ALL '
+            IUF=IPRODB   ! assign second file unit to the events db unit
+            CALL ERSYS(LCFGF,IFCFG,IUF,MODE,itrc,IER)
+            return
+          endif
+        elseif(ioption.eq.4)then
+          return
+        endif
+      else
+
+      endif
+      
 C If materials and/or mlc call VER_MLC_MAT
       write(APE,'(a)') '_cal'
       if(domlc)then
@@ -1532,7 +1615,7 @@ C If operations then call VER_OPR.
 C Write out configuration file
 C But first change names of results libraries zones, flow, plant,
 C moisture, electrical cfd and IPV
-      if(domlc.or.dogeo)then
+      if(domlc.or.dogeo.or.doopr)then
         DO 123 ISPS=1,NSSET
           EXT='.res'
           CALL FNCNGR(SBLRES(ISPS),APE,EXT,NNAME)
@@ -1584,7 +1667,7 @@ C If a variant connections file also required set this up.
       endif
 
       call edisp(iuout,'A variant of the model has been created')
-      call edisp(iuout,
+  42  call edisp(iuout,
      &  'The next task is to undertake calibration runs...')
       DOK=.true.
       helptopic='calibration_overview'
@@ -1595,10 +1678,10 @@ C If a variant connections file also required set this up.
 
 C Check if there are simulation parameter sets, if so user should
 C select them before proceeding.
-      if(nsset.gt.0)then
+ 170  if(nsset.gt.0)then
 
 C Select an existing set or cancel.
- 170    do ii=1, nsset
+        do ii=1, nsset
           CALL EDAY(isstday(ii),isstmon(ii),ijdstart)
           call stdate(iyear,ijdstart,descra,descrst)
           CALL EDAY(isfnday(ii),isfnmon(ii),ijdfinish)
@@ -2069,7 +2152,767 @@ C and or forward slashes.
 C And repeat for the next observation.
       enddo
       
+      call edisp(iuout,
+     &  'If you have a json file defining the changes needed')
+  43  call edisp(iuout,
+     &  'to calibrate the model do this next...')
+      CALL EASKABC(
+     &  'After sending the csv files to calibro you will be given',
+     &  'a json file:','scan it','delay scanning','cancel',
+     &  isauto,nbhelp)
+      if(isauto.eq.1)then
+
+C Ask for file name. Parse the file and report directives.
+        LTEMP='  '; DTEMP='  '; nbhelp=1
+        call EASKS(LTEMP,'Json file name from Calibro?',
+     &    ' ',72,DTEMP,'Json file from calibro',IER,nbhelp)
+        INQUIRE (FILE=LTEMP,EXIST=LIBXST)
+        if (LIBXST) then
+          call edisp(iuout,'  ')
+          write(outs,'(A,A)')
+     &     ' Reading calibro json file: ',LTEMP
+          call edisp(iuout,outs)
+          IUNIT=IFIL
+          CALL EFOPSEQ(IUNIT,LTEMP,1,IER)
+          if(IER.LT.0)then
+            write(outs,'(3a)') 'JSON file ',LTEMP(1:lnblnk(LTEMP)),
+     &      ' could not be opened.'
+            goto 43
+          endif
+          write(currentfile,'(a)') LTEMP(1:lnblnk(LTEMP))
+
+C Read lines from the file looking for specific key phrases.
+  77      call lstripc(IUNIT,loutstr,99,ND,1,'json line 1',IER)
+          IF(IER.NE.0)goto 1001
+          k=0
+          call egetrm(loutstr,K,buffer,'W','tokens',IER)
+          if(buffer(1:1).eq.lcurley) goto 77
+          if(buffer(1:1).eq.rcurley) goto 77
+          if(buffer(1:1).eq.lsquare) goto 77
+          if(buffer(1:1).eq.rsquare) goto 77
+
+C Return the tag and phrase. If tag is PARAMETER then parse
+C PHRASE into two strings split at the dot. The 1st string
+C is the uncertainty and the 2nd is the scope/location.
+          k=0
+          call EGETJSNTAGPHR(buffer,K,JTAG,PHRASE,'-','json a',ier)
+          if(JTAG(1:7).eq.'calibro')then
+            call edisp(iuout,'Scanning a calibro file...')
+            goto 77
+          elseif(JTAG(1:11).eq.'calibration')then
+            goto 77
+          elseif(JTAG(1:11).eq.'theta.stats')then
+            goto 77
+          elseif(JTAG(1:9).eq.'PARAMETER')then
+
+C Keyword PARAMETER is followed by dot separated phrase. 
+C Use splitstratchar FIRST is the uncertainty and 
+C SECOND is the scope/location.
+            CH='.'; FIRST='  '; SECOND='  '
+            call splitstratchar(PHRASE,CH,FIRST,SECOND,ier)
+            write(6,*) 'what is ',first(1:lnblnk(first))
+            write(6,*) 'where scope is ',second(1:lnblnk(second))
+
+C Loop through existing uncertainty defs to find matching LCNG
+            itis=0
+            located=.false.
+            lnfirst=lnblnk(first)
+            do loop=1,NICNG
+              loop2=IACTD(loop,1)
+              lnlcng=lnblnk(LCNG(loop2))
+              write(6,*) '... ',loop,loop2,' ',
+     &          LCNG(loop2)(1:lnlcng),' vs ',first(1:lnfirst)
+              if(first(1:lnfirst).eq.LCNG(loop2)(1:lnlcng))then
+                located=.true.
+                itis=loop2
+                call LISTUAL(1,itis)  ! remind us what it is
+                goto 78  ! now get attribute value
+              endif
+            enddo
+
+C Now get the new attribute value.
+  78        call lstripc(IUNIT,loutstr,99,ND,1,'json EST',IER)
+
+C Now look for the new attribute to apply to the uncertainty.
+C If the uncertainty type is MLC layer thickness ...
+            k=0
+            call egetrm(loutstr,K,buffer,'W','tokens',IER)
+            k=0
+            call EGETJSNTAGR(buffer,K,FIRST,rv,0.01,1.0,'-','ESTM',ier)
+            write(6,*) 'jtag is ',FIRST(1:lnblnk(FIRST))
+            write(6,*) 'real attribute is ',rv
+            goto 1001  ! process
+          else
+            goto 77  ! read another line
+          endif
+
+C Identify what to do.
+ 1001     CALL ERPFREE(IUNIT,ios)
+          if (IDTYPU(itis).eq.1) then  ! if materials focus
+            call edisp(iuout,'thermophysical change not yet done.')
+            continue
+          elseif(IDTYPU(itis).eq.2) then  ! if MLC focus
+
+            write(outs,'(3a,i2)')' Composite construction: ',
+     &        MATNAM(itis,1)(1:lnblnk(MATNAM(itis,1))),
+     &        ' layer ',IMISCD(itis,1)
+            call edisp(iuout,outs)
+
+C Apply changes to MLC database.
+            call UMLCAE02(itis,rv)
+    
+C Next step is to update each of the zone construction files.
+            call edisp(iuout,'Updating zone construction files...')
+            QUIET=.TRUE.
+            do IZ=1,NCOMP
+              CALL EDCON(ITRC,ITRU,IZ,QUIET,IER)
+            enddo
+            QUIET=.FALSE.
+            call edisp(iuout,'Updating zone construction files...done.')
+
+          elseif(IDTYPU(itis).eq.3) then  ! if weather focus
+            call edisp(iuout,'weather change not yet done.')
+            continue
+          elseif(IDTYPU(itis).eq.4) then  ! if operation focus
+            call edisp(iuout,'zone operations change not yet done.')
+            continue
+          elseif(IDTYPU(itis).eq.5) then  ! if hc coefficients
+            call edisp(iuout,'zone hc change not yet done.')
+            continue
+          elseif(IDTYPU(itis).eq.101) then  ! if geometry focus
+            call edisp(iuout,'zone surf area change not yet done.')
+            continue
+          endif
+        endif
+
+C Resetablish the original model and represent user choices.
+
+C Re-establish the base case model and return.
+        call edisp(iuout,'Reverting to original model...')
+        write(LCFGF,'(a)') OLDLCFGF(1:lnblnk(OLDLCFGF))
+        MODE='ALL '
+        IUF=IPRODB   ! assign second file unit to the events db unit
+        CALL ERSYS(LCFGF,IFCFG,IUF,MODE,itrc,IER)
+        if(ier.eq.0)then
+          return
+        else
+          call usrmsg('Unable to revert to base case cfg file',
+     &      'Exiting prj.','P')
+
+C Clear allocatable arrays
+          CALL DeallocateAllArrays
+          CALL EPAGEND
+          STOP
+        endif
+        XST=.true.
+        call edisp(iuout,'Reverting to original model...done.')
+        goto 79  ! offer user choice
+
+      elseif(isauto.eq.2)then
+C << TODO >>
+
+      elseif(isauto.eq.3)then
+
+C Re-establish the base case model and return.
+        write(LCFGF,'(a)') OLDLCFGF(1:lnblnk(OLDLCFGF))
+        MODE='ALL '
+        IUF=IPRODB   ! assign second file unit to the events db unit
+        CALL ERSYS(LCFGF,IFCFG,IUF,MODE,itrc,IER)
+        if(ier.eq.0)then
+          return
+        else
+          call usrmsg('Unable to revert to base case cfg file',
+     &      'Exiting prj.','P')
+
+C Clear allocatable arrays
+          CALL DeallocateAllArrays
+          CALL EPAGEND
+          STOP
+        endif
+      endif
       return
       end
 
+
+C ***************** EGETJSNTAGPHR
+C EGETJSNTAGPHR gets first json tag after position K from the STRING of
+C characters and the phrase after :. Strips the leading " and the
+C trailing ". Returns k at the trailing phase " Spaces within tag are ok.
+C Provides a warning message if ACT='W', a failure message if ACT='F' and does
+C no message if ACT='-'. Expects a json line similar to:
+C   "calibration": "cellular",
+      SUBROUTINE EGETJSNTAGPHR(STRING,K,JTAG,PHRASE,ACT,MSG,ier)
+#include "espriou.h"
+      common/OUTIN/IUOUT,IUIN
+
+      CHARACTER*(*) JTAG,PHRASE, STRING, MSG
+      CHARACTER ACT*1,A*1,loutstr*248,outs*124
+      character dq*1,lcurley*1,lsquare*1,simicol*1
+      logical unixok
+
+C LS is th maximum length of STRING, L the current position,
+C LW the maximum length of PHRASE.
+      dq = char(34)  ! double quote
+      lcurley = char(123)  ! {
+      lsquare = char(91)   ! [
+      simicol = char(58)   ! :
+      ier=0
+      PHRASE=' '; JTAG=' '
+      LS=LEN(STRING)
+      LW=LEN(PHRASE)
+      LJ=LEN(JTAG)
+      L=0; M=0
+
+C Start by skipping blanks tabs before the JTAG.
+   10 K=K+1
+      IF(K.GT.LS) GOTO 999
+      A=STRING(K:K)
+      IF(A.EQ.' '.OR.A.EQ.','.OR.(ICHAR(A).EQ.9)) GOTO 10
+      IF(A.EQ.lcurley) GOTO 10  ! continue past {
+      IF(A.EQ.lsquare) GOTO 10  ! continue past [
+      if(A.EQ.dq) then
+        K=K+1            ! increment to next character
+        A=STRING(K:K)    ! instanciate A
+        goto 20          ! proceed to copy
+      elseif(A.EQ.dq) then
+        continue
+      endif
+
+C Copy JTAG from STRING, character by character until ": is found.
+   20 L=L+1
+      IF(L.GT.LW) return
+      if(A.EQ.dq) goto 21          ! now get the phrase
+      JTAG(L:L)=A     ! copy character into the phrase
+      K=K+1
+      IF(K.GT.LS) GOTO 999
+      A=STRING(K:K)
+      IF(ICHAR(A).EQ.9.or.A.eq.',') GO TO 100
+      if(A.EQ.dq) goto 21          ! now get the phrase
+      GOTO 20
+
+C Skip blanks tabs etc before PHRASE.
+   21 K=K+1
+      IF(K.GT.LS) GOTO 999
+      A=STRING(K:K)
+      IF(A.EQ.' '.OR.A.EQ.','.OR.(ICHAR(A).EQ.9)) GOTO 21
+      if(A.EQ.simicol) then
+        K=K+1            ! increment to next character after :
+        A=STRING(K:K)    ! instanciate A
+        goto 21          ! try next character
+      endif
+      if(A.EQ.dq) then
+        K=K+1            ! increment to next character
+        A=STRING(K:K)    ! instanciate A
+        goto 30          ! now copy into PHRASE
+      endif
+
+C Copy PHRASE from STRING, character by character until " is found.
+   30 M=M+1
+      PHRASE(M:M)=A      ! copy character into the phrase
+      K=K+1
+      IF(K.GT.LS) GOTO 999
+      A=STRING(K:K)
+      IF(ICHAR(A).EQ.9.or.A.eq.',') GO TO 100
+      if(A.EQ.dq) goto 100     ! got final "
+      goto 30          ! get another character
+
+  100 write(6,*) 'jtag is ',jtag(1:lnblnk(jtag))
+      write(6,*) 'phrase is ',phrase(1:lnblnk(phrase))
+      RETURN
+
+  999 if(ACT.EQ.'-')then
+        RETURN
+      elseif(ACT.EQ.'W')then
+        ier=1
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
+     &      'WARNING: in ',currentfile(1:LN),
+     &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
+        else
+          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
+     &      'WARNING: Past end of line for ',
+     &      MSG(1:LNM),' (phrase) in...'
+        endif
+      elseif(ACT.EQ.'F')then
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
+     &      'FAILURE: in ',currentfile(1:LN),
+     &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
+        else
+          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
+     &      'FAILURE: Past end of line for ',
+     &      MSG(1:LNM),' (phrase) in...'
+        endif
+      endif
+      CALL EDISP248(iuout,loutstr,100)
+      if(lnblnk(STRING).gt.123)then
+        CALL EDISP248(iuout,STRING,100)
+      else
+        CALL EDISP(iuout,STRING)
+      endif
+      GOTO 100
+
+   1  call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      LNM=max(1,lnblnk(STRING))
+      if(IOS.eq.2)then
+        write(outs,*)'EGETJSNTAGPHR: permission error writing warning: '
+        call edisp(iuout,outs)
+        call edisp(iuout,STRING(1:LNM))
+      else
+        write(outs,*)'EGETJSNTAGPHR: error writing warning: '
+        call edisp(iuout,outs)
+        call edisp(iuout,STRING(1:LNM))
+      endif
+      return
+
+      END
  
+
+C ***************** EGETJSNTAGR
+C EGETJSNTAGR gets first json tag after position K from the STRING of
+C characters and the real number after :. Strips the leading " and the
+C trailing ". Returns k at the trailing phase " Spaces within tag are ok.
+C Provides a warning message if ACT='W', a failure message if ACT='F' and does
+C no message if ACT='-'. Expects a json line similar to:
+C   "ESTIMATE": 0.0345,
+      SUBROUTINE EGETJSNTAGR(STRING,K,JTAG,RV,RMN,RMX,RACT,MSG,ier)
+#include "espriou.h"
+      common/OUTIN/IUOUT,IUIN
+
+      CHARACTER*(*) JTAG,STRING, MSG
+      CHARACTER RACT*1,A*1,loutstr*248,outs*124
+      CHARACTER STR1*16,STR2*16
+      character dq*1,lcurley*1,lsquare*1,simicol*1
+      character PHRASE*42
+      logical unixok
+
+C LS is th maximum length of STRING, L the current position,
+C LW the maximum length of PHRASE.
+      dq = char(34)  ! double quote
+      lcurley = char(123)  ! {
+      lsquare = char(91)   ! [
+      simicol = char(58)   ! :
+      ier=0
+      PHRASE='  '; JTAG='  '
+      LS=LEN(STRING)
+      ils=lnblnk(STRING)
+      LW=LEN(PHRASE)
+      LJ=LEN(JTAG)
+      L=0; M=0
+
+C Start by skipping blanks tabs before the JTAG.
+   10 K=K+1
+      IF(K.GT.LS) GOTO 999
+      A=STRING(K:K)
+      IF(A.EQ.' '.OR.A.EQ.','.OR.(ICHAR(A).EQ.9)) GOTO 10
+      IF(A.EQ.lcurley) GOTO 10  ! continue past {
+      IF(A.EQ.lsquare) GOTO 10  ! continue past [
+      if(A.EQ.dq) then
+        K=K+1            ! increment to next character
+        A=STRING(K:K)    ! instanciate A
+        goto 20          ! proceed to copy
+      elseif(A.EQ.dq) then
+        continue
+      endif
+
+C Copy JTAG from STRING, character by character until ": is found.
+   20 L=L+1
+      IF(L.GT.LW) return
+      if(A.EQ.dq) goto 21          ! now get the phrase
+      JTAG(L:L)=A     ! copy character into the phrase
+      K=K+1
+      IF(K.GT.LS) GOTO 999
+      A=STRING(K:K)
+      IF(ICHAR(A).EQ.9.or.A.eq.',') GO TO 100
+      if(A.EQ.dq) goto 21          ! now get the phrase
+      GOTO 20
+
+C Skip blanks tabs etc before PHRASE. We do not expect any "
+   21 K=K+1
+      IF(K.GT.LS) GOTO 999
+      A=STRING(K:K)
+      IF(A.EQ.' '.OR.A.EQ.','.OR.(ICHAR(A).EQ.9)) GOTO 21
+      if(A.EQ.simicol) then
+        K=K+1            ! increment to next character after :
+        A=STRING(K:K)    ! instanciate A
+        goto 21          ! try next character
+      endif
+
+C Copy PHRASE from STRING, character by character until a ',' is found.
+   30 M=M+1
+      PHRASE(M:M)=A      ! copy character into the phrase
+      K=K+1
+      IF(K.GT.LS) GOTO 999
+      A=STRING(K:K)
+      IF(ICHAR(A).EQ.9.or.A.eq.',') GO TO 100
+      goto 30          ! get another character
+
+  100 write(6,*) 'jtag is ',jtag(1:lnblnk(jtag))
+      write(6,*) 'phrase is ',phrase(1:lnblnk(phrase))
+
+C Convert phrase into a real and do range checks.
+      read(phrase,*,ERR=1002)rv
+
+C If range checking disabled, jump out of routine.
+      IF(RACT.EQ.'-')RETURN
+
+C Make up reporting string.
+      CALL REL16STR(RV,STR1,IW1,IER)
+
+C Check RV against minimum and respond based on RACT.
+      IF(RV.LT.RMN)THEN
+        CALL REL16STR(RMN,STR2,IW2,IER)
+        IF(RACT.EQ.'W')THEN
+          call edisp(iuout,' ')
+          LN=max(1,lnblnk(currentfile))
+          LNM=max(1,lnblnk(MSG))
+          if(currentfile(1:2).ne.'  ')then
+            WRITE(LOUTSTR,'(4a)',IOSTAT=IOS,ERR=1)
+     &        'WARNING: in ',currentfile(1:LN),': ',STRING(1:ils)
+          else
+            write(LOUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' WARNING in: ',
+     &        STRING(1:ils)
+          endif
+          call edisp248(iuout,LOUTSTR,100)
+          write(LOUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
+     &      ' value (',STR1(1:IW1),') < normal minimum ',STR2(1:IW2),'!'
+          call edisp248(iuout,LOUTSTR,100)
+        ELSEIF(RACT.EQ.'F')THEN
+          call edisp(iuout,' ')
+          LN=max(1,lnblnk(currentfile))
+          LNM=max(1,lnblnk(MSG))
+          if(currentfile(1:2).ne.'  ')then
+            WRITE(LOUTSTR,'(4a)',IOSTAT=IOS,ERR=1)
+     &        'FAILURE: in ',currentfile(1:LN),': ',STRING(1:ils)
+          else
+            write(LOUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' FAILURE in: ',
+     &      STRING(1:ils)
+          endif
+          call edisp248(iuout,LOUTSTR,100)
+          write(LOUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
+     &       ' value (',STR1(1:IW1),') < allowable minumum ',
+     &       STR2(1:IW2),'!'
+          call edisp248(iuout,loutstr,100)
+          IER=1
+          RETURN
+        ENDIF
+      ELSEIF(RV.GT.RMX)THEN
+        CALL REL16STR(RMX,STR2,IW2,IER)
+        IF(RACT.EQ.'W')THEN
+          call edisp(iuout,' ')
+          LN=max(1,lnblnk(currentfile))
+          LNM=max(1,lnblnk(MSG))
+          if(currentfile(1:2).ne.'  ')then
+            WRITE(LOUTSTR,'(4a)',IOSTAT=IOS,ERR=1)
+     &        'WARNING: in ',currentfile(1:LN),': ',STRING(1:ils)
+          else
+            write(LOUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' WARNING in: ',
+     &      STRING(1:ils)
+          endif
+          call edisp248(iuout,LOUTSTR,100)
+          write(LOUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
+     &       ' value (',STR1(1:IW1),') > normal  maximum ',
+     &       STR2(1:IW2),'!'
+          call edisp248(iuout,LOUTSTR,100)
+        ELSEIF(RACT.EQ.'F')THEN
+          call edisp(iuout,' ')
+          LN=max(1,lnblnk(currentfile))
+          LNM=max(1,lnblnk(MSG))
+          if(currentfile(1:2).ne.'  ')then
+            WRITE(LOUTSTR,'(4a)',IOSTAT=IOS,ERR=1)
+     &        'FAILURE: in ',currentfile(1:LN),': ',STRING(1:ils)
+          else
+            write(LOUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' FAILURE in: ',
+     &      STRING(1:ils)
+          endif
+          call edisp248(iuout,LOUTSTR,100)
+          write(LOUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
+     &       ' value (',STR1(1:IW1),') > allowable maximum ',
+     &       STR2(1:IW2),'!'
+          call edisp248(iuout,loutstr,100)
+          IER=1
+          RETURN
+        ENDIF
+      ENDIF
+
+      RETURN
+
+  999 if(RACT.EQ.'-')then
+        RETURN
+      elseif(RACT.EQ.'W')then
+        ier=1
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
+     &      'WARNING: in ',currentfile(1:LN),
+     &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
+        else
+          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
+     &      'WARNING: Past end of line for ',
+     &      MSG(1:LNM),' (phrase) in...'
+        endif
+      elseif(RACT.EQ.'F')then
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
+     &      'FAILURE: in ',currentfile(1:LN),
+     &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
+        else
+          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
+     &      'FAILURE: Past end of line for ',
+     &      MSG(1:LNM),' (phrase) in...'
+        endif
+      endif
+      CALL EDISP248(iuout,loutstr,100)
+      if(lnblnk(STRING).gt.123)then
+        CALL EDISP248(iuout,STRING,100)
+      else
+        CALL EDISP(iuout,STRING)
+      endif
+      GOTO 100
+
+   1  call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      LNM=max(1,lnblnk(STRING))
+      if(IOS.eq.2)then
+        write(outs,*)'EGETJSNTAGR: permission error writing warning: '
+        call edisp(iuout,outs)
+        call edisp(iuout,STRING(1:LNM))
+      else
+        write(outs,*)'EGETJSNTAGR: error writing warning: '
+        call edisp(iuout,outs)
+        call edisp(iuout,STRING(1:LNM))
+      endif
+      return
+
+ 1002 if(currentfile(1:2).ne.'  ')then
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        WRITE(LOUTSTR,'(6a)',IOSTAT=IOS,ERR=1) 'Failed in ',
+     &    currentfile(1:LN),': conversion of ',
+     &    MSG(1:LNM),' value in ',phrase
+      else
+        LNM=max(1,lnblnk(MSG))
+        WRITE(LOUTSTR,1003,IOSTAT=IOS,ERR=1)MSG(1:LNM),phrase
+ 1003   FORMAT(' Failed: conversion of ',A,' value in ',A)
+      endif
+      CALL EDISP248(iuout,LOUTSTR,100)
+      IER=2
+      GOTO 100
+
+      END
+
+C ***************** splitstratchar
+C splitstratchar splits a string at a specific character returning 2 str.
+C example if char is a dot it splits spandrel_ins_thick.all_insul_fram
+C into spandrel_ins_thick and all_insul_fram
+      SUBROUTINE splitstratchar(STRING,CH,FIRST,SECOND,ier)
+C#include "espriou.h"
+      common/OUTIN/IUOUT,IUIN
+
+      CHARACTER*(*) STRING,FIRST,SECOND
+      CHARACTER CH*1
+      CHARACTER A*1,loutstr*248,outs*124
+      logical unixok
+      integer K
+
+C LST is th maximum length of STRING, L the current position,
+C LF,LS  the maximum length of FIRST & SECOND.
+      ier=0
+      FIRST='  '; SECOND='  '
+      LST=LEN(STRING)
+      LNLST=lnblnk(STRING)
+      LF=LEN(FIRST)
+      LS=LEN(SECOND)
+      L=0; M=0; K=0
+
+C Start by skipping blanks tabs before FIRST.
+   10 K=K+1
+      IF(K.GT.LST) GOTO 999   ! past defined length
+      IF(K.GT.LNLST) GOTO 100 ! past actual length
+      A=STRING(K:K)
+      IF(A.EQ.' '.OR.A.EQ.','.OR.(ICHAR(A).EQ.9)) GOTO 10
+      A=STRING(K:K)    ! instanciate A
+      goto 20          ! proceed to copy
+
+C Copy FIRST from STRING, character by character until CH is found.
+   20 L=L+1
+      IF(L.GT.LST) return
+      IF(L.GT.LF) goto 21
+      FIRST(L:L)=A     ! copy character into the 1st phrase
+      K=K+1
+      IF(K.GT.LST) GOTO 999   ! past defined length
+      IF(K.GT.LNLST) GOTO 100 ! past actual length
+      A=STRING(K:K)
+      IF(ICHAR(A).EQ.9.or.A.eq.',') GO TO 100
+      if(A.EQ.CH) goto 21          ! now get the 2nd phrase
+      GOTO 20
+
+C Skip blanks tabs etc before SECOND.
+   21 K=K+1
+      IF(K.GT.LST) GOTO 999
+      IF(K.GT.LNLST) GOTO 100 ! past actual length
+      A=STRING(K:K)
+      IF(A.EQ.' '.OR.A.EQ.','.OR.(ICHAR(A).EQ.9)) GOTO 21
+      goto 30          ! now copy into SECOND
+
+C Copy PHRASE from STRING, character by character until " is found.
+   30 M=M+1
+      if(M.gt.LS) goto 100 ! past size of 2nd string
+      SECOND(M:M)=A      ! copy character into the 2nd phrase
+      K=K+1
+      IF(K.GT.LST) GOTO 100
+      IF(K.GT.LNLST) GOTO 100 ! past actual length
+      A=STRING(K:K)
+      IF(ICHAR(A).EQ.9.or.A.eq.',') GO TO 100
+      goto 30          ! get another character
+
+  100 write(6,*) 'first is ',first(1:lnblnk(first))
+      write(6,*) 'second is ',second(1:lnblnk(second))
+      RETURN
+
+  999 CALL EDISP248(iuout,loutstr,100)
+      if(lnblnk(STRING).gt.123)then
+        CALL EDISP248(iuout,STRING,100)
+      else
+        CALL EDISP(iuout,STRING)
+      endif
+      GOTO 100
+
+      END
+ 
+C Variants of code in sensit.F and sentimn.F to adapt model files.
+C   UMLCAE02   Edits data: thickness in MLC's.
+C        call UAE02(IZONE,IACT,DIR)  ! MLC layer thickness
+
+C ******************** UMLCAE02 ********************
+C UMLCAE02 edits layer thicknesses in MLC db.
+C Naming convention:
+C IACT: index of uncertainty what and where
+C DIR: change directive...
+
+      SUBROUTINE UMLCAE02(IACT,DIR)
+#include "building.h"
+C #include "geometry.h"
+C Common blocks UA2 UA3 UA4 within uncertainty.h
+#include "uncertainty.h"
+#include "esprdbfile.h"
+#include "material.h"
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: iuout,iuin
+
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+
+      COMMON/UA31/MATNAM(MNCNG,2)
+      COMMON/UA32/IMISCD(MNCNG,2)
+
+      CHARACTER MATNAM*32
+
+      character strval*12,uhphrase*42
+
+C Data stored in UA02 has the following meaning in this routine:
+C IDMAT(?,1): The material in the chosen MLC, if this is 0 then 
+C             a new MLC reference will be in MATNAM(?,2).
+C IDMAT(?,2): Unused.
+C IDMAT(?,3): Change type (%; +/-; explicit).
+C Define variables for current location and change.
+      ICL=IACTD(IACT,2)
+      ICC=IACTD(IACT,1)
+
+      write (6,'(a)') '   '
+      write (6,'(a)') 'Entering subroutine UMLCAE02'
+
+C If the common block MLC has not yet been filled then read in the
+C composite construction database.
+      IF(.NOT.MLDBOK)THEN
+        CALL ERMLDB(0,iuout,IER)
+        IF(IER.eq.4)THEN
+          CALL ERMLDB2(0,iuout,IER)
+          if(IER.eq.0)then
+            MLDBOK=.TRUE.
+          endif
+        ELSEIF(IER.EQ.1.or.IER.eq.2.or.IER.eq.3)THEN
+          CALL USRMSG(' ',' Unable to display selections ','W')
+          IER=IER+1
+          RETURN
+        ELSE
+          MLDBOK=.TRUE.
+        ENDIF
+      ENDIF
+      if(IER.ne.0)then
+        call usrmsg('Problem scanning MLC db.','Returning.','W')
+        return
+      endif
+
+C This construction has uncertainties defined, but which MLC database 
+C entry is it? Find matching MLC.
+      call matchmlcdesc(MATNAM(ICC,1),imlc)
+      if(imlc.eq.0)then
+        call usrmsg('Problem finding MLC in db.','Returning.','W')
+        return
+      endif
+
+C The layer of the MLC is found in IMISCD(ICC,1)
+      IE=IMISCD(ICC,1)
+
+C Make specific header string for each change (to match urunvals)
+      lncng=lnblnk(LCNG(ICC))
+      lnloc=lnblnk(LLOC(ICL))
+      uhphrase=' '
+      write(uhphrase,'(3a)')LCNG(ICC)(1:lncng),':',LLOC(ICL)(1:lnloc)
+      luhphrase=lnblnk(uhphrase)
+      write(6,'(2a)') 'Implementing ',uhphrase(1:luhphrase)
+      write (6,'(a,f9.4)') 'DTHK: ',DTHK(imlc,ie)
+
+C The new value is...
+      strval=' '        ! clear string buffer for the value changed
+
+C Either edit layer thickness.
+      if (IDMAT(ICC,3).eq.1) then
+
+C Percentage change. Ensure it does not go below 1mm. 
+        write(6,'(a,3f9.4)') 'DATU DIR % factor: ',DATU(ICC,1),
+     &    DIR,(((DATU(ICC,1)/100.)*DIR)+1.0)
+        DTHK(imlc,ie)=DTHK(imlc,ie)*(((DATU(ICC,1)/100.)*DIR)+1.0)
+        if(DTHK(imlc,ie).lt.0.001)DTHK(imlc,ie)=0.001
+        call relstr(DTHK(imlc,ie),strval,lna,ier)
+      elseif (IDMAT(ICC,3).eq.2) then
+
+C Absolute change. Ensure it does not go below 1mm. 
+        write (6,'(a,3f9.4)') 'DATU DIR abs factor: ',
+     &    DATU(ICC,1),DIR,(DATU(ICC,1)*DIR)
+        DTHK(imlc,ie)=DTHK(imlc,ie)+(DATU(ICC,1)*DIR)
+        if(DTHK(imlc,ie).lt.0.001)DTHK(imlc,ie)=0.001
+        call relstr(DTHK(imlc,ie),strval,lna,ier)
+      elseif (IDMAT(ICC,3).eq.3) then
+
+C Explicit change. Ensure it does not go below 1mm.
+        write (6,'(a,3f9.4)') 'DATU DIR expl factor: ',
+     &    DATU(ICC,1),DIR,(DATU(ICC,1)-DTHK(imlc,ie))*DIR
+        if (DIR.gt.0.) then
+          DTHK(imlc,ie)=DTHK(imlc,ie)+(DATU(ICC,1)-DTHK(imlc,ie))*DIR
+        else
+          DTHK(imlc,ie)=DTHK(imlc,ie)-(DATU(ICC,2)-DTHK(imlc,ie))*DIR
+          if(DTHK(imlc,ie).lt.0.001)DTHK(imlc,ie)=0.001
+        endif
+        call relstr(DTHK(imlc,ie),strval,lna,ier)
+      endif
+      write (6,'(a)') 'to:'
+      write (6,'(a,f9.4)') 'DTHK: ',DTHK(imlc,ie)
+
+C Now update the MLC database.
+      call edisp(iuout,'Updating the MLC database...')
+      CALL EMKAMLD2(iuout,IER) ! write it out
+      call edisp(iuout,'Updating the MLC database...done.')
+      RETURN
+      END
+
+

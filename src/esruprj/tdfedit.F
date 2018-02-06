@@ -59,7 +59,7 @@ C Logical flags for file openings.
       LOGICAL OPTDF,OK,dok
       logical FOUND,XST,unixok,silent
 
-      DIMENSION ITEM(30),ikeybk(30),itemsel(MIT),itemval(MIT)
+      DIMENSION ITEM(31),ikeybk(31),itemsel(MIT),itemval(MIT)
       CHARACTER tdaide*72
       character afil*96,tfile*96,TTAG*12
       CHARACTER LTMPFL*72
@@ -290,6 +290,7 @@ C Set the viewing period to the same as the TDF file period.
      &        '  ___entries (',NITDF,')______________________________'
       ITEM(7)='   entry name  |description '
       MHEAD=7
+      MCTL=7
       M=MHEAD
 
 C Loop through the TDF items until the page to be displayed. ikeybk
@@ -439,11 +440,13 @@ C Define the number of timestep per hour.
 C No action pending pull up details of item for editing. Save current
 C menu status. Also read in the generic arrays which match this instance
 C and recover it`s layout variables via GENDAT.
-        CALL EPMENSV
         ifoc=ikeybk(ino)
-        CALL GENDAT(TTYPE(IFOC),IFOC,FOUND,IER)
-        CALL EDTITEM(ITRC,IFOC,IER)
-        CALL EPMENRC
+        if(ifoc.gt.0)then
+          CALL EPMENSV
+          CALL GENDAT(TTYPE(IFOC),IFOC,FOUND,IER)
+          CALL EDTITEM(ITRC,IFOC,IER)
+          CALL EPMENRC
+        endif
         msgl2=' Problem detected...'
         IF(IER.EQ.1)CALL USRMSG(' ',msgl2,'-')
         INO=-4
@@ -573,7 +576,9 @@ C            write(6,*) 'compacting from ',nuwpr,' to ',itnwpr
       ELSEIF(INO.EQ.MITEM-3)THEN
 
 C Preferences menu for temporal data.
+        CALL EPMENSV
         CALL SETUPTDF(IER)
+        CALL EPMENRC
       ELSEIF(INO.EQ.MITEM-4)THEN
 
 C Set the trace verbosity within the TDF user interface.
@@ -590,8 +595,10 @@ C lower items up.  NOTE: some translation of IFOC may be required.
 
 C No instances created yet so do first one.
           IFOC=1
+          CALL EPMENSV
           CALL ITINSRT(ITRC,IFOC,IER)
-          INO=-4
+          CALL EPMENRC
+         INO=-4
           GOTO 2
         ENDIF
 
@@ -609,7 +616,9 @@ C Manage list. Begin by creating selection list.
      &   'add entry','delete entry','copy entry',IRT,nbhelp)
         if(IRT.eq.1)then
           IFOC=NITDF+1
+          CALL EPMENSV
           CALL ITINSRT(ITRC,IFOC,IER)
+          CALL EPMENRC
           IF(IER.EQ.1) then
             msgl2=' Problem detected while adding item.'
             CALL USRMSG(' ',msgl2,'-')

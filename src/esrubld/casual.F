@@ -1102,8 +1102,8 @@ C </SPR>
               QLATN(2)=QLATN(2)+CGLAT(ICOMP,IDAY,IGN,IPER)*
      &                 CGCTL(ICOMP,2,IGN)
               if(IGN.gt.1)then 
-	        znElecCasGain(ICOMP)=QCASC(2)+QCASR(2)
-	      endif
+                znElecCasGain(ICOMP)=QCASC(2)+QCASR(2)
+              endif
             else
 
 C Instead of using fracf, add-on shcon,shrad,shlat for SHOCC.
@@ -2973,11 +2973,11 @@ C and uses ICALENDER if required. If matching gain(s) set ACTIVE=1.0.
       ENDIF
       IGC=NCGTC(IZONE,IDTY)
       IF(NCAS(IDTY).GE.1)THEN
-     	DO 30 ICNN=1,NCAS(IDTY)
-     	  IF(ICGT(IDTY,ICNN).EQ.IGC)THEN
-     	    IF(IH.GT.ICGS(IDTY,ICNN).AND.IH.LE.ICGF(IDTY,ICNN))ACTIVE=1.
-     	  ENDIF
-   30	CONTINUE
+        DO 30 ICNN=1,NCAS(IDTY)
+          IF(ICGT(IDTY,ICNN).EQ.IGC)THEN
+            IF(IH.GT.ICGS(IDTY,ICNN).AND.IH.LE.ICGF(IDTY,ICNN))ACTIVE=1.
+          ENDIF
+   30   CONTINUE
       ENDIF
       RETURN
       END

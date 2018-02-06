@@ -169,6 +169,13 @@ C   it continues reading from an ASCII file (unit IAF) reading as
 C   many lines as necessary to recover the data
 C  EGETRM: Returns the remainder (RSTR with no leading blanks) from
 C          a text string (TSTR) after position k.
+C EGETXMLTAGE: gets first XML tag from a STRING of characters.
+C EGETWXML: gets first WORD from a STRING of characters.
+C EGETWIXML: gets a word from a STRING and converts to an integer.
+C EGETWRXML: gets a word from a STRING and converts to a real.
+C EGETEQDQXML: gets tag & quoted PHRASE from a STRING.
+C EGETRMXML: gets remainder of a string until a '<'.
+
 
 C  ERPFREE: Is used to close any file.
 C  EFDELET: Delete the current file opened under IUN and return ISTAT.
@@ -6357,6 +6364,725 @@ C of RSTR or TSTR.
       return
 
       END
+
+C Supporting subroutines for scanning XML data files.
+C  EGETXMLTAG:  Finds first XML tag after pos k in a string within an XML file.
+C  EGETWXML:    Finds first word after pos k in a string within an XML file.
+C  EGETWIXML:   As EGETWI for an integer within an XML file.
+C  EGETWRXML:   As EGETWR for a real within an XML file.
+C  EGETEQDQXML: Recovers tag="x" returning both tag and x.
+C  EGETRMXML:   The remainder of a text an XML tag within an XML file.
+
+C ***************** EGETXMLTAG
+C EGETXMLTAGE gets first XML tag after position K from the STRING of
+C characters. Strips the leading < and the trailing >. Returns k at
+C the trailing > Spaces within tag are ok. Provides a warning
+C message if ACT='W', a failure message if ACT='F' and does
+C no message if ACT='-'.
+      SUBROUTINE EGETXMLTAG(STRING,K,PHRASE,ACT,MSG,ier)
+#include "espriou.h"
+      common/OUTIN/IUOUT,IUIN
+
+      CHARACTER*(*) PHRASE, STRING, MSG
+      CHARACTER ACT*1,A*1,loutstr*248,outs*124
+      logical unixok
+
+C LS is th maximum length of STRING, L the current position,
+C LW the maximum length of PHRASE.
+      ier=0
+      PHRASE=' '
+      LS=LEN(STRING)
+      LW=LEN(PHRASE)
+      L=0
+
+C Start by skipping blanks tabs before the PHRASE.
+   10 K=K+1
+      IF(K.GT.LS) GOTO 999
+      A=STRING(K:K)
+      IF(A.EQ.' '.OR.A.EQ.','.OR.(ICHAR(A).EQ.9)) GOTO 10
+
+      if(A.EQ.'<') then
+        K=K+1            ! increment to next character
+        A=STRING(K:K)    ! instanciate A
+        goto 20          ! proceed to copy
+      elseif(A.EQ.'>') then
+        continue
+      endif
+
+C Copy PHRASE from STRING, character by character until tab or a
+C comma or > is found.
+   20 L=L+1
+      IF(L.GT.LW) return
+      if(A.EQ.'>') then
+        return          ! do not save > in phrase
+      endif
+      PHRASE(L:L)=A     ! copy character into the phrase
+      K=K+1
+      IF(K.GT.LS) GOTO 999
+      A=STRING(K:K)
+      IF(ICHAR(A).EQ.9.or.A.eq.',') GO TO 100
+      if(A.EQ.'>') then
+        continue
+      endif
+      GOTO 20
+
+  100 RETURN
+
+  999 if(ACT.EQ.'-')then
+        RETURN
+      elseif(ACT.EQ.'W')then
+        ier=1
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
+     &      'WARNING: in ',currentfile(1:LN),
+     &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
+        else
+          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
+     &      'WARNING: Past end of line for ',
+     &      MSG(1:LNM),' (phrase) in...'
+        endif
+      elseif(ACT.EQ.'F')then
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
+     &      'FAILURE: in ',currentfile(1:LN),
+     &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
+        else
+          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
+     &      'FAILURE: Past end of line for ',
+     &      MSG(1:LNM),' (phrase) in...'
+        endif
+      endif
+      CALL EDISP248(iuout,loutstr,100)
+      if(lnblnk(STRING).gt.123)then
+        CALL EDISP248(iuout,STRING,100)
+      else
+        CALL EDISP(iuout,STRING)
+      endif
+      GOTO 100
+
+   1  call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      LNM=max(1,lnblnk(STRING))
+      if(IOS.eq.2)then
+        write(outs,*) 'EGETXMLTAG: permission error writing warning: '
+        call edisp(iuout,outs)
+        call edisp(iuout,STRING(1:LNM))
+      else
+        write(outs,*) 'EGETXMLTAG: error writing warning: '
+        call edisp(iuout,outs)
+        call edisp(iuout,STRING(1:LNM))
+      endif
+      return
+
+      END
+
+
+C ***************** EGETWXML
+C EGETWXML gets first WORD after position K from the STRING of
+C characters. Words are separated by blanks, commas, |, <, or tab: WORD,WORD,WORD
+C or WORD WORD WORD or WORD, WORD, WORD  WORD> are all valid.  Provides a warning
+C message if ACT='W', a failure message if ACT='F' and does
+C no message if ACT='-'.  Modified after:
+C G.N. Walton, US Nat. Institute of Standards and Technology
+C     LS     - maximum length of STRING
+C     L      - current position in WORD
+C     LW     - maximum length of WORD
+
+      SUBROUTINE EGETWXML(STRING,K,WORD,ACT,MSG,IER)
+#include "espriou.h"
+C espriou.h provides currentfile.
+      common/OUTIN/IUOUT,IUIN
+
+      CHARACTER*(*) WORD, STRING, MSG
+      CHARACTER ACT*1,A*1,loutstr*248,outs*124
+      logical unixok
+
+      WORD=' '
+      LS=LEN(STRING)
+      LW=LEN(WORD)
+      L=0
+
+C Start by skipping blanks and tabs before the word.
+   10 K=K+1
+      IF(K.GT.LS) GOTO 999
+      A=STRING(K:K)
+      IF(A.EQ.' '.OR.A.EQ.','.OR.(ICHAR(A).EQ.9).OR.
+     &   (ICHAR(A).eq.124)) GOTO 10
+
+C Copy WORD from STRING, character by character until separator found.
+C A < is considered a separator as it represents start of a subsequent
+C XML tag.
+   20 L=L+1
+      IF(L.GT.LW) GOTO 100
+      WORD(L:L)=A
+      K=K+1
+      IF(K.GT.LS) GOTO 999
+      A=STRING(K:K)
+      IF(A.EQ.' '.OR.A.EQ.','.OR.(ICHAR(A).EQ.9).OR.
+     &   (ICHAR(A).eq.124).OR.A.EQ.'<') GO TO 100
+      GOTO 20
+
+  100 RETURN
+
+  999 ier=1
+      if(ACT.EQ.'-')then
+        RETURN
+      elseif(ACT.EQ.'W')then
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
+     &      'WARNING: in ',currentfile(1:LN),
+     &      ' past end of line for ',MSG(1:LNM),' in...'
+        else
+          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
+     &      'WARNING: Past end of line for ',
+     &      MSG(1:LNM),' (word) in...'
+        endif
+      elseif(ACT.EQ.'F')then
+        ier=1
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
+     &      'FAILURE: in ',currentfile(1:LN),
+     &      ' past end of line for ',MSG(1:LNM),' in...'
+        else
+          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
+     &      'FAILURE: Past end of line for ',
+     &      MSG(1:LNM),' (word) in...'
+        endif
+      endif
+      CALL EDISP248(iuout,loutstr,100)
+      if(lnblnk(STRING).gt.123)then
+        CALL EDISP248(iuout,STRING,100)
+      else
+        CALL EDISP(iuout,STRING)
+      endif
+      GOTO 100
+
+   1  call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      LNM=max(1,lnblnk(STRING))
+      if(IOS.eq.2)then
+        write(outs,*) 'EGETWXML: permission error writing warning re: '
+        call edisp(iuout,outs)
+        call edisp(iuout,STRING(1:LNM))
+      else
+        write(outs,*) 'EGETWXML: error writing warning re: '
+        call edisp(iuout,outs)
+        call edisp(iuout,STRING(1:LNM))
+      endif
+      return
+
+      END
+
+
+C ***************** EGETWIXML
+C EGETWIXML gets first word after position K from the STRING of
+C characters and converts it into an integer IV, tests it against
+C the minimum MN and the maximum MX and provides a warning
+C message if ACT='W', a failure message if ACT='F' and does
+C no range checking if ACT='-'. Words may be separated by blanks,
+C commas, <, or tab: WORD,WORD,WORD or WORD WORD WORD or WORD, WORD, WORD
+C are all valid.
+      SUBROUTINE EGETWIXML(STRING,K,IV,MN,MX,ACT,MSG,IER)
+#include "espriou.h"
+      common/OUTIN/IUOUT,IUIN
+
+      CHARACTER*(*) STRING, MSG
+      CHARACTER ACT*1,STR1*10,STR2*10,WORD*20,loutstr*248,outs*124
+      logical unixok
+
+C Pick up line and lenght for error messages.
+      ils=max(1,lnblnk(STRING))
+      if(ils.gt.105)ils=105
+
+      IER=0
+      WORD=' '
+
+C Use alternative call that also checks for <.
+      CALL EGETWXML(STRING,K,WORD,'-','integer',IER)
+      IF(IER.NE.0)RETURN
+      read(WORD,*,IOSTAT=IOS,ERR=1002)iv
+
+C If range checking disabled, jump out of routine.
+      IF(ACT.EQ.'-')RETURN
+
+C Make up reporting string.
+      CALL INTSTR(IV,STR1,IW1,IER)
+
+C Check IV against minimum and respond based on ACT.
+      IF(IV.LT.MN)THEN
+        CALL INTSTR(MN,STR2,IW2,IER)
+        IF(ACT.EQ.'W')THEN
+          call edisp(iuout,' ')
+          LN=max(1,lnblnk(currentfile))
+          LNM=max(1,lnblnk(MSG))
+          if(currentfile(1:2).ne.'  ')then
+            WRITE(loutstr,'(4a)',IOSTAT=IOS,ERR=1)
+     &        'WARNING: in ',currentfile(1:LN),': ',STRING(1:ils)
+          else
+            write(loutstr,'(a,a)',IOSTAT=IOS,ERR=1)' WARNING in: ',
+     &      STRING(1:ils)
+          endif
+          CALL EDISP248(iuout,loutstr,100)
+          write(loutstr,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
+     &      ' value (',STR1(1:IW1),') < normal minimum ',STR2(1:IW2),'!'
+          CALL EDISP248(iuout,loutstr,100)
+        ELSEIF(ACT.EQ.'F')THEN
+          call edisp(iuout,' ')
+          LN=max(1,lnblnk(currentfile))
+          LNM=max(1,lnblnk(MSG))
+          if(currentfile(1:2).ne.'  ')then
+            WRITE(loutstr,'(4a)',IOSTAT=IOS,ERR=1)
+     &        'FAILURE: in ',currentfile(1:LN),': ',STRING(1:ils)
+          else
+            write(loutstr,'(a,a)',IOSTAT=IOS,ERR=1)' FAILURE in: ',
+     &        STRING(1:ils)
+          endif
+          CALL EDISP248(iuout,loutstr,100)
+          write(loutstr,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
+     &       ' value (',STR1(1:IW1),') < allowable minimum ',
+     &       STR2(1:IW2),'!'
+          CALL EDISP248(iuout,loutstr,100)
+          IER=1
+          RETURN
+        ENDIF
+      ELSEIF(IV.GT.MX)THEN
+        CALL INTSTR(MX,STR2,IW2,IER)
+        IF(ACT.EQ.'W')THEN
+          call edisp(iuout,' ')
+          LN=max(1,lnblnk(currentfile))
+          LNM=max(1,lnblnk(MSG))
+          if(currentfile(1:2).ne.'  ')then
+            WRITE(loutstr,'(4a)',IOSTAT=IOS,ERR=1)
+     &        'WARNING: in ',currentfile(1:LN),': ',STRING(1:ils)
+          else
+            write(loutstr,'(a,a)',IOSTAT=IOS,ERR=1)' WARNING in: ',
+     &        STRING(1:ils)
+          endif
+          CALL EDISP248(iuout,loutstr,100)
+          write(loutstr,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
+     &      ' value (',STR1(1:IW1),') > normal maximum ',STR2(1:IW2),'!'
+          CALL EDISP248(iuout,loutstr,100)
+        ELSEIF(ACT.EQ.'F')THEN
+          call edisp(iuout,' ')
+          LN=max(1,lnblnk(currentfile))
+          LNM=max(1,lnblnk(MSG))
+          if(currentfile(1:2).ne.'  ')then
+            WRITE(loutstr,'(4a)',IOSTAT=IOS,ERR=1)
+     &        'FAILURE: in ',currentfile(1:LN),': ',STRING(1:ils)
+          else
+            write(loutstr,'(a,a)',IOSTAT=IOS,ERR=1)' FAILURE in: ',
+     &        STRING(1:ils)
+          endif
+          CALL EDISP248(iuout,loutstr,100)
+          write(loutstr,'(7a)',IOSTAT=IOS,ERR=1) ' the ',MSG(1:LNM),
+     &       ' value (',STR1(1:IW1),') > allowable maximum ',
+     &       STR2(1:IW2),'!'
+          CALL EDISP248(iuout,loutstr,100)
+          IER=1
+          RETURN
+        ENDIF
+      ENDIF
+
+  100 RETURN
+
+ 1002 if(currentfile(1:2).ne.'  ')then
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        WRITE(loutstr,'(6a)',IOSTAT=IOS,ERR=1) 'Failed in ',
+     &    currentfile(1:LN),': conversion of ',
+     &    MSG(1:LNM),' value in ',WORD
+      else
+        LNM=max(1,lnblnk(MSG))
+        WRITE(loutstr,1003,IOSTAT=IOS,ERR=1)MSG(1:LNM),WORD
+ 1003   FORMAT(' Failed: conversion of ',A,' value in ',A)
+      endif
+      CALL EDISP248(iuout,loutstr,100)
+      IER=2
+      GOTO 100
+
+   1  call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      LNM=max(1,lnblnk(STRING))
+      if(IOS.eq.2)then
+        write(outs,*) 'EGETWIXML: permission error writing warning re: '
+        call edisp(iuout,outs)
+        call edisp(iuout,STRING(1:LNM))
+      else
+        write(outs,*) 'EGETWIXML: error writing warning re: '
+        call edisp(iuout,outs)
+        call edisp(iuout,STRING(1:LNM))
+      endif
+      return
+
+      END
+
+
+C **************** EGETWRXML
+C EGETWRXML gets first word after position K from the STRING of
+C characters and converts it into a real number RV, tests it against
+C the minimum RMN and the maximum RMX and provides a warning
+C message if RACT='W', a failure message if RACT='F' and does
+C no range checking if RACT='-'. Words may be separated by blanks,
+C commas, <, or tab: WORD,WORD,WORD or WORD WORD WORD or WORD, WORD, WORD
+C are all valid.
+      SUBROUTINE EGETWRXML(STRING,K,RV,RMN,RMX,RACT,MSG,IER)
+#include "espriou.h"
+      common/OUTIN/IUOUT,IUIN
+
+C LOUTSTR is for messages to the user and should be long enough
+c to prevent truncation of messge contents.
+      CHARACTER*(*) STRING, MSG
+      CHARACTER RACT*1,STR1*16,STR2*16,WORD*20,LOUTSTR*248,outs*124
+      logical unixok
+
+C Pick up line and length for error messages.
+      ils=max(1,lnblnk(STRING))
+      if(ils.gt.230)ils=230
+
+      IER=0
+      WORD=' '
+
+C Use alternative call that also checks for <.
+      CALL EGETWXML(STRING,K,WORD,'-','real',IER)
+      IF(IER.NE.0) goto 1002
+      read(WORD,*,ERR=1002)rv
+
+C If range checking disabled, jump out of routine.
+      IF(RACT.EQ.'-')RETURN
+
+C Make up reporting string.
+      CALL REL16STR(RV,STR1,IW1,IER)
+
+C Check RV against minimum and respond based on RACT.
+      IF(RV.LT.RMN)THEN
+        CALL REL16STR(RMN,STR2,IW2,IER)
+        IF(RACT.EQ.'W')THEN
+          call edisp(iuout,' ')
+          LN=max(1,lnblnk(currentfile))
+          LNM=max(1,lnblnk(MSG))
+          if(currentfile(1:2).ne.'  ')then
+            WRITE(LOUTSTR,'(4a)',IOSTAT=IOS,ERR=1)
+     &        'WARNING: in ',currentfile(1:LN),': ',STRING(1:ils)
+          else
+            write(LOUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' WARNING in: ',
+     &        STRING(1:ils)
+          endif
+          call edisp248(iuout,LOUTSTR,100)
+          write(LOUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
+     &      ' value (',STR1(1:IW1),') < normal minimum ',STR2(1:IW2),'!'
+          call edisp248(iuout,LOUTSTR,100)
+        ELSEIF(RACT.EQ.'F')THEN
+          call edisp(iuout,' ')
+          LN=max(1,lnblnk(currentfile))
+          LNM=max(1,lnblnk(MSG))
+          if(currentfile(1:2).ne.'  ')then
+            WRITE(LOUTSTR,'(4a)',IOSTAT=IOS,ERR=1)
+     &        'FAILURE: in ',currentfile(1:LN),': ',STRING(1:ils)
+          else
+            write(LOUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' FAILURE in: ',
+     &      STRING(1:ils)
+          endif
+          call edisp248(iuout,LOUTSTR,100)
+          write(LOUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
+     &       ' value (',STR1(1:IW1),') < allowable minumum ',
+     &       STR2(1:IW2),'!'
+          call edisp248(iuout,loutstr,100)
+          IER=1
+          RETURN
+        ENDIF
+      ELSEIF(RV.GT.RMX)THEN
+        CALL REL16STR(RMX,STR2,IW2,IER)
+        IF(RACT.EQ.'W')THEN
+          call edisp(iuout,' ')
+          LN=max(1,lnblnk(currentfile))
+          LNM=max(1,lnblnk(MSG))
+          if(currentfile(1:2).ne.'  ')then
+            WRITE(LOUTSTR,'(4a)',IOSTAT=IOS,ERR=1)
+     &        'WARNING: in ',currentfile(1:LN),': ',STRING(1:ils)
+          else
+            write(LOUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' WARNING in: ',
+     &      STRING(1:ils)
+          endif
+          call edisp248(iuout,LOUTSTR,100)
+          write(LOUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
+     &       ' value (',STR1(1:IW1),') > normal  maximum ',
+     &       STR2(1:IW2),'!'
+          call edisp248(iuout,LOUTSTR,100)
+        ELSEIF(RACT.EQ.'F')THEN
+          call edisp(iuout,' ')
+          LN=max(1,lnblnk(currentfile))
+          LNM=max(1,lnblnk(MSG))
+          if(currentfile(1:2).ne.'  ')then
+            WRITE(LOUTSTR,'(4a)',IOSTAT=IOS,ERR=1)
+     &        'FAILURE: in ',currentfile(1:LN),': ',STRING(1:ils)
+          else
+            write(LOUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' FAILURE in: ',
+     &      STRING(1:ils)
+          endif
+          call edisp248(iuout,LOUTSTR,100)
+          write(LOUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
+     &       ' value (',STR1(1:IW1),') > allowable maximum ',
+     &       STR2(1:IW2),'!'
+          call edisp248(iuout,loutstr,100)
+          IER=1
+          RETURN
+        ENDIF
+      ENDIF
+
+  100 RETURN
+
+ 1002 if(currentfile(1:2).ne.'  ')then
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        WRITE(LOUTSTR,'(6a)',IOSTAT=IOS,ERR=1) 'Failed in ',
+     &    currentfile(1:LN),': conversion of ',
+     &    MSG(1:LNM),' value in ',WORD
+      else
+        LNM=max(1,lnblnk(MSG))
+        WRITE(LOUTSTR,1003,IOSTAT=IOS,ERR=1)MSG(1:LNM),WORD
+ 1003   FORMAT(' Failed: conversion of ',A,' value in ',A)
+      endif
+      CALL EDISP248(iuout,LOUTSTR,100)
+      IER=2
+      GOTO 100
+
+   1  call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      LNM=max(1,lnblnk(STRING))
+      if(IOS.eq.2)then
+        write(outs,*) 'EGETWRXML: permission error writing warning re: '
+        call edisp(iuout,outs)
+        call edisp(iuout,STRING(1:LNM))
+      else
+        write(outs,*) 'EGETWRXML: error writing warning re: '
+        call edisp(iuout,outs)
+        call edisp(iuout,STRING(1:LNM))
+      endif
+      return
+
+      END
+
+C ***************** EGETEQDQXML
+C EGETEQDQXML gets tag & first quoted PHRASE after position K 
+C from the STRING of characters. Phrases can contain spaces
+C and commas but not tabs.
+C Provides a warning message if ACT='W', a failure message if ACT='F' and
+C no message if ACT='-'.  The string returned has the quotes removed.
+C Note it uses an internal string buffer which assumes that the
+C phrase is less than 248 characters long.
+C It is dealing with this pattern IDType="WMO"
+      SUBROUTINE EGETEQDQXML(STRING,K,TAG,PHRASE,ACT,MSG,ier)
+#include "espriou.h"
+      common/OUTIN/IUOUT,IUIN
+
+      CHARACTER*(*) TAG, PHRASE, STRING, MSG
+      CHARACTER ACT*1,A*1,loutstr*124,outs*124
+      character dq*1,sqleft*1,sqright*1
+      logical unixok,isphrase
+
+      dq = char(34)  ! double quote
+      sqleft = char(96)  ! single quote left
+      sqright = char(39)  ! single quote right
+
+C LS is th maximum length of STRING, L the current position,
+C LW the maximum length of PHRASE.
+      ier=0
+      TAG=' '; PHRASE=' '
+      LS=LEN(STRING)
+      LW=LEN(PHRASE)
+      LT=LEN(TAG)
+      L=0; isphrase=.false.
+
+C Start by skipping blanks, commas and tabs before the PHRASE.
+   10 K=K+1
+      IF(K.GT.LS) GOTO 999
+      A=STRING(K:K)
+      IF(A.EQ.' '.OR.A.EQ.','.OR.(ICHAR(A).EQ.9)) GOTO 10
+
+C Copy TAG or PHRASE from STRING, character by character until 
+C a double quote or single quote is found (a quoted phrase 
+C could include a comma, but not a tab)
+   20 L=L+1
+      IF(L.GE.LW) GOTO 100   ! at end of available phrase chars
+      if(isphrase)then
+        if(A.eq.dq.or.A.eq.sqleft.or.A.eq.sqright)then
+          goto 100  ! we have terminating quote
+        else
+          PHRASE(L:L)=A
+        endif
+      else
+        TAG(L:L)=A
+      endif
+      K=K+1
+      IF(K.GT.LS) GOTO 999
+      A=STRING(K:K)
+      IF(ICHAR(A).EQ.9) GOTO 100
+      if(A.eq."=")then
+        isphrase=.true.  ! mark end of tag and advance
+        K=K+1            ! increment K counter
+        A=STRING(K:K)    ! instanciate A should be a quote
+        L=0              ! reset L counter
+        if(A.eq.dq.or.A.eq.sqleft.or.A.eq.sqright)then
+          K=K+1          ! increment K counter
+          A=STRING(K:K)  ! instanciate A again
+          goto 20        ! loop back and deal with it
+        endif
+      endif
+      if(A.eq.dq.or.A.eq.sqleft.or.A.eq.sqright)then
+
+C Found terminating quote so process.
+        GOTO 100
+      endif
+      GOTO 20
+
+  100 return
+
+  999 if(ACT.EQ.'-')then
+        RETURN
+      elseif(ACT.EQ.'W')then
+        ier=1
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
+     &      'WARNING: in ',currentfile(1:LN),
+     &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
+        else
+          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
+     &      'WARNING: Past end of line for ',
+     &      MSG(1:LNM),' (phrase) in...'
+        endif
+      elseif(ACT.EQ.'F')then
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
+     &      'FAILURE: in ',currentfile(1:LN),
+     &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
+        else
+          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
+     &      'FAILURE: Past end of line for ',
+     &      MSG(1:LNM),' (phrase) in...'
+        endif
+      endif
+      CALL EDISP248(iuout,loutstr,100)
+      if(lnblnk(STRING).gt.123)then
+        CALL EDISP248(iuout,STRING,100)
+      else
+        CALL EDISP(iuout,STRING)
+      endif
+      GOTO 100
+
+   1  call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      LNM=max(1,lnblnk(STRING))
+      if(IOS.eq.2)then
+        write(outs,*) 
+     &    'EGETEQDQXML: permission error writing warning re: '
+        call edisp(iuout,outs)
+        call edisp(iuout,STRING(1:LNM))
+      else
+        write(outs,*) 'EGETEQDQXML: error writing warning re: '
+        call edisp(iuout,outs)
+        call edisp(iuout,STRING(1:LNM))
+      endif
+      return
+
+      END
+
+
+C ***************** EGETRMXML
+C EGETRMXML returns the remainder of a text string TSTR after position k
+C in RSTR until a '<' is noticed.
+      SUBROUTINE EGETRMXML(TSTR,K,RSTR,ACT,MSG,IER)
+#include "espriou.h"
+      common/OUTIN/IUOUT,IUIN
+
+      CHARACTER*(*) TSTR,RSTR,MSG
+      character ACT*1,A*1,loutstr*248
+      logical unixok
+
+C LS is th maximum length of STRING, L the current position,
+C LR the maximum length of RSTR.
+      RSTR=' '
+      LS=LEN(TSTR)
+      LR=LEN(RSTR)
+      L=0
+
+C Start by skipping blanks and tabs before TSTR.
+   10 K=K+1
+      IF(K.GT.LS) GOTO 999
+      A=TSTR(K:K)
+      IF(A.EQ.' '.OR.A.EQ.','.OR.(ICHAR(A).EQ.9)) GOTO 10
+
+C Copy RSTR from TSTR character by character until either end
+C of RSTR or TSTR or a '<' found..
+   20 L=L+1
+      IF(L.GT.LR)goto 100
+      IF(A.EQ.'<') GOTO 100  ! start of next XML tag
+      RSTR(L:L)=A
+      K=K+1
+      IF(K.GT.LS) goto 100
+      A=TSTR(K:K)
+      GOTO 20
+
+  100 RETURN
+
+  999 if(ACT.EQ.'-')then
+        RETURN
+      elseif(ACT.EQ.'W')then
+        ier=1
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1) 'WARNING in ',
+     &      currentfile(1:LN),': no chars found for ',
+     &      MSG(1:LNM),' string in:'
+        else
+          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
+     &     'WARNING: no characters found for ',MSG(1:LNM),' string in:'
+        endif
+      elseif(ACT.EQ.'F')then
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1) 'FAILURE in ',
+     &      currentfile(1:LN),': no chars found for ',
+     &      MSG(1:LNM),' string in:'
+        else
+          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
+     &      'FAILURE: no characters found for ',MSG(1:LNM),' string in:'
+        endif
+      endif
+      CALL EDISP248(iuout,loutstr,100)
+      if(lnblnk(TSTR).gt.123)then
+        CALL EDISP248(iuout,TSTR,100)
+      else
+        CALL EDISP(iuout,TSTR)
+      endif
+      GOTO 100
+
+   1  call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      if(IOS.eq.2)then
+        write(loutstr,*) 'EGETRM: permission error writing warning ',
+     &    RSTR
+      else
+        write(loutstr,*) 'EGETRM: error writing warning re: ',RSTR
+      endif
+      call edisp248(iuout,loutstr,100)
+      return
+
+      END
+      
 
 C ************* isadll
 C Find if module is being used as a dll (silent running).

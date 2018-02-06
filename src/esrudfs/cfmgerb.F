@@ -660,7 +660,7 @@ C Read head_1: MCEL1D,ICFDSV,(IEQSV(J),J=1,5+NCTM)
           CALL EGETWI(LOUTSTR,K,IEQSV(J),0,0,'-','IEQSV',IER)
         ENDDO
       elseif(WORD(1:7).eq.'head_2:')then
-	
+
 C Read head_2: (abs(ICFAUX(I)),I=1,NCOMP)
         DO I=1,NCOMP   ! where do we get NCOMP?
           CALL EGETWI(LOUTSTR,K,ICFAUX(I),0,0,'-','ICFAUX',IER)

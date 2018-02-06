@@ -366,6 +366,7 @@ C  IMRTS   - identifies which surfaces are used in the MRT calculation
      &NPGAP(MCOM,MS,MGP)
 
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
+      COMMON/FVALA/TFA(MCOM),QFA(MCOM)
 
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,
      &QFUT,TFUT
@@ -393,9 +394,19 @@ C Fix sensor type for now.
       IMRTT(IC)=2
       ITSC(IC)=1
 
+C Index of control function
+      IFUNC=ABS(IBCLAW(ICF,IDTYP,IPER))
+
 C Summate product of internal surface temperatures (opaque
 C and transparent), and corresponding areas.
-      TAI=TFUT
+C Set air temperature to be used in calculations
+      IF(IFUNC.EQ.10)THEN
+        TAI=TFA(ICMP)
+      ELSE
+        TAI=TFUT
+      ENDIF
+C      TAI=TFUT
+
       NC=NCONST(ICMP)
       TMRT=TAI
       SUM=0.
@@ -479,10 +490,10 @@ C is `sensed variable function`, then re-set IBSN(ICF,?)
 
       IF(IBSN(ICF,1).EQ.0.OR.IBSN(ICF,1).EQ.IICOMP)THEN
 
-C Match flow controller type. If PID use TFA otherwise use TNP.
-C << check for ON/OFF OPTIMUM START etc. >>
+C Match flow controller type. If PID or ON/OFF use TFA otherwise use TNP
+C << check for OPTIMUM START etc. >>
         ICL=IBCLAW(ICF,IDTYP,IPER)
-        if(ICL.eq.5)then
+        if((ICL.eq.5).OR.(ICL.eq.10))then
          TCTL=TFA(IICOMP)
         else
          TCTL=TNP
@@ -844,6 +855,9 @@ C the present time row surface and air point temperatures.
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/BTIME/BTIMEP,BTIMEF
 
+      COMMON/BCL10M/LASTH(MCOM),LASTC(MCOM)
+      CHARACTER*3 LASTH,LASTC
+
       character outs*124
       logical atrace  ! is trace active
       logical close
@@ -982,8 +996,20 @@ C  assuming present time-row surface temperatures.
     7 CALL MZMIXT(IICOMP,TMRT,TMIX)
       ITYPE=IBCLAW(ICF,IDTYP,IPER)
       if(itype.eq.31)goto 6  ! jump back for trace
-      GOTO(8,9,11,12),ITYPE
-      GOTO 99
+C      GOTO(8,9,11,12),ITYPE
+      if(ITYPE.eq.1)then
+            GOTO 8
+        elseif (ITYPE.eq.2) then
+            GOTO 9
+        elseif (ITYPE.eq.3) then
+            GOTO 11
+        elseif (ITYPE.eq.4) then
+            GOTO 12
+        elseif (ITYPE.eq.10) then
+            GOTO 10
+        else
+            GOTO 99
+      endif
 
 C Thermostatic control period: is temperature within
 C range.
@@ -1210,6 +1236,120 @@ C Temperature too high: extract fixed cooling.
       B2=BB2
       B3=BB3
       GOTO 18
+
+C=======================================================================
+C ON/OFF flux control
+C=======================================================================
+
+C This is a generic implementation of a two-position controller
+C with hysteresis and dead-zone control.
+C This type of control is commonly used in thermostats in 
+C home central heating systems, water-supply systems, 
+C convective heaters, and many, many more.
+
+C The fundamental characteristic of the two-position controllers is that
+C the output exists at only one of two discrete levels at any one time.
+C However, it is possible that the set-point ranges can be configured
+C so that the heating and cooling ranges may overlap. In which case the
+C heating and cooling may be on at the same time.
+C The heat injected/subtracted to/from the zone will be the net effect 
+C of the heating and cooling heat transfer.
+
+c QHM = fixed heating capacity (W)
+c QCM = fixed cooling capacity (W)
+c HSPON = heating ON set point temp. (deg.C)
+c HSPOFF = heating OFF set point temp. (deg.C)
+c CSPON = cooling ON set point temp. (deg.C)
+c CSPOFF = cooling OFF set point temp. (deg.C)
+
+   10 TU=BMISCD(ICF,IDTYP,IPER,7)
+      TL=BMISCD(ICF,IDTYP,IPER,5)
+      QH=BMISCD(ICF,IDTYP,IPER,2)
+      QC=-BMISCD(ICF,IDTYP,IPER,3)
+
+      QHM = BMISCD(ICF,IDTYP,IPER,2)
+      QCM = -BMISCD(ICF,IDTYP,IPER,3)
+      HSPON = BMISCD(ICF,IDTYP,IPER,4)
+      HSPOFF = BMISCD(ICF,IDTYP,IPER,5)
+      CSPON = BMISCD(ICF,IDTYP,IPER,6)
+      CSPOFF = BMISCD(ICF,IDTYP,IPER,7)
+
+C----------------------------------
+C SET HEATING MODE
+C----------------------------------
+C The heating set-point is the arithmetic average of the heating on 
+C set-point and the heating off set-point.
+      HSET = (HSPON+HSPOFF)/2.
+C The heating hysteresis bandwidth is the difference between the
+C on and off set-points
+      HBAND = (HSPOFF-HSPON)/2.
+C The heating error is the difference between the set-point and the
+C temperature measurement from the zone sensor
+      HERR = HSET - TMIX
+C Set heating mode to ON when the error is greater than or equal to
+C the heating hysteresis bandwidth
+C Set the heating mode to OFF when the error is less than or equal to
+C the negative bandwidth
+      IF (HERR.GE.HBAND)THEN
+          IPLT=1
+          LASTH(IICOMP)='ON '
+      ELSE IF (HERR.LE.-HBAND)THEN
+          LASTH(IICOMP)='OFF'
+      END IF
+
+C----------------------------------
+C SET COOLING MODE
+C----------------------------------
+C The cooling set-point is the arithmetic average of the cooling on 
+C set-point and the cooling off set-point.
+      CSET = (CSPON+CSPOFF)/2.
+C The cooling hysteresis bandwidth is the difference between the
+C on and off set-points
+      CBAND = (CSPOFF-CSPON)/2.
+C The cooling error is the difference between the set-point and the
+C temperature measurement from the zone sensor
+      CERR = CSET - TMIX
+C Set cooling mode to ON when the error is less than or equal to
+C the cooling hysteresis bandwidth
+C Set the cooling mode to OFF when the error is greater than or equal to
+C the negative bandwidth
+      IF (CERR.LE.CBAND)THEN
+          IPLT=2
+          LASTC(IICOMP)='ON '
+      ELSE IF (CERR.GE.-CBAND)THEN
+          LASTC(IICOMP)='OFF'
+      END IF
+
+C Switch on heater:
+      IF(LASTH(IICOMP).EQ.'ON ')THEN
+          QH=QHM
+      ELSE
+          QH=0.
+      ENDIF
+
+C Switch on cooler:
+      IF(LASTC(IICOMP).EQ.'ON ')THEN
+          QC=QCM
+      ELSE
+          QC=0.
+      ENDIF
+
+C Total heating/cooling
+      QMX=QH+QC
+      QMN=0.
+      Q=QH+QC
+
+      IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
+      TFUT=(B3-B2*Q)/B1
+      T=TFUT
+      CALL MZBACK(Q)
+      B1=BB1
+      B2=BB2
+      B3=BB3
+      GOTO 18
+
+C If temperature is in dead-zone goto 81
+C      IF(TMIX.LE.TU.AND.TMIX.GE.TL)GOTO 81
 
    99 write(outs,98)ITYPE
    98 format(' BCL00: building control law',I3,' does not yet')
@@ -1861,7 +2001,7 @@ C      WRITE(6,*)'Heating/cooling flux and set points',QFUT,HSP,CSP
      &IPLT,QMX,QMN,TFUT,QFUT)
      
 C Set QFUT for use by slave controller.
-      Qmst(ICF)=Q
+      Qmst(ICF)=QFUT
       bMasterFreeCoolFlag(ICF)=bFreeCoolActive
       
 C Trace output. Update the logic here to reflect more of the approach
@@ -3581,31 +3721,76 @@ C heating/cooling capacity for time step.
       CSPON=BMISCD(ICF,IDTYP,IPER,6)
       CSPOFF=BMISCD(ICF,IDTYP,IPER,7)
 
-C Note that heating and cooling throttling ranges may overlap. In
-C this case simultaneous heating and cooling may result.
+C This is a generic implementation of a two-position controller
+C with hysteresis and dead-zone control.
+C This type of control is commonly used in thermostats in 
+C home central heating systems, water-supply systems, 
+C convective heaters, and many, many more.
 
-C Heating cycle:
-      IF(TCTL.LT.HSPON)THEN
-         QH=QHM
-         LASTH(IICOMP)='ON '
-      ELSEIF(TCTL.GT.HSPOFF)THEN
-         QH=0.
-         LASTH(IICOMP)='OFF'
-      ELSEIF(TCTL.GE.HSPON.AND.TCTL.LE.HSPOFF)THEN
-         IF(LASTH(IICOMP).EQ.'ON ')QH=QHM
-         IF(LASTH(IICOMP).EQ.'OFF')QH=0.
+C The fundamental characteristic of the two-position controllers is that
+C the output exists at only one of two discrete levels at any one time.
+C However, it is possible that the set-point ranges can be configured
+C so that the heating and cooling ranges may overlap. In which case the
+C heating and cooling may be on at the same time.
+C The heat injected/subtracted to/from the zone will be the net effect 
+C of the heating and cooling heat transfer.
+
+C----------------------------------
+C SET HEATING MODE
+C----------------------------------
+C The heating set-point is the arithmetic average of the heating on 
+C set-point and the heating off set-point.
+      HSET = (HSPON+HSPOFF)/2.
+C The heating hysteresis bandwidth is the difference between the
+C on and off set-points
+      HBAND = (HSPOFF-HSPON)/2.
+C The heating error is the difference between the set-point and the
+C temperature measurement from the zone sensor
+      HERR = HSET - TCTL
+C Set heating mode to ON when the error is greater than or equal to
+C the heating hysteresis bandwidth
+C Set the heating mode to OFF when the error is less than or equal to
+C the negative bandwidth
+      IF (HERR.GE.HBAND)THEN
+          LASTH(IICOMP)='ON '
+      ELSE IF (HERR.LE.-HBAND)THEN
+          LASTH(IICOMP)='OFF'
+      END IF
+
+C----------------------------------
+C SET COOLING MODE
+C----------------------------------
+C The cooling set-point is the arithmetic average of the cooling on 
+C set-point and the cooling off set-point.
+      CSET = (CSPON+CSPOFF)/2.
+C The cooling hysteresis bandwidth is the difference between the
+C on and off set-points
+      CBAND = (CSPOFF-CSPON)/2.
+C The cooling error is the difference between the set-point and the
+C temperature measurement from the zone sensor
+      CERR = CSET - TCTL
+C Set cooling mode to ON when the error is less than or equal to
+C the cooling hysteresis bandwidth
+C Set the cooling mode to OFF when the error is greater than or equal to
+C the negative bandwidth
+      IF (CERR.LE.CBAND)THEN
+          LASTC(IICOMP)='ON '
+      ELSE IF (CERR.GE.-CBAND)THEN
+          LASTC(IICOMP)='OFF'
+      END IF
+
+C Switch on heater:
+      IF(LASTH(IICOMP).EQ.'ON ')THEN
+          QH=QHM
+      ELSE
+          QH=0.
       ENDIF
 
-C Cooling cycle:
-      IF(TCTL.GT.CSPON)THEN
-         QC=QCM
-         LASTC(IICOMP)='ON '
-      ELSEIF(TCTL.LT.CSPOFF)THEN
-         QC=0.
-         LASTC(IICOMP)='OFF'
-      ELSEIF(TCTL.LE.CSPON.AND.TCTL.GE.CSPOFF)THEN
-         IF(LASTC(IICOMP).EQ.'ON ')QC=QCM
-         IF(LASTC(IICOMP).EQ.'OFF')QC=0.
+C Switch on cooler:
+      IF(LASTC(IICOMP).EQ.'ON ')THEN
+          QC=QCM
+      ELSE
+          QC=0.
       ENDIF
 
 C Convert from (/m^2) if necessary.

@@ -112,16 +112,17 @@ C Thermophysical property.
           if (IER.NE.0) return
           K=0
           call EGETWI(OUTSTR,K,IDMAT(II,3),1,3,'W',
-     &                                          'change type ref.',IER)
+     &      'change type ref.',IER)
           call EGETWR(OUTSTR,K,DATU(II,1),0.,100.,'W','change mag.',IER)
           call EGETWR(OUTSTR,K,DATU(II,2),0.,100.,'W','change mag.',IER)
         elseif (IDTYPU(II).eq.2) then
 
-C MLC name or layer thickness.
-          call STRIPC(IUALF,OUTSTR,2,ND,0,'Layer and MLC name.',IER)
+C material index MLC name & layer position.
+          call STRIPC(IUALF,OUTSTR,3,ND,0,'Layer and MLC name.',IER)
           if (IER.NE.0) return
           K=0
-          call EGETWI(OUTSTR,K,IDMAT(II,1),1,500,'W','Layer.',IER)
+          call EGETWI(OUTSTR,K,IDMAT(II,1),1,500,'W',
+     &      'Mat index or if zero toggle.',IER)
           if (IDMAT(II,1).eq.0) then
 
 C 2 MLC names.
@@ -129,17 +130,19 @@ C 2 MLC names.
             call EGETW(OUTSTR,K,MATNAM(II,2),'W','MLC name 2',IFLAG)
           else
 
-C 1 MLC name and data for thickness change.
+C 1 MLC name and which layer followed by data for thickness change.
             call EGETW(OUTSTR,K,MATNAM(II,1),'W','MLC name 1',IFLAG)
+            call EGETWI(OUTSTR,K,IMISCD(II,1),1,12,'W',
+     &        'which layer in mlc.',IER)
             call STRIPC(IUALF,OUTSTR,3,ND,0,'data.',IER)
             if (IER.NE.0) return
             K=0
             call EGETWI(OUTSTR,K,IDMAT(II,3),1,3,'W',
-     &                                          'change type ref.',IER)
+     &        'change type ref.',IER)
             call EGETWR(OUTSTR,K,DATU(II,1),0.,100.,'W',
-     &                                               'change mag.',IER)
+     &        'change mag.',IER)
             call EGETWR(OUTSTR,K,DATU(II,2),0.,100.,'W',
-     &                                               'change mag.',IER)
+     &        'change mag.',IER)
           endif
         elseif (IDTYPU(II).eq.3) then
 
@@ -152,7 +155,7 @@ C Climate parameters.
           if (IER.NE.0) return
           K=0
           call EGETWI(OUTSTR,K,IDMAT(II,3),1,2,'W',
-     &                                          'change type ref.',IER)
+     &      'climate change type ref.',IER)
           call EGETWR(OUTSTR,K,DATU(II,1),0.,10.,'W','change mag.',IER)
           call EGETWR(OUTSTR,K,DATU(II,2),0.,10.,'W','change mag.',IER)
         elseif (IDTYPU(II).eq.4) then
@@ -169,7 +172,7 @@ C Read associated data.
           if (IER.NE.0) return
           K=0
           call EGETWI(OUTSTR,K,IDMAT(II,3),1,3,'W',
-     &                                          'change type ref.',IER)
+     &      'oper change type ref.',IER)
           call EGETWR(OUTSTR,K,DATU(II,1),0.,100.,'W','change mag.',IER)
           call EGETWR(OUTSTR,K,DATU(II,2),0.,100.,'W','change mag.',IER)
         elseif (IDTYPU(II).eq.5) then
@@ -205,11 +208,11 @@ C Read associated data.
             if (IER.NE.0) return
             K=0
             call EGETWI(OUTSTR,K,IDMAT(II,3),1,4,'W',
-     &                                          'change type ref.',IER)
+     &        'zone air change type ref.',IER)
             call EGETWR(OUTSTR,K,DATU(II,1),0.,100.,'W',
-     &                                          'change mag.',IER)
+     &        'change mag.',IER)
             call EGETWR(OUTSTR,K,DATU(II,2),0.,100.,'W',
-     &                                          'change mag.',IER)
+     &        'change mag.',IER)
           endif
         elseif (IDTYPU(II).eq.1001) then
 
@@ -228,7 +231,7 @@ C Read associated data.
           if (IER.NE.0) return
           K=0
           call EGETWI(OUTSTR,K,IDMAT(II,3),1,4,'W',
-     &                                          'change type ref.',IER)
+     &      'ctl change type ref.',IER)
           call EGETWR(OUTSTR,K,DATU(II,1),0.,100.,'W','change mag.',IER)
           call EGETWR(OUTSTR,K,DATU(II,2),0.,100.,'W','change mag.',IER)
         endif
@@ -252,7 +255,7 @@ C Read the locations.
         call STRIPC(IUALF,OUTSTR,1,ND,0,'no of zones.',IER)
         if (IER.NE.0) return
         K=0
-        call EGETWI(OUTSTR,K,NZGU(II),0,MCOM,'W','no of zones',IER)
+        call EGETWI(OUTSTR,K,NZGU(II),0,MCOM,'-','no of zones',IER)
 
 C If NZGU(II)<=1 then time based location.
         if (NZGU(II).lt.1) then
@@ -339,6 +342,8 @@ C WRITUAL reads the data fron an existing UA library.
 #include "building.h"
 C Common blocks UA1 UA2 UA3 UA4 within uncertainty.h
 #include "uncertainty.h"
+#include "esprdbfile.h"
+#include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -346,7 +351,7 @@ C Common blocks UA1 UA2 UA3 UA4 within uncertainty.h
       COMMON/UA31/MATNAM(MNCNG,2)
       COMMON/UA32/IMISCD(MNCNG,2)
 
-      character outs*124,MATNAM*32
+      character outs*124,datmsg*42,datmsg2*42,chgmsg*42,MATNAM*32
 
       IER=0
 
@@ -357,116 +362,186 @@ C Open existing file.
         return
       endif
 
-      write (IUALF,30,IOSTAT=ISTAT,ERR=1003)
-  30  FORMAT('*Uncertainty analysis library')
+      write (IUALF,'(a)',IOSTAT=ISTAT,ERR=1003)
+     &  '*Uncertainty analysis library'
 
-      write (IUALF,32,IOSTAT=ISTAT,ERR=1003)NICNG,NILOC,NIACT
-  32  FORMAT(3i4,' # Changes, Locations, Actions')
+      write (IUALF,'(3i4,a)',IOSTAT=ISTAT,ERR=1003)
+     &  NICNG,NILOC,NIACT,' # Changes, Locations, Actions'
 
 C For each change write info.
-      write (IUALF,40,IOSTAT=ISTAT,ERR=1003)
-  40  FORMAT('#  ')
-      write (IUALF,41,IOSTAT=ISTAT,ERR=1003)
-  41  FORMAT('# Changes definitions follow...')
-      write (IUALF,43,IOSTAT=ISTAT,ERR=1003)
-  43  FORMAT('#  ')
+      write (IUALF,'(a)',IOSTAT=ISTAT,ERR=1003) '#  '
+      write (IUALF,'(a)',IOSTAT=ISTAT,ERR=1003)
+     &  '# Changes definitions follow...'
+      write (IUALF,'(a)',IOSTAT=ISTAT,ERR=1003) '#  '
       do 1000, II=1,NICNG
-        write (IUALF,42,IOSTAT=ISTAT,ERR=1003)
-  42    FORMAT('*cng_def')
-        write (IUALF,44,IOSTAT=ISTAT,ERR=1003)LCNG(II)
-  44    FORMAT(a,' # Change id string')
+        write (IUALF,'(a)',IOSTAT=ISTAT,ERR=1003) '*cng_def'
+        write (IUALF,'(2a)',IOSTAT=ISTAT,ERR=1003)LCNG(II),
+     &    ' # Change id string'
+
+C Initial strings.
         write (outs,'(a)') ' # Change type: unknown '
+        write (datmsg,'(a)') ' # Data type: unknown '
+        if(IDMAT(II,3).eq.1) chgmsg=' # % change'
+        if(IDMAT(II,3).eq.2) chgmsg=' # abs change'
+        if(IDMAT(II,3).eq.3) chgmsg=' # explicit change'
         if (IDTYPU(II).eq.1) then
           write (outs,'(a)') ' # Change type: Materials'
+          write (IUALF,'(i4,a)',IOSTAT=ISTAT,ERR=1003)IDTYPU(II),
+     &      outs(1:lnblnk(outs))
+          write(IUALF,'(2i4,a)',IOSTAT=ISTAT,ERR=1003)
+     &      IDMAT(II,1),IDMAT(II,2),' # material & property id'
         elseif (IDTYPU(II).eq.2) then
+
+C Layer thickness decode attributes including material name
           write (outs,'(a)') ' # Change type: Constructions'
+          write (IUALF,'(i4,a)',IOSTAT=ISTAT,ERR=1003)IDTYPU(II),
+     &      outs(1:lnblnk(outs))
+          datmsg=' layer thickness'
+          write(datmsg2,'(2a)') ' ',matname(IDMAT(II,1))
+          write(IUALF,'(i4,2a,i3,a)',IOSTAT=ISTAT,ERR=1003)IDMAT(II,1),
+     &      ' ',MATNAM(II,1)(1:lnblnk(MATNAM(II,1))),IMISCD(II,1),
+     &      '    # material index & construction name & which layer'
         elseif (IDTYPU(II).eq.3) then
           write (outs,'(a)') ' # Change type: Weather parameter'
+          write (IUALF,'(i4,a)',IOSTAT=ISTAT,ERR=1003)IDTYPU(II),
+     &      outs(1:lnblnk(outs))
+          if(IDMAT(II,1).eq.1) datmsg=' Dry bulb T'
+          if(IDMAT(II,1).eq.2) datmsg=' Direct normal sol'
+          if(IDMAT(II,1).eq.3) datmsg=' Diffuse horiz sol'
+          if(IDMAT(II,1).eq.4) datmsg=' Wind speed'
+          if(IDMAT(II,1).eq.5) datmsg=' Wind direction'
+          if(IDMAT(II,1).eq.6) datmsg=' Relative humidity'
+          datmsg2=' -'
+          write (IUALF,'(i4,2a)',IOSTAT=ISTAT,ERR=1003)IDMAT(II,1),
+     &      ' # Weather parameter',datmsg
         elseif (IDTYPU(II).eq.4) then
           write (outs,'(a)') ' # Change type: Scheduled operation'
+          write (IUALF,'(i4,a)',IOSTAT=ISTAT,ERR=1003)IDTYPU(II),
+     &      outs(1:lnblnk(outs))
+         if(IDMAT(II,1).eq.0)then
+            if(IDMAT(II,2).eq.1) datmsg=' infiltration'
+            if(IDMAT(II,2).eq.2) datmsg=' ventilation'
+            datmsg2=' -'
+          else
+            if(IDMAT(II,1).eq.1) datmsg=' occupants'
+            if(IDMAT(II,1).eq.2) datmsg=' lights'
+            if(IDMAT(II,1).eq.3) datmsg=' equipment'
+            if(IDMAT(II,2).eq.1) datmsg2=' sensible'
+            if(IDMAT(II,2).eq.2) datmsg2=' latent'
+            if(IDMAT(II,2).eq.3) datmsg2=' radiant frac'
+            if(IDMAT(II,2).eq.4) datmsg2=' convective frac'
+            if(IDMAT(II,2).eq.5) datmsg2=' total Q'
+            if(IDMAT(II,2).eq.6) datmsg2=' period start'
+            if(IDMAT(II,2).eq.7) datmsg2=' RC split'
+          endif
+          write (IUALF,'(2i4,3a)',IOSTAT=ISTAT,ERR=1003)IDMAT(II,1),
+     &      IDMAT(II,2),' # Operations parameter',
+     &      datmsg(1:lnblnk(datmsg)),datmsg2(1:lnblnk(datmsg2))
         elseif (IDTYPU(II).eq.5) then
           write (outs,'(a)') ' # Change type: Convection coefficients'
+          write (IUALF,'(i4,a)',IOSTAT=ISTAT,ERR=1003)IDTYPU(II),
+     &      outs(1:lnblnk(outs))
+          write (IUALF,'(2i4,a)',IOSTAT=ISTAT,ERR=1003)IDMAT(II,1),
+     &      IDMAT(II,2),' # Heat transfer ref'
+          datmsg=' Halcrow time invarient'
+          datmsg2=' -'
         elseif (IDTYPU(II).eq.101) then
-          write (outs,'(a)') ' # Change type: Zone air volume'
+          write (outs,'(a)') ' # Change type: Zone volume or area'
+          write (IUALF,'(i4,a)',IOSTAT=ISTAT,ERR=1003)IDTYPU(II),
+     &      outs(1:lnblnk(outs))
+          if(IDMAT(II,1).eq.1) datmsg=' zone air volume'
+          if(IDMAT(II,1).eq.2) datmsg=' surface area'
+          datmsg2=' -'
+          write (IUALF,'(2i4,2a)',IOSTAT=ISTAT,ERR=1003)IDMAT(II,1),
+     &      IDMAT(II,2),' # Zone parameter ',datmsg(1:lnblnk(datmsg))
         elseif (IDTYPU(II).eq.1001) then
           write (outs,'(a)') ' # Change type: Zone control'
-        endif
-        write (IUALF,46,IOSTAT=ISTAT,ERR=1003)IDTYPU(II),outs
-  46    FORMAT(i4,a40)
-        if (IDTYPU(II).eq.1) then
-          write(IUALF,45,IOSTAT=ISTAT,ERR=1003)IDMAT(II,1),IDMAT(II,2)
-  45      FORMAT(2i4,' # material & property id')
-        elseif (IDTYPU(II).eq.2) then
-          write(IUALF,48,IOSTAT=ISTAT,ERR=1003)IDMAT(II,1),MATNAM(II,1)
-  48      FORMAT(i4,' ',a,' # material & construction name')
-        elseif (IDTYPU(II).eq.3) then
-          write (IUALF,47,IOSTAT=ISTAT,ERR=1003)IDMAT(II,1)
-  47      FORMAT(i4,' # Climate parameter ref')
-        elseif (IDTYPU(II).eq.1001) then
-          write (IUALF,51,IOSTAT=ISTAT,ERR=1003)IDMAT(II,1),
-     &      IDMAT(II,2),IMISCD(II,1),IMISCD(II,2)
-  51      FORMAT(4i4,' # Control parameters')
+          write (IUALF,'(i4,a)',IOSTAT=ISTAT,ERR=1003)IDTYPU(II),
+     &      outs(1:lnblnk(outs))
+          if(IDMAT(II,1).gt.0) datmsg=' control loop'
+          if(IMISCD(II,2).eq.1)  datmsg2=' period Start'
+          if(IMISCD(II,2).eq.2)  datmsg2=' max heat'
+          if(IMISCD(II,2).eq.3)  datmsg2=' min heat'
+          if(IMISCD(II,2).eq.4)  datmsg2=' max cool'
+          if(IMISCD(II,2).eq.5)  datmsg2=' min cool'
+          if(IMISCD(II,2).eq.6)  datmsg2=' heating SP'
+          if(IMISCD(II,2).eq.7)  datmsg2=' cooling SP'
+          write (IUALF,'(4i4,2a)',IOSTAT=ISTAT,ERR=1003)IDMAT(II,1),
+     &      IDMAT(II,2),IMISCD(II,1),IMISCD(II,2),
+     &      ' # Control parameters ',datmsg2(1:lnblnk(datmsg2))
         else
-          write (IUALF,49,IOSTAT=ISTAT,ERR=1003)IDMAT(II,1),IDMAT(II,2)
-  49      FORMAT(2i4,' # ref 1, ref 2')
+          write (outs,'(a)') ' # Change type: unknown'
+          write (IUALF,'(i4,a)',IOSTAT=ISTAT,ERR=1003)IDTYPU(II),
+     &      outs(1:lnblnk(outs))
+          write (IUALF,'(2i4,a)',IOSTAT=ISTAT,ERR=1003)
+     &      IDMAT(II,1),IDMAT(II,2),' # ref 1, ref 2'
+          datmsg=' other'; datmsg2=' -'
         endif
-        write (IUALF,50,IOSTAT=ISTAT,ERR=1003)IDMAT(II,3),
-     &    DATU(II,1),DATU(II,2)
-  50    FORMAT(i4,2f10.3,' # Data')
+
+C << can we be more specific in comment? >>
+        write(6,*) 'datmsg is ',datmsg(1:lnblnk(datmsg))
+        write(6,*) 'datmsg2 is ',datmsg2(1:lnblnk(datmsg2))
+
+        if (IDTYPU(II).eq.1001.or.IDTYPU(II).eq.2) then
+          write (IUALF,50,IOSTAT=ISTAT,ERR=1003)IDMAT(II,3),
+     &      DATU(II,1),DATU(II,2),chgmsg(1:lnblnk(chgmsg)),
+     &      datmsg(1:lnblnk(datmsg)),datmsg2(1:lnblnk(datmsg2))
+  50      FORMAT(i4,2f10.3,'  ',3a)
+        else
+          write (IUALF,51,IOSTAT=ISTAT,ERR=1003)IDMAT(II,3),
+     &      DATU(II,1),DATU(II,2),chgmsg(1:lnblnk(chgmsg)),
+     &      datmsg(1:lnblnk(datmsg))
+  51      FORMAT(i4,2f10.3,'  ',2a)
+        endif
  1000 continue
 
 C For each location write info.
-      write (IUALF,60,IOSTAT=ISTAT,ERR=1003)
-  60  FORMAT('#  ')
-      write (IUALF,61,IOSTAT=ISTAT,ERR=1003)
-  61  FORMAT('# Locations definitions follow...')
-      write (IUALF,63,IOSTAT=ISTAT,ERR=1003)
-  63  FORMAT('#  ')
+      write (IUALF,'(a)',IOSTAT=ISTAT,ERR=1003) '#  '
+      write (IUALF,'(a)',IOSTAT=ISTAT,ERR=1003)
+     &  '# Locations definitions follow...'
+      write (IUALF,'(a)',IOSTAT=ISTAT,ERR=1003) '#  '
       do 2000, II=1,NILOC
-        write (IUALF,62,IOSTAT=ISTAT,ERR=1003)
-  62    FORMAT('*loc_def')
-        write (IUALF,64,IOSTAT=ISTAT,ERR=1003)LLOC(II)
-  64    FORMAT(a,' # Location id string')
+        write (IUALF,'(a)',IOSTAT=ISTAT,ERR=1003) '*loc_def'
+        write (IUALF,'(2a)',IOSTAT=ISTAT,ERR=1003)LLOC(II),
+     &    ' # Location id string'
         if (NTLOC(II).eq.0) then
-          write (IUALF,66,IOSTAT=ISTAT,ERR=1003)NZGU(II)
+          write (IUALF,'(i4,a)',IOSTAT=ISTAT,ERR=1003)NZGU(II),
+     &      ' # Number of zones'
         else
-          write (IUALF,66,IOSTAT=ISTAT,ERR=1003)NZGU(II)*NTLOC(II)
+          write (IUALF,'(i4,a)',IOSTAT=ISTAT,ERR=1003)
+     &      NZGU(II)*NTLOC(II),' # Number of zones'
         endif
-  66    FORMAT(i4,' # Number of zones')
 
 C If NTLOC=-1 then write time information.
         if (NTLOC(II).eq.-1) then
-          write (IUALF,67,IOSTAT=ISTAT,ERR=1003)(NTG(II,IJ),IJ=1,4)
-  67      FORMAT(4i4,' # Start day, hour, finish day, hour')
+          write (IUALF,'(4i4,a)',IOSTAT=ISTAT,ERR=1003)
+     &      (NTG(II,IJ),IJ=1,4),' # Start day, hour, finish day, hour'
         endif
 
 C Data for each zone.
         do 2100, IJ=1,NZGU(II)
-          write (IUALF,68,IOSTAT=ISTAT,ERR=1003) NZNOGU(II,IJ),
-     &      NSGU(II,IJ)
-  68      FORMAT(2i4,' # Zone number, Number of surfaces')
+          write (IUALF,'(2i4,a)',IOSTAT=ISTAT,ERR=1003)
+     &      NZNOGU(II,IJ),NSGU(II,IJ),
+     &      ' # Zone number Number of surfaces'
           write (IUALF,70,IOSTAT=ISTAT,ERR=1003)
      &      (NSNOG(II,IJ,IK),IK=1,NSGU(II,IJ))
   70      FORMAT(25i3,' # Surfaces')
+C          write (IUALF,'(25i3,a)',IOSTAT=ISTAT,ERR=1003)
+C     &      (NSNOG(II,IJ,IK),IK=1,NSGU(II,IJ)),' # Surfaces'
  2100   continue
  2000 continue
 
 C For each actions write info.
-      write (IUALF,80,IOSTAT=ISTAT,ERR=1003)
-  80  FORMAT('#  ')
-      write (IUALF,81,IOSTAT=ISTAT,ERR=1003)
-  81  FORMAT('# Action definitions follow...')
-      write (IUALF,83,IOSTAT=ISTAT,ERR=1003)
-  83  FORMAT('#  ')
+      write (IUALF,'(a)',IOSTAT=ISTAT,ERR=1003) '#  '
+      write (IUALF,'(a)',IOSTAT=ISTAT,ERR=1003)
+     &  '# Action definitions follow...'
+      write (IUALF,'(a)',IOSTAT=ISTAT,ERR=1003) '#  '
       do 3000, II=1,NIACT
-        write (IUALF,82,IOSTAT=ISTAT,ERR=1003)
-  82    FORMAT('*act_def')
-        write (IUALF,86,IOSTAT=ISTAT,ERR=1003)
-     &    IACTD(II,1),LCNG(IACTD(II,1))
-  86    FORMAT(i4,' # Uncertanty ref: ',a)
-        write (IUALF,88,IOSTAT=ISTAT,ERR=1003)
-     &    IACTD(II,2),LLOC(IACTD(II,2))
-  88    FORMAT(i4,' # Location ref: ',a)
+        write (IUALF,'(a)',IOSTAT=ISTAT,ERR=1003) '*act_def'
+        write (IUALF,'(i4,2a)',IOSTAT=ISTAT,ERR=1003)
+     &    IACTD(II,1),' # Uncertanty ref: ',LCNG(IACTD(II,1))
+        write (IUALF,'(i4,2a)',IOSTAT=ISTAT,ERR=1003)
+     &    IACTD(II,2),' # Location ref: ',LLOC(IACTD(II,2))
  3000 continue
 
    99 CALL ERPFREE(IUALF,ISTAT)
@@ -495,6 +570,7 @@ C Common blocks UA1 UA2 UA3 UA4 within uncertainty.h
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/UA31/MATNAM(MNCNG,2)
+      COMMON/UA32/IMISCD(MNCNG,2)
 
       logical closemat1,closemat2
 
@@ -575,7 +651,8 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht
                     write(NAM,'(a)') matname(matarrayindex)(1:32)
                   endif
                 endif
-                write(outs,'(2a)')' Thickness of material: ',NAM
+                write(outs,'(3a,i3)')' Thickness of material: ',NAM,
+     &            ' @ layer ',IMISCD(I,1)
                 call edisp (iuout,outs)
               endif
             elseif(IDTYPU(I).eq.3) then  ! if weather focus

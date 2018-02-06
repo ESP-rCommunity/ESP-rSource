@@ -490,6 +490,7 @@ C If output to file alter the edisp unit number.
 
       if (IMRT.ne.0) then
 C Put sensor MRT in GVAL.
+        ISET=ISIM
         call SENMRT(IDAY,IZONE,IMRT,ISET,0)
 
 C If there is a CFD domain for this zone, use air velocity and

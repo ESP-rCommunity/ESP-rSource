@@ -26,12 +26,6 @@ C  silentxmlread: parses a gbXML file and then invokes
 C    .silentxmlmodel
 C silentxmlzone creates a zone based on gbxml common blocks. It is
 C   called within silentxmlread after silentxmlmodel called.
-C EGETXMLTAGE: gets first XML tag from a STRING of characters.
-C EGETWXML: gets first WORD from a STRING of characters.
-C EGETWIXML: gets a word from a STRING and converts to an integer.
-C EGETWRXML: gets a word from a STRING and converts to a real.
-C EGETEQDQXML: gets tag & quoted PHRASE from a STRING.
-C EGETRMXML: gets remainder of a string until a '<'.
 C Matchzone: given zonestring returns the index matching from array zn.
 C Matchcoord: given X Y Z returns the index of matching szcoords.
 C cyclejwn: takes a jvn array cycles to start at a vertex index.
@@ -1028,7 +1022,7 @@ C Same as local variable actions which is passed back to calling code.
       character defmlc*32  ! names of default MLC for Office
       dimension defmlc(13)
       character loutstr*248,PHRASE*360,WORD*48,STUFF*96,TAG*48,RSTR*124
-      character MODE*4
+      character MODE*4,errmsg*24
       
 C Site related local variables.
       logical havesite       ! true if tokens included
@@ -1049,10 +1043,12 @@ C     logical lmatch
       integer jvn1(MV) ! to hold list of opening edges
       integer idebg    ! debug level
       logical isSI     ! false if Units are Imperial
+      logical isInch   ! false if Units are Feet
       logical wecanprocess    ! can we take surface complexity
+      logical isadoor  ! if topology is like a door
       integer nbvertincurrent ! how many vertices are in current surface
 
-      IER=0; idebg=0
+      IER=0; idebg=1
       IFCFG=IFIL+5
 
 C Determine operating system
@@ -1101,6 +1097,7 @@ C      mpath=' '  ! passed now
       ICYEAR=2016; CLAT=52.; CLONG=0.  ! initial guess
       simxml = .false.
       isSI=.true.  ! assume SI units
+      isInch=.true.  ! but if Imperial assume Inches
 
 C Test read of XML files and tokens. Clear local variables.
       inlocation=.false.; inbuilding=.false.; insurface=.false.
@@ -1219,7 +1216,7 @@ C Initialise gbXML file. and set currentfile.
 
  442  call lstripc(IUNIT,loutstr,99,ND,1,'geo line 1',IER)
 C Debug.
-      if(idebg.eq.2)write(6,'(a)') loutstr(1:lnblnk(loutstr))
+C      if(idebg.eq.2)write(6,'(a)') loutstr(1:lnblnk(loutstr))
       k=0
       call EGETXMLTAG(loutstr,K,PHRASE,'-','xml tag',ier)
 C Debug.
@@ -1253,7 +1250,14 @@ C Read the next tag and quoted string.
           elseif(TAG(1:10).eq.'lengthUnit')then
             write(6,*) 'lengthUnit is ',
      &        STUFF(1:lnblnk(STUFF))
-            if(STUFF(1:6).eq.'Inches') isSI=.false.  ! Imperial units
+            if(STUFF(1:6).eq.'Inches')then
+              isSI=.false.  ! Imperial units
+              isInch=.true.
+            endif
+            if(STUFF(1:4).eq.'Feet')then
+              isSI=.false.  ! Imperial units
+              isInch=.false.
+            endif
           elseif(TAG(1:8).eq.'areaUnit')then
             write(6,*) 'areaUnit is ',
      &        STUFF(1:lnblnk(STUFF))
@@ -1590,6 +1594,12 @@ C Inherit the parent surface iszother and increment to account for opening.
           endif  ! havepartition
         endif    ! inopening
 
+      elseif(PHRASE(1:11).eq.'Description')then
+
+C Might be associated with a surface. Do nothing yet.
+        call EGETRMXML(loutstr,K,RSTR,'-','address',IER)
+        write(6,*) 'description is ',RSTR(1:lnblnk(RSTR))
+
       elseif(PHRASE(1:13).eq.'StreetAddress')then
 
         call EGETRMXML(loutstr,K,RSTR,'-','address',IER)
@@ -1669,7 +1679,7 @@ C controller, if conditionType="Unconditioned" set to freefloat.
           elseif(TAG(1:9).eq.'spaceType')then
             write(6,*) 'spaceType is ',STUFF(1:lnblnk(STUFF))
 C Notes: examples are "OfficeOpenPlan", "LaboratoryOffice",
-C "FineMaterialWarehouse"
+C "FineMaterialWarehouse", "ActiveStorage"
           elseif(TAG(1:9).eq.'zoneIdRef')then
             write(6,*) 'zoneIdRef is ',STUFF(1:lnblnk(STUFF))
           elseif(TAG(1:2).eq.'id')then
@@ -1811,7 +1821,12 @@ C Needs testing.
   
 C Process a child surface which has a shared edge with the parent.
 C Need to signal working in other zone!
-            call gbxdoor(icurzone,icursurf,iopensurf,'i')
+            call gbxisadoor(icurzone,icursurf,iopensurf,'i',isadoor)
+            if(isadoor)then
+              call gbxdoor(icurzone,icursurf,iopensurf,'i')
+            else
+              call gbxchild(icurzone,icursurf,iopensurf,'i')
+            endif
 
             if(havepartition)then
               if(nbxmlchild.eq.1)then
@@ -1819,8 +1834,13 @@ C Need to signal working in other zone!
      &          'There is also door in a partition to sort.',
      &          iothzone,iothsurf,iothopsurf(nbxmlchild),
      &          isznver(iothzone,iothopsurf(nbxmlchild))
-                call gbxdoor(iothzone,iothsurf,iothopsurf(nbxmlchild),
-     &            'o')
+                call gbxisadoor(iothzone,iothsurf,
+     &            iothopsurf(nbxmlchild),'o',isadoor)
+                if(isadoor)then
+            call gbxdoor(iothzone,iothsurf,iothopsurf(nbxmlchild),'o')
+                else
+            call gbxchild(iothzone,iothsurf,iothopsurf(nbxmlchild),'o')
+                endif
               endif
             endif
 
@@ -1848,17 +1868,16 @@ C            enddo
 
 C Pay attention if we are insurface & inplanar. Read 
 C lines of <Coordinate> and jump when /CartesianPoint.
-        if(insurface)then
-          if(inplanar)then
+        if(insurface.and.inplanar)then
 
 C Echo the current context toggles.
-              nbvertincurrent=nbvertincurrent+1
-            if(idebg.ge.1)then
-              write(6,*) 'insurface ',insurface,' inplanar ',inplanar,
-     &        ' havepartition ',havepartition,' inopening ',
-     &        inopening,' iswindow ',iswindow,' isdoor ',isdoor,
-     &        nbxmlchild,nbvertincurrent
-            endif
+          nbvertincurrent=nbvertincurrent+1
+          if(idebg.ge.1)then
+            write(6,*) 'insurface ',insurface,' inplanar ',inplanar,
+     &       ' havepartition ',havepartition,' inopening ',
+     &       inopening,' iswindow ',iswindow,' isdoor ',isdoor,
+     &       nbxmlchild,nbvertincurrent
+          endif
 
 C At this point the following might apply:
 C a) we are dealing with facade so coords get registered once
@@ -1878,574 +1897,384 @@ C that the zone can take this additional complexity.
 C << we should only do decr_b or decr_c decrementing nzsur()
 C << what kind of logic would do this?
 C << How about a logical wecandothis ?? >> 
-            wecanprocess=.true.
-            if(nztv(icurzone)+1.lt.MTV.and.
-     &         isznver(icurzone,icursurf)+1.lt.MV)then
-              continue  ! we can process this
-            else
-              wecanprocess=.false.
-              write(6,'(a,2i4,a,2i4,3a,i3)')
-     &          ' BEYOND ZONE vertex edge LIMITS in z ',
-     &          icurzone,icursurf,' z verts & surf edges ',
-     &          nztv(icurzone),isznver(icurzone,icursurf),' ',
-     &          cursurfname,' ',nbvertincurrent
-            endif
-            if(inopening)then
-              if(isznver(icurzone,iopensurf)+1.lt.MV)then
-                continue
-              else
-                wecanprocess=.false.
-                write(6,'(a,2i4,a,3i4)')
-     &            ' BEYOND edge LIMITS in z ',
-     &            icurzone,icursurf,' opening ',nztv(icurzone),
-     &            isznver(icurzone,iopensurf),nbvertincurrent
-              endif
-              if(isznver(iothzone,iothopsurf(nbxmlchild))+1.lt.MV)then
-                continue
-              else
-                wecanprocess=.false.
-                write(6,'(a,i3,a,4i4)')
-     &            ' BEYOND vertex or edge LIMITS in za ',
-     &            icurzone,' OTHER ptn ',nztv(iothzone),
-     &            isznver(iothzone,iothopsurf(nbxmlchild)),
-     &            nbxmlchild,nbvertincurrent
-              endif
-            endif
-            if(havepartition)then
-              if(isznver(iothzone,iothsurf)+1.lt.MV)then
-                continue
-              else
-                wecanprocess=.false.
-                write(6,'(a,2i4,a,3i4)')
-     &            ' BEYOND vertex or edge LIMITS in OTHER z s ',
-     &            iothzone,iothsurf,' other & opening ',nztv(iothzone),
-     &            isznver(iothzone,iothsurf),nbvertincurrent
-              endif
-            endif
-
-            if(wecanprocess)then
+          wecanprocess=.true.
+          if(nztv(icurzone)+1.lt.MTV.and.
+     &       isznver(icurzone,icursurf)+1.lt.MV)then
+            continue  ! we can process this
+          else
+            wecanprocess=.false.
+            write(6,'(a,2i4,a,2i4,3a,i3)')
+     &        ' BEYOND ZONE vertex edge LIMITS in z ',
+     &        icurzone,icursurf,' z verts & surf edges ',
+     &        nztv(icurzone),isznver(icurzone,icursurf),' ',
+     &        cursurfname,' ',nbvertincurrent
+          endif
+          if(inopening)then
+            if(isznver(icurzone,iopensurf)+1.lt.MV)then
               continue
             else
-              iopen=1
-              do while (iopen.ne.0)
-                call lstripc(IUNIT,loutstr,99,ND,1,'xml surf',IER)
-                k=0
-                call EGETXMLTAG(loutstr,K,PHRASE,'-','xml tag',ier)
-
-C If we are currently working on an Opening then look for /Opening
-                if(inopening.and.PHRASE(1:8).eq.'/Opening')then
-                  iopen=0; iopensurf=0
-                  inopening=.false.; iswindow=.false.
-                  isdoor=.false.
-                  nzsur(icurzone)=nzsur(icurzone)-1 ! decrement
-                  nbwalls(icurzone)=nzsur(icurzone)
-                endif
-                if(PHRASE(1:8).eq.'/Surface')then
-                  iopen=0; insurface=.false.
-                  isdoor=.false.; iswindow=.false.
-                  nzsur(icurzone)=nzsur(icurzone)-1 ! decrement
-                  nbwalls(icurzone)=nzsur(icurzone)
-                  if(havepartition)then
-                    havepartition=.false.  ! unset any active partition marker
-                    ptnflip=.false.; ptnopeningflip=.false.
-                    nbxmlchild=0
-                    do loop=1,20
-                      iothopsurf(loop)=0
-                    enddo
-                  endif
-                endif
-              end do
-
-C Debug.
-              write(6,*) 'decr_bcd ',nzsur(icurzone),nbwalls(icurzone),
-     &          nextsurftype,nextsurfname,icurzone,icursurf,iopensurf
-              iopensurf=0
-              goto 442  ! get another line
+              wecanprocess=.false.
+              write(6,'(a,2i4,a,3i4)')
+     &          ' BEYOND edge LIMITS in z ',
+     &          icurzone,icursurf,' opening ',nztv(icurzone),
+     &          isznver(icurzone,iopensurf),nbvertincurrent
             endif
-
-C            write(6,'(a,i3,a,2i4)')' incrementing edges in z ',
-C     &        icurzone,' this & opening ',icursurf,iopensurf
-            isznver(icurzone,icursurf)=isznver(icurzone,icursurf)+1
-            if(inopening)then
-              isznver(icurzone,iopensurf)=isznver(icurzone,iopensurf)+1
+          endif
+          if(havepartition)then
+            if(isznver(iothzone,iothsurf)+1.lt.MV)then
+              continue
+            else
+              wecanprocess=.false.
+              write(6,'(a,2i4,a,3i4)')
+     &          ' BEYOND vertex or edge LIMITS in OTHER z s ',
+     &          iothzone,iothsurf,' other & opening ',nztv(iothzone),
+     &          isznver(iothzone,iothsurf),nbvertincurrent
             endif
+          endif
+
+          if(wecanprocess)then
+            continue
+          else
+
+C Beyond complexity limits. Create a message name and jump
+C to block of code that scans file until /Opening or /Surface
+            errmsg='decr_bcd '
+            goto 69
+          endif
+
+C          write(6,'(a,i3,a,2i4)')' incrementing edges in z ',
+C     &      icurzone,' this & opening ',icursurf,iopensurf
+          isznver(icurzone,icursurf)=isznver(icurzone,icursurf)+1
+          if(inopening)then
+            isznver(icurzone,iopensurf)=isznver(icurzone,iopensurf)+1
+          endif
 
 C Logic for havepartition may apply. So the isznver arrays for
 C a parent surface in the other zone and a possible opening it it.
-            if(havepartition)then
-              if(idebg.ge.1)then
-                write(6,'(a,i3,3a,2i3)')' have other partition ',
-     &            iothzone,' ',othzonename,' surfs in other ',
-     &            nzsur(iothzone),iothsurf
-              endif
-              isznver(iothzone,iothsurf)=isznver(iothzone,iothsurf)+1
-              if(inopening)then
-                if(nbxmlchild.ge.1.and.nbxmlchild.lt.21)then
-                  isznver(iothzone,iothopsurf(nbxmlchild))=
-     &              isznver(iothzone,iothopsurf(nbxmlchild))+1
-                endif
+          if(havepartition)then
+            if(idebg.ge.1)then
+              write(6,'(a,i3,3a,2i3)')' have other partition ',
+     &          iothzone,' ',othzonename,' surfs in other ',
+     &          nzsur(iothzone),iothsurf
+            endif
+            isznver(iothzone,iothsurf)=isznver(iothzone,iothsurf)+1
+            if(inopening)then
+              if(nbxmlchild.ge.1.and.nbxmlchild.lt.21)then
+                isznver(iothzone,iothopsurf(nbxmlchild))=
+     &            isznver(iothzone,iothopsurf(nbxmlchild))+1
               endif
             endif
+          endif
 
 C Get a new set of coordinates.
-            loop=0
-            RVX=0.0; RVY=0.0; RVZ=0.0
- 443        call lstripc(IUNIT,loutstr,99,ND,1,'X coord',IER)
-            k=0
-            call EGETXMLTAG(loutstr,K,PHRASE,'-','Coordinate',ier)
-            if(PHRASE(1:10).eq.'Coordinate')then
-              loop=loop+1
-              if(loop.eq.1)then
-                call EGETWRXML(loutstr,K,RVX,-180.,180.,'-','X',IER)
-                if(.NOT.isSI) RVX=RVX*0.0254
-              elseif(loop.eq.2)then
-                call EGETWRXML(loutstr,K,RVY,-180.,180.,'-','X',IER)
-                if(.NOT.isSI) RVY=RVY*0.0254
-              elseif(loop.eq.3)then
+          loop=0
+          RVX=0.0; RVY=0.0; RVZ=0.0
+ 443      call lstripc(IUNIT,loutstr,99,ND,1,'X coord',IER)
+          k=0
+          call EGETXMLTAG(loutstr,K,PHRASE,'-','Coordinate',ier)
+          if(PHRASE(1:10).eq.'Coordinate')then
+            loop=loop+1
+            if(loop.eq.1)then
+              call EGETWRXML(loutstr,K,RVX,-180.,180.,'-','X',IER)
+              if(.NOT.isSI)then
+                if(isInch) RVX=RVX*0.0254
+                if(.NOT.isInch) RVX=RVX*0.3048
+              endif
+            elseif(loop.eq.2)then
+              call EGETWRXML(loutstr,K,RVY,-180.,180.,'-','X',IER)
+              if(.NOT.isSI)then
+                if(isInch) RVY=RVY*0.0254
+                if(.NOT.isInch) RVY=RVY*0.3048
+              endif
+            elseif(loop.eq.3)then
 
 C Got X Y & Z if this is the initial coord in the zone just add it
 C otherwise test to see if it is unique.
-                call EGETWRXML(loutstr,K,RVZ,-180.,180.,'-','X',IER)
-                if(.NOT.isSI) RVZ=RVZ*0.0254
+              call EGETWRXML(loutstr,K,RVZ,-180.,180.,'-','X',IER)
+              if(.NOT.isSI)then
+                if(isInch) RVZ=RVZ*0.0254
+                if(.NOT.isInch) RVZ=RVZ*0.3048
+              endif
+C Debug
+              if(idebg.eq.2)then
+                write(6,'(a,3f8.4)') 'X Y Z: ',RVX,RVY,RVZ
+              endif
+              if(nztv(icurzone).eq.0)then
+                szcoords(icurzone,1,1)=RVX
+                szcoords(icurzone,1,2)=RVY
+                szcoords(icurzone,1,3)=RVZ
+                nztv(icurzone)=nztv(icurzone)+1  ! increment
+                iszjvn(icurzone,icursurf,1)=1
 C Debug
                 if(idebg.eq.2)then
-                  write(6,'(a,3f8.4)') 'X Y Z: ',RVX,RVY,RVZ
+                  write(6,'(a,2i4,3f8.3,a,2i3)') 
+     &            'adding parent coords ',icurzone,
+     &            icursurf,RVX,RVY,RVZ,' nztv ',
+     &            NZTV(icurzone),nzsur(icurzone)
                 endif
-                if(nztv(icurzone).eq.0)then
-                  szcoords(icurzone,1,1)=RVX
-                  szcoords(icurzone,1,2)=RVY
-                  szcoords(icurzone,1,3)=RVZ
-                  nztv(icurzone)=nztv(icurzone)+1  ! increment
-                  iszjvn(icurzone,icursurf,1)=1
-                else
+              else
 
 C Logic similar to insert.F line 849. Check that we are
 C within zone and surface limits.
-                  if(nztv(icurzone)+1.lt.MTV.and.
-     &               isznver(icurzone,icursurf)+1.lt.MV)then
-                    continue  ! we can process this
-                  else
+                if(nztv(icurzone)+1.lt.MTV.and.
+     &             isznver(icurzone,icursurf)+1.lt.MV)then
+                  continue  ! we can process this
+                else
 
-C << Place to decrement surface counter >>
-
-                    write(6,'(a,i3,a,3i4)')
-     &                ' BEYOND vertex or edge LIMITS in zb ',
-     &                icurzone,' this & opening ',nztv(icurzone),
-     &                isznver(icurzone,icursurf),nbvertincurrent
-                    iopen=1
-                    do while (iopen.ne.0)
-                      call lstripc(IUNIT,loutstr,99,ND,1,'xml surf',IER)
-                      k=0
-                      call EGETXMLTAG(loutstr,K,PHRASE,'-','xmltag',ier)
-                      if(PHRASE(1:8).eq.'/Opening')then
-                        iopen=0; iopensurf=0
-                        inopening=.false.; iswindow=.false.
-                        isdoor=.false.
-                        nzsur(icurzone)=nzsur(icurzone)-1 ! decrement
-                        nbwalls(icurzone)=nzsur(icurzone)
-                      endif
-                      if(PHRASE(1:8).eq.'/Surface')then
-                        iopen=0; insurface=.false.
-                        isdoor=.false.; iswindow=.false.
-                        nzsur(icurzone)=nzsur(icurzone)-1 ! decrement
-                        nbwalls(icurzone)=nzsur(icurzone)
-                        if(havepartition)then
-                          havepartition=.false.  ! unset any active partition marker
-                          ptnflip=.false.; ptnopeningflip=.false.
-                          nbxmlchild=0
-                          do loop=1,20
-                            iothopsurf(loop)=0
-                          enddo
-                        endif
-                      endif
-                    end do
-
-C << Place to decrement surface list >>
-                write(6,*) 'decr_c ',nzsur(icurzone),nbwalls(icurzone),
-     &            nextsurftype,nextsurfname,icurzone,icursurf,iopensurf
-                    goto 442  ! get another line
-                  endif
-                  found=.false.
-                  call matchcoord(RVX,RVY,RVZ,icurzone,found,match)
+C Beyond complexity limits. Create a message name and jump
+C to block of code that scans file until /Opening or /Surface
+                  write(6,'(a,i3,a,3i4)')
+     &              ' BEYOND vertex or edge LIMITS in zb ',
+     &              icurzone,' this & opening ',nztv(icurzone),
+     &              isznver(icurzone,icursurf),nbvertincurrent
+                  errmsg='decr_c '
+                  goto 69
+                endif
+                found=.false.
+                call matchcoord(RVX,RVY,RVZ,icurzone,found,match)
 
 C If an existing vertex is close then reference it otherwise
 C add a new vertex to the end of the zone list. The n is the
 C current edge count i.e. the position where match is to be
 C inserted.
-                  if(found)then
-                    n=isznver(icurzone,icursurf)
-                    iszjvn(icurzone,icursurf,n)=match
+                if(found)then
+                  n=isznver(icurzone,icursurf)
+                  iszjvn(icurzone,icursurf,n)=match
 C Debug
-                    if(idebg.eq.2)then
-                      write(6,'(a,2i3,3f8.3,a,2i3)')'reuse coords ',
-     &                icurzone,
-     &                icursurf,RVX,RVY,RVZ,' at ',match,n
-                    endif
-                  else
-                    n=isznver(icurzone,icursurf)
-                    NZTV(icurzone)=NZTV(icurzone)+1  ! increment
-                    iszjvn(icurzone,icursurf,n)=NZTV(icurzone)
-                    szcoords(icurzone,NZTV(icurzone),1)=RVX
-                    szcoords(icurzone,NZTV(icurzone),2)=RVY
-                    szcoords(icurzone,NZTV(icurzone),3)=RVZ
+                  if(idebg.eq.2)then
+                    write(6,'(a,2i3,3f8.3,a,2i3)')'reuse coords ',
+     &              icurzone,
+     &              icursurf,RVX,RVY,RVZ,' at ',match,n
+                  endif
+                else
+                  n=isznver(icurzone,icursurf)
+                  NZTV(icurzone)=NZTV(icurzone)+1  ! increment
+                  iszjvn(icurzone,icursurf,n)=NZTV(icurzone)
+                  szcoords(icurzone,NZTV(icurzone),1)=RVX
+                  szcoords(icurzone,NZTV(icurzone),2)=RVY
+                  szcoords(icurzone,NZTV(icurzone),3)=RVZ
 C Debug
-                    if(idebg.eq.2)then
-                      write(6,'(a,2i4,3f8.3,a,2i3)') 
-     &                'adding parent coords ',icurzone,
-     &                icursurf,RVX,RVY,RVZ,' nztv ',
-     &                NZTV(icurzone),nzsur(icurzone)
-                    endif
+                  if(idebg.eq.2)then
+                    write(6,'(a,2i4,3f8.3,a,2i3)') 
+     &              'adding parent coords ',icurzone,
+     &              icursurf,RVX,RVY,RVZ,' nztv ',
+     &              NZTV(icurzone),nzsur(icurzone)
                   endif
                 endif
+              endif
 
 C Debug - write out the current edge list.
-                if(idebg.eq.2)then
-                  write(6,'(a,2i4,a,124i4)') 'surf jvn a ',
-     &             icurzone,icursurf,' ',
-     &             (iszjvn(icurzone,icursurf,j),J=1,
-     &             isznver(icurzone,icursurf))
-                endif
-                if(inopening)then
+              if(idebg.eq.2)then
+                write(6,'(a,3i4,a,124i4)') 'surf jvn a ',
+     &           icurzone,icursurf,isznver(icurzone,icursurf),' ',
+     &           (iszjvn(icurzone,icursurf,j),J=1,
+     &           isznver(icurzone,icursurf))
+              endif
+              if(inopening)then
 
 C If there is an opening repeat the logic but with iopensurf and icursurf.
-                  if(nztv(icurzone)+1.lt.MTV.and.
-     &               isznver(icurzone,icursurf)+1.lt.MV)then
-                    continue  ! we can process this
-                  else
+                if(nztv(icurzone)+1.lt.MTV.and.
+     &             isznver(icurzone,icursurf)+1.lt.MV)then
+                  continue  ! we can process this
+                else
 
-C Place to decrement surface counter >>
-
-                    write(6,'(a,i3,a,3i4)')
-     &                ' BEYOND vertex or edge LIMITS in zc ',
-     &                icurzone,' this & opening ',nztv(icurzone),
-     &                isznver(icurzone,icursurf),nbvertincurrent
-                    iopen=1
-                    do while (iopen.ne.0)
-                      call lstripc(IUNIT,loutstr,99,ND,1,'xml surf',IER)
-                      k=0
-                      call EGETXMLTAG(loutstr,K,PHRASE,'-','xmltag',ier)
-                      if(PHRASE(1:8).eq.'/Opening')then
-                        iopen=0; iopensurf=0
-                        inopening=.false.; iswindow=.false.
-                        isdoor=.false.
-                        nzsur(icurzone)=nzsur(icurzone)-1 ! decrement
-                        nbwalls(icurzone)=nzsur(icurzone)
-                        if(havepartition)then
-                          havepartition=.false.  ! unset any active partition marker
-                          ptnflip=.false.; ptnopeningflip=.false.
-                          nbxmlchild=0
-                        endif
-                      endif
-                      if(PHRASE(1:8).eq.'/Surface')then
-                        iopen=0; insurface=.false.
-                        isdoor=.false.; iswindow=.false.
-                        iopensurf=0
-                        nzsur(icurzone)=nzsur(icurzone)-1 ! decrement
-                        nbwalls(icurzone)=nzsur(icurzone)
-                        if(havepartition)then
-                          havepartition=.false.  ! unset any active partition marker
-                          ptnflip=.false.; ptnopeningflip=.false.
-                          nbxmlchild=0
-                          do loop=1,20
-                            iothopsurf(loop)=0
-                          enddo
-                        endif
-                      endif
-                    end do
-
-C << Place to decrement surface list >>
-          write(6,*) 'decr_f ',nzsur(icurzone),nbwalls(icurzone),
-     &      nextsurftype,nextsurfname,icurzone,icursurf,iopensurf
-C                    goto 443  ! get another line
-                    goto 442  ! get another line
-                  endif
-                  found=.false.
-                  call matchcoord(RVX,RVY,RVZ,icurzone,found,match)
+C Beyond complexity limits. Create a message name and jump
+C to block of code that scans file until /Opening or /Surface
+                  write(6,'(a,i3,a,3i4)')
+     &              ' BEYOND vertex or edge LIMITS in zc ',
+     &              icurzone,' this & opening ',nztv(icurzone),
+     &              isznver(icurzone,icursurf),nbvertincurrent
+                  errmsg='decr_f '
+                  goto 69
+                endif
+                found=.false.
+                call matchcoord(RVX,RVY,RVZ,icurzone,found,match)
 
 C If an existing vertex is close then reference it otherwise
 C add a new vertex to the end of the zone list. Add its index to
 C both the parent and opening surface if a window.
-                  if(found)then
+                if(found)then
+                  n=isznver(icurzone,iopensurf)
+                  iszjvn(icurzone,iopensurf,n)=match
+                  if(iswindow.or.isdoor)then
                     n=isznver(icurzone,iopensurf)
-                    iszjvn(icurzone,iopensurf,n)=match
-                    if(iswindow.or.isdoor)then
-                      n=isznver(icurzone,iopensurf)
-                      iszjvn(icurzone,iopensurf,n)=match  ! ? shift to /PolyLoop ?
-C Debug.
-                      if(idebg.eq.2)then
-                        write(6,'(a,2i3,3f8.3,a,2i3)') 
-     &                  'reuse coords for opening ',
-     &                  icurzone,iopensurf,RVX,RVY,RVZ,' at ',
-     &                  match,n
-                      endif
-                    endif
-                  else
-                    n=isznver(icurzone,iopensurf)
-                    NZTV(icurzone)=NZTV(icurzone)+1  ! increment
-                    iszjvn(icurzone,iopensurf,n)=NZTV(icurzone)
+                    iszjvn(icurzone,iopensurf,n)=match  ! ? shift to /PolyLoop ?
 C Debug.
                     if(idebg.eq.2)then
-                      write(6,'(a,2i4,3f8.3,a,2i3)')
-     &                'adding coords opening ',
-     &                icurzone,iopensurf,RVX,RVY,RVZ,
-     &                ' nztv ',NZTV(icurzone),n
+                      write(6,'(a,2i3,3f8.3,a,2i3)') 
+     &                'reuse coords for opening ',
+     &                icurzone,iopensurf,RVX,RVY,RVZ,' at ',
+     &                match,n
                     endif
-                    n=isznver(icurzone,iopensurf)
-                    NZTV(icurzone)=NZTV(icurzone)+1  ! increment
-                    iszjvn(icurzone,iopensurf,n)=NZTV(icurzone)
-                    szcoords(icurzone,NZTV(icurzone),1)=RVX
-                    szcoords(icurzone,NZTV(icurzone),2)=RVY
-                    szcoords(icurzone,NZTV(icurzone),3)=RVZ
                   endif
-
-C Debug - write out the edge list for iopensurf.
-C                 write(6,'(a,2i4,124i4)') 'opening jvn b ',
-C     &             icurzone,iopensurf,
-C     &             (iszjvn(icurzone,iopensurf,j),J=1,
-C     &              isznver(icurzone,iopensurf))
-
+                else
+                  n=isznver(icurzone,iopensurf)
+                  NZTV(icurzone)=NZTV(icurzone)+1  ! increment
+                  iszjvn(icurzone,iopensurf,n)=NZTV(icurzone)
+C Debug.
+                  if(idebg.eq.2)then
+                    write(6,'(a,2i4,3f8.3,a,2i3)')
+     &              'adding coords opening ',
+     &              icurzone,iopensurf,RVX,RVY,RVZ,
+     &              ' nztv ',NZTV(icurzone),n
+                  endif
+                  n=isznver(icurzone,iopensurf)
+                  NZTV(icurzone)=NZTV(icurzone)+1  ! increment
+                  iszjvn(icurzone,iopensurf,n)=NZTV(icurzone)
+                  szcoords(icurzone,NZTV(icurzone),1)=RVX
+                  szcoords(icurzone,NZTV(icurzone),2)=RVY
+                  szcoords(icurzone,NZTV(icurzone),3)=RVZ
                 endif
 
+C Debug - write out the edge list for iopensurf.
+C               write(6,'(a,2i4,124i4)') 'opening jvn b ',
+C     &           icurzone,iopensurf,
+C     &           (iszjvn(icurzone,iopensurf,j),J=1,
+C     &            isznver(icurzone,iopensurf))
+
+              endif
+
 C Logic for havepartition may also apply here. We have already
-C have iothsurf defined when we read AdjacentSpaceId
-                if(havepartition)then
-                  if(idebg.eq.2)then
-                    write(6,'(a,i2,1x,a,2i3)')' have other partition a',
-     &              iothzone,othzonename,nzsur(iothzone),iothsurf
-                  endif
+C have iothsurf defined when we read AdjacentSpaceId (but we might
+C not have read that token yet).
+              if(havepartition)then
+                if(idebg.eq.2)then
+                  write(6,'(a,i2,1x,a,2i3)')' have other partition a',
+     &             iothzone,othzonename,nzsur(iothzone),iothsurf
+                endif
 
 C The surface count in iothzone will already have a slot for this so use it.
-                  if(nztv(iothzone)+1.lt.MTV.and.
-     &              isznver(iothzone,iothsurf)+1.lt.MV)then
-                    continue  ! we can process this
-                  else
+                if(nztv(iothzone)+1.lt.MTV.and.
+     &            isznver(iothzone,iothsurf)+1.lt.MV)then
+                  continue  ! we can process this
+                else
 
-C << Place to decrement surface counter >>
+C Beyond complexity limits. Create a message name and jump
+C to block of code that scans file until /Opening or /Surface
+                  write(6,'(a,i3,a,3i4)')
+     &              ' BEYOND vertex or edge LIMITS in zd ',
+     &              iothzone,' this & opening ',nztv(iothzone),
+     &              isznver(iothzone,iothsurf),nbvertincurrent
+                  errmsg='decr_h '
+                  goto 69
+                endif
 
-                    write(6,'(a,i3,a,3i4)')
-     &                ' BEYOND vertex or edge LIMITS in zd ',
-     &                iothzone,' this & opening ',nztv(iothzone),
-     &                isznver(iothzone,iothsurf),nbvertincurrent
-                    iopen=1
-                    do while (iopen.ne.0)
-                      call lstripc(IUNIT,loutstr,99,ND,1,'xmlsurf',IER)
-                      k=0
-                      call EGETXMLTAG(loutstr,K,PHRASE,'-','xmltg',ier)
-
-C If we are currently working on an Opening then look for /Opening
-                      if(inopening.and.PHRASE(1:8).eq.'/Opening')then
-                        iopen=0; iopensurf=0
-                        inopening=.false.; iswindow=.false.
-                        isdoor=.false.
-                        nzsur(icurzone)=nzsur(icurzone)-1 ! decrement
-                        nbwalls(icurzone)=nzsur(icurzone)
-                      endif
-                      if(PHRASE(1:8).eq.'/Surface')then
-                        iopen=0; insurface=.false.
-                        isdoor=.false.; iswindow=.false.
-                        if(havepartition)then
-                          havepartition=.false.  ! unset any active partition marker
-                          ptnflip=.false.; ptnopeningflip=.false.
-                          nbxmlchild=0
-                          do loop=1,20
-                            iothopsurf(loop)=0
-                          enddo
-                        endif
-                      endif
-                    end do
-
-C << Place to decrement data structures >>
-              write(6,*) 'decr_h ',nzsur(icurzone),nbwalls(icurzone),
-     &          nextsurftype,nextsurfname,icurzone,icursurf,iopensurf
-                iopensurf=0
-                    goto 442  ! get another line
-                  endif
-
-                  found=.false.
-                  call matchcoord(RVX,RVY,RVZ,iothzone,found,match)
-                  if(found)then
-                    n=isznver(iothzone,iothsurf)
-                    iszjvn(iothzone,iothsurf,n)=match
+                found=.false.
+                call matchcoord(RVX,RVY,RVZ,iothzone,found,match)
+                if(found)then
+                  n=isznver(iothzone,iothsurf)
+                  iszjvn(iothzone,iothsurf,n)=match
 C Debug.
-                    if(idebg.eq.2)then
-                      write(6,'(a,2i4,3f8.3,a,2i3)')
-     &                'reuse coords a ',iothzone,
-     &                iothsurf,RVX,RVY,RVZ,' at ',match,n
-                    endif
-                  else
-                    n=isznver(iothzone,iothsurf)
-                    NZTV(iothzone)=NZTV(iothzone)+1  ! increment
-                    iszjvn(iothzone,iothsurf,n)=NZTV(iothzone)
-                    szcoords(iothzone,NZTV(iothzone),1)=RVX
-                    szcoords(iothzone,NZTV(iothzone),2)=RVY
-                    szcoords(iothzone,NZTV(iothzone),3)=RVZ
-C Debug.
-                    if(idebg.eq.2)then
-                      write(6,'(a,2i4,3f8.3,a,2i3)') 
-     &                  'adding coords a ',iothzone,iothsurf,
-     &                  RVX,RVY,RVZ,' other nztv ',NZTV(iothzone),n
-                    endif
+                  if(idebg.eq.2)then
+                    write(6,'(a,2i4,3f8.3,a,2i3)')
+     &              'reuse coords a ',iothzone,
+     &              iothsurf,RVX,RVY,RVZ,' at ',match,n
                   endif
+                else
+                  n=isznver(iothzone,iothsurf)
+                  NZTV(iothzone)=NZTV(iothzone)+1  ! increment
+                  iszjvn(iothzone,iothsurf,n)=NZTV(iothzone)
+                  szcoords(iothzone,NZTV(iothzone),1)=RVX
+                  szcoords(iothzone,NZTV(iothzone),2)=RVY
+                  szcoords(iothzone,NZTV(iothzone),3)=RVZ
+C Debug.
+                  if(idebg.eq.2)then
+                    write(6,'(a,2i4,3f8.3,a,2i3)') 
+     &                'adding coords a ',iothzone,iothsurf,
+     &                RVX,RVY,RVZ,' other nztv ',NZTV(iothzone),n
+                  endif
+                endif
 
 C Debug - write out the other zone partition edge list.
-                  if(idebg.ge.1)then
-                    write(6,'(a,2i4,124i4)') 'other ptn jvn ',
-     &               iothzone,iothsurf,
-     &               (iszjvn(iothzone,iothsurf,j),J=1,
-     &               isznver(iothzone,iothsurf))
-                  endif
+                if(idebg.ge.1)then
+                  write(6,'(a,2i4,124i4)') 'other ptn jvn ',
+     &             iothzone,iothsurf,
+     &             (iszjvn(iothzone,iothsurf,j),J=1,
+     &             isznver(iothzone,iothsurf))
+                endif
 
-                  if(inopening)then
+                if(inopening)then
 
 C If the partition had an opening then check again.
 
 C << Place to decrement surface counter >>
 
-                    if(nztv(iothzone)+1.lt.MTV)then
-                      if(nbxmlchild.ge.1.and.
-     &             isznver(iothzone,iothopsurf(nbxmlchild))+1.ge.MV)then
-                        write(6,'(a,i3,a,4i4)')
-     &                    ' BEYOND vertex or edge LIMITS in ze ',
-     &                    iothzone,' this & open ',nztv(iothzone),
-     &                    isznver(iothzone,iothopsurf(nbxmlchild)),
-     &                    nbxmlchild,nbvertincurrent
-                        iopen=1
-                        do while (iopen.ne.0)
-                          call lstripc(IUNIT,loutstr,99,ND,1,
-     &                      'xml surf',IER)
-                          k=0
-                          call EGETXMLTAG(loutstr,K,PHRASE,'-',
-     &                      'xml tag',ier)
+                  if(nztv(iothzone)+1.lt.MTV)then
+                    if(nbxmlchild.ge.1.and.
+     &           isznver(iothzone,iothopsurf(nbxmlchild))+1.ge.MV)then
 
-C If we are currently working on an Opening then look for /Opening
-                        if(inopening.and.PHRASE(1:8).eq.'/Opening')then
-                          iopen=0; iopensurf=0
-                          inopening=.false.; iswindow=.false.
-                          isdoor=.false.
-                          nzsur(icurzone)=nzsur(icurzone)-1 ! decrement
-                          nbwalls(icurzone)=nzsur(icurzone)
-                        endif
-                        if(PHRASE(1:8).eq.'/Surface')then
-                          iopen=0; insurface=.false.
-                          isdoor=.false.; iswindow=.false.
-                          if(havepartition)then
-                            havepartition=.false.  ! unset any active partition marker
-                            ptnflip=.false.; ptnopeningflip=.false.
-                            nbxmlchild=0
-                            do loop=1,20
-                              iothopsurf(loop)=0
-                            enddo
-                          endif
-                        endif
-                        end do
-
-C << Place to decrement data structures >>
-               write(6,*) 'decr_i ',nzsur(icurzone),nbwalls(icurzone),
-     &           nextsurftype,nextsurfname,icurzone,icursurf,iopensurf
-                        iopensurf=0
-C                        goto 443  ! get another line
-                        goto 442  ! get another line
-                      endif
-                    else
-
-C << Place to decrement surface counter >>
-
+C Beyond complexity limits. Create a message name and jump
+C to block of code that scans file until /Opening or /Surface
                       write(6,'(a,i3,a,4i4)')
-     &                  ' BEYOND vertex or edge LIMITS in zf ',
-     &                  iothzone,' this & opening ',nztv(iothzone),
+     &                  ' BEYOND vertex or edge LIMITS in ze ',
+     &                  iothzone,' this & open ',nztv(iothzone),
      &                  isznver(iothzone,iothopsurf(nbxmlchild)),
      &                  nbxmlchild,nbvertincurrent
-                      iopen=1
-                      do while (iopen.ne.0)
-                        call lstripc(IUNIT,loutstr,99,ND,1,'xmlsur',IER)
-                        k=0
-                        call EGETXMLTAG(loutstr,K,PHRASE,'-',
-     &                    'xml tag',ier)
-                        if(PHRASE(1:8).eq.'/Opening')then
-                          iopen=0; iopensurf=0
-                          inopening=.false.; iswindow=.false.
-                          isdoor=.false.
-                          nzsur(iothzone)=nzsur(iothzone)-1 ! decrement
-                          nbwalls(iothzone)=nzsur(iothzone)
-                          if(havepartition)then
-                            havepartition=.false.  ! unset any active partition marker
-                            ptnflip=.false.; ptnopeningflip=.false.
-                            nbxmlchild=0
-                          endif
-                        endif
-                        if(PHRASE(1:8).eq.'/Surface')then
-                          iopen=0; insurface=.false.
-                          isdoor=.false.; iswindow=.false.
-                          iopensurf=0
-                          nzsur(iothzone)=nzsur(iothzone)-1 ! decrement
-                          nbwalls(iothzone)=nzsur(iothzone)
-                          if(havepartition)then
-                            havepartition=.false.  ! unset any active partition marker
-                            ptnflip=.false.; ptnopeningflip=.false.
-                            nbxmlchild=0
-                            do loop=1,20
-                              iothopsurf(loop)=0
-                            enddo
-                          endif
-                        endif
-                      end do
+                      errmsg='decr_i '
+                      goto 69
+                    endif
+                  else
 
-C << Place to decrement surface list >>
-          write(6,*) 'decr_k ',nzsur(icurzone),nbwalls(icurzone),
-     &      nextsurftype,nextsurfname,icurzone,icursurf,iopensurf
-C                      goto 443  ! get another line
-                      goto 442  ! get another line
-                    endif
-                    found=.false.
-                    call matchcoord(RVX,RVY,RVZ,iothzone,found,match)
-                    if(found)then
-                      if(nbxmlchild.ge.1.and.nbxmlchild.lt.21)then
-                        n=isznver(iothzone,iothopsurf(nbxmlchild))
-                        iszjvn(iothzone,iothopsurf(nbxmlchild),n)=match
+C Beyond complexity limits. Create a message name and jump
+C to block of code that scans file until /Opening or /Surface
+                    write(6,'(a,i3,a,4i4)')
+     &                ' BEYOND vertex or edge LIMITS in zf ',
+     &                iothzone,' this & opening ',nztv(iothzone),
+     &                isznver(iothzone,iothopsurf(nbxmlchild)),
+     &                nbxmlchild,nbvertincurrent
+                    errmsg='decr_k '
+                    goto 69
+                  endif
+                  found=.false.
+                  call matchcoord(RVX,RVY,RVZ,iothzone,found,match)
+                  if(found)then
+                    if(nbxmlchild.ge.1.and.nbxmlchild.lt.21)then
+                      n=isznver(iothzone,iothopsurf(nbxmlchild))
+                      iszjvn(iothzone,iothopsurf(nbxmlchild),n)=match
 C Debug.
-                        if(idebg.eq.2)then
-                          write(6,'(a,2i4,3f8.3,a,3i3)') 
-     &                    'reuse coords for opening b ',
-     &                    iothzone,iothopsurf(nbxmlchild),
-     &                    RVX,RVY,RVZ,' at ',match,n,nbxmlchild
-                        endif
-                      endif
-                    else  ! focus on other zone opening in partition
-                      if(nbxmlchild.ge.1.and.nbxmlchild.lt.21)then
-                        n=isznver(iothzone,iothopsurf(nbxmlchild))
-                        NZTV(iothzone)=NZTV(iothzone)+1   ! increment
-                        iszjvn(iothzone,iothopsurf(nbxmlchild),n)=
-     &                    NZTV(iothzone)
-                      endif
-                      szcoords(iothzone,NZTV(iothzone),1)=RVX
-                      szcoords(iothzone,NZTV(iothzone),2)=RVY
-                      szcoords(iothzone,NZTV(iothzone),3)=RVZ
-C Debug.
-                      if(nbxmlchild.ge.1)then
-                        write(6,'(a,2i4,3f8.3,a,5i3)') 
-     &                    'adding coords for opening b',iothzone,
-     &                    iothopsurf(nbxmlchild),RVX,RVY,RVZ,' nztv ',
-     &                    NZTV(iothzone),n,nzsur(iothzone),n,nbxmlchild
+                      if(idebg.eq.2)then
+                        write(6,'(a,2i4,3f8.3,a,3i3)') 
+     &                  'reuse coords for opening b ',
+     &                  iothzone,iothopsurf(nbxmlchild),
+     &                  RVX,RVY,RVZ,' at ',match,n,nbxmlchild
                       endif
                     endif
+                  else  ! focus on other zone opening in partition
+                    if(nbxmlchild.ge.1.and.nbxmlchild.lt.21)then
+                      n=isznver(iothzone,iothopsurf(nbxmlchild))
+                      NZTV(iothzone)=NZTV(iothzone)+1   ! increment
+                      iszjvn(iothzone,iothopsurf(nbxmlchild),n)=
+     &                  NZTV(iothzone)
+                    endif
+                    szcoords(iothzone,NZTV(iothzone),1)=RVX
+                    szcoords(iothzone,NZTV(iothzone),2)=RVY
+                    szcoords(iothzone,NZTV(iothzone),3)=RVZ
+C Debug.
+                    if(nbxmlchild.ge.1)then
+                      write(6,'(a,2i4,3f8.3,a,5i3)') 
+     &                  'adding coords for opening b',iothzone,
+     &                  iothopsurf(nbxmlchild),RVX,RVY,RVZ,' nztv ',
+     &                  NZTV(iothzone),n,nzsur(iothzone),n,nbxmlchild
+                    endif
+                  endif
 
 C Debug - write out the edge list for iopensurf.
-                    if(nbxmlchild.ge.1.and.nbxmlchild.lt.21)then
-                      write(6,'(a,2i4,124i4)') 
-     &                  'other opening jvn equiv',
-     &                  iothzone,iothopsurf(nbxmlchild),
-     &                  (iszjvn(iothzone,iothopsurf(nbxmlchild),j),J=1,
-     &                  isznver(iothzone,iothopsurf(nbxmlchild)))
-                    endif
-                  endif  ! of opening
-                endif    ! of havepartition
-              endif
-              goto 443
-            elseif(PHRASE(1:15).eq.'/CartesianPoint')then
-              goto 442  ! get another line
+                  if(nbxmlchild.ge.1.and.nbxmlchild.lt.21)then
+                    write(6,'(a,2i4,124i4)') 
+     &                'other opening jvn equiv',
+     &                iothzone,iothopsurf(nbxmlchild),
+     &                (iszjvn(iothzone,iothopsurf(nbxmlchild),j),J=1,
+     &                isznver(iothzone,iothopsurf(nbxmlchild)))
+                  endif
+                endif  ! of opening
+              endif    ! of havepartition
             endif
+            goto 443
+          elseif(PHRASE(1:15).eq.'/CartesianPoint')then
+            goto 442  ! get another line
           endif
         endif
+
       elseif(PHRASE(1:15).eq.'/CartesianPoint')then
         if(inbuilding)then
           continue
@@ -2474,7 +2303,9 @@ C until the PHRASE is '/ShellGeometry'.
 
 C Depending on the source a Surface tag can be followed by:
 C surfaceType="x", constructionIdRef="y",exposedToSun="z",
-C id="zz". 
+C id="zz". Somewhere in the definition will be a AdjacentSpaceId
+C tag (untill we have that we cannot assign zone or surface
+C attributes so set haveadjacentspaceid=.FALSE.
         havename=.false.
         insurface=.true.
         havenearside=.false.
@@ -2555,7 +2386,7 @@ C Fall through if the surface type is not currently dealt with.
             havename=.true.
 
 C Debug. 
-            if(cursurfname(1:6).eq."su-108")then
+            if(cursurfname(1:10).eq."S0_1-SF_29")then
               write(6,*) 'pay attention'
             endif
           else
@@ -2655,38 +2486,8 @@ C If beyond limits read lines until the tag is </Opening>
 C and then jump back to 442.
           write(6,'(a,2i4)')' BEYOND surface LIMITS in z ',
      &      icurzone,nzsur(icurzone)+1
-          iopen=1
-          do while (iopen.ne.0)
-            call lstripc(IUNIT,loutstr,99,ND,1,'xml opening',IER)
-            k=0
-            call EGETXMLTAG(loutstr,K,PHRASE,'-','xml tag',ier)
-            if(PHRASE(1:8).eq.'/Opening')then
-              iopen=0; iopensurf=0
-              inopening=.false.; iswindow=.false.
-              isdoor=.false.
-            endif
-            if(PHRASE(1:8).eq.'/Surface')then
-              iopen=0; insurface=.false.
-              isdoor=.false.; iswindow=.false.
-              if(havepartition)then
-                havepartition=.false.  ! unset any active partition marker
-                ptnflip=.false.; ptnopeningflip=.false.
-                nbxmlchild=0
-                do loop=1,20
-                  iothopsurf(loop)=0
-                enddo
-              endif
-            endif
-          end do
-
-C << Place to decrement counters. No example triggers this yet >>
-C << if other zone is at complexity limits we might
-C << need to delete the current surface in the current zone??
-
-          write(6,*) 'decr_a ',nzsur(icurzone),nbwalls(icurzone),
-     &      nextsurftype,nextsurfname,icurzone,icursurf,iopensurf
-
-          goto 442  ! get another line
+          errmsg='decr_a '
+          goto 69
         endif
 
 C Increment nzsur, nbwalls.
@@ -3028,6 +2829,9 @@ C << Perhaps this will need to be rolled back if complexity limits exceeded >>
                 write(iszuse(icurzone,iopensurf,2),'(a)') '- '
               endif
               if(curstype(1:3).eq.'Air')then
+
+C << why are we setting air to similar? It might be a partition >>
+
                 write(iszmlcn(icurzone,icursurf),'(a)')
      &            defmlc(11)(1:lnblnk(defmlc(11)))
                 write(iszuse(icurzone,iopensurf,1),'(a)') 'FICT'
@@ -3138,6 +2942,27 @@ C Now that we know which zone we can assign cursurfname and attributes.
 C For InteriorFloor.
                 if(idebg.ge.1)then
                   write(6,'(5a,i3,a,i3)') 'Found int floor match ',
+     &            cursurfname,' in ',zn(icurzone),' z ',
+     &            icurzone,' s-in-z count ',nzsur(icurzone)
+                endif
+                write(iszotf(icurzone,icursurf),'(a)') 'OPAQUE'
+                write(iszmlcn(icurzone,icursurf),'(a)') 
+     &            defmlc(12)(1:lnblnk(defmlc(12)))
+                write(iszuse(icurzone,icursurf,1),'(a)') 'PARTN'
+                write(iszuse(icurzone,icursurf,2),'(a)') '- '
+                write(iszother(icurzone,icursurf,1),'(a)')
+     &            othzonename
+                write(iszother(icurzone,icursurf,2),'(i3.3)')
+     &            iothzone
+                write(iszother(icurzone,icursurf,3),'(i3.3)')
+     &            iothsurf
+                zboundarytype(icurzone,icursurf,1)=3
+                zboundarytype(icurzone,icursurf,2)=iothzone
+                zboundarytype(icurzone,icursurf,3)=iothsurf
+
+              elseif(curstype(1:3).eq.'Air')then
+                if(idebg.ge.1)then
+                  write(6,'(5a,i3,a,i3)') 'Found int air match ',
      &            cursurfname,' in ',zn(icurzone),' z ',
      &            icurzone,' s-in-z count ',nzsur(icurzone)
                 endif
@@ -3391,6 +3216,55 @@ C This often is a source of documentation. Not currently used.
       endif
       goto 442  ! loop to read another line from the XML file.
 
+
+C ***********************
+C Block of code that loops through the file looking for the
+C next /Opening or /Surface when complexity limits exceeded.
+  69  continue
+      iopen=1
+      do while (iopen.ne.0)
+        call lstripc(IUNIT,loutstr,99,ND,1,'xml surf',IER)
+        k=0
+        call EGETXMLTAG(loutstr,K,PHRASE,'-','xml tag',ier)
+
+C If we are currently working on an Opening then look for /Opening
+        if(inopening.and.PHRASE(1:8).eq.'/Opening')then
+          iopen=0; iopensurf=0
+          inopening=.false.; iswindow=.false.
+          isdoor=.false.
+          nzsur(icurzone)=nzsur(icurzone)-1 ! decrement
+          nbwalls(icurzone)=nzsur(icurzone)
+          if(havepartition)then
+            havepartition=.false.  ! unset any active partition marker
+            ptnflip=.false.; ptnopeningflip=.false.
+            nbxmlchild=0
+          endif
+        endif
+        if(PHRASE(1:8).eq.'/Surface')then
+          iopen=0; insurface=.false.
+          isdoor=.false.; iswindow=.false.
+          nzsur(icurzone)=nzsur(icurzone)-1 ! decrement
+          nbwalls(icurzone)=nzsur(icurzone)
+          if(havepartition)then
+            havepartition=.false.  ! unset any active partition marker
+            ptnflip=.false.; ptnopeningflip=.false.
+            nbxmlchild=0
+            do loop=1,20
+              iothopsurf(loop)=0
+            enddo
+          endif
+        endif
+      end do
+
+C Debug.
+      write(6,*) errmsg(1:lnblnk(errmsg)),' ',nzsur(icurzone),
+     &  nbwalls(icurzone),nextsurftype,nextsurfname,icurzone,icursurf,
+     &  iopensurf
+      iopensurf=0
+      goto 442  ! get another line
+
+
+C ****************
 C Process the data if the end of the file reached.
  1000 continue
 
@@ -3426,23 +3300,21 @@ C If there are no zones and no *start_zone found return.
       else
         icomp=0      ! reset because it will be incrmented later
 
-C If user wants to specify room use on a zone-by-zone basis.
-
 C Ask if user wants to specify globally or on a zone-by-zone basis.
         call EASKATOG('Define zone use:',' ',
      &    'spec zone-by-zone','assume all empty',
      &    'assume cellular offices','assume open plan offices',
      &    'assume coridors',' ',' ',IW,nbhelp)
         if(IW.eq.2)then
-          IGU=1
+          IGU=1  ! assume all empty
         elseif(IW.eq.3)then
-          IGU=2
+          IGU=2  ! assume cellular offices
         elseif(IW.eq.4)then
-          IGU=3
+          IGU=3  ! assume open plan offices
         elseif(IW.eq.5)then
-          IGU=4
+          IGU=4  ! assume corridors
         elseif(IW.eq.1)then
-          IGU=0
+          IGU=0  ! specify zone by zone
         endif
 
 C << Rework for metasurf common blocks.
@@ -3507,6 +3379,7 @@ C Create zone based on a set of parameters (created above).
 C Generate a zone control file with one control law for
 C each of the zones in the model (assuming conditionType
 C directives were found.
+        call isunix(unixok)
         if(unixok)then
           fs = char(47)
         else
@@ -3539,724 +3412,9 @@ C write it out again to sort the paths to the databases.
 
       END
 
-C Supporting subroutines for scanning XML data files.
-C  EGETXMLTAG:  Finds first XML tag after pos k in a string within an XML file.
-C  EGETWXML:    Finds first word after pos k in a string within an XML file.
-C  EGETWIXML:   As EGETWI for an integer within an XML file.
-C  EGETWRXML:   As EGETWR for a real within an XML file.
-C  EGETEQDQXML: Recovers tag="x" returning both tag and x.
-C  EGETRMXML:   The remainder of a text an XML tag within an XML file.
+C Supporting subroutines for scanning XML data files are
+C now located in lib/esru_lib.F
 
-C ***************** EGETXMLTAG
-C EGETXMLTAGE gets first XML tag after position K from the STRING of
-C characters. Strips the leading < and the trailing >. Returns k at
-C the trailing > Spaces within tag are ok. Provides a warning
-C message if ACT='W', a failure message if ACT='F' and does
-C no message if ACT='-'.
-      SUBROUTINE EGETXMLTAG(STRING,K,PHRASE,ACT,MSG,ier)
-#include "espriou.h"
-      common/OUTIN/IUOUT,IUIN
-
-      CHARACTER*(*) PHRASE, STRING, MSG
-      CHARACTER ACT*1,A*1,loutstr*248,outs*124
-      logical unixok
-
-C LS is th maximum length of STRING, L the current position,
-C LW the maximum length of PHRASE.
-      ier=0
-      PHRASE=' '
-      LS=LEN(STRING)
-      LW=LEN(PHRASE)
-      L=0
-
-C Start by skipping blanks tabs before the PHRASE.
-   10 K=K+1
-      IF(K.GT.LS) GOTO 999
-      A=STRING(K:K)
-      IF(A.EQ.' '.OR.A.EQ.','.OR.(ICHAR(A).EQ.9)) GOTO 10
-
-      if(A.EQ.'<') then
-        K=K+1            ! increment to next character
-        A=STRING(K:K)    ! instanciate A
-        goto 20          ! proceed to copy
-      elseif(A.EQ.'>') then
-        continue
-      endif
-
-C Copy PHRASE from STRING, character by character until tab or a
-C comma or > is found.
-   20 L=L+1
-      IF(L.GT.LW) return
-      if(A.EQ.'>') then
-        return          ! do not save > in phrase
-      endif
-      PHRASE(L:L)=A     ! copy character into the phrase
-      K=K+1
-      IF(K.GT.LS) GOTO 999
-      A=STRING(K:K)
-      IF(ICHAR(A).EQ.9.or.A.eq.',') GO TO 100
-      if(A.EQ.'>') then
-        continue
-      endif
-      GOTO 20
-
-  100 RETURN
-
-  999 if(ACT.EQ.'-')then
-        RETURN
-      elseif(ACT.EQ.'W')then
-        ier=1
-        LN=max(1,lnblnk(currentfile))
-        LNM=max(1,lnblnk(MSG))
-        if(currentfile(1:2).ne.'  ')then
-          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
-     &      'WARNING: in ',currentfile(1:LN),
-     &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
-        else
-          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
-     &      'WARNING: Past end of line for ',
-     &      MSG(1:LNM),' (phrase) in...'
-        endif
-      elseif(ACT.EQ.'F')then
-        LN=max(1,lnblnk(currentfile))
-        LNM=max(1,lnblnk(MSG))
-        if(currentfile(1:2).ne.'  ')then
-          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
-     &      'FAILURE: in ',currentfile(1:LN),
-     &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
-        else
-          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
-     &      'FAILURE: Past end of line for ',
-     &      MSG(1:LNM),' (phrase) in...'
-        endif
-      endif
-      CALL EDISP248(iuout,loutstr,100)
-      if(lnblnk(STRING).gt.123)then
-        CALL EDISP248(iuout,STRING,100)
-      else
-        CALL EDISP(iuout,STRING)
-      endif
-      GOTO 100
-
-   1  call isunix(unixok)
-      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
-      LNM=max(1,lnblnk(STRING))
-      if(IOS.eq.2)then
-        write(outs,*) 'EGETXMLTAG: permission error writing warning: '
-        call edisp(iuout,outs)
-        call edisp(iuout,STRING(1:LNM))
-      else
-        write(outs,*) 'EGETXMLTAG: error writing warning: '
-        call edisp(iuout,outs)
-        call edisp(iuout,STRING(1:LNM))
-      endif
-      return
-
-      END
-
-
-C ***************** EGETWXML
-C EGETWXML gets first WORD after position K from the STRING of
-C characters. Words are separated by blanks, commas, |, <, or tab: WORD,WORD,WORD
-C or WORD WORD WORD or WORD, WORD, WORD  WORD> are all valid.  Provides a warning
-C message if ACT='W', a failure message if ACT='F' and does
-C no message if ACT='-'.  Modified after:
-C G.N. Walton, US Nat. Institute of Standards and Technology
-C     LS     - maximum length of STRING
-C     L      - current position in WORD
-C     LW     - maximum length of WORD
-
-      SUBROUTINE EGETWXML(STRING,K,WORD,ACT,MSG,IER)
-#include "espriou.h"
-C espriou.h provides currentfile.
-      common/OUTIN/IUOUT,IUIN
-
-      CHARACTER*(*) WORD, STRING, MSG
-      CHARACTER ACT*1,A*1,loutstr*248,outs*124
-      logical unixok
-
-      WORD=' '
-      LS=LEN(STRING)
-      LW=LEN(WORD)
-      L=0
-
-C Start by skipping blanks and tabs before the word.
-   10 K=K+1
-      IF(K.GT.LS) GOTO 999
-      A=STRING(K:K)
-      IF(A.EQ.' '.OR.A.EQ.','.OR.(ICHAR(A).EQ.9).OR.
-     &   (ICHAR(A).eq.124)) GOTO 10
-
-C Copy WORD from STRING, character by character until separator found.
-C A < is considered a separator as it represents start of a subsequent
-C XML tag.
-   20 L=L+1
-      IF(L.GT.LW) GOTO 100
-      WORD(L:L)=A
-      K=K+1
-      IF(K.GT.LS) GOTO 999
-      A=STRING(K:K)
-      IF(A.EQ.' '.OR.A.EQ.','.OR.(ICHAR(A).EQ.9).OR.
-     &   (ICHAR(A).eq.124).OR.A.EQ.'<') GO TO 100
-      GOTO 20
-
-  100 RETURN
-
-  999 ier=1
-      if(ACT.EQ.'-')then
-        RETURN
-      elseif(ACT.EQ.'W')then
-        LN=max(1,lnblnk(currentfile))
-        LNM=max(1,lnblnk(MSG))
-        if(currentfile(1:2).ne.'  ')then
-          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
-     &      'WARNING: in ',currentfile(1:LN),
-     &      ' past end of line for ',MSG(1:LNM),' in...'
-        else
-          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
-     &      'WARNING: Past end of line for ',
-     &      MSG(1:LNM),' (word) in...'
-        endif
-      elseif(ACT.EQ.'F')then
-        ier=1
-        LN=max(1,lnblnk(currentfile))
-        LNM=max(1,lnblnk(MSG))
-        if(currentfile(1:2).ne.'  ')then
-          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
-     &      'FAILURE: in ',currentfile(1:LN),
-     &      ' past end of line for ',MSG(1:LNM),' in...'
-        else
-          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
-     &      'FAILURE: Past end of line for ',
-     &      MSG(1:LNM),' (word) in...'
-        endif
-      endif
-      CALL EDISP248(iuout,loutstr,100)
-      if(lnblnk(STRING).gt.123)then
-        CALL EDISP248(iuout,STRING,100)
-      else
-        CALL EDISP(iuout,STRING)
-      endif
-      GOTO 100
-
-   1  call isunix(unixok)
-      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
-      LNM=max(1,lnblnk(STRING))
-      if(IOS.eq.2)then
-        write(outs,*) 'EGETWXML: permission error writing warning re: '
-        call edisp(iuout,outs)
-        call edisp(iuout,STRING(1:LNM))
-      else
-        write(outs,*) 'EGETWXML: error writing warning re: '
-        call edisp(iuout,outs)
-        call edisp(iuout,STRING(1:LNM))
-      endif
-      return
-
-      END
-
-
-C ***************** EGETWIXML
-C EGETWIXML gets first word after position K from the STRING of
-C characters and converts it into an integer IV, tests it against
-C the minimum MN and the maximum MX and provides a warning
-C message if ACT='W', a failure message if ACT='F' and does
-C no range checking if ACT='-'. Words may be separated by blanks,
-C commas, <, or tab: WORD,WORD,WORD or WORD WORD WORD or WORD, WORD, WORD
-C are all valid.
-      SUBROUTINE EGETWIXML(STRING,K,IV,MN,MX,ACT,MSG,IER)
-#include "espriou.h"
-      common/OUTIN/IUOUT,IUIN
-
-      CHARACTER*(*) STRING, MSG
-      CHARACTER ACT*1,STR1*10,STR2*10,WORD*20,loutstr*248,outs*124
-      logical unixok
-
-C Pick up line and lenght for error messages.
-      ils=max(1,lnblnk(STRING))
-      if(ils.gt.105)ils=105
-
-      IER=0
-      WORD=' '
-
-C Use alternative call that also checks for <.
-      CALL EGETWXML(STRING,K,WORD,'-','integer',IER)
-      IF(IER.NE.0)RETURN
-      read(WORD,*,IOSTAT=IOS,ERR=1002)iv
-
-C If range checking disabled, jump out of routine.
-      IF(ACT.EQ.'-')RETURN
-
-C Make up reporting string.
-      CALL INTSTR(IV,STR1,IW1,IER)
-
-C Check IV against minimum and respond based on ACT.
-      IF(IV.LT.MN)THEN
-        CALL INTSTR(MN,STR2,IW2,IER)
-        IF(ACT.EQ.'W')THEN
-          call edisp(iuout,' ')
-          LN=max(1,lnblnk(currentfile))
-          LNM=max(1,lnblnk(MSG))
-          if(currentfile(1:2).ne.'  ')then
-            WRITE(loutstr,'(4a)',IOSTAT=IOS,ERR=1)
-     &        'WARNING: in ',currentfile(1:LN),': ',STRING(1:ils)
-          else
-            write(loutstr,'(a,a)',IOSTAT=IOS,ERR=1)' WARNING in: ',
-     &      STRING(1:ils)
-          endif
-          CALL EDISP248(iuout,loutstr,100)
-          write(loutstr,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
-     &      ' value (',STR1(1:IW1),') < normal minimum ',STR2(1:IW2),'!'
-          CALL EDISP248(iuout,loutstr,100)
-        ELSEIF(ACT.EQ.'F')THEN
-          call edisp(iuout,' ')
-          LN=max(1,lnblnk(currentfile))
-          LNM=max(1,lnblnk(MSG))
-          if(currentfile(1:2).ne.'  ')then
-            WRITE(loutstr,'(4a)',IOSTAT=IOS,ERR=1)
-     &        'FAILURE: in ',currentfile(1:LN),': ',STRING(1:ils)
-          else
-            write(loutstr,'(a,a)',IOSTAT=IOS,ERR=1)' FAILURE in: ',
-     &        STRING(1:ils)
-          endif
-          CALL EDISP248(iuout,loutstr,100)
-          write(loutstr,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
-     &       ' value (',STR1(1:IW1),') < allowable minimum ',
-     &       STR2(1:IW2),'!'
-          CALL EDISP248(iuout,loutstr,100)
-          IER=1
-          RETURN
-        ENDIF
-      ELSEIF(IV.GT.MX)THEN
-        CALL INTSTR(MX,STR2,IW2,IER)
-        IF(ACT.EQ.'W')THEN
-          call edisp(iuout,' ')
-          LN=max(1,lnblnk(currentfile))
-          LNM=max(1,lnblnk(MSG))
-          if(currentfile(1:2).ne.'  ')then
-            WRITE(loutstr,'(4a)',IOSTAT=IOS,ERR=1)
-     &        'WARNING: in ',currentfile(1:LN),': ',STRING(1:ils)
-          else
-            write(loutstr,'(a,a)',IOSTAT=IOS,ERR=1)' WARNING in: ',
-     &        STRING(1:ils)
-          endif
-          CALL EDISP248(iuout,loutstr,100)
-          write(loutstr,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
-     &      ' value (',STR1(1:IW1),') > normal maximum ',STR2(1:IW2),'!'
-          CALL EDISP248(iuout,loutstr,100)
-        ELSEIF(ACT.EQ.'F')THEN
-          call edisp(iuout,' ')
-          LN=max(1,lnblnk(currentfile))
-          LNM=max(1,lnblnk(MSG))
-          if(currentfile(1:2).ne.'  ')then
-            WRITE(loutstr,'(4a)',IOSTAT=IOS,ERR=1)
-     &        'FAILURE: in ',currentfile(1:LN),': ',STRING(1:ils)
-          else
-            write(loutstr,'(a,a)',IOSTAT=IOS,ERR=1)' FAILURE in: ',
-     &        STRING(1:ils)
-          endif
-          CALL EDISP248(iuout,loutstr,100)
-          write(loutstr,'(7a)',IOSTAT=IOS,ERR=1) ' the ',MSG(1:LNM),
-     &       ' value (',STR1(1:IW1),') > allowable maximum ',
-     &       STR2(1:IW2),'!'
-          CALL EDISP248(iuout,loutstr,100)
-          IER=1
-          RETURN
-        ENDIF
-      ENDIF
-
-  100 RETURN
-
- 1002 if(currentfile(1:2).ne.'  ')then
-        LN=max(1,lnblnk(currentfile))
-        LNM=max(1,lnblnk(MSG))
-        WRITE(loutstr,'(6a)',IOSTAT=IOS,ERR=1) 'Failed in ',
-     &    currentfile(1:LN),': conversion of ',
-     &    MSG(1:LNM),' value in ',WORD
-      else
-        LNM=max(1,lnblnk(MSG))
-        WRITE(loutstr,1003,IOSTAT=IOS,ERR=1)MSG(1:LNM),WORD
- 1003   FORMAT(' Failed: conversion of ',A,' value in ',A)
-      endif
-      CALL EDISP248(iuout,loutstr,100)
-      IER=2
-      GOTO 100
-
-   1  call isunix(unixok)
-      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
-      LNM=max(1,lnblnk(STRING))
-      if(IOS.eq.2)then
-        write(outs,*) 'EGETWIXML: permission error writing warning re: '
-        call edisp(iuout,outs)
-        call edisp(iuout,STRING(1:LNM))
-      else
-        write(outs,*) 'EGETWIXML: error writing warning re: '
-        call edisp(iuout,outs)
-        call edisp(iuout,STRING(1:LNM))
-      endif
-      return
-
-      END
-
-
-C **************** EGETWRXML
-C EGETWRXML gets first word after position K from the STRING of
-C characters and converts it into a real number RV, tests it against
-C the minimum RMN and the maximum RMX and provides a warning
-C message if RACT='W', a failure message if RACT='F' and does
-C no range checking if RACT='-'. Words may be separated by blanks,
-C commas, <, or tab: WORD,WORD,WORD or WORD WORD WORD or WORD, WORD, WORD
-C are all valid.
-      SUBROUTINE EGETWRXML(STRING,K,RV,RMN,RMX,RACT,MSG,IER)
-#include "espriou.h"
-      common/OUTIN/IUOUT,IUIN
-
-C LOUTSTR is for messages to the user and should be long enough
-c to prevent truncation of messge contents.
-      CHARACTER*(*) STRING, MSG
-      CHARACTER RACT*1,STR1*16,STR2*16,WORD*20,LOUTSTR*248,outs*124
-      logical unixok
-
-C Pick up line and length for error messages.
-      ils=max(1,lnblnk(STRING))
-      if(ils.gt.230)ils=230
-
-      IER=0
-      WORD=' '
-
-C Use alternative call that also checks for <.
-      CALL EGETWXML(STRING,K,WORD,'-','real',IER)
-      IF(IER.NE.0) goto 1002
-      read(WORD,*,ERR=1002)rv
-
-C If range checking disabled, jump out of routine.
-      IF(RACT.EQ.'-')RETURN
-
-C Make up reporting string.
-      CALL REL16STR(RV,STR1,IW1,IER)
-
-C Check RV against minimum and respond based on RACT.
-      IF(RV.LT.RMN)THEN
-        CALL REL16STR(RMN,STR2,IW2,IER)
-        IF(RACT.EQ.'W')THEN
-          call edisp(iuout,' ')
-          LN=max(1,lnblnk(currentfile))
-          LNM=max(1,lnblnk(MSG))
-          if(currentfile(1:2).ne.'  ')then
-            WRITE(LOUTSTR,'(4a)',IOSTAT=IOS,ERR=1)
-     &        'WARNING: in ',currentfile(1:LN),': ',STRING(1:ils)
-          else
-            write(LOUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' WARNING in: ',
-     &        STRING(1:ils)
-          endif
-          call edisp248(iuout,LOUTSTR,100)
-          write(LOUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
-     &      ' value (',STR1(1:IW1),') < normal minimum ',STR2(1:IW2),'!'
-          call edisp248(iuout,LOUTSTR,100)
-        ELSEIF(RACT.EQ.'F')THEN
-          call edisp(iuout,' ')
-          LN=max(1,lnblnk(currentfile))
-          LNM=max(1,lnblnk(MSG))
-          if(currentfile(1:2).ne.'  ')then
-            WRITE(LOUTSTR,'(4a)',IOSTAT=IOS,ERR=1)
-     &        'FAILURE: in ',currentfile(1:LN),': ',STRING(1:ils)
-          else
-            write(LOUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' FAILURE in: ',
-     &      STRING(1:ils)
-          endif
-          call edisp248(iuout,LOUTSTR,100)
-          write(LOUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
-     &       ' value (',STR1(1:IW1),') < allowable minumum ',
-     &       STR2(1:IW2),'!'
-          call edisp248(iuout,loutstr,100)
-          IER=1
-          RETURN
-        ENDIF
-      ELSEIF(RV.GT.RMX)THEN
-        CALL REL16STR(RMX,STR2,IW2,IER)
-        IF(RACT.EQ.'W')THEN
-          call edisp(iuout,' ')
-          LN=max(1,lnblnk(currentfile))
-          LNM=max(1,lnblnk(MSG))
-          if(currentfile(1:2).ne.'  ')then
-            WRITE(LOUTSTR,'(4a)',IOSTAT=IOS,ERR=1)
-     &        'WARNING: in ',currentfile(1:LN),': ',STRING(1:ils)
-          else
-            write(LOUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' WARNING in: ',
-     &      STRING(1:ils)
-          endif
-          call edisp248(iuout,LOUTSTR,100)
-          write(LOUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
-     &       ' value (',STR1(1:IW1),') > normal  maximum ',
-     &       STR2(1:IW2),'!'
-          call edisp248(iuout,LOUTSTR,100)
-        ELSEIF(RACT.EQ.'F')THEN
-          call edisp(iuout,' ')
-          LN=max(1,lnblnk(currentfile))
-          LNM=max(1,lnblnk(MSG))
-          if(currentfile(1:2).ne.'  ')then
-            WRITE(LOUTSTR,'(4a)',IOSTAT=IOS,ERR=1)
-     &        'FAILURE: in ',currentfile(1:LN),': ',STRING(1:ils)
-          else
-            write(LOUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' FAILURE in: ',
-     &      STRING(1:ils)
-          endif
-          call edisp248(iuout,LOUTSTR,100)
-          write(LOUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
-     &       ' value (',STR1(1:IW1),') > allowable maximum ',
-     &       STR2(1:IW2),'!'
-          call edisp248(iuout,loutstr,100)
-          IER=1
-          RETURN
-        ENDIF
-      ENDIF
-
-  100 RETURN
-
- 1002 if(currentfile(1:2).ne.'  ')then
-        LN=max(1,lnblnk(currentfile))
-        LNM=max(1,lnblnk(MSG))
-        WRITE(LOUTSTR,'(6a)',IOSTAT=IOS,ERR=1) 'Failed in ',
-     &    currentfile(1:LN),': conversion of ',
-     &    MSG(1:LNM),' value in ',WORD
-      else
-        LNM=max(1,lnblnk(MSG))
-        WRITE(LOUTSTR,1003,IOSTAT=IOS,ERR=1)MSG(1:LNM),WORD
- 1003   FORMAT(' Failed: conversion of ',A,' value in ',A)
-      endif
-      CALL EDISP248(iuout,LOUTSTR,100)
-      IER=2
-      GOTO 100
-
-   1  call isunix(unixok)
-      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
-      LNM=max(1,lnblnk(STRING))
-      if(IOS.eq.2)then
-        write(outs,*) 'EGETWRXML: permission error writing warning re: '
-        call edisp(iuout,outs)
-        call edisp(iuout,STRING(1:LNM))
-      else
-        write(outs,*) 'EGETWRXML: error writing warning re: '
-        call edisp(iuout,outs)
-        call edisp(iuout,STRING(1:LNM))
-      endif
-      return
-
-      END
-
-C ***************** EGETEQDQXML
-C EGETEQDQXML gets tag & first quoted PHRASE after position K 
-C from the STRING of characters. Phrases can contain spaces
-C and commas but not tabs.
-C Provides a warning message if ACT='W', a failure message if ACT='F' and
-C no message if ACT='-'.  The string returned has the quotes removed.
-C Note it uses an internal string buffer which assumes that the
-C phrase is less than 248 characters long.
-C It is dealing with this pattern IDType="WMO"
-      SUBROUTINE EGETEQDQXML(STRING,K,TAG,PHRASE,ACT,MSG,ier)
-#include "espriou.h"
-      common/OUTIN/IUOUT,IUIN
-
-      CHARACTER*(*) TAG, PHRASE, STRING, MSG
-      CHARACTER ACT*1,A*1,loutstr*124,outs*124
-      character dq*1,sqleft*1,sqright*1
-      logical unixok,isphrase
-
-      dq = char(34)  ! double quote
-      sqleft = char(96)  ! single quote left
-      sqright = char(39)  ! single quote right
-
-C LS is th maximum length of STRING, L the current position,
-C LW the maximum length of PHRASE.
-      ier=0
-      TAG=' '; PHRASE=' '
-      LS=LEN(STRING)
-      LW=LEN(PHRASE)
-      LT=LEN(TAG)
-      L=0; isphrase=.false.
-
-C Start by skipping blanks, commas and tabs before the PHRASE.
-   10 K=K+1
-      IF(K.GT.LS) GOTO 999
-      A=STRING(K:K)
-      IF(A.EQ.' '.OR.A.EQ.','.OR.(ICHAR(A).EQ.9)) GOTO 10
-
-C Copy TAG or PHRASE from STRING, character by character until 
-C a double quote or single quote is found (a quoted phrase 
-C could include a comma, but not a tab)
-   20 L=L+1
-      IF(L.GE.LW) GOTO 100   ! at end of available phrase chars
-      if(isphrase)then
-        if(A.eq.dq.or.A.eq.sqleft.or.A.eq.sqright)then
-          goto 100  ! we have terminating quote
-        else
-          PHRASE(L:L)=A
-        endif
-      else
-        TAG(L:L)=A
-      endif
-      K=K+1
-      IF(K.GT.LS) GOTO 999
-      A=STRING(K:K)
-      IF(ICHAR(A).EQ.9) GOTO 100
-      if(A.eq."=")then
-        isphrase=.true.  ! mark end of tag and advance
-        K=K+1            ! increment K counter
-        A=STRING(K:K)    ! instanciate A should be a quote
-        L=0              ! reset L counter
-        if(A.eq.dq.or.A.eq.sqleft.or.A.eq.sqright)then
-          K=K+1          ! increment K counter
-          A=STRING(K:K)  ! instanciate A again
-          goto 20        ! loop back and deal with it
-        endif
-      endif
-      if(A.eq.dq.or.A.eq.sqleft.or.A.eq.sqright)then
-
-C Found terminating quote so process.
-        GOTO 100
-      endif
-      GOTO 20
-
-  100 return
-
-  999 if(ACT.EQ.'-')then
-        RETURN
-      elseif(ACT.EQ.'W')then
-        ier=1
-        LN=max(1,lnblnk(currentfile))
-        LNM=max(1,lnblnk(MSG))
-        if(currentfile(1:2).ne.'  ')then
-          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
-     &      'WARNING: in ',currentfile(1:LN),
-     &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
-        else
-          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
-     &      'WARNING: Past end of line for ',
-     &      MSG(1:LNM),' (phrase) in...'
-        endif
-      elseif(ACT.EQ.'F')then
-        LN=max(1,lnblnk(currentfile))
-        LNM=max(1,lnblnk(MSG))
-        if(currentfile(1:2).ne.'  ')then
-          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
-     &      'FAILURE: in ',currentfile(1:LN),
-     &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
-        else
-          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
-     &      'FAILURE: Past end of line for ',
-     &      MSG(1:LNM),' (phrase) in...'
-        endif
-      endif
-      CALL EDISP248(iuout,loutstr,100)
-      if(lnblnk(STRING).gt.123)then
-        CALL EDISP248(iuout,STRING,100)
-      else
-        CALL EDISP(iuout,STRING)
-      endif
-      GOTO 100
-
-   1  call isunix(unixok)
-      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
-      LNM=max(1,lnblnk(STRING))
-      if(IOS.eq.2)then
-        write(outs,*) 
-     &    'EGETEQDQXML: permission error writing warning re: '
-        call edisp(iuout,outs)
-        call edisp(iuout,STRING(1:LNM))
-      else
-        write(outs,*) 'EGETEQDQXML: error writing warning re: '
-        call edisp(iuout,outs)
-        call edisp(iuout,STRING(1:LNM))
-      endif
-      return
-
-      END
-
-
-C ***************** EGETRMXML
-C EGETRMXML returns the remainder of a text string TSTR after position k
-C in RSTR until a '<' is noticed.
-      SUBROUTINE EGETRMXML(TSTR,K,RSTR,ACT,MSG,IER)
-#include "espriou.h"
-      common/OUTIN/IUOUT,IUIN
-
-      CHARACTER*(*) TSTR,RSTR,MSG
-      character ACT*1,A*1,loutstr*248
-      logical unixok
-
-C LS is th maximum length of STRING, L the current position,
-C LR the maximum length of RSTR.
-      RSTR=' '
-      LS=LEN(TSTR)
-      LR=LEN(RSTR)
-      L=0
-
-C Start by skipping blanks and tabs before TSTR.
-   10 K=K+1
-      IF(K.GT.LS) GOTO 999
-      A=TSTR(K:K)
-      IF(A.EQ.' '.OR.A.EQ.','.OR.(ICHAR(A).EQ.9)) GOTO 10
-
-C Copy RSTR from TSTR character by character until either end
-C of RSTR or TSTR or a '<' found..
-   20 L=L+1
-      IF(L.GT.LR)goto 100
-      IF(A.EQ.'<') GOTO 100  ! start of next XML tag
-      RSTR(L:L)=A
-      K=K+1
-      IF(K.GT.LS) goto 100
-      A=TSTR(K:K)
-      GOTO 20
-
-  100 RETURN
-
-  999 if(ACT.EQ.'-')then
-        RETURN
-      elseif(ACT.EQ.'W')then
-        ier=1
-        LN=max(1,lnblnk(currentfile))
-        LNM=max(1,lnblnk(MSG))
-        if(currentfile(1:2).ne.'  ')then
-          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1) 'WARNING in ',
-     &      currentfile(1:LN),': no chars found for ',
-     &      MSG(1:LNM),' string in:'
-        else
-          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
-     &     'WARNING: no characters found for ',MSG(1:LNM),' string in:'
-        endif
-      elseif(ACT.EQ.'F')then
-        LN=max(1,lnblnk(currentfile))
-        LNM=max(1,lnblnk(MSG))
-        if(currentfile(1:2).ne.'  ')then
-          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1) 'FAILURE in ',
-     &      currentfile(1:LN),': no chars found for ',
-     &      MSG(1:LNM),' string in:'
-        else
-          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
-     &      'FAILURE: no characters found for ',MSG(1:LNM),' string in:'
-        endif
-      endif
-      CALL EDISP248(iuout,loutstr,100)
-      if(lnblnk(TSTR).gt.123)then
-        CALL EDISP248(iuout,TSTR,100)
-      else
-        CALL EDISP(iuout,TSTR)
-      endif
-      GOTO 100
-
-   1  call isunix(unixok)
-      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
-      if(IOS.eq.2)then
-        write(loutstr,*) 'EGETRM: permission error writing warning ',
-     &    RSTR
-      else
-        write(loutstr,*) 'EGETRM: error writing warning re: ',RSTR
-      endif
-      call edisp248(iuout,loutstr,100)
-      return
-
-      END
-      
 C ***************** Matchzone
 C Matchzone given zonestring returns the index of zone matching in array zn.
 C IER=0 if ok, IER >0 indicates new zone.
@@ -4613,11 +3771,139 @@ C     &    YY(urpos),ZZ(urpos)
 
 
 C*******************************************************************
+C gbxisadoor check is a child has a door topology. Where IZ is the
+C current zone, IPS is index of parent, IDS is index of child.
+C In the case of an other zone then use alt variables.
+C act 'i' inside 'o' other side.
+      subroutine gbxisadoor(IZ,IPS,ICS,act,isadoor)
+#include "building.h"
+#include "geometry.h"
+      integer IZ,IPS,ICS  ! zone parent child index
+      character act*1
+      logical isadoor
+
+      integer iyy,n,lldooris
+      integer lldpos,lrdpos,uldpos,urdpos ! closest to BB corners for child
+      integer icwhich1,icwhich2,icvwhich1,icvwhich2
+      integer ipwhich1a,ipwhich2a,ipwhich1b,ipwhich2b
+      integer ipvwhich1a,ipvwhich2a,ipvwhich1b,ipvwhich2b
+      integer ivc,item
+      logical matchver
+      
+      if(isznver(IZ,ICS).eq.0) return  ! cannot deal with a zero edge 
+      isadoor=.false.
+
+C First decrement isznver of the parent by isznver of 
+C the door (which got into the list via earlier steps).
+C Use n in subsequent logic.
+      n=isznver(IZ,IPS)-isznver(IZ,ICS)  ! subtract opening
+      if(n.le.0) return  ! cannot deal with zero edges
+
+C A door topology might also apply to surfaces which share
+C one or more edges with the parent. First step is to loop
+C through all of the child vertices and see if they are
+C on one of the parent edges.
+C Debug.
+      write(6,'(a,3i4)') 'gbxisadoor focused on iz ips ics ',IZ,IPS,ICS
+      write(6,'(a,124i4)') 'gbxisadoor parent surf jvn ',
+     &  (iszjvn(IZ,IPS,j),J=1,n)
+      do loop=1,n
+        loop2=iszjvn(IZ,IPS,loop)
+        write(6,'(a,i3,3f7.3)')'p coords ',loop2,szcoords(iz,loop2,1),
+     &    szcoords(iz,loop2,2),szcoords(iz,loop2,3)
+      end do  ! of loop
+
+      if(act.eq.'i')then
+C Debug.
+        write(6,'(a,i3,124i4)') 'gbxisadoor door iszjvn edges & list ',
+     &    isznver(IZ,ICS),
+     &    (iszjvn(iz,ics,loop3),loop3=1,isznver(IZ,ICS))
+        do loop=1,isznver(IZ,ICS)
+          loop2=iszjvn(IZ,ICS,loop)
+          write(6,'(a,i3,3f7.3)')'c coords ',loop2,
+     &     szcoords(iz,loop2,1),szcoords(iz,loop2,2),
+     &     szcoords(iz,loop2,3)
+        end do  ! of loop
+        call gbxSURLEHI(IZ,ICS,XYMAX,ZMAX,lldpos,lrdpos,uldpos,urdpos)
+        lldooris=iszjvn(IZ,ICS,lldpos)  ! door lower left
+        write(6,'(a,2i4)') 'lldooris v & pos',lldooris,lldpos
+      elseif(act.eq.'o')then
+C Debug.
+        write(6,'(a,i3,124i4)') 'gbxisadoor other open isz equiv jvn ',
+     &    isznver(IZ,ICS),(iszjvn(IZ,ICS,j),J=1,isznver(IZ,ICS))
+        call gbxSURLEHI(IZ,ICS,XYMAX,ZMAX,lldpos,lrdpos,uldpos,urdpos)
+        lldooris=iszjvn(IZ,ICS,lldpos)  ! door lower left
+        write(6,'(a,2i4)') 'o mode lldooris v & pos',lldooris,lldpos
+      endif
+      icwhich1=0; icwhich2=0   ! vertex index
+      icvwhich1=0; icvwhich2=0 ! vertex position
+      ipwhich1a=0; ipwhich2a=0   ! parent edge vertex index
+      ipwhich1b=0; ipwhich2b=0   ! parent edge vertex index
+      ipvwhich1a=0; ipvwhich2a=0   ! parent vertex position
+      ipvwhich1b=0; ipvwhich2b=0   ! parent vertex position
+      do ivc=1,isznver(IZ,ICS)  ! for each child vertex
+        item=iszjvn(iz,ics,ivc)   ! vert of the child
+        do iyy = 1,n   ! for each parent edge
+          if(iyy.lt.isznver(IZ,IPS))then
+            iptem1=iszjvn(IZ,IPS,iyy); iptem2=iszjvn(IZ,IPS,iyy+1)
+          else
+            iptem1=iszjvn(IZ,IPS,iyy); iptem2=iszjvn(IZ,IPS,1)
+          endif
+          call gbxpointtoline(item,iz,iptem1,iptem2,offset,matchver)
+          if(offset.lt.0.002.and.matchver)then  ! if within 2mm
+            if(icwhich1.eq.0)then
+              icwhich1=item  ! remember first match
+              icvwhich1=ivc  ! and its position
+              ipwhich1a=iptem1
+              ipwhich1b=iptem2
+              ipvwhich1a=iyy
+              ipvwhich1b=iyy+1
+            else
+              icwhich2=item  ! remember 2nd match
+              icvwhich2=ivc  ! and its position
+              ipwhich2a=iptem1
+              ipwhich2b=iptem2
+              ipvwhich2a=iyy
+              ipvwhich2b=iyy+1
+              goto 43  ! no need to look further
+            endif
+          endif
+        enddo
+      enddo
+ 43   continue
+
+C In the parent surface we loop backwards until we are just
+C after ipvwhich1a we then insert door vertex icwhich1 
+C then loop backwards (3 times) within the door vertex list.
+C Debug.
+      write(6,'(a,13i4)') 'gbxisadoor door verts @ edge ',lldooris,
+     &  icwhich1,icvwhich1,icwhich2,icvwhich2,ipwhich1a,ipvwhich1a,
+     &  ipwhich1b,ipvwhich1b,ipwhich2a,ipvwhich2a,ipwhich2b,ipvwhich2b
+
+C If some of these are still zero then what was marked as a door
+C probably should be treated as an insert-within child.
+      if(icwhich1.eq.0.or.icwhich2.eq.0.or.
+     &   icwhich2.eq.0.or.icvwhich2.eq.0)then
+        write(6,*) '***Child not really a door topology***'
+        isadoor=.false.
+        return
+      else
+        write(6,*) '***Child is a door topology***'
+        isadoor=.true.
+        return
+      endif
+
+      return
+      END
+
+
+C*******************************************************************
 C gbxdoor wraps parent surface around a child surface which
 C has an edge along the parent boundary. Where IZ is the
 C current zone, IPS is index of parent, IDS is index of child.
 C In the case of an other zone then use alt variables.
-C act 'i' inside 'o' other side.
+C act 'i' inside 'o' other side.  If it turns out not to
+C be a door topology then pass it to gbxchild and return.
       subroutine gbxdoor(IZ,IPS,ICS,act)
 #include "building.h"
 #include "geometry.h"
@@ -4646,9 +3932,9 @@ C one or more edges with the parent. First step is to loop
 C through all of the child vertices and see if they are
 C on one of the parent edges.
 C Debug.
-C      write(6,'(a,3i4)') 'gbxdoor focused on iz ips ics ',IZ,IPS,ICS
-C      write(6,'(a,124i4)') 'gbxdoor parent surf jvn ',
-C     &  (iszjvn(IZ,IPS,j),J=1,isznver(IZ,IPS))
+      write(6,'(a,3i4)') 'gbxdoor focused on iz ips ics ',IZ,IPS,ICS
+      write(6,'(a,124i4)') 'gbxdoor parent surf jvn ',
+     &  (iszjvn(IZ,IPS,j),J=1,isznver(IZ,IPS))
 C      do loop=1,isznver(IZ,IPS)
 C        loop2=iszjvn(IZ,IPS,loop)
 C        write(6,'(a,i3,3f7.3)')'p coords ',loop2,szcoords(iz,loop2,1),
@@ -4657,9 +3943,9 @@ C      end do  ! of loop
 
       if(act.eq.'i')then
 C Debug.
-C        write(6,'(a,i3,124i4)') 'gbxdoor door iszjvn edges & list ',
-C     &    isznver(IZ,ICS),
-C     &    (iszjvn(iz,ics,loop3),loop3=1,isznver(IZ,ICS))
+        write(6,'(a,i3,124i4)') 'gbxdoor door iszjvn edges & list ',
+     &    isznver(IZ,ICS),
+     &    (iszjvn(iz,ics,loop3),loop3=1,isznver(IZ,ICS))
 C        do loop=1,isznver(IZ,ICS)
 C          loop2=iszjvn(IZ,ICS,loop)
 C          write(6,'(a,i3,3f7.3)')'c coords ',loop2,
@@ -4671,11 +3957,11 @@ C        end do  ! of loop
 C        write(6,'(a,2i4)') 'lldooris v & pos',lldooris,lldpos
       elseif(act.eq.'o')then
 C Debug.
-C        write(6,'(a,i3,124i4)') 'gbxdoor other open isz equiv jvn ',
-C     &    isznver(IZ,ICS),(iszjvn(IZ,ICS,j),J=1,isznver(IZ,ICS))
+        write(6,'(a,i3,124i4)') 'gbxdoor other open isz equiv jvn ',
+     &    isznver(IZ,ICS),(iszjvn(IZ,ICS,j),J=1,isznver(IZ,ICS))
         call gbxSURLEHI(IZ,ICS,XYMAX,ZMAX,lldpos,lrdpos,uldpos,urdpos)
         lldooris=iszjvn(IZ,ICS,lldpos)  ! door lower left
-C        write(6,'(a,2i4)') 'o mode lldooris v & pos',lldooris,lldpos
+        write(6,'(a,2i4)') 'o mode lldooris v & pos',lldooris,lldpos
       endif
       icwhich1=0; icwhich2=0   ! vertex index
       icvwhich1=0; icvwhich2=0 ! vertex position
@@ -4718,9 +4004,17 @@ C In the parent surface we loop backwards until we are just
 C after ipvwhich1a we then insert door vertex icwhich1 
 C then loop backwards (3 times) within the door vertex list.
 C Debug.
-C      write(6,*) 'gbxdoor door verts @ edge ',
-C     &  icwhich1,icvwhich1,icwhich2,icvwhich2,ipwhich1a,ipvwhich1a,
-C     &  ipwhich1b,ipvwhich1b,ipwhich2a,ipvwhich2a,ipwhich2b,ipvwhich2b
+      write(6,'(a,13i4)') 'gbxdoor door verts @ edge ',lldooris,
+     &  icwhich1,icvwhich1,icwhich2,icvwhich2,ipwhich1a,ipvwhich1a,
+     &  ipwhich1b,ipvwhich1b,ipwhich2a,ipvwhich2a,ipwhich2b,ipvwhich2b
+
+C If most of these are still zero then what was marked as a door
+C probably should be treated as an insert-within.
+      if(icwhich1.eq.0.and.icwhich2.eq.0)then
+        write(6,*) '***Child not really a door trying as child***'
+        call gbxchild(IZ,IPS,ICS,act)
+        return
+      endif
 
 C Check if icwhich1 or icwhich2 are the lower left corner of the door.
 C And then cycle the list so the last item in the door matches this.
@@ -4731,8 +4025,9 @@ C And then cycle the list so the last item in the door matches this.
         enddo
         call bkcyclejvn(jvn1,isznver(IZ,ICS),icwhich1,jvn2)
 C Debug.
-C        write(6,*) 'jvn1 ',(jvn1(j),j=1,isznver(IZ,ICS))
-C        write(6,*) 'jvn2 ',(jvn2(j),j=1,isznver(IZ,ICS))
+        write(6,*) 'case lldooris.eq.icwhich1'
+        write(6,*) 'jvn1 ',(jvn1(j),j=1,isznver(IZ,ICS))
+        write(6,*) 'jvn2 ',(jvn2(j),j=1,isznver(IZ,ICS))
       elseif(lldooris.eq.icwhich2)then
         do iyy = 1,isznver(IZ,ICS)   ! make arrays to pass
           jvn1(iyy)=iszjvn(iz,ics,iyy)
@@ -4740,13 +4035,17 @@ C        write(6,*) 'jvn2 ',(jvn2(j),j=1,isznver(IZ,ICS))
         enddo
         call bkcyclejvn(jvn1,isznver(IZ,ICS),icwhich2,jvn2)
 C Debug.
-C        write(6,*) 'jvn1 ',(jvn1(j),j=1,isznver(IZ,ICS))
-C        write(6,*) 'jvn2 ',(jvn2(j),j=1,isznver(IZ,ICS))
+        write(6,*) 'case lldooris.eq.icwhich2'
+        write(6,*) 'jvn1 ',(jvn1(j),j=1,isznver(IZ,ICS))
+        write(6,*) 'jvn2 ',(jvn2(j),j=1,isznver(IZ,ICS))
+      else
+C Debug.
+        write(6,*) 'case lldooris not icwhich1 or icwhich2'
       endif
       ivll=ipvwhich1a  ! remember parent insertion point
 C Debug.
-C      write(6,'(a,i3,124i4)') 'ivll parent surf jvn ',
-C     &  ivll,(iszjvn(IZ,IPS,j),J=1,isznver(IZ,IPS))
+      write(6,'(a,i3,124i4)') 'ivll parent surf jvn ',
+     &  ivll,(iszjvn(IZ,IPS,j),J=1,isznver(IZ,IPS))
 
       n=isznver(IZ,IPS)
 

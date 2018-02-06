@@ -103,7 +103,7 @@ C Instanciate the help strings for this menu.
           IZONE=NCOMP
         endif
         CALL EDAY(ID1,IM1,IDAY)
-        CALL MOCMFT(IDAY,IZONE,'V')
+        CALL MOCMFT(IDAY,IZONE,0,'V')
       elseif(INO.EQ.6)then
         call edisp(iuout,' ')
         doit = ' '

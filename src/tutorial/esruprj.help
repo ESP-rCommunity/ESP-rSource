@@ -13351,7 +13351,7 @@ c              call askok(outs,
 'To support bouyancy calculations the relative difference between'
 'the two nodes of the connection and the component need to be'
 'specified.  One technique is to imagine placing your view point'
-'at the component and look at the node. If you are looking up the'
+'at the node and look at the component. If you are looking up the'
 'difference is positive, if you are looking down the difference is'
 'negative.'
 *enditem

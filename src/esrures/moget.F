@@ -1328,6 +1328,9 @@ C IGET = 23  Comfort, ask which index and initialise.
             SLABEL(NGET)='Comfort (PMV hours) (-)'; LNSLABEL(NGET)=23
           endif
           MRTLIST=.true.
+          idd=1
+          izz=1
+          CALL MOCMFT(idd,izz,0,'I')
         elseif(inoc.eq.2)then
           IGETNO(NGET,4)=2
           IGETNO(NGET,6)=-304; IGETNO(NGET,7)=8; IGETNO(NGET,8)=4
@@ -1341,6 +1344,9 @@ C IGET = 23  Comfort, ask which index and initialise.
             SLABEL(NGET)='Comfort (PMV set hours)'; LNSLABEL(NGET)=23
           endif
           MRTLIST=.true.
+          idd=1
+          izz=1
+          CALL MOCMFT(idd,izz,0,'I')
         elseif(inoc.eq.3)then
           IGETNO(NGET,4)=3
           IGETNO(NGET,6)=-304; IGETNO(NGET,7)=8; IGETNO(NGET,8)=4
@@ -1354,6 +1360,9 @@ C IGET = 23  Comfort, ask which index and initialise.
             SLABEL(NGET)='Comfort (PPD % hours)'; LNSLABEL(NGET)=21
           endif
           MRTLIST=.true.
+          idd=1
+          izz=1
+          CALL MOCMFT(idd,izz,0,'I')
         elseif(inoc.eq.4) then
           IGETNO(NGET,1)=50
           IGETNO(NGET,6)=-305; IGETNO(NGET,7)=8; IGETNO(NGET,8)=4
@@ -1439,9 +1448,6 @@ C IGET = 23  Comfort, ask which index and initialise.
             LNSLABEL(NGET)=28
           endif
         endif
-        idd=1
-        izz=1
-        CALL MOCMFT(idd,izz,0,'I')
 
       elseif(INO.EQ.8)then
 
@@ -4048,7 +4054,8 @@ C specific information.
                 if (SLIST.and.NLIST) then
                   IGETNO(NGET,3)=ISFSEL(IG)
                   IGETNO(NGET,4)=INODE
-                elseif (.not.(MRTLIST.and.IGETNO(NGET,1).eq.23)) then
+C                elseif (.not.(MRTLIST.and.IGETNO(NGET,1).eq.23)) then
+                else
                   IGETNO(NGET,4)=IGETNO((NGET-1),4)
                 endif
                 IGETNO(NGET,5)=IGETNO((NGET-1),5)
@@ -4716,7 +4723,7 @@ C IGETNO(KGET,1) = 22 Ambient RH (climate parameter)
 
       elseif(IGETNO(KGET,1).eq.23)then
 
-C IGETNO(KGET,1) = 23 Comfort (IGETNO(KGET,3)= 1,2 or 3 - PMV/PPD..)
+C IGETNO(KGET,1) = 23 Comfort (IGETNO(KGET,4)= 1,2 or 3 - PMV/PPD..)
         if(IGETNO(KGET,4).eq.1)then
           CALL MOCMFT(IDAY,IGETNO(KGET,2),IGETNO(KGET,3),'M')
         elseif(IGETNO(KGET,4).eq.2)then

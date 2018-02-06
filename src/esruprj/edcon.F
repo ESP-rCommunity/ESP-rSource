@@ -42,10 +42,12 @@ C output, IER=0 OK.
 
 C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
+#include "esprdbfile.h"
 #include "epara.h"
 #include "sbem.h"
 #include "CFC_common.h"
 #include "prj3dv.h"
+#include "material.h"
 
       integer lnblnk  ! function definition
 
@@ -157,6 +159,21 @@ C Read in the related geometry file into common.
         CALL USRMSG(' ',' Problem detected in geometry... ','W')
         RETURN
       ENDIF
+
+C Refresh the index of the MLC which matches each surface.
+      do I=1,NZSUR(icomp)
+        icn1=izstocn(icomp,i)
+        if(icn1.ge.1)then
+          ssmlcindex(icn1)=0  ! assume no matching MLC          
+          lnssmlc=lnblnk(SSMLCN(icn1))
+          do ii=1,nmlc
+            if(SSMLCN(icn1)(1:lnssmlc).eq.
+     &         mlcname(ii)(1:lnmlcname(ii)))then
+              ssmlcindex(icn1)=ii   ! remember MLC index     
+            endif
+          enddo
+        endif
+      enddo
 
 C Scan through the geometry file and if more than 3 construction
 C attributes have not been set then advise the user to use the

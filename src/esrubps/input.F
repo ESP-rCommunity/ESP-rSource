@@ -1137,6 +1137,23 @@ C Toggle for extreme silent running (endless) mode.
       logical endless,issilient
       common/endlessmode/endless,issilient
 
+C Uncertainties
+      character USETNAME*96   ! the synopsis for each MC-run
+      character uheader*1000  ! header including name of each uncertainty changed
+      character urunvals*1000 ! attribute changed-to value of each uncertainty
+                              ! change for the run.
+      COMMON/USETN/USETNAME(MNRS),uheader,urunvals
+
+C Logical flag for uncertainty header has been printed.
+      logical uncertheadprinted
+      common/uncerthead/uncertheadprinted
+      logical headerdone
+      logical itemunique  ! should we include in fort.37
+      integer itemsinheader,nbpastitems,nbdatahits
+      character pastphrase*42
+      common/uhead/headerdone,itemunique(20),pastphrase(20),
+     &  itemsinheader,nbpastitems,nbdatahits
+
       CHARACTER*72 LMOIST,LMSTR
       character outs*124,CXSTR*78,spflnam*72
       character dllsubr*12,dllmesg*124
@@ -1169,6 +1186,15 @@ C for user defined ground temps.
       ILTHPS=.FALSE.
       BLDG3D=.FALSE.
       MSTROK=.FALSE.
+
+C If there are uncertainties then clear the fort.36 and fort.37 header.
+C      if (ISIM.gt.1.and.IMET.gt.0) then
+C        uheader='  '
+C        urunvals='  '
+C        headerdone=.false.; itemsinheader=0
+C        uncertheadprinted=.false.
+C      endif
+
       DO 10 I=1,NCOMP
         IZ=I
         MNDZ(IZ)=0
@@ -1248,7 +1274,13 @@ C Open any timestep based utility files.
         endif
         IF(ZONE3D(IZ))BLDG3D=.TRUE.
 
-C Now alter properties for uncertainty analysis. 
+C Now alter properties for uncertainty analysis.
+
+C << If the first zone clear the header and data reporting buffers.
+C << idea set headerdone to false and clear the header buffer
+C << strings somewhere above
+C << If the last zone write completed header and data reports to fort.37.
+ 
         if (ISIM.gt.1) then
           if (IMET.eq.1) then
             call DSA(IZ)

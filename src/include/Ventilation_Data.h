@@ -91,7 +91,7 @@ c ( JWH remove continuation lines)
      & TMAIN,SensibleEff, HRVventHLR, HRVairHLR,
      & CVSSupplyTemp,TotalPower,ExhaustFanPower, PreheaterPower,
 c --- 27-08-2014: Patrice Pinel: Changed HRV ducts for CVS ducts
-c	  & HRVSupDuctHG, HRVExhDuctHG,iOtherFans,OtherFansSupplyRate,
+c    & HRVSupDuctHG, HRVExhDuctHG,iOtherFans,OtherFansSupplyRate,
      & CVSSupDuctHG, CVSExhDuctHG,iOtherFans,OtherFansSupplyRate,
      & OtherFansExhaustRate,OtherFansTotalPower,ERVTest,
      & CVSZoneFrac,CVSmDotAir, bCVS_OFF,
@@ -130,9 +130,9 @@ c --- 27-08-2014: Patrice Pinel: Changed HRV ducts for CVS ducts
         Integer  OtherFansExhaustRate
         Integer  OtherFansTotalPower
 c --- Mass flow rate of air in a stream (kg/s)
-        Real  CVSmDotAir			
+        Real  CVSmDotAir
 c --- Zone volume fractions
-        Real  CVSZoneFrac(MCOM)		
+        Real  CVSZoneFrac(MCOM)
 c --- Flag to indicate when temperature control results in the CVS being OFF
         Logical bCVS_OFF
 c --- Temperature below which the ERV operates
@@ -196,7 +196,7 @@ c --- Flag indicating a pre-heater
         Logical  ERVPreHtr
 
 c These parameters are referenced from the 
-c Home Ventilating Institute (HVI) and used in the 	
+c Home Ventilating Institute (HVI) and used in the 
 c Central ventilation system model
 c-------------------------------------------------
 c      COMMON/  HVI_Data /

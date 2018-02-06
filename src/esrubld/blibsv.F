@@ -605,7 +605,9 @@ C Generate automatically if an uncertainty analysis.
 
 C A better name for each M-C run is generated and will overwrite
 C the following initial string.
-            write (RSNAME,'(a,i4)') 'M-C run:',NSIM
+            if(NSIM.lt.10)write (RSNAME,'(a,i2)') 'M-C run:',NSIM
+            if(NSIM.lt.100)write (RSNAME,'(a,i3)') 'M-C run:',NSIM
+            if(NSIM.ge.100)write (RSNAME,'(a,i4)') 'M-C run:',NSIM
           endif
         endif
       endif

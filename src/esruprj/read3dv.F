@@ -444,6 +444,10 @@ C it can be seen. Then move cursor to vertex and remember position.
 
  351      CONTINUE
           iedge=iedge+1
+
+C Ensure edge is less than MV.
+          if(iedge.gt.MV) goto 300
+
           CALL  ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,iix,iiy)
           if(IPEN.eq.1)then

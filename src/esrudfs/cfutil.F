@@ -423,7 +423,7 @@ C file name
         write(lflname,302) IFRAME
       ENDIF
 
-C Check and open data output file (?)
+C Check and open data output file.
       IUNIT=IFIL+1
       lpath=path
       path='./'

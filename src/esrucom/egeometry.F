@@ -4647,7 +4647,7 @@ C Do reality checks on connection and number of edges.
         endif
         if(NVER(I).eq.0)then
           write(outs,*) 'Zone ',icomp,' & surface ',i,
-     &      ' has not edges.'
+     &      ' has no edges.'
           call edisp(iuout,outs)
           ier=4
           goto 10
@@ -6358,8 +6358,11 @@ C Surfaces with associated vertices.
         if(NV.le.26)then
           WRITE(OUTSTR,9990) SNAME(icomp,I),NV,(JVN(I,J),J=1,NV)
           call edisp(ITRU,OUTSTR)
-        else
+        elseif(NV.le.100)then
           WRITE(LOUTSTR,9990)SNAME(icomp,I),NV,(JVN(I,J),J=1,NV)
+          call edisp248(ITRU,LOUTSTR,100)
+        else  ! echo the first 100 edges
+          WRITE(LOUTSTR,9990)SNAME(icomp,I),NV,(JVN(I,J),J=1,100)
           call edisp248(ITRU,LOUTSTR,100)
         endif 
  9990   FORMAT(A,I5,1x,124(',',I3))

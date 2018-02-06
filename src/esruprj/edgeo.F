@@ -1029,14 +1029,18 @@ C Present list of surfaces and allow user to select up to all of them.
           DO 10 I=1,NSUR
             ioc10=IZSTOCN(icomp,i)
             lnl=lnblnk(SSMLCN(ioc10))
+            lnsn=lnblnk(SSNAME(ioc10))
+            if((lnl+lnsn+2).ge.32) lnl=32-(lnsn+2)  ! to prevent overflow
             ITEMSS(I)=' '
             if(IRT.eq.1)then
-              WRITE(ITEMSS(I),'(A)')SSNAME(ioc10)
+              WRITE(ITEMSS(I),'(A)')SSNAME(ioc10)(1:lnsn)
             elseif(IRT.eq.2)then
-              WRITE(ITEMSS(I),'(A,2x,A)')SSNAME(ioc10),
-     &          SSMLCN(ioc10)(1:lnl)
+C              WRITE(ITEMSS(I),'(A,2x,A)')SSNAME(ioc10)(1:lnsn),
+C     &          SSMLCN(ioc10)(1:lnl)
+              WRITE(ITEMSS(I),'(A,2x,A)')SSNAME(ioc10)(1:lnsn),
+     &          SSMLCN(ioc10)(1:15)
             elseif(IRT.eq.3)then
-              WRITE(ITEMSS(I),'(A,2x,A)')SSNAME(ioc10),
+              WRITE(ITEMSS(I),'(A,2x,A)')SSNAME(ioc10)(1:lnsn),
      &          SSOTHER(ioc10,1)(1:15)
             elseif(IRT.eq.4)then
               WRITE(ITEMSS(I),'(7A)')SSNAME(ioc10),' ',

@@ -334,7 +334,7 @@ C IGET = 23  Comfort, ask which index and initialise.
         if(ICI.eq.1)ITITLE = 'Comfort PMV'
         if(ICI.eq.2)ITITLE = 'Comfort PMV (set)'
         if(ICI.eq.3)ITITLE = 'Comfort PPD'
-        CALL MOCMFT(IODS,NZNO(1),'I')
+        CALL MOCMFT(IODS,NZNO(1),0,'I')
       elseif(INO.EQ.25)then
 
 C Set rotations.
@@ -535,11 +535,11 @@ C Total convection inside.
 
 C Get comfort.
           if(ICI.eq.1)then
-            CALL MOCMFT(ID,NZNO(1),'M')
+            CALL MOCMFT(ID,NZNO(1),0,'M')
           elseif(ICI.eq.2)then
-            CALL MOCMFT(ID,NZNO(1),'E')
+            CALL MOCMFT(ID,NZNO(1),0,'E')
           elseif(ICI.eq.3)then
-            CALL MOCMFT(ID,NZNO(1),'D')
+            CALL MOCMFT(ID,NZNO(1),0,'D')
           endif
           CALL XTVAL1(GVAL,ISTART,IEND,1)
         elseif(IGET.eq.24)then

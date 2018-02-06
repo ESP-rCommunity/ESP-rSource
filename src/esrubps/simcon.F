@@ -2262,7 +2262,7 @@ C If appropriate, output special features invoked.
       IF(IndxSt.GT.0)IMESS=1
       IF(bUserPltSolvConfig) IMESS = 1
       IF(IMESS.EQ.1)THEN
-        call edisp(icout,'')
+        call edisp(icout,' ')
         call edisp(icout,' Special features invoked:')
         call edisp(icout,' =========================')
       ENDIF
