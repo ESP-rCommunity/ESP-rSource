@@ -89,7 +89,7 @@ C *************************************************************
 
 C Initialize all variables of the nonlinear thermal properties 
       NTHF=0
-      DO 10 ITHF=0,MTHF
+      DO 10 ITHF=1,MTHF
         NTHEQ(ITHF)=0
         IBTHAL(ITHF,1)=0
         IBTHAL(ITHF,2)=0
