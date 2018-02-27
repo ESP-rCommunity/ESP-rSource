@@ -678,7 +678,7 @@ C Determine where heat is injected/extracted
 c PIN is at surface.
           Q_zone = QFS(iZone)
 
-        elseif ( iban(i_ZnCtl,3) .gt. 0 ) then
+        elseif(iban(i_ZnCtl,3).gt.0 .and. iban(i_ZnCtl,1).ne.-2) then
 
 C PIN is within construction
           Q_zone = QFC(iZone)
@@ -690,7 +690,7 @@ C PIN is in a plant component node - not implemented yet.
         elseif ( iban(i_ZnCtl,1) .eq. -2 ) then
 
 C PIN is mix of radiative/convective flux (ie - plant component)
-         Q_zone = QPLTF(iZone)
+         Q_zone = (QPLTF(iZone)+QPLTP(iZone))*0.5
 
         else
 
