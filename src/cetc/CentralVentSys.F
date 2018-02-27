@@ -729,9 +729,13 @@ c Revise calling methods (for ESPr) Jul 24/01, Aug 15, 16, Oct 25
 c ---
 C      USE Ventilation_data
 c ---
+      use h3kmodule
       Implicit None
 #include "building.h"
 #include "Ventilation_Data.h"
+#include "SOFC.h"
+#include "OffsiteUtilitiesPublic.h"
+#include "h3k_report_data.h"
       Integer m
       Real T
 c ---
@@ -768,6 +772,7 @@ c
 c --- 27-08-2014: Patrice Pinel: Changed test for boolean variable bCVS_OFF evaluated in MECH_VENT_CONTROL()
 c --- Evaluated the same way for all CVS systems
          !If ( T .gt. Tlow .and. T .lt. Thigh ) Then
+
          If(.not. bCVS_OFF) Then    ! CVS is not OFF
 c
 c Ventilation air heat loss rate
@@ -777,15 +782,37 @@ c Temperature of air downstream of the supply fan
 c
             HRVventHLR = ( MCP * ( TMAIN - T ) -
      x sFP ) * CVSOpTime
-c
+
+            TotalPower = HRVtest(1,3)
+
          Else ! Not operating
 c
             HRVventHLR = 0.
 c
             CVSSupplyTemp = T
 c
+            TotalPower = 0.
          Endif
 c ---
+c --- Reporting
+      
+         ! Set flag allowing h3kreports to scale this data for seasonal reporting purposes.
+         If (bFirst_call_noHR) Then     ! First call to the erv model
+             Call SetAdditionalValues(rvPltHvacHRVElecLd%Identifier, 
+     &                              3, .true.)         
+             ! Ensure any subsequent call is not treated as the first one   
+             bFirst_call_noHR = .false.
+         Endif
+         
+         ! Report electricity consumption
+         Call AddToReport(rvPltHvacHRVElecLd%Identifier, TotalPower)      
+         
+         ! Store aggregate electricity use for reporting in Site Utility facilitity.
+         fSUFuelEnergyUse(iElectricity,iUseHRV)= TotalPower
+         
+         ! Pass fuel energy stroage data to site utilities
+         Call StoreSiteEnergyUse(iIdealVent, fSUFuelEnergyUse)         
+
       Endif
 c ---
       Return
