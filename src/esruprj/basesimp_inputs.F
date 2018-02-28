@@ -344,7 +344,7 @@ C CONTENT for width of basement.
 
 C CONTENT for length of basement.
       min_bsmtLength = bsmtWidth              ! meter
-      max_bsmtLength = 20.                    ! meter
+      max_bsmtLength = 25.                    ! meter
       CALL EASKR(bsmtLength,' ',' Length of the basement (m) ? ',
      &  min_bsmtLength,'F',max_bsmtLength,'F',bsmtLength,
      &  'width of the basement',IER,nbhelp)
