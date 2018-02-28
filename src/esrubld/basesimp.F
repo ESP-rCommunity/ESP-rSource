@@ -170,7 +170,7 @@ c-----5m minimum are reasonable. Consequently, the limits imposed here for
 c-----BASESIMP foundations allow widths from 1 to 20 m and lengths from 1 to 100 m.
       IF(CLOSE99) THEN     ! set parameter windows on BASECALC dimensions (type 999)
         fMinFoundLength = 2.0   ! meter
-        fMaxFoundLength = 20.0  ! meter
+        fMaxFoundLength = 25.0  ! meter
         fMinFoundWidth = 2.0    ! meter
         fMaxFoundWidth = 20.0   ! meter
         fMinInsulRSI = 0.0      ! m2K/W
