@@ -2,8 +2,8 @@
 # (see README file before installing).
 SRCdir=`pwd`
 
-PROGRAMS = aco bps c2e cdb clm dbm dfs e2r ecnv eco grd harmonizer ish mfs \
-	   mld mrt net pdb prj res run vew stats
+PROGRAMS = aco bps c2e cdb clm dbm dfs e2r ecnv eco enet grd harmonizer ish mfs \
+	   mld mrt pdb prj res run vew stats
 
 allX11: libX11 $(PROGRAMS)
 allGTK: libGTK $(PROGRAMS)
@@ -42,58 +42,163 @@ disableSQLite:
 	cd $(SRCdir)/lib; \
 	$(MAKE) the_libNoSQLite
 
+InstBins:
+	$(eval doInstall=yes)
+
 # PROGRAMS:
 
-aco: 
-	cd $(SRCdir)/esruaco; $(MAKE)
-b2e: 
-	cd $(SRCdir)/esrub2e; $(MAKE)
+export FMIarg
+
+aco:
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/esruaco; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/esruaco; $(MAKE); \
+	fi
+b2e:
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/esrub2e; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/esrub2e; $(MAKE); \
+	fi 
 bps: 
-	cd $(SRCdir)/esrubps; $(MAKE) theEXE
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/esrubps; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/esrubps; $(MAKE) theEXE; \
+	fi
 bpsdll: 
-	cd $(SRCdir)/esrubps; $(MAKE) theDLL
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/esrubps; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/esrubps; $(MAKE) theDLL; \
+	fi
 dbm: 
-	cd $(SRCdir)/esrudbm; $(MAKE)
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/esrudbm; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/esrudbm; $(MAKE); \
+	fi
 dfs: 
-	cd $(SRCdir)/esrudfs; $(MAKE)
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/esrudfs; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/esrudfs; $(MAKE); \
+	fi
 c2e: 
-	cd $(SRCdir)/esruc2e; $(MAKE)
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/esruc2e; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/esruc2e; $(MAKE); \
+	fi
 cdb: 
-	cd $(SRCdir)/esrucdb; $(MAKE)
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/esrucdb; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/esrucdb; $(MAKE); \
+	fi
 clm: 
-	cd $(SRCdir)/esruclm; $(MAKE)
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/esruclm; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/esruclm; $(MAKE); \
+	fi
 e2r: 
-	cd $(SRCdir)/esrue2r; $(MAKE)
-ecnv:
-	cd $(SRCdir)/esrucnv; $(MAKE)
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/esrue2r; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/esrue2r; $(MAKE); \
+	fi
+ecnv: 
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/esrucnv; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/esrucnv; $(MAKE); \
+	fi
 eco: 
-	cd $(SRCdir)/esrueco; $(MAKE)
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/esrueco; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/esrueco; $(MAKE); \
+	fi
 grd: 
-	cd $(SRCdir)/esrugrd; $(MAKE)
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/esrugrd; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/esrugrd; $(MAKE); \
+	fi
 harmonizer: 
-	cd $(SRCdir)/harmonizer; $(MAKE) theExe
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/harmonizer; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/harmonizer; $(MAKE) theExe; \
+	fi
 harmonizerdll: 
-	cd $(SRCdir)/harmonizer; $(MAKE) theDLL
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/harmonizer; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/harmonizer; $(MAKE) theDLL; \
+	fi
 ish: 
-	cd $(SRCdir)/esruish; $(MAKE)
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/esruish; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/esruish; $(MAKE); \
+	fi
 mfs: 
-	cd $(SRCdir)/esrumfs; $(MAKE)
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/esrumfs; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/esrumfs; $(MAKE); \
+	fi
 mld: 
-	cd $(SRCdir)/esrumld; $(MAKE)
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/esrumld; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/esrumld; $(MAKE); \
+	fi
 mrt: 
-	cd $(SRCdir)/esrumrt; $(MAKE)
-net: 
-	cd $(SRCdir)/esrunet; $(MAKE)
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/esrumrt; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/esrumrt; $(MAKE); \
+	fi
+enet: 
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/esrunet; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/esrunet; $(MAKE); \
+	fi
 pdb: 
-	cd $(SRCdir)/esrupdb; $(MAKE)
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/esrupdb; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/esrupdb; $(MAKE); \
+	fi
 prj: 
-	cd $(SRCdir)/esruprj; $(MAKE)
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/esruprj; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/esruprj; $(MAKE); \
+	fi
 res: 
-	cd $(SRCdir)/esrures; $(MAKE)
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/esrures; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/esrures; $(MAKE); \
+	fi
 vew: 
-	cd $(SRCdir)/esruvew; $(MAKE)
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/esruvew; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/esruvew; $(MAKE); \
+	fi
 stats: 
-	cd $(SRCdir)/esrustats; $(MAKE)
+	if [ "$(doInstall)" = "yes" ]; then \
+	  cd $(SRCdir)/esrustats; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; \
+	else \
+	  cd $(SRCdir)/esrustats; $(MAKE); \
+	fi
 
 clean:
 	cd $(SRCdir)/lib;     $(MAKE) clean
@@ -147,32 +252,6 @@ strip:
 	cd $(SRCdir)/esrures; $(MAKE) strip
 	cd $(SRCdir)/esruvew; $(MAKE) strip
 	cd $(SRCdir)/esrustats; $(MAKE) strip
-
-InstBins:
-	cd $(SRCdir)/esruaco; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esrub2e; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esrubps; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esrudbm; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esrudfs; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esruc2e; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esrucdb; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esruclm; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esrue2r; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esrucnv; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esrueco; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esrugrd; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esruish; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esrumfs; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esrumld; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esrumrt; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esrunet; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esrupdb; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esruprj; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esrures; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esruvew; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esrustats; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/harmonizer; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/harmonizer; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${DLL} install
 
 tars: clean
 	rm -f esp-r.tar esp-r.tar.gz esp-r_training.tar esp-r_training.tar.gz

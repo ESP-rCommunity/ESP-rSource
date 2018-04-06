@@ -54,6 +54,7 @@ C creates a grey-scale VRML 2.0 world.
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
+      CHARACTER GMLCN*32,GSNAME*6
 
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
@@ -61,7 +62,6 @@ C creates a grey-scale VRML 2.0 world.
       CHARACTER*72 GTGEOM
       character GDESCR*36
       character OPT*12  ! to pass optical properties
-      CHARACTER GMLCN*12,GSNAME*6
       character ZSN*28,q*1
       DIMENSION SNA(MS),PAZI(MS),PELV(MS),ZSN(MS)
       character outs*124,outsd*124,hc*1
@@ -147,7 +147,7 @@ C << surface should be skipped logic for later...>>
         if(mlctype(IM)(1:4).NE.'OPAQ')then
           WRITE(ioout,'(3a)')
      &      '   appearance DEF Glass_',
-     &      mlcname(IM)(1:lnblnk(mlcname(IM))),' Appearance {'
+     &      mlcname(IM)(1:lnmlcname(IM)),' Appearance {'
           WRITE(ioout,'(2a)')
      &      '     material Material { diffuseColor 1 1 1 ',
      &      ' ambientIntensity 1.0 specularColor 0 0 100  '
@@ -157,7 +157,7 @@ C << surface should be skipped logic for later...>>
         else
           WRITE(ioout,'(3a)')
      &      '    appearance DEF Solid_',
-     &      mlcname(IM)(1:lnblnk(mlcname(IM))),' Appearance {'
+     &      mlcname(IM)(1:lnmlcname(IM)),' Appearance {'
           WRITE(ioout,'(a,3F5.2,a,3F5.2)')
      &      '      material Material { diffuseColor ',
      &      1.0-AE,1.0-AE,1.0-AE,' specularColor ',1.0-AE,1.0-AE,1.0-AE
@@ -180,7 +180,7 @@ C Read in the zone geometry.
         WRITE(outs,'(a,a)')' Scanning : ',LGEOM(newfoc)
         CALL edisp(iuout,outs)
         call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
-        CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+        CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL,'q')
         vol(newfoc)=zvol
         zonetotsurfacearea(newfoc)=zoa
         WRITE(ioout,'(a)')' '
@@ -239,11 +239,11 @@ C (which holds the coordinates of the zone along with the first surface.
             if(mlctype(IM)(1:4).NE.'OPAQ')then
               WRITE(ioout,'(2a)')
      &          '      appearance USE Glass_',
-     &          mlcname(IM)(1:lnblnk(mlcname(IM)))
+     &          mlcname(IM)(1:lnmlcname(IM))
             else
               WRITE(ioout,'(2a)')
      &          '      appearance USE Solid_',
-     &          mlcname(IM)(1:lnblnk(mlcname(IM)))
+     &          mlcname(IM)(1:lnmlcname(IM))
             endif
 
 C Ensure first character is not a number.
@@ -297,11 +297,11 @@ C Write differently if opaque or transparent.
             if( mlctype(IM)(1:4).NE.'OPAQ')then
               WRITE(ioout,'(2a)')
      &          '     appearance USE Glass_',
-     &          mlcname(IM)(1:lnblnk(mlcname(IM)))
+     &          mlcname(IM)(1:lnmlcname(IM))
             else
               WRITE(ioout,'(2a)')
      &          '     appearance USE Solid_',
-     &          mlcname(IM)(1:lnblnk(mlcname(IM)))
+     &          mlcname(IM)(1:lnmlcname(IM))
             endif
             call ifnumber(sname(newfoc,j)(1:1),numb)
             if(numb)then

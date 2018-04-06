@@ -93,11 +93,11 @@ C
      1             RESORT,NSWPT,URFT,FSDTT,PRANDL,PFUN
 
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX
+     &      JHUMINDX,URFC(MCTM)
       COMMON/CFDPOL/POLCONCp(MCTM,ntcelx,ntcely,ntcelz),
      1              POLCONCf(MCTM,ntcelx,ntcely,ntcelz)
       common/KEYVOLN/VOLNAME(MNVLS,MNZ),VCsurf(MNVLS,MNZ)
-
+      character VOLNAME*12,VCsurf*12
       COMMON/CONST/GREAT,small,GRAV
       COMMON/TIMSTP/DT
       COMMON/INTERP/SIFE(ntcelx),SIFW(ntcelx),SIFN(ntcely),SIFS(ntcely),
@@ -134,11 +134,12 @@ C Common blocks for blockages and small supply openings
      &              RESID(MNOD),SAFLW(MNOD)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+      common/ocflux/COflux,H2Oexp,H2Oswt
 
       DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
       INTEGER SPMTYP,SSLINK1,SSLINK2
       LOGICAL OK,LINVOL,CALLMA,CALPOL
-      CHARACTER*12 POLNAM,SRCE,SSNAME,VOLNAME,VCsurf
+      CHARACTER*12 POLNAM,SRCE,SSNAME
       REAL POL3D(ntcelx,ntcely,ntcelz),SRCSTR(MNVLS,MNZ)
       logical unixok
 
@@ -253,6 +254,14 @@ C Should loop through conc sources here.
           do 70 I=IVCELLS(IV,ICFD,1),IVCELLS(IV,ICFD,2)
             do 71 J=JVCELLS(IV,ICFD,1),JVCELLS(IV,ICFD,2)
               do 72 K=KVCELLS(IV,ICFD,1),KVCELLS(IV,ICFD,2)
+               if (POLNAM(ICTM,ICFD) .eq. 'Sweat') then
+!                call DynamicOcc(1,1.5,1)
+                VOLPOL(ICTM,IV,ICFD)=H2Oswt+H2Oexp
+                SRCSTR(IV,ICFD)=VOLPOL(ICTM,IV,ICFD)
+!               if (ITRC.eq.1) then
+!                print *, SRCSTR(IV,ICFD)
+!               endif
+               endif
                 SU(I,J,K)=SRCSTR(IV,ICFD)
  72           continue
  71         continue
@@ -417,9 +426,9 @@ C If inside the blockage set resor to zero.
             RESORC=RESORC+ABS(RESOR)
             RENORMC=RENORMC+ABS(RENORM)
 
-C Under-relaxation. Using always values from temperature equation 
-            AP(I,J,K)=AP(I,J,K)/URFT 
-            SU(I,J,K)=SU(I,J,K)+(1.0-URFT)*AP(I,J,K)*
+C Under-relaxation. 
+            AP(I,J,K)=AP(I,J,K)/URFC(ICTM) 
+            SU(I,J,K)=SU(I,J,K)+(1.0-URFC(ICTM))*AP(I,J,K)*
      &                POLCONCf(ICTM,I,J,K)
  3002     CONTINUE
  3001   CONTINUE
@@ -505,12 +514,13 @@ C always of the zero-gradient type.
      &             KOPENf(MCFND,MNZ),FIXM(MCFND,MNZ),
      &             FIXT(MCFND,MNZ),FIXC(MCFND,MNZ),
      &             FIXK(MCFND,MNZ),FIXE(MCFND,MNZ),
-     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),ICNACT(MCFND,MNZ)
+     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),
+     &             ICNACT(MCFND,MNZ),IVOLN(MCFND,MNZ)
       COMMON/Sbdary/NSB(MNZ),ISBi(MNSBZ,MNZ),ISBf(MNSBZ,MNZ),
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
      &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
      &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
-     &              SSBHC(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
       COMMON/ICFNOD/ICFD,ICP
       COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),
@@ -538,7 +548,7 @@ C always of the zero-gradient type.
       COMMON/INCALC/INCALU,INCALV,INCALW,INCALK,INCALD,INCALT,
      1              IZEROT,IZanKE,IMITZ
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX
+     &      JHUMINDX,URFC(MCTM)
       COMMON/CFDPOL/POLCONCp(MCTM,ntcelx,ntcely,ntcelz),
      1              POLCONCf(MCTM,ntcelx,ntcely,ntcelz)
 
@@ -1145,10 +1155,7 @@ C following procedure given in PhD Thesis by Aizaz Samuel
       DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
 
 C First get temperature in CFD domain
-C There is no CFD domain no. to thermal zone mapping (similar to ICAAS
-C that maps mfs nodes to thermal zones) currently. Take 1st thermal zone
-C as first CFD domain, second thermal zone as second CFD domain and so on
-      TEMP_K=0.5*(TFA(ICFD)+TPA(ICFD))+273.
+      TEMP_K=0.5*(TFA(ICP)+TPA(ICP))+273.
 
 C Now get pressure in CFD domain first 
       PRESS_BAR=1.01325+REAL(PRES(ICFDNOD(ICFD)))/100000.0

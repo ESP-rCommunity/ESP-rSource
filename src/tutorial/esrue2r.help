@@ -8,29 +8,49 @@
 *item e2r confirm_monitor_type
 'Radiance was initially written when monchrome, greyscale and colour'
 'monitors were common and it was necessary to confirm the users'
-'monitor so that the correct display utility is used.'
+'monitor so that the correct display utility is used. Currently it'
+'is used to force ximage to produce a dithered monochrome image if'
+'there is insufficient colour depth.'
 *enditem
           CALL EASKABC('Please confirm your monitor type:',' ',
 *item e2r scene_config_file_name
-'A scene configuration file is required to aid'
-'maintenance of the visualisation process.'
-'This file contains details on where individual'
-'RIF (Radiance Input Format) files are kept and'
-'what there intended use is.'
+'A scene configuration file is required by ESP-r to aid'
+'maintenance of the visualisation process. This file contains'
+'details on where individual RIF (Radiance Input Format) files'
+'are kept and what their intended use is. It can hold multiple'
+'scene descriptions and is typically located in the model cfg'
+'folder.'
 *enditem
             CALL EASKS(ltmp72,
-*item e2r e2r_temporary_folder
-'The e2r module has been working with files in'
-'a temporary folder. If you say [yes] then the'
-'files will be copied back into the rad folder'
-'of the ESP-r model.'
-' '
-'If you say [no] the temporary folder will be'
-'removed and your files deleted.'
-' '
-'If you are planning to alter the geometry and/'
-'or constructions in your model it is usually'
-'best not to keep the files (i.e. select [no]).'
+*item e2r e2r_additional_overview
+'The e2r module is designed to reduce direct user interactions'
+'with the command line syntax of Radiance. Experts will, of'
+'course augment the facilities of e2r. And for many common tasks'
+'you will not need to manually edit the Radiance descriptive files.'
+'  '
+'ESp-r models can be exported to Radiance and ESP-r does not know '
+'about changes you manually make to the Radiance description (your'
+'edits can be overwritten. Either make backups or create additional'
+'scenes with unique [root] names to prevent overwriting.'
+'  '
+'When you create a new scene you are asked for its purpose. This helps'
+'in setting a number of parameters used in the calculation process as'
+'well as informing the interface e.g. an interior rendering view will'
+'request information on which ESP-r zone the view point is in, while'
+'a night scene will turn off the sun, set the ambient light levels'
+'to match.'
+'  '
+'Radiance materials are derived from grey-scale equivalents of ESP-r'
+'constructions (one material for the inside face and one for the'
+'other face). You can include an additional Radiance material file'
+'in you scene and edit the polygon defintions to reference these.'
+'You have the option to set the general level of roughness - the'
+'so-called [adobe] and [dirt] functions. With minimal editing you'
+'can adapt individual surfaces properties.'
+'  '
+'Lastly, those who are familiar with Radiance will have an advantage'
+'and there are many resources on the web which can give you clues'
+'about leveraging the facilities of e2r.'
 *enditem
             CALL ASKOK('Do you wish to keep the Radiance scene files?',
 *item e2r model_config_file_name
@@ -269,6 +289,13 @@
 'while e2r is built on an eyepoint & viewed point '
 'approach. '
 ' '
+'To get an idea what the Radiance plan view attributes'
+'are manually issue the command:'
+' rad -V -vZl -n -s the_rif_file_name > plan.view'
+'then in e2r ask to scan plan.view and preview to the'
+'screen and use view commands to set the view position'
+'as well as the -vo (near trim) and -va (aft trim) distances.'
+' '
 'For internal views the perspecitve feedback is not '
 'appropriate--use the plan & elevation views. '
 ' '
@@ -306,6 +333,13 @@
 *item VEWFORM eyepoint_editing
 'The eyepoint is in metres in the coordinate system '
 'of the site. '
+' '
+'To get an idea what the Radiance plan view attributes'
+'are manually issue the command:'
+' rad -V -v Zl -n -s the_rif_file_name > plan.view'
+'then in e2r ask to scan plan.view and preview to the'
+'screen and use view commands to set the view position'
+'as well as the -vo (near trim) and -va (aft trim) distances.'
 *enditem
           CALL EASKS(HOLD,' Eye point  X  Y  Z (in metres): ',
 *item VEWFORM reflect_rad_view_in_per
@@ -379,10 +413,14 @@
 '  '
 ' External image - assumes you are looking at the model from'
 '   the outside at a given date and time (or range of times).'
+' Night external image - sets ambient light sources consistent'
+'   with clear night sky, otherwise as external image.'
 ' Internal image - assumes a viewpoint within one of the zones'
 '   in the model.'
 ' Glare - assumes a viewpoint within a zone and sets parameters'
-'   and uses Radiance facilities for glare.'
+'   and uses Radiance facilities for glare. Remember to set'
+'   viewing parameters consisitent with this task (wide angle'
+'   and horizontal).'
 ' Daylight factors - focused on a zone of the model and a grid'
 '   of points in the room and calculates daylight factors based'
 '   on a standard overcast sky.'
@@ -489,6 +527,12 @@
 'answering yes. If you say no you can start the simulation'
 'later. Note the simulation can take several minutes, if '
 'hours to complete. '
+'  '
+'If the scene purpose is a glare study the literature suggests that'
+'the view directives should be close to a wide-angle view - say 120'
+'to 170 degrees vertically and horizontally and that the elevation'
+'of the view is horizontal. There are several steps to the glare'
+'process so watch the process in the command window.'
 *enditem
       call ASKOK('Scene description is now complete.',
 *subroutine settime
@@ -502,14 +546,17 @@
 *item genimage single_time_or_sequence
 'Rendering can be for one instant in time or at intervals'
 'e.g. every 10 or 15 or 20 minutes during a period of a day.'
-'You can adjust the parameters needed to create a set of'
-'images (gif) which can be combined to form an amimation.'
+'You can adjust the parameters needed to create a set of images'
+'(gif or tif or jpg) which can be combined to form an amimation.'
 ' '
 'If you specify a period from 8h00 to 9h00 at a 20 minute'
 'interval on the 69th day of the year there will be four files'
 'created (.hdr) and converted to gif files via the Radiance'
-'utility ra_gif.  You can then use a tool such as gimp or'
-'gifsicle to combine the separate gif files into an animation.'
+'utility ra_gif or tiff files via the ra_tiff utilty or to jpg'
+'files via the Imagemagick convert utility.'
+'  '
+'You can then use a tool such as gimp or gifsicle or convert '
+'to combine the separate files into an animation.'
 ' '
 'For example: '
 '  gifsicle -l1 -d100 69*.gif >animation.gif'
@@ -517,7 +564,13 @@
 'bine them into a file animation.gif with a 100ms delay between'
 'frames. This can be viewed in a web browser or via a utility'
 'named animate (part of the Imagemagick tool set).'
-
+'  or '
+'  convert -delay 20 -loop 0 *.jpg animated.gif'
+' '
+'NOTE: convert tends to darken when converting from hdr to jpg so'
+'you might need to alter the command to:'
+'   convert -brightness-contrast 20x-20 -loop 0 *.jpg animated.gif'
+'to increase brighness by 20% and decrease contrast by 20%.'
 *enditem
         CALL EASKAB(' ',' Image(s):','single time instance',
 *item genimage render_to_screen_or_file
@@ -541,6 +594,25 @@
 '  '
 'The image frame size is a compromise between the'
 'visual detail and and computation time. '
+'  '
+'Once the sequence of images has been created you can use'
+'a tool such as gimp or gifsicle or convert to combine the'
+'separate files into an animated gif. There may be 3rd party'
+'tools that can take a set of images and create a movie file.
+' '
+'For example: '
+'  gifsicle -l1 -d100 69*.gif >animation.gif'
+'will take all of the gif files that start with 69 and com-'
+'bine them into a file animation.gif with a 100ms delay between'
+'frames. This can be viewed in a web browser or via a utility'
+'named animate (part of the Imagemagick tool set).'
+'  or '
+'  convert -delay 20 -loop 0 *.jpg animated.gif'
+' '
+'NOTE: convert tends to darken when converting from hdr to jpg so'
+'you might need to alter the command to:'
+'   convert -brightness-contrast 20x-20 -loop 0 *.jpg animated.gif'
+'to increase brighness by 20% and decrease contrast by 20%.'
 *enditem
           CALL EASKR(ATIMEFN,' ',' End time of the animation? ',
           CALL EASKATOG('Interval between views:',' ','one min',
@@ -553,6 +625,14 @@
 *enditem
             CALL EASKABC(outs,'Do you want to: ','overwrite',
             CALL EASKS(ltmp,
+*subroutine getfalse
+*item getfalse e2r_falsecolour
+'False colour images with lux contours can be defined. You'
+'are asked about the range of expected lux within the image'
+'as well as the number of contours to plot.'
+' '
+'You may need to experiment to find appropriate parameters.'
+*enditem
 *subroutine getdf
 *item getdf e2r_df_convergence
 'The calculations will strart with one ambient bounce and'

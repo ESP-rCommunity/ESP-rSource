@@ -32,7 +32,8 @@ C CHECK -Checks if CFD convergence has been reached.
 C      COMMON/FDTRFC/FLSDTU(MNZ),FLSDTV(MNZ),FLSDTW(MNZ),FLSDTP(MNZ),
 C     &              FLSDTT(MNZ),FLSDTK(MNZ),FLSDTE(MNZ)
       COMMON/LINRFC/URFCU(MNZ),URFCV(MNZ),URFCW(MNZ),URFCP(MNZ),
-     &              URFCT(MNZ),URFCK(MNZ),URFCE(MNZ),URFCVS(MNZ)
+     &              URFCT(MNZ),URFCK(MNZ),URFCE(MNZ),URFCVS(MNZ),
+     &              URFCC(MNZ,MCTM)
       common/EQTION/CALLU(MNZ),CALLV(MNZ),CALLW(MNZ),CALLT(MNZ),
      &             CALLC(MNZ),KEMDL(MNZ),BUOY(MNZ),BOUSSI(MNZ),
      &             ZEROT(MNZ),ZandKE(MNZ),MITzero(MNZ)
@@ -61,7 +62,7 @@ C      COMMON/NSSWP/NSSWPU(MNZ),NSSWPV(MNZ),NSSWPW(MNZ),NSSWPP(MNZ),
 C     &             NSSWPT(MNZ),NSSWPK(MNZ),NSSWPE(MNZ)
 
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
-      COMMON/ACCrec/IACC
+      COMMON/ACCrec/IACC(MNZ)
       common/ADAPITER/ITERADD
       
       CHARACTER word*124,outs*124,LCFD*72
@@ -76,44 +77,50 @@ C For help messages
 
       helpinsub='CHECK'  ! set for subroutine
 
-C Solution not converd=ged.  If in adaptive conflation mode increse number 
+C Solution not converged.  If in adaptive conflation mode increse number 
 C of iterations by 50% (unless this is less than 10% of original number of 
-C iterations).  Write current residuals to ACC file.
+C iterations) << this behaviour disabled >>.  Write current residuals to ACC file.
       IF( abs(IFCFD(ICP)).eq.4 .or. abs(IFCFD(ICP)).eq.5)THEN
-        write(IACC,*)
-        WRITE(IACC,'(a,I6,a)')
+        write(IACC(icfd),*)
+        WRITE(IACC(icfd),'(a,I6,a)')
      &    'Convergence has not been achieved after ',
      &    MAXIT,' iterations.'
-        write(IACC,*)' Current residual values:'
-        WRITE(IACC,'(a,7E10.3)') '  Mass = ',RESORM
+        write(IACC(icfd),*)' Current residual values:'
+        WRITE(IACC(icfd),'(a,7E10.3)') '  Mass = ',RESORM
         IF(CALLU(ICFD))THEN
-          WRITE(IACC,'(a,7E10.3)') '  X momentum = ',RESORU
+          WRITE(IACC(icfd),'(a,7E10.3)') '  X momentum = ',RESORU
         ENDIF
         IF(CALLV(ICFD))THEN
-          WRITE(IACC,'(a,7E10.3)') '  Y momentum = ',RESORV
+          WRITE(IACC(icfd),'(a,7E10.3)') '  Y momentum = ',RESORV
         ENDIF
         IF(CALLW(ICFD))THEN
-          WRITE(IACC,'(a,7E10.3)') '  Z momentum = ',RESORW
+          WRITE(IACC(icfd),'(a,7E10.3)') '  Z momentum = ',RESORW
         ENDIF
         IF(CALLT(ICFD))THEN
-          WRITE(IACC,'(a,7E10.3)') '  Energy = ',RESORT
+          WRITE(IACC(icfd),'(a,7E10.3)') '  Energy = ',RESORT
         ENDIF
         IF(KEMDL(ICFD))THEN
-          WRITE(IACC,'(a,7E10.3)') '  Turbulent energy = ',RESORK
-          WRITE(IACC,'(a,7E10.3)') '  Energy dissipation = ',RESORE
+          WRITE(IACC(icfd),'(a,7E10.3)') '  Turbulent energy = ',
+     &                                                     RESORK
+          WRITE(IACC(icfd),'(a,7E10.3)') '  Energy dissipation = ',
+     &                                                       RESORE
         endif
-        if (MAXITR(ICFD).eq.MAXIT) then
-          ITERADD=MAXIT/2
-          MAXIT=MAXIT+ITERADD
-          write (IACC,*) 'New maximum number of iterations ',MAXIT
-        elseif ((MAXITR(ICFD)/10).lt.(ITERADD/2)) then
-          ITERADD=ITERADD/2
-          MAXIT=MAXIT+ITERADD
-          write (IACC,*) 'New maximum number of iterations ',MAXIT
-        else
-          write (IACC,*) ' ** Accepting unconverged solution **'
+
+C << Following code commented out to conform to user set max. iterations >>
+c        if (MAXITR(ICFD).eq.MAXIT) then
+c          ITERADD=MAXIT/2
+c          MAXIT=MAXIT+ITERADD
+c          write (IACC(icfd),*) 'New maximum number of iterations ',
+c     &                                                        MAXIT
+c        elseif ((MAXITR(ICFD)/10).lt.(ITERADD/2)) then
+c          ITERADD=ITERADD/2
+c          MAXIT=MAXIT+ITERADD
+c          write (IACC(icfd),*) 'New maximum number of iterations ',
+c     &                                                        MAXIT
+c        else
+          write (IACC(icfd),*) ' ** Accepting unconverged solution **'
           CONVER=.TRUE.
-        endif
+c        endif
         return
       endif
       

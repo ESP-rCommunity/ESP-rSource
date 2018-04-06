@@ -47,9 +47,6 @@ C Use geometry for common g0/g1/g2/g4/g5/g6/g7/prec16/precz/c20.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
 
-      Logical MODIFY,MODLEN,MODBND
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -158,12 +155,8 @@ C Allow user choices of beginning as a simple shape (with image feedback).
      &  'rectangular plan','polygon plan','general 3D',
      &  'bitmap',ishape,nbhelp)
  144  IF(ishape.eq.1)THEN
-        XO1=0.
-        YO1=0.
-        ZO1=0.
-        DX1=5.0
-        DY1=3.0
-        DZ1=2.7
+        XO1=0.0; YO1=0.0; ZO1=0.0
+        DX1=5.0; DY1=3.0; DZ1=2.7
         helptopic='zone_initial_rect'
         call gethelptext(helpinsub,helptopic,nbhelp)
         HOLD=' '
@@ -203,9 +196,7 @@ C Pass in critical dimensions and expect the data back via common G1.
         NSUR=6
         IUZBASEA(icomp)=0
         IBASES(ICOMP,1)=6
-        MODBND=.TRUE.
-        MODIFY=.TRUE.
-        MODLEN=.TRUE.
+        MODBND=.TRUE.; MODIFYVIEW=.TRUE.; MODLEN=.TRUE.
         iZBFLG(ICOMP)=0
       ELSEIF(ishape.eq.2)THEN
 
@@ -260,9 +251,7 @@ C and expect the data back via common G1. And ESCROT also acts on G1.
         NSUR=NW+2
         IUZBASEA(icomp)=0
         IBASES(ICOMP,1)=NSUR
-        MODBND=.TRUE.
-        MODIFY=.TRUE.
-        MODLEN=.TRUE.
+        MODBND=.TRUE.; MODIFYVIEW=.TRUE.; MODLEN=.TRUE.
         iZBFLG(ICOMP)=0
       ENDIF
 
@@ -277,11 +266,8 @@ C Update the connection list and hash.
         ICCC=NCON
         DO 32 ICC=1,NSUR
           ICCC=ICCC+1
-          IC1(ICCC)=ICOMP
-          IE1(ICCC)=ICC
-          ICT(ICCC)=-1   ! mark as unknown at this time.
-          IC2(ICCC)=0
-          IE2(ICCC)=0
+          IC1(ICCC)=ICOMP; IE1(ICCC)=ICC; ICT(ICCC)=-1   ! mark as unknown at this time.
+          IC2(ICCC)=0; IE2(ICCC)=0
           SSNAME(iccc)=SNAME(icomp,icc)
           SSOTF(iccc)=SOTF(icc)
           SSMLCN(iccc)=SMLCN(icc)
@@ -289,8 +275,7 @@ C Update the connection list and hash.
           SSOTHER(iccc,1)=SOTHER(icc,1)
           SSOTHER(iccc,2)=SOTHER(icc,2)
           SSOTHER(iccc,3)=SOTHER(icc,3)
-          SSUSE(iccc,1)=SUSE(icc,1)
-          SSUSE(iccc,2)=SUSE(icc,2)
+          SSUSE(iccc,1)=SUSE(icc,1); SSUSE(iccc,2)=SUSE(icc,2)
           SSPARENT(iccc)=SPARENT(icc)
           IZSTOCN(icomp,icc)=iccc
    32   CONTINUE
@@ -313,45 +298,24 @@ C User will begin with a minimal GEN body.
         CALL EGETWR(HOLD,K,X0,0.,0.,'-','X origin',IER)
         CALL EGETWR(HOLD,K,Y0,0.,0.,'-','Y origin',IER)
         CALL EGETWR(HOLD,K,Z0,0.,0.,'-','Z origin',IER)
-        X(1)=X0+2.0
-        Y(1)=Y0
-        Z(1)=Z0
-        X(2)=X0
-        Y(2)=Y0
-        Z(2)=Z0
-        X(3)=X0
-        Y(3)=Y0+2.0
-        Z(3)=Z0
-        X(4)=X0+2.0
-        Y(4)=Y0+2.0
-        Z(4)=Z0
+        X(1)=X0+2.0; Y(1)=Y0; Z(1)=Z0
+        X(2)=X0; Y(2)=Y0; Z(2)=Z0
+        X(3)=X0; Y(3)=Y0+2.0; Z(3)=Z0
+        X(4)=X0+2.0; Y(4)=Y0+2.0; Z(4)=Z0
         NVER(1)=4
-        JVN(1,1)=1
-        JVN(1,2)=2
-        JVN(1,3)=3
-        JVN(1,4)=4
+        JVN(1,1)=1; JVN(1,2)=2; JVN(1,3)=3; JVN(1,4)=4
         NZTV(icomp)=NTV
         SNAME(ICOMP,1)='first'
-        SOTF(1)='OPAQUE'
-        SMLCN(1)='UNKN'
-        SVFC(1)='FLOR'
-        SOTHER(1,1)='UNKNOWN'
-        SOTHER(1,2)='0'
-        SOTHER(1,3)='0'
-        SUSE(1,1)='-'
-        SUSE(1,2)='-'
-        SPARENT(1)='-'
-        IUZBASEA(icomp)=0
-        IBASES(ICOMP,1)=1
+        SOTF(1)='OPAQUE'; SMLCN(1)='UNKN'; SVFC(1)='FLOR'
+        SOTHER(1,1)='UNKNOWN'; SOTHER(1,2)='0'; SOTHER(1,3)='0'
+        SUSE(1,1)='-'; SUSE(1,2)='-'; SPARENT(1)='-'
+        IUZBASEA(icomp)=0; IBASES(ICOMP,1)=1
 
 C Update the connection list and hash for initial surface.
         ICCC=NCON
         ICCC=ICCC+1
-        IC1(ICCC)=ICOMP
-        IE1(ICCC)=1
-        ICT(ICCC)=-1  ! mark as unknown
-        IC2(ICCC)=0
-        IE2(ICCC)=0
+        IC1(ICCC)=ICOMP; IE1(ICCC)=1; ICT(ICCC)=-1  ! mark as unknown
+        IC2(ICCC)=0; IE2(ICCC)=0
         SSNAME(iccc)=SNAME(ICOMP,1)
         SSOTF(iccc)=SOTF(1)
         SSMLCN(iccc)=SMLCN(1)
@@ -364,9 +328,7 @@ C Update the connection list and hash for initial surface.
         SSPARENT(iccc)=SPARENT(1)
         IZSTOCN(icomp,1)=iccc
         NCON=ICCC
-        MODBND=.TRUE.
-        MODIFY=.TRUE.
-        MODLEN=.TRUE.
+        MODBND=.TRUE.; MODIFYVIEW=.TRUE.; MODLEN=.TRUE.
         iZBFLG(icomp)=0
       elseif(ishape.eq.4)then
 
@@ -400,6 +362,7 @@ C High level info for all cases except clickonbitmap.
       IF(zname(ICOMP)(1:2).EQ.'  ')THEN
         IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
         IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+        IF(ICOMP.GT.99)WRITE(zname(ICOMP),'(A5,I3)')'Zone-',ICOMP
         lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update length for this string.
       ENDIF
       if(zdesc(ICOMP)(1:2).EQ.'  ')then
@@ -409,9 +372,7 @@ C High level info for all cases except clickonbitmap.
       endif
       CTYPE(icomp)='GEN '
       NDP(ICOMP)=3
-      IDPN(ICOMP,1)=0
-      IDPN(ICOMP,2)=0
-      IDPN(ICOMP,3)=0
+      IDPN(ICOMP,1)=0; IDPN(ICOMP,2)=0; IDPN(ICOMP,3)=0
       NZSUR(ICOMP)=NSUR  ! update nzsur() it is needed by zgupdate.
       NZTV(ICOMP)=NTV
 
@@ -505,6 +466,9 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
 #include "material.h"
       
       integer lnblnk  ! function definition
+      integer itrc    ! trace level
+      integer ic      ! index of zone to create
+      integer ier     ! non-zero return is error
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -518,13 +482,23 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
       integer icascf
       common/cctl/icascf(mcom)
 
-      CHARACTER*72 LTMP,DFILE
+      CHARACTER LTMP*72
       CHARACTER OUTSTR*124,ctldoc*248,LCTLF*72
+      CHARACTER DFILE*72,CFILE*72,OFILE*72
       character sfile*72,snpfile*72,fs*1,outs*124
 
       LOGICAL OK,DOK,XST,OKC,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
       logical altered ! to signal change in boundary conditions of added existing zone.
+
+C Predefined entity variables.
+      character name*12   ! the object name to pass to PREDEFEMBED
+      character prec*1    ! character to pre-pend to names
+      character hold*36   ! for dialog
+      character objmenu*32 !menu for selected object
+      character ZN*12,zd*64
+      real objbb(3)
+      character predef*144,temp*12
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -545,9 +519,9 @@ C Set folder separator (fs) to \ or / as required.
 
  293  helptopic='zone_source_files'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      CALL EASKABCD(' ','New zone options:','input dimensions',
+      CALL EASKATOG('New zone options: ',' :','input dimensions',
      &  'load existing (ESP-r)','load existing (cflow3 zip)',
-     &  'cancel',INZOPT,nbhelp)
+     &  'use pre-defined entity','cancel',' ',' ',INZOPT,nbhelp)
 
 C Input dimensions.
       if(INZOPT.eq.1)then
@@ -600,7 +574,7 @@ C User did not select a file. Take them back to the question.
 
 C Existing ESP-r geom file.
         DFILE=' '
-        WRITE(OUTSTR,'(a,i2,a)')' For zone ',IC,
+        WRITE(OUTSTR,'(a,i3,a)')' For zone ',IC,
      &   ' the geometry is defined in:'
         CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'geom file',IER,nbhelp)
         IF(LTMP(1:2).EQ.'  ')GOTO 293
@@ -668,43 +642,31 @@ C the connections list, then remind user to double check topology.
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
      &        ' is a EXTERIOR connection which will be used.'
             call edisp(iuout,outs)
-            ICT(ICCC)=0
-            IC2(ICCC)=0
-            IE2(ICCC)=0
+            ICT(ICCC)=0; IC2(ICCC)=0; IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:7).eq.'SIMILAR')then
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
      &        ' is a SIMILAR connection which will be used.'
             call edisp(iuout,outs)
-            ICT(ICCC)=1
-            IC2(ICCC)=0
-            IE2(ICCC)=0
+            ICT(ICCC)=1; IC2(ICCC)=0; IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:9).eq.'ADIABATIC')then
-            ICT(ICCC)=5
-            IC2(ICCC)=0
-            IE2(ICCC)=0
+            ICT(ICCC)=5; IC2(ICCC)=0; IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:8).eq.'CONSTANT')then
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
      &    ' was a CONSTANT connection. Confirm its surface attributes.'
             call edisp(iuout,outs)
             SOTHER(icc,1)='UNKNOWN'
-            ICT(ICCC)=-1
-            IC2(ICCC)=0
-            IE2(ICCC)=0
+            ICT(ICCC)=-1; IC2(ICCC)=0; IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:6).eq.'GROUND')then
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
      &      ' was a GROUND connection. Confirm its surface attributes.'
             call edisp(iuout,outs)
             SOTHER(icc,1)='UNKNOWN'
-            ICT(ICCC)=-1
-            IC2(ICCC)=0
-            IE2(ICCC)=0
+            ICT(ICCC)=-1; IC2(ICCC)=0; IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:7).eq.'UNKNOWN')then
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
      &    ' has an undefined boundary. Confirm its surface attributes.'
             call edisp(iuout,outs)
-            ICT(ICCC)=-1
-            IC2(ICCC)=0
-            IE2(ICCC)=0
+            ICT(ICCC)=-1; IC2(ICCC)=0; IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:7).eq.'ANOTHER')then
 
 C Existing partitions in an imported zone are reset to UNKNOWN.
@@ -712,9 +674,7 @@ C Existing partitions in an imported zone are reset to UNKNOWN.
      &        ' was a partition. Confirm its surface attributes.'
             call edisp(iuout,outs)
             SOTHER(icc,1)='UNKNOWN'
-            ICT(ICCC)=-1
-            IC2(ICCC)=0
-            IE2(ICCC)=0
+            ICT(ICCC)=-1; IC2(ICCC)=0; IE2(ICCC)=0
             altered = .true.   ! will need to write out geometry
           else
 
@@ -745,7 +705,9 @@ C Update the connection based data structures.
 C Find the index of the MLC which matches this surface.
           ssmlcindex(iccc)=0  ! assume no matching MLC          
           do 5 ii=1,nmlc
-            if(SSMLCN(iccc)(1:12).eq.mlcname(ii)(1:12)) then
+            lnssmlc=lnblnk(SSMLCN(iccc))
+            if(SSMLCN(iccc)(1:lnssmlc).eq.
+     &         mlcname(ii)(1:lnmlcname(ii)))then
               ssmlcindex(iccc)=ii   ! remember MLC index     
             endif
   5       continue
@@ -821,7 +783,7 @@ C                write(6,*) ltmp
           else
             LTMP=LPROJ(IC)
           endif
-          WRITE(OUTSTR,'(a,i2,a)')' For zone ',IC,
+          WRITE(OUTSTR,'(a,i3,a)')' For zone ',IC,
      &      ' the operations are defined in:'
  295      CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'opr file',IER,nbhelp)
           IF(LTMP(1:2).EQ.'  ')GOTO 295
@@ -878,7 +840,7 @@ C                write(6,*) ltmp
           else
             LTMP=LTHRM(IC)
           endif
-          WRITE(OUTSTR,'(a,i2,a)')' For zone ',IC,
+          WRITE(OUTSTR,'(a,i3,a)')' For zone ',IC,
      &      ' the constructions are defined in:'
  297      CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'constr file',IER,nbhelp)
           IF(LTMP(1:2).EQ.'  ')GOTO 297
@@ -928,7 +890,7 @@ C Existing zip geom file.
         helptopic='zone_also_zip_source'
         call gethelptext(helpinsub,helptopic,nbhelp)
         DFILE=' '
-        WRITE(OUTSTR,'(a,i2,a)')'For zone ',IC,
+        WRITE(OUTSTR,'(a,i3,a)')'For zone ',IC,
      &    ' the geometry is to be scanned from:'
  396    CALL EASKS(LTMP,' ',OUTSTR,72,DFILE,'zip file',IER,nbhelp)
         IF(LTMP(1:2).EQ.'  ')GOTO 293
@@ -949,7 +911,149 @@ C Scan zip file and update control and connections.
           IF(OK)GOTO 396
         ENDIF
 
-      elseif(INZOPT.EQ.4)then
+      elseif(INZOPT.eq.4)then
+
+C Predefined entities. We are looking for zone type entries such
+C as plant components or portions of buildings.
+C NOTE: If creating a new zone then we do not have to
+C invert any of the surfaces. If the entity bounding surfaces
+C are to be shared with another zone then they need to be
+C inverted. Currently, assume that the user will manually import.
+        call choosepredef(name,objmenu,objbb,ier)
+        if(ier.eq.2)then
+          goto 293    ! nothing selected
+        elseif(ier.eq.1)then
+          call usrmsg('Predefined objects not found or the file',
+     &                'was corrupt','W')
+          goto 293
+        endif
+
+        write(predef,'(a)') lpredef(1:96)
+
+C Code bits from SCRZONE.
+C If newer model cfg file ensure version 1.1 geometry file created. 
+        if(icfgv.lt.4)then
+          newgeo=.false.  ! assume older format geometry.
+        else
+          newgeo=.true.   ! set to newer format
+          gversion(ic)=1.1
+        endif
+
+C Set folder separator (fs) to \ or / as required.
+        call isunix(unixok)
+        if(unixok)then
+          fs = char(47)
+        else
+          fs = char(92)
+        endif
+
+C Establish name of the zone. Base this on the predefined entity.
+        write(ZN,'(a)') name
+ 42     helptopic='zone_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL EASKS(ZN,'Zone description?','(<12 chars, no spaces)',
+     &    12,'New zone','zone name',IER,nbhelp)
+        IF(ZN.eq.' '.or.ier.ne.0)goto 42
+        call st2name(ZN,zname(IC))
+        lnzname(ic)=lnblnk(zname(IC))  ! update this string length.
+
+        write(zd,'(3a)') zname(IC)(1:lnzname(IC)),' ',objmenu
+ 43     CALL EASKS(zd,'What does it represent?','(<64 characters)',
+     &    64,'no description entered','zone descr',IER,nbhelp)
+        IF(zd.eq.' '.or.ier.ne.0)goto 43
+        zdesc(IC)=zd
+        lnzdesc(IC)=lnblnk(zd)  ! update the length of this string.
+
+C Initial guesses for related zone files.
+        if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+          WRITE(DFILE,'(2a)') zname(IC)(1:lnzname(IC)),'.geo'
+          WRITE(CFILE,'(2a)') zname(IC)(1:lnzname(IC)),'.con'
+          WRITE(OFILE,'(2a)') zname(IC)(1:lnzname(IC)),'.opr'
+        else
+          WRITE(DFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
+     &      zname(IC)(1:lnzname(IC)),'.geo'
+          WRITE(CFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
+     &      zname(IC)(1:lnzname(IC)),'.con'
+          WRITE(OFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
+     &      zname(IC)(1:lnzname(IC)),'.opr'
+        endif
+        LGEOM(IC)=DFILE
+        LTHRM(IC)=CFILE
+        LPROJ(IC)=OFILE
+        NTV=0            ! clear geometry prior to import
+        NZTV(ic)=NTV
+        NSUR=0
+        NZSUR(IC)=NSUR
+        IUZBASEA(ic)=0
+        IBASES(IC,1)=0
+        iZBFLG(IC)=0
+        nbvis(ic)=0      ! what else needs to be cleared?
+
+C As a new zone establish what the next available connection is.
+        ICCC=NCON   ! connection number of the first object surface
+        ICCC=ICCC+1
+        IC1(ICCC)=IC
+        IE1(ICCC)=1
+        IZSTOCN(ic,1)=ICCC
+
+C Ask where to place it (get new origin) and then use GB1
+C to temporarily draw it.
+ 422    call edisp(iuout,'  ')
+        write(outs,'(3a)')'bounding box of ',objmenu,' is.'
+        call edisp(iuout,outs)
+        write(outs,'(3f7.3,a)') objbb(1),objbb(2),objbb(3),' XYZm'
+        call edisp(iuout,outs)
+        VALR=0.
+        CALL EASKR(VALR,' Object rotation (+ = anticlockwise)',
+     &    'around its lower left corner:',
+     &    -359.0,'W',359.0,'W',0.0,'rotation',IER,nbhelp)
+        hold = ' 0.000  0.000  0.000    '
+        CALL EASKS(HOLD,'Place object origin @ (X Y Z metres)',
+     &    'i.e. within the room: ',
+     &    36,' 0. 0. 0.','transforms XYZ',IER,nbhelp)
+        K=0
+        CALL EGETWR(HOLD,K,DX,-99.,99.,'W','X tr',IER)
+        CALL EGETWR(HOLD,K,DY,-99.,99.,'W','Y tr',IER)
+        CALL EGETWR(HOLD,K,DZ,-99.,99.,'W','Z tr',IER)
+        CALL CNVBLK(DX,DY,DZ,objbb(1),objbb(2),objbb(3),VALR)
+
+C Peview the bounding box of the object via DRWBB.
+        write(temp,'(A)')name
+        call drwbb(temp,ier)
+
+        CALL EASKABC('Options for predefined object: ',' ',
+     &    'apply transform and merge','revise transform','cancel',
+     &    IW,nbhelp)
+        if (IW.eq.1) then
+
+C Ask for single character to prepend to copied associated entities.
+C Then used predefembed to read in the predefined into the model.
+          CALL EASKABCD(' Character to pre-pend to copied entities:',
+     &      ' ',' a ',' b ',' c ',' d ',IBOPT,nbhelp)
+          if(ibopt.eq.1)prec='a'
+          if(ibopt.eq.2)prec='b'
+          if(ibopt.eq.3)prec='c'
+          if(ibopt.eq.4)prec='d'
+          call PREDEFEMBED(IFIL+2,predef,IC,DX,DY,DZ,VALR,name,
+     &      prec,IER)
+        elseif (IW.eq.2) then
+          goto 422   ! test another location
+        elseif (IW.eq.3) then
+          continue
+        endif
+
+C Signal that the wireframe image needs to be redrawn.
+        MODIFYVIEW=.TRUE.; MODLEN=.TRUE.; MODBND=.TRUE.
+
+C As surfaces added save the model cfd and cnn files.
+        CALL EMKCFG('-',IER)
+
+C Present message about what to do next.
+        helptopic='after_predef_warning'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('predef popup',nbhelp,'-',0,0,IER)
+
+      elseif(INZOPT.EQ.5)then
         ier = -3  ! signal user cancel
         return
       endif
@@ -992,7 +1096,6 @@ C espriou.h provides currentfile.
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
 
       LOGICAL DOK,OK,XST,changed,OKC,OKM,modopr,browse
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -1426,6 +1529,9 @@ C Re-establish link between zone/surfaces and connections.
  335  continue
 
 C Ask if user wishes to remove all files related to the zone.
+C << place to take into account where prj was invoked and the
+C << path to the model cfg folder.
+
       dok=.false.
       helptopic='zone_delete_files'
       call gethelptext(helpinsub,helptopic,nbhelp)
@@ -1814,10 +1920,10 @@ C If existing db out of date the perform recalculation.
           call tstamp('>','PRJ: start shading recalculation')
           if(IRT.eq.1)then
             call comissionish(icomp,'sra',ier)
-            ishold=.false.
+            if(ier.eq.0)ishold=.false.
           else
             call comissionish(icomp,'ira',ier)
-            ishold=.false.
+            if(ier.eq.0)ishold=.false.
           endif
         endif
       endif
@@ -1851,6 +1957,8 @@ C     = 'sra'  silent recalculation (of all files)
 C     = 'ir '  interactive recalculation (existing files)
 C     = 'ira'  interactive recalculation (of all files)
 C     = 'in '  interactive new
+C     = 'sab'  silent conversion ASCII to binary
+C     = 'sua'  silent useupdate_silent mode
       subroutine comissionish(iz,act,ier)
 #include "building.h"
 #include "model.h"
@@ -1865,14 +1973,23 @@ C     = 'in '  interactive new
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/appw/iappw,iappx,iappy
+      integer iappw,iappx,iappy
+      integer iappwpc ! application %
+
+C Directives for shading and/or insolation.
+      common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
+     &     nsurfinso(MCOM),isurfinso(MCOM,MS)
 
       CHARACTER ZN*12,longtfile*144,longtfiledos*144
       character TMODE*8,outs*248,DOIT*248
+      character shdafile*72
       character act*3  ! the parameter passed
-      logical XST,concat,unixok
+      logical XST,XSTA,concat,unixok
+      logical shdasked,ishasked
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
+      shdasked=.true.; ishasked=.true.
 
       if(iz.eq.0.or.iz.gt.ncomp)then
         ier=1
@@ -1884,8 +2001,45 @@ C Check if Unix-based or DOS based.
         return  ! do not do if ISI has not been setup yet
       endif
 
+C Confirm that zone shading directives have been defined. Use
+C similar logic to that used in edgeo.F for the interface.
+      if(nsurfcalc(iz).gt.0)then
+        if(iaplic(iz,1).eq.0)then
+          shdasked=.true.
+        else
+          shdasked=.true.
+        endif
+      else
+        if(IOBS(iz).eq.0)then
+          shdasked=.false.
+        elseif(IOBS(iz).eq.2)then
+          shdasked=.false.
+        else
+          shdasked=.false.
+        endif
+      endif
+      if(nsurfinso(iz).gt.0)then
+        if(iaplic(iz,2).eq.0)then
+          ishasked=.true.
+        else
+          ishasked=.true.
+        endif
+      else
+        ishasked=.false.
+      endif
+      if((.NOT.shdasked).and.(.NOT.ishasked))then
+        ier=3
+        call edisp(iuout,
+     &  'No shading or insolation directives set for this zone.')
+        call edisp(iuout,
+     &  'Return to the zone geometry facility and set these.')
+        return  ! do not do if ISI has not been setup yet
+      endif
+
 C Check if file exists and get local zone name for feedback.
       call FINDFIL(LSHAD(iz),XST)
+      write(shdafile,'(2a)') lshad(iz)(1:lnblnk(lshad(iz))),'a'
+      call FINDFIL(shdafile,XSTA)
       write(ZN,'(A)') zname(iz)
       LNZ=max(1,lnzname(iz))  ! find current lenght of at least on character
 
@@ -1906,6 +2060,13 @@ C and change any / to \.
         longtfile=longtfiledos
       endif
 
+C Get application % nopminal size.
+      if(iappw.eq.630)then
+        iappwpc=100
+      else
+        iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+      endif
+
       if(act(1:3).eq.'sr ')then
 
 C Silent recalculate (try not to ask the user anything if there
@@ -1923,6 +2084,7 @@ C rather than starting up a new xterm.
           write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
      &        ' has been recalculated.'
           call edisp(iuout,outs)
+          ier=0
         else
           ier=3
           return  ! if shading file does exist
@@ -1943,6 +2105,7 @@ C rather than starting up a new xterm.
         write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
      &      ' has been recalculated.'
         call edisp(iuout,outs)
+        ier=0
 
       elseif(act(1:3).eq.'ir ')then
 
@@ -1950,9 +2113,9 @@ C Interactive recalculate of zone shading if there is an existing
 C shading file. If prj initial size is a % of default pass this\
 C on to child with an offset from prj start position.
         if(XST)then
-          if(iappw.gt.0.and.iappw.le.200)then
+          if(iappwpc.gt.0.and.iappwpc.le.200)then
             write(doit,'(3a,3i4,5a)') 'ish -mode ',
-     &          tmode,' -s ',iappw,iappx+15,iappy+50,' -file ',
+     &          tmode,' -s ',iappwpc,iappx+15,iappy+50,' -file ',
      &          longtfile(1:lnblnk(longtfile)),' -zone ',
      &          ZN(1:lnz),' -act recalculate'
           else
@@ -1965,6 +2128,7 @@ C on to child with an offset from prj start position.
           write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
      &      ' has been recalculated.'
           call edisp(iuout,outs)
+          ier=0
         else
           ier=3
           return  ! if shading file does exist
@@ -1974,9 +2138,9 @@ C on to child with an offset from prj start position.
 C Interactive recalculate of zone shading without checking if
 C a shading file exists. If prj initial size is a % of default
 C pass this on to child with an offset from prj start position.
-        if(iappw.gt.0.and.iappw.le.200)then
+        if(iappwpc.gt.0.and.iappwpc.le.200)then
           write(doit,'(3a,3i4,5a)') 'ish -mode ',
-     &        tmode,' -s ',iappw,iappx+15,iappy+50,' -file ',
+     &        tmode,' -s ',iappwpc,iappx+15,iappy+50,' -file ',
      &        longtfile(1:lnblnk(longtfile)),' -zone ',
      &        ZN(1:lnz),' -act recalculate'
         else
@@ -1989,13 +2153,14 @@ C pass this on to child with an offset from prj start position.
         write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
      &    ' has been recalculated.'
         call edisp(iuout,outs)
+        ier=0
 
       elseif(act(1:3).eq.'in ')then
 
 C Interactive shading calculation for a new shading database.
-        if(iappw.gt.0.and.iappw.le.200)then
+        if(iappwpc.gt.0.and.iappwpc.le.200)then
           write(doit,'(3a,3i4,4a)') 'ish -mode ',tmode,
-     &      ' -s ',iappw,iappx+15,iappy+50,' -file ',
+     &      ' -s ',iappwpc,iappx+15,iappy+50,' -file ',
      &      longtfile(:lnblnk(longtfile)),' -zone ',
      &      ZN(1:lnblnk(ZN))
         else
@@ -2008,7 +2173,45 @@ C Interactive shading calculation for a new shading database.
         write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
      &    ' has been recalculated.'
         call edisp(iuout,outs)
-       
+        ier=0
+
+      elseif(act(1:3).eq.'sab')then
+
+C Convert ASCII shading to binary but only if an ASCII file is
+C found.
+        if(XSTA)then
+          write(doit,'(6a)') 'ish -mode text -file ',
+     &      longtfile(1:lnblnk(longtfile)),' -zone ',
+     &      ZN(1:lnz),' -act asci2bin ',shdafile(1:lnblnk(shdafile))
+          call usrmsg('starting shading conversion via',doit,'-')
+
+C Since silent, tell runit to use the current command window
+C rather than starting up a new xterm.
+          call runit(doit,'-')
+          write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
+     &      ' has been imported from ASCII.'
+          call edisp(iuout,outs)
+        endif
+        ier=0
+
+      elseif(act(1:3).eq.'sua')then
+
+C Silent useupdate_silent mode to convert ASCII if available or
+C to recalculate whether or not there is an existing shading
+C file.
+        write(doit,'(5a)') 'ish -mode text -file ',
+     &    longtfile(1:lnblnk(longtfile)),' -zone ',
+     &    ZN(1:lnz),' -act useupdate_silent'
+        call usrmsg('starting shading analysis via',doit,'-')
+
+C Since silent, tell runit to use the current command window
+C rather than starting up a new xterm.
+        call runit(doit,'-')
+        write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
+     &      ' has been converted or recalculated.'
+        call edisp(iuout,outs)
+        ier=0
+
       endif
 
       return
@@ -2064,10 +2267,13 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
         endif
       endif
       if(vdis.ne.0.0)then
+
+C The original C code returned the square of distance
+C so unpack via sqrt call.
         d2l=(vdis1-(vdis+vdis1-vdis2)*
      &      (vdis+vdis1-vdis2)/vdis/4.0)
-        if(abs(d2l).lt.0.003)then
-          offset=d2l
+        if(abs(d2l).lt.0.00003)then
+          offset=d2l   ! if really small d2l
         else
           offset=SQRT(d2l)
         endif

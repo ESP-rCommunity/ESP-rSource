@@ -75,8 +75,8 @@ C     Trace output
 C     Check user specified number of controlled variables
       NCITM=0
       IF(NCI(IPCOMP).NE.NCITM)
-     &     WRITE(ITU,*) ' CMP22S warning: user specified wrong number',
-     &     ' of controlled variables'
+     &     WRITE(ITU,*) ' Radiant floor warning: user specified wrong ',
+     &     'number of controlled variables'
 
 C     Check component has 1 connection only to water
       NCONS=1
@@ -106,9 +106,9 @@ C     sets the position of current rad floor in IRadFloor array.
 
 
 C     Error handling
- 990  WRITE(IUOUT,*) ' CMP68S: connection error for component ',IPCOMP
+ 990  WRITE(IUOUT,*) ' Radiant floor: error for component ',IPCOMP
       WRITE(IUOUT,*) '         should be ',NCONS,' air connection(s)'
-      STOP ' CMP68S: unresolvable error'
+      STOP ' Radiant floor: unresolvable error'
       END
 
 
@@ -245,15 +245,16 @@ C     Flag indicating if radiant floor is active, number of radiant floors, indi
       LOGICAL RadFloor_active
       INTEGER NRadFloor
       INTEGER IRadFloor(MPCOM), InitRadFloor(MPCOM)
-      INTEGER irf
+      INTEGER irf, InsulationLayer
 C----------------------------------------------------------------------
 C     Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &     ITRACE(37).NE.0) WRITE(ITU,*) ' Entering subroutine CMP95C'
+     &     ITRACE(37).NE.0) WRITE(ITU,*) 
+     &' Entering radiant floor subroutine'
 
       IF(INDCFG .NE. 3) THEN
          call usrmsg('Use this plant component only when the simulaton',
-     &    'is active, i.e., INDCFG = 3. Leaving subroutine CMP95C','W')
+     &    'is active, i.e., INDCFG = 3. Leaving radiant floor','W')
          RETURN
       ENDIF
 
@@ -301,6 +302,9 @@ C     Zone surface No.
 
 C     Surface injection node No.
       In = INT( ADATA(IPCOMP,9) )
+      
+C     Layer of insulation
+      InsulationLayer = ADATA(IPCOMP,10)
 
 C     Area of the radiant surface
       AreaR   = SNA(Iz, Is)
@@ -337,15 +341,18 @@ C     Layer specific heat
          SHT  = THRMLI(Iz,Is,J,3)
 C     Layer thickness
          THKL = THRMLI(Iz,Is,J,4)
-
-         THKC = THKC + THKL
+         IF(J .GT. InsulationLayer) THKC = THKC + THKL
 
 C     Find the resistance of the air gap associated with layer J.
          IF(NairGap .GT. 0 .AND. THRMLI(Iz,Is,J,1) .LT. Small)THEN
             DO 12 iNairGap =1, NairGap
                IndxAirG = NPGAP(Iz,Is,iNairGap)
                IF(IndxAirG .EQ. J) THEN
-                  Ncentr = Ncentr + 1
+
+C This is an error as there are 3 nodes in each layer  - this gives the wrong number 
+C of total nodes in constructions with air gaps.
+C                  Ncentr = Ncentr + 1
+                  Ncentr=Ncentr + 2
                   AirRes = RGAPS(Iz,Is,iNairGap)
                   COND = THKL/AirRes
                ENDIF
@@ -356,8 +363,10 @@ C     Find the resistance of the air gap associated with layer J.
             IF(In .EQ. Ncentr  ) Xqc = THKC - THKL/2.
             IF(In .EQ. Ncentr-1) Xqc = THKC - THKL
          ENDIF
-         AKslab  = AKslab  + COND*THKL
-         RCPslab = RCPslab + DENS*SHT*THKL
+         IF(J .GT. InsulationLayer) THEN
+            AKslab  = AKslab  + COND*THKL
+            RCPslab = RCPslab + DENS*SHT*THKL
+         ENDIF
  11   CONTINUE
 
 C     average thermal conductivity, diffusivity and volumetric
@@ -368,11 +377,11 @@ C     specific heat of slab system
 
 C     Check if the specified injection node is valid -----------------
       IF(In .LT. 1 .OR. In .GT. Ncentr+1) THEN
-         WRITE(outs,*)'CMP95C Fatal error: injection node',In,
-     &     ' not in range 1 to',Ncentr+1
+         WRITE(outs,*)'Radiant floor fatal error: injection node ',In,
+     &' not in range 1 to',Ncentr+1
          call edisp(iuout,outs)
          WRITE(*,outs)
-         WRITE(*,*)'Source error: subroutine CMP95C.  Simulation halted'
+         WRITE(*,*)'Source error: radiant floor.  Simulation halted'
          call pauses(2)   ! pause for 2 seconds then abort program.
          STOP
       ENDIF

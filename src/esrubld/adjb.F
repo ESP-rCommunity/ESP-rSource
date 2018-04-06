@@ -153,7 +153,7 @@ C Zone-by-zone.
         NC=NCONST(ICOMP)
         if(ATRACE)then
           call edisp(itu,' ')
-          write(outs,'(1x,A,A,I2,A,I2,A)') 
+          write(outs,'(1x,A,A,I3,A,I3,A)') 
      &      zname(icomp)(1:lnzname(icomp)),' (',ICOMP,') with ',
      &      NC,' surfaces, units W/m^2 '
           call edisp(itu,outs)

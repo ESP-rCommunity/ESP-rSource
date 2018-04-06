@@ -155,7 +155,9 @@ C Define the year if not already done.
           CALL EASKR(CLAT,' ',' Weather latitude:',
      &      -89.9,'W',89.9,'W',30.0,'weather latitude',IER,nbhelp)
 
-          CALL EASKR(CLONG,' ',' Longitude diference ?',
+          CALL EASKR(CLONG,
+     &      'Longitude (actual or longitude difference',
+     &      'from local time meridian +east) ?',
      &      -14.9,'W',14.9,'W',0.0,'weather long',IER,nbhelp)
         endif
       endif
@@ -256,6 +258,7 @@ C with the radiation flag set appropriately after the file has been
 C read in.
       SUBROUTINE COLTOBCLM(ITRU,LASCI,IUNIT,IDS,IDF,IER)
 #include "esprdbfile.h"
+#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -309,7 +312,9 @@ C Clear column association.
         ITUNITS(I)=0
    27 CONTINUE
       IMSTL=1
-      IDS=1; IDF=365; iwidest=0; IREAD=0
+      iwidest=0; IREAD=0
+      if(IDS.eq.0)IDS=1    ! if not already set
+      if(IDF.eq.0)IDF=365 
 
 C Display the initial lines of the file for the user.
 
@@ -476,7 +481,8 @@ C Define the year if not already done.
         CALL EASKR(CLAT,' ',' Weather latitude:',
      &    -89.9,'W',89.9,'W',30.0,'weather latitude',IER,nbhelp)
 
-        CALL EASKR(CLONG,' ',' Longitude diference ?',
+        CALL EASKR(CLONG,'Longitude (acutal or difference from the',
+     &    'local time meridian +east) ?',
      &    -14.9,'W',14.9,'W',0.0,'weather long',IER,nbhelp)
 
         CALL EASKI(IDS,' ',' Start day-of-year (1) ? ',
@@ -596,6 +602,7 @@ C method which equation set to use.
 C Re-open the file and read how ever many lines prior to the data
 C that the user requested.
         CALL EFOPSEQ(IUNIT,LASCI,1,IER)
+        write(currentfile,'(a)') LASCI(1:lnblnk(LASCI))
         N=0
    70   N=N+1
         CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'line 1',IER)
@@ -617,14 +624,15 @@ C Read one hour's data from ASCII file into outstr. Loop through
 C each of the possible columns and if it matches one of the weather
 C data columns defined by the user read and convert the correct
 C data format. If not a match just read the word and try the 
-C next column.
+C next column. If reached EOF then jump to end of loop.
             CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'weather data',IER)
+            if(ier.ne.0) goto 20  ! EOF detected
             K=0
             do 6 N1=1,iwidest   ! loop through the possible columns
               if(N1.eq.IMSTC(1))then
                 if(ITUNITS(1).eq.0)then
                   CALL EGETWR(OUTSTR,K,DIF,0.0,0.0,'-',
-     &              'dif w/m2 reak',IER)
+     &              'dif w/m2 real',IER)
                   ICLM(J,1)= NINT(DIF)
                 elseif(ITUNITS(1).eq.1)then
                   CALL EGETWI(OUTSTR,K,IDIF,0,0,'-','dif w/m2 int',IER)
@@ -840,7 +848,7 @@ C Create a header section with site name, period etc.
         if(IDNGH.eq.0)then
           WRITE(IAF,30,IOSTAT=ISTAT,ERR=1003)LCLIM(1:lnblnk(LCLIM)),
      &            LASCI(1:lnblnk(LASCI))
-  30      FORMAT('# ascii climate file from ',a,' binary db,',/,
+  30      FORMAT('# ascii weather file from ',a,' binary db,',/,
      &    '# defined in: ',a,/,
      &    '# col 1: Diffuse solar on the horizontal (W/m**2)',/,
      &    '# col 2: External dry bulb temperature   (Tenths DEG.C)',/,
@@ -851,7 +859,7 @@ C Create a header section with site name, period etc.
         else
           WRITE(IAF,31,IOSTAT=ISTAT,ERR=1003)LCLIM(1:lnblnk(LCLIM)),
      &            LASCI(1:lnblnk(LASCI))
-  31      FORMAT('# ascii climate file from ',a,' binary db,',/,
+  31      FORMAT('# ascii weather file from ',a,' binary db,',/,
      &    '# defined in: ',a,/,
      &    '# col 1: Diffuse solar on the horizontal (W/m**2)',/,
      &    '# col 2: External dry bulb temperature   (Tenths DEG.C)',/,
@@ -1440,11 +1448,13 @@ C Climate list common.
       logical XST,ok,silent,unixok
       
 C Logical rescan = true if climatelist needs to be rescanned to
-C pick up typical periods (i.e. if climate file name typed in
+C pick up typical periods (i.e. if weather file name typed in
 C or passed into clm module).
       logical rescan
 
-      CHARACTER CLMLOC*30,outs*124,tab*1,outs248*248
+      CHARACTER CLMLOC*30,outs*124,tab*1
+      character minu*1,second*1,longdms*14,latdms*14
+      character outs248*248
       character LCMDFL*144,clmdb*144,L144*144,lltmp*144
       character fs*1
       character actreturn*1  ! users preference
@@ -1456,6 +1466,8 @@ C For help messages
 
       helpinsub='CFILIN'  ! set for cfiles
       tab = CHAR(9)
+      minu = CHAR(39)
+      second = CHAR(34)
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1669,25 +1681,58 @@ C reset to indicate the weather was not in the list.
       WRITE(outs,'(a,a30)')' Weather data: ',CLMLOC
       call edisp(iuout,outs)
 
+C Get longitude in degrees minutes and seconds.
+      ILONG=INT(CLONG)                 ! integer portion of degrees
+      FRAM=abs(clong)-abs(real(ilong)) ! fraction portion of degrees
+      FRAD2=FRAM*60                    ! into minutes
+      ILONGM=INT(FRAD2)                ! integer part of minutes
+      FRAS=abs(FRAD2)-abs(real(ilongm))! fraction portion of minutes
+      FRAS2=FRAS*60                    ! seconds
+C      write(6,*)'clong fra frad',CLONG,FRAM,FRAD2,ILONG,ILONGM,FRAS
+      if(clong.gt.0.0)then
+        write(longdms,'(i2,a,i2,a,f4.1,a)')
+     &    ILONG,'deg ',ILONGM,minu,FRAS2,second
+      else
+        write(longdms,'(i3,a,i2,a,f4.1,a)')
+     &    ILONG,'deg',ILONGM,minu,FRAS2,second
+      endif
+C      write(6,*) 'longdms ',longdms
+C Get latitude in degrees minutes and seconds.
+      ILAT=INT(CLAT)                  ! integer portion of degrees
+      FRAM=abs(clat)-abs(real(ilat))  ! fraction portion of degrees
+      FRAD2=FRAM*60                   ! into minutes
+      ILATM=INT(FRAD2)                ! integer part of minutes
+      FRAS=abs(FRAD2)-abs(real(ilatm))! fraction portion of minutes
+      FRAS2=FRAS*60                   ! seconds
+C      write(6,*)'clat fra frad',clat,FRAM,FRAD2,ILAT,ILATM,FRAS,FRAS2
+      if(clat.ge.0.0)then
+        write(latdms,'(i2,a,i2,a,f4.1,a)')
+     &    ILAT,'deg ',ILATM,minu,FRAS2,second
+       else
+        write(latdms,'(i3,a,i2,a,f4.1,a)')
+     &    ILAT,'deg',ILATM,minu,FRAS2,second
+       endif
+C      write(6,*) 'latdms ',latdms
+     
       if(IDNGH.GT.0)then       ! Global horizontal.
         if(CLAT.LT.0.0)then    ! if south
           ACLAT=ABS(CLAT)
           if(CLONG.LT.0.0)then ! if west
-            ACLONG=ABS(CLONG)
-            WRITE(outs,109)ACLAT,ACLONG,IYEAR
- 109        FORMAT(1X,F7.1,'S',F7.1,'W',': ',I4,2X,'GH')
+           ACLONG=ABS(CLONG)
+           WRITE(outs,109)ACLAT,latdms,CLONG,longdms,IYEAR
+ 109       FORMAT(1X,F7.2,' (',a,')S',F7.2,' (',a,')W',': ',I4,2X,'GH')
           else                 ! if east
-            WRITE(outs,108)ACLAT,CLONG,IYEAR
- 108        FORMAT(1X,F7.1,'S',F7.1,'E',': ',I4,2X,'GH')
+           WRITE(outs,108)ACLAT,latdms,CLONG,longdms,IYEAR
+ 108       FORMAT(1X,F7.2,' (',a,')S',F7.2,' (',a,')E',': ',I4,2X,'GH')
           endif
         else                   ! if north
           if(CLONG.LT.0.0)then ! if west
-            ACLONG=ABS(CLONG)
-            WRITE(outs,107)CLAT,ACLONG,IYEAR
- 107        FORMAT(1X,F7.1,'N',F7.1,'W',': ',I4,2X,'GH')
+           ACLONG=ABS(CLONG)
+           WRITE(outs,107)CLAT,latdms,CLONG,longdms,IYEAR
+ 107       FORMAT(1X,F7.2,' (',a,')N',F7.2,' (',a,')W',': ',I4,2X,'GH')
           else                 ! if east
-            WRITE(outs,102)CLAT,CLONG,IYEAR
- 102        FORMAT(1X,F7.1,'N',F7.1,'E',': ',I4,2X,'GH')
+           WRITE(outs,102)CLAT,latdms,CLONG,longdms,IYEAR
+ 102       FORMAT(1X,F7.2,' (',a,')N',F7.2,' (',a,')E',': ',I4,2X,'GH')
           endif
         endif
         call edisp(iuout,outs)
@@ -1696,21 +1741,21 @@ C reset to indicate the weather was not in the list.
         if(CLAT.LT.0.0)then    ! if south
           ACLAT=ABS(CLAT)
           if(CLONG.LT.0.0)then ! if west
-            ACLONG=ABS(CLONG)
-            WRITE(outs,106)ACLAT,ACLONG,IYEAR
- 106        FORMAT(1X,F7.1,'S',F7.1,'W',': ',I4,2X,'DN')
+           ACLONG=ABS(CLONG)
+           WRITE(outs,106)ACLAT,latdms,CLONG,longdms,IYEAR
+ 106       FORMAT(1X,F7.2,' (',a,')S',F7.2,' (',a,')W',': ',I4,2X,'DN')
           else                 ! if east
-            WRITE(outs,105)ACLAT,CLONG,IYEAR
- 105        FORMAT(1X,F7.1,'S',F7.1,'E',': ',I4,2X,'DN')
+           WRITE(outs,105)ACLAT,latdms,CLONG,longdms,IYEAR
+ 105       FORMAT(1X,F7.2,' (',a,')S',F7.2,' (',a,')E',': ',I4,2X,'DN')
           endif
         else                   ! if north
           if(CLONG.LT.0.0)then ! if west
-            ACLONG=ABS(CLONG)
-            WRITE(outs,104)CLAT,ACLONG,IYEAR
- 104        FORMAT(1X,F7.1,'N',F7.1,'W',': ',I4,2X,'DN')
+           ACLONG=ABS(CLONG)
+           WRITE(outs,104)CLAT,latdms,CLONG,longdms,IYEAR
+ 104       FORMAT(1X,F7.2,' (',a,')N',F7.2,' (',a,')W',': ',I4,2X,'DN')
           else                 ! if east
-            WRITE(outs,103)CLAT,CLONG,IYEAR
- 103        FORMAT(1X,F7.1,'N',F7.1,'E',': ',I4,2X,'DN')
+           WRITE(outs,103)CLAT,latdms,CLONG,longdms,IYEAR
+ 103       FORMAT(1X,F7.2,' (',a,')N',F7.2,' (',a,')E',': ',I4,2X,'DN')
           endif
         endif
         call edisp(iuout,outs)

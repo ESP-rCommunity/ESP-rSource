@@ -43,7 +43,6 @@ Send inquiries to:
 ESP-r is also supported through a community mailing list.  To subscribe
 to the list, visit:
 
-
    http://lists.strath.ac.uk/mailman/listinfo/esp-r
 
 ===========================================================
@@ -67,120 +66,99 @@ Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 ===========================================================
 3. OBTAINING ESP-r.
 
-ESP-r is distributed in two forms:
-   i) precompiled binaries, and
-  ii) version-controlled source code.
-
-Using the precompiled binaries is the easiest way to get ESP-r up and
-running, but you'll need the source code if you wish to modify ESP-r
-and contribute your changes to the community.
-
-
-Precompiled binaries
----------------------
-Precompiled binaries for Linux, Cygwin, Mac OSX and Microsoft Windows
-are available at:
-
-   ftp://ftp.strath.ac.uk/Esru_public/
+ESP-r is distributed via version-controlled source code. The
+GPL license encourages you to contribute any changes you made
+back into the community.
 
 
 Version-controlled source code
 ------------------------------
-The ESP-r source code is stored on a publicly-accessible Subversion
-repository, called 'ESP-r Central'.
+The ESP-r source code is stored on a publicly-accessible repositories
+at <https://github.com/ESP-rCommunity. Although you can compile ESP-r
+with only the ESP-rSource.git to get full functionality you have
+to checkout all four repositories and create a new folder structure 
+to hold the combined distribution. Assuming the folder for downloads is
+ESPrgit and the combined distribution will be in ESP-rMaster give
+the following commands:
 
-You can learn more about accessing the ESP-r subversion repository here:
+ mkdir ESPrgit
+ cd ESPrgit
+ git clone --recursive https://github.com/ESP-rCommunity/ESP-rSource.git
+ git clone --recursive https://github.com/ESP-rCommunity/ESP-rDatabases.git
+ git clone --recursive https://github.com/ESP-rCommunity/ESP-rModels.git
+ git clone --recursive https://github.com/ESP-rCommunity/ESP-rDoc.git
+
+Now use a utility called rsync to merge the repositories into ESP-rMaster:
+
+ mkdir ESP-rMaster
+ rsync -av ESP-rSource/ ESP-rMaster/
+ rsync -av ESP-rDatabases/ ESP-rMaster/data/
+ rsync -av ESP-rDoc/ ESP-rMaster/doc/
+ rsync -av ESP-rModels/ ESP-rMaster/models/
+
+You can learn more about accessing the ESP-r repository here:
 
    http://www.esru.strath.ac.uk/Programs/ESP-r_central.htm
 
-Source code for the current release can be downloaded using the subversion
-command:
+You will also need a folder for the compiled ESP-r. Lets assume 
+this is /opt/esru (create it if it does not exist) On Windows
+this would be C:/ESRU. 
 
-   svn checkout https://espr.svn.cvsdude.com/esp-r/trunk/
+In the top folder of ESP-rMaster is an Install script. For Linux, OSX and
+Cywin a typical set of commands to build ESP-r
+is:
+ ./Install -d /opt/esru --gcc4 --debug
 
-Source code for the latest 'development' version of ESP-r can be
-downloaded using the subversion command
+or for a MSYS2 development environment on Windows:
+ ./Install -d C:/ESRU --gcc4 --debug
 
-   svn checkout https://espr.svn.cvsdude.com/esp-r/branches/development_branch
-
-Should you wish to contribute improvements to the archive, you'll also
-need a developer's account. Contact Alex Ferguson (aferguso@nrcan.gc.ca)
-or Bart Lomanowski (blomanow@nrcan.gc.ca) to arrange one.
+Answer yes to installing the databases and example models.
+more information about setting up computers and development
+tool chains are found in the doc/manual/OS folders.
 
 
 ===========================================================
 4. SYSTEM REQUIREMENTS
 
-ESP-r has been installed Solaris, Linux, Cygwin, MinGW and MAC
+ESP-r has been installed Linux, Cygwin, MSYS2 and MAC
 OS X systems, using a variety of compiler and graphics library
-combinations. Some of these configurations have been thoroughly tested
-and are regarded as 'stable', while others remain in beta testing.
+combinations.
 
 While ESP-r has been built on all of the supported platforms and
 configurations, it is most routinely used on Linux.  Installation on
-common Linux distributions (including Ubuntu, Mandrake, Redhat/Fedora and
-Gentoo) using the gcc 3.4 and gcc 4.1 compiler suites has proven robust,
-and you can use it with confidence on these systems.
+common Linux distributions (including Ubuntu, Redhat/Fedora and
+Gentoo) using the gcc 4/5/6 (gcc g++ gfortran) series of compiler 
+suites has proven robust, and you can use it with confidence on 
+these systems.  OSX is similar to Linux in the build process (see
+the notes in the doc/manual/OS/Apple folder). ESP-r can also be 
+build on Windows via Cygwin or MSYS2 (see the doc/manual/OS/Cygwin
+or doc/manual/OS/Native_windows).
 
-ESP-r is used less often on Solaris, Cygwin, MinGW and OS X systems. These
-systems are not be available to some ESP-r developers, and some (such
-as MinGW) provide no standard environment on which ESP-r developers
-can rely to ensure the software functions correctly.  Moreover, some
-compilers suites, including gcc 4.2 and Intel 10.0 have proven erratic
-with the ESP-r source base. While every effort is made to assure the
-quality of ESP-r on these platforms, it may not perform as expected
-with these systems and compilers. Should you wish to use ESP-r on a
-non-Linux platform or with the gcc 4.2+ / Intel compiler suites, please
-review Section 10: "RELEASE TESTING", below. There, you will find an
-up-to-date description of the status of ESP-r on each platform.
+Some facilities of ESP-r use the Radiance lighting simulation
+suite to carry out tasks. Radiance can be downloaded from
+<radsite.lbl.gov/radiance/>. The release of July 2014 4.2
+as rad4R2all.tar.gz works with ESP-r.
 
 
 Architectures
 -------------
-ESP-r is presently only supported on 32 bit systems.
-Installations on MinGW and OS X are regarded as 'beta'.
+ESP-r is presently supported on 32 and 64 bit systems.
 
  -----------------------------------------------------------
-                      Solaris  Linux   Cygwin  MinGW    OS X
+                      Linux   Cygwin  MSYS2    OS X
  ...........................................................
- 32-bit                  S       S       S       B       B
- 64-bit                  B       B       X       X       X
+ 32-bit                  S       S       S       -
+ 64-bit                  S       S       S       S
  -----------------------------------------------------------
  S = Stable
- B = Beta testing
  X = Not supported
  - = Not applicable
 
 Compilers
 ---------
-Compilation of ESP-r is presently only supported with
+Compilation of ESP-r is presently supported with
 the following compiler sets:
-  - GCC 3.4 (gcc, g++ and g77)
-  - GCC 4.1 (gcc, g++ and gfortran)
-  - Sun cc / f90
-
-Of these, The GCC 4.1 compiler has proven the most robust. For this
-reason, it is the recommended compiler for building ESP-r.
-
-ESP-r also builds with the GNU GCC 4.2+ and Intel 10.0 compiler suites
-on Linux, but these combinations behave unexpectedly in some situations
-Until these issues are resolved, use of GCC 4.2+ and Intel builds is
-recommended only for testing purposes.
-
- ---------------------------------------------------------
-                    Solaris  Linux   Cygwin  MinGW    OS X
- .........................................................
- Sun cc  / f90         S       -        -      -       -
- GCC 3.4.X / g77       S       D        S      B       B
- GCC 4.1.2 / gFrotran  X       S        S      X       X
- GCC 4.2.X / gFortran  X       B        B      X       X
- Intel 10.0 / ifort    X       B        X      X       X
- ---------------------------------------------------------
- S = Stable
- B = Beta testing
- D = Depreciated (support will be discontinued in the future)
- X = Not supported
- - = Not applicable
+  - GCC 4.9 - 6.0 (gcc, g++ and gfortran)
 
 Graphics libraries
 ------------------
@@ -191,14 +169,13 @@ and GTK versions of ESP-r can be installed on all platforms provided
 the GTK libraries are available.
 
  -----------------------------------------------------------
-                      Solaris  Linux   Cygwin  MinGW    OS X
+                      Linux   Cygwin  MSYS2  OS X
  ...........................................................
- X11                     S        S       S      -       S
- GTK                     B        B       B      B       B
- no graphics             S        S       S      B       S
+ X11                    S       S      -       S
+ GTK                    S       S      S       S
+ no graphics            S       S      S       S
  -----------------------------------------------------------
  S = Stable
- B = Beta testing
  X = Not supported
  - = Not applicable
 
@@ -221,7 +198,7 @@ translate the XML result file into any user- specified ASCII format.
 6. INSTALLATION
 
 Installation of ESP-r is managed through the 'Install'
-script, which is located in the 'src' directory. ESP-r
+script, which is located in the top level directory. ESP-r
 can be installed into any user-writable directory.
 
 The Install script provides interactive prompts to guide
@@ -232,22 +209,12 @@ run:
   $ ./Install --help
 
 
-System-wide installations:
---------------------------
-
-  1. Create a '/usr/esru' folder.
-
-  2. As superuser, run the command:
-
-          $ ./Install -d /usr/esru
-
-
 Local installations
 -------------------
 
   1. Run the command:
 
-          $ ./Install -d <path/to/esp-r>
+          $ ./Install -d <path/to/esp-r> --gcc4
 
      Where <path/to/esp-r> describes the desired
      installation directory. For instance,
@@ -321,20 +288,6 @@ settings for example problems, climate, control, etc. These
 can be changed if the default settings offered in the
 standard distribution are not appropriate for your site.
 
-Colour Map
-----------
-To run ESP-r on some Sun workstations it may be necessary
-to firstly define the default colour map.  This can be
-done by issuing the command "xstdcmap -default" or placing
-it in your .xinitrc or .openwin-init file.  With Solaris 7
-you will also need to add "xstdcmap -delete all" to your
-.xinitrc file.  If you are running OpenWindows and colour
-problems persist, try commenting out the line
-
-      cmap_alloc -allscreens
-
-in the file /usr/openwin/lib/openwin-sys.
-
 
 ===========================================================
 8. DOCUMENTATION
@@ -357,15 +310,16 @@ Theoretical basis
 Application of ESP-r
 --------------------
 
-  - "The ESP-r Cookbook"  describes the application of
+  - "Strategies for Deploying Virtual Representations of the Built 
+    Environment"  describes the application of
     ESP-r in building simulation:
        
-       ftp://ftp.strath.ac.uk/Esru_public/documents/esp-r_cookbook.pdf
+       www.esru.strath.ac.uk/Documents/ESP-r_cookbook_june_2015.pdf
 
   - "Data model summary ESP-r Version 9 Series" describes
     the  format of ESP-r's input files:
 
-       ftp://ftp.strath.ac.uk/Esru_public/documents/ESP-r_data_doc.pdf
+       www.esru.strath.ac.uk/Documents/ESP-r_data_doc.pdf
 
 Developing with ESP-r
 ---------------------
@@ -374,23 +328,7 @@ Developing with ESP-r
     outlines the branch structure in use on ESP-r
     central, and procedures for merging code:
 
-       ftp://ftp.strath.ac.uk/Esru_public/documents/repository.pdf
-
-  - "An overview of Subversion for ESP-r Central
-    Users" summarizes the use of subversion to
-    access and maintain branches on ESP-r Central:
-       
-       ftp://ftp.strath.ac.uk/Esru_public/documents/subversion.pdf
-
-  - "ESP-r Coding Guide" provides guidelines for
-    modifying ESP-r source code:
-
-       ftp://ftp.strath.ac.uk/Esru_public/documents/coding_guide.pdf
-
-  - "ESP-r Developers' Quality Assurance Checklist"
-    prescribes testing procedures for contributers:
-
-       ftp://ftp.strath.ac.uk/Esru_public/documents/QA_checklist.pdf
+       www.esru.strath.ac.uk/Documents/good_practice.pdf
 
 ===========================================================
 9. VALIDATION
@@ -414,10 +352,7 @@ Development of ESP-r continues, and its predictions are
 subject to change as new features are added and existing
 facilities improved. To guarantee the reliability of ESP-r
 results, a quality assurance procedure is performed prior
-to each release.
-
-A comprehensive discussion of ESP-r prelease testing and 
-results for version 11.11 is available online:
+to each release. 
 
 http://espr.trac.cvsdude.com/esp-r/wiki/PreReleaseTesting11.11
 

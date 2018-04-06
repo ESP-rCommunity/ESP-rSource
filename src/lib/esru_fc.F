@@ -19,11 +19,8 @@ C  etplot      :- general line plotting.
 C  axiscale    :- determines scaling parameters for horizontal
 C                 and vertical axis.
 C  linescale   :- stores scaling parameters for lines.
-C  dinterval   :- determins the tic interval for an axis as well
-C                 as the number of decimal places.
 C  vrtaxis     :- draws a vertical axis with tic marks and labels.
 C  horaxis     :- draws a horizontal axis with tic marks and labels.
-C  captut      :- tutorial indicator
 C  captextf    :- text feedback capture
 C  captexgf    :- graphic feedback capture
 C  updcapt     :- notify for capture button
@@ -360,14 +357,30 @@ C      write(6,*) opta
       iy=0
       return
       end
- 
+
       subroutine pixel2u(ux,uy,gx,gy)
       gx=0.0
       gy=0.0
       return
       end
- 
+
+      subroutine etplotwwc(ux,uy,iupdown,isym)
+      return
+      end
+
       subroutine etplot(ux,uy,iupdown,isym)
+      return
+      end
+
+      subroutine earc(x,y,rad,ang1,ang2,operation)
+      return
+      end
+
+      subroutine nwkgflg(ngf)
+      return
+      end
+
+      subroutine nwksmod(sel,con,dat)
       return
       end
 
@@ -419,10 +432,6 @@ C      end
       return
       end
 
-      subroutine dinterval(v1,v2,dv,ndec,mode)
-      return
-      end
-
       subroutine labelstr(n,val,iwticc,sstr)
       character sstr*10
       return
@@ -430,6 +439,16 @@ C      end
 
       subroutine vrtaxis(ymn,ymx,ioffl,ioffb,iofft,yadd,sca,mode,side,
      &  msg)
+      real ymn,ymx,sca,yadd
+      integer ioffl,ioffb,iofft
+      character*(*) msg
+      return
+      end
+
+      subroutine vrtaxisdd(ymn,ymx,ioffl,ioffb,iofft,yadd,sca,mode,
+     &  ddx,nx,side,msg)
+      real ymn,ymx,sca,yadd,ddx
+      integer ioffl,ioffb,iofft,nx
       character*(*) msg
       return
       end
@@ -441,10 +460,26 @@ C      end
       return
       end
 
+      subroutine horaxisdd(xmn,xmx,ioffl,ioffr,ioffb,xadd,sca,mode,
+     &   ddx,nx,msg)
+      real xmn,xmx,sca,xadd,ddx
+      integer ioffl,ioffr,ioffb,nx
+      character*(*) msg
+      return
+      end
+
       subroutine horaxishdw(xmn,xmx,ioffl,ioffr,ioffb,xadd,sca,mode,
      &  ind,idiv,isjday,msg)
       real xmn,xmx,sca,xadd
       integer ioffl,ioffr,ioffb,ind,idiv,isjday
+      character*(*) msg
+      return
+      end
+
+      subroutine horaxishdwdd(xmn,xmx,ioffl,ioffr,ioffb,xadd,sca,mode,
+     &  ddx,nx,ind,idiv,isjday,msg)
+      real xmn,xmx,sca,xadd,ddx
+      integer ioffl,ioffr,ioffb,nx,ind,idiv,isjday
       character*(*) msg
       return
       end
@@ -472,10 +507,6 @@ C      end
 C      subroutine refreshenv
 C      return
 C      end
-
-      subroutine opentutorial
-      return
-      end
 
       subroutine opencpw
       return
@@ -513,11 +544,6 @@ C      end
       end
 
       subroutine capexall(cmd)
-      character*(*) cmd
-      return
-      end
-
-      subroutine captut(cmd)
       character*(*) cmd
       return
       end
@@ -607,7 +633,7 @@ C      end
       subroutine findviewtext(icx,line,isize,ix,iy)
       integer icx,line,isize,ix,iy
       return
-      end 
+      end
 
 C      subroutine getfilelist(subpath,action,listf,nwlistf,nlistf)
 C      character*(*) subpath, action, listf
@@ -624,7 +650,7 @@ C Return string indicating xlibs
       return
       end
 
-      
+
 C A zero says there is neither X11 or GTK available.
       integer function iXavail()
       iXavail = 0
@@ -636,9 +662,9 @@ C A three says that this is the text only version.
       igraphiclib = 3
       return
       end
-      
-      
-      
+
+
+
 C      function lnblnk(string)
 C      character*(*) string
 C      character a*1,sl*1

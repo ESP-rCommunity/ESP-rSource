@@ -441,7 +441,9 @@ C Cast values for linescale.
       igheight=igwh
       call axiscale(igwid,igheight,XMIN,XMAX,PMIN,PMAX,TSC,YSCP,
      &              sca,Xadd,YaddP)
-      call vrtaxis(PMIN,PMAX,iigr,iigb,iigt,YaddP,YSCP,0,1,'Percent')
+      call dintervalf(PMIN,PMAX,DY,NDEC,0)
+      call vrtaxisdd(PMIN,PMAX,iigr,iigb,iigt,YaddP,YSCP,0,DY,NDEC,
+     &  1,'Percent')
 
 C Draw axis, begin with scaling factors for the X & Y axis.
 C Stuff this into static memory.
@@ -452,10 +454,13 @@ C Stuff this into static memory.
 C Pick up the data increment for the horizontal axis and then draw
 C the horizontal axis.
       LABELX=LABLSX(IL)
-      call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,XSC,1,LABELX)
+      CALL dintervalf(Xmin,Xmax,ddy1,ny,1)
+      CALL horaxisdd(Xmin,Xmax,iigl,iigr,iigb,xadd,XSC,1,ddy1,ny,
+     &  LABELX)
 
 C Draw the vertical axis.
-      call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,YSC,1,0,
+      call dintervalf(YMIN,YMAX,DY,NDEC,1)
+      call vrtaxisdd(YMIN,YMAX,iigl,iigb,iigt,Yadd,YSC,1,DY,NDEC,0,
      &  'Distribution')
       call forceflush()
 

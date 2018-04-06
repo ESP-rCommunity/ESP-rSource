@@ -102,19 +102,24 @@ C************************ Elec_Net_Calculator     ******************************
 C
 C Created by: Phylroy Lopez
 C Initial Creation Date: Jan  16, 2003.
+C Changed: Jul 05, 2014 ag
 C Copyright CETC 2003
 C
 C This function is used to perform various operations using data caculated by the 
-C electrical network. It presently supports 5 operations, as determined by 
-C the 'mode' arguement passed to it:
+C electrical network. It presently supports 8 operations, as determined by 
+C the 'mode' argument passed to it:
 C
-C - mode = (total_load | hvac_load | occpant_load )
+C - mode = ( total_load | hvac_load | occpant_load | cluster_load )
 C   Function will collect all electical demands from HVAC equipment and/or
-C   occumant loads, and return the total.
+C   occupant loads, cluster_load and return the total.
 C
-C - mode = total_gen
+C - mode = (total_gen | offsite_gen )
 C   Function will collect all of the electrical power produced in on-site 
-C   generation sources, and return the total.
+C   generation sources or offsite generation sources and return the total.
+C
+C - mode = balance
+C   Function will balance load and generation for all components of the
+C   electrical network, taking battery charge (?)/discharge into account
 C 
 C - mode = save_data
 C   Function reads data used by ESP-r's electrical network 
@@ -134,40 +139,10 @@ C*******************************************************************************
 #include "plant.h"
 #include "building.h"
 #include "power.h"
-C CETC named constants 
-#include "CETC_definitions.h" 
-C---------------------------------------------------------------------
-C     Hybird Componenet data
-C---------------------------------------------------------------------
-      COMMON/HYBE/
-C     Number of Hybrid Components
-     &     nHYBcom,
-C     index of component.
-     &     HYBCOMNO(MHYCOM),
-C     Type of component.
-     &     HYCOMTYP(MHYCOM),
-C     Phase type of component.
-     &     HYCOMPHTYP(MHYCOM),
-C     Nodes connected to component. 
-     &     HYCONEN(MHYCOM,MPHAS),
-C     Location of component. 
-     &     HYLOC(MHYCOM,MPHAS),
-C    Number of data for component.
-     &     NHYBDAT(MHYCOM),
-C    misc. data for component.
-     &     HYBDAT(MHYCOM,MHYDAT)
+#include "CETC_definitions.h"
+C provides pba, vrb and lion
+#include "BATTERY.h"
 
-C---------------------------------------------------------------------
-C     Zone casual gain power consumption variables. 
-C---------------------------------------------------------------------
-C     Real power (W)
-C     Reactive power (W)
-      COMMON/ENETZONE/PEZON(MCOM,MGTY),QEZON(MCOM,MGTY)
-C---------------------------------------------------------------------
-C     Plant component  power consumption variables. 
-C---------------------------------------------------------------------
-C     Real Power (W), reactive power, Complex power vector.
-      COMMON/ENETPCOMP/PPCMP(MPCOM),QPCMP(MPCOM),VCMP(MPCOM)
 C---------------------------------------------------------------------
 C     Common for writing data 
 C---------------------------------------------------------------------
@@ -182,20 +157,6 @@ C---------------------------------------------------------------------
      &     Hybrid_Power_Real(MHYCOM), ! Hybrid real power
      &     Elec_Power_Real(MHYCOM)   ! Power only component real power    
       REAL Hybrid_Power_Real, Elec_Power_Real
-
-C---------------------------------------------------------------------------------
-C Common holding the power-only component description read from the electric
-C network input file.
-C---------------------------------------------------------------------------------
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-
-C---------------------------------------------------------------------------------
-C Common holding power generation and loads data for power-only components.
-C---------------------------------------------------------------------------------
-      COMMON/ENETPOWC/PPOWOC(MPOWCOM),QPOWOC(MPOWCOM),
-     &VPOWC(MPOWCOM)
 
 
 C---------------------------------------------------------------------
@@ -220,6 +181,8 @@ C---------------------------------------------------------------------
                                 ! in Hot3000)
       LOGICAL report_pv         ! electrical production of pv 
                                 ! components 
+      LOGICAL report_battery    ! loads covered by battery or 
+                                ! electrical export from battery
       LOGICAL report_cogen      ! electrical production of cogen
                                 ! components
       LOGICAL report_offsite_loads    ! external electrial loads
@@ -228,12 +191,6 @@ C---------------------------------------------------------------------
 C---------------------------------------------------------------------
 C    local  Plant component  power consumption variables. 
 C---------------------------------------------------------------------
-C     Type casting 
-      INTEGER NHYBCOM,HYBCOMNO,HYCOMTYP,HYCOMPHTYP,HYCONEN,HYLOC,NHYBDAT
-      
-C     Type casting
-      REAL PEZON,QEZON,PPCMP,QPCMP,HYBDAT
-      COMPLEX VCMP
       
       CHARACTER*124 OUTS
 C Pointers to various components / loads
@@ -245,13 +202,6 @@ C Pointers to various components / loads
       INTEGER iLoadIndex
 
       REAL    fElec_net_result
-
-      INTEGER      NPOWCOM, POWCOMNO, POWCOMID, POWCOMPHTYP, POWCONEN,
-     &             NPOWCDAT, NPOWCDATS
-      REAL         POWCDAT
-      REAL         PPOWOC, QPOWOC
-      COMPLEX      VPOWC
-
 
       integer iPOWCO            ! counter
 
@@ -267,6 +217,7 @@ C     report hvac + occupant-driven electric loads
          report_gains    = .false. 
          report_cogen    = .false.
          report_pv       = .false.
+         report_battery  = .false.
          report_offsite_all  = .false.
          report_offsite_gen  = .false.
          report_offsite_loads = .true.
@@ -277,6 +228,7 @@ C     report hvac loads only
          report_cogen    = .false. 
          report_gains    = .false.
          report_pv       = .false.
+         report_battery  = .false.
          report_offsite_all  = .false.
          report_offsite_gen  = .false.
          report_offsite_loads = .false.
@@ -287,6 +239,7 @@ C     report occupant-driven loads onlu
          report_cogen    = .false.
          report_gains    = .false.
          report_pv       = .false.
+         report_battery  = .false.
          report_offsite_all  = .false.
          report_offsite_gen  = .false.
          report_offsite_loads = .false.
@@ -297,6 +250,7 @@ C     report power generation only
          report_gains    = .false.
          report_cogen    = .true.
          report_pv       = .true.
+         report_battery  = .false.
          report_offsite_all  = .false.
          report_offsite_gen  = .false.
          report_offsite_loads = .false.
@@ -307,6 +261,7 @@ C     report power generation only
          report_gains    = .false.
          report_cogen    = .false.
          report_pv       = .false.
+         report_battery  = .false.
          report_offsite_all  = .false.
          report_offsite_gen  = .false.
          report_offsite_loads = .true.
@@ -316,6 +271,7 @@ C     report power generation only
          report_gains    = .false.
          report_cogen    = .false.
          report_pv       = .false.
+         report_battery  = .false.
          report_offsite_all  = .false.
          report_offsite_gen  = .true.
          report_offsite_loads = .false.
@@ -326,6 +282,7 @@ C     report net import/export
          report_gains    = .false.
          report_cogen    = .true.
          report_pv       = .true.
+         report_battery  = .true.
          report_offsite_all  = .true.
          report_offsite_gen  = .false.
          report_offsite_loads = .false.
@@ -367,10 +324,11 @@ C...........Power consumption from appropriate commonblock
 C..............Zone casual gains (ESRU coupling)
                Hybrid_Power_Real(iHybridComponent) =  
      &              PEZON( iIndex, iLoadIndex ) ! (W)
-
             ELSEIF ( iComponentType .eq. 2 ) THEN
 C..............Special Materials, including PV
-C..............- this is a placeholder for future use
+C..............PV generation
+               Hybrid_Power_Real(iHybridComponent) =  
+     &              PSPM(iIndex) ! (W)
 
             ELSEIF ( iComponentType .eq. 3 ) THEN
 C..............Plant component. 
@@ -406,7 +364,7 @@ C................Component to be excluded
          ENDIF
       END DO
 
-C.....Note: non-HVAC loads are treated as power-only components in the
+C.....Note: non-HVAC or internal gain loads are treated as power-only components in the
 C.....electrical network.
       DO iPOWCO=1,NPOWCOM
 C........Has exclusion been requested for the component?
@@ -424,6 +382,18 @@ C........Has exclusion been requested for the component?
      &          .and. (report_cogen) ) THEN
               fElec_net_result = fElec_net_result + PPOWOC(iPOWCO)
           ENDIF
+
+C << what about the losses of power only component type 20? >>
+
+C.........Load covered by battery or charge load on electrical net
+          IF ( ( (POWCOMID(iPOWCO) .eq. pba)
+     &           .or. (POWCOMID(iPOWCO) .eq. vrb)
+     &           .or. (POWCOMID(iPOWCO) .eq. lion) ) ! this is a battery
+     &           .and. (report_battery)
+     &          ) THEN
+              fElec_net_result = fElec_net_result + PPOWOC(iPOWCO)
+          ENDIF
+
 C.....Following if statement is for the case when the electric component is a power 
 C.....only component for loads from the outside such as in the case of a cluster of 
 C.....houses served by the electrical network in one building

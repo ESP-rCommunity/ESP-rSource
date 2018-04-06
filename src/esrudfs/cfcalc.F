@@ -42,17 +42,21 @@ C CFCALC - CFD solution manager.
       common/outin/iuout,iuin
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
-      COMMON/ICFCHN/ICFMON,ICFTMP,ICFLIB
+      COMMON/ICFCHN/ICFMON(MNZ),ICFTMP,ICFLIB
       COMMON/BNDCND/FLWIN,XMONIN
       COMMON/FDTRFC/FLSDTU(MNZ),FLSDTV(MNZ),FLSDTW(MNZ),FLSDTP(MNZ),
      &              FLSDTT(MNZ),FLSDTK(MNZ),FLSDTE(MNZ)
       COMMON/LINRFC/URFCU(MNZ),URFCV(MNZ),URFCW(MNZ),URFCP(MNZ),
-     &              URFCT(MNZ),URFCK(MNZ),URFCE(MNZ),URFCVS(MNZ)
+     &              URFCT(MNZ),URFCK(MNZ),URFCE(MNZ),URFCVS(MNZ),
+     &              URFCC(MNZ,MCTM)
+      COMMON/LINRFC2/URFCU2(MNZ),URFCV2(MNZ),URFCW2(MNZ),URFCP2(MNZ),
+     &              URFCT2(MNZ),URFCK2(MNZ),URFCE2(MNZ),URFCVS2(MNZ),
+     &              URFCC2(MNZ,MCTM)
       common/EQTION/CALLU(MNZ),CALLV(MNZ),CALLW(MNZ),CALLT(MNZ),
      &             CALLC(MNZ),KEMDL(MNZ),BUOY(MNZ),BOUSSI(MNZ),
      &             ZEROT(MNZ),ZandKE(MNZ),MITzero(MNZ)
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX
+     &      JHUMINDX,URFC(MCTM)
       COMMON/PRSREF/IPRESF(MNZ),JPRESF(MNZ),KPRESF(MNZ)
       COMMON/UVEL/RESORU,NSWPU,URFU,FSDTU,DXEPU(ntcelx),
      1            DXPWU(ntcelx),SEWU(ntcelx)
@@ -79,7 +83,7 @@ C CFCALC - CFD solution manager.
       common/INCALC/INCALU,INCALV,INCALW,INCALK,INCALD,INCALT,
      1              IZEROT,IZanKE,IMITZ
       COMMON/INCALP/INCALPOL(MCTM)
-      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR
+      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR(MNZ)
       COMMON/MFS/IMFACT
       COMMON/ICFNOD/ICFD,ICP
       COMMON/LINRFC1/URFCD(MNZ)
@@ -88,12 +92,11 @@ C CFCALC - CFD solution manager.
      &             NSSWPT(MNZ),NSSWPK(MNZ),NSSWPE(MNZ)
       COMMON/NORM/RENORMU,RENORMV,RENORMW,RENORMT,RENORMK,RENORME
       COMMON/RENORM/LRENORM
-      COMMON/ZTURB/rMOOT,nZtoKE
+      COMMON/ZTURB/rMOOT(MNZ),nZtoKE(MNZ)
       COMMON/ITERAT/NITER
       COMMON/YUANcm/Uqstor(ntcelx,ntcely,ntcelz),Uqinit 
-      COMMON/ACCrec/IACC
+      COMMON/ACCrec/IACC(MNZ)
       common/fvisgo/gophrun
-      COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
       common/cfdconf/ICFBLD(MNZ),ICFMFS(MNZ)
       common/KEYVOLN/VOLNAME(MNVLS,MNZ),VCsurf(MNVLS,MNZ)
@@ -106,6 +109,10 @@ C CFCALC - CFD solution manager.
      &          VOLPol(MCTM,MNVLS,MNZ)
       common/KEYCASGN/IDcasgn(MNVLS,MNZ),Fcasgn(MNVLS,MNZ)
 
+C integer NBLK() is the number of blockages in each domain
+C integer INBLK() points to the volume which defines the blockage shape
+C integer NSSO() is the number of small supply openings in each domain
+C integer INSSO() point to the volume which defines the small supply shape
       common/blksso/NBLK(MNZ),INBLK(MNVLS,MNZ),NSSO(MNZ),
      &          INSSO(MNVLS,MNZ)
       common/SSOinit/areaSSO
@@ -117,8 +124,8 @@ C CFCALC - CFD solution manager.
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       common/btime/btimep,btimef
 
-      CHARACTER LRES(4)*24,LMON(4)*24,POLNAM*12,LCFD*72
-      character VOLNAME*12,VCsurf*12,wkd1*10,wkd2*10,OUT*72
+      CHARACTER LRES(4)*24,LMON(4)*24,POLNAM*12
+      character VOLNAME*12,VCsurf*12,wkd1*10,wkd2*10,OUT*96
 
       DIMENSION CRES(4),CMON(4)
 
@@ -130,6 +137,9 @@ C CFCALC - CFD solution manager.
       LOGICAL CALPOL,CALLMA
       LOGICAL areaSSO,gophrun,INCALPOL
       logical unixok
+
+      real sec_pre,sec_now,sec_tkn
+      integer NITER_pre
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -154,23 +164,35 @@ C the CFD domain has been invoked during this simulation.
 
 C Under relaxation factors.
 C Linear.
-      URFU=URFCU(ICFD)
-      URFV=URFCV(ICFD)
-      URFW=URFCW(ICFD)
-      URFP=URFCP(ICFD)
-      URFT=URFCT(ICFD)
-      URFK=URFCK(ICFD)
-      URFE=URFCE(ICFD)
-      URFVIS=URFCVS(ICFD)
+C If buoyancy is active, use alternate relaxation factors.
+      if (BUOY(ICFD)) then
+        URFU = URFCU2(ICFD)
+        URFV = URFCV2(ICFD)
+        URFW = URFCW2(ICFD)
+        URFP = URFCP2(ICFD)
+        URFT = URFCT2(ICFD)
+        URFK = URFCK2(ICFD)
+        URFE = URFCE2(ICFD)
+        URFVIS = URFCVS2(ICFD)
+      else
+        URFU=URFCU(ICFD)
+        URFV=URFCV(ICFD)
+        URFW=URFCW(ICFD)
+        URFP=URFCP(ICFD)
+        URFT=URFCT(ICFD)
+        URFK=URFCK(ICFD)
+        URFE=URFCE(ICFD)
+        URFVIS=URFCVS(ICFD)
+      endif
       URFDEN=URFCD(ICFD)
+      DO 123 ICTM=1,NCTM
+        URFC(ICTM)=URFCC(ICFD,ICTM)
+  123 CONTINUE
 
 C Ficticious time-step.
-      FSDTU=FLSDTU(ICFD)
-      FSDTV=FLSDTV(ICFD)
-      FSDTW=FLSDTW(ICFD)
-      FSDTP=FLSDTP(ICFD)
-      FSDTT=FLSDTT(ICFD)
-      FSDTK=FLSDTK(ICFD)
+      FSDTU=FLSDTU(ICFD); FSDTV=FLSDTV(ICFD)
+      FSDTW=FLSDTW(ICFD); FSDTP=FLSDTP(ICFD)
+      FSDTT=FLSDTT(ICFD); FSDTK=FLSDTK(ICFD)
       FSDTE=FLSDTE(ICFD)
 
 C Simulation Parameters:
@@ -186,12 +208,9 @@ C Maximum source of residuals.
       SORMAX=SRMAX(ICFD)
 
 C Indicate which equations are active.
-      INCALU=CALLU(ICFD)
-      INCALV=CALLV(ICFD)
-      INCALW=CALLW(ICFD)
-      INCALT=CALLT(ICFD)
-      INCALK=KEMDL(ICFD)
-      INCALD=KEMDL(ICFD)
+      INCALU=CALLU(ICFD); INCALV=CALLV(ICFD)
+      INCALW=CALLW(ICFD); INCALT=CALLT(ICFD)
+      INCALK=KEMDL(ICFD); INCALD=KEMDL(ICFD)
       DO 121 ICTM=1,NCTM
         INCALPOL(ICTM)=CALPOL(ICTM,ICFD)
  121  CONTINUE
@@ -219,21 +238,14 @@ C Pressure reference position.
       KPREF=KPRESF(ICFD)
       
 C Set sweeping control.
-      NSWPU=NSSWPU(ICFD)
-      NSWPV=NSSWPV(ICFD)
-      NSWPW=NSSWPW(ICFD)
-      NSWPP=NSSWPP(ICFD)
-      NSWPK=NSSWPK(ICFD)
-      NSWPD=NSSWPE(ICFD)
+      NSWPU=NSSWPU(ICFD); NSWPV=NSSWPV(ICFD)
+      NSWPW=NSSWPW(ICFD); NSWPP=NSSWPP(ICFD)
+      NSWPK=NSSWPK(ICFD); NSWPD=NSSWPE(ICFD)
       NSWPT=NSSWPT(ICFD)
 
 C Initialize renormalization factors.
-      RENORM2=1.0
-      RENORMU=1.0
-      RENORMV=1.0
-      RENORMW=1.0
-      RENORMT=1.0
-      RENORMK=1.0
+      RENORM2=1.0; RENORMU=1.0; RENORMV=1.0
+      RENORMW=1.0; RENORMT=1.0; RENORMK=1.0
       RENORME=1.0
 
 C Check for links between sources and operations file.
@@ -282,32 +294,33 @@ C Calculate the current period id for identified casual gain.
       if(.not.INCALT) call UNIFORMT  
 
       CALL PROPS(1)
-      WRITE(ICFMON,1030)ITIMST
+      WRITE(ICFMON(ICFD),1030)ITIMST
 
 C Record ACC actions (begin).
-      IF( abs(IFCFD(ICP)).eq.4 .or. abs(IFCFD(ICP)).eq.5)THEN
-        write(IACC,*)
-        write(IACC,*) 'Initiating CFD sim with following parameters:'
-        if(INCALU) write(IACC,*) '  U-momentum active'
-        if(INCALV) write(IACC,*) '  V-momentum active'
-        if(INCALW) write(IACC,*) '  W-momentum active'
-        if(INCALT) write(IACC,*) '  Energy equation active'
-        if(INCALK) write(IACC,*) '  k-epsilon turb model active'
-        if(IZanKE) write(IACC,*) '  k-epsilon + fixed mu-t active'
-        if(IMITZ)  write(IACC,*) '  Chen & Xu turb model active'
-        if(BUOYA)  write(IACC,*) '  Buoyancy turned on'
-        if(BOUSSA) write(IACC,*) '  Boussinesq approximation active',
-     &                  ' with ref temp = ',TBAR
+      IF( abs(IBLACT).eq.4 .or. abs(IBLACT).eq.5)THEN
+        write(IACC(icfd),*)
+        write(IACC(icfd),*) 
+     &    'Initiating CFD sim with following parameters:'
+        if(INCALU) write(IACC(icfd),*) '  U-momentum active'
+        if(INCALV) write(IACC(icfd),*) '  V-momentum active'
+        if(INCALW) write(IACC(icfd),*) '  W-momentum active'
+        if(INCALT) write(IACC(icfd),*) '  Energy equation active'
+        if(INCALK) write(IACC(icfd),*) '  k-epsilon turb model active'
+        if(IZanKE) write(IACC(icfd),*) '  k-epsilon + fixed mu-t active'
+        if(IMITZ)  write(IACC(icfd),*) '  Chen & Xu turb model active'
+        if(BUOYA)  write(IACC(icfd),*) '  Buoyancy turned on'
+        if(BOUSSA) write(IACC(icfd),*)
+     &  '  Boussinesq approximation active with ref temp = ',TBAR(ICFD)
         do 20 IV=1,NVOL(ICFD)
           if (IDcasgn(IV,ICFD).gt.0) then
-            write(IACC,*) 'Heat gain set from casual gain ',
-     &          IDcasgn(IV,ICFD),' to ',VOLHeat(IV,ICFD),'W in volume ',
-     &          VOLNAME(IV,ICFD)
+            write(IACC(icfd),*) 'Heat gain set from casual gain ',
+     &          IDcasgn(IV,ICFD),' to ',VOLHeat(IV,ICFD),'W in volume '
+     &          ,VOLNAME(IV,ICFD)
           endif
  20     continue
-        write(IACC,*) '  Convergence criteria: ',MAXIT,SORMAX
-        write(IACC,*) '  Relaxation factors: ',URFU,URFV,URFW,URFP,URFT,
-     &                                       URFK,URFE,URFVIS,URFDEN
+        write(IACC(icfd),*) '  Convergence criteria: ',MAXIT,SORMAX
+        write(IACC(icfd),*) '  Relaxation factors: ',URFU,URFV,URFW,
+     &                             URFP,URFT,URFK,URFE,URFVIS,URFDEN
       else
 
 C Debug.
@@ -324,7 +337,7 @@ C Debug.
           if(IMITZ)  write(6,*) '  Chen & Xu turb model active'
           if(BUOYA)  write(6,*) '  Buoyancy turned on'
           if(BOUSSA) write(6,*) '  Boussinesq approximation active',
-     &                          ' with ref temp = ',TBAR
+     &                          ' with ref temp = ',TBAR(ICFD)
           do 21 IV=1,NVOL(ICFD)
             if (IDcasgn(IV,ICFD).gt.0) then
               write(6,*) 'Heat gain set from casual gain ',
@@ -350,10 +363,10 @@ C Iteration loop.
 C If in text mode, print monitoring headlines.
       IF(LRENORM) THEN
         IF(MMOD.NE.8) WRITE(IUOUT,420)
-        WRITE(ICFMON,420)
+        WRITE(ICFMON(ICFD),420)
       ELSE
         IF(MMOD.NE.8) WRITE(IUOUT,410)
-        WRITE(ICFMON,410)
+        WRITE(ICFMON(ICFD),410)
       ENDIF
 
 C Iterate until solution converges.
@@ -362,7 +375,7 @@ C Iterate until solution converges.
 C If both the zero-equation and k-epsilon models are being used, determine
 C which to activate this iteration.
       if(IZanKE) then
-        if(NITER.ge.nZtoKE) then
+        if(NITER.ge.nZtoKE(ICFD)) then
           INCALK=.TRUE.
           INCALD=.TRUE.
           IZEROT=.FALSE.
@@ -453,13 +466,58 @@ C Find the maximum source of residual.
 
 C Write/ plot residuals and monitoring values.
 C First check if output for this iteration.
+
+C << If in text or script mode report less frequently,
+C << especially if the domain is large.
       if (mod(NITER,NPLT).eq.0.or.NITER.le.1) then
 
+C Check time taken to run since last check.
+c        write(6,*)'checking time'
+        if(NITER.eq.1)then
+          call cpu_time(sec_now)
+          NITER_pre=1
+c          write(6,*)'NITER=1, sec_now=',sec_now
+        else
+c          write(6,*)'NITER=',NITER
+          sec_pre=sec_now
+          call cpu_time(sec_now)
+          sec_tkn=(sec_now-sec_pre)/real((NITER-NITER_pre))
+c          write(6,*)'sec_pre=',sec_pre,'sec_now=',sec_now,
+c     &                                        'sec_tkn=',sec_tkn
+          NITER_pre=NITER
+
+C For graphics mode re-display target is 0.75 seconds.
+          IF(MMOD.eq.8)THEN
+            if ((sec_tkn*50.).lt.0.75) then
+              NPLT=100  ! Maximum NPLT
+            else
+C Output ~ every 0.75 seconds, constrained to increments of 10 iterations (rounded up).
+              NPLT=0.75/sec_tkn
+              sec_tkn=real(NPLT)/10.  ! sec_tkn no longer needed, use as temporary variable.
+              NPLT=(int(sec_tkn)+1)*10
+            endif
+          ELSE  ! we have text mode
+            if ((sec_tkn*50.).lt.5.0) then
+              NPLT=100  ! Maximum NPLT of 100.
+            else
+C Output ~ every 9 seconds, constrained to increments of 10 iterations (rounded up).
+              NPLT=9.0/sec_tkn
+              sec_tkn=real(NPLT)/10.  ! sec_tkn no longer needed, use as temporary variable.
+              NPLT=(int(sec_tkn)+1)*10
+            endif
+          ENDIF
+        endif
+C If in graphical mode, maximum NPLT of 40
+        if ((MMOD.eq.8).and.(NPLT.gt.40)) then
+          NPLT=40
+        endif
+
 C Write residuals and monitoring values in a ASCII format file.
-        WRITE(ICFMON,312)NITER,RESORU,RESORV,RESORW,RESORM,RESORT,
-     1         RESORK,RESORE,Uf(IMON,JMON,KMON),Vf(IMON,JMON,KMON),
-     2         Wf(IMON,JMON,KMON),P(IMON,JMON,KMON),Tf(IMON,JMON,KMON),
-     3         TEf(IMON,JMON,KMON),EDf(IMON,JMON,KMON)
+        WRITE(ICFMON(ICFD),312)NITER,RESORU,RESORV,RESORW,RESORM,
+     1         RESORT,RESORK,RESORE,Uf(IMON,JMON,KMON),
+     2         Vf(IMON,JMON,KMON),Wf(IMON,JMON,KMON),P(IMON,JMON,KMON),
+     3         Tf(IMON,JMON,KMON),TEf(IMON,JMON,KMON),
+     4         EDf(IMON,JMON,KMON)
 
 C Don't display anything for first 2 iterations.
         if (NITER.GE.3) then
@@ -520,7 +578,7 @@ C a simulation must be halted prior to convergence: the temporary file can
 C be used to set initial values when the simulation is resumed.
 C      IF(mod(NITER,100).EQ.0) THEN
 C        IER=0
-C        call INTSTR(ICP,nbchar,ISWD,IER)
+C        call INTSTR(ICFD,nbchar,ISWD,IER)
 C        write(outfil,'(a8,a)')'tmp_DFS_',nbchar(1:ISWD)
 C        CLOSE(icftmp)
 C        CALL FPOPEN(icftmp,IER,6,3,outfil)
@@ -534,22 +592,25 @@ C exporting data to a plot file.
       IF(SORCE.GT.SORMAX.OR.NITER.LT.20) GOTO 300 
   302 continue
       
-C Check convergence.
+C Check convergence. If mfs active and the number of dfs-mfs iterations
+C is less than ten and not running in script mode.
       if(SORCE.GT.SORMAX)THEN
-        IF(ICFMFS(ICFD).EQ.1.AND.NMFSRUN.LE.10)THEN
+        IF(ICFMFS(ICFD).EQ.1.AND.NMFSRUN.LE.10.AND.MMOD.NE.-6)THEN
 
 C Help message (unindented) for next two dialogs.
           helptopic='dfs_mass_residual'
           call gethelptext(helpinsub,helptopic,nbhelp)
 
-C If mass residual is maximum
+C If mass residual is maximum.
           CALL ECLOSE(resorm,sorce,0.01,closer)
+          IW=3  ! assume continue
           IF(CLOSER)THEN
-          CALL ASKOK(
-     &     'Mass residual is max do you want to lower velocity',
-     &     'URFs and do more iterations (see help)?',MKURFL,DOK,nbhelp)
+            call EASKABCD(
+     &        'Mass residual @ max. Lower velocity URF or iterate.',
+     &        'Options:','lower velocity URF +10 iter','+10 mfs iter',
+     &        'mark converged','continue',IW,nbhelp)
           ENDIF
-          IF(MKURFL)THEN
+          if (IW.eq.1) then
             WRITE(OUT,'(A,I4,A)')'Solution did not converge in ',
      &      NITER,' iterations'
             CALL EDISP(IUOUT,'Changing under relaxation factors')
@@ -564,46 +625,64 @@ C If mass residual is maximum
               CALL REPLOT (NOMAXIT,MAXIT,IPLOT)
               GOTO 320
             ENDIF
-          ENDIF
-
-          IF(NSPITR.LT.2)THEN
-            CALL ASKOK(
-     &        'Solution may still converge if velocity URFs are',
-     &        'lowered and iterating again, Is this OK (see help)?',
-     &        OK,DOK,nbhelp)
-            IF(OK)THEN
-              CALL EDISP(IUOUT,'Solution has not converged lowering')
-              CALL EDISP(IUOUT,'velocity URFs and 500 iterations')
-              NSPITR=NSPITR+1
-              NOMAXIT=MAXIT
-              MAXIT=500+MAXIT
-              URFU=0.75*URFU
-              URFV=0.75*URFV
-              URFW=0.75*URFW
-              IF (NITER.LT.MAXIT) THEN
-                CALL REPLOT (NOMAXIT,MAXIT,IPLOT)
-                GOTO 320
-              ENDIF
+          elseif (IW.eq.2) then
+            CALL EDISP(IUOUT,'Iterating 10 more times')
+            NOMAXIT=MAXIT
+            MAXIT=MAXIT+10
+            NMFSRUN=NMFSRUN+1
+            IF (NITER.LT.MAXIT) THEN
+              CALL REPLOT (NOMAXIT,MAXIT,IPLOT)
+              GOTO 320
             ENDIF
-          ENDIF
+          elseif (IW.eq.3)then
+            CONVER=.TRUE.
+            WRITE(OUT,'(A,I5,A,I3,A,F6.3,A)')'Marked converged at ',
+     &      NITER,' iterations, for day no. ',idyf,' at ',btimef,'...'
+            CALL EDISP(IUOUT,OUT)
+            IF( abs(IBLACT).eq.4 .or. abs(IBLACT).eq.5)THEN
+              write(IACC(icfd),'(a)') OUT(1:lnblnk(out))
+            ENDIF
+            goto 42
+          elseif (IW.eq.4)then
+            continue
+          endif
 
 C If any of the velocity residuals are maximum probably the iterations
-C need to be done again using lower velocity URFs 
-          CALL EDISP(IUOUT,'Solution has not converged')       
-          CALL ASKOK('It may converge if velocity URFs are lowered',
-     &      'and iterations done again is this OK?',OK,DOK,nbhelp)
-          IF(OK)THEN
+C need to be done again using lower velocity URFs. Offer choice. 
+          call EASKABCD(
+     &    'Did not converge. Lower velocity URF or iterate','Options:',
+     &    'lower velocity URF +500 iter','+500 iter','mark converged',
+     &    'continue',IW,nbhelp)
+          if (IW.eq.1) then
             NOMAXIT=MAXIT
             MAXIT=500+MAXIT
             URFU=0.75*URFU
             URFV=0.75*URFV
             URFW=0.75*URFW
-            call init
+C            call init    ! test without this
             IF (NITER.LT.MAXIT) THEN
-              CALL REPLOT (NOMAXIT,MAXIT,IPLOT)
               GOTO 320
             ENDIF
-          ENDIF
+          elseif (IW.eq.2) then
+
+C Only reset the maximum iterations.
+            NOMAXIT=MAXIT
+            MAXIT=500+MAXIT
+            IF (NITER.LT.MAXIT) THEN
+              GOTO 320
+            ENDIF
+          elseif (IW.eq.3) then
+            CONVER=.TRUE.
+            WRITE(OUT,'(A,I5,A,I3,A,F6.3,A)')'Marked converged at ',
+     &      NITER,' iterations, for day no. ',idyf,' at ',btimef,'...'
+            CALL EDISP(IUOUT,OUT)
+            IF( abs(IBLACT).eq.4 .or. abs(IBLACT).eq.5)THEN
+              write(IACC(icfd),'(a)') OUT(1:lnblnk(out))
+            ENDIF
+            goto 42
+          else
+            continue
+          endif
         ENDIF
         NOMAXIT=MAXIT
         CALL CHECK(MAXIT,CONVER)
@@ -613,20 +692,44 @@ C need to be done again using lower velocity URFs
             GOTO 320
           endif
         endif
-        CALL EDISP(IUOUT,'Solution did not converge')       
+        WRITE(OUT,'(A,I5,A,I3,A,F6.3)')
+     &    'Solution did NOT converge at ',
+     &    NITER,' iterations, for day no. ',idyf,' at ',btimef
+        CALL EDISP(IUOUT,out)       
       ELSE
         CONVER=.TRUE.
-        WRITE(OUT,'(A,I4,A,I3,A,F6.3,A)')'Solution converged in ',
-     &  NITER,' iterations, for day no. ',idyf,' at ',btimef,'...'
+        call cpu_time(sec_conv)
+        WRITE(OUT,'(A,I5,A,I3,A,F6.3,A,f8.0)')'Solution converged in ',
+     &  NITER,' iterations, for day no. ',idyf,' at ',btimef,' elapsed',
+     &  sec_conv
         CALL EDISP(IUOUT,OUT)
+        IF( abs(IBLACT).eq.4 .or. abs(IBLACT).eq.5)THEN
+          write(IACC(icfd),'(a)') OUT(1:lnblnk(out))
+        ENDIF
       ENDIF
-
+ 
 C Write out final monitoring/ residual info if not done above.
-      if(mod(NITER,NPLT).ne.0)then
-         WRITE(ICFMON,312)NITER,RESORU,RESORV,RESORW,RESORM,RESORT,
+  42  if(mod(NITER,NPLT).ne.0)then
+        WRITE(ICFMON(ICFD),312)NITER,RESORU,RESORV,RESORW,RESORM,
+     1     RESORT,RESORK,RESORE,Uf(IMON,JMON,KMON),Vf(IMON,JMON,KMON),
+     2     Wf(IMON,JMON,KMON),P(IMON,JMON,KMON),Tf(IMON,JMON,KMON),
+     3     TEf(IMON,JMON,KMON),EDf(IMON,JMON,KMON)
+        if (MMOD.ne.8) then
+
+C Write out final solutions to screen if not in graphic mode.
+          WRITE(IUOUT,312)NITER,RESORU,RESORV,RESORW,RESORM,RESORT,
      1         RESORK,RESORE,Uf(IMON,JMON,KMON),Vf(IMON,JMON,KMON),
      2         Wf(IMON,JMON,KMON),P(IMON,JMON,KMON),Tf(IMON,JMON,KMON),
      3         TEf(IMON,JMON,KMON),EDf(IMON,JMON,KMON)
+        endif
+
+C Append to the ACC file.
+        IF( abs(IBLACT).eq.4 .or. abs(IBLACT).eq.5)THEN
+          WRITE(IACC(icfd),312)NITER,RESORU,RESORV,RESORW,RESORM,RESORT,
+     1         RESORK,RESORE,Uf(IMON,JMON,KMON),Vf(IMON,JMON,KMON),
+     2         Wf(IMON,JMON,KMON),P(IMON,JMON,KMON),Tf(IMON,JMON,KMON),
+     3         TEf(IMON,JMON,KMON),EDf(IMON,JMON,KMON)
+        endif
       endif
 
 C Calculate mean age of air, if required, and only if not preliminary CFD 
@@ -675,7 +778,7 @@ C INIT - Initialize simulation variables.
      1             RESORT,NSWPT,URFT,FSDTT,PRANDL,PFUN
       COMMON/LOCAGE/AGEf(ntcelx,ntcely,ntcelz)
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX
+     &      JHUMINDX,URFC(MCTM)
       COMMON/CFDPOL/POLCONCp(MCTM,ntcelx,ntcely,ntcelz),
      1              POLCONCf(MCTM,ntcelx,ntcely,ntcelz)
       COMMON/ICFNOD/ICFD,ICP    
@@ -773,7 +876,8 @@ C            and sets it uniform to the whole CFD domain
      &             KOPENf(MCFND,MNZ),FIXM(MCFND,MNZ),
      &             FIXT(MCFND,MNZ),FIXC(MCFND,MNZ),
      &             FIXK(MCFND,MNZ),FIXE(MCFND,MNZ),
-     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),ICNACT(MCFND,MNZ)
+     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),
+     &             ICNACT(MCFND,MNZ),IVOLN(MCFND,MNZ)
       COMMON/ICFNOD/ICFD,ICP
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
 
@@ -835,13 +939,13 @@ C ICALL stops the initisation of blockage data until after the first iteration.
      1             RESORT,NSWPT,URFT,FSDTT,PRANDL,PFUN
       COMMON/CONST/GREAT,small,GRAV
       COMMON/URFDEN/URFDEN
-      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR
+      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR(MNZ)
       common/INCALC/INCALU,INCALV,INCALW,INCALK,INCALD,INCALT,
      1              IZEROT,IZanKE,IMITZ
       COMMON/INCALP/INCALPOL(MCTM)
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX
-      COMMON/ZTURB/rMOOT,nZtoKE
+     &      JHUMINDX,URFC(MCTM)
+      COMMON/ZTURB/rMOOT(MNZ),nZtoKE(MNZ)
       common/KEYVOLS/NVOL(MNZ),IVOLF(MNVLS,MNZ),IVCELLS(MNVLS,MNZ,2),
      &               JVCELLS(MNVLS,MNZ,2),KVCELLS(MNVLS,MNZ,2)
 
@@ -854,7 +958,6 @@ C Common blocks for blockages and small supply openings.
       LOGICAL BUOYA,BOUSSA,IZEROT,IZanKE,IMITZ
       LOGICAL CALLMA,CALPOL,OK,LINVOL,INCALPOL
 
-
       DO 100 I=1,NI
         DO 1001 J=1,NJ
           DO 1002 K=1,NK
@@ -864,7 +967,7 @@ C VIS is the eddy viscosity, not the kinematic eddy viscosity (units are Pa*s).
             if(IZEROT) then
 
 C Zero-equation fixed-eddy-viscosity turbulence model.
-              VIS(I,J,K) = (rMOOT+1.)*VISCOS
+              VIS(I,J,K) = (rMOOT(ICFD)+1.)*VISCOS
             elseif(IMITZ) then
 
 C MIT zero-eqn turb model. Refer to eq.7 of Chen & Xu 1998 E&B paper.
@@ -897,7 +1000,7 @@ C Density:
 
 C Apply the Boussinesq approximation: density is a constant,
 C evaluated at the reference temperature specified by the user.
-              DENf(I,J,K)=AIRDEN(TBAR)
+              DENf(I,J,K)=AIRDEN(TBAR(ICFD))
             ELSE
 
 C If the Boussinesq approximation is not applied, then
@@ -1034,7 +1137,7 @@ C Common blocks for blockages and small supply openings.
 
       LOGICAL INCALU,INCALV,INCALW,INCALK,INCALD,INCALT,IZEROT,IZanKE
       LOGICAL IMITZ
-      LOGICAL LINVOL,OK
+      LOGICAL LINVOL,OK,NxtIsBlk
 
       double precision RESOR, SORVOL
 
@@ -1273,12 +1376,9 @@ C Set Ia=I of adjacent cell (depends on if east or west boundary).
                     OK=.true.
                   endif
                   if (OK) then
-                    AE(Ia,J,K)=0.0 
-                    AW(Ia,J,K)=0.0
-                    AN(Ia,J,K)=0.0 
-                    AS(Ia,J,K)=0.0
-                    AH(Ia,J,K)=0.0 
-                    AL(Ia,J,K)=0.0
+                    AE(Ia,J,K)=0.0; AW(Ia,J,K)=0.0
+                    AN(Ia,J,K)=0.0; AS(Ia,J,K)=0.0
+                    AH(Ia,J,K)=0.0; AL(Ia,J,K)=0.0
 
 C AP does not change.  Calculate the value for 
 C Uf which results in the true momentum and put it in SU. 
@@ -1293,17 +1393,28 @@ C Uf which results in the true momentum and put it in SU.
 C Check for blockages.
       if(NBLK(ICFD).gt.0) then
 
-C Loop through whole blockage,set U_velocity to zero 
+C Loop through whole blockage,set U_velocity to zero.
         do 2002 IVO=1,NBLK(ICFD)
           IV=INBLK(IVO,ICFD) 
           IST=max(3,IVCELLS(IV,ICFD,1))
           do 2001 I=IST,IVCELLS(IV,ICFD,2)
             do 2001 J=JVCELLS(IV,ICFD,1),JVCELLS(IV,ICFD,2)
               do 2001 K=KVCELLS(IV,ICFD,1),KVCELLS(IV,ICFD,2)             
-                SU(I,J,K)=0.0
-                AP(I,J,K)=GREAT
-                SU(I+1,J,K)=0.0
-                AP(I+1,J,K)=GREAT
+c                SU(I,J,K)=0.0
+c                AP(I,J,K)=GREAT
+c                SU(I+1,J,K)=0.0
+c                AP(I+1,J,K)=GREAT
+
+                AE(I,J,K)=0.0; AW(I,J,K)=0.0; AN(I,J,K)=0.0
+                AS(I,J,K)=0.0; AH(I,J,K)=0.0; AL(I,J,K)=0.0
+                SP(I,J,K)=0.0; SU(I,J,K)=0.0; AP(I,J,K)=1.0
+
+                AE(I+1,J,K)=0.0; AW(I+1,J,K)=0.0
+                AN(I+1,J,K)=0.0; AS(I+1,J,K)=0.0
+                AH(I+1,J,K)=0.0; AL(I+1,J,K)=0.0
+                SP(I+1,J,K)=0.0; SU(I+1,J,K)=0.0
+                AP(I+1,J,K)=1.0
+
  2001     continue
  2002   continue
       endif
@@ -1659,12 +1770,9 @@ C Set Ja=J of adjacent cell (depends on if south(=3) or north(=4) boundary).
                     OK=.true.
                   endif
                   if (OK) then
-                    AE(I,Ja,K)=0.0 
-                    AW(I,Ja,K)=0.0
-                    AN(I,Ja,K)=0.0 
-                    AS(I,Ja,K)=0.0
-                    AH(I,Ja,K)=0.0 
-                    AL(I,Ja,K)=0.0
+                    AE(I,Ja,K)=0.0; AW(I,Ja,K)=0.0
+                    AN(I,Ja,K)=0.0; AS(I,Ja,K)=0.0
+                    AH(I,Ja,K)=0.0; AL(I,Ja,K)=0.0
 
 C AP does not change.  Calculate the value for 
 C Vf which results in the true momentum and put it in SU. 
@@ -1685,10 +1793,21 @@ C Loop through whole blockage,set V_velocity to zero
           do 2001 I=IVCELLS(IV,ICFD,1),IVCELLS(IV,ICFD,2)
             do 2001 J=JST,JVCELLS(IV,ICFD,2)
               do 2001 K=KVCELLS(IV,ICFD,1),KVCELLS(IV,ICFD,2)
-                SU(I,J,K)=0.0
-                AP(I,J,K)=GREAT
-                SU(I,J+1,K)=0.0
-                AP(I,J+1,K)=GREAT
+c                SU(I,J,K)=0.0
+c                AP(I,J,K)=GREAT
+c                SU(I,J+1,K)=0.0
+c                AP(I,J+1,K)=GREAT
+
+                AE(I,J,K)=0.0; AW(I,J,K)=0.0; AN(I,J,K)=0.0
+                AS(I,J,K)=0.0; AH(I,J,K)=0.0; AL(I,J,K)=0.0
+                SP(I,J,K)=0.0; SU(I,J,K)=0.0; AP(I,J,K)=1.0
+
+                AE(I,J+1,K)=0.0; AW(I,J+1,K)=0.0
+                AN(I,J+1,K)=0.0; AS(I,J+1,K)=0.0
+                AH(I,J+1,K)=0.0; AL(I,J+1,K)=0.0
+                SP(I,J+1,K)=0.0; SU(I,J+1,K)=0.0
+                AP(I,J+1,K)=1.0
+
  2001     continue
 C
  2002   continue
@@ -1775,7 +1894,7 @@ C  to obtain velocity component in z direction.
      2            AS(ntcelx,ntcely,ntcelz),AH(ntcelx,ntcely,ntcelz),
      3            AL(ntcelx,ntcely,ntcelz),SU(ntcelx,ntcely,ntcelz),
      4            SP(ntcelx,ntcely,ntcelz)
-      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR
+      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR(MNZ)
       common/INCALC/INCALU,INCALV,INCALW,INCALK,INCALD,INCALT,
      1              IZEROT,IZanKE,IMITZ
       COMMON/CONST/GREAT,small,GRAV
@@ -1898,7 +2017,7 @@ C Buoyancy effect.
 
 C Apply the Boussinesq approximation.  Only if the temperature difference
 C is significant (>=0.00001degC) modify the source term.
-                Tmod=SIFL(K)*Tf(i,j,K)+SIFH(K-1)*Tf(i,j,K-1)-TBAR
+                Tmod=SIFL(K)*Tf(i,j,K)+SIFH(K-1)*Tf(i,j,K-1)-TBAR(ICFD)
                 if (abs(Tmod).gt.0.00001) then
                   SU(I,J,K)=SU(i,j,K)+
      &                         GRAV*BETA(i,j,K)*VOL*DENf(i,j,K)*Tmod
@@ -2071,12 +2190,9 @@ C Set Ka=K of adjacent cell (depends on if low(5) or high(6) boundary).
                     OK=.true.
                   endif
                   if (OK) then
-                    AE(I,J,Ka)=0.0 
-                    AW(I,J,Ka)=0.0
-                    AN(I,J,Ka)=0.0 
-                    AS(I,J,Ka)=0.0
-                    AH(I,J,Ka)=0.0 
-                    AL(I,J,Ka)=0.0
+                    AE(I,J,Ka)=0.0; AW(I,J,Ka)=0.0
+                    AN(I,J,Ka)=0.0; AS(I,J,Ka)=0.0
+                    AH(I,J,Ka)=0.0; AL(I,J,Ka)=0.0
 
 C AP does not change.  Calculate the value for 
 C Wf which results in the true momentum and put it in SU. 
@@ -2099,10 +2215,23 @@ C Loop through whole blockage,set W_velocity to zero
           do 2001 I=IVCELLS(IV,ICFD,1),IVCELLS(IV,ICFD,2)
             do 2001 J=JVCELLS(IV,ICFD,1),JVCELLS(IV,ICFD,2)
               do 2001 K=KST,KVCELLS(IV,ICFD,2)             
-                SU(I,J,K)=0.0
-                AP(I,J,K)=GREAT
-                SU(I,J,K+1)=0.0
-                AP(I,J,K+1)=GREAT
+c                SU(I,J,K)=0.0
+c                AP(I,J,K)=GREAT
+c                SU(I,J,K+1)=0.0
+c                AP(I,J,K+1)=GREAT
+
+                AE(I,J,K)=0.0; AW(I,J,K)=0.0
+                AN(I,J,K)=0.0; AS(I,J,K)=0.0
+                AH(I,J,K)=0.0; AL(I,J,K)=0.0
+                SP(I,J,K)=0.0; SU(I,J,K)=0.0
+                AP(I,J,K)=1.0
+
+                AE(I,J,K+1)=0.0; AW(I,J,K+1)=0.0
+                AN(I,J,K+1)=0.0; AS(I,J,K+1)=0.0
+                AH(I,J,K+1)=0.0; AL(I,J,K+1)=0.0
+                SP(I,J,K+1)=0.0; SU(I,J,K+1)=0.0
+                AP(I,J,K+1)=1.0
+
  2001     continue
  2002   continue
       endif
@@ -2242,18 +2371,11 @@ C All convective fluxes and coefficients are set to zero.
                 if(OK) then 
 
 C Cell is within the blockage       
-                  AE(I,J,K)=0.0
-                  AW(I,J,K)=0.0
-                  AN(I,J,K)=0.0
-                  AS(I,J,K)=0.0
-                  AH(I,J,K)=0.0
-                  AL(I,J,K)=0.0
-                  CE=0.0
-                  CW=0.0
-                  CN=0.0
-                  CS=0.0
-                  CH=0.0
-                  CL=0.0
+                  AE(I,J,K)=0.0; AW(I,J,K)=0.0
+                  AN(I,J,K)=0.0; AS(I,J,K)=0.0
+                  AH(I,J,K)=0.0; AL(I,J,K)=0.0
+                  CE=0.0; CW=0.0; CN=0.0
+                  CS=0.0; CH=0.0; CL=0.0
                 else 
 
 C Cell is outside blockage. 
@@ -2365,52 +2487,73 @@ C Correct velocities.
 C Check for blockages and exclude them from calculation.
               if (I.gt.2) then
 
-C Check adjacent cell for blockage.
-                IVcor=0
+C Check scalar cells on both boundaries in U direction for blockages.
+                IUcor=0
                 do 5101 IVO=1,NBLK(ICFD)
                   IV=INBLK(IVO,ICFD) 
                   OK=LINVOL(I,J,K,
-     &                    (IVCELLS(IV,ICFD,1)+1),(IVCELLS(IV,ICFD,2)+1),
+c     &                    (IVCELLS(IV,ICFD,1)+1),(IVCELLS(IV,ICFD,2)+1),
+     &                     IVCELLS(IV,ICFD,1),IVCELLS(IV,ICFD,2),
      &                     JVCELLS(IV,ICFD,1),JVCELLS(IV,ICFD,2),
      &                     KVCELLS(IV,ICFD,1),KVCELLS(IV,ICFD,2))
-                  if (OK) IVcor=IVcor+1
+                  if (OK) IUcor=IUcor+1 
+                  OK=LINVOL(I-1,J,K,
+c     &                    (IVCELLS(IV,ICFD,1)+1),(IVCELLS(IV,ICFD,2)+1),
+     &                     IVCELLS(IV,ICFD,1),IVCELLS(IV,ICFD,2),
+     &                     JVCELLS(IV,ICFD,1),JVCELLS(IV,ICFD,2),
+     &                     KVCELLS(IV,ICFD,1),KVCELLS(IV,ICFD,2))
+                  if (OK) IUcor=IUcor+1
  5101           continue
 
-C If adjacent cell unblocked correct velocity.
-                if (IVcor.eq.0) Uf(I,J,K)=Uf(I,J,K)+
+C If both bounding scalar cells unblocked correct velocity.
+                if (IUcor.eq.0) Uf(I,J,K)=Uf(I,J,K)+
      &                        DU(I,J,K)*(PP(I-1,J,K)-PP(I,J,K))
               endif
               if (J.gt.2) then
 
-C Check adjacent cell for blockage.
-                IUcor=0
+C Check scalar cells on both boundaries in V direction for blockages.
+                IVcor=0
                 do 5102 IVO=1,NBLK(ICFD)
                   IV=INBLK(IVO,ICFD) 
                   OK=LINVOL(I,J,K,
      &                     IVCELLS(IV,ICFD,1),IVCELLS(IV,ICFD,2),
-     &                    (JVCELLS(IV,ICFD,1)+1),(JVCELLS(IV,ICFD,2)+1),
+c     &                    (JVCELLS(IV,ICFD,1)+1),(JVCELLS(IV,ICFD,2)+1),
+     &                     JVCELLS(IV,ICFD,1),JVCELLS(IV,ICFD,2),
      &                     KVCELLS(IV,ICFD,1),KVCELLS(IV,ICFD,2))
-                  if (OK) IUcor=IUcor+1
+                  if (OK) IVcor=IVcor+1
+                  OK=LINVOL(I,J-1,K,
+     &                     IVCELLS(IV,ICFD,1),IVCELLS(IV,ICFD,2),
+c     &                    (JVCELLS(IV,ICFD,1)+1),(JVCELLS(IV,ICFD,2)+1),
+     &                     JVCELLS(IV,ICFD,1),JVCELLS(IV,ICFD,2),
+     &                     KVCELLS(IV,ICFD,1),KVCELLS(IV,ICFD,2))
+                  if (OK) IVcor=IVcor+1
  5102           continue
 
-C If adjacent cell unblocked correct velocity.
-                if (IUcor.eq.0) Vf(i,j,K)=Vf(i,j,K)+
+C If both bounding scalar cells unblocked correct velocity.
+                if (IVcor.eq.0) Vf(i,j,K)=Vf(i,j,K)+
      &                        DV(I,J,K)*(PP(I,J-1,K)-PP(I,J,K))
               endif
               if (K.gt.2) then
 
-C Check adjacent cell for blockage.
+C Check scalar cells on both boundaries in W direction for blockages.
                 IWcor=0
                 do 5103 IVO=1,NBLK(ICFD)
                   IV=INBLK(IVO,ICFD) 
                   OK=LINVOL(I,J,K,
      &                     IVCELLS(IV,ICFD,1),IVCELLS(IV,ICFD,2),
      &                     JVCELLS(IV,ICFD,1),JVCELLS(IV,ICFD,2),
-     &                    (KVCELLS(IV,ICFD,1)+1),(KVCELLS(IV,ICFD,2)+1))
+c     &                    (KVCELLS(IV,ICFD,1)+1),(KVCELLS(IV,ICFD,2)+1))
+     &                     KVCELLS(IV,ICFD,1),KVCELLS(IV,ICFD,2))
+                  if (OK) IWcor=IWcor+1
+                  OK=LINVOL(I,J,K-1,
+     &                     IVCELLS(IV,ICFD,1),IVCELLS(IV,ICFD,2),
+     &                     JVCELLS(IV,ICFD,1),JVCELLS(IV,ICFD,2),
+c     &                    (KVCELLS(IV,ICFD,1)+1),(KVCELLS(IV,ICFD,2)+1))
+     &                     KVCELLS(IV,ICFD,1),KVCELLS(IV,ICFD,2))
                   if (OK) IWcor=IWcor+1
  5103           continue
 
-C If adjacent cell unblocked correct velocity.
+C If both bounding scalar cells unblocked correct velocity.
                 if (IWcor.eq.0) Wf(i,j,K)=Wf(i,j,K)+
      &                        DW(I,J,K)*(PP(I,J,K-1)-PP(I,J,K))
               endif
@@ -2696,12 +2839,9 @@ C Set the temperature inside the blockage equal to the initial one.
           do 2017 I=IVCELLS(IV,ICFD,1),IVCELLS(IV,ICFD,2)
             do 2107 J=JVCELLS(IV,ICFD,1),JVCELLS(IV,ICFD,2)
               do 2207 K=KVCELLS(IV,ICFD,1),KVCELLS(IV,ICFD,2)
-                AE(I,J,K)=0.0
-                AW(I,J,K)=0.0
-                AN(I,J,K)=0.0
-                AS(I,J,K)=0.0
-                AH(I,J,K)=0.0
-                AL(I,J,K)=0.0
+                AE(I,J,K)=0.0; AW(I,J,K)=0.0
+                AN(I,J,K)=0.0; AS(I,J,K)=0.0
+                AH(I,J,K)=0.0; AL(I,J,K)=0.0
                 SP(I,J,K)=0.0
                 SU(I,J,K)=TINIT(ICFD)
                 AP(I,J,K)=1.0
@@ -2769,7 +2909,7 @@ C  energy equation and solve the matrix.
      4            SP(ntcelx,ntcely,ntcelz)
       COMMON/TEMPf/Tf(ntcelx,ntcely,ntcelz),GAMH(ntcelx,ntcely,ntcelz),
      1             RESORT,NSWPT,URFT,FSDTT,PRANDL,PFUN
-      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR
+      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR(MNZ)
       COMMON/CONST/GREAT,small,GRAV
       COMMON/SUSP/SUKD(ntcelx,ntcely,ntcelz),SPKD(ntcelx,ntcely,ntcelz)
       COMMON/TIMSTP/DT
@@ -3113,7 +3253,7 @@ C  dissipation equation and solve the matrix.
      4            SP(ntcelx,ntcely,ntcelz)   
       COMMON/TEMPf/Tf(ntcelx,ntcely,ntcelz),GAMH(ntcelx,ntcely,ntcelz),
      1             RESORT,NSWPT,URFT,FSDTT,PRANDL,PFUN
-      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR
+      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR(MNZ)
       COMMON/CONST/GREAT,small,GRAV
       COMMON/SUSP/SUKD(ntcelx,ntcely,ntcelz),SPKD(ntcelx,ntcely,ntcelz)
       COMMON/TIMSTP/DT
@@ -3320,13 +3460,9 @@ C Loop through whole blockage, set the dissipation to a small value.
             do 2001 J=JVCELLS(IV,ICFD,1),JVCELLS(IV,ICFD,2)
               do 2001 K=KVCELLS(IV,ICFD,1),KVCELLS(IV,ICFD,2) 
                 SU(I,J,K)=100.0*small
-                AP(I,J,K)=1.0
-                AE(I,J,K)=0.0
-                AW(I,J,K)=0.0
-                AN(I,J,K)=0.0
-                AS(I,J,K)=0.0
-                AH(I,J,K)=0.0
-                AL(I,J,K)=0.0
+                AP(I,J,K)=1.0; AE(I,J,K)=0.0; AW(I,J,K)=0.0
+                AN(I,J,K)=0.0; AS(I,J,K)=0.0; AH(I,J,K)=0.0
+                AL(I,J,K)=0.0; SP(I,J,K)=0.0
  2001     continue
  2000   continue
       endif
@@ -3357,12 +3493,13 @@ C INDBND - Initialize some boundary conditions.
      &             KOPENf(MCFND,MNZ),FIXM(MCFND,MNZ),
      &             FIXT(MCFND,MNZ),FIXC(MCFND,MNZ),
      &             FIXK(MCFND,MNZ),FIXE(MCFND,MNZ),
-     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),ICNACT(MCFND,MNZ)
+     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),
+     &             ICNACT(MCFND,MNZ),IVOLN(MCFND,MNZ)
       COMMON/Sbdary/NSB(MNZ),ISBi(MNSBZ,MNZ),ISBf(MNSBZ,MNZ),
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
      &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
      &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
-     &              SSBHC(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
 
       COMMON/ICFNOD/ICFD,ICP
@@ -3552,7 +3689,8 @@ C INOUT - Set up all inlet and outlet conditions.
      &             KOPENf(MCFND,MNZ),FIXM(MCFND,MNZ),
      &             FIXT(MCFND,MNZ),FIXC(MCFND,MNZ),
      &             FIXK(MCFND,MNZ),FIXE(MCFND,MNZ),
-     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),ICNACT(MCFND,MNZ)
+     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),
+     &             ICNACT(MCFND,MNZ),IVOLN(MCFND,MNZ)
       COMMON/ICFNOD/ICFD,ICP
 
       COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
@@ -3577,7 +3715,7 @@ C INOUT - Set up all inlet and outlet conditions.
      1            DENf(ntcelx,ntcely,ntcelz),VIS(ntcelx,ntcely,ntcelz),
      2            BETA(ntcelx,ntcely,ntcelz)
       COMMON/THETA/THETA1(MCFND,MNZ),THETA2(MCFND,MNZ)
-      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR
+      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR(MNZ)
 
       LOGICAL BUOYA,BOUSSA
 
@@ -3610,7 +3748,7 @@ C and correct source term in pressure correction eqn.
                   TEMP=Tf(I,J,K)
                   Tf(I-1,J,K)=Tf(I,J,K)
                 ENDIF
-                IF(BOUSSA) TEMP=TBAR
+                IF(BOUSSA) TEMP=TBAR(ICFD)
                 Uf(I,J,K)=FIXM(L,ICFD)/AIRDEN(TEMP)/AREA
                 UIN=Uf(I,J,K)
                 VRES=Uf(I,J,K)*SQRT(1.+ETAND(THETA1(L,ICFD))**2+
@@ -3629,7 +3767,7 @@ C Opening in east.
                   TEMP=Tf(I,J,K)
                   Tf(I+1,J,K)=Tf(I,J,K)
                 ENDIF
-                IF(BOUSSA) TEMP=TBAR
+                IF(BOUSSA) TEMP=TBAR(ICFD)
                 Uf(I+1,J,K)=-FIXM(L,ICFD)/AIRDEN(TEMP)/AREA
                 UIN=Uf(I+1,J,K)
                 VRES=ABS(Uf(I+1,J,K))*SQRT(1.+ETAND(THETA1(L,ICFD))**2+
@@ -3648,7 +3786,7 @@ C Opening in south.
                   TEMP=Tf(I,J,K)
                   Tf(I,J-1,K)=Tf(I,J,K)
                 ENDIF
-                IF(BOUSSA) TEMP=TBAR
+                IF(BOUSSA) TEMP=TBAR(ICFD)
                 Vf(I,J,K)=FIXM(L,ICFD)/AIRDEN(TEMP)/AREA
                 UIN=Vf(I,J,K)
                 VRES=Vf(I,J,K)*SQRT(1.+ETAND(THETA1(L,ICFD))**2+
@@ -3667,7 +3805,7 @@ C Opening in north.
                   TEMP=Tf(I,J,K)
                   Tf(I,J+1,K)=Tf(I,J,K)
                 ENDIF
-                IF(BOUSSA) TEMP=TBAR
+                IF(BOUSSA) TEMP=TBAR(ICFD)
                 Vf(I,J+1,K)=-FIXM(L,ICFD)/AIRDEN(TEMP)/AREA
                 UIN=Vf(I,J+1,K)
                 VRES=ABS(Vf(I,J+1,K))*SQRT(1.+ETAND(THETA1(L,ICFD))**2+
@@ -3686,7 +3824,7 @@ C Opening in low.
                   TEMP=Tf(I,J,K)
                   Tf(I,J,K-1)=Tf(I,J,K)
                 ENDIF
-                IF(BOUSSA) TEMP=TBAR
+                IF(BOUSSA) TEMP=TBAR(ICFD)
                 Wf(I,J,K)=FIXM(L,ICFD)/AIRDEN(TEMP)/AREA
                 UIN=Wf(I,J,K)
                 VRES=Wf(I,J,K)*SQRT(1.+ETAND(THETA1(L,ICFD))**2+
@@ -3705,7 +3843,7 @@ C Opening in high.
                   TEMP=Tf(I,J,K)
                   Tf(I,J,K+1)=Tf(I,J,K)
                 ENDIF
-                IF(BOUSSA) TEMP=TBAR
+                IF(BOUSSA) TEMP=TBAR(ICFD)
                 Wf(I,J,K+1)=-FIXM(L,ICFD)/AIRDEN(TEMP)/AREA
                 UIN=Wf(I,J,K+1)
                 VRES=ABS(Wf(I,J,K+1))*SQRT(1.+ETAND(THETA1(L,ICFD))**2+
@@ -3838,7 +3976,8 @@ C fixed in a cell.
      &             KOPENf(MCFND,MNZ),FIXM(MCFND,MNZ),
      &             FIXT(MCFND,MNZ),FIXC(MCFND,MNZ),
      &             FIXK(MCFND,MNZ),FIXE(MCFND,MNZ),
-     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),ICNACT(MCFND,MNZ)
+     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),
+     &             ICNACT(MCFND,MNZ),IVOLN(MCFND,MNZ)
       COMMON/COEF/AP(ntcelx,ntcely,ntcelz),AE(ntcelx,ntcely,ntcelz),
      1            AW(ntcelx,ntcely,ntcelz),AN(ntcelx,ntcely,ntcelz),
      2            AS(ntcelx,ntcely,ntcelz),AH(ntcelx,ntcely,ntcelz),

@@ -263,7 +263,7 @@ C Instanciate and clear commons, scan the supplied problem
 C to update commons for configuration.
           call clrprb
           call edisp(iuout,' Scanning the problem before updating...')
-          call escdef(iotmp2,IER)
+          call escdef(iotmp2,'s',IER)
           MODE='ALL '
           call ERSYS(LCFGF,ioout,iotmp2,MODE,itrc,IER)
           if(IER.eq.0)then
@@ -303,7 +303,7 @@ C files and close the cfg file.
             stop 'ecnv aborted.'
           endif
         else
-          call escdef(iotmp2,IER)
+          call escdef(iotmp2,'s',IER)
           call clrprb
         endif
 
@@ -355,7 +355,7 @@ C have not been read in.
 
 C Scan the defaults file for default configuration.
 C Make temporary use of file unit iotmp2.
-        call escdef(iotmp2,IER)
+        call escdef(iotmp2,'s',IER)
         write(LTMP,'(a)') filname(1:lnblnk(filname))
 
 C Find the path and local file name.
@@ -1327,11 +1327,11 @@ C Passed paramters.
 
 C Depending on computer type set integer size of passed parameters.
 #ifdef OSI
-      integer JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
-      integer JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+      integer JITZNM,JITSNM,JITVNO,JITOBS,JITVIS,JITVOBJ,JITSNR,JITGRD
+      integer JITORG,JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
 #else
-      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
-      integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITVIS,JITVOBJ,JITSNR
+      integer*8 JITGRD,JITORG,JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
 #endif     
       return
       end
@@ -1359,6 +1359,14 @@ C Depending on computer type set integer size of passed parameters.
       ier=0
       return
       end
+      
+      SUBROUTINE EDMLDB2(chgdb,ACTION,isel,IER)
+      logical chgdb
+      character*1 ACTION
+      integer isel,ier
+      ier=0
+      return
+      end
 
       SUBROUTINE INLNST(ITYP)
       return
@@ -1372,6 +1380,15 @@ C Depending on computer type set integer size of passed parameters.
 C Dummy subroutine needed to compile (called from library code).
       SUBROUTINE PLELEV(direc)
       CHARACTER direc*1
+      return
+      end
+
+      subroutine Find_season_parameters()
+      return
+      end
+
+      SUBROUTINE BASESIMP_INPUTS(ICOMP,IER)
+      integer icomp,ier
       return
       end
 

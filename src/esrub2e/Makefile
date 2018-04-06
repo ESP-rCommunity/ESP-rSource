@@ -1,3 +1,9 @@
+architecture := $(shell uname -s)
+ifeq ($(architecture),Darwin)
+	SWTCH=
+else
+	SWTCH= -D
+endif
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
 CDBdir = $(SRCdir)/esrucdb
@@ -7,6 +13,7 @@ PRJdir = $(SRCdir)/esruprj
 BLDdir = $(SRCdir)/esrubld
 CETCdir = $(SRCdir)/cetc
 PROG = b2e$(EXE)
+default: $(PROG)
 
 .SUFFIXES: .o .F
 .F.o:
@@ -15,17 +22,15 @@ PROG = b2e$(EXE)
 %.o : %.f90
 	$(MCC) $(FFLAGS) -c $<
 
-MODULE_OBJECTS = h3kmodule.o aim2_module.o startup.o
+MODULE_OBJECTS = aim2_module.o startup.o
 
-OBJECTS = basesimp.o basesimp_inputs.o b2e.o bscoeff.o bscoeff_extended.o \
-	CDBPlugins.o CDBCommon.o CDBExplore.o\
+OBJECTS = b2e.o CDBPlugins.o CDBCommon.o CDBExplore.o\
 	c2fdum.o clispline.o ctlwrt.o ctread.o daproc.o econtrol.o egeometry.o \
 	emfnetw.o emkcfg.o eroper.o esru_misc.o esystem.o filelist.o initalc.o item.o mfcdat.o \
 	nwkrewr.o pltcfg.o readTrnsys.o rwipv.o rwsbem.o simcomis.o sort.o tdfile.o \
-    azalt.o qrun.o
+	FMIcom.o
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod start_up.mod \
-          parse_command_line.mod h3kmodule.mod
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod start_up.mod parse_command_line.mod
 
 $(PROG): $(MODULE_OBJECTS) $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS)
@@ -33,18 +38,6 @@ $(PROG): $(MODULE_OBJECTS) $(OBJECTS)
 aim2_module.F:
 	rm -f aim2_module.F
 	ln -s $(BLDdir)/aim2_module.F .
-basesimp.F:
-	rm -f basesimp.F
-	ln -s $(BLDdir)/basesimp.F .
-basesimp_inputs.F:
-	rm -f basesimp_inputs.F
-	ln -s $(PRJdir)/basesimp_inputs.F .
-bscoeff.F:
-	rm -f bscoeff.F
-	ln -s $(BLDdir)/bscoeff.F .
-bscoeff_extended.F:
-	rm -f bscoeff_extended.F
-	ln -s $(CETCdir)/bscoeff_extended.F .
 CDBPlugins.F:
 	rm -f CDBPlugins.F
 	ln -s $(CDBdir)/CDBPlugins.F .
@@ -120,26 +113,27 @@ startup.F:
 tdfile.F:
 	rm -f tdfile.F
 	ln -s $(COMdir)/tdfile.F .
-azalt.F:
-	rm -f azalt.F
-	ln -s $(COMdir)/azalt.F .
-qrun.F:
-	rm -f qrun.F
-	ln -s $(COMdir)/qrun.F .
-h3kmodule.f90:
-	rm -f h3kmodule.f90
-	ln -s $(CETCdir)/h3kmodule.f90 .
+FMIcom.F:
+	rm -f FMIcom.F
+	ln -s $(COMdir)/FMIcom.F .
 
 strip:
-	@if [ -f $(PROG) ]; then strip $(PROG); fi
+	strip $(PROG)
 
 install:
-	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
+	install $(SWTCH) $(PROG) $(ESPBinDir)/$(PROG)
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
-	aim2_module.F basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
-	CDBPlugins.F CDBCommon.F CDBExplore.F \
+	aim2_module.F CDBPlugins.F CDBCommon.F CDBExplore.F \
 	c2fdum.F ctlwrt.F ctread.F econtrol.F egeometry.F emfnetw.F emkcfg.F esru_misc.F \
 	eroper.F esystem.F filelist.F initalc.F item.F mfcdat.F nwkrewr.F pltcfg.F sort.F startup.F tdfile.F \
-	readTrnsys.F rwipv.F rwsbem.F azalt.F qrun.F h3kmodule.f90
+	readTrnsys.F rwipv.F rwsbem.F \
+	FMIcom.F
+
+distclean: clean
+
+uninstall:
+	-rm -f $(ESPBinDir)/$(PROG)
+	
+.PHONY: clean install default strip uninstall distclean

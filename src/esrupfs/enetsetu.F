@@ -40,7 +40,8 @@ C            electrical network. The admittance is usually the inverse of the co
 C            impedance of the linkage between the nodes. However, when conductors are
 C            mutually coupled (i.e. overhead lines), the calculation of the admittance
 C            is more convoluted. All admittance values as calculated in PER-UNIT.
-C ENETADMY - calculates the self-admittance and branch admittances for each node            C            in the electrical network. 
+C ENETADMY - calculates the self-admittance and branch admittances for each node
+C            in the electrical network.
 C ENETPARAM- this routine allows the user to set up the electrical power flow solution
 C            parameters.
 C     
@@ -75,32 +76,16 @@ C This routine initialises all the electrical network and solution
 C parameters prior to the start of an electrical network simulation. 
 C 
       SUBROUTINE ENETSINI
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 
       COMMON/C6/INDCFG
       COMMON/OUTIN/IUOUT,IUIN
 
-C The PER-UNIT electrical network state variables.
-      COMMON/ENETVPU/VOLTPUP(MENOD),VOLTPUF(MENOD)
-
 C The electrical simulation parameters. 
       COMMON/ENETSIMP/ENETMAXI,ENETSLVT,ENETVCVG,ENETACVG,ENETVLIM,
      &ENODCVGF(MENOD),CVGCHK
-
-C The electrical nodes
-      COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
-     &ENODPH(MENOD),ENODTYP(MENOD),ENODBASEV(MENOD),
-     &ENODBASEP
-
-C The electrical network topology
-      COMMON/ECONN/NECON,ECONO(MECON),CONPHTYP(MECON),
-     &CONPH(MECON,MPHAS),CCNO(MECON),SENOD(MECON,MPHAS),
-     &EENOD(MECON,MPHAS)
-
-C The connecting components
-      COMMON/CONCOM/NCONECOM,CONECOMNO(MCONECOM),CONECOMID(MCONECOM),
-     &CONECOMPHTYP(MCONECOM),NCONECOMDAT(MCONECOM),
-     &CONECOMDAT(MCONECOM,MCCDAT)
 
 C The calculated component impedance (SI)
       COMMON/ECONZVAL/NCONZ(MCONECOM),CONZ(MCONECOM,MZARRY)
@@ -113,30 +98,19 @@ C The electrical network jacobian solution matrix
       COMMON/ENETMTRX/JACOBEL(MJROW,MJCOL),EMATJZ(MJROW),
      &EDELTA(MJROW)
 
-C The array of driving port and transfer admittances
-      COMMON/YARRY/NYELM,YADM(MENOD,MENOD)
-
-C More network-related info - phase angles.
-      COMMON/ENETMSC/PHASEANG(MPHAS)
-
-      COMMON/ENETDELTAT/IETSET,ENETSTP
-
 C Initialization status of power-only components
       COMMON/ENetPowComp/bComp_initialized
       logical bComp_Initialized(MPOWCOM)
 
+      INTEGER ENETMAXI,ENETSLVT,ENODCVGF
             
-      INTEGER NCONZPU,NCONECOM,CONECOMNO,CONECOMID,CONECOMPHTYP,
-     &NCONECOMDAT,NECON,ECONO,CONPHTYP,CONPH,CCNO,SENOD,EENOD,NCONZ,
-     &NENOD,ENODNO,ENODPHTYP,ENODPH,ENODTYP,ENETMAXI,ENETSLVT,NYELM,
-     &ENODCVGF,ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP,NTSTPP
+      INTEGER ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP,NTSTPP
 
-      REAL RADPHA,PHASEANG,CONECOMDAT,ENODBASEV,ENODBASEP,ENETACVG,
-     &ENETVLIM,ENETVCVG,ENETSTP
+      REAL RADPHA,ENETACVG,ENETVLIM,ENETVCVG
 
       DOUBLE PRECISION JACOBEL,EMATJZ,EDELTA
 
-      COMPLEX CONZPU,CONYPU,YADM,VOLTPUF,VOLTPUP,CONZ
+      COMPLEX CONZPU,CONYPU,CONZ
 
       LOGICAL CVGCHK
 
@@ -192,7 +166,7 @@ C Matrix parameters
           JACOBEL(IJR,IJC)=0.0
   90  CONTINUE
   80  CONTINUE
-										
+
 C Set power-only component initialization flags to false.
 C Power-only component data requiring initialization will
 C set these data to true after initialization is complete.
@@ -222,34 +196,12 @@ C NHREC    - the number of records used to store hybrid component data
 C **************************************************************************************
       SUBROUTINE ENETLIBH 
 
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-
-C Common for electrical file 
-      COMMON/ENTFILE/ENTFLNAM,IENTXIST
-
-C The electrical nodes
-      COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
-     &ENODPH(MENOD),ENODTYP(MENOD),ENODBASEV(MENOD),
-     &ENODBASEP
-
-C The connected hybrid components
-      COMMON/HYBE/NHYBCOM,HYBCOMNO(MHYCOM),HYCOMTYP(MHYCOM),
-     &HYCOMPHTYP(MHYCOM),HYCONEN(MHYCOM,MPHAS),HYLOC(MHYCOM,MPHAS),
-     &NHYBDAT(MHYCOM),HYBDAT(MHYCOM,MHYDAT)
-
-C The connected power only components
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-
-
-C The electrical network topology
-      COMMON/ECONN/NECON,ECONO(MECON),CONPHTYP(MECON),
-     &CONPH(MECON,MPHAS),CCNO(MECON),SENOD(MECON,MPHAS),
-     &EENOD(MECON,MPHAS)
 
 C Electrical library details - the number of records per timestep and the number 
 C of records used to store hybrid and power only data. 
@@ -257,19 +209,11 @@ C of records used to store hybrid and power only data.
      &NPREC
 
 C Type casting (all variables and arrays cast explicitly)
-      INTEGER NENOD,ENODNO,ENODPHTYP,ENODPH,ENODTYP,NHYBCOM,HYBCOMNO,
-     &HYCOMTYP,HYCOMPHTYP,HYCONEN,HYLOC,NHYBDAT,NPOWCOM,POWCOMNO,
-     &POWCOMID,POWCOMPHTYP,POWCONEN,NPOWCDAT,NPOWCDATS,CONPH,NECON,
-     &ECONO,CONPHTYP,CCNO,SENOD,EENOD,NTSREC,NHREC,NPREC
+      INTEGER NTSREC,NHREC,NPREC
 
-      INTEGER IENTXIST,IUOUT,IUIN,IFIL,IELFIL,IELIBHL,IELIBW,
+      INTEGER IUOUT,IUIN,IFIL,IELFIL,IELIBHL,IELIBW,
      &IELSTREC
      
-      REAL ENODBASEV,ENODBASEP,HYBDAT,POWCDAT
-
-C Characters
-      CHARACTER*72 ENTFLNAM
-
 C Get the results library file number and record width from the include file. 
       IELFIL=IFIL+MADFIL
       IELIBW=MELIBW
@@ -376,8 +320,9 @@ C ******************************* ENETCBAZ  ************************************
 C 
       SUBROUTINE ENETCBAZ
 
+#include "building.h"
+#include "plant.h"
 #include "power.h"
-#include "building.h" 
 
 C Trace
       COMMON/OUTIN/IUOUT,IUIN
@@ -385,27 +330,13 @@ C Trace
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
-C The connecting components
-      COMMON/CONCOM/NCONECOM,CONECOMNO(MCONECOM),CONECOMID(MCONECOM),
-     &CONECOMPHTYP(MCONECOM),NCONECOMDAT(MCONECOM),
-     &CONECOMDAT(MCONECOM,MCCDAT)
-
 C The calculated component impedance
       COMMON/ECONZVAL/NCONZ(MCONECOM),CONZ(MCONECOM,MZARRY)
 
-C The electrical nodes
-      COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
-     &ENODPH(MENOD),ENODTYP(MENOD),ENODBASEV(MENOD),
-     &ENODBASEP
-
-
 C Type casting (all variables and arrays cast explicitly)
-      INTEGER NCONECOM,CONECOMNO,CONECOMID,CONECOMPHTYP,
-     &NCONECOMDAT,NCONZ,IDLC,INC, NENOD
+      INTEGER NCONZ,IDLC,INC
 
-      REAL CONECOMDAT,R,X,M,RN,XN,NM,R1,X1,R2,X2,RN1,XN1,RN2,XN2,L
-      INTEGER ENODNO, ENODPHTYP, ENODPH, ENODTYP
-      REAL  ENODBASEV, ENODBASEP
+      REAL R,X,M,RN,XN,NM,R1,X1,R2,X2,RN1,XN1,RN2,XN2,L
 
       COMPLEX CONZ
       CHARACTER*124 OUTS
@@ -658,7 +589,8 @@ C Trace
 C Write out the calculated impedance values
           WRITE(ITU,*)' '
 
-          WRITE(ITU,*)' Calculated impedance values for component',ICCN
+          WRITE(ITU,*)' Calculated impedance values for '
+     &      ,'connecting component ',ICCN
           WRITE(ITU,*)' Component type',CONECOMID(ICCN)
           WRITE(ITU,*)' No. of calculated impedance values',NCONZ(ICCN)
           INC=2
@@ -679,7 +611,8 @@ C Write out the calculated impedance values
 
 C Error message
  1001 WRITE(OUTS,*) 
-     &'ERROR: ENETCBAZ incorrect no. of data items specified for conn '
+     &'ERROR: ENETCBAZ incorrect no. of data items specified for conn'
+     &,'ecting component '
      &,ICCN
       CALL EDISP(itu,outs)
       CALL EPWAIT
@@ -729,9 +662,11 @@ C               --> [zh(a3,b1)+zl(a3,b1) zh(a3,b2)+zl(a3,b2) zh(a3,b3)+zl(a3,b3)
 C ***********************************************************************************
 
       SUBROUTINE ENETZ2PU
+c      implicit none
 
-#include "power.h"
 #include "building.h"
+#include "plant.h"
+#include "power.h"
 
 C Trace
       COMMON/TC/ITC,ICNT
@@ -740,19 +675,6 @@ C Trace
 
       COMMON/OUTIN/IUOUT,IUIN
 
-C The electrical network
-      COMMON/ENET/ENTYPE
-
-C The electrical nodes
-      COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
-     &ENODPH(MENOD),ENODTYP(MENOD),ENODBASEV(MENOD),
-     &ENODBASEP
-
-C The connecting components
-      COMMON/CONCOM/NCONECOM,CONECOMNO(MCONECOM),CONECOMID(MCONECOM),
-     &CONECOMPHTYP(MCONECOM),NCONECOMDAT(MCONECOM),
-     &CONECOMDAT(MCONECOM,MCCDAT)
-
 C The calculated component impedances
       COMMON/ECONZVAL/NCONZ(MCONECOM),CONZ(MCONECOM,MZARRY)
 
@@ -760,21 +682,15 @@ C The per unit connection impedances and admittances
       COMMON/ECONZYPU/NCONZPU(MECON),CONZPU(MECON,MZARRY),
      &CONYPU(MECON,MYARRY)
 
-C The electrical network topology
-      COMMON/ECONN/NECON,ECONO(MECON),CONPHTYP(MECON),
-     &CONPH(MECON,MPHAS),CCNO(MECON),SENOD(MECON,MPHAS),
-     &EENOD(MECON,MPHAS)
-
 C Derived System and Nodal Values
-      COMMON/ENETSMC/LNPWRBAS,ENODZBAS(MENOD),ENODIBAS(MENOD)
-
-      REAL CONECOMDAT,ENODBASEV,ENODBASEP,LNPWRBAS,ENODIBAS
-
-      INTEGER NENOD,ENODNO,ENODPHTYP,ENODPH,ENODTYP,NCONECOM,CONECOMNO,
-     &CONECOMID,CONECOMPHTYP,NCONECOMDAT,NCONZ,NCONZPU,NECON,ECONO,
-     &CONPHTYP,CONPH,CCNO,SENOD,EENOD,MAXPH,ENTYPE
+      INTEGER NCONZ,NCONZPU,MAXPH
 
       COMPLEX CONZ,CONZPU,CONYPU
+
+
+C Local variables
+      INTEGER IC,iccn,ICID,ICN
+      REAL ENODZH,ENODZL
 
       LOGICAL CLOSE
 
@@ -1085,26 +1001,21 @@ C impedance matrix.
 
       SUBROUTINE ENETCPUY
 
-#include "power.h"
 #include "building.h"
+#include "plant.h"
+#include "power.h"
 
 C Trace
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
-C The electrical network topology
-      COMMON/ECONN/NECON,ECONO(MECON),CONPHTYP(MECON),
-     &CONPH(MECON,MPHAS),CCNO(MECON),SENOD(MECON,MPHAS),
-     &EENOD(MECON,MPHAS)
-
 C The per unit connection impedances and admittances
       COMMON/ECONZYPU/NCONZPU(MECON),CONZPU(MECON,MZARRY),
      &CONYPU(MECON,MYARRY)
 
 C Type casting (all variables and arrays cast explicitly)
-      INTEGER NCONZPU,NECON,ECONO,CONPHTYP,CONPH,CCNO,INC,SENOD,
-     &EENOD,I,J,K,IDLC
+      INTEGER NCONZPU,INC,I,J,K,IDLC
 
 C Dimension temporary 3x3 and 2x2 arrays to pass into the inversion routine
       DIMENSION TPUY3(MPHAS,MPHAS),TPUYI3(MPHAS,MPHAS),
@@ -1286,39 +1197,24 @@ C YADM(I,J) - an enntry in the admittance matrix
 
       SUBROUTINE ENETADMY
 
-#include "power.h"
 #include "building.h"
+#include "plant.h"
+#include "power.h"
 
 C Trace
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
-C The electrical nodes
-      COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
-     &ENODPH(MENOD),ENODTYP(MENOD),ENODBASEV(MENOD),
-     &ENODBASEP
-
-C The electrical network topology
-      COMMON/ECONN/NECON,ECONO(MECON),CONPHTYP(MECON),
-     &CONPH(MECON,MPHAS),CCNO(MECON),SENOD(MECON,MPHAS),
-     &EENOD(MECON,MPHAS)
-
 C The per unit connection impedance and admittances
       COMMON/ECONZYPU/NCONZPU(MECON),CONZPU(MECON,MZARRY),
      &CONYPU(MECON,MYARRY)
 
-C The array of driving port and transfer admittances
-      COMMON/YARRY/NYELM,YADM(MENOD,MENOD)
-
 C Variable casting
-      INTEGER NENOD,ENODNO,ENODPHTYP,ENODPH,ENODTYP, NECON,ECONO,
-     &CONPHTYP,CONPH,CCNO,SENOD,EENOD,NCONZPU,NYELM,ICON,IC,IMEL,
+      INTEGER NCONZPU,ICON,IC,IMEL,
      &JMEL,IPH1,IPH2
 
-      REAL ENODBASEV,ENODBASEP
-
-      COMPLEX CONZPU,CONYPU,YADM
+      COMPLEX CONZPU,CONYPU
 
       LOGICAL CLOSER,CLOSEI
 
@@ -1429,6 +1325,8 @@ C ******************************************************************************
 
        SUBROUTINE ENETPARAM
 
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 
       COMMON/ENETSIMP/ENETMAXI,ENETSLVT,ENETVCVG,ENETACVG,ENETVLIM,
@@ -1437,7 +1335,8 @@ C ******************************************************************************
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/POPHELP/H(60)
 
-      INTEGER ENETMAXI,ENETSLVT,ENODCVGF,DEFMAXI
+      INTEGER ENETMAXI,ENETSLVT,ENODCVGF
+      INTEGER DEFMAXI
        
       REAL ENETVCVG,ENETACVG,ENETVLIM,DEFVCVG,DEFACVG
 

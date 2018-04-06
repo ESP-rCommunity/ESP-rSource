@@ -72,6 +72,12 @@
 'within the zone operations file the first Type is for'
 'occupants the second Type is lights and the third Type'
 'is Equipment (small power).'
+' '
+'If occupancy is associated with an aggregate casual gains'
+'temporal entity (CASUALT), the LAST casual gain type'
+'should be selected (e.g. equipment by default). If a'
+'seperate gains temporal entity is used (CASUAL3T), the'
+'appropriate gain type should be selected as normal.'
 *enditem
         CALL EASKATOG('Which casual gain represents occupancy:',' ',
 *item MOCMFT res_comfort_menu
@@ -152,11 +158,6 @@
 'If you no longer want to look at comfort predictions return'
 *enditem
         CALL EASKAB(' ','Comfort:',
-*subroutine scnocup
-*item scnocup res_weekday_occup_period
-'Weekday or weekend occupancy period (start and stop hours). '
-*enditem
-        CALL EASKS(HOLD,' ',' Weekday occupancy period: ',
 *subroutine MODESQ
 *item MODESQ res_design_q_menu
 'The design questions menu does not yet have'
@@ -450,11 +451,31 @@
 *enditem
 C        CALL EASKABC('Data display options:',outs,
 *item MFMENU res_casual_gain_type
-'Select a casual gain type to base occupancy on.'
-'Labels show are from the first zone in the current'
-'list. Type 1 usually represents casual gains from '
-'people,although any of the three casual gain types'
-'can be used. '
+'This option allows you to give directives to only report'
+'results during specified periods. By default it is assumed'
+'that these specified periods are associated with occupancy.'
+'There are three options: '
+' Always occupied - 24/7 occupancy is assumed i.e.'
+'     results will be reported for every time step.'
+' Labels from the zone operations file - the 2nd - 4th'
+'     options of the dialog reflect what has been defined'
+'     in the zone operations file for casual gain types.' 
+'     If you select one of these then results are reported'
+'     for non-zero gain periods.'
+' time - you specify a start time and an end time for'
+'     typical day types and results are reported during'
+'     these periods only.'
+' '
+'If you have not altered the labels for the casual gains'
+'within the zone operations file, the first type is for'
+'occupants, the second type is lights and the third type'
+'is Equipment (small power).'
+' '
+'If occupancy is associated with an aggregate casual gains'
+'temporal entity (CASUALT), the LAST casual gain type'
+'should be selected (e.g. equipment by default). If a'
+'seperate gains temporal entity is used (CASUAL3T), the'
+'appropriate gain type should be selected as normal.'
 *enditem
             CALL EASKATOG('Which casual gain represents occupancy:',
 *item MFMENU res_flow_occupancy_zone
@@ -969,11 +990,31 @@ C        CALL EASKABC('Data display options:',outs,
 *enditem
         CALL EASKABCD('Data display options:',outs,'integrated',
 *item GOMENU which_casual_gain_type
-'Select a casual gain type to base occupancy on.'
-'Labels show are from the first zone in the current'
-'list. Type 1 usually represents casual gains from '
-'people,although any of the three casual gain types'
-'can be used. '
+'This option allows you to give directives to only report'
+'results during specified periods. By default it is assumed'
+'that these specified periods are associated with occupancy.'
+'There are three options: '
+' Always occupied - 24/7 occupancy is assumed i.e.'
+'     results will be reported for every time step.'
+' Labels from the zone operations file - the 2nd - 4th'
+'     options of the dialog reflect what has been defined'
+'     in the zone operations file for casual gain types.' 
+'     If you select one of these then results are reported'
+'     for non-zero gain periods.'
+' time - you specify a start time and an end time for'
+'     typical day types and results are reported during'
+'     these periods only.'
+' '
+'If you have not altered the labels for the casual gains'
+'within the zone operations file, the first type is for'
+'occupants, the second type is lights and the third type'
+'is Equipment (small power).'
+' '
+'If occupancy is associated with an aggregate casual gains'
+'temporal entity (CASUALT), the LAST casual gain type'
+'should be selected (e.g. equipment by default). If a'
+'seperate gains temporal entity is used (CASUAL3T), the'
+'appropriate gain type should be selected as normal.'
 *enditem
             CALL EASKATOG('Which casual gain represents occupancy:',
 *item GOMENU res_menu_3_axis_min_max

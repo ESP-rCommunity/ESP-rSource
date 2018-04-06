@@ -1055,6 +1055,7 @@ C   cntdat(?,1..3) - supplementary data for containment ?.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "prj3dv.h"
 
       common/outin/iuout,iuin
       common /pcdat/ nnodes(mpcom), isv(mpcom,mnodec), 
@@ -1064,15 +1065,9 @@ C   cntdat(?,1..3) - supplementary data for containment ?.
       common/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/FILEP/IFIL
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY6/LINSTY(MCON)
 
       dimension ival(mpcom), cnttyp(4)
       character cnttyp*45,  head*19, emod*1, outs*124, h*72
-
-      LOGICAL MODIFY,MODLEN,MODBND
 
 C Fill array with existing containment types.
       cnttyp(1)='Ambient air temperature.             '
@@ -1190,19 +1185,11 @@ C and construction node cntdt3 counted from outside.
               call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
 
 C General image option flags.
-              ITDSP=1
-              ITBND=1
-              ITEPT=0
-              ITZNM=0
-              ITSNM=0
-              ITVNO=1
-              ITORG=1
-              ITSNR=1
-              ITGRD=1
-              GRDIS=0.0
-              ITPPSW=0
+              ITDSP=1; ITBND=1; ITEPT=0; ITZNM=0; ITSNM=0
+              ITVNO=1; ITORG=1; ITSNR=1
+              ITGRD=1; GRDIS=0.0; ITPPSW=0
 
-              MODIFY=.TRUE.
+              MODIFYVIEW=.TRUE.
               MODBND=.TRUE.
               CALL INLNST(1)
               ITVNO=0
@@ -1210,7 +1197,7 @@ C General image option flags.
               nznog(1)=IZ
               izgfoc=IZ
               CALL ADJVIEW(IER)
-              MODIFY=.TRUE.
+              MODIFYVIEW=.TRUE.
               MODBND=.TRUE.
 
               ISO=1
@@ -2170,7 +2157,7 @@ C Write menu displaying a list of layer names
       footer=3
       write(item(1),'(a,a)') 'a surface name: ',SNAME(iz,is)
       write(item(2),'(a,i2)')'b number of layers: ',LAYERS(imatch)
-      write(item(3),'(a,a)') 'c MLC name: ',mlcname(imatch)(1:12)
+      write(item(3),'(a,a)') 'c MLC name: ',mlcname(imatch)(1:16)
       item(4)='  ----------------------------'
       do 10 j=1,LAYERS(imatch)
 
@@ -2534,6 +2521,7 @@ C D - delete
 #include "geometry.h"
 #include "plant.h"
 #include "control.h"
+#include "prj3dv.h"
 
       common /pcdat/ nnodes(mpcom), isv(mpcom,mnodec), 
      &               ndcon(mpcom,mnodec)
@@ -2550,15 +2538,10 @@ C Common for the building plant lin
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/FILEP/IFIL
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       CHARACTER MODE*1,H*72
       CHARACTER*124 OUTS,ASKSTR
       LOGICAL OK,dok,CLOSE
-
-      LOGICAL MODIFY,MODLEN,MODBND
 
       IF(MODE.EQ.'A'.OR.MODE.EQ.'E') THEN
 
@@ -2734,7 +2717,7 @@ C General image option flags.
           GRDIS=0.0
           ITPPSW=0
 
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           MODBND=.TRUE.
           CALL INLNST(1)
           ITVNO=0
@@ -2742,7 +2725,7 @@ C General image option flags.
           nznog(1)=IZ
           izgfoc=IZ
           CALL ADJVIEW(IER)
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           MODBND=.TRUE.
 
           ISO=1

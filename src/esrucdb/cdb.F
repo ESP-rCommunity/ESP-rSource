@@ -222,7 +222,7 @@ C Find the user's home folder then get users custom settings.
 C Scan the defaults file for default configuration.
 C Make temporary use of file unit IFIL+1.  Note: escdef must come
 C after scan of .esprc file.
-      call escdef(IFIL+1,IER)
+      call escdef(IFIL+1,'s',IER)
 
 C Take command line file name as initial file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
@@ -426,6 +426,14 @@ C Dummy routines from common3dv.F
       ier=0
       return
       end
+      
+      SUBROUTINE EDMLDB2(chgdb,ACTION,isel,IER)
+      logical chgdb
+      character*1 ACTION
+      integer isel,ier
+      ier=0
+      return
+      end
 
       SUBROUTINE INLNST(ITYP)
       return
@@ -449,11 +457,11 @@ C Passed paramters.
 
 C Depending on computer type set integer size of passed parameters.
 #ifdef OSI
-      integer JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
-      integer JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+      integer JITZNM,JITSNM,JITVNO,JITOBS,JITVIS,JITVOBJ,JITSNR,JITGRD
+      integer JITORG,JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
 #else
-      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
-      integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITVIS,JITVOBJ,JITSNR
+      integer*8 JITGRD,JITORG,JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
 #endif     
       return
       end

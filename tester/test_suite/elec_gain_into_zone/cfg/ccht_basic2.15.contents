@@ -36,7 +36,7 @@ Databases associated with the model:
  standard materials     : ccht_material.ascii
  standard constructions : ccht_constr.db1
  standard plant comp    : plantc.db1
- standard event profiles: profiles.db1.a
+ standard event profiles: profiles.db2.a
  standard optical prop  : ccht-optics.db1
  standard UK NCM data   : SBEM.db1
  standard mould isopleth: mould.db1

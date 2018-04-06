@@ -207,12 +207,12 @@ C If the Fourier number for this layer is higher than the maximum allowable.
           IF(TFRRN.GE.FMIN.AND.TFRRN.LE.FMAX)THEN
             NNDL(ICOMP,I,J)=NODEL
           ELSE
-            WRITE(MSG1,'(2A,3(I2,A),F14.4)')' WARNING: The Fourier ',
+            WRITE(MSG1,'(2A,3(I3,A),F14.4)')' WARNING: The Fourier ',
      &      'number for layer (',ICOMP,',',I,',',J,') is: ',FRRN
             CALL EDISP(IUOUT,MSG1)
           ENDIF
         ELSEIF(FRRN.GT.FMAX.AND.NNDL(ICOMP,I,J).EQ.2)THEN
-          WRITE(MSG1,'(2A,3(I2,A),F14.4)')' WARNING: The Fourier ',
+          WRITE(MSG1,'(2A,3(I3,A),F14.4)')' WARNING: The Fourier ',
      &    'number for layer (',ICOMP,',',I,',',J,') is: ',FRRN
           CALL EDISP(IUOUT,MSG1)
 
@@ -223,7 +223,7 @@ C If the Fourier number for this layer is lower than the minimum allowable.
           IF(TFRRN.GE.FMIN.AND.TFRRN.LE.FMAX)THEN
             NNDL(ICOMP,I,J)=NODEL
           ELSE
-            WRITE(MSG1,'(2A,3(I2,A),F14.4)')' WARNING: The Fourier ',
+            WRITE(MSG1,'(2A,3(I3,A),F14.4)')' WARNING: The Fourier ',
      &      'number for layer (',ICOMP,',',I,',',J,') is: ',FRRN
             CALL EDISP(IUOUT,MSG1)
           ENDIF
@@ -234,7 +234,7 @@ C If the Fourier number for this layer is lower than the minimum allowable.
 C If the number of nodes per a construction exceeded the maximum allowable.
       IF(NUMBR.GT.MN)THEN
         CALL EDISP(IUOUT,' ')
-        WRITE(CONSTNM,'(A,2(I2,A))')' construction (',ICOMP,',',I,').'
+        WRITE(CONSTNM,'(A,2(I3,A))')' construction (',ICOMP,',',I,').'
         WRITE(MSG1,'(2A)')' ERROR: The number of nodes in',CONSTNM
         CALL EDISP(IUOUT,MSG1) 
         WRITE(MSG1,'(A,I2,A)')'is more than the maximum (i.e.,',

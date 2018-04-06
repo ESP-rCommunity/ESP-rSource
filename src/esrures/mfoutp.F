@@ -79,7 +79,7 @@ C Occupancy filter info.
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       common/mfocup/iocpzone
 
-      COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,7)
+      COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,8)
 
       character SMFLABEL*32,GMFLABEL*20,GLMFLABEL*32
       COMMON/MFLABEL/SMFLABEL(MFRS),GMFLABEL(MFRS),GLMFLABEL(MFRS)
@@ -91,7 +91,8 @@ C Occupancy filter info.
 C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       COMMON/FREQS/NBINS,XBIN1,XBINN,DXBIN,IFREQ,IHITS,IMISS,INBIN(MF)
-      COMMON/FREQS1/ICBIN(MF),ITOTAL
+      integer ICBIN,IRCBIN
+      COMMON/FREQS1/ICBIN(MF),IRCBIN(MF),ITOTAL
 
       dimension Yold(MZS), TIMEold(MZS)
       character TLABEL*60,trange*20,tranged*20,t28*28,dg*1
@@ -358,7 +359,7 @@ C from zone iocpzone. Start with assumption of full occupancy.
               ih=int(ATIME+1.)
               ioc=1
               if(iocupf.eq.1.and.iocpzone.ne.0)then
-                call getocup(iocpzone,IDAY,ih,ioc,iier)
+                call getocup(iocpzone,IDAY,JJ,ioc,iier)
               endif
               if(ioc.ne.0) then
                 if(FLOWVALS(IX).gt.FMAX(IX))then
@@ -759,7 +760,7 @@ C Assume fully occupied.
                   ih=int(ATIME+1.)
                   ioc=1
                   if(iocupf.eq.1.and.iocpzone.ne.0)then
-                    call getocup(iocpzone,IDAY,ih,ioc,iier)
+                    call getocup(iocpzone,IDAY,JJ,ioc,iier)
                   endif
                   if(ioc.ne.0) then
                     write (outs248(K:KE),'(f11.4)') FLOWVALS(IXY)
@@ -782,7 +783,7 @@ C Assume fully occupied.
                     ih=int(ATIME+1.)
                     ioc=1
                     if(iocupf.eq.1.and.iocpzone.ne.0)then
-                      call getocup(iocpzone,IDAY,ih,ioc,iier)
+                      call getocup(iocpzone,IDAY,JJ,ioc,iier)
                     endif
                     if(ioc.ne.0) then
                       write (outs800(K:KE),'(f11.4)') FLOWVALS(IXY)
@@ -857,7 +858,7 @@ C from zone iocpzone. Start with assumption of full occupancy.
                 ih=int(ATIME+1.)
                 ioc=1
                 if(iocupf.eq.1.and.iocpzone.ne.0)then
-                  call getocup(iocpzone,IDAY,ih,ioc,iier)
+                  call getocup(iocpzone,IDAY,JJ,ioc,iier)
                 endif
                 if(ioc.ne.0) then
                   IB = INT(((FLOWVALS(IX) - XBIN1) / DXBIN) + 1.)
@@ -921,7 +922,7 @@ C use pattern from zone iocpzone. Start with assumption of full occupancy.
                 ih=int(ATIME+1.)
                 ioc=1
                 if(iocupf.eq.1.and.iocpzone.ne.0)then
-                  call getocup(iocpzone,IDAY,ih,ioc,iier)
+                  call getocup(iocpzone,IDAY,JJ,ioc,iier)
                 endif
                 if(ioc.ne.0) then
                   FTOTSD(IX)=FTOTSD(IX)+((FAVE(IX)-FLOWVALS(IX))**2)
@@ -936,7 +937,7 @@ C use pattern from zone iocpzone. Start with assumption of full occupancy.
                 ih=int(ATIME+1.)
                 ioc=1
                 if(iocupf.eq.1.and.iocpzone.ne.0)then
-                  call getocup(iocpzone,IDAY,ih,ioc,iier)
+                  call getocup(iocpzone,IDAY,JJ,ioc,iier)
                 endif
                 if(ioc.ne.0) then
                   if (FLOWVALS(IX).gt.XQUERY)then
@@ -950,7 +951,7 @@ C Hours below.
                 ih=int(ATIME+1.)
                 ioc=1
                 if(iocupf.eq.1.and.iocpzone.ne.0)then
-                  call getocup(iocpzone,IDAY,ih,ioc,iier)
+                  call getocup(iocpzone,IDAY,JJ,ioc,iier)
                 endif
                 if(ioc.ne.0) then
                   if (FLOWVALS(IX).lt.XQUERY)then
@@ -1033,8 +1034,8 @@ C indicate that several flow items (e.g. nodes) are included.
      &            ' (...), Bin width =',DXBIN
               endif
             endif
-            if(IG.eq.1.or.IG.eq.4)CALL MODDRW(1,TLABEL)
-            if(IG.eq.2.or.IG.eq.5)CALL MODDRW(2,TLABEL)
+            if(IG.eq.1.or.IG.eq.4)CALL MODDRW(1,TLABEL,0,0)
+            if(IG.eq.2.or.IG.eq.5)CALL MODDRW(2,TLABEL,0,0)
           else
             call edisp(iuout,' Sorry, not in graphic mode...')
           endif
@@ -1139,13 +1140,14 @@ C Create string description for time of maximum occurrance.
           write (XT,'(a,a,a)')DESCR(1:6),'@',DESCRH
 
 C Create string description for time of minimum occurrance.
+C Flow data in m^3/s or kg/s deserves 3 decimal places.
           MINDOY=INT(TMIN(I)/24.)+IODS
           TMINHR=AMOD(TMIN(I),24.)
           call STDATE(IYEAR,MINDOY,DESCR,DESCR1)
           call EDTIME(TMINHR,DESCRH,DESCRD,TIMER)
           write (NT,'(a,a,a)')DESCR(1:6),'@',DESCRH
           t20=GMFLABEL(I)
-          write (outs,'(a,1x,2(f7.2,2x,a12,2x),2(f7.2,3x))') t20,
+          write (outs,'(a,1x,2(f7.3,2x,a12,2x),1x,2(f7.3,3x))') t20,
      &      FMAX(I),XT,FMIN(I),NT,FAVE(I),FSTD(I)
           call eddisp(itru,outs)
  210    continue
@@ -1183,7 +1185,7 @@ C Create string description for time of minimum occurrance.
           write (NT,'(a,a,a)')DESCR(1:6),'@',DESCRH
           AYAB=float(IQHRS(I))*float(NOUT)/float(NTS)
           t20=GMFLABEL(I)
-          write (outs,'(a,1x,2(f7.2,2x,a12,1x),2f9.2)') t20,
+          write (outs,'(a,1x,2(f7.3,2x,a12,1x),2f9.3)') t20,
      &      FMAX(I),XT,FMIN(I),NT,FAVE(I),AYAB
           call eddisp(itru,outs)
 
@@ -1225,7 +1227,7 @@ C Create string description for time of minimum occurrance.
           write (NT,'(a,a,a)')DESCR(1:6),'@',DESCRH
           AYAB=float(IQHRS(I))*float(NOUT)/float(NTS)
           t20=GMFLABEL(I)
-          write (outs,'(a,1x,2(f7.2,2x,a12,1x),2f9.2)') t20,
+          write (outs,'(a,1x,2(f7.3,2x,a12,1x),2f9.3)') t20,
      &      FMAX(I),XT,FMIN(I),NT,FAVE(I),AYAB
           call eddisp(itru,outs)
 

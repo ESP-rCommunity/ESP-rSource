@@ -31,6 +31,7 @@ C ****** GTOPOL
 #include "model.h"
 #include "esprdbfile.h"
 #include "material.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -43,9 +44,6 @@ C ****** GTOPOL
       COMMON/GTFIL/GTGEOM
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -56,7 +54,7 @@ C ****** GTOPOL
       dimension ivals(MGRT)
       CHARACTER GMLCN*32,GSNAME*6,GTNAME*15,GTGEOM*72
       CHARACTER outs*124,ltmp*72,t15*15,ETEXT*82
-      logical XST,MODIFY,MODLEN,MODBND,grmod,ok,dok
+      logical XST,grmod,ok,dok,modmlc
       integer nitms,INO ! max items and current menu item
 
 #ifdef OSI
@@ -164,7 +162,7 @@ C Begin with menu.
 
 C If ground needs drawing or updating do it here.
       if(MMOD.ge.8.and.grmod)then
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODBND=.TRUE.
         MODLEN=.TRUE.
         if(ITDSP.le.5)then
@@ -223,12 +221,12 @@ C List help.
 
 C Edit, and manipulate vertices and support transforms.
         call EDGVERT(grmod,IER)
-        if(grmod)MODIFY=.TRUE.
+        if(grmod)MODIFYVIEW=.TRUE.
       ELSEIF(INO.EQ.4)THEN
 
 C Edit surface list.
         call edgvlist(itrc,ier)
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         grmod=.true.
       ELSEIF(INO.EQ.5)THEN
 
@@ -242,20 +240,30 @@ C Now edit the composition.
           write(outs,'(3a)') 'Select construction for ',
      &    GSNAME(IS),' from the list (or exit to leave unknown).'
           CALL EPMENSV
-          CALL EPKMLC(ISEL,outs,'(or exit to leave unknown)',IERR)
+          if(mlcver.eq.0)then
+            CALL EPKMLC(ISEL,outs,'(or exit to leave unknown)',IERR)
+          else
+            call edisp(iuout,'(or exit to leave unknown)')
+            CALL EDMLDB2(modmlc,'-',ISEL,IER)
+          endif
           CALL EPMENRC
           IF(ISEL.GT.0.and.ierr.eq.0)then
-            WRITE(GMLCN(IS),'(A)') mlcname(ISEL)(1:12)
+            WRITE(GMLCN(IS),'(A)') mlcname(ISEL)
           else
             if(GMLCN(IS)(1:1).eq.' ')GMLCN(IS)='UNKNOWN'
           endif
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           grmod=.true.
         elseif(is.lt.0)then
           write(outs,'(2a)') 'Select construction attribute ',
      &      ' from the list (or exit to leave unknown).'
           CALL EPMENSV
-          CALL EPKMLC(ISEL,outs,'(or exit to leave unknown)',IERR)
+          if(mlcver.eq.0)then
+            CALL EPKMLC(ISEL,outs,'(or exit to leave unknown)',IERR)
+          else
+            call edisp(iuout,'(or exit to leave unknown)')
+            CALL EDMLDB2(modmlc,'-',ISEL,IER)
+          endif
           CALL EPMENRC
           IF(ISEL.GT.0.and.ierr.eq.0)then
             DO 10 L=1,NGT
@@ -266,9 +274,9 @@ C Now edit the composition.
      &        'Surface  composition',IER,nbhelp)
             do 11 i=1,inpick
               iss = ivals(i)
-              WRITE(GMLCN(ISS),'(A)') mlcname(ISEL)(1:12)
+              WRITE(GMLCN(ISS),'(A)') mlcname(ISEL)
   11        continue
-            MODIFY=.TRUE.
+            MODIFYVIEW=.TRUE.
             grmod=.true.
           endif
         endif
@@ -308,7 +316,7 @@ C swop back to previous.
             ITVNO=LITVNO
             ITORG=LITORG
             ITGRD=LITGRD
-            MODIFY=.TRUE.
+            MODIFYVIEW=.TRUE.
             grmod=.true.
           endif
         endif
@@ -354,7 +362,7 @@ C Rotation choices.
             ZGT(I)=ZGT(I)+VALZ
    62     continue
         endif
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         grmod=.true.
       ELSEIF(INO.EQ.9)THEN
 
@@ -395,11 +403,8 @@ C IER=0 OK, IER=1 problem.
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6G/LINSTYG(MGRT)
-      LOGICAL MODIFY,MODLEN,MODBND,MODGEO,ok,dok,match,matchver
+      LOGICAL MODGEO,ok,dok,match,matchver
 
       DIMENSION VERT(35),IVLST(MGTV),ITEMP(MGTV),COG1(3),COG2(3),COG3(3)
       CHARACTER VERT*35,KEY*1,HOLD*32,GTGEOM*72
@@ -473,14 +478,14 @@ C If a long list include page facility text.
       VERT(M+6)  ='- exit                           '
 
 C Update display.
-      if(MMOD.ge.8.and.MODIFY)then
+      if(MMOD.ge.8.and.MODIFYVIEW)then
         CALL INLNST(1)
         ITVNO=0
         izgfoc=0
         CALL ADJVIEW(IER)
         CALL INLNSTG(3)
         call EGRNDR(IER)
-        MODIFY=.false.
+        MODIFYVIEW=.false.
       endif
 
 C Help text for this menu.
@@ -605,7 +610,7 @@ C Show the new point on the current wireframe.
               IPACT=CREATE
               CALL EKPAGE(IPACT)
               MODGEO=.TRUE.
-              MODIFY=.TRUE.
+              MODIFYVIEW=.TRUE.
               MODBND=.TRUE.
               call usrmsg(' ',' ','-')
               if(MMOD.ge.8)then
@@ -781,7 +786,7 @@ C Show the new point on the current wireframe.
               IPACT=CREATE
               CALL EKPAGE(IPACT)
               MODGEO=.TRUE.
-              MODIFY=.TRUE.
+              MODIFYVIEW=.TRUE.
               MODBND=.TRUE.
               call usrmsg(' ',' ','-')
               if(MMOD.ge.8)then
@@ -795,7 +800,7 @@ C Show the new point on the current wireframe.
      &        ok,dok,nbhelp)
             if(ok)goto 73
           endif
-          MODIFY=.true.
+          MODIFYVIEW=.true.
           if(MMOD.ge.8)then
             CALL ADJVIEW(IER)
             CALL INLNSTG(3)
@@ -821,7 +826,7 @@ C Angle between two lines.
      &        iwhich1,iwhich2,iwhich3,' is ',ang3
             call edisp(iuout,outs)
           endif
-          MODIFY=.true.
+          MODIFYVIEW=.true.
         elseif(ino.eq.5)then
           continue
         elseif(ino.eq.6)then
@@ -851,7 +856,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
      &     ZGT(iwhich3),' is ',offset,'(m) to edge ',IWHICH1,' &',
      &     IWHICH2
            call edisp(iuout,outs)
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           MODBND=.TRUE.
           call usrmsg(' ',' ','-')
         elseif(ino.eq.7)then
@@ -1080,7 +1085,7 @@ C Show the new point on the current wireframe.
               zgt(IWHICH1)=z3
             endif
             MODGEO=.TRUE.
-            MODIFY=.TRUE.
+            MODIFYVIEW=.TRUE.
             MODBND=.TRUE.
             if(MMOD.ge.8)then
               CALL ADJVIEW(IER)
@@ -1123,7 +1128,7 @@ C be a new vertex and update the wireframe.
             IPACT=CREATE
             CALL EKPAGE(IPACT)
             MODGEO=.TRUE.
-            MODIFY=.TRUE.
+            MODIFYVIEW=.TRUE.
             MODBND=.TRUE.
             call usrmsg(' ',' ','-')
 C            if(MMOD.ge.8)then
@@ -1183,7 +1188,7 @@ C order so that compating of list works correctly.
             IPACT= -1*jipm
             CALL EKPAGE(IPACT)
             MODGEO=.TRUE.
-            MODIFY=.TRUE.
+            MODIFYVIEW=.TRUE.
             MODBND=.TRUE.
           endif
         elseif(IRT.eq.3)then
@@ -1206,7 +1211,7 @@ C no more than will overrange MTV.
             IPACT=CREATE
             CALL EKPAGE(IPACT)
             MODGEO=.TRUE.
-            MODIFY=.TRUE.
+            MODIFYVIEW=.TRUE.
             MODBND=.TRUE.
           endif
         elseif(IRT.eq.4)then
@@ -1234,7 +1239,7 @@ C only up to MTV.
                 IPACT=CREATE
                 CALL EKPAGE(IPACT)
                 MODGEO=.TRUE.
-                MODIFY=.TRUE.
+                MODIFYVIEW=.TRUE.
                 MODBND=.TRUE.
               endif
             endif
@@ -1262,7 +1267,7 @@ C Present vertex coords for editing then parse data from HOLD.
               CALL EGETWR(HOLD,K,YGT(IFOC),-999.9,999.9,'W','Ycord',IER)
               CALL EGETWR(HOLD,K,ZGT(IFOC),-9.9,999.9,'W','Zcord',IER)
               if(ier.ne.0)goto 146
-              MODIFY=.TRUE.
+              MODIFYVIEW=.TRUE.
               MODBND=.TRUE.
               MODGEO=.TRUE.
               MODLEN=.TRUE.
@@ -1291,7 +1296,7 @@ C Present vertex coords for editing then parse data from HOLD.
         CALL EGETWR(HOLD,K,YGT(IFOC),-999.9,999.9,'W','Y cord',IER)
         CALL EGETWR(HOLD,K,ZGT(IFOC),-9.9,999.9,'W','Z cord',IER)
         if(ier.ne.0)goto 42
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODBND=.TRUE.
         MODGEO=.TRUE.
         MODLEN=.TRUE.
@@ -1328,9 +1333,9 @@ C It is assumed that contextual help will have been setup before
 C calling this subroutine.
 
 #ifdef OSI
-      integer iix,iiy,ixd,iyd
+      integer iix,iiy,iixx,iiyy,ixd,iyd,iik
 #else
-      integer*8 iix,iiy,ixd,iyd
+      integer*8 iix,iiy,iixx,iiyy,ixd,iyd,iik
 #endif
 
 C Initialise vertex list menu size variables based on window size.
@@ -1423,8 +1428,8 @@ C Use mouse to select existing vertices.
 
 C Return pixel position of mouse click, check if key `e` or `E` was
 C hit and then loop through each of the vertices for something close.
-  46      CALL trackview(ii,ixx,iyy)
-          if(ii.eq.69.or.ii.eq.101)goto 47
+  46      CALL trackview(iik,iixx,iiyy)
+          if(iik.eq.69.or.iik.eq.101)goto 47
           found=.false.
           do 45 i=1,NGTV
             COG1(1)=XGT(I)
@@ -1433,8 +1438,8 @@ C hit and then loop through each of the vertices for something close.
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
             call u2pixel(COG3(1),COG3(2),iix,iiy)
-            ixd=iix-ixx
-            iyd=iiy-iyy
+            ixd=iix-iixx
+            iyd=iiy-iiyy
             if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
               if(found)then
                 call edisp(iuout,'Close points...try again.')
@@ -1516,13 +1521,12 @@ C be either the vertex to delete or the number of vertices to
 C added at the end of the list.
       SUBROUTINE ADDGVERT(NUM,ACTION,IER)
 #include "building.h"
+#include "prj3dv.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      LOGICAL MODIFY,MODLEN,MODBND,check,found,closex,closey,closez
+      LOGICAL check,found,closex,closey,closez
       logical ok,dok,matchver
 
       DIMENSION ISASSO(MS),X1(MV),Y1(MV),Z1(MV)
@@ -1588,7 +1592,7 @@ C Finally decrement NGTV.
             NGTV=NGTV-1
           ENDIF
         ENDIF
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
 
       elseif(ACTION.eq.'A'.or.ACTION.eq.'a')then
 
@@ -1698,7 +1702,7 @@ C Surface (ivj) vertex list has been updated. Go on to next surface.
             endif
           endif
   143   continue
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         check = .true.
       elseif(ACTION.eq.'C'.or.ACTION.eq.'c')then
 
@@ -1795,7 +1799,7 @@ C Surface (ivj) vertex list has been updated. Go on to next surface.
   346       continue
           endif
         endif
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         check = .true.
       endif
       if(check)then
@@ -1985,9 +1989,7 @@ C Method checks for minimally linked vertices.
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      LOGICAL MODIFY,MODLEN,MODBND,closex,closey,closez,OK,DOK
+      LOGICAL closex,closey,closez,OK,DOK
       logical clkok,found,matchver
 
       dimension X1(8),Y1(8),Z1(8),jvn1(8),XT(8),YT(8),ZT(8)
@@ -1998,9 +2000,9 @@ C Method checks for minimally linked vertices.
       character holds*36,SNAME1*6,SNAMED*6,SMLCN1*32
       integer IRT  ! for radio button
 #ifdef OSI
-      integer iix,iiy,ixd,iyd
+      integer iix,iiy,iixx,iiyy,ixd,iyd,iik
 #else
-      integer*8 iix,iiy,ixd,iyd
+      integer*8 iix,iiy,iixx,iiyy,ixd,iyd,iik
 #endif
 
 C For help messages
@@ -2135,7 +2137,7 @@ C Rotate around a point in the surface.
             if(ieri.eq.-3)then
 
 C User asked to cancel so retract new information and return.
-              MODIFY=.FALSE.
+              MODIFYVIEW=.FALSE.
               NGVER(NGT)=0
               GSNAME(NGT)=' '
               GMLCN(NGT)=' '
@@ -2284,7 +2286,7 @@ C Reverse the ordering.
         endif
 
         MODBND=.TRUE.
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
       ELSEIF(ACTION.EQ.'A')THEN
 
 C Create a new surface, set as many defaults as possible.
@@ -2311,8 +2313,8 @@ C the individual vertex numbers from the list.
             ijvn=0
             call edisp(iuout,
      &        'Select points via cursor...type `e` to finish.')
-  46        CALL trackview(ii,ixx,iyy)
-            if(ii.eq.69.or.ii.eq.101)goto 47
+  46        CALL trackview(iik,iixx,iiyy)
+            if(iik.eq.69.or.iik.eq.101)goto 47
             found=.false.
             do 45 i=1,NGTV
               COG1(1)=XGT(I)
@@ -2321,8 +2323,8 @@ C the individual vertex numbers from the list.
               CALL VECTRN(COG1,TEMAT,COG2,IER)
               CALL VECTRN(COG2,ETSMAT,COG3,IER)
               call u2pixel(COG3(1),COG3(2),iix,iiy)
-              ixd=iix-ixx
-              iyd=iiy-iyy
+              ixd=iix-iixx
+              iyd=iiy-iiyy
               if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
                 if(found)then
                   call edisp(iuout,'Close points...try again.')
@@ -2366,7 +2368,7 @@ C Fill default attributes.
         call st2name(SN,SN2)
         GSNAME(NGT)=SN2
         GMLCN(NGT)='UNKNOWN'
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
       endif
 
       RETURN
@@ -2394,10 +2396,6 @@ C IER=1 problem.
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY6G/LINSTYG(MGRT)
       DIMENSION  COG1(3),COG2(3),COG3(3)
       DIMENSION  XXW(4),YYW(4),ZZW(4)
@@ -2405,7 +2403,7 @@ C IER=1 problem.
       DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
       DIMENSION  SBBOX(3,2)
 
-      LOGICAL MODIFY,MODLEN,MODBND,OK,DOK
+      LOGICAL OK,DOK
 
       DIMENSION VERT(36)
       DIMENSION  XX(8),YY(8),ZZ(8),XT(8),YT(8),ZT(8),jvn1(8)
@@ -2414,6 +2412,7 @@ C IER=1 problem.
       CHARACTER GMLCN*32,GSNAME*6,GTNAME*15,GTGEOM*72
       integer IRT   ! for radio button
       integer MVERT,IVERT ! max items and current menu item
+      logical modmlc  ! to select MLC
 
 #ifdef OSI
       integer iupdown,isym,iix,iiy    ! passed to etplot
@@ -2477,14 +2476,14 @@ C If a long list include page facility text.
       VERT(M+7)  ='- exit to zone definition menu    '
 
 C Update display.
-      if(MMOD.ge.8.and.MODIFY)then
+      if(MMOD.ge.8.and.MODIFYVIEW)then
         CALL INLNST(1)
         ITVNO=0
         izgfoc=0
         CALL ADJVIEW(IER)
         CALL INLNSTG(3)
         call EGRNDR(IER)
-        MODIFY=.false.
+        MODIFYVIEW=.false.
       endif
 
 C Help text for this menu.
@@ -2571,7 +2570,7 @@ C Rotate around a point in the surface.
      &       '(ie. 1st, 2nd or 3rd in the surface) ',
      &       1,'F',N,'F',1,'rotation anchor',IERI,nbhelp)
           if(ieri.eq.-3)then
-            MODIFY=.FALSE.
+            MODIFYVIEW=.FALSE.
             goto 92
           endif
           ANGR=0.
@@ -2607,7 +2606,7 @@ C Reverse the ordering, redraw image and return.
             izz=NGVER(IS)+3-iyy
             JGVN(IS,iyy)=jvn1(izz)
   147     CONTINUE
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           CALL INLNST(1)
           izgfoc=0
           CALL ADJVIEW(IER)
@@ -2615,7 +2614,7 @@ C Reverse the ordering, redraw image and return.
           goto 92
         endif
         if(IRT.eq.6)then
-          MODIFY=.FALSE.
+          MODIFYVIEW=.FALSE.
           goto 92
         endif
 
@@ -2631,7 +2630,7 @@ C Check bounds.
 
 C Update the image.
         MODBND=.TRUE.
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         if(MMOD.ge.8)then
           CALL INLNST(1)
           izgfoc=0
@@ -2659,14 +2658,14 @@ C points within the zone in place of the originals....
      &             'to the surface (and attached surfaces) ?',
      &             OK,DOK,nbhelp)
         if(OK)then
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           DO 155 J = 1,N
             XGT(JGVN(IS,J)) = XX(J) 
             YGT(JGVN(IS,J)) = YY(J)
             ZGT(JGVN(IS,J)) = ZZ(J) 
   155     CONTINUE
         else
-          MODIFY=.FALSE.
+          MODIFYVIEW=.FALSE.
         endif
       ELSEIF(IVERT.EQ.(MVERT-4))THEN
 
@@ -2689,7 +2688,7 @@ C Delete a surface. If number of surfaces changed then update cfg.
 
 C Update the image.
         MODBND=.TRUE.
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         if(MMOD.ge.8)then
           CALL INLNST(1)
           izgfoc=0
@@ -2901,7 +2900,7 @@ C Confirm opening.
           if(INVT.eq.2)then
             ITVNO=0
             ITSNM=0
-            MODIFY=.TRUE.
+            MODIFYVIEW=.TRUE.
             if(MMOD.ge.8)then
               CALL INLNSTG(3)
               call EGRNDR(IER)
@@ -2937,11 +2936,17 @@ C following code is similar to that in addsur in edzone.f.
           endif
 
           CALL EPMENSV
-          CALL EPKMLC(ISEL,'Select one of the constructions for the',
+          if(mlcver.eq.0)then
+            CALL EPKMLC(ISEL,'Select one of the constructions for the',
      &      'inserted surface. ',IER)
+          else
+            call edisp(iuout,
+     &      'Select a construction for the inserted surface.')
+            CALL EDMLDB2(modmlc,'-',ISEL,IER)
+          endif
           CALL EPMENRC
           IF(ISEL.GT.0)then
-            WRITE(GMLCN(NGT),'(A)') mlcname(ISEL)(1:12)
+            WRITE(GMLCN(NGT),'(A)') mlcname(ISEL)
           endif
         endif
         if(LASTS.ne.NGT)then
@@ -2955,7 +2960,7 @@ C following code is similar to that in addsur in edzone.f.
 
 C Update the image.
         MODBND=.TRUE.
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         call usrmsg(' ',' ','-')
         if(MMOD.ge.8)then
           CALL INLNST(1)
@@ -2979,7 +2984,7 @@ C long string and then parse the data.
 
 C Set all surfaces to standard line width and surface being edited to 
 C a thick line. Calling egrndr twice seems to force hilight of surface.
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         if(MMOD.ge.8)then
           LINSTYG(ifoc)=2
           call EGRNDR(IER)
@@ -3028,7 +3033,7 @@ C Read an index, check if within range and if so add to JGVN().
           JGVN(IFOC,J)=JV
    94   CONTINUE
         NGVER(IFOC)=NV
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
       ELSE
 
 C Not one of the legal menu choices.
@@ -3214,8 +3219,6 @@ C output: triangle list
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
 
       INTEGER NVSEL, NTSEL, VLIST(90), CLOSE, CENTER, TRIANGLE
       REAL DIST, TRI(12), DX
@@ -3224,7 +3227,7 @@ C output: triangle list
       DIMENSION PTA(2), ITSEL(90), ITCHK(90)
       CHARACTER GMLCN*32,GSNAME*6,msg*32,outs*124
       LOGICAL LVERT(MGTV), INPOLY
-      logical MODIFY,MODLEN,MODBND,OK,dok
+      logical OK,dok
 
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
@@ -3306,7 +3309,7 @@ C Divide by the number of vertices to get C of G, set view point.
         VIEWM(2)= CG(2)
         VIEWM(3)= 1.
         MODLEN=.TRUE.
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODBND=.TRUE.
 
 C If viewpoint or bounds different then initialise viewing paramters.
@@ -3495,7 +3498,7 @@ C Restore view point.
       VIEWM(2)=oldv2
       VIEWM(3)=oldv3
       ANG=oldang
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODLEN=.TRUE.
       MODBND=.TRUE.
 

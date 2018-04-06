@@ -80,7 +80,8 @@ C     &              Zplawe(MNREG,MNZ),NREG(3,MNZ)
      &             KOPENf(MCFND,MNZ),FIXM(MCFND,MNZ),
      &             FIXT(MCFND,MNZ),FIXC(MCFND,MNZ),
      &             FIXK(MCFND,MNZ),FIXE(MCFND,MNZ),
-     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),ICNACT(MCFND,MNZ)
+     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),
+     &             ICNACT(MCFND,MNZ),IVOLN(MCFND,MNZ)
       COMMON/HSrc/NHS(2,MNZ),IHSi(MNHS,2,MNZ),IHSf(MNHS,2,MNZ),
      &            JHSi(MNHS,2,MNZ),JHSf(MNHS,2,MNZ),KHSi(MNHS,2,MNZ),
      &            KHSf(MNHS,2,MNZ),HSID(MNHS,2,MNZ),SHS(MNHS,2,MNZ),
@@ -88,7 +89,8 @@ C     &              Zplawe(MNREG,MNZ),NREG(3,MNZ)
       COMMON/FDTRFC/FLSDTU(MNZ),FLSDTV(MNZ),FLSDTW(MNZ),FLSDTP(MNZ),
      &              FLSDTT(MNZ),FLSDTK(MNZ),FLSDTE(MNZ)
       COMMON/LINRFC/URFCU(MNZ),URFCV(MNZ),URFCW(MNZ),URFCP(MNZ),
-     &              URFCT(MNZ),URFCK(MNZ),URFCE(MNZ),URFCVS(MNZ)
+     &              URFCT(MNZ),URFCK(MNZ),URFCE(MNZ),URFCVS(MNZ),
+     &              URFCC(MNZ,MCTM)
       COMMON/INITIA/UINIT(MNZ),VINIT(MNZ),WINIT(MNZ),PINIT(MNZ),
      &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ)
       common/EQTION/CALLU(MNZ),CALLV(MNZ),CALLW(MNZ),CALLT(MNZ),
@@ -118,8 +120,8 @@ C     &              Zplawe(MNREG,MNZ),NREG(3,MNZ)
      &             NSSWPT(MNZ),NSSWPK(MNZ),NSSWPE(MNZ)
       COMMON/RENORM/LRENORM
       COMMON/THETA/THETA1(MCFND,MNZ),THETA2(MCFND,MNZ)
-      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR
-      COMMON/ZTURB/rMOOT,nZtoKE
+      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR(MNZ)
+      COMMON/ZTURB/rMOOT(MNZ),nZtoKE(MNZ)
       common/varIC/NINIT,uic,vic,wic,pic,kic,eic,tic
       common/relax/nrfac,urlx,vrlx,wrlx,prlx,krlx,erlx,trlx
       common/eqnslv/solveqn
@@ -504,7 +506,7 @@ C terms of a multiple of the molecular viscosity.
      &      ' Cannot convert eddy viscosity for zero-eq turb model.')
           goto 999
         endif
-        rMOOT=VAL
+        rMOOT(ICFD)=VAL
       endif
 
 C If both the zero-equation and k-epsilon turbulence models are specified, then
@@ -528,7 +530,7 @@ C the k-epsilon model takes place.
      &             ' Cannot convert changeover point for turb models.')
           goto 999
         endif
-        nZtoKE=IVAL
+        nZtoKE(ICFD)=IVAL
       endif
 
 C Set ITURB for MIT.
@@ -566,9 +568,10 @@ C to use in the buoyancy calculations.
      &      ' Cannot convert reference temperature for buoyancy.')
           goto 999
         endif
-        TBAR=VAL
+        TBAR(ICFD)=VAL
         if(itrc.gt.0)then
-          write(outs,'(a,F7.3)')' Reference T for buoyancy: ',TBAR
+          write(outs,'(a,F7.3)')' Reference T for buoyancy: ',
+     &                                                       TBAR(ICFD)
           call edisp(itu,outs)
         endif
       endif
@@ -1513,8 +1516,8 @@ C gridding process requires 3 small numbers to be multiplied and
 C this can cause problems. If CFD grid visualisation fails try
 C altering SMALL to 1.E-12.
       GREAT=1.E+20
-      SMALL=1.E-20   ! standard
-C      SMALL=1.E-12  ! alternative
+C      SMALL=1.E-20   ! standard
+      SMALL=1.E-12  ! alternative
       GRAV=9.81
 
 C Fluid properties.
@@ -1586,7 +1589,7 @@ C solid boundaries.
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
      &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
      &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
-     &              SSBHC(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
       COMMON/ICFNOD/ICFD,ICP
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
@@ -2048,7 +2051,6 @@ C  with the origin at the lower southwest corner of the CFD domain.
 #include "geometry.h"
 #include "prj3dv.h"
 
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
       COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
      1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
@@ -2068,7 +2070,7 @@ C k directions.
       Ymax = YV(NJ)
       Zmax = ZW(NK)
 
-C Set values in RAY5
+C Set values in RAY5 of prj3dv.h
       XMN=0.
       XMX=Xmax
       YMN=0.

@@ -333,6 +333,19 @@ extern "C"
        return rep_toggle_config__(sParam, iNameLength);
     }
 
+   /**
+    * Report the status of an on-off configuration parameter
+    */
+    bool rep_bool_config__(char* sParam, int iNameLength){
+
+      std::string paramName = std::string(sParam, iNameLength);
+
+      return TReportsManager::Instance()->ReportBoolConfig(paramName);
+    }
+    bool rep_bool_config_(char* sParam, int iNameLength)
+    {
+      return rep_bool_config__(sParam, iNameLength);
+    }
 
     /**
      *   Write out configuration file with new options
@@ -377,26 +390,69 @@ extern "C"
    }
 
    /* ********************************************************************
-   ** Method:   add_to_report_wild_
+   ** Method:   add_to_report_wild3_
    ** Purpose:  Called by the Fortran code to pass data value for a
    **           specified variable
    ** Params:   iIdentifier - pointer to a fortran integer*4
    **           fValue - pointer to a fortran real
    **           sWild_ - pointers to fortran strings
    **           strLen_ - lenght of the passed in strings
-   ** Note:     It's important to ensure that the strings are send from
+   ** Note:     It's important to ensure that the strings are sent from
    **           Fortran without spaces (correctly allocated).  The trim
    **           routine could be added to the corresponding h3kmodule.f90
    **           wrapper if this is problematic.  This was left out for
    **           speed reasons
    ** Returns:  N/A
    ** Author:   Claude Lamarche
-   ** Mod Date: 2011-07-15
+   ** Mod Auth: Achim Geissler
+   ** Mod Date: 2014-05-12
    ** ***************************************************************** */
    void add_to_report_wild3__(int* iIdentifier,float* fValue,char* sWild1,
                           char* sWild2,char* sWild3,int strLen1,
                           int strLen2,int strLen3){
       char temp[strLen1+strLen2+strLen3+3];
+
+      /* extract actual string length (non-NULL characters) for
+        switching "zone_*" and "<<zone-name>>" output!
+       */
+      char * pch;
+      int strlen_mod;
+
+      strlen_mod=strLen1;
+      pch=strchr(sWild1,' ');
+      if(pch!=NULL) {
+        strlen_mod=pch-sWild1;
+      }
+
+     /* strLen1 should only be shortened, never made longer!
+      */
+      if (strlen_mod < strLen1) {
+        strLen1 = strlen_mod;
+      }
+
+      strlen_mod=strLen2;
+      pch=strchr(sWild2,' ');
+      if(pch!=NULL) {
+        strlen_mod=pch-sWild2;
+      }
+
+     /* strLen2 should only be shortened, never made longer!
+      */
+      if (strlen_mod < strLen2) {
+        strLen2 = strlen_mod;
+      }
+
+      strlen_mod=strLen3;
+      pch=strchr(sWild3,' ');
+      if(pch!=NULL) {
+        strlen_mod=pch-sWild3;
+      }
+
+     /* strLen3 should only be shortened, never made longer!
+      */
+      if (strlen_mod < strLen3) {
+        strLen3 = strlen_mod;
+      }
 
       //Kludge: quick way to build a * delimited string with the params
       memcpy(temp,sWild1,strLen1);
@@ -414,26 +470,57 @@ extern "C"
    }
 
    /* ********************************************************************
-   ** Method:   add_to_report_wild_
+   ** Method:   add_to_report_wild2_
    ** Purpose:  Called by the Fortran code to pass data value for a
    **           specified variable
    ** Params:   iIdentifier - pointer to a fortran integer*4
    **           fValue - pointer to a fortran real
    **           sWild_ - pointers to fortran strings
    **           strLen_ - lenght of the passed in strings
-   ** Note:     It's important to ensure that the strings are send from
+   ** Note:     It's important to ensure that the strings are sent from
    **           Fortran without spaces (correctly allocated).  The trim
    **           routine could be added to the corresponding h3kmodule.f90
    **           wrapper if this is problematic.  This was left out for
    **           speed reasons
    ** Returns:  N/A
    ** Author:   Claude Lamarche
-   ** Mod Date: 2011-07-15
+   ** Mod Auth: Achim Geissler
+   ** Mod Date: 2014-05-12
    ** ***************************************************************** */
    void add_to_report_wild2__(int* iIdentifier,float* fValue,char* sWild1,
                           char* sWild2,int strLen1,int strLen2){
 
       char temp[strLen1+strLen2+2];
+
+     /* extract actual string length (non-NULL characters) for 
+        switching "zone_*" and "<<zone-name>>" output!
+      */
+      char * pch;
+      int strlen_mod;
+
+      strlen_mod=strLen1;
+      pch=strchr(sWild1,' ');
+      if(pch!=NULL) {
+        strlen_mod=pch-sWild1;
+      }
+
+     /* strLen1 should only be shortened, never made longer!
+      */
+      if (strlen_mod < strLen1) {
+        strLen1 = strlen_mod;
+      }
+
+      strlen_mod=strLen2;
+      pch=strchr(sWild2,' ');
+      if(pch!=NULL) {
+        strlen_mod=pch-sWild2;
+      }
+
+     /* strLen2 should also only be shortened, never made longer!
+      */
+      if (strlen_mod < strLen2) {
+        strLen2 = strlen_mod;
+      }
 
       //Kludge: quick way to build a * delimited string with the params
       memcpy(temp,sWild1,strLen1);
@@ -450,7 +537,7 @@ extern "C"
 
 
    /* ********************************************************************
-   ** Method:   add_to_report_wild_
+   ** Method:   add_to_report_wild1_
    ** Purpose:  Called by the Fortran code to pass data value for a
    **           specified variable
    ** Params:   iIdentifier - pointer to a fortran integer*4
@@ -464,10 +551,29 @@ extern "C"
    **           speed reasons
    ** Returns:  N/A
    ** Author:   Claude Lamarche
-   ** Mod Date: 2011-07-15
+   ** Mod Auth: Achim Geissler
+   ** Mod Date: 2014-05-12
    ** ***************************************************************** */
    void add_to_report_wild1__(int* iIdentifier,float* fValue,char* sWild1,int strLen1){
       char temp[strLen1+1];
+
+     /* extract actual string length (non-NULL characters) for
+        switching "zone_*" and "<<zone-name>>" output!
+      */
+      char * pch;
+      int strlen_mod;
+
+      strlen_mod=strLen1;
+      pch=strchr(sWild1,' ');
+      if(pch!=NULL) {
+        strlen_mod=pch-sWild1;
+      }
+
+     /* strLen1 should only be shortened, never made longer!
+      */
+      if (strlen_mod < strLen1) {
+        strLen1 = strlen_mod;
+      }
 
       //Kludge: quick way to build a string with the params
       memcpy(temp,sWild1,strLen1);
@@ -684,7 +790,8 @@ extern "C"
    ** Method:   set_report_variable()
    ** Purpose:  Called by the fortran code to pass the Report Variable
    **           definition, id, description, to the C++ containers
-   ** Params:   sVariableName -  The Unique xml path location to where the data is to be stored.
+   ** Params:   sVariableName - The Unique xml "path location" (the value of '%VariableName'
+                                as defined in h3kmodule.f90) to where the data is to be stored.
                 sMetaName -  The metatag to be added. (usually 'units' is used)
                 sMetaValue - The value for the above metatag (Usually the unit type, like
                      (W) for watts)
@@ -704,6 +811,7 @@ extern "C"
 
       //This will terminate the fortran string with NUL character
       //Making this character array in memory a valid c format.
+
       sVariableName[*iVariableNameLength] = '\0';
       sMetaType[*iMetatypeLength] = '\0';
       sMetaValue[*iMetaValueLength] = '\0';
@@ -926,6 +1034,8 @@ TReportsManager::TReportsManager(  )
    bReports_Enabled = false;
    m_bSeasonalRun = false;
    bUseResFilenameRoot = false;
+   bUseZoneNames = false;
+   bUseSurfaceNames = false;
 
 
    //remove the out.csv and out.db3 on init since the save_to_disk
@@ -1362,6 +1472,32 @@ void TReportsManager::AddNewSeason(int iSeason_index,float fHtgMultiplier,float 
  ** ***************************************************************** */
 bool TReportsManager::UseResFilenameRoot(){
    return bUseResFilenameRoot;
+}
+
+/* ********************************************************************
+ ** Method:   UseZoneNames
+ ** Scope:    public
+ ** Purpose:  Returns state of boolean
+ ** Params:   N/A
+ ** Returns:  boolean
+ ** Author:   Achim Geissler
+ ** Mod Date: 2014-03-07
+ ** ***************************************************************** */
+bool TReportsManager::UseZoneNames(){
+  return bUseZoneNames;
+}
+
+/* ********************************************************************
+ ** Method:   UseSurfaceNames
+ ** Scope:    public
+ ** Purpose:  Returns state of boolean
+ ** Params:   N/A
+ ** Returns:  boolean
+ ** Author:   Achim Geissler
+ ** Mod Date: 2014-03-07
+ ** ***************************************************************** */
+bool TReportsManager::UseSurfaceNames(){
+  return bUseSurfaceNames;
 }
 
 /* ********************************************************************
@@ -3063,6 +3199,12 @@ void TReportsManager::ParseConfigFile( const std::string& filePath  )
   // Output file name root = results file name root?
   m_params["use_resfilenameroot"] = inputXML.GetFirstNodeValue("use_resfilenameroot", inputXML.RootNode());
 
+  // Output zone names?
+  m_params["use_zonenames"] = inputXML.GetFirstNodeValue("use_zonenames", inputXML.RootNode());
+
+  // Output file name root = results file name root?
+  m_params["use_surfacenames"] = inputXML.GetFirstNodeValue("use_surfacenames", inputXML.RootNode());
+
   // Save to disk, save_to_disk max attribute
   m_params["save_to_disk"] = inputXML.GetFirstNodeValue("save_to_disk", inputXML.RootNode());
   m_params["save_to_disk_every"] = inputXML.GetFirstAttributeValue("save_to_disk","every").c_str();
@@ -3217,6 +3359,22 @@ void TReportsManager::SetFlags(){
     bUseResFilenameRoot = false;
   }
 
+  // Output zone names (instead of zone_xx)?
+  if ( m_params["use_zonenames"] == "true" ){
+    bUseZoneNames = true;
+  }else{
+    m_params["use_zonenames"] = "false";
+    bUseZoneNames = false;
+  }
+
+  // Output surface names (instead of surface_xx)?
+  if ( m_params["use_surfacenames"] == "true" ){
+    bUseSurfaceNames = true;
+  }else{
+    m_params["use_surfacenames"] = "false";
+    bUseSurfaceNames = false;
+  }
+
   // Timestep averaging
   if ( m_params["time_step_averaging"] == "false" ){
       bTS_averaging = false;
@@ -3340,6 +3498,23 @@ bool TReportsManager::ToggleConfig(std::string cParam){
    }
 
    return bSuccess;
+}
+
+/**
+ *   Report boolean value of requested parameter (true/false)
+ *
+ */
+bool TReportsManager::ReportBoolConfig(std::string cParam){
+  bool bReturn;
+
+  //boolean type settings, true/false
+  if ( m_params [ cParam ] == "true" ){
+    bReturn = true;
+  }else{
+    bReturn = false;
+  }
+
+  return bReturn;
 }
 
 /**

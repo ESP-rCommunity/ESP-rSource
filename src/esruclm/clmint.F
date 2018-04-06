@@ -269,19 +269,19 @@ C If output to file alter the edisp unit number.
       IF(CLONG.GE.0.0.AND.CLAT.LT.0.0)IK=3
       IF(CLONG.LT.0.0.AND.CLAT.LT.0.0)IK=4
       if(IK.EQ.1)then
-        WRITE(outs,101)CLMLOC,ACLAT,ACLONG,IYEAR
+        WRITE(outs,101)CLMLOC,ACLAT,CLONG,IYEAR
  101    FORMAT(' Weather analysis:',1X,A30,':',F7.2,'N',F7.2,'E :',I5)
         call edisp(itru,outs)
       elseif(IK.EQ.2)then
-        WRITE(outs,102)CLMLOC,ACLAT,ACLONG,IYEAR
+        WRITE(outs,102)CLMLOC,ACLAT,CLONG,IYEAR
  102    FORMAT(' Weather analysis:',1X,A30,':',F7.2,'N',F7.2,'W :',I5)
         call edisp(itru,outs)
       elseif(IK.EQ.3)then
-        WRITE(outs,103)CLMLOC,ACLAT,ACLONG,IYEAR
+        WRITE(outs,103)CLMLOC,ACLAT,CLONG,IYEAR
  103    FORMAT(' Weather analysis:',1X,A30,':',F7.2,'S',F7.2,'E :',I5)
         call edisp(itru,outs)
       elseif(IK.EQ.4)then
-        WRITE(outs,104)CLMLOC,ACLAT,ACLONG,IYEAR
+        WRITE(outs,104)CLMLOC,ACLAT,CLONG,IYEAR
  104    FORMAT(' Weather analysis:',1X,A30,':',F7.2,'S',F7.2,'W :',I5)
         call edisp(itru,outs)
       endif

@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -302,26 +302,13 @@ C Write calendar information (just the default one for the moment)
       calentag(3)='sunday'
       calendayname(3)='Sundays (all year)'
       calentag(4)='holiday'
-      calendayname(4)='holiday'
-      nbcaldays(4)=0
-      calentag(5)='-'
-      calendayname(5)='-'
-      nbcaldays(5)=0
-      calentag(6)='-'
-      calendayname(6)='-'
-      nbcaldays(6)=0
-      calentag(7)='-'
-      calendayname(7)='-'
-      nbcaldays(7)=0
-      calendayname(8)='-'
-      calentag(8)='-'
-      nbcaldays(8)=0
-      calentag(9)='-'
-      calendayname(9)='-'
-      nbcaldays(9)=0
-      calentag(10)='-'
-      calendayname(10)='-'
-      nbcaldays(10)=0
+      calendayname(4)='holiday'; nbcaldays(4)=0
+      calentag(5)='-'; calendayname(5)='-'; nbcaldays(5)=0
+      calentag(6)='-'; calendayname(6)='-'; nbcaldays(6)=0
+      calentag(7)='-'; calendayname(7)='-'; nbcaldays(7)=0
+      calendayname(8)='-'; calentag(8)='-';nbcaldays(8)=0
+      calentag(9)='-'; calendayname(9)='-'; nbcaldays(9)=0
+      calentag(10)='-'; calendayname(10)='-'; nbcaldays(10)=0
      
       do 542 ijd=1,365
 
@@ -471,7 +458,7 @@ C hasname (string array) the surface name for each surface (so fillsur does not 
       character act*2
       character subpath*84,sfile*144
       character icact*8,iwatt*8,afact*8,iflow*8,vflow*8
-      character sn*12,constr*12,opt*12,outs*124
+      character sn*12,constr*32,opt*12,outs*124
       LOGICAL browse,OKC,XST,unixok
       logical willneedtmc  !  if a tmc file will be required.
       logical closev       !  mass is close to vertical
@@ -479,7 +466,7 @@ C hasname (string array) the surface name for each surface (so fillsur does not 
       logical anunknownmlc ! if true then there was an unknown MLC
 
 C Strings for surface attributes to pass to insrec.
-      character rsname*12,rsotf*32,rsmlcn*32,rsuse1*8,rsuse2*8
+      character rsname*12,rsotf*32,rsmlcn*32,rsuse1*12,rsuse2*12
       character rsparent*12
       integer newsurf   ! index of surface when adding door/glazing
       integer ibcs      ! connection associated with base surface
@@ -552,21 +539,21 @@ C Choices based on the value of shape.
         return
       endif
       IF(ishape.eq.1)THEN
-        XOC=zorigin(icomp,1)
-        YOC=zorigin(icomp,2)
-        ZOC=zorigin(icomp,3)
-        DXC=zsize(icomp,1)
-        DYC=zsize(icomp,2)
-        DZC=zsize(icomp,3)
+        XOCB=zorigin(icomp,1)
+        YOCB=zorigin(icomp,2)
+        ZOCB=zorigin(icomp,3)
+        DXCB=zsize(icomp,1)
+        DYCB=zsize(icomp,2)
+        DZCB=zsize(icomp,3)
 
 C Pending rotation angle and set point to origin of the zone.
         ANGR=rotateit(ICOMP,1)
-        rotateit(ICOMP,2)=XOC
-        rotateit(ICOMP,3)=YOC
+        rotateit(ICOMP,2)=XOCB
+        rotateit(ICOMP,3)=YOCB
 
 C Convert box into a gen description. Pass in critical dimensions
 C and expect the data back via common G1.
-        CALL ERECC(XOC,YOC,ZOC,DXC,DYC,DZC,ANGR)
+        CALL ERECC(XOCB,YOCB,ZOCB,DXCB,DYCB,DZCB,ANGR)
         rotateit(ICOMP,4)=rotateit(ICOMP,1)   ! remmeber the pending rotation
         rotateit(ICOMP,5)=rotateit(ICOMP,2)   ! and the origin of the zone
         rotateit(ICOMP,6)=rotateit(ICOMP,3)
@@ -679,7 +666,9 @@ C Also set ssmlcindex for this surface.
         imatch=0
         ssmlcindex(iccc)=0  ! assume no matching MLC          
         do 5 ii=1,nmlc
-          if(SMLCN(icc)(1:12).eq.mlcname(ii)(1:12)) then
+          lnssmlc=lnblnk(SMLCN(icc))
+          if(SMLCN(icc)(1:lnssmlc).eq.
+     &       mlcname(ii)(1:lnmlcname(ii)))then
             imatch=ii
             ssmlcindex(iccc)=ii   ! remember MLC index     
           endif
@@ -746,7 +735,7 @@ C Reset to represent UNKNOWN
           SOTHER(icc,1)='UNKNOWN'
         ENDIF
         write(SOTHER(icc,2),'(i2.2)') zboundarytype(icomp,icc,2)
-        write(SOTHER(icc,3),'(i2.2)') zboundarytype(icomp,icc,3)
+        write(SOTHER(icc,3),'(i3.3)') zboundarytype(icomp,icc,3)
 
 C Set connection based variables.
         SSNAME(iccc)=SNAME(icomp,icc)
@@ -843,7 +832,7 @@ C parent surface.  Later add logic to better place the door..
             newsurf=nsur+1
             isurf=ids
             CALL SURLEHI(isurf,XYMAX,ZMAX)  ! get width of parent
-            XOC=XYMAX-(zhasdoor(icomp,ids)+0.3)
+            XOCB=XYMAX-(zhasdoor(icomp,ids)+0.3)
             ZOC=0.0
             XW=zhasdoor(icomp,ids)
             if(ZMAX.gt.2.3)then
@@ -860,7 +849,9 @@ C and then see if it is opaque or transparent and copy out the relevant
 C section of the construction attributes.
             imatch=0
             do 56 ii=1,nmlc
-              if(rsmlcn(1:12).eq.mlcname(ii)(1:12)) then
+              lnssmlc=lnblnk(rsmlcn)
+              if(rsmlcn(1:lnssmlc).eq.
+     &           mlcname(ii)(1:lnmlcname(ii)))then
                 imatch=ii
               endif
  56         continue
@@ -878,7 +869,7 @@ C section of the construction attributes.
             rsuse1='DOOR'
             rsuse2='CLOSED'
             write(rsparent,'(a)') sname(icomp,isurf)
-            call INSREC(0,iuout,ICOMP,isurf,act,XOC,ZOC,XW,ZH,
+            call INSREC(0,iuout,ICOMP,isurf,act,XOCB,ZOCB,XW,ZH,
      &        rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
 
 C Connection information needs to be updated.
@@ -916,7 +907,7 @@ C Reset to represent UNKNOWN
             ENDIF
             write(SOTHER(newsurf,2),'(i2.2)')
      &        zboundarytype(icomp,newsurf,2)
-            write(SOTHER(newsurf,3),'(i2.2)')
+            write(SOTHER(newsurf,3),'(i3.3)')
      &        zboundarytype(icomp,newsurf,3)
             SSOTHER(ibcs,1)=SOTHER(newsurf,1)
             SSOTHER(ibcs,2)=SOTHER(newsurf,2)
@@ -936,7 +927,7 @@ C the parent surface as a percentage of area.
             newsurf=nsur+1
             isurf=ids
             act='sp'
-            XOC=zhasglaze(icomp,ids)
+            XOCB=zhasglaze(icomp,ids)
             ZOC=0.0
             XW=0.0
             ZH=0.0
@@ -947,8 +938,10 @@ C Loop thru all of the constructions to find the matching construction
 C and then see if it is opaque or transparent and copy out the relevant
 C section of the construction attributes.
             imatch=0
+            lnssmlc=lnblnk(rsmlcn)
             do 55 ii=1,nmlc
-              if(rsmlcn(1:12).eq.mlcname(ii)(1:12)) then
+              if(rsmlcn(1:lnssmlc).eq.
+     &           mlcname(ii)(1:lnmlcname(ii)))then
                 imatch=ii
               endif
  55         continue
@@ -966,7 +959,7 @@ C section of the construction attributes.
             rsuse1='C-WINDOW'
             rsuse2='CLOSED'
             write(rsparent,'(a)') sname(icomp,isurf)
-            call INSREC(0,iuout,ICOMP,isurf,act,XOC,ZOC,XW,ZH,
+            call INSREC(0,iuout,ICOMP,isurf,act,XOCB,ZOCB,XW,ZH,
      &        rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
 
 C Connection information needs to be updated.
@@ -1040,6 +1033,11 @@ C Next, if there are mass pairs to add make standard calls to insert them.
           call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
   79    continue
       endif
+
+C Predefined objects - task to decide how these might be represented
+C in meta file (if at all).
+C << work to be done >>
+
       CALL EMKCFG('-',IER)
 
 C If no errors then proceed to create constructions files. The
@@ -1319,112 +1317,73 @@ C Clear the sz array structures. The logic is to scan all of the
 C zone details and then process the zones after *end is detected
 C in the file.
       if(act(1:1).ne.'?')then
-        actions=' '
-        root=' '
-        mpath=' '
-        modeltitle=' '
-        modeldocblock=' '
-        weather=' '
+        actions=' '; root=' '; mpath=' '
+        modeltitle=' '; modeldocblock=' '; weather=' '
         hourlysnowfile=' '
         simact='------'   ! assume no simulation directives
 
         groundreflmodel=0
-        skyview=0.0
-        groundview=0.0
-        buildingview=0.0
-        havesite=.false.
-        havehourlysnowfile=.false.
-        havegroundtempsets=.false.
-        groundtempsets=0
+        skyview=0.0; groundview=0.0; buildingview=0.0
+        havesite=.false.; havehourlysnowfile=.false.
+        havegroundtempsets=.false.; groundtempsets=0
         havesimparameters=.false.
-        simstartup=0
-        simzonetimestep=0
-        simplanttimestep=0
-        simsavelevel=0
-        isilentncf=0
+        simstartup=0; simzonetimestep=0; simplanttimestep=0
+        simsavelevel=0; isilentncf=0
 
 C For each of the possible ESP-r zones, clear values.
         do 41 iz=1,MCOM
-          nztv(iz) = 0
-          zname(iz) = ' '
-          shape(iz) = ' '
-          nbwalls(iz) = 0
-          rotateit(iz,1) = 0.0
-          rotateit(iz,2) = 0.0
-          rotateit(iz,3) = 0.0
-          rotateit(iz,4) = 0.0
-          rotateit(iz,5) = 0.0
-          rotateit(iz,6) = 0.0
-          zorigin(iz,1) = 0.0
-          zorigin(iz,2) = 0.0
+          nztv(iz) = 0; nbwalls(iz) = 0
+          zname(iz) = ' '; shape(iz) = ' '
+          rotateit(iz,1) = 0.0; rotateit(iz,2) = 0.0
+          rotateit(iz,3) = 0.0; rotateit(iz,4) = 0.0
+          rotateit(iz,5) = 0.0; rotateit(iz,6) = 0.0
+          zorigin(iz,1) = 0.0; zorigin(iz,2) = 0.0
           zorigin(iz,3) = 0.0
-          zsize(iz,1) = 0.0
-          zsize(iz,2) = 0.0
-          zsize(iz,3) = 0.0
-          znbglz(iz) = 0
-          znbdoor(iz) = 0
-          znbmass(iz) = 0
+          zsize(iz,1) = 0.0; zsize(iz,2) = 0.0; zsize(iz,3) = 0.0
+          znbglz(iz) = 0; znbdoor(iz) = 0; znbmass(iz) = 0
           do 39 isu=1,MS
-            zboundarytype(iz,isu,1)=0
-            zboundarytype(iz,isu,2)=0
+            zboundarytype(iz,isu,1)=0; zboundarytype(iz,isu,2)=0
             zboundarytype(iz,isu,3)=0
             sname(iz,isu)=' '
-            zhasglaze(iz,isu)=0.0
-            zhasdoor(iz,isu)=0.0
+            zhasglaze(iz,isu)=0.0; zhasdoor(iz,isu)=0.0
             isznbedges(iz,isu)=0
             do 54 ivu=1,MV
               iszlist(iz,isu,ivu)=0
   54        continue
   39      continue
           do 59 imu=1,4
-            zdatamass(iz,imu,1)= 0.0
-            zdatamass(iz,imu,2)= 0.0
-            zdatamass(iz,imu,3)= 0.0
-            zdatamass(iz,imu,4)= 0.0
-            zdatamass(iz,imu,5)= 0.0
-            zdatamass(iz,imu,6)= 0.0
+            zdatamass(iz,imu,1)= 0.0; zdatamass(iz,imu,2)= 0.0
+            zdatamass(iz,imu,3)= 0.0; zdatamass(iz,imu,4)= 0.0
+            zdatamass(iz,imu,5)= 0.0; zdatamass(iz,imu,6)= 0.0
             zdatamass(iz,imu,7)= 0.0
-            ztextmass(iz,imu,1)= ' '
-            ztextmass(iz,imu,2)= ' '
+            ztextmass(iz,imu,1)= ' '; ztextmass(iz,imu,2)= ' '
             ztextmass(iz,imu,3)= ' '
   59      continue
   41    continue
 
 C For each of the META specific arrays, clear values.
         do 42 iz=1,MSZ
-          szuse(iz,1) = ' '
-          szuse(iz,2) = ' '
-          szuse(iz,3) = ' '
+          szuse(iz,1) = ' '; szuse(iz,2) = ' '; szuse(iz,3) = ' '
           usefile(iz) = ' '
           nbobs(iz) = 0
-          ht_Setpoint(iz)= 0.0
-          cl_Setpoint(iz)= 0.0
+          ht_Setpoint(iz)= 0.0; cl_Setpoint(iz)= 0.0
           i_ctl_link(iz)=0
           do 55 ibu=1,MB
-            XOB(iz,ibu) = 0.0
-            YOB(iz,ibu) = 0.0
-            ZOB(iz,ibu) = 0.0
-            DXOB(iz,ibu) = 0.0
-            DYOB(iz,ibu) = 0.0
-            DZOB(iz,ibu) = 0.0
-            BANGOB(iz,ibu,1) = 0.0
-            BANGOB(iz,ibu,2) = 0.0
+            XOB(iz,ibu) = 0.0; YOB(iz,ibu) = 0.0; ZOB(iz,ibu) = 0.0
+            DXOB(iz,ibu) = 0.0; DYOB(iz,ibu) = 0.0; DZOB(iz,ibu) = 0.0
+            BANGOB(iz,ibu,1) = 0.0; BANGOB(iz,ibu,2) = 0.0
             BANGOB(iz,ibu,3) = 0.0
             OPOB(iz,ibu) = 1.0
-            BLOCKNAME(iz,ibu) = ' '
-            LNBLOCKNAME(iz,ibu) = 0
-            BLOCKMAT(iz,ibu) = ' '
-            LNBLOCKMAT(iz,ibu) = 0
+            BLOCKNAME(iz,ibu) = ' '; LNBLOCKNAME(iz,ibu) = 0
+            BLOCKMAT(iz,ibu) = ' '; LNBLOCKMAT(iz,ibu) = 0
             BLOCKTYP(iz,ibu) = 'obs '
             do 56 ibe=1,8
-              XBP(iz,ibu,ibe)=0.0
-              YBP(iz,ibu,ibe)=0.0
+              XBP(iz,ibu,ibe)=0.0; YBP(iz,ibu,ibe)=0.0
               ZBP(iz,ibu,ibe)=0.0
   56        continue
   55      continue
           do 53 isu=1,MTV   ! clear the coordinates
-            szcoords(iz,isu,1)=0.0
-            szcoords(iz,isu,2)=0.0
+            szcoords(iz,isu,1)=0.0; szcoords(iz,isu,2)=0.0
             szcoords(iz,isu,3)=0.0
   53      continue
           do 52 isu=1,MS
@@ -2513,16 +2472,12 @@ C be included in the version 1.1 geometry file.
           if(i_ctl_link(isz).gt.0)then
             isilentncf=1+isilentncf
             ncf=isilentncf
-            IBSN(isilentncf,1)=0
-            IBSN(isilentncf,2)=0
-            IBSN(isilentncf,3)=0
-            IBSN(isilentncf,4)=0
-            IBAN(isilentncf,1)=0
-            IBAN(isilentncf,2)=0
+            IBSN(isilentncf,1)=0; IBSN(isilentncf,2)=0
+            IBSN(isilentncf,3)=0; IBSN(isilentncf,4)=0
+            IBAN(isilentncf,1)=0; IBAN(isilentncf,2)=0
             IBAN(isilentncf,3)=0
             NBCDT(isilentncf)=1
-            IBCDV(isilentncf,1,1)=1
-            IBCDV(isilentncf,1,2)=365
+            IBCDV(isilentncf,1,1)=1; IBCDV(isilentncf,1,2)=365
             NBCDP(isilentncf,1)=1
             IBCTYP(isilentncf,1,1)=0
             IBCLAW(isilentncf,1,1)=1

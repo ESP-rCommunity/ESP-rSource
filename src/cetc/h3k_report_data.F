@@ -356,7 +356,9 @@ C.....Local variables
       parameter ( SBC=56.7E-9 )
 
 C.....DECLARATIONS for H3Kreporting object
-      CHARACTER*2   cZone_Chars, cSurf_Chars, cNode_Chars
+      CHARACTER*12 cZone_Chars   ! zname(MCOM)
+      Character*12 cSurf_Chars   ! sname(MCOM,MS)
+      character*2  cNode_Chars
 
       CHARACTER*128 ZONE_LABEL
 
@@ -648,14 +650,17 @@ C.......the so called inward flowing fraction (IFF).
 
       endif reset_building_totals
 
-
-C.....Pad zone index to 'XX'
-      if ( iZone .gt. 9 ) then
-         write (cZone_Chars,'(I2)') iZone
+C.....Switch for zone name output here
+      if (ReportBoolConfig("use_zonenames")) then
+        write (cZone_Chars,'(A)') zname(iZone)(1:lnzname(iZone))
       else
-        write (cZone_Chars,'(A,I1)') '0', iZone
-      endif
-
+C.......Pad zone index to 'XX'
+        if ( iZone .gt. 9 ) then
+           write (cZone_Chars,'(A,I2)') 'zone_',iZone
+        else
+           write (cZone_Chars,'(A,I1)') 'zone_0',iZone
+        endif
+      endif ! use_zonenames
 
 C----------------------------------------------------------------------
 C.....Determine control function for current zone.
@@ -673,7 +678,7 @@ C Determine where heat is injected/extracted
 c PIN is at surface.
           Q_zone = QFS(iZone)
 
-        elseif ( iban(i_ZnCtl,3) .gt. 0 ) then
+        elseif(iban(i_ZnCtl,3).gt.0 .and. iban(i_ZnCtl,1).ne.-2) then
 
 C PIN is within construction
           Q_zone = QFC(iZone)
@@ -685,7 +690,7 @@ C PIN is in a plant component node - not implemented yet.
         elseif ( iban(i_ZnCtl,1) .eq. -2 ) then
 
 C PIN is mix of radiative/convective flux (ie - plant component)
-         Q_zone = QPLTF(iZone)
+         Q_zone = (QPLTF(iZone)+QPLTP(iZone))*0.5
 
         else
 
@@ -812,14 +817,18 @@ C-----------------------------------------------------------------------
 
       zone_surface_loop: do iSurface = 1, nzsur(iZone)
 
+C.....Switch for surface name output here
+      if (ReportBoolConfig ("use_surfacenames")) then
+        write (cSurf_Chars,'(A)')
+     &          sname(iZone,iSurface)(1:lnsname(iZone,iSurface))
+      else
 C.......Pad surface index to 'XX'
         if ( iSurface .gt. 9 ) then
-          write (cSurf_Chars,'(I2)') iSurface
+          write (cSurf_Chars,'(A,I2)') 'surface_',iSurface
         else
-          write (cSurf_Chars,'(A,I1)') '0', iSurface
+          write (cSurf_Chars,'(A,I1)') 'surface_0',iSurface
         endif
-
-
+      endif ! use_surfacenames
 
 C-----------------------------------------------------------------------
 C       Report total short wave radiation on this surface.
@@ -2118,11 +2127,18 @@ C.......contributions overlap in functionality, and they should
 C.......be almagamated. Alex has adopted a slightly more efficient
 C.......method of writing out the variable names, which the code
 C.......below should also make use of.
-         if ( iSurface .gt. 9 ) then
-            write(cSurf_Chars, '(I2)') iSurface
-         else
-            write(cSurf_Chars, '(A,I1)') '0', iSurface
-         endif
+C.......Switch for surface name output here
+        if (ReportBoolConfig ("use_surfacenames")) then
+          write (cSurf_Chars,'(A)')
+     &            sname(iZone,iSurface)(1:lnsname(iZone,iSurface))
+        else
+C.........Pad surface index to 'XX'
+          if ( iSurface .gt. 9 ) then
+            write (cSurf_Chars,'(A,I2)') 'surface_',iSurface
+          else
+            write (cSurf_Chars,'(A,I1)') 'surface_0',iSurface
+          endif
+        endif ! use_surfacenames
 
 C........Surface temperature
 C........->Report data
@@ -3338,63 +3354,11 @@ C*******************************************************************************
 
 C     Load misc. named parameters:
 C       total_load / hvac_load / occupant_load / cluster_load / total_gen
+#include "building.h"
+#include "plant.h"
 #include "CETC_definitions.h"
 #include "power.h"
 
-C The electrical nodes common
-      common/enod/
-     &     nenod,
-     &     enodno(menod),
-     &     enodphtyp(menod),
-     &     enodph(menod),
-     &     enodtyp(menod),
-     &     enodbasev(menod),
-     &     enodbasep
-      integer nenod                 ! number of nodes in elec network
-      integer enodno                ! not used in current context
-      integer enodphtyp             ! not used in current context
-      integer enodph                ! not used in current context
-      integer enodtyp               ! not used in current context
-      real enodbasev                ! not used in current context
-      real enodbasep                ! not used in current context
-
-
-
-C The elec net load, generated and transmitted nodal power flows (SI)
-      common/enodlgt/
-     &     penodl(menod),
-     &     qenodl(menod),
-     &     penodg(menod),
-     &     qenodg(menod),
-     &     penodt(menod),
-     &     qenodt(menod)
-
-      real penodl     ! real load
-      real qenodl     ! reactive load
-      real penodg     ! real generated power
-      real qenodg     ! reactive generated power
-      real penodt     ! real transmitted power
-      real qenodt     ! reactive transmitted power
-
-
-C---------------------------------------------------------------------
-C     Hybird Componenet data
-C---------------------------------------------------------------------
-      COMMON/HYBE/
-     &     nHYBcom,
-     &     HYBCOMNO,
-     &     HYCOMTYP,
-     &     HYCOMPHTYP,
-     &     HYCONEN,
-     &     HYLOC,
-     &     NHYBDAT,
-     &     HYBDAT
-
-      integer nHYBcom
-      integer NHYBDAT(MHYCOM)
-      integer HYBCOMNO(MHYCOM), HYCOMTYP(MHYCOM),  HYCOMPHTYP(MHYCOM)
-      integer HYCONEN(MHYCOM,MPHAS), HYLOC(MHYCOM,MPHAS)
-      real HYBDAT(MHYCOM,MHYDAT)
 
 C---------------------------------------------------------------------
 C     HOT3000 Storage common blocks used for plant->electrical network
@@ -3407,42 +3371,6 @@ C---------------------------------------------------------------------
 C.....Real power from hybrid & power only components
       REAL Hybrid_Power_Real, Elec_Power_Real
 
-C---------------------------------------------------------------------------------
-C Common holding the power-only component description read from the electric
-C network input file.
-C---------------------------------------------------------------------------------
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-
-C---------------------------------------------------------------------------------
-C Common holding power generation and loads data for power-only components.
-C---------------------------------------------------------------------------------
-      COMMON/ENETPOWC/PPOWOC(MPOWCOM),QPOWOC(MPOWCOM),
-     &VPOWC(MPOWCOM)
-
-      INTEGER      NPOWCOM, POWCOMNO, POWCOMID, POWCOMPHTYP, POWCONEN,
-     &             NPOWCDAT, NPOWCDATS
-      REAL         POWCDAT
-      REAL         PPOWOC, QPOWOC
-      COMPLEX      VPOWC
-C---------------------------------------------------------------------------------
-C     Names for electrial network comoponents
-C---------------------------------------------------------------------------------
-
-      COMMON/ECNAMES/ENODNAM(MENOD),HYCOMNAM(MHYCOM),
-     &HYCOMTYPSTR(MHYCOM),POWCOMNAM(MPOWCOM),POWCDATS(MPOWCOM,MPCDS),
-     &CONECOMNAM(MCONECOM)
-
-      CHARACTER*12 ENODNAM,HYCOMTYPSTR,HYCOMNAM,
-     &POWCOMNAM,CONECOMNAM
-      CHARACTER*72 POWCDATS
-
-C---------------------------------------------------------------------------------
-C Common holding nodal voltages (actual voltages, not "per unit" voltages.
-C---------------------------------------------------------------------------------
-      COMMON/ENODSLV/ENODVLT(MENOD)
-      COMPLEX ENODVLT
 
 C---------------------------------------------------------------------------------
 C     local varibles
@@ -3558,13 +3486,13 @@ C.....is handy for testing
       do iElec_node = 1, nenod
 
          if (iElec_node .le. 9) then
-            WRITE (node_num, '(A,I1);')
+            WRITE (node_num, '(A,I1)')
      &           '00', iElec_node
          elseif(iElec_node .le. 99) then
-            WRITE (node_num, '(A,I2);')
+            WRITE (node_num, '(A,I2)')
      &           '0', iElec_node
          else
-            WRITE (node_num, '(I3);')
+            WRITE (node_num, '(I3)')
      &           iElec_node
          endif
 
@@ -3645,6 +3573,8 @@ C.....Power-only component flux
 C.....Call RE-H2-CTL reporting function
       call RESH2_Ctl_PostProcess()
 
+C.....Call RES (elec) Ctl reporting function
+      call RES_elec_ctl_PostProcess()
 
       return
       end
@@ -3990,11 +3920,11 @@ C.........Loop through all interconnections in a flow network
             if (NODPS(jj) .eq. ii) THEN ! only look for positive side conn. of cur. node
                i_neg = NODNE(jj) ! the node on the other side of the conn.
 
-               write(Connect_Name,'(A,A,A,A,A,A)')
+               write(Connect_Name,'(A,A,A,A,A)')
      &             NDNAM(ii)(1:NDNAM_len),'->',
      &             NDNAM(i_neg)(1:LNBLNK(NDNAM(i_neg))),
-     &             ' (via ',
-     &             CMNAM(ITPCON(jj))(1:LNBLNK(CMNAM(ITPCON(jj)))),')'
+     &             '_via_',
+     &             CMNAM(ITPCON(jj))(1:LNBLNK(CMNAM(ITPCON(jj))))
 
                connect_len = LNBLNK(Connect_name)
        ! pressure drop between nodes of connection ***********************

@@ -1,33 +1,33 @@
 C This file holds data relating to electric vehicles and related code. The vehicle model
 C can be used in conjunction with ESP-r's power flow modelling capability. The routines 
 C are as follows. 
-C POWOC_EV_model     - 	electric vehicle-to-home model dealing with the presence of the 
-C 			vehicle, the state of charge and the charging current/power
+C POWOC_EV_model     - electric vehicle-to-home model dealing with the presence of the 
+C                      vehicle, the state of charge and the charging current/power
 C
-C EV_state	     -	calculates the "state" of the electric vehicle _idle_, charge or
-C			absent (logical).
+C EV_state           - calculates the "state" of the electric vehicle _idle_, charge or
+C                      absent (logical).
 C
-C EV_init	     -	initialised the component's data.
+C EV_init            - initialised the component's data.
 C
-C EV_charge_ctl		routine that handles the different charging options for the vehicle.
+C EV_charge_ctl        routine that handles the different charging options for the vehicle.
 C
-C > EV_fix_charge    -	fixed charge rate for the vehicle battery, charge rate set by the
-C			user - typically used during a fast (e.g. 2hr) or trickle (e.g. 8 hr)
-C 			charge.
+C > EV_fix_charge    - fixed charge rate for the vehicle battery, charge rate set by the
+C                      user - typically used during a fast (e.g. 2hr) or trickle (e.g. 8 hr)
+C                      charge.
 C 
 C > EV_opp_charge    -  vehicle only charges when the building demand is low enough (set by user)
-C			or alternatively there is power available from any local renewables. 
+C                       or alternatively there is power available from any local renewables. 
 C
-C > EV_V2H_charge    - 	the vehicle charges at periods of low power or renewable availability or
-C			alternatively can discharge in order to limit the peak building demand.
+C > EV_V2H_charge    - the vehicle charges at periods of low power or renewable availability or
+C                      alternatively can discharge in order to limit the peak building demand.
 C
-C EV_trip()  	     -	calculates feasible trips for the electric vehicle.
+C EV_trip()          - calculates feasible trips for the electric vehicle.
 C 
-C EV_SOC()	     -	calculates the new SOC of the battery based on the trip or charging situation.
+C EV_SOC()           - calculates the new SOC of the battery based on the trip or charging situation.
 C 
-C EV_save() 	     -	saves the EV data to the library and transfers boundary conditions, also writes the
-C			component trace if required   
-C   	 
+C EV_save()          - saves the EV data to the library and transfers boundary conditions, also writes the
+C                      component trace if required   
+C    
 C New routines to be added here <<>>.
 C
 C
@@ -38,8 +38,9 @@ C
 C
       SUBROUTINE POWOC_EVEHICLE(IPWC)
 
+#include "building.h"
+#include "plant.h"
 #include "power.h"
-#include "building.h" 
 
 C Trace Commons
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -70,8 +71,9 @@ C state has persisted.
 
       SUBROUTINE EV_STATE(IPWC)
 
-#include "power.h"
 #include "building.h"
+#include "plant.h"
+#include "power.h"
 
 C Trace Commons
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -108,16 +110,12 @@ C Charge, idle and trip duration counters.
 C Data recording for the vehicle. 
 c      COMMON/EVSTATE5/NO_TRIP(MPOWCOM),TOT_TRIP_DURATION(MPOWCOM)
 
-C Simulation time and timestep.
-      COMMON/ENETIME/ENETIMEF,ENETIMEP
-      COMMON/ENETDELTAT/IETSET,ENETSTP
-
 C Initialization status of power-only components
       COMMON/ENETPOWCOMP/BCOMP_INITIALIZED(MPOWCOM)
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
-      REAL ENETIMEF,ENETIMEP,CHARGE_DUR,
+      REAL CHARGE_DUR,
      &TRIP_DUR,IDLE_DUR,PROB_CHARGE_MOD,WKPERS,SATPERS,SUNPERS,
      &TRIP_PROBWK,TRIP_PROBSAT,TRIP_PROBSUN,STAY_LOCKOUT,ABSENT_LOCKOUT,
      &NOM_TRIP,MAX_SPEED
@@ -224,7 +222,7 @@ C Set going or leaving probabilities.
           IF(ENETIMEF.GE.SUNPERS(IPWC,IPER).AND.
      &    ENETIMEF.LT.SUNPERS(IPWC,IPER+1))THEN
             INPER=IPER 
-          ENDIF           		
+          ENDIF          
   9     CONTINUE
 
 C Check if in final draw period
@@ -304,8 +302,9 @@ C *EV_INIT**********************************************************************
 C This routine initialised the simulation data for each EV
 
       SUBROUTINE EV_INIT(IPWC)
-#include "power.h"
 #include "building.h"
+#include "plant.h"
+#include "power.h"
 
 C Trace Commons
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -353,12 +352,6 @@ C EV SOC
       COMMON/EVRECORD2/TOT_TRIP_DISTP(MPOWCOM),TOT_TRIP_DISTF(MPOWCOM)
 
       COMMON/EVDATA8/NCHARGEDATA(MPOWCOM),CHARGE_CTL_DATA(MPOWCOM,20)   
-
-C The connected power only components
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-
 
       CHARACTER*6 EV_STATUSP, EV_STATUSF
 
@@ -543,13 +536,12 @@ C Statistical data to calibrate this model for the UK is available from the DfT
 
       SUBROUTINE EV_TRIP(IPWC)
 
+#include "building.h"
+#include "plant.h"
 #include "power.h"
-#include "building.h" 
 
 C Trace Commons
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-
-      COMMON/ENETDELTAT/IETSET,ENETSTP
 
       COMMON/EVSTATE1/EV_STATUSF(MPOWCOM),EV_STATUSP(MPOWCOM)
 
@@ -646,15 +638,12 @@ C 5 - co-operative charge when the battery discharged to keep load below a limit
 
       SUBROUTINE EV_CHARGE(IPWC)
 
-#include "power.h"
 #include "building.h"
+#include "plant.h"
+#include "power.h"
 
 C Trace Commons
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-
-C Simulation time and timestep.
-      COMMON/ENETIME/ENETIMEF,ENETIMEP
-      COMMON/ENETDELTAT/IETSET,ENETSTP
 
       COMMON/EVSTATE1/EV_STATUSF(MPOWCOM),EV_STATUSP(MPOWCOM)
 
@@ -669,15 +658,11 @@ C Charging control data.
 C EV SOC
       COMMON/EVSTATE6/EV_SOCF(MPOWCOM),EV_SOCP(MPOWCOM)
 
-C Power only components
-      COMMON/ENETPOWC/PPOWOC(MPOWCOM),QPOWOC(MPOWCOM),
-     &VPOWC(MPOWCOM)
-
       COMMON/EVSTATE8/TOT_TRIP_DISTP(MPOWCOM),TOT_TRIP_DISTF(MPOWCOM),
      &TRIP_DIST(MPOWCOM,999)
 
       REAL CHARGE_CTL_DATA,CHARGE_SENS,CHARGE_ACT,CHARGE_V_NOM,
-     &CHARGE_I_MAX,CHARGE_KWH,PPOWOC,QPOWOC,EV_SOCF,EV_SOCP,
+     &CHARGE_I_MAX,CHARGE_KWH,EV_SOCF,EV_SOCP,
      &MIN_SOC,PROB_CHARGE_MOD,MAX_SPEED,KWH_KM,KWH_HR,TOT_TRIP_DISTP,
      &TOT_TRIP_DISTF,TRIP_DIST
 
@@ -829,8 +814,9 @@ C This routine updates the state of charge for the EV battery.
 C
       SUBROUTINE EV_SOC(IPWC)
 
+#include "building.h"
+#include "plant.h"
 #include "power.h"
-#include "building.h" 
 
 C Trace Commons
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -841,8 +827,6 @@ C The current state of the EV.
       COMMON/EVDATA6/BATTERY_CAP(MPOWCOM),KWH_KM(MPOWCOM),
      &KWH_HR(MPOWCOM),CHARGE_EFF(MPOWCOM),MIN_SOC(MPOWCOM),
      &PROB_CHARGE_MOD(MPOWCOM)
-
-      COMMON/ENETDELTAT/IETSET,ENETSTP
 
 C Charging control data.
       COMMON/EVDATA7/CHARGE_TYPE(MPOWCOM),CHARGE_KWH(MPOWCOM)

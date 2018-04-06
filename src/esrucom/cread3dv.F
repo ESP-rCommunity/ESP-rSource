@@ -53,10 +53,6 @@ C      COMMON/OUTIN/IUOUT,IUIN
 
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      COMMON/RAY6/LINSTY(MCON)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
 C VCOORD : X,Y & Z coordinates in model (via geometry.h).
@@ -169,7 +165,12 @@ C and then go on to the normal objects. After this point ISTOK is .FALSE.
 C If obstructions are to be drawn read the obstruction file, transform
 C the obstruction description into a gen body and plot them out
 C before going on to the surfaces in the zone itself.
-      IF(ITDSP.EQ.0.or.ITDSP.eq.5)CALL DRAWOBS(nznog(IZ),ier)
+      IF(ITDSP.EQ.0.or.ITDSP.eq.5.or.ITDSP.eq.7)then
+        CALL DRAWOBS(nznog(IZ),ier)
+      ENDIF
+
+C Also draw visual entities if ITDSP set to zero or six.
+      IF(ITDSP.EQ.0.or.ITDSP.eq.6)CALL DRAWVIS(nznog(IZ),ier)
 
 C If zone names are to be displayed place near the centre of zone.
 C For clarity use larger font and then restore font to normal size.
@@ -183,10 +184,17 @@ C Note: temp character t13 is 1 char wider than zname().
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
         call u2pixel(COG3(1),COG3(2),iix,iiy)
-        write(t13,'(A)')zname(nznog(IZ))
+
+C Note call to textpixwidth corrupts t13 so need to
+C re-create t13 after textpixwidth call.
+        t13=' '
+        write(t13,'(A)')zname(nznog(IZ))(1:lnzname(nznog(IZ)))
+        IF(IFS.GT.0)CALL winfnt(NAMEFT+1)
         call textpixwidth(t13,ipixw)
         iixc = iix - (ipixw/2)
+        write(t13,'(A)')zname(nznog(IZ))(1:lnzname(nznog(IZ)))
         CALL wstxpt(iixc,iiy,t13)
+        IF(IFS.GT.0)CALL winfnt(IFS)
         call forceflush()
       ENDIF
       IF(ier.NE.0)RETURN
@@ -323,7 +331,9 @@ C Set line style for this surface. linsty=2 is double width line.
 C Check for hilights. ITHLS=1 is composition, ITHLS=2 trn:opq,
 C ITHLS = 3 partial attributes
         if(ITHLS.eq.1.and.ITHLZ.gt.0)then
-          if(mlcname(ITHLZ)(1:12).eq.SSMLCN(ICC)(1:12))then
+          lnssmlc=lnblnk(SSMLCN(icc))
+          if(mlcname(ITHLZ)(1:lnmlcname(ITHLZ)).eq.
+     &       SSMLCN(ICC)(1:lnssmlc))then
             IPEN= -305
           else
             IPEN= 1

@@ -57,7 +57,13 @@ C  EASKSUR: Presents a list of surfaces in a zone IZONE.
 C  asksnode: Presents a list of layers/nodes within a surface.
 C  FLNAME: Provides a name for a defined file type.
 C  ZSID:   Returns a compact description in ZSDESC of the zone:surface.
-C ZNARLIST takes an array (list) of zone indices and returns descr string.
+C ZNARLIST: Takes an array (list) of zone indices and returns descr string.
+C discovercfg: Provides a list of model cfg files within a passed folder
+C              and allows user to select passing back full path & name.
+C FDPWDTOCFG: Figures out the path between where an application was started
+C             and the model cfg folder (pwdtocfg).
+C dintervalf: A fortran implementation of the c surboutine dinterval.
+
 
 C ************* CLRPRB
 C CLRPRB clears the zone based memory in preparation for reading
@@ -83,6 +89,8 @@ C geometry.h provides commons G0/G2/G4/G5/c20/precz.
 #include "schedule.h"
 C derived.h are derived areas and U values for zones and the model
 #include "derived.h"
+#include "plant.h"
+#include "power.h"
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       INTEGER :: iairn,icaas
@@ -166,6 +174,12 @@ C Moisture.
       common/MOIST01/MSTROK,MSTRZN(MCOM)
       common/MOIST02/LMOIST(MCOM)
 
+C Water filled zones.
+      COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
+     &              zSWAp(mcom),zSWAf(mcom)
+      real zfldK,zfldD,zfldC,zfldA,zSWAp,zSWAf
+      LOGICAL znotair
+
 C Ground topology.
       COMMON/GTFIL/GTGEOM
       COMMON/GT/GTNAME
@@ -205,8 +219,7 @@ C Configuration control.
 
 C Special materials & electrical network files.
       common/spmfxst/ispmxist,spflnam
-      common/entfile/entflnam, ientxist
-      INTEGER :: ispmxist,ientxist
+      INTEGER :: ispmxist
 C Path to SHOCC input files
 C bSHOCCed     - logical flag whether project has SHOCC input
 C bZoneSHOCCed - logical array whether zones have SHOCC input
@@ -253,6 +266,12 @@ C door width and height.
       real defwininsert,defdoorwidth,defdoorheight
       common/ginsert/defwininsert,defdoorwidth,defdoorheight
 
+C Radiance processor cores.
+      integer radcores
+      common/radcor/radcores
+
+C IES lighting distribution files from model.h
+
       CHARACTER LCFD*72
       CHARACTER*72 LAPROB,LPNF
 
@@ -260,14 +279,15 @@ C door width and height.
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
       character hvacfile*72,LBSIMP*72
       character ctldoc*248,lctlf*72
-      character GTGEOM*72,GTNAME*15,spflnam*72,entflnam*72,lipvdatf*72
+      character GTGEOM*72,GTNAME*15,spflnam*72,lipvdatf*72
       character*10 wkd1, wkd2
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,spfdescr*8
+      character selres*72,spfdescr*30
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
      
       INTEGER :: i,icc,ibe,ibu,j,ixs,ix,iivu,isystcurrent,imu
+      INTEGER :: ies
  
       call tstamp('>','PRJ: clearing model commons')
       
@@ -288,15 +308,8 @@ C Initial assumption is no SHOCC files.
       LGDTAQ='UNKNOWN'
       LGRD1D='UNKNOWN'
       LNLTHP='UNKNOWN'
-      zonepth='./'
-      netpth='./'
-      ctlpth='./'
-      aimpth='./'
-      imgpth='./'
-      radpth='./'
-      dbspth='./'
-      bsmpth='./'
-      hvacpth='./'
+      zonepth='./'; netpth='./'; ctlpth='./'; aimpth='./'
+      imgpth='./'; radpth='./'; dbspth='./'; bsmpth='./'; hvacpth='./'
       lradcf='UNKNOWN'
       cfgroot=' '
       LCTLF='UNKNOWN'
@@ -331,14 +344,11 @@ C HOT3000: AIM-2.
       CALL AIM2_ClearAll
 
 C Clear pre-simulation sets.
-      nsset= 0
-      isstup= 0
-      isbnstep= 0
-      ispnstep= 0
+      nsset= 0; isstup= 0; isbnstep= 0; ispnstep= 0
       isavgh=0
       issave= -1
       sipvres=' '
-      do 39 i=1,MSPS
+      do i=1,MSPS
         spfdescr(i)=' '
         sblres(i)=' '
         sflres(i)=' '
@@ -349,79 +359,48 @@ C Clear pre-simulation sets.
         isstmon(i)=0
         isfnday(i)=0
         isfnmon(i)=0
-	seahddwk(i)=0.0
-	seacddwk(i)=0.0
-	seahddtot(i)=0.0
+        seahddwk(i)=0.0
+        seacddwk(i)=0.0
+        seahddtot(i)=0.0
         seacddtot(i)=0.0
-	wkdiff(i)=0.0
-	iwkbest(i)=0
-	iwkbstrt(i)=0
+        wkdiff(i)=0.0
+        iwkbest(i)=0
+        iwkbstrt(i)=0
         wkheatdd(i)=0.0
-	wkcooldd(i)=0.0
-  39  continue
+        wkcooldd(i)=0.0
+      enddo  ! of I
 
 C Clear IPV strings and number of assessmments.
-      ipvtitl=' '
-      ipvvers=' '
-      ipvsynop=' '
-      ipvsimu=' '
-      nipvassmt=0
-      nipvdispjd=0
-      ipvastjd(1)=0
-      ipvafnjd(1)=0
-      ipvdispjd(1)=0
+      ipvtitl=' '; ipvvers=' '; ipvsynop=' '; ipvsimu=' '
+      nipvassmt=0; nipvdispjd=0
+      ipvastjd(1)=0; ipvafnjd(1)=0; ipvdispjd(1)=0
 
 C Clear anchors.
       NALOC=0
-      do 40 i=1,20
+      do i=1,20
         ALOCLBL(i)='undefined'
         ALOCTYP(i)='unkn'
         IALOC(i)=0
-        do 400 j=1,99
+        do j=1,99
           lstanchr(i,j)=0
-  400   continue
-  40  continue
+        enddo   ! of j
+      enddo     ! of i
 
 C Set initial primary conversions and emissions.
       ipconv=0
-      pcnvht=1.0
-      pcnvcl=1.0
-      pcnvlt=1.0
-      pcnvfn=1.0
-      pcnvhw=1.0
-      phtco2=0.0
-      phtnox=0.0
-      phtsox=0.0
-      pclco2=0.0
-      pclnox=0.0
-      pclsox=0.0
-      pltco2=0.0
-      pltnox=0.0
-      pltsox=0.0
-      pfnco2=0.0
-      pfnnox=0.0
-      pfnsox=0.0
-      pspco2=0.0
-      pspnox=0.0
-      pspsox=0.0
-      phwco2=0.0
-      phwnox=0.0
-      phwsox=0.0
+      pcnvht=1.0; pcnvcl=1.0; pcnvlt=1.0; pcnvfn=1.0; pcnvhw=1.0
+      phtco2=0.0; phtnox=0.0; phtsox=0.0; pclco2=0.0; pclnox=0.0
+      pclsox=0.0; pltco2=0.0; pltnox=0.0; pltsox=0.0; pfnco2=0.0
+      pfnnox=0.0; pfnsox=0.0; pspco2=0.0; pspnox=0.0; pspsox=0.0
+      phwco2=0.0; phwnox=0.0; phwsox=0.0
 
 C Initial data for CPCALC.
       icpcon=0
-      ble=0.00
-      bwi=0.00
-      bhi=0.00
-      blox=0.00
-      bloy=0.00
-      bloz=0.00
+      ble=0.00; bwi=0.00; bhi=0.00
+      blox=0.00; bloy=0.00; bloz=0.00
       orient=0.00
       irt=0
-      ra=0.00
-      sbh=0.00
-      pad=0.00
-      wvpe=0.00
+      ra=0.00; sbh=0.00; pad=0.00; wvpe=0.00
 
 C Clear derived model areas and U-values.
       xfloor = 0.0; xexposed = 0.0; xvexposed = 0.0
@@ -433,27 +412,24 @@ C Clear derived model areas and U-values.
       xareaslproof = 0.0; xareafltroof = 0.0; xareaskylt = 0.0
 
 C Initialize the indices.
-      INTHPS=.FALSE.
-      IGR1D=.FALSE.
-      GRND3D=.FALSE.
-      BLDG3D=.FALSE.
-      MSTROK=.FALSE.
+      INTHPS=.FALSE.; IGR1D=.FALSE.; GRND3D=.FALSE.
+      BLDG3D=.FALSE.; MSTROK=.FALSE.
 
 C Assume there is not BSim-CFD conflation in any of the zones.
       NCONF=0
-      do 5 i=1,MNZ
+      do i=1,MNZ
         icfdnd(i)=0
-  5   continue
+      enddo  ! of i
 
 C Clear image related data.
       noimg=0
       iton=0
-      do 6,IX=1,MIMG
+      do IX=1,MIMG
         imgfmt(IX)=' '
         imgfoc(IX)=' '
         limgfil(IX)=' '
         imgdoc(IX)='-'
-  6   continue
+      enddo  ! of IX
 
       IAIRN=0
       LAPROB='UNKNOWN'
@@ -462,11 +438,15 @@ C Clear image related data.
       SLAT=50.
       sitelongdif=0.0
       SLON=0.
+      radcores = 1  ! assume only 1 core for use by Radiance
 
 C Assumptions about doors and windows.
       defwininsert=15.0
       defdoorwidth=0.8
       defdoorheight=2.1
+
+C Water properties for water filled zones (std values).
+      zfldK=0.6; zfldD=998.2; zfldC=4190.0; zfldA=0.0
 
 C Season data.
       ihaveseason=0
@@ -480,24 +460,17 @@ C Zone level common blocks.
       do 42 IX = 1,MCOM
 
 C Per-zone areas and U-values.
-        uavgtran(IX) = 0.0
-        uavwall(IX) = 0.0
-        uavslproof(IX) = 0.0
-        uavfltroof(IX) = 0.0
-        uavgsky(IX) = 0.0
-        uavground(IX) = 0.0
-        areatran(IX) = 0.0
-        areawall(IX) = 0.0
-        areaslproof(IX) = 0.0
-        areafltroof(IX) = 0.0
-        areaskylt(IX) = 0.0
-        areaground(IX) = 0.0
-        exposed(IX) = 0.0
-        vexposed(IX) = 0.0
-        izsfloor(IX) = 0
-        izsceil(IX) = 0
+        uavgtran(IX) = 0.0; uavwall(IX) = 0.0; uavslproof(IX) = 0.0
+        uavfltroof(IX) = 0.0; uavgsky(IX) = 0.0; uavground(IX) = 0.0
+        areatran(IX) = 0.0; areawall(IX) = 0.0; areaslproof(IX) = 0.0
+        areafltroof(IX)= 0.0; areaskylt(IX)= 0.0; areaground(IX)= 0.0
+        exposed(IX) = 0.0; vexposed(IX) = 0.0
+        izsfloor(IX) = 0; izsceil(IX) = 0
+        znotair(ix)=.FALSE.  ! assumption of air filled
+        zSWAp(ix)=0.0; zSWAf(ix)=0.0
+        ncub(ix)=0  ! clear number of mrt sensors in each zone
 
-        do 43 IXS = 1,MS
+        do IXS = 1,MS
           SNAME(IX,IXS)=' '   ! clear surface name
           zboundarytype(IX,IXS,1)=0  ! clear surface boundary
           zboundarytype(IX,IXS,2)=0
@@ -505,16 +478,17 @@ C Per-zone areas and U-values.
           zhasglaze(ix,ixs)=0.0
           zhasdoor(ix,ixs)=0.0
           isznbedges(ix,ixs)=0
-          do 54 iivu=1,MV
+          do iivu=1,MV
             iszlist(ix,ixs,iivu)=0
             szcoords(ix,ixs,1)=0.0
             szcoords(ix,ixs,2)=0.0
             szcoords(ix,ixs,3)=0.0
-  54      continue
-   43   continue
+          enddo  ! of iivu
+        enddo    ! if IXS
 
 C Clear obstructions in all zones.
-        do 55 ibu=1,MB
+C << clear all mrt sensors in all zones. >>
+        do ibu=1,MB
           XOB(ix,ibu) = 0.0
           YOB(ix,ibu) = 0.0
           ZOB(ix,ibu) = 0.0
@@ -530,12 +504,51 @@ C Clear obstructions in all zones.
           BLOCKMAT(ix,ibu) = ' '
           LNBLOCKMAT(ix,ibu) = 0
           BLOCKTYP(ix,ibu) = 'obs '
-          do 56 ibe=1,8
+          do ibe=1,8
             XBP(ix,ibu,ibe)=0.0
             YBP(ix,ibu,ibe)=0.0
             ZBP(ix,ibu,ibe)=0.0
-  56      continue
-  55    continue
+          enddo  ! of ibe
+        enddo    ! of ibu
+
+C Clear visual entities in all zones.
+        nbvis(ix) = 0
+        do ibu=1,MB
+          XOV(ix,ibu) = 0.0
+          YOV(ix,ibu) = 0.0
+          ZOV(ix,ibu) = 0.0
+          DXOV(ix,ibu) = 0.0
+          DYOV(ix,ibu) = 0.0
+          DZOV(ix,ibu) = 0.0
+          BANGOV(ix,ibu,1) = 0.0
+          BANGOV(ix,ibu,2) = 0.0
+          BANGOV(ix,ibu,3) = 0.0
+          OPOV(ix,ibu)=0.0
+          VISNAME(ix,ibu) = ' '
+          LNVISNAME(ix,ibu) = 0
+          VISMAT(ix,ibu) = ' '
+          LNVISMAT(ix,ibu) = 0
+          VISTYP(ix,ibu) = 'vis '
+          do ibe=1,8
+            XVP(ix,ibu,ibe)=0.0
+            YVP(ix,ibu,ibe)=0.0
+            ZVP(ix,ibu,ibe)=0.0
+          enddo  ! of ibe
+        enddo    ! of ibu
+
+C Clear visual objects in all zones.
+        NBVOBJ(ix)=0
+        do ibu=1,12
+          VOBJNAME(ix,ibu) = ' '
+          LNVOBJNAME(ix,ibu) = 0
+          VOBJDESC(ix,ibu) = ' '
+          LNVOBJDESC(ix,ibu) = 0
+          NBVOBJLIST(ix,ibu) = 0
+          do ibe=1,12
+            VOBJLIST(ix,ibu,ibe) = ' '
+            LNVOBJLIST(ix,ibu,ibe) = 0
+          enddo  ! of ibe
+        enddo    ! of ibu
 
 C Clear SHOCC zone information as well.
         bZoneSHOCCed(IX)=.false.
@@ -546,28 +559,17 @@ C Clear SHOCC zone information as well.
         NBWALLS(IX)=0
         NCCODE(IX)=0
         NDP(IX)=3
-        IDPN(IX,1)=0
-        IDPN(IX,2)=0
-        IDPN(IX,3)=0
+        IDPN(IX,1)=0; IDPN(IX,2)=0; IDPN(IX,3)=0
         CTYPE(IX)=' '
         shape(IX)=' '
         gversion(ix)=1.0
-        rotateit(ix,1)=0.0
-        rotateit(ix,2)=0.0
-        rotateit(ix,3)=0.0
-        rotateit(ix,4)=0.0
-        rotateit(ix,5)=0.0
-        rotateit(ix,6)=0.0
-        zorigin(ix,1)=0.0
-        zorigin(ix,2)=0.0
-        zorigin(ix,3)=0.0
-        zsize(ix,1)=0.0
-        zsize(ix,2)=0.0
-        zsize(ix,3)=0.0
-        znbglz(ix) = 0
-        znbdoor(ix) = 0
-        znbmass(ix) = 0
-        do 158 imu=1,4
+        rotateit(ix,1)=0.0; rotateit(ix,2)=0.0
+        rotateit(ix,3)=0.0; rotateit(ix,4)=0.0
+        rotateit(ix,5)=0.0; rotateit(ix,6)=0.0
+        zorigin(ix,1)=0.0; zorigin(ix,2)=0.0; zorigin(ix,3)=0.0
+        zsize(ix,1)=0.0; zsize(ix,2)=0.0; zsize(ix,3)=0.0
+        znbglz(ix) = 0; znbdoor(ix) = 0; znbmass(ix) = 0
+        do imu=1,4
           zdatamass(ix,imu,1)=0.0
           zdatamass(ix,imu,2)=0.0
           zdatamass(ix,imu,3)=0.0
@@ -578,7 +580,7 @@ C Clear SHOCC zone information as well.
           ztextmass(ix,imu,1)=' '
           ztextmass(ix,imu,2)=' '
           ztextmass(ix,imu,3)=' '
-  158   continue
+        enddo  ! if imu
         zdesc(IX)=' '
         lnzdesc(IX)=0
         zname(IX)=' '
@@ -624,7 +626,7 @@ C HOT3000: BASESIMP.
    42 continue
 
 C Clear the connection list.
-      DO 32 ICC=1,MCON
+      DO ICC=1,MCON
         IC1(ICC)=0
         IE1(ICC)=0
         ICT(ICC)=-1   ! Set to -1 to signal connection type is not yet defined.
@@ -646,7 +648,7 @@ C Clear the connection list.
         sspelv(icc)=0.0
         ssperim(icc)=0.0
         ssthick(icc)=0.0
-   32 CONTINUE
+      ENDDO  ! of ICC
       icfgv=4  ! set cfg file version to latest type
       NCON=0
       ncomp=0
@@ -654,23 +656,23 @@ C Clear the connection list.
       groundrefl=0.2
       groundreflmodel=1
       snowgroundrefl=0.4
-      DO 60 I=1,12
+      DO I=1,12
         groundreflmonth(I)=groundrefl
         dayswithsnow(I)=0
-   60 CONTINUE
+      ENDDO  ! of I
       SNFNAM=' '
 
 C Clear the linear thermal bridges variables
-      DO 3 I=1,16
-        DO 2 IX=1,MCOM
+      DO I=1,16
+        DO IX=1,MCOM
           psi(IX,I) = 0.0
           lngth(IX,I) = 0.0
           losspercent(IX) = 0.0
           thbrpercent = 0.0
           totheatloss(ix) = 0.0
           uavtotal(ix) = 0.0
-    2   CONTINUE
-    3 CONTINUE
+        ENDDO  ! of IX
+      ENDDO    ! of I
 
 C Clear sbem string arrays (from sbem.h).
       pjname=' not yet defined'
@@ -697,25 +699,34 @@ C Clear sbem string arrays (from sbem.h).
       insurer_Company=' not yet defined'
       policyNumberInsurance=' not yet defined'
       pjLevComplexity='Undefined'
-      do 4 isystCurrent=1,MNS
+      do isystCurrent=1,MNS
         ductwork(isystCurrent)='No, use default leakage'
         AHUleakage(isystCurrent)='No, use default leakage'
         duct_tDLd(isystCurrent)=0.15
         AHU_tDLd(isystCurrent)=0.06
- 4    continue
+      enddo  ! of isystCurrent
 
 C Also integers from sbem.h
-      Y_inspect=2010
-      M_inspect=1
-      D_inspect=1
-      S_Yinsur=2010
-      S_Minsur=1
-      S_Dinsur=1
-      E_Yinsur=2011
-      E_Minsur=1
-      E_Dinsur=1
+      Y_inspect=2010; M_inspect=1; D_inspect=1
+      S_Yinsur=2010; S_Minsur=1; S_Dinsur=1
+      E_Yinsur=2011; E_Minsur=1; E_Dinsur=1
       pi_limit=0
       INOTI=0  ! assume we have an original model
+
+C Clear IES data files (see model.h for details).
+      nbofies=0
+      do ies=1,10
+        iesname(ies)='  '
+        iesmenu(ies)='  '
+        iesfile(ies)='  '
+        iesalong='X'
+        ieslen(ies)=0.0
+        ieswid(ies)=0.0
+        iesht(ies)=0.0
+        iespercents(ies)=1
+        iessteps(ies,1)=100; iessteps(ies,2)=1;
+        iessteps(ies,3)=1; iessteps(ies,4)=1; iessteps(ies,5)=1
+      enddo  ! of ies
       return
       end
 
@@ -724,6 +735,8 @@ C see if there are images associated with descriptive buttons.
       subroutine cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
 #include "building.h"
+#include "plant.h"
+#include "power.h"
 
 C Passed parameters because these are also used by c function opencfg
 #ifdef OSI
@@ -747,7 +760,6 @@ C Passed parameters because these are also used by c function opencfg
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/cctlnm/ctldoc,lctlf
-      common/entfile/entflnam, ientxist
       character imgfmt*4  ! GIF XBMP TIF JPG
       character imgfoc*4  ! FZON FNET FCTL FDFS
       character limgfil*72  ! file name (extend to 144 char)
@@ -758,7 +770,7 @@ C Passed parameters because these are also used by c function opencfg
       integer iton   ! zero if images not yet shown, one if yes
       common/imagfi/noimg,iton
 
-      CHARACTER ctldoc*248,lctlf*72,LCFD*72,entflnam*72
+      CHARACTER ctldoc*248,lctlf*72,LCFD*72
       character LAPROB*72
 
       icfg_type = INDCFG
@@ -794,27 +806,27 @@ C Loop through all zones to see if there is a domain flow description.
       else
         if(icfgz.ne.0)then
           iicfgz=0
-          do 49 img=1,noimg
+          do img=1,noimg
               if(imgfoc(img)(1:4).eq.'FZON')iicfgz=iicfgz+1
-  49      continue
+          enddo ! of img
         endif
         if(icfgn.ne.0)then
           iicfgn=0
-          do 48 img=1,noimg
+          do img=1,noimg
               if(imgfoc(img)(1:4).eq.'FNET')iicfgn=iicfgn+1
-  48      continue
+          enddo ! of img
         endif
         if(icfgc.ne.0)then
           iicfgc=0
-          do 47 img=1,noimg
+          do img=1,noimg
               if(imgfoc(img)(1:4).eq.'FCTL')iicfgc=iicfgc+1
-  47      continue
+          enddo  ! of img
         endif
         if(icfgdfn.ne.0)then
           iicfgdfn=0
-          do 46 img=1,noimg
+          do img=1,noimg
               if(imgfoc(img)(1:4).eq.'FDFS')iicfgdfn=iicfgdfn+1
-  46      continue
+          enddo  ! of img
         endif
       endif
 
@@ -827,6 +839,9 @@ C ***** Notice that an active description button has been pressed.
 #include "model.h"
 #include "net_flow.h"
 #include "control.h"
+#include "plant.h"
+#include "power.h"
+
       common/pophelp/h(60)
 
       integer ncomp,ncon
@@ -834,7 +849,6 @@ C ***** Notice that an active description button has been pressed.
       COMMON/C23/IFPNF,LPNF
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
-      common/entfile/entflnam, ientxist
 
 C Control
       common/cctlnm/ctldoc,lctlf
@@ -847,7 +861,6 @@ C Images.
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
 
       character h*72,act*1
-      character entflnam*72
       CHARACTER LCFD*72
       CHARACTER LAPROB*72,LPNF*72,CNTMFIL*72
       CHARACTER ctldoc*248,lctlf*72
@@ -922,7 +935,7 @@ C Show control related images (assumes that control has already been scanned).
           nh=1
           if(ncf.gt.0)then
             nh=nh+1
-            write(h(nh),'(3a,i2,a)')' Zones - ',znctldoc(1:45),
+            write(h(nh),'(3a,i3,a)')' Zones - ',znctldoc(1:45),
      &      '(',ncf,' loops)'
           endif
           if(ncl.gt.0)then
@@ -1210,7 +1223,7 @@ C Close site file.
 
 C ************* ERMRT
 C ERMRT Read the MRT sensor definition file. IC is the zone index
-C (for use in mrt).  IER=0 OK, IER=1 problem.
+C (for use in mrt).  IER=0 OK, IER=1 problem IER=3 surface mismatch.
       SUBROUTINE ERMRT(ITRC,ITRU,IUF,LMRT,IC,IER)
 #include "building.h"
 #include "geometry.h"
@@ -1220,11 +1233,6 @@ C (for use in mrt).  IER=0 OK, IER=1 problem.
 
       common/TOTAL/nsurmf, NGRID, NTRPOL
       
-      integer ncub,ivfok
-      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
-      character CUBN*6
-      common/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       common/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
       common /cube5/fstgrp,fstsur,lstsur,strtgr
 
@@ -1287,10 +1295,15 @@ C currently not used - mrt accesses configuration file.
         LGEO='UNKNOWN'
       endif
 
-C Read number of sensors.
+C Read number of mrt sensors.
+C << NCUB is implied in newer geometry files so check if this number disagrees.
+C << NZS needs to be checked against what is in the geometry file. If it does
+C << not agree then should rebuild either with zeros or with area weighted and
+C << re-establish mrt blocks if they exist in geo file.
       CALL STRIPC(IUF,OUTSTR,0,ND,1,'no sensors & surfs',IER)
       K=0
-      CALL EGETWI(OUTSTR,K,NCUB,0,MCUB,'F','number mrt sensors',IER)
+      CALL EGETWI(OUTSTR,K,NCUBF,0,MCUB,'F',
+     &  'number mrt sensors in vwf file',IER)
       CALL EGETWI(OUTSTR,K,NZS,1,MS,'F','number mrt zone surfs',IER)
       CALL EGETWI(OUTSTR,K,IZINDX,1,MCOM,'F','mrt zone index',IER)
       if(ier.ne.0)return
@@ -1310,7 +1323,9 @@ C Read number of sensors.
           return
         endif
       endif
+
       if(NZS.ne.NZSUR(ic))then
+
         write(outs,'(3a)') LMRT(1:lnblnk(LMRT)),
      &    ' has different surface count to zone geometry.'
         if(dll)then
@@ -1321,11 +1336,21 @@ C Read number of sensors.
           return
         else
           call edisp(itru,outs)
-          IER=1
+          IER=3  ! signal mismatch
           CALL ERPFREE(iuf,ISTAT)
           return
         endif
       endif
+      
+C Test for number of MRT sensors. If zero in this file but NCUB(IC) is
+C non-zero then do not update NCUB. If > zero and NCUB(IC) is zero then do
+C update NCUB(IC).
+      if(NCUBF.eq.0.and.NCUB(IC).gt.0)then
+        continue
+      elseif(NCUBF.gt.0.and.NCUB(IC).eq.0)then
+        NCUB(IC)=NCUBF
+      endif
+
       DO 330 I = 1,NZS
 
 C Read surface data line(s).
@@ -1342,7 +1367,7 @@ C Skip past the row sums.
   331 CONTINUE
 
 C Write out trace if requested.
-C MS senstive, change is MS>90.
+C MS senstive, change is MS>99.
       if(itrc.gt.0)then
         call edisp(itru,' Black body view factors')
         if(NZS.le.22)then
@@ -1353,26 +1378,37 @@ C MS senstive, change is MS>90.
           call edisp(itru,outs)
           write(outs,'(4X,22I5)')(I,I=23,NZS)
           call edisp(itru,outs)
-        elseif(NZS.ge.45.and.NZS.le.68)then
+        elseif(NZS.ge.45.and.NZS.le.66)then
           write(outs,'(4X,22I5)')(I,I=1,22)
           call edisp(itru,outs)
           write(outs,'(4X,22I5)')(I,I=23,44)
           call edisp(itru,outs)
           write(outs,'(4X,22I5)')(I,I=45,NZS)
           call edisp(itru,outs)
-        elseif(NZS.ge.69.and.NZS.le.90)then
+        elseif(NZS.ge.67.and.NZS.le.88)then
           write(outs,'(4X,22I5)')(I,I=1,22)
           call edisp(itru,outs)
           write(outs,'(4X,22I5)')(I,I=23,44)
           call edisp(itru,outs)
-          write(outs,'(4X,22I5)')(I,I=45,68)
+          write(outs,'(4X,22I5)')(I,I=45,66)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=67,NZS)
+          call edisp(itru,outs)
+        elseif(NZS.ge.89.and.NZS.le.110)then
+          write(outs,'(4X,22I5)')(I,I=1,22)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=23,44)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=45,66)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=67,88)
           call edisp(itru,outs)
           write(outs,'(4X,22I5)')(I,I=69,NZS)
           call edisp(itru,outs)
         endif
         call edisp(itru,' ')
 
-C MS senstive, change is MS>90.
+C MS senstive, change if MS>99.
         DO 9994 I=1,NZS
           if(NZS.le.22)then
             write(outs,9993)I,(VEWF(I,J),J=1,NZS)
@@ -1383,28 +1419,39 @@ C MS senstive, change is MS>90.
             call edisp(itru,outs)
             write(outs,'(1x,22F5.2)')(VEWF(I,J),J=23,NZS)
             call edisp(itru,outs)
-          elseif(NZS.ge.45.and.NZS.le.68)then
+          elseif(NZS.ge.45.and.NZS.le.66)then
             write(outs,9993)I,(VEWF(I,J),J=1,22)
             call edisp(itru,outs)
             write(outs,'(1x,22F5.2)')(VEWF(I,J),J=23,44)
             call edisp(itru,outs)
             write(outs,'(1x,22F5.2)')(VEWF(I,J),J=45,NZS)
             call edisp(itru,outs)
-          elseif(NZS.ge.45.and.NZS.le.90)then
+          elseif(NZS.ge.67.and.NZS.le.88)then
             write(outs,9993)I,(VEWF(I,J),J=1,22)
             call edisp(itru,outs)
             write(outs,'(1x,22F5.2)')(VEWF(I,J),J=23,44)
             call edisp(itru,outs)
-            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=45,68)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=45,66)
             call edisp(itru,outs)
-            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=69,NZS)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=67,NZS)
+            call edisp(itru,outs)
+          elseif(NZS.ge.89.and.NZS.le.110)then
+            write(outs,9993)I,(VEWF(I,J),J=1,22)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=23,44)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=45,66)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=67,88)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=89,NZS)
             call edisp(itru,outs)
           endif
  9994   CONTINUE
       endif
 
 C If there are sensors continue.
-      if(NCUB.eq.0)goto 100
+      if(NCUB(IC).eq.0)goto 100
 
 C If next line is *MRT_SENSOR
       CALL STRIPC(IUF,OUTSTR,0,ND,1,'line 1',IER)
@@ -1434,7 +1481,7 @@ C reference to a standard zone!!!!
       nsurmf=NZS+6
 
 C Clear array of view factors from each cube to geometry.
-      do 40 i=1,NCUB
+      do 40 i=1,NCUB(IC)
         do 41 iv=1,6
           do 42 j=1,nsurmf
             ffl(i,iv,j)=0.
@@ -1445,7 +1492,7 @@ C Clear array of view factors from each cube to geometry.
 C Read each sensor block. If no name then assign the sensor index
 C as the name via internal read. If FOCUS is the same as the current
 C sensor name then read the viewfactors and exit.
-      DO 10 I=1,NCUB
+      DO 10 I=1,NCUB(IC)
         CALL STRIPC(IUF,OUTSTR,99,ND,1,'sensor block',IER)
         IF(IER.NE.0)return
         IF(ND.EQ.8.OR.ND.EQ.9)THEN
@@ -1509,11 +1556,6 @@ C act character*1 if 'a' then area weighted, if 'r' ray traced.
 
       integer lnblnk  ! function definition
 
-      integer ncub,ivfok
-      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
-      character CUBN*6
-      common/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
 
       dimension rval(MS)
@@ -1540,7 +1582,7 @@ C Write out the file data.
       WRITE(IUF,'(A,A)',IOSTAT=IOS,ERR=14)'*GEOM  ',
      &  LGEOM(1:lnblnk(LGEOM))
       WRITE(IUF,'(3I4,A)',IOSTAT=IOS,ERR=14)
-     &  NCUB,NZS,ICOMP,
+     &  NCUB(ICOMP),NZS,ICOMP,
      &  '   # numb mrt sensors, numb zone surfs, zone index'
       if(act.eq.'a')then
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=14)
@@ -1572,16 +1614,16 @@ C because it might influence use of view factors in bps.
           fr=fr+VEWF(i,j)
 461     CONTINUE
         WRITE(IUF,4060)i,fr
-4060    FORMAT(' sum over row ',i2,' is : ',F14.10)
+4060    FORMAT(' sum over row ',i3,' is : ',F14.10)
 462   CONTINUE
 
 C If there are any cubes the save this information as well.
-      if(NCUB.eq.0)goto 999
+      if(NCUB(ICOMP).eq.0)goto 999
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=14) '*MRT_SENSOR'
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=14)
      & '# OK, Xorig, Yorig, Zorig,   DX,    DY,    DZ, rotation,  name'
 
-      DO 1180 I=1,NCUB
+      DO 1180 I=1,NCUB(ICOMP)
         WRITE(IUF,34)IVFOK(I),XOC(I),YOC(I),ZOC(I),DXC(I),DYC(I),
      &    DZC(I),CANG(I),CUBN(I),I
   34    FORMAT(I4,6F7.3,F7.1,2X,A6,'   # sensor ',I2)
@@ -2428,13 +2470,13 @@ C If error, return transformed points same as initial.
         CALL EDISP(ITRU,' Transforming coords: ')
         ipos=1
         call arlist(ipos,NB,XT,MV,'S',out96,loutlen,itrunc)
-        WRITE(outs,'(a,20F7.3)') ' X coords:',out96(1:loutlen)
+        WRITE(outs,'(a,a)') ' X coords:',out96(1:loutlen)
         CALL EDISP(ITRU,outs)
         call arlist(ipos,NB,YT,MV,'S',out96,loutlen,itrunc)
-        WRITE(outs,'(a,20F7.3)') ' Y coords:',out96(1:loutlen)
+        WRITE(outs,'(a,a)') ' Y coords:',out96(1:loutlen)
         CALL EDISP(ITRU,outs)
         call arlist(ipos,NB,ZT,MV,'S',out96,loutlen,itrunc)
-        WRITE(outs,'(a,20F7.3)') ' Z coords:',out96(1:loutlen)
+        WRITE(outs,'(a,a)') ' Z coords:',out96(1:loutlen)
         CALL EDISP(ITRU,outs)
       ENDIF
 
@@ -2644,8 +2686,8 @@ C from the 1m offset.The tollerance is currently set to 5mm.
         CALL ORTTRN(X(I),Y(I),Z(I),TMAT,X1,Y1,ZZZ,IERR)
         call eclose(ZZZ,offset,0.005,close)
         if(.NOT.close)then
-	  ivoff=ivoff+1   ! increment number of vertices off by more than 5mm
-	  differ=offset-ZZZ
+          ivoff=ivoff+1   ! increment number of vertices off by more than 5mm
+          differ=offset-ZZZ
           if(abs(differ).gt.abs(ofby))then  ! keep track of largest diff
             iwhich=i
             ofby=differ
@@ -2678,7 +2720,7 @@ C G4 G5 into SG1 SG2 SG3 SG4 SG5.
      &           SOTHER1(MS,3),SUSE1(MS,2),SPARENT1(MS)
 
       CHARACTER CTYPE1*4,SOTHER1*24,SNAME1*12,SMLCN1*32
-      CHARACTER SVFC1*4,SOTF1*32,SUSE1*8,SPARENT1*12
+      CHARACTER SVFC1*4,SOTF1*32,SUSE1*12,SPARENT1*12
 
 C Loop through all data and copy their contents into a parallel common
 C block for later recovery.
@@ -2734,7 +2776,7 @@ C G4 G5 from SG1 SG2 SG3 SG4 SG5.
      &           SOTHER1(MS,3),SUSE1(MS,2),SPARENT1(MS)
 
       CHARACTER CTYPE1*4,SOTHER1*24,SNAME1*12,SMLCN1*32
-      CHARACTER SVFC1*4,SOTF1*32,SUSE1*8,SPARENT1*12
+      CHARACTER SVFC1*4,SOTF1*32,SUSE1*12,SPARENT1*12
 
 C Loop through all data and copy their contents into a parallel common
 C block for later recovery.
@@ -2868,20 +2910,20 @@ C current menu line index. Build up text strings for the menu.
           CALL EMKEY(L,KEY,IER)
           if(MOD.EQ.'T'.OR.MOD.EQ.'t')then
             if(LTHRM(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LTHRM(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
           else
             WRITE(VERT(M),14)KEY,zname(L)
           endif
-   14     FORMAT(A1,1X,A12)
+   14     FORMAT(A1,1X,A)
         ENDIF
    10 CONTINUE
 
@@ -3092,9 +3134,9 @@ C `h` heat transfer (comvective) methods, `-` zone names only.
       CHARACTER*(*) prompt,title,errmsg
 
       DIMENSION VERT(35)
-      CHARACTER VERT*27,KEY*1
+      CHARACTER VERT*28,KEY*1
       character h*72,mod*1,outs*124
-      CHARACTER*72 LCFD
+      CHARACTER*72 LCFD,shdafile
       integer MVERT,IVERT  ! max items and current menu item
 
 C Initialise zone menu variables based on window size.
@@ -3133,16 +3175,16 @@ C Build up text strings for the menu.
           M=M+1
           CALL EMKEY(L,KEY,IER)
           if(mod.eq.'-')then
-            WRITE(VERT(M),'(a1,1x,a12)')KEY,zname(L)
+            WRITE(VERT(M),'(a1,1x,a)')KEY,zname(L)
           elseif(mod.eq.'c')then
             if(LTHRM(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LTHRM(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3151,7 +3193,7 @@ C Build up text strings for the menu.
 C Check for operations files. For each one that exists, scan to see
 C if it has been sorted and notify user.
             if(LPROJ(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LPROJ(L),XST)
               if(XST)then
@@ -3159,47 +3201,55 @@ C if it has been sorted and notify user.
                 CALL ERPFREE(IUO,ISTAT)
                 CALL EROPER(0,iuout,IUO,L,IER)
                 if(ip3ver(L).eq.0)then
-                  WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (older)'
+                  WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (older)'
                   write(outs,'(3a)') 'Operations for ',zname(L),
      &              'needs update (periods unsorted).'
                   call edisp(iuout,outs)
                 elseif(ip3ver(L).eq.1)then
-                  WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                  WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &              ' (defined)'
                 elseif(ip3ver(L).ge.2)then
-                  WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                  WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &              ' (defined)'
                 endif
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
           elseif(mod.eq.'s')then
 
-C Check for existing shading files.
+C Check for existing shading files. Also check if an ASCII version
+C exists if no binary file exists.
             if(LSHAD(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LSHAD(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
-     &            ' (not found)'
+                write(shdafile,'(2a)') lshad(L)(1:lnblnk(lshad(L))),'a'
+                call FINDFIL(shdafile,XST)
+                if(XST)then
+                  WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
+     &              ' (ASCII only)'
+                else
+                  WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
+     &              ' (not found)'
+                endif
               endif
             endif
           elseif(mod.eq.'v')then
 
 C Check for existing viewfactor files.
             if(LVIEW(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LVIEW(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3207,13 +3257,13 @@ C Check for existing viewfactor files.
 
 C Check for casual gain control files.
             if(LCGCIN(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LCGCIN(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3221,13 +3271,13 @@ C Check for casual gain control files.
 
 C Check for CFD domain files.
             if(LCFD(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LCFD(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3235,13 +3285,13 @@ C Check for CFD domain files.
 
 C Check for heat transfer regime files.
             if(LHCCO(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LHCCO(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3409,16 +3459,16 @@ C Build up text strings for the menu.
           M=M+1
           CALL EMKEY(L,KEY,IER)
           if(mod.eq.'-')then
-            WRITE(VERT(M),'(a1,1x,a12)')KEY,zname(L)
+            WRITE(VERT(M),'(a1,1x,a)')KEY,zname(L)
           elseif(mod.eq.'c')then
             if(LTHRM(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LTHRM(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3427,7 +3477,7 @@ C Build up text strings for the menu.
 C Check for operations files. For each one that exists, scan to see
 C if it has been sorted and notify user.
             if(LPROJ(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LPROJ(L),XST)
               if(XST)then
@@ -3435,22 +3485,22 @@ C if it has been sorted and notify user.
                 CALL ERPFREE(IUO,ISTAT)
                 CALL EROPER(0,iuout,IUO,L,IER)
                 if(ip3ver(L).eq.0)then
-                  WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (older)'
+                  WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (older)'
                   write(outs,'(3a)') 'Operations for ',zname(L),
      &              'needs update (periods unsorted).'
                   call edisp(iuout,outs)
                 elseif(ip3ver(L).eq.1)then
-                  WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                  WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &              ' (defined v1)'
                 elseif(ip3ver(L).eq.2)then
-                  WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                  WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &              ' (defined v2)'
                 elseif(ip3ver(L).gt.2)then
-                  WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                  WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &              ' (definedv2+)'
                 endif
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3458,13 +3508,13 @@ C if it has been sorted and notify user.
 
 C Check for existing shading files.
             if(LSHAD(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LSHAD(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3472,13 +3522,13 @@ C Check for existing shading files.
 
 C Check for existing obstruction block files.
             if(ZOBS(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(ZOBS(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3486,13 +3536,13 @@ C Check for existing obstruction block files.
 
 C Check for existing viewfactor files.
             if(LVIEW(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LVIEW(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3500,13 +3550,13 @@ C Check for existing viewfactor files.
 
 C Check for casual gain control files.
             if(LCGCIN(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LCGCIN(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3514,13 +3564,13 @@ C Check for casual gain control files.
 
 C Check for CFD domain files.
             if(LCFD(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LCFD(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3528,13 +3578,13 @@ C Check for CFD domain files.
 
 C Check for heat transfer regime files.
             if(LHCCO(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LHCCO(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3692,7 +3742,7 @@ C show attributes in list.
       DIMENSION VERT(35),VERTS(35)
 
       CHARACTER*(*) PROMPT1,PROMPT2
-      CHARACTER H*72,VERT*28,VERTS*40,KEY*1,MOD*1,title*29
+      CHARACTER H*72,VERT*32,VERTS*42,KEY*1,MOD*1,title*29
       LOGICAL SELECT
       integer loopstart,loopend,i,icc   ! for looping
       logical usesbasesimp
@@ -3716,12 +3766,12 @@ C IVERT is the menu position, MVERT the current number of menu lines.
         write(title,'(2a)')'  Surfaces in ',
      &    zname(IZONE)(1:lnzname(IZONE))
         MHEAD=1
-        VERTS(1)='  Name         Composition  Facing'
+        VERTS(1)='  Name         Composition   Facing'
       elseif(MOD.eq.'A')then
         write(title,'(2a)')'  Surfaces in ',
      &    zname(IZONE)(1:lnzname(IZONE))
         MHEAD=1
-        VERTS(1)='  Name         Composition  Facing'
+        VERTS(1)='  Name         Composition   Facing'
       endif
       MCTL=4
       ILEN=NZSUR(IZONE)
@@ -3740,19 +3790,32 @@ C current menu line index. Build up text strings for the menu.
           M=M+1
           CALL EMKEY(L,KEY,IER)
           icc=IZSTOCN(izone,L)
-          if(MOD.eq.'-')then
-            WRITE(VERT(M),14)KEY,SSNAME(icc),SSMLCN(icc)(1:12)
-   14       FORMAT(A1,1X,A,1X,A)
+          if(icc.lt.1)then
+            continue
           else
-
-C << consider writing out different info depending on what SSOTHER is >>
-            if(icc.gt.0)then
-              WRITE(VERTS(M),13)KEY,SSNAME(icc),SSMLCN(icc)(1:12),
-     &          SSOTHER(icc,1)(1:12)
-   13         FORMAT(A1,1X,A,1X,A,1X,A12)
-            else
-              WRITE(VERTS(M),'(2a)')KEY,' unresolved surface...'
+            lnsmlcn=lnblnk(SSMLCN(icc))
+            if(lnsmlcn.gt.16) lnsmlcn=16
+            if(MOD.eq.'-')then
+              WRITE(VERT(M),14)KEY,SSNAME(icc),SSMLCN(icc)(1:lnsmlcn)
+   14         FORMAT(A1,1X,A,1X,A)
             endif
+          endif
+   
+C << consider writing out different info depending on what SSOTHER is >>
+          if(icc.gt.0)then
+            lnn=lnblnk(SSNAME(icc))
+            lnsmlcn=lnblnk(SSMLCN(icc))
+            lnoth=lnblnk(SSOTHER(icc,1))
+            if((lnn+lnsmlcn+lnoth).lt.36)then
+              WRITE(VERTS(M),13)KEY,SSNAME(icc)(1:lnn),
+     &          SSMLCN(icc)(1:lnsmlcn),SSOTHER(icc,1)(1:lnoth)
+            else
+              WRITE(VERTS(M),13)KEY,SSNAME(icc)(1:lnn),
+     &          SSMLCN(icc)(1:15),SSOTHER(icc,1)(1:lnoth)
+            endif
+   13       FORMAT(A,2X,A,2X,A,2X,A)
+          else
+            WRITE(VERTS(M),'(2a)')KEY,' unresolved surface...'
           endif
         ENDIF
    10 CONTINUE
@@ -3898,7 +3961,7 @@ C Write menu displaying a list of layer names
       header=3
       footer=3
       write(item(1),'(a,a)') 'a surface name: ',SSNAME(icc)
-      write(item(2),'(a,a)') 'c constr name: ',mlcname(imatch)(1:12)
+      write(item(2),'(a,a)') 'c constr name: ',mlcname(imatch)(1:16)
       item(3)='  ----------------------------'
       do 10 j=1,LAYERS(imatch)
 
@@ -3917,7 +3980,7 @@ C Pick up the material name of each layer. Uses zero matarrayindex to signal gap
           call usrmsg('Materials are incomplete or not yet scanned.',
      &      'Please check your model materials file.','W')
         endif
-        write(item(header+j),'(a,i2,1x,a12)')' Layer: ',j,PNAM(j)
+        write(item(header+j),'(a,i2,1x,a)')' Layer: ',j,PNAM(j)
         ndisp=header+j
   10  continue
       item(ndisp+footer-2)='  ----------------------------'
@@ -4191,13 +4254,13 @@ C Similar to code ZLIST in esrures/utils.F.
   42  continue
       if(length.lt.236)then
         WRITE(outs,5,iostat=ios,err=1)(zname(list(I)),I=1,inlist)
-    5   FORMAT(' Zones: ',20(a12,' '))
+    5   FORMAT(' Zones: ',20(a,' '))
         call sdelim(outs,outsd,'S',IW)
         zdescr=outsd
         return
       else
         if(inlist.eq.1)then
-         WRITE(ZDESCR,'(A,I2,2A)')' Zone (',list(1),') ',zname(list(1))
+         WRITE(ZDESCR,'(A,I3,2A)')' Zone (',list(1),') ',zname(list(1))
         elseif(inlist.gt.1)THEN
 
 C If full names will not fit in zdescr then write out indices only.
@@ -4227,6 +4290,262 @@ C Trap for I/O errors.
       return
       END
 
+C -------- discovercfg
+C Discovercfg provides a list of model cfg files within a passed
+C folder and returns full path of selected in sfile. If user did
+C not select ier is -1, if there were no matching files ier is -2
+C and ier = 1 was an error in composition. 
+      subroutine discovercfg(subpath,sfile,ier)
+#include "espriou.h"
+#include "building.h"
+#include "model.h"
+      character subpath*84 ! folder to scan for cfg
+      character sfile*144  ! full path of cfg file name selected
+
+C Local variables.
+      character action*3,fs*1
+      character outs*124,t144*144
+      logical unixok
+
+      common/OUTIN/IUOUT,IUIN
+    
+      integer nboflistf  ! how many folders or file names passed
+      integer listfoldertype   ! zero if unused one if folder two if file
+      integer lenlistfolder    ! width of each string
+      character*72 listfolder  ! array of folder or file names
+      common/listfold/nboflistf,listfoldertype(MFFOLD),
+     &                lenlistfolder(MFFOLD),listfolder(MFFOLD)
+
+      dimension ivlist(MFFOLD)
+      character*70 listfc70(MFFOLD)
+      character*70 listfc70s(MFFOLD)
+      character*72 listfolders(MFFOLD)  ! for sorted
+      integer lenlistfolders(MFFOLD)    ! for sorted
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='discovercfg'  ! set for subroutine
+      helptopic='cfg_avail_files'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
+C Echo search criteria.
+      write(outs,*,IOSTAT=ios,ERR=16) 'models in folder ',subpath
+      call edisp(iuout,outs)
+
+C Re-establish action and file separator prior to call to getfileslist.
+      action='cfg'
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+      call getfileslist(subpath,action,nlistf)
+      call printfileslist(outs,'p')
+
+C Try to use information gathered from file scan.
+      if(nlistf.gt.0)then
+        ix=1
+        do 76 ij=1,nlistf
+          listfc70(ij)=' '
+          lex=lenlistfolder(ij)
+          if(lex.gt.70) lex=70
+          if(lex.le.1)then
+            write(listfc70(ij),'(a)') '  '
+          else
+            write(listfc70(ij),'(a)') listfolder(ij)(1:lex)
+          endif
+          if(lex.gt.maxw) maxw=lex  ! ensure widest string can be displayed
+  76    continue
+        if(maxw.gt.70) maxw=70  ! ensure list fits
+        if(maxw.lt.15) maxw=15  ! ensure title can be seen
+
+C Sort both file name lists.
+        do ij=1,nlistf
+          listfc70s(ij)=listfc70(ij)
+          listfolders(ij)=listfolder(ij)
+        enddo
+        call SORTSTRA(listfc70s,nlistf)
+        call SORTSTRA(listfolders,nlistf)
+        do ij=1,nlistf
+C          write(6,*) ij,' ',listfc70s(ij)
+          lenlistfolders(ij)=lnblnk(listfolders(ij))
+        enddo
+
+C Select from the list. If prj was started in model cfg folder
+C (pwdtocfg = !) write with pwdinitial, otherwise also include
+C the pwdtocfg part of the path.
+C        write(6,*) 'pwdtocfg is ',pwdtocfg
+        CALL EPICKS(IX,ivlist,outs,' ',
+     &    maxw,nboflistf,listfc70s,'Available files',IER,nbhelp)
+        if(ix.eq.1)then
+          if(pwdtocfg(1:1).eq.'!')then
+            write(sfile,'(3a)',IOSTAT=ios,ERR=17) 
+     &        pwdinitial(1:lnpwdi),fs,
+     &        listfolders(ivlist(ix))(1:lenlistfolders(ivlist(ix)))
+          else
+            write(sfile,'(5a)',IOSTAT=ios,ERR=17) 
+     &        pwdinitial(1:lnpwdi),fs,pwdtocfg(1:lnpwdc),fs,
+     &        listfolders(ivlist(ix))(1:lenlistfolders(ivlist(ix)))
+          endif
+        else
+          sfile='UNKNOWN'
+          ier=-1   ! user did not select
+        endif
+      else
+        sfile='UNKNOWN'
+        ier=-2   ! no matching files found
+      endif
+
+C Debug.
+      write(6,*) 'sfile is ',sfile(1:lnblnk(sfile))
+      return
+
+C Error conditions.
+   16 if(IOS.eq.2)then
+        CALL USRMSG('No permission to write outs',outs,'W')
+      else
+        CALL USRMSG('String write error in outs',outs,'W')
+      endif
+      IER=1
+      return
+   17 if(IOS.eq.2)then
+        CALL LUSRMSG('No permission to write sfile',sfile,'W')
+      else
+        CALL LUSRMSG('String write error in sfile',sfile,'W')
+      endif
+      IER=1
+      return
+      end
+
+C ******* FDPWDTOCFG
+C FDPWDTOCFG: Given a file name (fstring) and using the current value
+C of pwdinitial (if applications have established this via a 
+C call usrdir(pwdinitial) as they start) then this checks if fstring
+C contains a (pwdtocfg) and a file name (filen). Begins with similar 
+C logic to fdroot from esru_lib.F and filen should be the same as
+C the file name returned in fdroot.  
+C fdpwdtocfg updates the common block variable pwdtocfg.
+
+C Ppath is returned for information purposes << consider removing this >>
+      SUBROUTINE fdpwdtocfg(fstring,ppath,filen)
+#include "espriou.h"
+#include "building.h"
+#include "model.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      CHARACTER*(*) ppath,filen,fstring
+C      character fstring*72
+      character fs*1
+      character testpwdtocfg*72
+      logical unixok
+      integer ilbfstr  ! last actual char in fstring
+      integer ipos     ! the leftward moving character position
+      integer ilstr    ! declaired length of fstring
+      integer ilenfilen ! declaired length of filen to be returned
+      integer ilenpath ! declaired length of path to be returned
+
+C Set fileseparator depending on OS.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Clear variables and get string lengths.
+      filen = ' '
+      ilbfstr = lnblnk(fstring)
+      ipos = ilbfstr
+      ilstr = LEN(fstring)
+      ilenfilen = LEN(filen)
+      ilenpath = LEN(ppath)
+
+C Loop backwards from last non-blank character until a separator is found.
+ 344  continue
+      ipos=ipos-1
+      if(fstring(ipos:ipos).eq.fs)then
+        filen = ' '
+        write(filen,'(a)',IOSTAT=IOS,ERR=1) fstring(ipos+1:ilbfstr)
+        ppath = ' '
+        if(ipos.gt.ilenpath)then
+          write(ppath,'(a)',IOSTAT=IOS,ERR=1) fstring(1:ilenpath)
+        else
+          write(ppath,'(a)',IOSTAT=IOS,ERR=1) fstring(1:ipos)
+        endif
+        continue
+      elseif(fstring(ipos:ipos).eq.'/')then
+        filen = ' '
+        write(filen,'(a)',IOSTAT=IOS,ERR=1) fstring(ipos+1:ilbfstr)
+        ppath = ' '
+        if(ipos.gt.ilenpath)then
+          write(ppath,'(a)',IOSTAT=IOS,ERR=1) fstring(1:ilenpath)
+        else
+          write(ppath,'(a)',IOSTAT=IOS,ERR=1) fstring(1:ipos)
+        endif
+        continue
+      else
+
+C Arrived at the first character. There have been no file separators
+C so filen is fstring (truncated if necessary) and the path becomes
+C the equivalent of where-i-am-now.
+        if(ipos.eq.1)then
+C          call edisp(iuout,'No folder separator found.')
+          if(ilstr.ge.ilenfilen)then
+            filen = ' '
+            write(filen,'(a)',IOSTAT=IOS,ERR=1)fstring(1:ilenfilen)
+            write(ppath,'(a1,a1)',IOSTAT=IOS,ERR=1) '.',fs
+            continue
+          elseif(ilstr.lt.ilenfilen)then
+            write(filen,'(a)')fstring(1:lnblnk(fstring))
+            write(ppath,'(a1,a1)',IOSTAT=IOS,ERR=1) '.',fs
+            continue
+          endif
+        elseif(ipos.gt.1)then
+          goto 344   ! read some more
+        endif
+      endif
+
+C Now see about comparing pwdinitial with the initial portion of
+C ppath to derive pwdtocfg. Start at left and work to the end of
+C pwdinitial looking for the same characters.
+      loop=0
+  345 continue
+      loop=loop+1
+      if(ppath(loop:loop).eq.pwdinitial(loop:loop))then
+        if(loop.lt.lnpwdi) goto 345
+        if(loop.eq.lnpwdi.and.ipos.gt.lnpwdi)then
+          write(pwdtocfg,'(a)') ppath(loop+1:ipos)
+          lnpwdc=lnblnk(pwdtocfg)
+C Debug
+C          write(6,*) ipos,loop,lnpwdi,lnpwdc,ppath(1:lnblnk(ppath))
+C          write(6,*) 'pwdtocfg ',pwdtocfg(1:lnblnk(pwdtocfg))
+        elseif(loop.eq.lnpwdi.and.ipos.eq.lnpwdi)then
+          write(pwdtocfg,'(a)') '!'
+        endif
+        return
+      else
+C << not sure >>
+      endif
+
+      return
+
+   1  if(IOS.eq.2)then
+        call edisp(iuout,
+     &  'fdpwdtocfg: permission error composing path or file.')
+        call edisp(iuout,fstring)
+      else
+        call edisp(iuout,
+     &    'fdpwdtocfg: error composing path or file from string.')
+        call edisp(iuout,fstring)
+      endif
+      return
+      end
+      
+
 C ******************** DeallocateAllArrays ****************************
 C *********************************************************************
 
@@ -4243,3 +4562,59 @@ C *********************************************************************
       CALL AIM2_DEALLOCATE
       
       END SUBROUTINE DeallocateAllArrays
+
+
+C A fortran implementation of the c surboutine dinterval.
+      subroutine dintervalf(v1,v2,dv,ndec,mode)
+      real v1,v2,dv
+      integer ndec,mode
+C When 'mode'=1 the hour interval on the graphical time (x-axis) is
+C set as follow:
+C v=v2-v1 for v < 12 dv=1, v < 18 dv=2, v < 24 dv=3
+C             v < 48 dv=6, v < 96 dv=12 else dv=24.
+C Should be the same logic as in esru_x.c.
+      real v,dvv,x,w
+      integer ix
+      if(mode.eq.0)then
+        vv = v2 - v1
+        v = abs(vv)
+        x = log10(v)
+        ix = nint(x)
+        if (x.lt.0.0) ix=ix-2
+        dx = real(ix)
+
+        dz = 10.0**dx
+        vr =  v / dz
+        w = 10.0
+        if (vr.lt.5.0) w = 5.0
+        if (vr.lt.2.0) w = 2.0
+
+        dvv = w * 0.1 * dz
+        if (vv.lt.0.0) dvv = -dvv
+
+        nd = 1 - ix
+        if (w.eq.10.0)then
+          nd=nd-1
+        elseif (w.eq.5.0)then
+          nd = 1
+        elseif (w.eq.2.0)then
+          nd = 2
+        endif
+        if (nd.lt.0) nd = 0
+      else
+        v = v2 - v1
+        dvv = 168.0
+        if (v.lt.4320.0) dvv = 48.0
+        if (v.lt.1440.0) dvv = 24.0
+        if (v.lt.338.0) dvv = 12.0
+        if (v.lt.122.0) dvv = 8.0
+        if (v.lt.50.0) dvv = 4.0
+        if (v.lt.26.0) dvv = 3.0
+        if (v.lt.20.0) dvv = 2.0
+        if (v.lt.14.0) dvv = 1.0
+        nd = 0
+      endif
+      dv = dvv
+      ndec = nd
+      return
+      end

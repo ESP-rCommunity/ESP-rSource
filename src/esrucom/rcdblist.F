@@ -19,8 +19,8 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C rcdblist.F includes:
-C  rdblist - scan list of climate databases and present selection to user.
-C  matchcdb - scan list of climate databases for name and return database.
+C  rdblist - scan list of weather databases and present selection to user.
+C  matchcdb - scan list of weather databases for name and return database.
 C  scancdblist - scan list for documentation and typical periods
 C  itemclimatelist - parse and extract information about one entry
 C     in climatelist file.
@@ -29,7 +29,7 @@ C NOTE: currently up to 124 climate name references are supported. If
 C the climatelist file exceeds this the array name should be revised.
 
 C ********* rdblist
-C Scan list of climate databases and present selection to user.
+C Scan list of weather databases and present selection to user.
       subroutine rdblist(idblfil,clmdb,actreturn,ier)
 #include "epara.h"
 #include "esprdbfile.h"
@@ -87,7 +87,7 @@ C Default season definitions.
       CALL EDAY(1,5,is1sums)
       CALL EDAY(31,8,is1sumf)
 
-C Open the list of climate databases. If we got here with a zero
+C Open the list of weather databases. If we got here with a zero
 C file unit number then reset it to something safe.
       if(idblfil.eq.0)then
         idblfil=ifil+1
@@ -98,14 +98,14 @@ C file unit number then reset it to something safe.
 C Read the header and see if '*CLIMATE_LIST' is a string.
       CALL STRIPC(idblfil,OUTSTR,0,ND,0,'header',IER)
       if(outstr(1:13).ne.'*CLIMATE_LIST')then
-        call edisp(iuout,' Not a list of climate databases... ')
+        call edisp(iuout,' Not a list of weather databases... ')
         ier=1
         return
       endif
       write(currentfile,'(a)') cdblfil(1:lnblnk(cdblfil))
 
 C In the first pass, make up the display, beginning with
-C an organizational header and the `names' of each climate db.
+C an organizational header and the `names' of each weather db.
       clmdb='UNKNOWN'
       llclmdb='UNKNOWN'
       MHEAD=2
@@ -161,12 +161,12 @@ C If a long list include page facility text.
       ENDIF
       write(mitem(1),'(2x,a30)') group(1:30)
       mitem(2)   =  '  __________________________  '
-      mitem(M+2)=  '< user defined climate db     '
-      mitem(M+3)=  '* new climate db (all zeros)  '
+      mitem(M+2)=  '< user defined weather db     '
+      mitem(M+3)=  '* new weather db (all zeros)  '
       mitem(M+4)=  '? help                        '
       mitem(M+5)=  '- exit                        '
 
-      CALL EMENU('  Climate sets',mitem,NCO,ICO)
+      CALL EMENU('  Weather sets',mitem,NCO,ICO)
       IF(ICO.EQ.NCO)THEN
         CALL ERPFREE(idblfil,ISTAT)
         return
@@ -176,7 +176,7 @@ C If a long list include page facility text.
       ELSEIF(ICO.EQ.(NCO-1))THEN
 
 C Help @ db file level.
-        h(1)='Several climate databases are available for browsing.'
+        h(1)='Several weather databases are available for browsing.'
         h(2)='To find out more about one of them simply select and'
         h(3)='additional information will be presented.  If you'
         h(4)='wish to choose one, use the choose option.'
@@ -200,7 +200,7 @@ C User supplied (which assumes default periods). Use file browser
 C with the GTK version.
         clmdb=' '
         llclmdb=' '
-        h(1)='This climate db is assumed to be in ESP-r format.'
+        h(1)='This weather db is assumed to be in ESP-r format.'
         h(2)='Note: selecting a file that is not in the official'
         h(3)='list (climate/climatelist) will not contain the meta-'
         h(4)='data about the length of seasons or typical weeks. '
@@ -208,21 +208,21 @@ C with the GTK version.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
-            CALL EASKF(llclmdb,' Climate file (esp-r binary format)?',
-     &        ' ',96,DCLIM,'climate file name',IER,4)
+            CALL EASKF(llclmdb,' Weather file (esp-r binary format)?',
+     &        ' ',96,DCLIM,'weather file name',IER,4)
           elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(llclmdb,' Climate file (esp-r binary format)?',
-     &        ' ',124,DCLIM,'climate file name',IER,4)
+            CALL EASKF(llclmdb,' Weather file (esp-r binary format)?',
+     &        ' ',124,DCLIM,'weather file name',IER,4)
           elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(llclmdb,' Climate file (esp-r binary format)?',
-     &        ' ',144,DCLIM,'climate file name',IER,4)
+            CALL EASKF(llclmdb,' Weather file (esp-r binary format)?',
+     &        ' ',144,DCLIM,'weather file name',IER,4)
           endif
         elseif(iglib.eq.2)then
-          CALL EASKF(llclmdb,' Climate file (esp-r binary format)?',
-     &      ' ',144,DCLIM,'climate file name',IER,4)
+          CALL EASKF(llclmdb,' Weather file (esp-r binary format)?',
+     &      ' ',144,DCLIM,'weather file name',IER,4)
         else
-          CALL EASKF(llclmdb,' Climate file (esp-r binary format)?',
-     &      ' ',96,DCLIM,'climate file name',IER,4)
+          CALL EASKF(llclmdb,' Weather file (esp-r binary format)?',
+     &      ' ',96,DCLIM,'weather file name',IER,4)
         endif
         IF(llclmdb(1:2).EQ.'  ')GOTO 289
 
@@ -241,7 +241,7 @@ C If there are enough items allow paging control via EKPAGE.
         ENDIF
       ELSEIF(ICO.GT.MHEAD.AND.ICO.LT.(NCO-MCTL+1))THEN
 
-C Present information on a climate db.
+C Present information on a weather db.
         CALL KEYIND(NCO,ICO,IFOC,IO)
         look=name(IFOC)
         CALL EFOPSEQ(idblfil,cdblfil,1,IER)
@@ -299,7 +299,7 @@ C actreturn 'u' to start clm module.
       end
 
 C ********* matchcdb
-C Scan list of climate databases for name and return database.
+C Scan list of weather databases for name and return database.
       subroutine matchcdb(idblfil,alias,clmdb,ier)
 #include "espriou.h"
       
@@ -315,7 +315,7 @@ C Scan list of climate databases for name and return database.
       character group*32,tlook*32,outs*124,louts*248
       character clmdb*144,avail*10,alias*32
 
-C Open the list of climate databases.
+C Open the list of weather databases.
       CALL EFOPSEQ(idblfil,cdblfil,1,IER)
       if(ier.ne.0)return
       write(currentfile,'(a)') cdblfil(1:lnblnk(cdblfil))
@@ -323,12 +323,12 @@ C Open the list of climate databases.
 C Read the header and see if '*CLIMATE_LIST' is a string.
       CALL STRIPC(idblfil,OUTSTR,0,ND,0,'header',IER)
       if(outstr(1:13).ne.'*CLIMATE_LIST')then
-        call edisp(iuout,' Not a list of climate databases... ')
+        call edisp(iuout,' Not a list of weather databases... ')
         ier=1
         return
       endif
 
-C In the first pass, make up list of `names' of each climate db.
+C In the first pass, make up list of `names' of each weather db.
       clmdb='UNKNOWN'
       in=0
   2   CALL STRIPC(idblfil,OUTSTR,0,ND,0,'menu scan',IER)
@@ -437,7 +437,7 @@ C the climate file was not selected via scan of climatelist.
       logical ok
       logical unixok
 
-C Open the list of climate databases.
+C Open the list of weather databases.
       ok=.false.
       CALL EFOPSEQ(idblfil,cdblfil,1,IER)
 
@@ -454,7 +454,7 @@ C If fail during file opening.
 C Read the header and see if '*CLIMATE_LIST' is a string.
       CALL STRIPC(idblfil,OUTSTR,0,ND,0,'header',IER)
       if(outstr(1:13).ne.'*CLIMATE_LIST')then
-        call edisp(iuout,' Not a list of climate databases... ')
+        call edisp(iuout,' Not a list of weather databases... ')
         ier=1
         ok=.false.
         return
@@ -537,7 +537,7 @@ C seasons.h provides typper and typsea
 C Strings associated with one climatelist item.
 C clmlnam (char*32) is the selection list string
 C clmlaid is aide (char*72) memoire for list item
-C clmldbfile (char*144) is the climate file (with path info)
+C clmldbfile (char*144) is the weather file (with path info)
 C clmlavail (char*10) is either ONLINE or OFFLINE
 C clmlhelp (char*72) is array of help strings
       common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
@@ -570,7 +570,7 @@ C      write(6,*) outstr(1:lnblnk(outstr))
           goto 4
         elseif(act.eq.'r')then
           call egetrm(outstr,K,clmdb,'W','db file',IER)
-          write(louts,'(a,a)') ' Climate database: ',
+          write(louts,'(a,a)') ' Weather database: ',
      &      clmdb(1:lnblnk(clmdb))
           call edisp248(iuout,louts,100)
           write(clmldbfile,'(a)') clmdb(1:lnblnk(clmdb))
@@ -590,7 +590,7 @@ C      write(6,*) outstr(1:lnblnk(outstr))
       elseif(WORD(1:6).eq.'*avail')then
         call egetrm(outstr,K,clmlavail,'W','db avail',IER)
         if(act.eq.'s')then
-          write(outs,'(a,a)') ' Climate is : ',clmlavail
+          write(outs,'(a,a)') ' Weather is : ',clmlavail
           call edisp(iuout,outs)
         endif
         goto 4
@@ -780,7 +780,7 @@ C for the line used in ASKOK.
  1546     continue
           if(clmlavail(1:7).eq.'OFFLINE')then
             call usrmsg(
-     & 'The selected climate file is not `ONLINE` and so you will have',
+     & 'The selected weather file is not `ONLINE` and so you will have',
      & 'to ask your systems administrator to bring it on line. ','W')
             CALL EASKAB(sethead,' ','Exit clm','Select another ? ',IW,1)
             if(IW.eq.2)then
@@ -812,7 +812,7 @@ C for the line used in ASKOK.
         elseif(act.eq.'s')then
           if(clmlavail(1:7).eq.'OFFLINE')then
             call usrmsg(
-     & 'The selected climate file is not `ONLINE` and so you will have',
+     & 'The selected weather file is not `ONLINE` and so you will have',
      & 'to ask your systems administrator to bring it on line. ','W')
             clmdb='UNKNOWN'
             actreturn='m'

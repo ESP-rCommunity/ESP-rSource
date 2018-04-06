@@ -52,7 +52,19 @@ C LPRFDB,IPRODB (for event profile database)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      
+
+C To signal to MFWRIT that globals are available from graphic network.
+C Currently set .FALSE.
+      logical haveglobal
+      COMMON/MFLOW11/haveglobal
+ 
+C Simulation preferences as per simcon.F in esrubps, some of which filled via
+C in the menu below.
+C << work in progress >>
+C      COMMON/MFSINC/MFBSNC
+C      COMMON/MFCALC/IPSMOD,MSLVTP
+C      COMMON/MFLITR/MAXITF,FERREL,FERMFL,PMAX,STEFFR,MFTRAC,ITER,IOK
+     
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -127,7 +139,7 @@ C unix and non-unix machine types).
       LTMP=LAPROB
       helptopic='flow_network_file_name'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      CALL EASKSCMD(LTMP,' Flow network file ?',
+      CALL EASKSCMD(LTMP,'Flow network file ?',
      &  ' ','dereference',clkok,72,' ','flow network file',IER,nbhelp)
       call usrmsg(' ',' ','- ')
 
@@ -136,10 +148,7 @@ C blank and update the configuration file.
       if(clkok)then
         if(cfgok.and.(.NOT.browse))then
           LAPROB='  '
-          NNOD=0
-          NCMP=0
-          NCNN=0
-          IAIRN=0
+          NNOD=0; NCMP=0; NCNN=0; IAIRN=0
           do 88 i=1,ncomp
             ICAAS(i)=0
   88      continue
@@ -322,6 +331,39 @@ C Other definition functions.
       write(ITEM1(16),
      &'(a,F4.2,a)')' Wind reduction factor (',wred,')'
       ITEM1(17)   ='f Set wind reduction         '
+
+C << place to add in simulation preferences >>
+C      if(IPSMOD.eq.1)then
+C        ITEMG(9)=   'h Mass flow stack press >> sending node'
+C      elseif(IPSMOD.eq.2)then
+C        ITEMG(9)=   'h Mass flow stack press >> avg of nodes'
+C      elseif(IPSMOD.eq.0)then
+C        ITEMG(9)=   'h Mass flow stack press >> NA          '
+C      endif
+C      if(MSLVTP.eq.1)then
+C        ITEMG(10)=  'i Mass flow solution >> Gaussian        '
+C      elseif(MSLVTP.eq.2)then
+C        ITEMG(10)=  'i Mass flow solution >> LU decomposition'
+C      elseif(MSLVTP.eq.0)then
+C        ITEMG(10)=  'i Mass flow solution >> NA              '
+C      endif
+C      if(MFTRAC.eq.-1)then
+C        ITEMG(11)=  'j Mass flow trace >> silent             '
+C      elseif(MFTRAC.eq.0)then
+C        ITEMG(11)=  'j Mass flow trace >> iterations only    '
+C      elseif(MFTRAC.eq.1)then
+C        ITEMG(11)=  'j Mass flow trace >> data on worst node '
+C      elseif(MFTRAC.eq.2)then
+C        ITEMG(11)=  'j Mass flow trace >> data on all nodes  '
+C      elseif(MFTRAC.eq.3)then
+C        ITEMG(11)=  'j Mass flow trace >> all nodes + solver '
+C      endif
+C      if(MFBSNC.eq.0)then
+C        ITEMG(12)=  'k Mass flow timestep >> 1 per hour      '
+C      elseif(MFBSNC.eq.1)then
+C        ITEMG(12)=  'k Mass flow timestep >> 1 per zone_step '
+C      endif
+
       ITEM1(18)   ='  __________________________ '
       ITEM1(19)   ='g Link nodes and zones       '
       ITEM1(20)   ='  __________________________ '
@@ -367,8 +409,7 @@ C Transfer data to fluid flow file and return to main menu.
           CALL EFOPSEQ(IUM,LAPROB,4,IER)
           IF(IER.NE.0)goto 78
 
-C << Note need a check so network flow file data is not written
-C << to a graphic network flow file.
+          haveglobal=.FALSE.  ! global preferences not yet available
           CALL MFWRIT(IUM)
           CALL ERPFREE(IUM,ISTAT)
         ENDIF
@@ -467,8 +508,7 @@ C Free the file after writing it.
         CALL EFOPSEQ(IUM,LAPROB,4,IER)
         IF(IER.NE.0)goto 80
 
-C << Note need a check so network flow file data is not written
-C << to a graphic network flow file.
+        haveglobal=.FALSE.  ! global preferences not yet available
         CALL MFWRIT(IUM)
         CALL ERPFREE(IUM,ISTAT)
         OUTS=' '
@@ -500,8 +540,7 @@ C Ask if changes need to be saved
           CALL EFOPSEQ(IUM,LAPROB,4,IER)
           IF(IER.NE.0)goto 81
 
-C << Note need a check so network flow file data is not written
-C << to a graphic network flow file.
+          haveglobal=.FALSE.  ! global preferences not yet available
           CALL MFWRIT(IUM)
           CALL ERPFREE(IUM,ISTAT)
           OUTS=' '
@@ -565,6 +604,7 @@ C
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
+#include "prj3dv.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       
@@ -584,16 +624,11 @@ C LAPRES,IAPRES (for window pressure databases)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-
       CHARACTER outs*124,prt*60,DEPRE*40
       CHARACTER NDNAM*12,NODID*12,T12*12
       CHARACTER LAPROB*72,t72*72,t144*144
       CHARACTER PCITM(35)*42,KEY*1,MOD*1
-      LOGICAL MODIFY,MODLEN,MODBND,OK,dok
+      LOGICAL OK,dok
       integer IVV  ! for radio button
       integer NITMS,IVERT ! max items and current menu item
 
@@ -696,17 +731,9 @@ C Get associated zone volume and height if type 0 or 1.
 C Redraw the bluiding in the graphic screen.
             MODBND=.TRUE.
             MODLEN=.TRUE.
-            ITDSP=1
-            ITBND=1
-            ITEPT=0
-            ITZNM=0
-            ITSNM=1
-            ITVNO=1
-            ITORG=0
-            ITSNR=1
-            ITGRD=1
-            GRDIS=0.0
-            ITPPSW=0
+            ITDSP=1; ITBND=1; ITEPT=0; ITZNM=0
+            ITSNM=1; ITVNO=1; ITORG=0; ITSNR=1
+            ITGRD=1; GRDIS=0.0; ITPPSW=0
             nzg=NCOMP
             if(nzg.gt.0)then
               DO 44 I=1,nzg
@@ -792,17 +819,9 @@ C Allow the user to determine the surface associated with this node.
 C Redraw the building in the graphic screen.
           MODBND=.TRUE.
           MODLEN=.TRUE.
-          ITDSP=1
-          ITBND=1
-          ITEPT=0
-          ITZNM=0
-          ITSNM=1
-          ITVNO=1
-          ITORG=0
-          ITSNR=1
-          ITGRD=1
-          GRDIS=0.0
-          ITPPSW=0
+          ITDSP=1; ITBND=1; ITEPT=0; ITZNM=0
+          ITSNM=1; ITVNO=1; ITORG=0; ITSNR=1
+          ITGRD=1; GRDIS=0.0; ITPPSW=0
           nzg=NCOMP
           if(nzg.gt.0)then
             DO 45 I=1,nzg
@@ -823,7 +842,7 @@ C (Re)Set all surfaces to standard line width.
 
 C General image option flags.
           call georead(IFIL+1,LGEOM(IZ),IZ,0,ITRU,IER)
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           MODBND=.TRUE.
           CALL INLNST(1)
           ITZNM=0
@@ -1201,6 +1220,8 @@ C Then call appropriate supplementary data input subroutine.
           CALL MF010I(IFCMP,IERL)
         ELSE IF(ITPCMP(IFCMP).EQ. 11) THEN
           CALL MF011I(IFCMP,IERL)
+        ELSE IF(ITPCMP(IFCMP).EQ. 12) THEN
+          CALL MF012I(IFCMP,IERL)
         ELSE IF(ITPCMP(IFCMP).EQ. 15) THEN
           CALL MF015I(IFCMP,IERL)
         ELSE IF(ITPCMP(IFCMP).EQ. 17) THEN
@@ -1623,20 +1644,17 @@ C Fluid flow model file: edit or input wind speed reduction factor
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "prj3dv.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/MFLCLM/DRYB,QDIF,QDNR,IRVH,WDIR,WSPD,WRED
 
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       CHARACTER outs*124
-      LOGICAL OK,dok,MODIFY,MODLEN,MODBND
+      LOGICAL OK,dok
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -1688,19 +1706,11 @@ C Allow the user to select the roof of the building
 
 C General image option flags.
 C << might want to save current values for later recovery >>
-      ITDSP=1
-      ITBND=1
-      ITEPT=0
-      ITZNM=0
-      ITSNM=0
-      ITVNO=1
-      ITORG=1
-      ITSNR=1
-      ITGRD=1
-      GRDIS=0.0
-      ITPPSW=0
+      ITDSP=1; ITBND=1; ITEPT=0; ITZNM=0; ITSNM=0
+      ITVNO=1; ITORG=1; ITSNR=1
+      ITGRD=1; GRDIS=0.0; ITPPSW=0
 
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODBND=.TRUE.
       CALL INLNST(1)
       ITVNO=0
@@ -1708,7 +1718,7 @@ C << might want to save current values for later recovery >>
       nznog(1)=ISZONE
       izgfoc=ISZONE
       CALL ADJVIEW(IER)
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODBND=.TRUE.
 
       ISO=1
@@ -1817,11 +1827,11 @@ C << should mode Z be visible when user first enters flow facility? >>
 #include "geometry.h"
 #include "schedule.h"
 #include "net_flow.h"
+#include "prj3dv.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -1838,10 +1848,6 @@ C << should mode Z be visible when user first enters flow facility? >>
      &              SUPCMP(MCMP,MCMS)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY6/LINSTY(MCON)
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
@@ -1860,7 +1866,7 @@ C associated with the largest ventilation rate.
       integer icompforinf,icompforvent,isrczforvent
       real finfmax,fvntmax
 
-      LOGICAL MODIFY,MODLEN,MODBND,XST
+      LOGICAL XST
       logical closevz,closeiz,close,foundit
       character NDNAM*12, outs*124, MODE*1
       character LAPROB*72
@@ -1974,14 +1980,9 @@ C Redraw the affected zones in the graphic screen.
   44          CONTINUE
 
               MODBND=.TRUE.
-              MODIFY=.TRUE.
-              ITDSP=1
-              ITBND=1
-              ITEPT=0
-              ITZNM=0
-              ITSNM=1
-              ITORG=0
-              ITGRD=1
+              MODIFYVIEW=.TRUE.
+              ITDSP=1; ITBND=1; ITEPT=0; ITZNM=0; 
+              ITSNM=1; ITORG=0; ITGRD=1
               LINSTY(ICN)=2
               nzg=2
               nznog(1)=IC1(ICN)

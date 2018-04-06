@@ -328,7 +328,7 @@ C only IPS1=-1,-5, or -6 sensor allows a signal other than temperature
       IF(IPS1.NE.-1.AND.IPS1.NE.-5.AND.IPS1.NE.-6
      &             .AND.(ICLCTP.NE.0.AND.ICLCTP.NE.1
      &             .AND.ICLCTP.NE.12.AND.ICLCTP.NE.18
-     &             .AND.ICLCTP.NE.41))then
+     &             .AND.ICLCTP.NE.41.AND.ICLCTP.NE.14))then
          call edisp(iuout,
      &    ' CLVAR: invalid sensor for plant loop controller type ')
          call epwait
@@ -417,7 +417,7 @@ C Controller type 10, 11, 17 or 23: senses relative humidity (%).
             PATMOS=1013.25
             call eclose(CSVF(IN,2),0.00,0.01,close)
             if(close)then
-	      SVCTL=0.0   ! trap for zero denominator
+              SVCTL=0.0   ! trap for zero denominator
             else
               SVCTL=PCRH2(CSVF(IN,1),CSVF(IN,3)/CSVF(IN,2),PATMOS)
             endif
@@ -4122,11 +4122,11 @@ C Set control parameters.
       DO 4000 ICT=1,NCT
         ICTLR(ICT)=INT((PMISCD(ICFP,IDTYPP,IPERP,ICT+1)))
         loopNo(ICT)=ICTLR(ICT)
-	IF(LASTOUT(ICTLR(ICT)).NE.0)THEN
-	  CTRLD(ICT)=.TRUE.
-	ELSE
-	  CTRLD(ICT)=.FALSE.
-	ENDIF
+        IF(LASTOUT(ICTLR(ICT)).NE.0)THEN
+          CTRLD(ICT)=.TRUE.
+        ELSE
+          CTRLD(ICT)=.FALSE.
+        ENDIF
  4000 CONTINUE
 
 C Get control logic, initially assuming OFF (ICTL=0)
@@ -4326,11 +4326,11 @@ C Set control parameters.
       DO 4000 ICT=1,NCT
         ICTLR(ICT)=INT((PMISCD(ICFP,IDTYPP,IPERP,ICT+1)))
         loopNo(ICT)=ICTLR(ICT)
-	IF(LASTOUT(ICTLR(ICT)).NE.0)THEN
-	  CTRLD(ICT)=.TRUE.
-	ELSE
-	  CTRLD(ICT)=.FALSE.
-	ENDIF
+        IF(LASTOUT(ICTLR(ICT)).NE.0)THEN
+          CTRLD(ICT)=.TRUE.
+        ELSE
+          CTRLD(ICT)=.FALSE.
+        ENDIF
  4000 CONTINUE
 
 C Get control logic, initially assuming OFF (ICTL=0)

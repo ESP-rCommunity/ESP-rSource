@@ -1,0 +1,32 @@
+
+Summary of changes:
+- Update and upgrade (with exceptions) the model files for the
+  A42_fuel_cell_comp_tests. Set model root name to match the
+  variant for clarity. Included more recent databases in the
+  model cfg files. Model contents reports generated for each 
+  of the variants. The newer files have fewer abreviations and 
+  clearer documentation and should be easier to maintain.
+- Noticed when doing upgrade that the re-scanned and re-written
+  zone construction and tmc files were radically different and
+  a number of items were not found. The model zone files were 
+  not matched to the stated common materials and constructions (constr.db1.a
+  and multicon.db1). A better match was found in ccht databases, however
+  the ccht_wall and ccht_window values still differed and model variants 
+  were created that give a close match to almost all of the constructions 
+  except for the optical properties of ccht_window.
+  Backup versions of main_main_second.tmc made to guard against overwrites. 
+- It would appear that a number of the models in the additional
+  tests folders have orphaned zone construction files which have
+  no equivalent common database entries. Such models are at risk
+  of corruption if zone files are touched.
+
+Testing
+- Visual differences of all changes were carried out.
+- Opened each model before and after upgrade. Checked for
+  warnings while generating model contents reports.
+- Ran case_100.cfg with close match zone files and found
+  that differences were ~1W for some items and at the 2nd
+  or 3rd decimal place. Some GJ report were off a few GJ.
+- Ran case_100.cfg on development_branch and upgraded
+  version with identical out.summary files.
+

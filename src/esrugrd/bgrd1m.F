@@ -37,11 +37,12 @@ C *********************************************************************
 
 C geometry.h provides commons G0/G2/g6/c20/precz.
 #include "geometry.h"
+#include "prj3dv.h"
+
       integer iCountWords
 
       COMMON/FILEP/IFIL
       COMMON/HELP/IHELPM
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -54,7 +55,7 @@ C geometry.h provides commons G0/G2/g6/c20/precz.
       COMMON/MOIST02/LMOIST(MCOM)
       COMMON/MOIST03/MNDS,MNDZ(MCOM),MNDC(MCOM,MS),MNDL(MCOM,MS,ME)
 
-      LOGICAL OK,DOK,MODIFY,MODLEN,MODBND,SAVEOK
+      LOGICAL OK,DOK,SAVEOK
       LOGICAL ZONOK,XST,MSTROK,MSTRZN
       CHARACTER ITEM(13)*34,ITEMC(MS)*20,FLTYP*25
       CHARACTER*12 ZONENM
@@ -101,7 +102,7 @@ C Help for this menu.
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Draw the appropriate graph.
-      IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
+      IF(MODIFYVIEW)CALL GRAAPH(IDRW1,IDRW2)
       CALL USRMSG(' ',' ','-')
       CALL EMENU('   Moisture Transport',ITEM,MITEM,INO)
 
@@ -118,7 +119,7 @@ C Before selecting new zone, update the utilities file.
         SAVEOK=.FALSE.
 
 C Show the complete building.
-        IF(IDRW1.NE.1.OR.MODIFY)THEN
+        IF(IDRW1.NE.1.OR.MODIFYVIEW)THEN
           IDRW1=1
           IDRW2=0
           CALL GRAAPH(IDRW1,IDRW2)

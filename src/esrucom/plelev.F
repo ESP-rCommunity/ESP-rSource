@@ -36,6 +36,7 @@ C IUF is file unit for geometry, utility file units.
 
 C geometry.h provides commons G0/G1/G2/precz/GS5/GS6.
 #include "geometry.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -47,9 +48,6 @@ C geometry.h provides commons G0/G1/G2/precz/GS5/GS6.
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
 
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       integer ifs,itfs,imfs
@@ -109,20 +107,32 @@ C Draw a scale vertical axis.
         CALL axiscale(igwid,igheight,XMN,XMX,YMN,YMX,xsc,ysc,sca,
      &    Xadd,Yadd)
         call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
-        CALL horaxis(XMN,XMX,iigl,iigr,iigb,Xadd,sca,1,'East (m) ->')
-        CALL vrtaxis(YMN,YMX,iigl,iigb,iigt,Yadd,sca,1,0,'^ North')
+        call dintervalf(XMN,XMX,DY,NDEC,1)
+        CALL horaxisdd(XMN,XMX,iigl,iigr,iigb,Xadd,sca,1,
+     &    DY,NDEC,'East (m) ->')
+        call dintervalf(YMN,YMX,DY,NDEC,1)
+        CALL vrtaxisdd(YMN,YMX,iigl,iigb,iigt,Yadd,sca,1,
+     &    DY,NDEC,0,'^ North')
       elseif(direc.eq.'S')then
         CALL axiscale(igwid,igheight,XMN,XMX,ZMN,ZMX,xsc,ysc,sca,
      &    Xadd,Yadd)
         call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
-        call horaxis(XMN,XMX,iigl,iigr,iigb,Xadd,sca,1,'East (m) ->')
-        call vrtaxis(ZMN,ZMX,iigl,iigb,iigt,Yadd,sca,1,0,'^ Up')
+        call dintervalf(XMN,XMX,DY,NDEC,1)
+        call horaxisdd(XMN,XMX,iigl,iigr,iigb,Xadd,sca,1,
+     &    DY,NDEC,'East (m) ->')
+        call dintervalf(ZMN,ZMX,DY,NDEC,1)
+        call vrtaxisdd(ZMN,ZMX,iigl,iigb,iigt,Yadd,sca,1,
+     &    DY,NDEC,0,'^ Up')
       elseif(direc.eq.'E')then
         CALL axiscale(igwid,igheight,YMN,YMX,ZMN,ZMX,xsc,ysc,sca,
      &    Xadd,Yadd)
         call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
-        call horaxis(YMN,YMX,iigl,iigr,iigb,Xadd,sca,1,'North (m) ->')
-        call vrtaxis(ZMN,ZMX,iigl,iigb,iigt,Yadd,sca,1,0,'^ Up')
+        call dintervalf(XMN,XMX,DY,NDEC,1)
+        call horaxisdd(YMN,YMX,iigl,iigr,iigb,Xadd,sca,1,
+     &    DY,NDEC,'North (m) ->')
+        call dintervalf(ZMN,ZMX,DY,NDEC,1)
+        call vrtaxisdd(ZMN,ZMX,iigl,iigb,iigt,Yadd,sca,1,
+     &    DY,NDEC,0,'^ Up')
       endif
 
 C Loop through each of the selected zones, read geometry

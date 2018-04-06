@@ -4284,12 +4284,12 @@ C GDUPDATE Update the graphical display of the model.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/rpath/path
       COMMON/PREC8/SLAT,SLON
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
+C The RAY2 common block variables are:
 C ITDSP labels toggle: all surf + obs = 0, all surf = 1, extrn = 2
 C       partn = 3 ,similar = 4, surfs + obs+ ground = 5, ground only = 6
 C ITBND bounds toggle: static = 0, optimum = 1, zone focus = 2
@@ -4303,10 +4303,7 @@ C ITHLS highlight toggle: normal 0, constr 1, trans/opaq 2, part atrib 3
 C ITGRD grid toggle: display = 0, hidden = 1
 C ITVNO vertex toggle: display = 0, hidden = 1
 C ITPPSW current view - perspective/plan/south/west
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
 
-      logical MODIFY,MODLEN,MODBND
       DIMENSION MTHNAM(12)
       CHARACTER DESCRH*5,DESCRD*5,path*72
       CHARACTER MTHNAM*3,ETEXT*60,outs*124
@@ -4325,7 +4322,7 @@ C Refresh the image.
       IUF=IFIL+1
       MODLEN=.TRUE.
       MODBND=.TRUE.
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
 
 C Debug
 C      write(6,*)ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -4344,14 +4341,14 @@ C list management for this.
      &                'this will be added in a later version.','P')
 C          CALL EPKMLC(ISEL,'Select a construction to hilight.',' ',IER)
 C          ITHLZ=ISEL
-C          MODIFY=.TRUE.
+C          MODIFYVIEW=.TRUE.
         endif
 
         CALL INLNST(1)
         CALL ADJVIEW(IER)
         MODLEN=.FALSE.
         MODBND=.FALSE.
-        MODIFY=.FALSE.
+        MODIFYVIEW=.FALSE.
       elseif(ITPPSW.eq.1)then
 
 C User toggle to a plan view.

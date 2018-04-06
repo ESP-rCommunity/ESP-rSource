@@ -31,6 +31,7 @@ C EDCASCTL - edit casual gain control data.
 C geometry.h provides commons G0/G1/G2/G5/c20/precz.
 #include "geometry.h"
 #include "prj3dv.h"
+#include "espriou.h"
       
       integer lnblnk  ! function definition
 
@@ -40,7 +41,6 @@ C geometry.h provides commons G0/G1/G2/G5/c20/precz.
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
-      common/user/browse
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       
       integer ncomp,ncon
@@ -53,7 +53,7 @@ C Zone casual gain control data.
      & UX(MCOM,MLCOM,MDF),UY(MCOM,MLCOM,MDF),UH(MCOM,MLCOM,MDF),
      & SETPT(MCOM,MLCOM),SYSPER(MCOM,MLCOM),SOFFLL(MCOM,MLCOM),
      & IOFFDT(MCOM,MLCOM),SMLOUT(MCOM,MLCOM),SMEOUT(MCOM,MLCOM)
-      COMMON/CGCIN3/ICGCS(MCOM),ICGCF(MCOM),
+      COMMON/CGCIN3/ICGCS(MCOM,MDTY),ICGCF(MCOM,MDTY),
      & ICGCFL(MCOM,MLCOM),SPELEC(MCOM,MLCOM),SLOPEM(MCOM,MLCOM)
 
       COMMON/DAYF/NDF(MCOM,MLCOM),DFDAT(MCOM,MLCOM,MGT,MDF),
@@ -68,23 +68,27 @@ C TMC common block:
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
 
-      common/RAY3/MODIFY,MODLEN,MODBND
-
       DIMENSION ITMC2DF(30),KSTR(MDTY)
       DIMENSION  COG1(3),COG2(3),COG3(3),tip(3),ipoints(6,2)
-      LOGICAL XST,lcouple,ldcoef
-      logical MODIFY,MODLEN,MODBND
-      logical browse
+      LOGICAL XST,lcouple,ldcoef,modcfg,unixok
 
-      character outs*124,LTMP*72,DTMP*64
+      character outs*124,DTMP*64
       character KEY*1,hold*40,hold2*72,doitl*248
       character*48 ITEM(30)
       CHARACTER*72 DLCGCIN
       CHARACTER info*18,cgcdesc*64,brw*8,calclabel*20
       character sn*12  ! for source surface name.
+      character dradcf*72
+      character ltmp*72
+      character doit*248
+      character msg*48
+      character fs*1
+C      character longtfile*144,longtfiledos*144
+C     character L144*144,lltmp*144
       INTEGER IX,IY,IZ,KSTR
       integer IRT  ! for radio button
       integer NITEMS,INO ! max items and current menu item
+      integer lntmp,lnradcf
 
 #ifdef OSI
       integer iix,iiy
@@ -99,17 +103,34 @@ C For help messages
 
       helpinsub='EDCASCTL'  ! set for subroutine
 
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
 C Assume daylight coeffs do not need to be calculated.
       ldcoef=.false.
       ICMDCF=0  ! set initial value
       LTMP=' '
 
-C Check and see if a casual gain control file exists.
+C Check and see if a casual gain control file exists. Ask
+C for confirmation of the name.
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
         WRITE(DLCGCIN,'(A,A4)')zname(ICOMP)(1:lnzname(ICOMP)),'.cgc'
       else
         WRITE(DLCGCIN,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
      &    zname(ICOMP)(1:lnzname(ICOMP)),'.cgc'
+      endif
+      LTMP=DLCGCIN
+      CALL EASKS(LTMP,'Zone casual gain control file name.',
+     &  'Specify:',72,DLCGCIN,'cgc control file',IER,nbhelp)
+      if(LTMP(1:2).NE.'  ')then
+         LCGCIN(ICOMP)=LTMP
+         DLCGCIN=LTMP  ! set the default name to match
+         ICGC(ICOMP)=1
       endif
       if(ICGC(ICOMP).NE.0)then
         call FINDFIL(LCGCIN(ICOMP),XST)
@@ -118,6 +139,7 @@ C Check and see if a casual gain control file exists.
 C Read existing file. If there is an error when opening the cgc file
 C then assume that Radiance based daylight coefficients will not have
 C been calculated.
+          write(currentfile,'(a)')LCGCIN(ICOMP)(1:lnblnk(LCGCIN(ICOMP)))
           call ercgcf(itrc,iuout,LCGCIN(ICOMP),ICOMP,ier)
           call edisp(iuout,'Opened existing casual gain control file.')
           if (ier.eq.-101) then
@@ -141,7 +163,6 @@ C Help text for this menu.
       if((ICGC(ICOMP).eq.0).or.(.not.xst))then
 
 C Set up default data based on ....
-        LCGCIN(ICOMP)=DLCGCIN
         call FINDFIL(LCGCIN(ICOMP),XST)
         if(XST)then
 
@@ -150,11 +171,12 @@ C Read existing file or setup initial values.
           call ercgcf(itrc,iuout,LCGCIN(ICOMP),ICOMP,ier)
           call edisp(iuout,'Opened existing casual gain control file.')
         else
+          call edisp(iuout,'Setting up default parameters.')
           cgcdesc(icomp)='no description supplied'
           DO 400 IDTY=1,NBDAYTYPE
             NCGTC(ICOMP,IDTY)=2
+            ICGCS(ICOMP,IDTY)=8; ICGCF(ICOMP,IDTY)=18
  400      CONTINUE
-          ICGCS(ICOMP)=8; ICGCF(ICOMP)=18
           ICGCFL(ICOMP,1)=1; IDFST(ICOMP,1)=1
           SETPT(ICOMP,1)=500.0; SOFFLL(ICOMP,1)=1.5
           SMLOUT(ICOMP,1)=0.1; SMEOUT(ICOMP,1)=0.1
@@ -188,7 +210,7 @@ C Read existing file or setup initial values.
 C Rescan geometry file.
       IUF=IFIL+1
       call georead(IUF,LGEOM(ICOMP),ICOMP,0,ITRU,IER)
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODBND=.TRUE.
 
 C Rescan zone Construction and TMC file 
@@ -210,14 +232,14 @@ C (need to test blind/ shuter control flags).
      &    ' so blind control tracking not possible!'
         call edisp(iuout,outs)
       endif         
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODBND=.TRUE.
 
 C Begin composing the display.
   20  continue
 
 C Reset all surface lines to standard width and redraw if revised data.
-      if(MODIFY)then
+      if(MODIFYVIEW)then
         CALL INLNST(1)
         nzg=1
         nznog(1)=ICOMP
@@ -225,17 +247,31 @@ C Reset all surface lines to standard width and redraw if revised data.
         CALL ADJVIEW(IER)
       endif
       NL=NLITZ(ICOMP)
-      write(ITEM(1),'(A,A)')   '  Zone: ',zname(ICOMP)
-      write(ITEM(2),'(A,A36)') '  Desc: ',cgcdesc(ICOMP)(1:36)
-      write(ITEM(3),'(A)') 'a control for daytypes '
-      write(ITEM(4),'(A,2I3)') 'b Control periods  : ',ICGCS(ICOMP),
-     &                            ICGCF(ICOMP)
+      write(ITEM(1),'(A,A)')     '  Zone: ',zname(ICOMP)
+      write(ITEM(2),'(A,A36)')   'a Desc: ',cgcdesc(ICOMP)(1:36)
+      if(NBDAYTYPE.le.3)then
+        write(ITEM(3),'(A,3i2)') 'b Control daytypes :',NCGTC(ICOMP,1),
+     &    NCGTC(ICOMP,2),NCGTC(ICOMP,2)
+      else
+        write(ITEM(3),'(A,4i2,a)') 'b Control daytypes :',
+     &    NCGTC(ICOMP,1),NCGTC(ICOMP,2),NCGTC(ICOMP,3),NCGTC(ICOMP,4),
+     &    '...'
+      endif
+      if(NBDAYTYPE.le.3)then
+        write(ITEM(4),'(A,6I3)') 'c Control periods  :',ICGCS(ICOMP,1),
+     &    ICGCF(ICOMP,1),ICGCS(ICOMP,2),ICGCF(ICOMP,2),
+     &    ICGCS(ICOMP,3),ICGCF(ICOMP,3)
+      else
+        write(ITEM(4),'(A,6I3,a)') 'c Control periods  :',
+     &    ICGCS(ICOMP,1),ICGCF(ICOMP,1),ICGCS(ICOMP,2),ICGCF(ICOMP,2),
+     &    ICGCS(ICOMP,3),ICGCF(ICOMP,3),'...'
+      endif
       write(ITEM(5),'(A,I3)')  '  Lighting zones   : ',NL
       ITEM(6)=            '  _______________________________________'
 
 C If we got to this point and no lighting zone then there should be at least one.
       if (N.le.0) N=1 ! bounds error fix
-      write(ITEM(7),'(A,I2)')    'c Lighting zone >> ',N
+      write(ITEM(7),'(A,I2)')    'd Lighting zone >> ',N
       info='unknown control'
       if(ICGCFL(ICOMP,N).eq.-1) info='Always On'
       if(ICGCFL(ICOMP,N).eq.0)  info='Always Off'
@@ -245,21 +281,21 @@ C If we got to this point and no lighting zone then there should be at least one
       if(ICGCFL(ICOMP,N).eq.4)  info='On-Off probability'
       if(ICGCFL(ICOMP,N).eq.31) info='Dimming-int. reset'
       if(ICGCFL(ICOMP,N).eq.32) info='Dimming-closd loop'
-      write(ITEM(8),'(A,A)') 'd Control type    : ',info(1:lnblnk(info))
+      write(ITEM(8),'(A,A)') 'e Control type    : ',info(1:lnblnk(info))
       if(IDFST(ICOMP,N).eq.1)then
-        write(ITEM(9),'(A)')  'e Calculation type: Analytical DF'
+        write(ITEM(9),'(A)')  'f Calculation type: Analytical DF'
       elseif(IDFST(ICOMP,N).eq.2)then
-        write(ITEM(9),'(A)')  'e Calculation type: User defined DF'
+        write(ITEM(9),'(A)')  'f Calculation type: User defined DF'
       elseif(IDFST(ICOMP,N).eq.3)then
-        write(ITEM(9),'(A)')  'e Calculation type: External sensor'
+        write(ITEM(9),'(A)')  'f Calculation type: External sensor'
       elseif(IDFST(ICOMP,N).eq.4)then
-        write(ITEM(9),'(A)')  'e Calculation type: Time step coupling'
+        write(ITEM(9),'(A)')  'f Calculation type: Time step coupling'
       elseif(IDFST(ICOMP,N).eq.5)then
-        write(ITEM(9),'(A)')  'e Calculation type: Daylight coeff.' 
+        write(ITEM(9),'(A)')  'f Calculation type: Daylight coeff.' 
       endif
-      write(ITEM(10),'(A,4F6.1,I3)') 'f Control data  :',SETPT(ICOMP,N),
+      write(ITEM(10),'(A,4F6.1,I3)') 'g Control data  :',SETPT(ICOMP,N),
      & SOFFLL(ICOMP,N),SMLOUT(ICOMP,N),SMEOUT(ICOMP,N),IOFFDT(ICOMP,N)
-      write(ITEM(11),'(A,F6.2,I3)') 'g Photocell data:',SYSPER(ICOMP,N),
+      write(ITEM(11),'(A,F6.2,I3)') 'h Photocell data:',SYSPER(ICOMP,N),
      &                              NDF(ICOMP,N)
 
       if(IDFST(ICOMP,N).EQ.1.OR.IDFST(ICOMP,N).EQ.2.OR.
@@ -323,12 +359,14 @@ C Daylight coef method (5).
         call forceflush()
       endif
 
-C In case of user defined daylight factor.
+C In case of user defined daylight factor. At this point still
+C treats CFC and CFC2 with opaque surfaces.
       if(IDFST(ICOMP,N).EQ.2)then
         m=m+1   
         write(ITEM(m),'(A)') '  Source surface & DF(s) per photocell:'
         do 44 ii = 1,NSUR
-          if(SOTF(II)(1:4).NE.'OPAQ'.AND.SOTF(II)(1:4).NE.'CFC ')THEN
+          if(SOTF(II)(1:4).NE.'OPAQ'.AND.SOTF(II)(1:4).NE.'CFC '.AND.
+     &       SOTF(II)(1:4).NE.'CFC2')THEN
             m=m+1
             CALL EMKEY(m,KEY,IER)
             write(sn,'(a)') sname(icomp,II)
@@ -352,46 +390,124 @@ C In case of user defined daylight factor.
 
       IF (INO.EQ.NITEMS)THEN
 
-C If browsing pass this information to e2r.
-        if(browse)then
-          brw = ' -b yes'
-        else
-          brw = ' -b no '
-        endif
+C Set browsing no for e2r.
+        brw = ' -b no '
 
 C Check for control using Radiance.
         helptopic='casual_gain_control'
         call gethelptext(helpinsub,helptopic,nbhelp)
         lcouple=.false.
-        DO 560 ILZ=1,NLITZ(ICOMP)
+        DO ILZ=1,NLITZ(ICOMP)
           if (IDFST(ICOMP,N).eq.4) lcouple=.true.
- 560    continue
+        ENDDO  ! of ILZ
+
+C If coupling or daylight coefficients we need to nominate
+C a radiance rcf file and remember it in the cfg file.
+        if (lcouple.or.ldcoef)then
+
+C Assume model is multi-folder with a rad folder.
+C Set rcf name if unknown and set default name. If path for radiance
+C files is ./ then update this to ../rad, create a folder. And
+C proceed on the basis that the rcf file will be in the rad folder.
+          modcfg=.false.
+          if(pwdtocfg(1:1).eq.'!')then
+            if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\ ')then
+              CALL PHELPD('visu-rad-warning',7,'-',0,0,IER)
+              write(radpth,'(3a)')'..',fs,'rad'
+              write(doit,'(4a)') 'mkdir ',
+     &          cfgroot(1:lnblnk(cfgroot)),fs,'rad'
+              call usrmsg('Creating folder for radiance model:',doit,
+     &          'P')
+              call runit(doit,'-')
+
+C And update radpath. The L144 is for future use of EASKXORGTKF
+              write(radpth,'(3a)') '..',fs,'rad'
+              modcfg=.true.
+            endif
+
+            if(lradcf(1:7).eq.'UNKNOWN')then
+              write(lradcf,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.rcf'
+              modcfg=.true.
+            endif
+          else
+
+C Prj has not been invoked from within the model cfg folder.
+            if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\ ')then
+              CALL PHELPD('visu-rad-warning',7,'-',0,0,IER)
+              write(radpth,'(3a)')'..',fs,'rad'
+              write(doit,'(8a)') 'mkdir ',pwdinitial(1:lnpwdi),fs,
+     &          pwdtocfg(1:lnblnk(pwdtocfg)),fs,'..',fs,'rad'
+              call usrmsg('Creating folder for radiance model:',doit,
+     &         'P')
+              call runit(doit,'-')
+
+C And update radpath.
+              write(radpth,'(3a)') '..',fs,'rad'
+              modcfg=.true.
+            endif
+
+            if(lradcf(1:7).eq.'UNKNOWN')then
+              write(lradcf,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.rcf'
+              modcfg=.true.
+            endif
+          endif
+
+C Check rcf name and contents of file on return from e2r.
+
+ 319      ltmp=lradcf
+          dradcf='scene.rcf'
+          CALL EASKS(ltmp,
+     &      ' Radiance scene file to support lighting controls',
+     &      ' :',72,dradcf,'Radiance scene file name',IER,nbhelp)
+          if(ltmp.eq.' ')goto 319 
+
+C rcf name OK and differs from prior name, update cfg file and start e2r.
+          lnradcf=lnblnk(lradcf)
+          lntmp=lnblnk(ltmp)
+          if(ltmp(1:lntmp).eq.lradcf(1:lnradcf))then
+            continue
+          else
+            modcfg=.true.
+            lradcf = ltmp
+          endif
+          if(modcfg)then
+            call tstamp('>','PRJ: save configuration (with rcf file)')
+            CALL EMKCFG('-',IER)
+          endif
+        endif
+
+C Now invoke e2r to do the work.
         if (lcouple) then
-          write(doitl,'(3a,i3,a)')'e2r -file ',LCFGF(1:lnblnk(LCFGF)),
-     &      ' -purpose Coupling -zone ',ICOMP,' -act Create'
-          call edisp (iuout,doitl)
-          call runit(doitl,'-')
+          call usrmsg('About to start Radiance in order to generate',
+     &      'descriptive files for coupled casual gain control.','W')
+          call EASKAB(
+     &    'Radiance is being used to asses light levels:',' ',
+     &    'Create & edit Radiance model','Continue',IW,nbhelp)
+          if (IW.eq.1) then
+            write(doitl,'(3a,i3,a)')'e2r -file ',LCFGF(1:lnblnk(LCFGF)),
+     &        ' -purpose Coupling -zone ',ICOMP,' -act Create'
+            call edisp (iuout,doitl)
+            call runit(doitl,'-')
+          endif
         endif
         if (ldcoef) then
- 8888     call EASKABC(
+ 8888     call EASKAB(
      &    'If Radiance is being used for daylight coefficients:',' ',
-     &    'Create & edit Radiance model','Calculate coefficients',
-     &    'Continue',IW,nbhelp)
+     &    'Create Radiance model and calcute','Continue',IW,nbhelp)
           if (IW.eq.1) then
             write(doitl,'(3a,i3,2a)')'e2r -file ',
      &        LCFGF(1:lnblnk(LCFGF)),' -purpose Day_coef -zone ',
      &        ICOMP,' -act Create',brw
           elseif (IW.eq.2) then
-            write(doitl,'(3a,i3,3a)')'e2r -file ',
-     &        LCFGF(1:lnblnk(LCFGF)),' -purpose Day_coef -zone ',
-     &        ICOMP,' -act Compute',brw,' &'
-          elseif (IW.eq.3) then
-            goto 9999
+            return
           endif
           call edisp (iuout,doitl)
           call runit(doitl,'-')
           goto 8888
         endif
+
+C The model needs to know about this additional file.
+
  9999   RETURN
       ELSEIF(INO.EQ.NITEMS-1)THEN
 
@@ -428,11 +544,11 @@ C <<  Perhaps this could be joined together? >>
         call edisp(iuout,' ')
         write(outs,'(A,I2)') ' Zone ',ICOMP
         call edisp(iuout,outs)
-        DO 401 IDTY=1,NBDAYTYPE
+        DO IDTY=1,NBDAYTYPE
           write(outs,9989)CALENTAG(IDTY),NCGTC(ICOMP,IDTY)
  9989     format(' Casual gain type for control during ',A,' = ',I3)
           call edisp(iuout,outs)
- 401    CONTINUE
+        ENDDO  ! of IDTY
         DO 117 NLZ=1,NLITZ(ICOMP)
           write(outs,'(A,I1)') ' Light zone ',NLZ
           call edisp(iuout,outs)
@@ -492,13 +608,9 @@ C <<  Perhaps this could be joined together? >>
      &       IDFST(ICOMP,NLZ).eq.4)then
            call edisp(iuout,
      &       ' Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |')
-           call edisp(iuout,
-     &       ' number|      |      |      |     |     |     |')
           elseif(IDFST(ICOMP,NLZ).eq.5)then
            call edisp(iuout,
      &       ' Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |  DC| ')
-           call edisp(iuout,
-     &       ' number|      |      |      |     |     |     |    | ')
           elseif(IDFST(ICOMP,NLZ).eq.3)then
             call edisp(iuout,' Sensor  | Sensor |')
             call edisp(iuout,' position| type   |')
@@ -508,14 +620,14 @@ C <<  Perhaps this could be joined together? >>
             if(IDFST(ICOMP,NLZ).eq.1.or.IDFST(ICOMP,NLZ).eq.2.or.
      &        IDFST(ICOMP,NLZ).eq.4)then
               write(outs,9914)J,CGX(ICOMP,NLZ,J),CGY(ICOMP,NLZ,J),
-     &        CGH(ICOMP,NLZ,J),UX(ICOMP,NLZ,J),UY(ICOMP,NLZ,J),
-     &        UH(ICOMP,NLZ,J)
+     &          CGH(ICOMP,NLZ,J),UX(ICOMP,NLZ,J),UY(ICOMP,NLZ,J),
+     &          UH(ICOMP,NLZ,J)
  9914         format(i7,3F7.2,3F6.2)
               call edisp(iuout,outs)
             elseif(IDFST(ICOMP,NLZ).eq.5)then
               write(outs,9915)J,CGX(ICOMP,NLZ,J),CGY(ICOMP,NLZ,J),
-     &        CGH(ICOMP,NLZ,J),UX(ICOMP,NLZ,J),UY(ICOMP,NLZ,J),
-     &        UH(ICOMP,NLZ,J),IDCFID(ICOMP,NLZ,J)
+     &         CGH(ICOMP,NLZ,J),UX(ICOMP,NLZ,J),UY(ICOMP,NLZ,J),
+     &         UH(ICOMP,NLZ,J),IDCFID(ICOMP,NLZ,J)
  9915         format(i7,3F7.2,3F6.2,I4)
               call edisp(iuout,outs)
             elseif(IDFST(ICOMP,NLZ).eq.3)then
@@ -525,13 +637,13 @@ C <<  Perhaps this could be joined together? >>
             endif
  9986     CONTINUE
 
-          DO 9985 J=1,NDF(ICOMP,NLZ)
+          DO J=1,NDF(ICOMP,NLZ)
             if(IDFST(ICOMP,NLZ).EQ.2)then
               call edisp(iuout,' ')
               call edisp(iuout,' Source | Daylight | ')
               call edisp(iuout,' surface| factor(%)| ')
               idd=0
-              DO 814 IL=1,NZSUR(icomp)
+              DO IL=1,NZSUR(icomp)
                 if(idd.lt.NUDWIN(ICOMP))then
                   if(DFDAT(ICOMP,NLZ,IL,J).gt.0.0)then
                     idd=idd+1
@@ -540,13 +652,12 @@ C <<  Perhaps this could be joined together? >>
                     call edisp(iuout,outs)
                   endif
                 endif
-  814         CONTINUE
+              ENDDO  ! of IL
             endif
- 9985     CONTINUE
+          ENDDO      ! of J
 
           call edisp(iuout,' ')
-          call edisp(iuout,' Start| Finish| Control     | ')
-          call edisp(iuout,'  Hour|   Hour|    Type     | ')
+          call edisp(iuout,' Start-Finish         | Control type| ')
           info='unknown control'
           if(ICGCFL(ICOMP,NLZ).eq.-1) info='Always On'
           if(ICGCFL(ICOMP,NLZ).eq.0)  info='Always Off'
@@ -557,7 +668,10 @@ C <<  Perhaps this could be joined together? >>
           if(ICGCFL(ICOMP,NLZ).eq.31) info='Dimming-int. reset'
           if(ICGCFL(ICOMP,NLZ).eq.32) info='Dimming-closd loop'
 
-          write(outs,'(2I7,1x,A)')ICGCS(ICOMP),ICGCF(ICOMP),info
+          write(outs,'(I3,a,2i3,a,2i3,a,i3,2x,A)')
+     &      ICGCS(ICOMP,1),'-',ICGCF(ICOMP,1),
+     &      ICGCS(ICOMP,2),'-',ICGCF(ICOMP,2),
+     &      ICGCS(ICOMP,3),'-',ICGCF(ICOMP,3),info
           call edisp(iuout,outs)
 
           IF(ICGCFL(ICOMP,NLZ).EQ.31.OR.ICGCFL(ICOMP,NLZ).EQ.32)THEN
@@ -578,40 +692,31 @@ C +- Lighting zone.
           NLITZ(ICOMP)= NLITZ(ICOMP)+1
           N=NLITZ(ICOMP)
 C Fill data.
-          ICGCFL(ICOMP,N)=1
-          IDFST(ICOMP,N)=1
-          SETPT(ICOMP,N)=500.
-          SOFFLL(ICOMP,N)=1.5
-          SMLOUT(ICOMP,N)=0.1
-          SMEOUT(ICOMP,N)=0.1
-          IOFFDT(ICOMP,N)=0
-          SYSPER(ICOMP,N)=1.0
-          SPELEC(icomp,N)=15.0
-          SLOPEM(icomp,N)=-0.025
+          ICGCFL(ICOMP,N)=1; IDFST(ICOMP,N)=1
+          SETPT(ICOMP,N)=500.0; SOFFLL(ICOMP,N)=1.5
+          SMLOUT(ICOMP,N)=0.1; SMEOUT(ICOMP,N)=0.1
+          IOFFDT(ICOMP,N)=0; SYSPER(ICOMP,N)=1.0
+          SPELEC(icomp,N)=15.0; SLOPEM(icomp,N)=-0.025
           NDF(ICOMP,N)=1
-          CGX(ICOMP,N,1)=0.0
-          CGY(ICOMP,N,1)=0.0
-          CGH(ICOMP,N,1)=0.0
-          UX(ICOMP,N,1)=0.0
-          UY(ICOMP,N,1)=0.0
-          UH(ICOMP,N,1)=1.0
+          CGX(ICOMP,N,1)=0.0; CGY(ICOMP,N,1)=0.0; CGH(ICOMP,N,1)=0.0
+          UX(ICOMP,N,1)=0.0; UY(ICOMP,N,1)=0.0; UH(ICOMP,N,1)=1.0
           NUDWIN(ICOMP)=1
 
 C Check for existing daylight coefficients.
           ICMDCF=0
-          do 145 IC=1,NCOMP
-            do 146 ILZ=1,NLITZ(ICOMP)
-              do 147 ISE=1,NDF(ICOMP,ILZ)
+          do IC=1,NCOMP
+            do ILZ=1,NLITZ(ICOMP)
+              do ISE=1,NDF(ICOMP,ILZ)
                 ICMDCF=MAX(ICMDCF,IDCFID(IC,ILZ,ISE))
- 147          continue
- 146        continue
- 145      continue
-          do 49 I = 1, NSUR
+              enddo  ! of ISE
+            enddo    ! of ILZ
+          enddo      ! of IC
+          do I = 1, NSUR
             DFDAT(ICOMP,N,I,1)=0.0
-  49      continue
+          enddo  ! of I
 
           call edisp(iuout,'New lighting zone filled with defaults.')
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
         ELSEIF(IW.EQ.1)THEN
 
 C Delete lighting zone.  << ... >>
@@ -625,51 +730,84 @@ C Edit general description of the casual gains.
      &    'Please supply a brief description of the casual gains:',
      &    ' ',64,'Dimming control','cgc description',IER,nbhelp)
         IF(IER.NE.0)GOTO 52
-        IF(LTMP(1:2).NE.'  ')THEN
+        IF(DTMP(1:2).NE.'  ')THEN
           cgcdesc(ICOMP)=DTMP  
-        endif    
+        endif
+        goto 20   ! refresh the menu text   
 
       ELSEIF (INO.EQ.3)THEN
 
-C Control on which calendar day types.
-        CALL EASKAB(' ','Control casual gains for ','one day type',
-     &     'all day types',IY,nbhelp)
+C Control on which calendar day types and then ask about
+C associated casual gain type (multiple day tpes get the
+C same type).
+        CALL EASKAB(' ','Control casual gains for ',
+     &    'one specified day type','all day types',IY,nbhelp)
         IF(IY.EQ.1)THEN
+          do loop=1,nbdaytype
+            NCGTC(ICOMP,IDTY)=0 ! clear other day types
+            ICGCS(ICOMP,IDTY)=0; ICGCF(ICOMP,IDTY)=1  ! clear periods
+          enddo  ! of loop
           IX=1
           CALL EPICKS(IX,KSTR,' ',
      &      'choose daytype to control casual gains',
      &      12,nbdaytype,calentag,'Choose daytype',IER,nbhelp)
           IDTY=KSTR(1)
-        ENDIF
-        CALL EASKABC(' ','Control casual gain type ','occupants',
-     &     'lighting','equipment',IZ,nbhelp)
-        IF(IY.EQ.1)THEN
+
+C << Should scan the zone operation file and use the labels given
+C << in that....
+          CALL EASKABC(' ','Control casual gain type ','occupants',
+     &       'lighting','equipment',IZ,nbhelp)
           NCGTC(ICOMP,IDTY)=IZ
-        ELSEIF(IY.EQ.2)THEN
-          DO 404 IDTY=1,NBDAYTYPE
-            NCGTC(ICOMP,IDTY)=IZ
- 404      CONTINUE
+          WRITE(HOLD,'(2I6)')ICGCS(ICOMP,IDTY),ICGCF(ICOMP,IDTY)
+          CALL EASKS(HOLD,' Control is active from hour to hour:',
+     &      ' ',40,' 8  18 ',' cast ctl periods',IER,nbhelp)
+          K=0
+          CALL EGETWI(HOLD,K,ia,0,23,'W','period start',IER)
+          CALL EGETWI(HOLD,K,ib,ia+1,24,'W','period end',IER)
+          ICGCS(ICOMP,IDTY)=ia; ICGCF(ICOMP,IDTY)=ib
+        ELSE
+          do loop=1,nbdaytype
+            write(msg,'(3a)') 'For daytype ',calentag(loop),
+     &        ' associate cgc with '
+            CALL EASKABCD(msg,' ','occupants',
+     &        'lighting','equipment','no control on this day type',
+     &        IZ,nbhelp)
+            if(IZ.eq.4)then
+              HOLD= '  0  1 '
+              NCGTC(ICOMP,loop)=0
+            else
+              WRITE(HOLD,'(2I6)')ICGCS(ICOMP,loop),ICGCF(ICOMP,loop)
+              NCGTC(ICOMP,loop)=IZ
+            endif
+            CALL EASKS(HOLD,' Control is active from hour to hour:',
+     &        ' ',40,' 8  18 ',' cast ctl periods',IER,nbhelp)
+            K=0
+            CALL EGETWI(HOLD,K,ia,0,23,'W','period start',IER)
+            CALL EGETWI(HOLD,K,ib,ia+1,24,'W','period end',IER)
+            ICGCS(ICOMP,loop)=ia; ICGCF(ICOMP,loop)=ib
+          enddo  ! of loop
         ENDIF
 
       ELSEIF (INO.EQ.4)THEN
 
-C Edit the control periods.
-  34    WRITE(HOLD,'(2I6)')ICGCS(ICOMP),ICGCF(ICOMP)
-        CALL EASKS(HOLD,' Control is active from hour to hour:',
-     &    ' ',40,' 8  18 ',' cast ctl periods',IER,nbhelp)
-        K=0
-        CALL EGETWI(HOLD,K,ia,0,23,'W','period start',IER)
-        CALL EGETWI(HOLD,K,ib,ia+1,24,'W','period end',IER)
-        if(ier.ne.0)goto 34
-        ICGCS(ICOMP)=ia
-        ICGCF(ICOMP)=ib
-
+C Edit the control periods for each day type.
+        do loop=1,nbdaytype
+           write(msg,'(3a)') 'For daytype ',calentag(loop)(1:12),
+     &       ' control is active from hour to hour:'
+           WRITE(HOLD,'(2I6)')ICGCS(ICOMP,loop),ICGCF(ICOMP,loop)
+          CALL EASKS(HOLD,msg,' ',40,' 8  18 ',
+     &      ' cast ctl periods',IER,nbhelp)
+          K=0
+          CALL EGETWI(HOLD,K,ia,0,23,'W','period start',IER)
+          CALL EGETWI(HOLD,K,ib,ia+1,24,'W','period end',IER)
+          ICGCS(ICOMP,loop)=ia; ICGCF(ICOMP,loop)=ib
+        enddo  ! of loop
       ELSEIF (INO.EQ.7)THEN
 
 C Toggle and then reform the menu to match control/calc type.
         N=N+1
         if(N.gt.NL)N=1
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         goto 20
 
       ELSEIF (INO.EQ.8)THEN
@@ -677,8 +815,9 @@ C Toggle and then reform the menu to match control/calc type.
 C Edit the cgc control type.
         IRT=1
         call EASKATOG(' Control type:',' ',
-     &    'Alway On','Alway Off','On-Off','Step','Dimming','Probab',
-     &    'cancel',IRT,nbhelp)
+     &    'Always On','Always Off','On-Off','Step 100:50:0',
+     &    'Dimming - ideal','On-Off probability','cancel',
+     &    IRT,nbhelp)
         if(irt.eq.1)then
           ICGCFL(ICOMP,N)=-1
         elseif(irt.eq.2)then
@@ -705,8 +844,7 @@ C Edit the cgc control type.
             K=0
             CALL EGETWR(HOLD,K,sig,0.,2000.,'W','night calib',IER)
             if(ier.ne.0)goto 46
-            SPELEC(ICOMP,N)=SIG
-            SLOPEM(ICOMP,N)=0.0
+            SPELEC(ICOMP,N)=SIG; SLOPEM(ICOMP,N)=0.0
           elseif(irt.eq.3)then
             ICGCFL(ICOMP,N)=32
             SIG=SPELEC(ICOMP,N)
@@ -718,13 +856,14 @@ C Edit the cgc control type.
             K=0
             CALL EGETWR(HOLD,K,sig,0.,2000.,'W','night calib',IER)
             CALL EGETWR(HOLD,K,slp,-1.,1.,'W','contr slope',IER)
-        if(ier.ne.0)goto 45
-            SPELEC(ICOMP,N)=SIG
-            SLOPEM(ICOMP,N)=SLP
+            if(ier.ne.0)goto 45
+            SPELEC(ICOMP,N)=SIG; SLOPEM(ICOMP,N)=SLP
           endif
         elseif(irt.eq.6)then
           ICGCFL(ICOMP,N)=4
         endif
+        call usrmsg('If you have switched control laws you might also',
+     &    'need to re-edit the sensor position.','W')
 
       ELSEIF (INO.EQ.9)THEN
 
@@ -734,21 +873,24 @@ C Select the calculation type.
         CALL PHELPD('cgs calct type',nbhelp,'photocell',0,0,IER)
         IRT=1
         call EASKATOG(' Calculation type:',' ',
-     &      'Analyt DF','User DF','Extern','Coupling','DayCoeff',
-     &      'cancel',' ',IRT,nbhelp)
+     &    'Analytic DF','User defined DF','Sensor on external face',
+     &    'Radiance coupling','DaylightCoeff',
+     &    'cancel',' ',IRT,nbhelp)
         if(irt.eq.1)then
           IDFST(ICOMP,N)=1
           ldcoef=.false.
         elseif(irt.eq.2)then
           IDFST(ICOMP,N)=2
           ldcoef=.false.
-C Loop through all surfaces and find out number of TMCs:
+C Loop through all surfaces and find out number of TMCs: It
+C does not (yet) count CFC and CFC2 as transparent.
           ICOUNT=0
-          do 47 i = 1, NSUR
-            if(SOTF(I)(1:4).NE.'OPAQ'.AND.SOTF(I)(1:4).NE.'CFC ')THEN
+          do i = 1, NSUR
+            if(SOTF(I)(1:4).NE.'OPAQ'.AND.SOTF(I)(1:4).NE.'CFC '.AND.
+     &         SOTF(I)(1:4).NE.'CFC2')THEN
               ICOUNT=ICOUNT+1              
             endif
-47        continue 
+          enddo   ! of I
           NUDWIN(ICOMP)=ICOUNT
         elseif(irt.eq.3)then
           IDFST(ICOMP,N)=3
@@ -760,7 +902,9 @@ C Loop through all surfaces and find out number of TMCs:
           IDFST(ICOMP,N)=5
           ldcoef=.true.
         endif
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
+        call usrmsg('If you have switched calculation types please',
+     &    're-edit the sensor position parameters.','W')
         goto 20
 
       ELSEIF (INO.EQ.10)THEN
@@ -782,10 +926,8 @@ C Edit detailed control data.
         CALL EGETWR(HOLD,K,ad,0.,1.,'W','min electric',IER)
         CALL EGETWI(HOLD,K,ie,0,30,'W','switch-off delay',IER)
         if(ier.ne.0)goto 24
-        SETPT(ICOMP,N)=aa
-        SOFFLL(ICOMP,N)=ab
-        SMLOUT(ICOMP,N)=ac
-        SMEOUT(ICOMP,N)=ad
+        SETPT(ICOMP,N)=aa; SOFFLL(ICOMP,N)=ab
+        SMLOUT(ICOMP,N)=ac; SMEOUT(ICOMP,N)=ad
         IOFFDT(ICOMP,N)=ie
 
       ELSEIF (INO.EQ.11)THEN
@@ -805,17 +947,15 @@ C Sensor data for lighting zone.
         if(ib.ne.lastndf)then
           if(ib.gt.NDF(ICOMP,N))then
             NDF(ICOMP,N)= ib
-            CGX(ICOMP,N,ib)=0.0
-            CGY(ICOMP,N,ib)=0.0
+            CGX(ICOMP,N,ib)=0.0; CGY(ICOMP,N,ib)=0.0
             CGH(ICOMP,N,ib)=0.0
-            UX(ICOMP,N,ib)=0.0
-            UY(ICOMP,N,ib)=0.0
+            UX(ICOMP,N,ib)=0.0; UY(ICOMP,N,ib)=0.0
             UH(ICOMP,N,ib)=1.0
           elseif(ib.lt.NDF(ICOMP,N))then
             call usrmsg('Cannot remove sensors at this time...',' ','W')
           endif
         endif
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         goto 20
 
       ELSEIF (INO.GT.12.AND.INO.LT.(NITEMS-5))THEN
@@ -837,13 +977,9 @@ C Edit sensor position.
           CALL EGETWR(HOLD,K,ae,-100.,100.,'W','y dir vector',IER)
           CALL EGETWR(HOLD,K,af,-100.,100.,'W','z dir vector',IER)
           if(ier.ne.0)goto 36
-          CGX(ICOMP,N,J)=aa
-          CGY(ICOMP,N,J)=ab
-          CGH(ICOMP,N,J)=ac
-          UX(ICOMP,N,J)=ad
-          UY(ICOMP,N,J)=ae
-          UH(ICOMP,N,J)=af
-          MODIFY=.TRUE.
+          CGX(ICOMP,N,J)=aa; CGY(ICOMP,N,J)=ab; CGH(ICOMP,N,J)=ac
+          UX(ICOMP,N,J)=ad; UY(ICOMP,N,J)=ae; UH(ICOMP,N,J)=af
+          MODIFYVIEW=.TRUE.
           goto 20
 
         ELSEIF(IDFST(ICOMP,N).EQ.3)THEN
@@ -866,6 +1002,7 @@ C Set third coordinate to dummy value:
           CGH(ICOMP,N,1)=0.0
 
         ELSEIF(IDFST(ICOMP,N).EQ.5)THEN
+        
 C Daylight coef method (5).
           helptopic='daylight_coef_method'
           call gethelptext(helpinsub,helptopic,nbhelp)
@@ -887,12 +1024,8 @@ C Daylight coef method (5).
           CALL EGETWR(HOLD,K,af,-100.,100.,'W','z dir vector',IER)
           CALL EGETWI(HOLD,K,ig,1,MDCFP,'W','df number',IER)
           if(ier.ne.0)goto 38
-          CGX(ICOMP,N,J)=aa
-          CGY(ICOMP,N,J)=ab
-          CGH(ICOMP,N,J)=ac
-          UX(ICOMP,N,J)=ad
-          UY(ICOMP,N,J)=ae
-          UH(ICOMP,N,J)=af
+          CGX(ICOMP,N,J)=aa; CGY(ICOMP,N,J)=ab; CGH(ICOMP,N,J)=ac
+          UX(ICOMP,N,J)=ad; UY(ICOMP,N,J)=ae; UH(ICOMP,N,J)=af
           IDCFID(ICOMP,N,J)=ig
 
 C Check if blind/ shuter control active for this thermal zone and if yes
@@ -903,21 +1036,9 @@ C status.
           DO 51 I=1,NSUR
             IF(ITMCFL(ICOMP,I).gt.0)then
               NTMC=ITMCFL(ICOMP,I)
-
-C Debug.
-C              write(6,*) 'TMC No. =',NTMC 
-           
               IF(IBCMT(ICOMP,NTMC).EQ.1) NDCFS(ig) = 2
-
-C Debug.
-C              write(6,*) 'Suface No. =',I
-C              write(6,*) 'Blind flag = ',IBCMT(ICOMP,NTMC)
-
             ENDIF
 51        CONTINUE
-
-C Debug.
-C          write(6,*) 'No. of DC stages = ',NDCFS(ig)
          
 C Set all daylight coefficients to -1 for this sensor (i.e. not calculated yet)
           do 996 ns = 1,NDCFS(ig)
@@ -926,7 +1047,7 @@ C Set all daylight coefficients to -1 for this sensor (i.e. not calculated yet)
  995        continue
  996      continue
           ldcoef=.true.  ! ask when exiting about coefficient generation
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           goto 20
 
         ELSEIF(IDFST(ICOMP,N).EQ.2)THEN
@@ -954,7 +1075,7 @@ C Photocell orientation.
           UX(ICOMP,N,J)=ad
           UY(ICOMP,N,J)=ae
           UH(ICOMP,N,J)=af
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           goto 20
 
          ELSEIF(INO.GT.(13+NDF(ICOMP,N)).AND.INO.LT.(NITEMS-5))THEN
@@ -973,7 +1094,7 @@ C Photocell orientation.
             DFDAT(ICOMP,N,IWW,J)=v1
    94     CONTINUE
           if(ier.ne.0)goto 39
-C          MODIFY=.TRUE.
+C          MODIFYVIEW=.TRUE.
          ENDIF
         ENDIF
       ELSE

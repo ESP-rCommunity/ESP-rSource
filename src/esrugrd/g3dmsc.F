@@ -95,20 +95,18 @@ C        12             r           r-th ground boundary surface
 C *********************************************************************
       SUBROUTINE GRAAPH(IDRW1,IDRW2)
 #include "building.h"
+#include "prj3dv.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
-      LOGICAL MODIFY,MODLEN,MODBND
-
       IF(MMOD.NE.8)RETURN
       IF(IDRW1.EQ.1)THEN
         CALL startbuffer()
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODBND=.TRUE.
         MODLEN=.TRUE.
         nzg=NCOMP
@@ -120,7 +118,7 @@ C *********************************************************************
         CALL ADJVIEW(IER)
       ELSEIF(IDRW1.EQ.2)THEN
         CALL startbuffer()
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODBND=.TRUE.
         MODLEN=.TRUE.
         nzg=1

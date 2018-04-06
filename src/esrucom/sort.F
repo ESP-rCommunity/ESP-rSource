@@ -23,6 +23,7 @@ C   SORTI - sort one lists of integers into ascending or descending
 C           order, with the option to carry another array.
 C   SORTR - sort one lists of reals into ascending or descending 
 C           order, with the option to carry another array.
+C   SORTSTRA - sort an array of string (increasing) order.
 C   INTFREQB - take integer array IX and return a frequency
 C           bin in integer array IY.
 
@@ -518,6 +519,134 @@ C Clean up.
             X(I)=-X(I)
   200    CONTINUE
       endif
+      RETURN
+      END
+
+C ******************* SORTSTRA ***********************
+C Sort an array of string (increasing) order. A slightly modified QUICKSORT
+C algorithm is used.
+C    SIX - string array  to be sorted
+C    NAR  - number of strings in array SIX to be sorted
+      SUBROUTINE SORTSTRA(SIX,NAR)
+
+      INTEGER IL,IU
+      character T*96,TT*96  ! assume file name < 96 char
+      character*(*) SIX
+      DIMENSION SIX(NAR), IL(21), IU(21)
+      integer lnsix   ! length of current SIX array item
+      integer lnt     ! length of T string
+
+      KFLAG=1  ! ascending order
+      NN=NAR
+      if (NN.le.1) RETURN
+      KK=ABS(KFLAG)
+
+C Sort SIX only.
+      M=1
+      I=1
+      J=NN
+      R=0.375E0
+
+   20 if (I.EQ.J) GOTO 60
+      if (R.LE.0.5898437E0) then
+         R=R+3.90625E-2
+      else
+         R=R-0.21875E0
+      endif
+
+   30 K=I
+
+C Select a central element of the array and save it in location T.
+      IJ=I + INT((J-I)*R)
+      lnsix=lnblnk(SIX(IJ))
+      write(T,'(a)') SIX(IJ)(1:lnsix)
+
+C If first element of array is greater than T, interchange with T.
+      if (SIX(I) .GT. T) then
+         SIX(IJ)=SIX(I)
+         lnt=lnblnk(T)
+         write(SIX(I),'(a)') T(1:lnt)
+         lnsix=lnblnk(SIX(IJ))
+         write(T,'(a)') SIX(IJ)(1:lnsix)
+      endif
+      L=J
+
+C If last element of array is less than than T, interchange with T.
+      if (SIX(J) .LT. T) then
+         SIX(IJ)=SIX(J)
+         SIX(J)=T
+         T=SIX(IJ)
+
+C If first element of array is greater than T, interchange with T.
+         if (SIX(I) .GT. T) then
+            SIX(IJ)=SIX(I)
+            lnt=lnblnk(T)
+            write(SIX(I),'(a)') T(1:lnt)
+            lnsix=lnblnk(SIX(IJ))
+            write(T,'(a)') SIX(IJ)(1:lnsix)
+         endif
+      endif
+
+C Find an element in the second half of the array which is smaller
+C than T.
+   40 L=L-1
+      if (SIX(L) .GT. T) GO TO 40
+
+C Find an element in the first half of the array which is greater
+C than T.
+   50 K=K+1
+      if (SIX(K) .LT. T) GO TO 50
+
+C Interchange these elements.
+      if (K.le.L) then
+         lnsix=lnblnk(SIX(L))
+         write(TT,'(a)') SIX(L)(1:lnsix)
+         SIX(L)=SIX(K)
+         lnt=lnblnk(TT)
+         write(SIX(K),'(a)') TT(1:lnt)
+         GO TO 40
+      endif
+
+C Save upper and lower subscripts of the array yet to be sorted.
+      if (L-I .GT. J-K) then
+         IL(M)=I
+         IU(M)=L
+         I=K
+         M=M+1
+      ELSE
+         IL(M)=K
+         IU(M)=J
+         J=L
+         M=M+1
+      endif
+      GO TO 70
+
+C Begin again on another portion of the unsorted array.
+   60 M=M-1
+      if (M .EQ. 0) GO TO 190
+      I=IL(M)
+      J=IU(M)
+
+   70 if (J-I .GE. 1) GO TO 30
+      if (I .EQ. 1) GO TO 20
+      I=I-1
+
+   80 I=I+1
+      if (I .EQ. J) GO TO 60
+      lnsix=lnblnk(SIX(I+1))
+      write(T,'(a)') SIX(I+1)(1:lnsix)
+      if (SIX(I).le.T) GO TO 80
+      K=I
+
+   90 SIX(K+1)=SIX(K)
+      K=K-1
+      if (T .LT. SIX(K)) GO TO 90
+      lnt=lnblnk(T)
+      write(SIX(K+1),'(a)') T(1:lnt)
+      GO TO 80
+
+C Finished.
+  190 continue
       RETURN
       END
 

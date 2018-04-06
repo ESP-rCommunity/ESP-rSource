@@ -541,6 +541,7 @@ C zSWA? (set in solar.F) is the shortwave flux absorption to add to the
 C zone fluid node if the zone is not air filled.
       COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
      &              zSWAp(mcom),zSWAf(mcom)
+      real zfldK,zfldD,zfldC,zfldA,zSWAp,zSWAf
       logical znotair
 
 C Check for trace request.

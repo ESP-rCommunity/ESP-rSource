@@ -38,7 +38,8 @@ C  MODTL  - temperature boundary conditions - laminar.
      &             KOPENf(MCFND,MNZ),FIXM(MCFND,MNZ),
      &             FIXT(MCFND,MNZ),FIXC(MCFND,MNZ),
      &             FIXK(MCFND,MNZ),FIXE(MCFND,MNZ),
-     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),ICNACT(MCFND,MNZ)
+     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),
+     &             ICNACT(MCFND,MNZ),IVOLN(MCFND,MNZ)
       COMMON/HSrc/NHS(2,MNZ),IHSi(MNHS,2,MNZ),IHSf(MNHS,2,MNZ),
      &            JHSi(MNHS,2,MNZ),JHSf(MNHS,2,MNZ),KHSi(MNHS,2,MNZ),
      &            KHSf(MNHS,2,MNZ),HSID(MNHS,2,MNZ),SHS(MNHS,2,MNZ),
@@ -47,7 +48,7 @@ C  MODTL  - temperature boundary conditions - laminar.
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
      &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
      &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
-     &              SSBHC(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
       COMMON/CFDCON/CONVF(MNZ,MNSBZ)
 

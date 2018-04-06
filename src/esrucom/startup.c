@@ -65,9 +65,6 @@ char** argv;
          } else if (strstr(argv[0],"tdf")) {
            printf(" This is the Temporal database module.\n");
            printf(" Use: [-mode {text|page|graphic|script}] \n");
-         } else if (strstr(argv[0],"tut")) {
-           printf(" This is the ESP-r tutorial. \n");
-           printf(" Use: [-mode {text|page|graphic|script}] \n");
          } else  {
            printf(" Use: [-mode {text|page|graphic|script}] [-file <name>]\n");
          }

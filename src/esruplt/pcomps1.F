@@ -824,9 +824,11 @@ C corresponding coefficient generator routine.
      &             ICONDX(MPCOM,MNODEC,MPCONC)
 
 C     Flag indicating if radiant floor is active.
-      COMMON/RadFloor/RadFloor_active
-
+      COMMON/RadFloor/RadFloor_active, NRadFloor, IRadFloor, 
+     &                InitRadFloor
       LOGICAL RadFloor_active
+      INTEGER NRadFloor
+      INTEGER IRadFloor(MPCOM), InitRadFloor(MPCOM)
 
 C     Set radiant floor model flag
       RadFloor_active = .true.

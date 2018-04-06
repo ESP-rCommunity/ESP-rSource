@@ -31,6 +31,7 @@ C will have been defined prior to calling edmrt.
 #include "model.h"
 #include "geometry.h"
 #include "epara.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -43,20 +44,15 @@ C will have been defined prior to calling edmrt.
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
 
-      integer ncub,ivfok
-      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
-      character CUBN*6
-      COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
       common/appw/iappw,iappx,iappy
+      integer iappw,iappx,iappy
+      integer iappwpc ! application %
 
       DIMENSION VERT(35)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
-      LOGICAL MODIFY,MODLEN,MODBND,concat,cfgmod,browse,clkok,XST
+      LOGICAL concat,cfgmod,browse,clkok,XST
       logical silent,unixok
       CHARACTER VERT*46,LTMP*72
       character VFILE*72,head*32,outs*124,KEY*1,ETEXT*82
@@ -65,6 +61,7 @@ C will have been defined prior to calling edmrt.
       character longtfile*144,longtfiledos*144
       integer icni,icnj  ! connection numbers for pair of surfaces.
       integer MVERT,IVERT ! max items and current menu item
+      logical newgeo
 
 C Passed parameters for cfgtogg
 #ifdef OSI
@@ -110,6 +107,17 @@ C If user is browsing model then give warning and exit.
 
 C Initialize the default viewfactors and MRT sensor file name and the 
 C matching geometry file.
+
+C << find a place in the initial scan of model to comment on the path
+C << to the zone files if blank or ./
+
+C << Take into account where prj was started and the
+C << path to the model cfg folder. Also check if zonepth is non-blank
+C << follows the standard folder naming scheme.
+C << Let VFILE include the extended path information and LVIEW the
+C << local reference information. We want to support creating the
+C << boilerplate file if working remotely.
+ 
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
         WRITE(VFILE,'(2a)')zname(ICOMP)(1:lnzname(ICOMP)),'.vwf'
       else
@@ -124,7 +132,7 @@ C Set VEWF array in preparation for editing or silent creation.
       call georead(IUF,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
 
 C << update logic to use alternative source for ZOA rather than call zinfo >>
-      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL,'q')
       NS=NZSUR(ICOMP)
       DO 111 I=1,NS
         II=I
@@ -139,10 +147,16 @@ C << update logic to use alternative source for ZOA rather than call zinfo >>
   111 CONTINUE
       if(silent)then
         if(IVF(ICOMP).eq.1)then
+
+C There should be an existing viewfactor file.
+C << ?? test the error return from ermrt call.
           call FINDFIL(LVIEW(ICOMP),XST)
           if(XST)then
             call edisp(iuout,' Opened existing viewfactor file.')
             CALL ERMRT(ITRC,ITRU,IUF,LVIEW(ICOMP),ICOMP,IER)
+            if(ier.eq.3)then
+              write(6,*) 'zone surface mrt surfs mismatch'
+            endif
           else
             VFILE=LVIEW(ICOMP)
             CALL usrmsg(
@@ -160,6 +174,8 @@ C << update logic to use alternative source for ZOA rather than call zinfo >>
             endif
           endif
         elseif(IVF(ICOMP).eq.0)then
+
+C Need to create a boilerplate file.
           VFILE=LVIEW(ICOMP)
           CALL usrmsg('Creating initial viewfactor file...',vfile,'-')
           CALL EMKMRT(LVIEW(ICOMP),LGEOM(ICOMP),NZSUR(ICOMP),IUF,
@@ -202,9 +218,14 @@ C and change any / to \.
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
-          if(iappw.gt.0.and.iappw.le.200)then
+          if(iappw.eq.630)then
+            iappwpc=100
+          else
+            iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+          endif
+          if(iappwpc.gt.0.and.iappwpc.le.200)then
             write(doit,'(3a,3i4,4a)') 'espvwf -mode ',tmode,
-     &        ' -s ',iappw,iappx+20,iappy+30,' -file ',
+     &        ' -s ',iappwpc,iappx+20,iappy+30,' -file ',
      &        longtfile(:lnblnk(longtfile)),' -zone ',ZN(1:lnblnk(ZN))
           else
             write(doit,'(6a)') 'espvwf -mode ',tmode,
@@ -215,7 +236,13 @@ C an offset from prj start position.
           call runit(doit,tmode)
           call usrmsg(' Reading viewfactor file....',' ','-')
           call pauses(1)
+
+C Test the error return from ermrt call.
           CALL ERMRT(ITRC,ITRU,IUF,LVIEW(ICOMP),ICOMP,IER)
+          if(ier.eq.3)then
+            write(6,*) 
+     &      'zone surface mrt surfs mismatch on return from mrt'
+          endif
           return
         endif
       endif
@@ -249,7 +276,48 @@ C and no MRT sensors.
           ENDIF
         endif
         call edisp(iuout,' Opened existing viewfactor file.')
+
+C Test the error return from ermrt call. If 3 then info in vwf
+C file is out of date.
         CALL ERMRT(ITRC,ITRU,IUF,LVIEW(ICOMP),ICOMP,IER)
+        if(ier.eq.3)then
+          call easkabc(
+     &      'Found difference in number of zone surfaces and MRT',
+     &      'surfaces. Options:','Re-make area weighted',
+     &      'Re-make via ray-tracing calcs','dereferemce',
+     &      IW,nbhelp)
+          if(IW.eq.1.or.IW.eq.2)then
+            CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL,'q')
+            NS=NZSUR(icomp)
+            DO I=1,NS
+              II=I
+              DO 21 J=1,NS
+                JJ=J
+                icc=izstocn(icomp,ii)
+                jcc=izstocn(icomp,jj)
+                VEWF(II,JJ)=0.0
+                IF(II.EQ.JJ)goto 21
+                VEWF(II,JJ)=(SSNA(jcc)/(ZOA-SSNA(icc)))
+   21         CONTINUE
+            ENDDO
+            if(IW.eq.1)then
+              CALL EMKMRT(LVIEW(ICOMP),LGEOM(ICOMP),NZSUR(ICOMP),IUF,
+     &          ICOMP,'a',IER)
+              call edisp(iuout,'Area weighted viewfactors saved.')
+            elseif(IW.eq.2)then
+              CALL EMKMRT(LVIEW(ICOMP),LGEOM(ICOMP),NZSUR(ICOMP),IUF,
+     &          ICOMP,'a',IER)   ! should this be 'r' ?
+              call edisp(iuout,'Now ask for a ray-trace calculation.')
+            endif
+          elseif(IW.eq.3)then
+            LVIEW(ICOMP)='UNKNOWN'
+            IVF(ICOMP)=0
+            call usrmsg(' updating model to remove mrt...',' ','-')
+            CALL EMKCFG('-',IER)
+            cfgmod=.false.
+            call usrmsg(' updating model to remove mrt...done',' ','-')
+          endif
+        endif
       else
 
 C No mrt file referenced so offer default name as well as an option
@@ -272,14 +340,26 @@ C Check just in case the file exists (or was previously dereferenced).
           call FINDFIL(LVIEW(ICOMP),XST)
           IF(XST)THEN
             call edisp(iuout,' Opened existing viewfactor file.')
+
+C Test the error return from ermrt call.
             CALL ERMRT(ITRC,ITRU,IUF,LVIEW(ICOMP),ICOMP,IER)
+            if(ier.eq.3)then
+              write(6,*) 
+     &        'zone surface mrt surfs mismatch after read of existing'
+            endif
             cfgmod=.true.
           else
-            NCUB=0
+
+C LVIEW does not exist create initial file with area weighted
+C viewfactors. If NCUB(ICOMP) was defined via the geometry file
+C then use that information.
+C            write(6,*) ' EDMRT b',icomp,NCUB(ICOMP)
+C            NCUB(ICOMP)=0
             CALL usrmsg('Creating area weighted viewfactor file...',
      &        ' ','-')
             CALL EMKMRT(LVIEW(ICOMP),LGEOM(ICOMP),NZSUR(ICOMP),IUF,
      &        ICOMP,'a',IER)
+            write(6,*) ' EDMRT c',icomp,NCUB(ICOMP)
             if(ier.ne.0)then
               call usrmsg(
      &  'Problem detected while creating viewfactor data file.',
@@ -307,7 +387,7 @@ C drawn and remember number of surfaces to pass to sensor file.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODLEN=.TRUE.
       MODBND=.TRUE.
       CALL ESCZONE(ICOMP)
@@ -318,13 +398,13 @@ C Initialise menu size variables based on window size.
 C IVERT is the menu position, MVERT the current no of lines.
       MHEAD=9
       MCTL=6
-      ILEN=NCUB
+      ILEN=NCUB(ICOMP)
       IPACT=CREATE
       CALL EKPAGE(IPACT)
 
 C Initial menu entry setup.
    92 IER=0
-      ILEN=NCUB
+      ILEN=NCUB(ICOMP)
       IVERT=-3
 
 C Loop through the items until the page to be displayed. M is the 
@@ -335,7 +415,7 @@ C current menu line index. Build up text strings for the menu.
       VERT(3)='a Edit zone viewfactors                      '
       VERT(4)='b Calculate zone or MRT sensor viewfactors   '
       VERT(5)='  ___________________________________________'
-      WRITE(VERT(6),'(A,I2)') '  Number of MRT sensors: ',NCUB
+      WRITE(VERT(6),'(A,I2)') '  Number of MRT sensors: ',NCUB(ICOMP)
       VERT(7)='  ___________________________________________'
       VERT(8)='  Sensor|   Origin (m)    |    Size (m)  |Rot'
       VERT(9)='  name  |Xcord|Ycord|Zcord|len |wid |ht  |deg'
@@ -388,7 +468,7 @@ C the zone, obstructions and sensors.
         call viewtext(etext,iside,isize,ifont)
       endif
       CALL ESCZONE(ICOMP)
-      CALL DRWSEN(ier)
+      CALL DRWSEN(ICOMP,ier)
       CALL ERCZONE(ICOMP)
 
 C Help text for this menu.
@@ -411,7 +491,7 @@ C List help text for the  menu.
 
 C List viewfactor contents.
         call edisp(itru,' ')
-        WRITE(outs,'(A,I2)')' Number of surfaces = ',NZS
+        WRITE(outs,'(A,I3)')' Number of surfaces = ',NZS
         call edisp(itru,outs)
         call edisp(itru,' ')
         call edisp(itru,' View Factors from Surface to Surface')
@@ -438,23 +518,44 @@ C Save viewfactor & sensor file...
           IVF(ICOMP)=0
           goto 48
         ENDIF
+        write(6,*) ' EDMRT d',icomp,NCUB(ICOMP)
         CALL usrmsg(' Updating the viewfactor file...',' ','-')
         CALL EMKMRT(LVIEW(ICOMP),LGEOM(ICOMP),NZS,IUF,ICOMP,'v',IER)
         CALL usrmsg(' Updating the viewfactor file...done.',' ','-')
+        write(6,*) ' EDMRT e',icomp,NCUB(ICOMP)
+        if(ncub(ICOMP).gt.0)then
+
+C Also save any mrt sensors to geometry file.
+          call eclose(gversion(ICOMP),1.1,0.01,newgeo)
+          if(newgeo)then
+            call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+        write(6,*) ' EDMRT f',icomp,NCUB(ICOMP)
+          endif
+        endif
+
       ELSEIF(IVERT.EQ.(MVERT-4))THEN
 
-C Add a sensor.
-        IF(NCUB+1.LE.MCUB)THEN
-          NCUB=NCUB+1
-          XOC(NCUB)=ZCOG(ICOMP,1)
-          YOC(NCUB)=ZCOG(ICOMP,2)
-          ZOC(NCUB)=ZCOG(ICOMP,3)
-          DXC(NCUB)=0.1
-          DYC(NCUB)=0.1
-          DZC(NCUB)=0.1
-          CANG(NCUB)=0.
-          write(CUBN(NCUB),'(A,I2.2)')'sen_',NCUB
-          MODIFY=.TRUE.
+C Add a mrt sensor.
+        IF(NCUB(ICOMP)+1.LE.MCUB)THEN
+          NCUB(ICOMP)=NCUB(ICOMP)+1
+          NCU=NCUB(ICOMP)
+          XOC(NCU)=ZCOG(ICOMP,1)
+          YOC(NCU)=ZCOG(ICOMP,2)
+          ZOC(NCU)=ZCOG(ICOMP,3)
+          DXC(NCU)=0.1
+          DYC(NCU)=0.1
+          DZC(NCU)=0.1
+          CANG(NCU)=0.
+          write(CUBN(NCU),'(A,I2.2)')'sen_',NCU
+          MODIFYVIEW=.TRUE.
+        write(6,*) ' EDMRT g',icomp,NCUB(ICOMP)
+
+C Also save mrt sensors to geometry file.
+          call eclose(gversion(ICOMP),1.1,0.01,newgeo)
+          if(newgeo)then
+            call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+        write(6,*) ' EDMRT h',icomp,NCUB(ICOMP)
+          endif
         ELSE
           CALL USRMSG(' ',' Too many sensors defined!','W')
         ENDIF
@@ -513,7 +614,7 @@ C use in area weighted computation.
 
 C << Rewrite logic to use G7 common blocks rather than call zinfo. >>
 
-          CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+          CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL,'q')
           NS=NZSUR(icomp)
           DO 11 I=1,NS
             II=I
@@ -546,9 +647,14 @@ C and change any / to \.
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
-          if(iappw.gt.0.and.iappw.le.200)then
+          if(iappw.eq.630)then
+            iappwpc=100
+          else
+            iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+          endif
+          if(iappwpc.gt.0.and.iappwpc.le.200)then
             write(doit,'(3a,3i4,5a)') 'espvwf -mode ',tmode,
-     &        ' -s ',iappw,iappx+20,iappy+30,' -file ',
+     &        ' -s ',iappwpc,iappx+20,iappy+30,' -file ',
      &        longtfile(:lnblnk(longtfile)),' -zone ',ZN(1:lnblnk(ZN)),
      &        ' &'
           else
@@ -566,8 +672,13 @@ C an offset from prj start position.
      &      'use new data','revert (no viewfactors)','continue',
      &      irt,nbhelp)
           if(irt.eq.1)then
+
+C Test the error return from ermrt call.
             call edisp(iuout,' Reading viewfactor file....')
             CALL ERMRT(ITRC,ITRU,IUF,LVIEW(ICOMP),ICOMP,IER)
+            if(ier.eq.3)then
+              write(6,*) 'post calc zone surface mrt surfs mismatch'
+            endif
             goto 92
           elseif(irt.eq.2)then
             IVF(ICOMP)=0
@@ -604,24 +715,19 @@ C EDMRTS: Edit details of a MRT sensor block.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-
-      integer ncub,ivfok
-      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
-      character CUBN*6
-      COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
+      COMMON/FILEP/IFIL
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       DIMENSION VERT(15)
       CHARACTER VERT*28,MSG*72,S6*6,head*30
       character ETEXT*82
-      LOGICAL MODIFY,MODLEN,MODBND
       integer NITMS,IVERT ! max items and current menu item
+      logical newgeo
 
 C Passed parameters for cfgtogg
 #ifdef OSI
@@ -654,7 +760,7 @@ C For help messages
 
 C Initial menu entry setup.
       write(head,'(A,A)')'  MRT details: ',zname(ICOMP)
-      MODIFY=.FALSE.
+      MODIFYVIEW=.FALSE.
    92 IER=0
       IVERT=-3
 
@@ -692,7 +798,7 @@ C draw the sensor cubes.  Set all surface lines to standard width.
         call viewtext(etext,iside,isize,ifont)
       endif
       CALL ESCZONE(ICOMP)
-      CALL DRWSEN(ier)
+      CALL DRWSEN(ICOMP,ier)
       CALL ERCZONE(ICOMP)
 
 C Help text for this menu.
@@ -707,49 +813,49 @@ C Now display the menu.
         CALL EASKR(XOC(ICUB),MSG,'Origin X coordinate?',
      &       -999.9,'W',999.9,'W',1.0,'origin X coord',IER,nbhelp)
         IVFOK(icub)=0
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODLEN=.TRUE.
       ELSEIF(IVERT.EQ.2)THEN
         CALL EASKR(YOC(ICUB),MSG,' Origin Y coordinate?',
      &       -999.9,'W',999.9,'W',1.0,'origin X coord',IER,nbhelp)
         IVFOK(icub)=0
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODLEN=.TRUE.
       ELSEIF(IVERT.EQ.3)THEN
         CALL EASKR(ZOC(ICUB),MSG,'Origin Z coordinate?',
      &       -999.9,'W',999.9,'W',1.0,'origin X coord',IER,nbhelp)
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODLEN=.TRUE.
       ELSEIF(IVERT.EQ.4)THEN
         CALL EASKR(DXC(ICUB),MSG,' Sensor width? ',
      &       0.001,'W',99.9,'W',1.0,'sensor X dimension',IER,nbhelp)
         IVFOK(icub)=0
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODLEN=.TRUE.
       ELSEIF(IVERT.EQ.5)THEN
         CALL EASKR(DYC(ICUB),MSG,' Sensor depth? ',
      &       0.001,'W',99.9,'W',1.0,'sensor Y dimension',IER,nbhelp)
         IVFOK(icub)=0
-        MODIFY=.TRUE.
+        MODIFYvIEW=.TRUE.
         MODLEN=.TRUE.
       ELSEIF(IVERT.EQ.6)THEN
         CALL EASKR(DZC(ICUB),MSG,' Sensor height? ',
      &       0.001,'W',99.9,'W',1.0,'sensor Z dimension',IER,nbhelp)
         IVFOK(icub)=0
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODLEN=.TRUE.
       ELSEIF(IVERT.EQ.7)THEN
         CALL EASKR(CANG(ICUB),MSG,' Sensor rotation? ',
      &       -359.0,'W',359.0,'W',0.0,'sensor rotation',IER,nbhelp)
         IVFOK(icub)=0
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODLEN=.TRUE.
       ELSEIF(IVERT.EQ.8)THEN
         S6=' '
         CALL EASKS(S6,' ',' Name of MRT sensor ? ',
      &    6,'sensor','sensor name',IER,nbhelp)
         IF(S6.NE.' ')CUBN(ICUB)=S6
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
       ELSEIF(IVERT.EQ.10)THEN
         helptopic='mrt_sensor_dimensions'
         call gethelptext(helpinsub,helptopic,nbhelp)
@@ -757,6 +863,18 @@ C Now display the menu.
       ELSEIF(IVERT.EQ.11)THEN
         return
       ENDIF
+
+C If we changed something and we have a newer geometry file
+C update the file.
+C Also save mrt sensors to geometry file.
+      if(MODIFYVIEW)then
+        IUF=IFIL+2
+        call eclose(gversion(ICOMP),1.1,0.01,newgeo)
+        if(newgeo)then
+          call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+          write(6,*) ' EDMRTS a update geometry'
+        endif
+      endif
       GOTO 92
 
       END

@@ -8,13 +8,13 @@ C  impact of the size of dfs and bps.
 C Small version jwh may 2013
 C
 C  Maximum number of cells in x direction (usual setting NTCELX=14)
-      INTEGER, PARAMETER :: NTCELX=14
+      INTEGER, PARAMETER :: NTCELX=18
 C  Maximum number of cells in y direction (usual setting NTCELY=14)
-      INTEGER, PARAMETER :: NTCELY=14
+      INTEGER, PARAMETER :: NTCELY=18
 C  Maximum number of cells in z direction (usual setting NTCELZ=14)
-      INTEGER, PARAMETER :: NTCELZ=14
+      INTEGER, PARAMETER :: NTCELZ=18
 C  Maximum number between ntcelx, ntcely and ntcelz (usual setting MCEL1D=14)
-      INTEGER, PARAMETER :: MCEL1D=14
+      INTEGER, PARAMETER :: MCEL1D=18
 C  Maximum number of new mfs connections created for CFD domain (usual setting MCFND=20)
       INTEGER, PARAMETER :: MCFND=20
 C  Maximum number of gridding regions per axis (usual setting MNREG=20)
@@ -26,13 +26,13 @@ C (set equal to 2* or greater than MS in building.h, because of current
 C method of specification of solid boundary conditions from building
 C surfaces)
       INTEGER, PARAMETER :: MNSBZ=160
-C  Maximum number of zones with CFD (usual setting MNZ=1)
-      INTEGER, PARAMETER :: MNZ=1
+C  Maximum number of zones with CFD (usual setting MNZ=4)
+      INTEGER, PARAMETER :: MNZ=2
 C  Maximum number of key volumes (usual setting MNVLS=120)
       INTEGER, PARAMETER :: MNVLS=120
 C  Maximum number of contaminants that can be modelled (Set equal to
 C  INTEGER, PARAMETER :: MCONTM in net_flow.h, if this is changed also change MCONTM)
       INTEGER, PARAMETER :: MCTM=4
 C Maximum frequency of residuals plotting during CFD solutions
-      INTEGER, PARAMETER :: MFRP=100
+      INTEGER, PARAMETER :: MFRP=1000
 

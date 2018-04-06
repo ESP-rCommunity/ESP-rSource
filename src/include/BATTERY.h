@@ -25,6 +25,8 @@ C Created by: Patrice Pinel
 C Initial Creation Date: MARCH, 2005
 C Modified by: Maria Mottillo
 C Modified by: Neil Saldanha January 2010 to include Li-on battery parameters
+C Modified by: Achim Geissler, October 2015 to allow for multiple batteries
+C              in electrical net
 
 C This common declares all the general variables required for the battery model
 C These variables describe the state of the battery at the end of a time step
@@ -34,25 +36,24 @@ C-------------------------------------------------------------------------------
 C Declaration of variables as common
 C---------------------------------------------------------------------------------
       common/BATTERY_STATE/
-     & abuseFlag,
-     & activeBatLifeControl,
-     & batTFin,
-     & batDODFin,
-     & batLifeUsed,
-     & cumBatLifeUsed,
-     & lifeUseFactor,
-     & mandChargeCycle,
-     & mandChargePhase,
-     & mandChargePhaseIncrease,
-     & timeSinceLastFullCharge,
+     & abuseFlag(MPOWCOM),
+     & activeBatLifeControl(MPOWCOM),
+     & batTemp(MPOWCOM),
+     & batDOD(MPOWCOM),
+     & batLifeUsed(MPOWCOM),
+     & cumBatLifeUsed(MPOWCOM),
+     & lifeUseFactor(MPOWCOM),
+     & mandChargeCycle(MPOWCOM),
+     & mandChargePhase(MPOWCOM),
+     & mandChargePhaseIncrease(MPOWCOM),
+     & timeSinceLastFullCharge(MPOWCOM),
      & nPreviousTS,
-     & batDemandP,
-     & loVoltLion,
-     & hiVoltLion,
-     & loTempLion,
-     & hiTempLion,
-     & cycles_used_Lion,
-     & batDemandP_Lion
+     & batDemandP(MPOWCOM),
+     & loVoltLion(MPOWCOM),
+     & hiVoltLion(MPOWCOM),
+     & loTempLion(MPOWCOM),
+     & hiTempLion(MPOWCOM),
+     & cycles_used_Lion(MPOWCOM)
 
 C---------------------------------------------------------------------------------
 C Declaration of variable type and definition
@@ -67,10 +68,10 @@ C       activeBatLifeControl = 0 : no active battery life control
 C       activeBatLifeControl = 1 : active battery life control
 
 C Battery temperature (C)
-      REAL batTFin
+      REAL batTemp
 
 C Battery Depth Of Discharge (%)
-      REAL batDODFin
+      REAL batDOD
 
 C Batery life used during the last time step (years)
       REAL batLifeUsed
@@ -107,18 +108,6 @@ C + Discharge -> energy demanded by system to the battery
 C - Charge -> energy provided by system to the batter
       REAL batDemandP
 
-C   Faraday constant
-      REAL Faraday_constant
-      PARAMETER (Faraday_constant = 96485.)
-
-C   Standard potential of Vanadium Redox Battery (VRB), V
-      REAL VRB_E0
-      PARAMETER (VRB_E0 = 1.259)
-
-C    Gas constant
-      REAL gas_constant
-      PARAMETER (gas_constant = 8.314)
-
 C-------------------------------------------------------------------------------
 C Li-on battery management flags added by Neil Saldanha, 1 = True, 0 = False
 C-------------------------------------------------------------------------------
@@ -128,25 +117,3 @@ C-------------------------------------------------------------------------------
 C Li-on degradation, number of cycles used
 C-------------------------------------------------------------------------------      
       REAL cycles_used_Lion
-      
-C---------------------------
-C Battery type signatures
-C---------------------------
-C Lead acid
-      INTEGER pba
-      PARAMETER (pba = 17)
-C Vanadium redox
-      INTEGER vrb
-      PARAMETER (vrb = 21)
-C Lithium-ion
-      INTEGER lion
-      PARAMETER (lion = 22)
-
-C-----------------------------------------
-C Res electric control flags and parameters
-C-----------------------------------------
-C These variables are invoked by Res_elec_Ctl.F in the cetc
-C folder to assign a battery demand if and only if its a li-on battery type
-
-      REAL batDemandP_Lion
-

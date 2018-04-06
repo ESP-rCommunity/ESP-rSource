@@ -5,10 +5,10 @@ C tdf2.h Parameters for TDF program, May 2010 version.
 C Allowed number of tabular entries in the TDF file. For large
 C models there may be one item per zone so this should reflect
 C the number of zones in building.h
-      PARAMETER (MIT=82)
+      PARAMETER (MIT=120)
 
 C Allowed columns of tabular data in TAB file.
-      PARAMETER (MTABC=80)
+      PARAMETER (MTABC=120)
 
 C Maximum number of help lines associated with a generic item.
       PARAMETER (MHEL=5)
@@ -32,7 +32,7 @@ C Maximum number of timesteps in an hour.
       PARAMETER (MHTS=60)
       
 C Array size for maximum items available of temporal definition
-      PARAMETER (MTI=27)
+      PARAMETER (MTI=29)
 
 C Related to TDF header.
       integer NWPR   ! Number of words per record in the TAB file.
@@ -107,6 +107,7 @@ C is the 6th item in the temporal file.
       integer IZIVENT   ! if non-zero ventilation & infiltration used
       integer IRAIRVL   ! if non-zero room air velocity (not yet used)
       integer ISETPTT   ! if non-zero single set point temperature used
+      integer ICFCCTL   ! if non-zero CFC on/off and/or slat angle used
       integer ICTLSTA   ! if non-zero control state (not yet used)
       integer ISKYLUX   ! if non-zero measured sky lux (not yet used)
       integer IDBTEXT   ! if non-zero ambient dry bulb (climate) used
@@ -134,10 +135,12 @@ C is the 6th item in the temporal file.
                               ! grid charging schedule for storage heater
       integer IELECPWR  ! flag indicating electrical power data (real and reactive)
                         ! is available for a zone
+      integer IRAININD  ! if non-zero rain indicator is present
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
      &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
      &       IDBTZNM(MCOM),ISURTMEAS(MCOM,MS),IMFNTDFP(MNOD),IMFNTDFF,
-     &       IPERVSEN,IStorageHeater(MCOM),IELECPWR(MCOM)
+     &       IPERVSEN,IStorageHeater(MCOM),IELECPWR(MCOM),ICFCCTL(MCOM),
+     &       IRAININD

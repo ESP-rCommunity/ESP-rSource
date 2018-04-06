@@ -66,29 +66,9 @@ C *********************************************************************
 
       SUBROUTINE POWOC_Wind_Prof_Supp_Elec(IPWC)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
-
-C---------------------------------------------------------------------------------
-C Common holding the power-only component description read from the electric
-C network input file.
-C---------------------------------------------------------------------------------
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-
-C---------------------------------------------------------------------------------
-C Common holding the name of the non-HVAC loads file specified in the electric
-C network input file (other variables in this common not used here).
-C---------------------------------------------------------------------------------
-      COMMON/ECNAMES/ENODNAM(MENOD),HYCOMNAM(MHYCOM),
-     &HYCOMTYPSTR(MHYCOM),POWCOMNAM(MPOWCOM),POWCDATS(MPOWCOM,MPCDS),
-     &CONECOMNAM(MCONECOM)
-
-C---------------------------------------------------------------------------------
-C Common holding power generation and loads data for power-only components.
-C---------------------------------------------------------------------------------
-      COMMON/ENETPOWC/PPOWOC(MPOWCOM),QPOWOC(MPOWCOM),
-     &VPOWC(MPOWCOM)
 
 C---------------------------------------------------------------------------------
 C Commons holding simulation time-clock variables.
@@ -124,18 +104,11 @@ C-------------------------------------------------------------------------------
 C---------------------------------------------------------------------------------
 C Declarations for common block variables.
 C---------------------------------------------------------------------------------
-      INTEGER      NPOWCOM, POWCOMNO, POWCOMID, POWCOMPHTYP, POWCONEN,
-     &             NPOWCDAT, NPOWCDATS
-      REAL         POWCDAT
-      REAL         PPOWOC, QPOWOC
-      COMPLEX      VPOWC
       INTEGER      IHRP, IHRF, IDYP, IDYF, IDWP, IDWF, NSINC, ITS
       REAL         btimep, btimef, ptimep, ptimef
       CHARACTER    LWndSupp*72
       INTEGER      iWndSupp
       character    dllsubr*12,dllmesg*124
-      CHARACTER*12 ENODNAM, HYCOMTYPSTR, HYCOMNAM, POWCOMNAM,CONECOMNAM
-      CHARACTER*72 POWCDATS
       REAL         QElecT, QTotalWindSupply, QFarmG
       REAL         GetWTPower
 
@@ -203,32 +176,12 @@ C *********************************************************************
 C --------------------------------------------------------------------------------
       SUBROUTINE POWOC_Wind_Read_Data(IPWC)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 
 C External functions.
       integer lnblnk
-
-C---------------------------------------------------------------------------------
-C Common holding the power-only component description read from the electric
-C network input file.
-C---------------------------------------------------------------------------------
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-
-C---------------------------------------------------------------------------------
-C Common holding the name of the non-HVAC loads file specified in the electric
-C network input file (other variables in this common not used here).
-C---------------------------------------------------------------------------------
-      COMMON/ECNAMES/ENODNAM(MENOD),HYCOMNAM(MHYCOM),
-     &HYCOMTYPSTR(MHYCOM),POWCOMNAM(MPOWCOM),POWCDATS(MPOWCOM,MPCDS),
-     &CONECOMNAM(MCONECOM)
-
-C---------------------------------------------------------------------------------
-C Common holding power generation and loads data for power-only components.
-C---------------------------------------------------------------------------------
-      COMMON/ENETPOWC/PPOWOC(MPOWCOM),QPOWOC(MPOWCOM),
-     &VPOWC(MPOWCOM)
 
 C---------------------------------------------------------------------------------
 C Commons holding simulation time-clock variables.
@@ -266,18 +219,11 @@ C-------------------------------------------------------------------------------
 C---------------------------------------------------------------------------------
 C Declarations for common block variables.
 C---------------------------------------------------------------------------------
-      INTEGER      NPOWCOM, POWCOMNO, POWCOMID, POWCOMPHTYP, POWCONEN,
-     &             NPOWCDAT, NPOWCDATS
-      REAL         POWCDAT
-      REAL         PPOWOC, QPOWOC
-      COMPLEX      VPOWC
       INTEGER      IHRP, IHRF, IDYP, IDYF, IDWP, IDWF, NSINC, ITS
       REAL         btimep, btimef, ptimep, ptimef
       CHARACTER    LWndSupp*72
       INTEGER      iWndSupp
       character    dllsubr*12,dllmesg*124
-      CHARACTER*12 ENODNAM, HYCOMTYPSTR, HYCOMNAM, POWCOMNAM,CONECOMNAM
-      CHARACTER*72 POWCDATS
       REAL         QElecT, QTotalWindSupply, QFarmG
       REAL         fWindSpeedProfile(100),fWindPowerProfile(100)
 
@@ -485,28 +431,6 @@ C *********************************************************************
 #include "power.h"
 
 C---------------------------------------------------------------------------------
-C Common holding the power-only component description read from the electric
-C network input file.
-C---------------------------------------------------------------------------------
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-
-C---------------------------------------------------------------------------------
-C Common holding the name of the non-HVAC loads file specified in the electric
-C network input file (other variables in this common not used here).
-C---------------------------------------------------------------------------------
-      COMMON/ECNAMES/ENODNAM(MENOD),HYCOMNAM(MHYCOM),
-     &HYCOMTYPSTR(MHYCOM),POWCOMNAM(MPOWCOM),POWCDATS(MPOWCOM,MPCDS),
-     &CONECOMNAM(MCONECOM)
-
-C---------------------------------------------------------------------------------
-C Common holding power generation and loads data for power-only components.
-C---------------------------------------------------------------------------------
-      COMMON/ENETPOWC/PPOWOC(MPOWCOM),QPOWOC(MPOWCOM),
-     &VPOWC(MPOWCOM)
-
-C---------------------------------------------------------------------------------
 C Commons holding simulation time-clock variables.
 C---------------------------------------------------------------------------------
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -542,18 +466,11 @@ C-------------------------------------------------------------------------------
 C---------------------------------------------------------------------------------
 C Declarations for common block variables.
 C---------------------------------------------------------------------------------
-      INTEGER      NPOWCOM, POWCOMNO, POWCOMID, POWCOMPHTYP, POWCONEN,
-     &             NPOWCDAT, NPOWCDATS
-      REAL         POWCDAT
-      REAL         PPOWOC, QPOWOC
-      COMPLEX      VPOWC
       INTEGER      IHRP, IHRF, IDYP, IDYF, IDWP, IDWF, NSINC, ITS
       REAL         btimep, btimef, ptimep, ptimef
       CHARACTER    LWndSupp*72
       INTEGER      iWndSupp
       character    dllsubr*12,dllmesg*124
-      CHARACTER*12 ENODNAM, HYCOMTYPSTR, HYCOMNAM, POWCOMNAM,CONECOMNAM
-      CHARACTER*72 POWCDATS
       REAL         QElecT, QTotalWindSupply, QFarmG
       REAL         fWindSpeedProfile(100),fWindPowerProfile(100)
 
@@ -588,7 +505,6 @@ C-------------------------------------------------------------------------------
       INTEGER IRVH
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       REAL QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
-      COMPLEX VSPM
       REAL MINU,MAXU,MINV,MAXV,INC
 
 

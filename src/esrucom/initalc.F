@@ -66,17 +66,17 @@ C Assign starting values to BLGPID,
 C ***************** mziboc
 
 C Mziboc assigns starting values to common
-C OPTCTL in building control functions 15 & 16.
+C OPTRCTL in building control functions 15 & 16.
 
       subroutine mziboc
 
       COMMON/TS6/idysv,ihrsv,irwcou,tsclaw,rewnd,nsncv1,nsncv2,pasone
-      COMMON/OPTCTL/IRWIND,IRWLAS,IRWCNT,IRWCSV,IRWCHP,IRWCHN,IRWCHG,
+      COMMON/OPTRCTL/IRWIND,IRWLAS,IRWCNT,IRWCSV,IRWCHP,IRWCHN,IRWCHG,
      &LGCTIN,INITCT,STFUT,STPRES,STPAS1,STPAS2,IRWFNL,TCTLSV
 
       logical tsclaw,rewnd,pasone
 
-C (Re)assign values for common OPTCTL,
+C (Re)assign values for common OPTRCTL,
         
       irwind=0
       irwlas=0

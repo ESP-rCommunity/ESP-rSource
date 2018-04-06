@@ -3088,7 +3088,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'variable sets the default location, in Windows $HOMEPATH environment'
 'variable sets the default location. Models are copied to this '
 'default or a folder you select. NOTE: no checks are made to'
-'confirm you have control of the nominated folder).
+'confirm you have control of the nominated folder).'
 '  '
 'GTK interface note: the file browser initially points to the home'
 'folder, if you click on a folder then what is [selected:] will be'
@@ -3366,7 +3366,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
         CALL ASKOK(outs,' ',OK,DOK,2)
         CALL PHELPD('Model context',30,'-',0,0,IER)
         CALL EASKR(SLAT,' ','Site latitude?',
-        CALL EASKR(SLON,' ','Longitude difference?',
+        CALL EASKR(SLON,' ','Longitude difference from meridian?',
 *item EDSITE site_exposure_options
 'The site exposure defines the relative view factors between a'
 'vertical surface and the sky (S), ground (G) and surrounding'
@@ -3784,8 +3784,9 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
       CALL EASKS(HOLD,' Temperatures July-December:',' ',72,' ',
 *subroutine EDDSHD
 *item EDDSHD reflect_site_change
-'Shading should be recalculated when site latitude or longitude'
-'changes. Each affected zone will be done in turn. Do all zones'
+'Shading should be recalculated when the model site latitude or'
+'longitude difference from the local time meridian changes. Each'
+'affected zone will be done in turn. Do all zones'
 'if you start the process.'
 *enditem
       CALL EASKABC(' Reflect site change in shading options:',' ',
@@ -3826,16 +3827,14 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'zone casual gains (lighting) based on the internal or external'
 'photocell illuminance. Different levels of calculation'
 'of photocell illuminance and control algorithms are supported.'
+'a Descriptive phrase  '
+'b Which casual gain type in the operations scehdule to control.'
+'    Plus you are asked about the day types for the control.'
 '  '
-'a Wkd Wkend control: Which casual gain type in the operations'
-'    schedule to control. Plus you are asked about the day types'
-'    for the control.'
-'b Control periods  : Star and end hours of the casual gain'
-'                     control - there is one active period assumed'
-'                     in each day.'
-'  Lighting zones   : Displays number of lighting zones'
-'c Lighting zone    : Scroll through lighting zones'
-'d Control type     : Selection of control algorithm:'
+'c Control periods  : Star and end hours of the casual gain'
+'                     control - for each calendar day type.'
+'d Lighting zone    : Toggle focus lighting zones'
+'e Control type     : Selection of control algorithm:'
 '  * Alway On  - casual gain will be alway on'
 '  * Alway Off - casual gain will be alway off'
 '  * On-Off    - on-off control algorithm'
@@ -3844,10 +3843,12 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  '
 '  * Probab    - user probability switching algorithm'
 '  '
-'e Calculation type : Selection of sensor illuminance'
-'                     calculation method'
-'f Control data     : Control algorithm input data'
-'g Photocell data   : Casual gain distribution between lighting'
+'f Calculation type : Selection of sensor illuminance calculation'
+'                     method - internal analytical, user supplied'
+'                     daylight factors, direct Radiance coupling'
+'                     and daylight coefficients via Radiance.'
+'g Control data     : Control algorithm input data'
+'h Photocell data   : Casual gain distribution between lighting'
 '                     zones and number of photocells'
 ' '
 '  Posn: x y z ux ..: Photocell location & orientation'
@@ -3863,10 +3864,6 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '   schedule typically only has one lighting gain type, you can'
 '   control a portion of that gain via lighting zones.'
 '  '
-'If you make changes to a casual gain control you are asked to'
-'provide a name for the overall casual gain control scheme e.g.'
-'  Dimming control with 2 lighting zones.' 
-'  '
 'Some control options make use of Radiance to calculate so-called'
 'daylight coefficients for a room which are then used at'
 'simulation time. If this has been selected then when you exit'
@@ -3875,6 +3872,8 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'used a control which relies on Radiance they select the continue'
 'option when exiting this menu.'
 '  '
+'For the Daylight coupling with Radiance option the e2r module is'
+'started to create the initial descriptive files prior to simulation.'
 *enditem
   246   CALL EASKS(LTMP,' Zone casual gain control file ?',
  8888   call EASKABC('Radiance model for daylight coefficients:',' ',
@@ -4114,44 +4113,45 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *item CFDCOMP
 *enditem
         call EASKS(ltmp,'Description of CFD model:',' ',72,dtmp,
-*item CFDCOMPcfd_conflation_options 
-'The CFD model can either operate in stand-alone mode (CFD only)'
-'or it can be conflated with the whole-building simulation.'
-'The user must supply all boundary conditions when CFD is operated'
-'in stand-alone mode. When conflated, CFD and BSim operate in'
-'tandem, exchanging information on a time-step basis. Three'
-'different conflation mechanisms currently exist to allow the'
-'building solution and CFD to handshake:'
+*item CFDCOMP cfd_conflation_options 
+'The CFD can be coupled to other simulation domains in the model,'
+'currently zone geometry and/or a mass flow network. When coupled,'
+'the CFD will exchange information with these simulation domains'
+'every time step.'
 ' '
-'With type 1 thermal conflation, the surface convection heat'
-'transfer coefficients are calculated from the CFD-predicted flow'
-'and temperature fields.  There is no interaction between the'
-'air-flow network and CFD.'
+'If coupling is enabled, boundary conditions of the CFD domain'
+'should be explicitly linked with specific elements of other domains.'
+'For solid boundaries, this is accomplished by choosing boundary'
+'condition type [building surface] and then selecting the'
+'appropriate building surface. For air flow openings this is'
+'accomplished by choosing boundary condition type [from flow network],'
+'and then selecting the node that is represented by the CFD domain'
+'and the connections that each air flow opening represents.'
 ' '
-'With type 2 thermal conflation, the zone air-point temperature'
-'and the surface convection heat transfer are calculated from'
-'the CFD-predicted flow and temperature fields. There is no'
-'interaction between the air-flow network and CFD.'
+'If coupling is disabled, the CFD domain will not participate'
+'in integrated building simulation. However the CFD domain may be'
+'simulated in isolation using the DFS module.'
 ' '
-'With air-flow conflation, the nodal air-flow network and CFD'
-'are integrated. A single air flow network node is replaced by'
-'a CFD domain, thus dropping the assumption of well-mixed'
-'conditions for that zone.There is no interaction on the'
-'thermal level.'
-' '
-'Note: when changing from a stand-alone CFD definition to a'
-'conflated CFD definition you will need to revise the boundary'
-'definition of [solids] to [building surf] so that the relevant'
-'solid-surface linkages are defined.'
+'Advanced options for controlling the behaviour of the CFD'
+'coupling can be found in the simulation toggles menu of the'
+'BPS module.'
 ' '
 'For further details, refer to:'
 'Clarke J A and Beausoleil-Morrison I, The Integration'
 'of Computational Fluid Dynamics into Building'
 'Simulation, IBPSA News, V9, N2, Dec. 1997.'
 *enditem
-        call EASKATOG('Conflation options:',' ','CFD only',
+        call ASKOK(
+     &      'Do you want to couple CFD with other simulation domains?',
         CALL PHELPD('CFD inputs',42,'-',0,0,IER)
         CALL ASKOK(' Data not yet saved to CFD input file.',
+*item CFDCOMP cfd_conflation_active
+'WARNING!'
+' '
+'You have enabled CFD coupling. This will greatly increase the time'
+'taken to run simulations (particularly if coupled with a mass flow'
+'network).'
+*enditem
 *subroutine CFDGGRD
 *item CFDGGRD cfd_gridding_setup
 'One of the major imput tasks in CFD is to define the gridding'
@@ -4184,9 +4184,12 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 ' option b: scans the current zone geometry and makes suggestions'
 '   about the regions along each axis.  You are asked to state the'
 '   total number of cells in each of the axis. This is reflected'
-'   in the menu in options c d and e.'
+'   in the menu in options c d and e. The suggested grid can be'
+'   fine-tuned via menu options c/d/e. Remember to save the domain'
+'   regularly to commit changes held in memory.'
 '  '
-' options c/d: supports editing of the X and Y grid spacing.'
+' options c/d: supports editing of the X and Y grid spacing via'
+'   altering the number of cells in a region or the power law.'
 '  '
 ' option e: the Z axis grid spacing - note that the curvilinear'
 '   option is not yet working so choose orthogonal. Check the'
@@ -4211,33 +4214,79 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
         CALL EASKI(ieorg,'Specify vertex at start of east Z axis.',
         CALL EASKI(izendet,'Specify vertex at end of east Z axis.',
         CALL PHELPD('gridding',14,'-',0,0,IER)
+*item CFDGGRD cfd_gridding_auto
+'The interface has been updated to reflect the regions and cells'
+'in each axis generated after scanning the zone geometry. Your next'
+'steps are: '
+' a) Select each axis in turn and confirm the grid spacing. Adjust'
+'    as required in the axis menu or try another auto-generation'
+'    with different overall cells in each axis. Note that each auto-'
+'    generation will clear the current memory of cells.'
+' b) When you are happy with the gridding save the domain (dfd) file.'
+' c) Use the operating system save the current domain (dfd) file'
+'    so you can recover if you make a mistake.'
+' d) Either define the solution variables or the volumes of the'
+'    domain that form solids, contaminate sources, air flow inlets'
+'    or outlets or blockages.'
+' e) PLAN (on paper) the start and end cells for each volume as well'
+'    as its name prior to creating volumes.'
+*enditem
 *subroutine CFDSVAR
 *item CFDSVAR cfd_equations_to_solve
-'Specify the equations to be solved in the CFD analysis.'
+'This menu allows the user to set up the equations to be solved by the'
+'CFD, i.e. specify what is modelled and the information required from'
+'the results. Most of the settings in this menu will only be used if'
+'the adaptive conflation controller (ACC) is disabled, otherwise the'
+'ACC will control the equation setup for best results. See below for'
+'details.'
 '  '
 'Velocity must always be solved and is determined from the grid'
 'definition. '
 '  '
-'Temperature. choice of on or off '
+'Temperature. Choice of on or off. '
+'Note: This flag will only be used if the adaptive conflation'
+'      controller (ACC) is disabled in the BPS simulation toggles,'
+'      otherwise the ACC will always solve temperature.' 
 '  '
-'Turbulence. five models available: '
+'Turbulence. Five models available: '
 '   no turbulence (ie laminar flow conditions)'
 '   k-e model (for recirculating flows)'
 '   fixed eddy viscosity (for approximating turbulence)'
-'   MIT zero-equation (for ...)'
+'   MIT zero-equation (a simpler alternative to k-e)'
 '   fixed eddy -> k-e model (uses fixed eddy approx for N'
 '      iterations then k-e as an aide to convegence)'
+'See Ian Beausoleil-Morrisons PhD thesis THE ADAPTIVE COUPLING OF'
+'HEAT AND AIR FLOW MODELLING WITHIN DYNAMIC WHOLE-BUILDING SIMULATION'
+'available online at:
+'https://www.strath.ac.uk/media/departments/mechanicalengineering/esru
+'/research/phdmphilprojects/beausoleil-morrison_thesis.pdf'
+'Note: This flag will only be used if the adaptive conflation'
+'      controller (ACC) is disabled in the BPS simulation toggles,'
+'      otherwise the ACC will always use the MIT zero-equation model'
+'      for preliminary simulations and the k-e model for the adapted'
+'      simulations.'
 '  '
-'Buoyancy.  three choices (temperature should be solved):'
+'Buoyancy. Three choices (temperature should be solved if 
+'          buoyancy is active):'
 '   none - buoyancy effects are ignored.'
 '   ideal gas - density calculated by ideal gas equation.'
 '   Boussinesq - Calculates buoyancy relative to buoyancy'
 '      at reference temperature. Best for small temperature'
 '      variations in domain. '
+'Note: This flag will only be used if the adaptive conflation'
+'      controller (ACC) is disabled in the BPS simulation toggles,'
+'      otherwise the ACC will use either no buoyancy or the Boussinesq'
+'      approximation for the adapted simulations, depending on the'
+'      results of the preliminary simulations.'
 '  '
-'The expert user can edit the individual equations which are to be'
-'solved and adjust initial values, relaxation factors etc via the'
-'edit equation setup option.'
+'Contaminants. Choice of on or off.
+'   One of these options will be present for each contaminant'
+'   defined in the boundary conditions.'
+'  '
+'Mean age of air. Choice of on or off.'
+'  '
+'Edit solution parameters allows the user to specify initial values,'
+'relaxation factors and convergence criteria for the CFD solver.
 '  '
 'If you have messed up the solution parameters you might want to'
 'reset them to default values. Note that default solution'
@@ -4248,60 +4297,66 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
         CALL PHELPD('solution variables',25,'-',0,0,IER)
 *subroutine CFDEDAT
 *item CFDEDAT cfd_equations_to_edit
-'Specify the equations to be solved in the CFD analysis.'
+'This menu allows the user to specify initial values, relaxation'
+'factors and convergence criteria for the CFD solver. Initial'
+'conditions and relaxation factors can have a significant impact on'
+'convergence rates and potential. Optimal values depend upon'
+'the nature of the flow, gridding,and other factors. '
+' '
+'Underrelaxation (values between 0 and 1) is typically employed'
+'to slow the solution to avoid divergence. Overrelaxation (values'
+'greater than 1), although not common, is permissible. Reducing'
+'relaxation factors can often coax a troublesome CFD simulation to'
+'convergence.'
+' '
+'For each variable, relaxation factor 1 is the nominal value and will'
+'always be used if the ACC is disabled. If the ACC is active,'
+'relaxation factor 1 will be used if buoyancy is not simulated, and'
+'relaxation factor 2 will be used if buoyancy is simulated. In'
+'general relaxation factor 2 should be lower than relaxation factor 1.'                
 '  '
-'Initial conditions can have a significant influence over'
-'convergence rates and potential. Relaxation factors can also'
-'have a significant impact on convergence rates and potential.'
-'The optimal value depends upon the nature of the flow, gridding,'
-'and other factors.'
-'  '
-'Velocity must always be solved based on the grid definition. '
-'  '
-' options b/c/d: set initial conditions which will apply to all'
-'   grid cells.  The relaxation factors shown in the menu have'
-'   the potential to help the solution to converge - if in doubt'
-'   use the default value.'
-'  '
-' option e: toggles whether temperautre is to be solved and'
-'   if so what its relaxation factor is.'
-'  '
-' option g: toggles whether turbulence is to be solved and'
-'   if so what its relaxation factor is. Five models available:'
+'Options a,b,c: Set initial conditions (which will apply to all grid'
+'  cells) and relaxation factors for velocity in the X direction.'
+'Options d,e,f: Set initial conditions (which will apply to all grid'
+'  cells) and relaxation factors for velocity in the Y direction.'
+'Options g,h,i: Set initial conditions (which will apply to all grid'
+'  cells) and relaxation factors for velocity in the Z direction.'
+' '
+'Option j: Toggles whether temperature is solved (see help on previous'
+'  menu).'
+'Options k,l,m: Set initial conditions (which will apply to all grid'
+'  cells) and relaxation factors for temperature.'
+' '
+'Option n: Toggles through turbulence models (see help on previous'
+'  menu). Five are available:'
 '   no turbulence (ie laminar flow conditions)'
-'   k-e model (for recirculating flows) you are asked for the'
-'     initial k and e value and their relaxaton factors.'
-'   fixed eddy viscosity (for approximating turbulence) you are'
-'     asked for the initial eddy value in terms of a multiple of'
-'     the molecular viscosity.'
-'   MIT zero-equation (for ...)'
+'   k-e model (for recirculating flows)'
+'   fixed eddy viscosity (for approximating turbulence)'
+'   MIT zero-equation (a simpler alternative to k-e)'
 '   fixed eddy -> k-e model (uses fixed eddy approx for N'
-'      iterations then k-e as an aide to convegence). You are'
-'      asked for the eddy value as well as the number of iterations'
-'      and the e value and relaxation factor.
+'      iterations then k-e as an aide to convegence)'
+'Options o,p,q: Set turbulence parameters depending on which model is'
+'  selected.'
 '  '
-' option i: toggles 3 buoyancy choices (temperature should be solved):'
+'Option r: Toggles between 3 buoyancy choices (see help on previous'
+'menu):'
 '   none - buoyancy effects are ignored.'
 '   ideal gas - density calculated by ideal gas equation.'
 '   Boussinesq - Calculates buoyancy relative to buoyancy at a given'
-'     reference T (~ average in the domain). Best for small temperature'
-'     variations in domain. '
+'     reference T (~ average in the domain). Best for small'
+'     temperature variations in domain. '
+'Option s: Set reference temperature for the Boussinesq approximation.'
+' '
+'Option t: Set the maximum number of iterations that the solver will'
+'  perform. By default unconverged solutions are accepted, though this'
+'  behaviour can be controlled if the ACC is disabled.'
+'Option u: Set convergence criterion, which is used by the solver'
+'  to judge when a converged solution has been obtained.'
+'Option v: Location of the monitoring cell. Key values at this cell'
+'  are displayed during the simulation.'
 '  '
-' options x/y: convergence criteria are used by the solver to judge'
-'   when a converged solution has been obtained.'
-'  '
-' option z: location of the monitoring cell.  This will be the cell'
-'   whos values are displayed during the solution.'
-'  '
-'Underrelaxation (values between 0 and 1) is typically employed'
-'to slow the solution to avoid divergence. Overrelaxation (values'
-'greater than 1), although not common, is permissible. Use smaller'
-'  relaxation factors for highly non-linear problems.'
-'  '
-'Relaxation factors can be of two types.  The most common is linear'
-'although relaxation via fictitious time steps is also permissible.'
-'  '
-'If a solution diverges, consider reducing the relaxation factors.'
+'Option +: If contaminants are included in the CFD domain, this menu'
+'  allows the user to set relaxation factors for the solution.'
 *enditem
         call EASKS(ltmp,'Initial value and relaxation factor',
         call EASKS(ltmp,'Initial value and relaxation factor',
@@ -4326,11 +4381,8 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  2) a user-specified number of iterations has been'
 '     performed.'
 ' '
-'If you specify the number of iterations, after which the'
-'calculations will be halted.'
-' '
-'In the case of a maximum equation residual. When the sum of'
-'the equation residues (for the mass and momentum equations)'
+'In the case of a maximum equation residual, when the sum of'
+'the equation residuals (for the mass and momentum equations)'
 'over all cells in the domain drops below this value, the'
 'solution is considered converged. The residual is normalized'
 'by the flow into the domain.'
@@ -4344,6 +4396,28 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
         CALL EASKI(ival,' ',' Maximum iterations to perform?',
         CALL EASKR(VAL,' ',' Maximum equation residual?',
         CALL PHELPD('solution variables',53,'-',0,0,IER)
+*item CFDEDAT cfd_no_contam_defined
+'No contaminants defined. Please define in the boundary conditions'
+'menu before attempting to edit solution parameters.'
+*enditem
+*subroutine CFDEDATC
+*item CFDEDATCON cfd_contam_equ_to_edit
+'This menu allows the user to specify relaxation factors for the'
+'contaminant transport equations solver. Optimal values depend upon'
+'the nature of the flow, gridding,and other factors. '
+' '
+'Underrelaxation (values between 0 and 1) is typically employed'
+'to slow the solution to avoid divergence. Overrelaxation (values'
+'greater than 1), although not common, is permissible. Reducing'
+'relaxation factors can often coax a troublesome CFD simulation to'
+'convergence.'
+' '
+'For each contaminant, relaxation factor 1 is the nominal value and'
+'will always be used if the ACC is disabled. If the ACC is active,'
+'relaxation factor 1 will be used if buoyancy is not simulated, and'
+'relaxation factor 2 will be used if buoyancy is simulated. In'
+'general relaxation factor 2 should be lower than relaxation factor 1.'
+*enditem
 *subroutine CFDBVAR
 *item CFDBVAR cfd_boundary_variables
 'A summary of each boundary condition is presented. By selecting'
@@ -4460,8 +4534,25 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'If the cells for the volume have not been defined you will be'
 'asked for this information as a first step.'
 '  '
-'Boundary conditions facilities help messages are terse - we'
-'need volunteers to improve them...'
+'Handshaking defines the flow of information between the zone solver'
+'and the CFD at this boundary. Note that the user choice of handshaking'
+'is only used if the ACC is turned off (currently found in the'
+'simulation toggles in bps); if the ACC is active it will choose'
+'optimum handshaking for each solid boundary condition at each time'
+'step.'
+'  '
+'The terms used for handshaking are as follows:'
+'  Direction     - Indicates how information is shared between the zone'
+'                  solver and CFD domain.'
+'                  one-way: BPS --> CFD         two-way: BPS <-> CFD'
+'  Wall function - Indicates whether log-law or Yuan wall functions'
+'                  are applied, and whether these are evaluated locally'
+'                  or not.'
+'  HTC / Qsurf   - Indicates whether heat transfer coefficients are'
+'                  calculated by the CFD, or Qsurf is evaluated'
+'                  directly, and the formula for this calculation.'
+'  Tref          - If Qsurf is evaluated directly, this indicates the'
+'                  source of the reference temperature Tref.'
 *enditem
         call EASKS(t12,'Boundary name? ','  ',12,d12,'bnd name',IER,1)
         CALL EASKATOG('Boundary types:',' ','temperature','heat flux',
@@ -4790,7 +4881,9 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'based or idealized) and air flow, electrical & contaminant networks.'
 '  '
 'The [controls] section gives access to the detail of the ideal'
-'zone controls as well as plant & flow controls and global controls.'
+'zone controls as well as plant, flow and global controls.'
+'Co-simulation links can also be specified using the Functional Mockup'
+'Interface (FMI) standard.'
 '  '
 'The [actions] section includes tasks that are applicable to models'
 'which are complete:'
@@ -4868,21 +4961,18 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 ' '
 'The flow network approach employs flow components (doors, cracks'
 'ducts, fans etc.) to explicitly represent the distributed flow'
-'paths in the model. This approach requires significantly'
-'rmore defining information. (A related facility, described'
-'elsewhere, allows a CFD domain to be linked to this flow network'
-'so that intra-zone flows can be evaluated under the'
-'influence of the above flow network.)'
+'paths in the model. This approach requires additional attributes'
+'to be supplied. (A related facility, described elsewhere allows'
+'a CFD domain to be linked to this flow network so that intra-'
+'zone flows can be evaluated by a combination of solvers.'
 ' '
 'Flow networks may be defined by selecting components from a menu'
-'(the standard approach) or by graphical namipulation of icons in'
-'a grid (an experimental approach which uses the [net] module).'
-'  '
-'In the case of the graphical approach when you return from the'
-'[net] tool you may have created nodes that are not linked to a'
-'zone. You will be asked to confirm the link manually for each'
-'of the zones in the model and then to save these links in the'
-'model configuration file.'
+'or by graphical manipulation of icons in a grid. New networks are'
+'defined via icons, however existing networks are not converted.'
+' '
+'If you have created nodes that are not yet linked to a thermal'
+'zone you will be asked to confirm the link manually for each'
+'of the zones in the model.'
 *enditem
         call EASKATOG('Define air flow via:',' ',
         CALL EASKS(LFIL,' ','Network graphics file?',72,
@@ -6409,6 +6499,63 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
         CALL EASKXORGTKF(LCOPY,'Plant templates db?',' ',
         CALL ASKOK('Is this file in the model ../dbs folder?',
         CALL EASKF(LCOPY,' ','Plant templates db?',
+*subroutine EDDBPREDEF
+*item EDDBPREDEF pre_db_edit_menu
+'The predefined objects database is an ASCII file which holds'
+'descriptions of furniture, fittings, zonal based environmental'
+'system components and facade elements which can be inserted into'
+'ESP-r models.'
+' '
+'Predefined objects for furniture can hold visual attributes'
+'(to be passed of Radiance) as well as back-to-back surfaces'
+'which represent the thermal mass. These are intended to be'
+'inserted into existing thermal zones after which they take a'
+'full part in the thermal and/or visual assessment.'
+' '
+'An environmental component, such as a thermostat, becomes'
+'a zonal representation including the mass of the circuit'
+'board, explicit sensor and casing. This zone-in-a-zone interacts'
+'with the occupied space zone.'
+' '
+'A predefined facade element would be inserted into a zone as'
+'a collection of surfaces, optionally with visual blocks to'
+'represent the depth of the framing.'
+' '
+'Currently predefined objects are created as ESP-r zones and'
+'then converted into a block of text to be manually inserted'
+'into the predefined.db1 file. Examples can be found in the'
+'models/validation/DSM/predef folder.'
+' '
+'In this menu you can list the contents of existing predefined'
+'objects, scan and convert existing ESP-r geometry files into'
+'the blocks of text to be inserted (further editing is required).' 
+' '
+'The following options can be selected:'
+' '
+'a) If the file exists than you can browse the database. '
+'   (Editing is not yet available you have manually edit)'
+' '
+'b) select from list: you confirm a common file name and it will'
+'   be associated with the model.'
+' '
+'c) select from files in model ../dbs folder : you confirm name and'
+'   it will be associated with the model.'
+' '
+'d) copy default database: a project copy of the default'
+'   database will be made and you will be offered a chance to'
+'   rename it.  The suggested name will be based on the model'
+'   root name.'
+' '
+'e) copy a file from common: a project copy of a common file'
+'   will be made and you will be offered a chance to rename'
+'   it (based on the model root name).'
+' '
+'f) Convert a ESP-r geometry file into an block of text which'
+'   you can further edit and insert into the predefined database.'
+' '
+'g) Preview the contents of a predefined object allows you to view'
+'   an object along with its primary attributes.'
+*enditem
 *subroutine EDDBPROFILE
 *item EDDBPROFILE events_db_manage
 '   Events Database '
@@ -6688,12 +6835,14 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '   the current computer.'
 ' '
 'g) convert an EPW file (which has been check as per the'
-'   EPW_readme instructions) to an esp-r binary climate file.'
+'   EPW_readme instructions) to an esp-r binary weather file.'
 '  '
-'After conversion you are asked to confirm the climate latitude'
-'and longitude difference as well as the climate year. Typically'
-'you should be using a climate location which is close to the'
-'site of your building.'
+'After conversion you are asked to confirm the weather file latitude'
+'and longitude (this is often stated as the difference in degrees'
+'from the local time meridian but some weather file sources are in'
+'actual longitude) as well as the climate year. The weather file'
+'documentation should make the longitude value clear. Typically one'
+'would use a weather file which is close to the site of your building.'
 '  '
 'The year associated with a model primarily tells the simulator'
 'what day of the week is 1 January. '
@@ -6839,6 +6988,14 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  there is an option to see detailed attributes such as thermo-'
 '  physical properties.'
 '  '
+'* Visual entities are simple solid bodies with names and composition'
+'  which are seen in wireframe views and passed to Radiance. Also'
+'  compound entities which might represent furniture are collections'
+'  of visual entities.'
+'  '
+'* Predefined entities are a mix of visual entities with embedded'
+'  thermal mass for multi-criteria assessments. Definitions are'
+'  currently in predefined.db1 and are work-in-progress.'
 'If you exit without saving changes then some inputs may be lost.'
 'You will be asked to confirm the file name.'
 *enditem
@@ -8294,17 +8451,17 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  '
 'Rotations: '
 ' First rotation: Assuming the block length dimension is along the'
-' X axis the 1st rotation is in the Z axis with a positive angle'
-' being measured anticlockwise from the X axis. Note this is'
-' currently a different syntax from the rotation of zones.'
+' X axis the 1st rotation is around the Z axis with a positive angle'
+' being measured anticlockwise from the line of the X axis. Note: this'
+' is a different syntax from the rotation of zones.'
 ' '
 ' Second rotation: Assuming the block has no first rotation, the'
-' 2nd axis of rotation is about the Y axis with the angle being'
-' measured between the base face and the horizon + is elevation,'
-' - is depression.'
+' 2nd axis of rotation is around the X axis with the angle being'
+' measured between the base face and the horizon +ve is tilted,'
+' upwards; -ve is tilted downwards.'
 ' '
-' Third rotation: Tilt is not yet implemented but will.be in the'
-' bX axis (assuming no other rotations).'
+' Third rotation: Tilt is not yet implemented but will be around the'
+' Y axis (assuming no other rotations).'
 '  '
 ' The combination of two rotations can be use to make a sloped roof'
 ' eve or an external shading slat that is horizonal along its'
@@ -8370,6 +8527,110 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
         CALL EASKAB('The selected surface doesn-t have 4 sides.',
 153     CALL EASKS(HOLDS,' 4 vertices defining corners: ',' ',
+*subroutine EDVIS
+*item EDVIS visual_overview
+'ESP-r includes a number of geometric entities for visual assessments'
+'(e.g. Radiance models or to add visual clarity to wire-frame views of'
+'models). These entities do not take part in thermal assessments or in'
+'shading assessments. Use shading obstructions for shading assessments'
+'and/or paired (back-to-back) surfaces for thermal inertia.
+' '
+'The composition of visual entities should be set to a multi-layer'
+'construction for use in visualisation studies.'
+'  '
+'Visuals are typically prism shaped and you will be asked to'
+'define an origin X Y and Z (m) as well as a length width and'
+'height (m) and one or two rotations. A form is a six sided body'
+'derived from an initial prism shape after which the coordinates'
+'can be edited.'
+'  '
+'Existing visual entities can be rotated as required. When editing'
+'rotations are applied to the block origin with anticlockwise '
+'direction positive in the edit menu. Rotations are about the site'
+'origin or another user defined point.'
+'  '
+'Transforms (X Y Z) can be applied to one or more visual entities.'
+'  '
+'You can manage the list e.g. adding new visuals, deleting existing'
+'visuals or copying (with option to rotate and transform). New'
+'visuals must be given a unique name (up to 12 characters).'
+'  '
+'As several visual entities can form an object, such as an office'
+'chair or a desk, you can also link several visual entities into'
+'a visual object. You can also rotate or transform an object as'
+'well as copying it (and the entities it references).'
+'  '
+*enditem
+*subroutine EDVISB
+*item EDVISB visual_prism
+'The specification of visual entities is currently based on prism'
+'forms.  Assuming there is no rotation the width of the block'
+'is its distance along the X axis, the depth is along the Y axis, and'
+'the height is along the Z axis.'
+'  '
+'Visuals must have a unique name (up to 12 char). This will be'
+'seen in the wire-frame view as well as in reports.'
+'  '
+'Rotations: '
+' First rotation: Assuming the block length dimension is along the'
+' X axis the 1st rotation is around the Z axis with a positive angle'
+' being measured anticlockwise from the X axis. Note this is'
+' the same as in zone obstructions.'
+' '
+' Second rotation: Assuming the block has no first rotation, the'
+' 2nd axis of rotation is around the X axis with the angle being'
+' measured between the base face and the horizon +ve is tilted,'
+' upwards; -ve is tilted downwards.'
+' '
+' Third rotation: Tilt is not yet implemented but will be around the'
+' Y axis (assuming no other rotations).'
+'  '
+'To assist in determining the placement of visual entities '
+'the site coordinates of the 4 corners:'
+' Front Left  = Block origin, '
+' Front Right = Right side (along initial X axis), '
+' Back Right  = Side diagonal from block origin '
+' '
+'The associated zone bounds are also shown in the menu as well as '
+'the construction gives surfaces properties for use in visualisation.'
+' '
+'A block type visuals can be converted into a general polygon'
+'enclosure with six sides (as long as each face is flat). These'
+'can represent non-rectangular objects. '
+' '
+'The base of a general polygon visual is made up of'
+'vertices 1 4 3 2. The upper surface is 5 6 7 8. The front'
+'surface is 1 2 6 5. The left surface is 4 1 5 8. The '
+'right surface is 2 3 7 6. The back surface is 3 4 8 7.'
+'Thus the 1st coordinate is the lower front left. The 2nd coordinate'
+'is the lower front right. The 3rd coordinate is the lower back right.'
+'The 4th coordinate is the lower back left. The 5th coordinate is'
+'the upper front left. The 6th coordiante is the upper front right.'
+'The 7th coordinate is the upper back right and the 8th is the'
+'upper back left.'
+' '
+'Visuals also have an attribute of opacity where 0.0 is'
+'transparent and 1.0 is opaque. This information is not yet used'
+'within radiance representations.'
+'  '
+'You can edit the origin of the block, make it the same as a vertex'
+'in the zone, or the same as a vertex in the zone after editing.'
+*enditem
+*subroutine EDVISOBJ
+*item EDVISB visual_object
+'Sometimes it is useful to associate several visual entities to form'
+'a compound visual object i.e. an office chair or desk. A compound'
+'visual object has a name (up to 12 char), a description (up to 32'
+'char) and up to a dozen names of existing visual entities.'
+' '
+'Visual objects can be rotated or transformed by applying the'
+'rotation or transfor to all the associated entities.'
+' '
+'You can copy a compound visual object. This is done by copying'
+'and renaming the associated entities. One can then rotate or'
+'transform the copied compound visual object without impacting'
+'the original entities.'
+*enditem
 *subroutine EDACONN
 *item EDACONN boundary_choice_menu
 'The model contiguity (boundary conditions at surfaces) are set in'
@@ -9147,12 +9408,15 @@ For the purposes of ESP-r, the use of WIS is focused on the'
         CALL EASKS(LCNN,' Updated surface connections file ?',' ',
         CALL EASKS(CFGFN,
         CALL EASKS(LCNN,' Updated surface connections file ?',' ',
-*item EDCONN
-'The current mosw description will be placed into this file.'
-'It is suggested that you define a new file (ie. '
-'project.cfg > project_a.cfg).'
+*item EDCONN surface_corner_detect
+'ESP-r provides two methods for scanning for geometric surface'
+'matches - within the topology checking facility and in the surface'
+'attribution [scan for nearby surfaces] option. Both check for a'
+'number of tollerances vis-a-vis how close vertices are, how close'
+'the angles between surface normals are, how close the COG of surfaces'
+'are etc. If your model includes fine details and/or small surfaces'
+'then changing to smaller tollerances helps to constrain the tests.'
 *enditem
-          CALL EASKS(CFGFN,
 *subroutine CONFIG
 *item CONFIG setting_up_topol
 'The process of checking topology in a model usually involves all of'
@@ -9620,6 +9884,19 @@ For the purposes of ESP-r, the use of WIS is focused on the'
  396    CALL EASKS(LTMP,' ',OUTSTR,72,DFILE,'zip file',IER,3)
         CALL ASKOK('Zip file not found!','Try again?',OK,
         CALL ASKOK('Problem scanning CAD file!',
+*item NEWZONE after_predef_warning
+'After importing a predefined zone object its bounding surfaces'
+'will have been set to indicate not-defined-yet. Please use either'
+'the surface attribute facility to set the boundary conditions or'
+'request a topology check to set the boundary conditions.'
+' '
+'Next double check the composition of the surfaces in the new zone'
+'to ensure they are appropriate.'
+' '
+'Check the documentation for the predefined object to see if it'
+'suggests other post-processing tasks. There may be additional'
+'predefined objects that should be used for multi-zone entities.' 
+*enditem
 *subroutine DELZONE
 *item DELZONE zone_delete_warning
 '                  - W A R N I N G - '
@@ -10453,7 +10730,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 '-4.1 for Glasgow (relative to the Greenwich Meridian).'
 *enditem
         CALL EASKR(SLAT,' ','Site latitude?',
-        CALL EASKR(SLON,' ','Longitude difference?',
+        CALL EASKR(SLON,' ','Longitude difference from meridian?',
 *item pregist cfg_model_year
 'The assessment year is required for event scheduling.(e.g.'
 'to determine which day of the week is 1 January. You can'
@@ -13200,6 +13477,30 @@ Another mode is to scan the zone operations file and to compose'
 *enditem
       CALL PHELPD('comp 11',17,'-',0,0,IER)
   43  CALL EASKS(hold,
+subroutine MF012I
+*item MF012I flow_cmp_012
+'Type 12 is a power law volume flow resistance (see '
+'component type 10 for basic description).'
+'This component additionally has a max flow rate or pressure'
+'difference setpoint. In mode 0 the component returns the'
+'max flow rate given, if the actual flow rate is greater. In mode'
+'1, the component is closed (flow rate = zero), if max dp is'
+'exceeded.'
+' '
+'This behaviour is for window-frame vents with storm'
+'protection devices.'
+'  '
+'  (m = rho . a . dP^b [m^3/s]) '
+' '
+'Supplemental data: '
+'  (1) fluid type (1=air, 2=water), '
+'  (2) flow coef a, '
+'  (3) flow exponent b,'
+'  (4) max flow rate (switch=0) or dp setpoint (switch=1),'
+'  (5) switch 0 (max val) or 1 (close at dp setpoint)'
+*enditem
+      CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,14)
+  43  CALL EASKS(hold,
 *subroutine MF015I
 *item MF015I flow_cmp_015
 'Type 15 is a power law mass flow resistance component.'
@@ -15607,7 +15908,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 ' shading - if selected will duplicate and then update'
 '   existing shading files e.g. a change in site.'
 ' '
-' climate data & latitude/longitude - finds dependencies'
+' weather data & latitude/longitude - finds dependencies'
 '   associated with such changes (ground temps, shading,'
 '   IPV) and updates the model accordingly.'
 ' '
@@ -16101,11 +16402,18 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '   whole of each day as well as no infiltration or ventilation'
 '   for all day types.'
 ' '
+' cellular office creates a typical pattern for a single occupant'
+' cellular office with a bit of diversity for occupants lights and'
+' small power. Saturday has morning use. Sunday & holiday minimal.'
+' '
+' open plan office creates a typical pattern with a bit of'
+' diversity for occupants lights & small power. 9 m2/person'
+' lighting ~7W/m2 & small power 11.7W/m2. Saturday morning use.'
+' Sunday & holiday minimal.'
+' '
 'After initiating one of the above actions you can edit the data'
-'as required. '
-'  '
-'A zone operation file contains schedules of air flow and casual'
-'gains.  Air flows may have thermostatic or wind speed control.'
+'as required. The file also contains schedules of air flow'
+'schedules which may have thermostatic or wind speed control.'
 *enditem
           CALL EASKS(LTMP,' ','Zone operations file name?',
           call askzone(isource,izdef,
@@ -16585,6 +16893,9 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'be appropriate for your project. You can adapt the '
 'labels if it clarifies your model. '
 '  '
+'Note the option for a so-called dynamic occupant. This requires'
+'additional attributes to be entered.
+'  '
 'If you want to use the standard labels select them from the list.'
 *enditem
         call askok(' ','Change type labels?',OK,dok,3)
@@ -16971,7 +17282,8 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '  '
 'You will then be asked to pick the required thermophysical'
 'property for this sensitivity study. You will also be asked'
-'to specify the bounds of the property to search within.'
+'to specify the bounds of the property to which the random.'
+'change will be applied.'
 '   '
 'Exit will return to the main menu without saving any data.'
 *enditem
@@ -16984,26 +17296,29 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'a specific layer of a MLC. First select which material you want to'
 'alter.'
 *enditem
-      call EASKAB('Which composite construction parameter? ','  ',
-      CALL EPICKS(INPIC,IVALE,' ',' Which material : ',
+      call EASKAB('Which composite construction parameter?','  ',
+      CALL EPICKS(INPIC,IVALE,' ',' Which material:',
 *subroutine SDDEF003
 *item SDDEF003 uncert_climate
 'Pick the required climate parameter from the list. '
 '   '
 'Exit will return to the main menu without saving any data.'
 *enditem
-      CALL EPICKS(INPIC,IVALP,' ',' Which parameter : ',
+      CALL EPICKS(INPIC,IVALP,' ','Which parameter:',
 *subroutine SDDEF004
 *item SDDEF004 uncert_operations
 'You can nominate casual gains or scheduled air flows as uncertain.'
 ' '
-'If casual gains then you will be asked which casual gain. and'
-'then whether it is the radiant or convective portion of the gain.'
-'or the total magnitude of the gain.'
+'If casual gains then you will be asked which casual gain, and'
+'then whether it is the radiant or convective portion of the gain,'
+'or the total magnitude of the gain or the period start time.'
 '  '
 'If schedules air flows selected then you are asked if it is'
 'infiltration or which zone is a ventilation source or if it'
 'is the source temperature of the ventilation which is uncertain.'
+'  '
+'For either casual gains or scheduled air flows you need to link'
+'with a defined (zone) location.'
 *enditem
       call EASKAB('  ','Which scheduled parameter? ',
       call EASKABC('  ','Which casual gain? ',
@@ -17025,15 +17340,20 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'take are defined via one of three processes:'
 '1) Percentage change: the upper and lower values will'
 '   be the base case value +/- the percentage change.'
-'   A value greater than zero is expected.'
+'   This will be multipled by the random seed for the run'
+'   to get the specific change to apply.'
+'   A % value greater than zero is expected.'
 '  '
 '2) Absolute change: the upper and lower values will be'
-'   the base case value +/- the absolute change.'
+'   the base case value +/- the absolute change. For example'
+'   to increment or decrement thickness by 10mm (0.01m).'
+'   This will be multipled by the random seed for the run'
+'   to get the specific change to apply.'
 '   A value greater than zerio is expected.'
 '  '
 '3) Explicitly: the upper and lower values will be '
-'   defined explicitly. Two values are expected and the'
-'   upper must be greater than the lower.'
+'   defined separately. Two values are expected and the'
+'   upper must be greater than the lower. '
 *enditem
         call EASKABC(' Define parameter bounds',' via:',
         call EASKR(PERC,' ',' Percentage change value? ',
@@ -17045,10 +17365,17 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'take are defined via one of two processes:'
 '1) Percentage change: the upper and lower values will'
 '   be the base case value +/- the percentage change.'
-'   A value greater than zero is expected.'
+'   This will be multipled by the random seed for the run'
+'   to get the specific change to apply.'
+'   A % value greater than zero is expected.'
 '  '
 '2) Absolute change: the upper and lower values will be'
-'   the base case value +/- the absolute change.'
+'   the base case value +/- the absolute change * the current'
+'   random number seed (+-2.0). For example to increment or'
+'   decrement thickness by a nominal 10mm set a value of 0.01m'
+'   (be sure the value reflects the units of the attribute).'
+'   This will be multipled by the random seed for the run'
+'   to get the specific change to apply.'
 '   A value greater than zero is expected.'
 *enditem
         call EASKAB(' Define parameter bounds',' via:',
@@ -17072,22 +17399,41 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 *enditem
       call EASKS(LTEMP,' Uncertainty definitions file name ?',
 *item UNCERTA uncert_overview_a
+'ESP-r includes formal descriptions of uncertainty for the following'
+'topics: 1) thermophysical properties, 2) layer thickness, 3) weather'
+'4) zone operations, 5) convection coefficients, zone air volume.'
+'  '
 'Uncertainties are defined in a three stage process '
 'analogous to mass flow.'
 '  '
-'1. A distribution for a chosen parameter is defined.  '
-'   Minimum one distribution.'
+'1 One or more distributions are defined. For example, if thickness'
+'  of insulation is of interest we might create named distributions'
+'  [wall_thickness] & [roof thickness] and identify specific materials'
+'  to perturb (% or +- absolute increments).'
 '  '
-'2. A physical location in the model is defined; zone,  '
-'   surface etc. Minimum one location.'
+'2 One or more named physical locations in the model are defined e.g.'
+'  [facades] & [roof] each of which are linked to specific zones &'
+'  surfaces. Thermophysical properties & layer thickness & zone'
+'  operations need a zone location. Weather needs a temporal location.'
 '  '
-'3. Distributions and locations are linked to define an '
-'   uncertainty.  The validity of the uncertainty is '
-'   checked at simulation time. Minimum one uncertainty.'
+'3. Distributions and locations are linked to define one or more'
+'   uncertanties e.g. [wall_thickness] + [facades].  The validity'
+'   of the uncertainty is checked at simulation time.'
 '  '
-'A so-called uncertainty library is used and if prj detects'
-'that you are working in a remote folder you are asked to'
-'confirm where to place the library.'
+'When the assessment is run you are given a choice of: differential,'
+'factorial, Monti-Carlo assessments. For each run a random see will be'
+'generated (within the range +-2.0 and applied to the user defined'
+'bounds. The results file will include a base case pluse all of'
+'the separate variants (sets) required.' 
+'NOTE: bps must be run in silent mode to support sensitivity studies.'
+'  '
+'When res is run you are given the option to work with all of the  '
+'sets or specific result sets. Look for the [sensitivity] menu option. '
+'  '
+'The initial option [a create default bounds] allows you to define'
+'bounds for uncertainty for thermophysical properties in advance'
+'and reference these defaults rather than manually stipulating the'
+'bounds to apply.'
 *enditem
         CALL PHELPD('Uncertainty definitions file',12,'-',0,0,IER)
 *subroutine DISPOPT
@@ -17120,7 +17466,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 *subroutine LOCDEF
 *item LOCDEF uncert_location
 'The location of the uncertainty can be:'
-' - spatial and in all temporal locations.'
+' - spatial (zones or zones:surfaces) and in all temporal locations.'
 ' - temporal and in all spatial locations.'
 ' - both.  Only use this option if both domains have a restriction'
 ' '
@@ -17136,9 +17482,9 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'If you are also selecting surfaces then you can select from the'
 'list of surfaces (suggest making a note of what you have selected.'
 '  '
-'For temporal selections you must define a period when uncertainty'
-'is applicable (start day of the year and hour of the day and finish'
-'day of the year and hour of the day). If you cancel then'
+'For temporal selections (i.e. weather) you must define a period when'
+'uncertainty is applicable (start day of the year and hour of the day'
+'and finish day of the year and hour of the day). If you cancel then'
 'the data is not changed.'
 *enditem
       CALL EASKABC(' ',
@@ -17154,6 +17500,9 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'Pick the required uncertainty definition(s).'
 '  '
 'Next pick the required location definition.'
+'  '
+'With a good naming regime the pairs of uncertainty and location'
+'will provide a clear indication of intent.  '
 '  '
 'Exit returns to the main menu without saving any data. '
 *enditem
@@ -17398,6 +17747,15 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'applications are invoked. '
 *enditem
         CALL EASKXORGTKF(exemfl,'ESP-r exemplars?','(see help)',
+*item SETUP surface_corner_detect
+'ESP-r provides two methods for scanning for geometric surface'
+'matches - within the topology checking facility and in the surface'
+'attribution [scan for nearby surfaces] option. Both check for a'
+'number of tollerances vis-a-vis how close vertices are, how close'
+'the angles between surface normals are, how close the COG of surfaces'
+'are etc. If your model includes fine details and/or small surfaces'
+'then changing to smaller tollerances helps to constrain the tests.'
+*enditem
 *subroutine tdfedit
 *item tdfedit tdf_time_format
 'The selected format for the input of time is currently'
@@ -17615,4 +17973,247 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
         CALL EASKS(tfile,' Import file name? ',
         CALL EASKI(ITEXP,' Several export formats are available: ',
         CALL EASKS(tfile,' Export file name? ',
-
+*subroutine FMI_ED
+*item FMI_ED FMI_disabled
+'This version of ESP-r has not been compiled with FMI support.'
+'Instructions to enable this functionality can be found in:'
+'[ESP-r installation directory]/manual/FMI/Users.txt.'
+*enditem
+      CALL PHELPD('FMI not available',nbhelp,'-',0,0,IER)
+*item FMI_ED FMI_spec_none
+'This facility allows creation and editing of directives to co-simulate'
+'with external programs called Functional Mock-up Units (FMUs). The'
+'data exchange is defined by the Functional Mock-up Interface (FMI)'
+'standard. Information on the FMI implementation in ESP-r, including'
+'a list of supported FMUs and their functionality, can be found in:'
+'[ESP-r installation directory]/manual/FMI'
+' '
+'Currently there are no FMU specifications. Please add one using'
+'option +.'
+*enditem
+        CALL PHELPD('FMI specification help',nbhelp,'-',0,0,IER)
+*item FMI_ED FMI_spec_some
+'This facility allows creation and editing of directives to co-simulate'
+'with external programs called Functional Mock-up Units (FMUs). The'
+'data exchange is defined by the Functional Mock-up Interface (FMI)'
+'standard. Information on the FMI implementation in ESP-r, including'
+'a list of supported FMUs and their functionality, can be found in:'
+'[ESP-r installation directory]/manual/FMI'
+' '
+'Note that multiple instances of an FMU can be defined from the same'
+'FMU specification (often there is one instance per zone). In most'
+'cases you should use a separate FMU specification for each different'
+'FMU you plan to co-simulate with, not for each instance.'
+' '
+'Option a: cycle through FMU specifications.'
+'Option b: set path to the FMU file (can be relative from model cfg'
+'          directory).'
+'Option c: define a brief identifying phrase for the FMU (maximum'
+'          30 characters).'
+'Option d: define the maximum time allowed for communication between'
+'          ESP-r and the FMU (in milli-seconds). A value of zero means'
+'          no limit.'
+'Option e: toggle debug logging for the FMU on or off. Only advanced'
+'          users should put this on.'
+'Option f: define FMU inputs, i.e. data passed from ESP-r to the FMU.'
+'Option g: define FMU outputs, i.e. data passed from the FMU to ESP-r.'
+'Option +: manage FMU specifications.'
+'Option !: list data for the currently selected FMU specification.'
+'Option >: save all FMU specification data to a file. By default this'
+'          file is given the extension .fmi and is placed in the ctl'
+'          model directory. Before saving, you will be warned if any'
+'          FMU files have not been specified.'
+'Option ?: show this help text.'
+'Option -: exit this menu. If there is unsaved data, you will be asked'
+'          if you want to save this before exiting.'
+*enditem
+        CALL PHELPD('FMI specification help',nbhelp,'-',0,0,IER)
+*item FMI_ED manage_FMUs
+'Here you can add, delete or copy an FMU specification. All inputs and'
+'outputs will also be deleted or copied along with the FMU'
+'specification. There is no undo for deleting an FMU specification'
+'(except reloading a previous file), so think carefully before doing'
+'so!'
+' '
+'When deleting or copying an FMU, you will be prompted for a number.'
+'This corresponds to the FMU specification index, listed when the'
+'prompt is given. Specifications are added at the end of the list'
+'(i.e. if there are 2 existing specifications and one is added, the'
+'new one will become number 3).'
+*enditem
+C Manage FMU specifications.
+        helptopic='manage_FMUs'
+        CALL gethelptext(helpinsub,helptopic,nbhelp)
+        CALL EASKABCD(' ','Options:',
+     &    'add','delete','copy','cancel',itmp,nbhelp)
+*item FMI_ED enter_FMU_file
+'This is a path to the FMU file, which normally has extension .fmu.'
+'This can be a relative path from the model cfg directory, or an'
+'absolute path. 72 characters maximum. After entering the file path,'
+'you will be warned if it cannot be found in the specified location.'
+*enditem
+          CALL EASKS(FMUFIL(IFMU),' ',' FMU file?',72,ctmp,'FMU file',
+     &      IER,nbhelp)
+*item FMI_ED FMU_file_not_found
+'The FMU file cannot be found at the location you have specified. This'
+'is not a fatal error, but please be aware that you will be unable to'
+'run a simulation with FMI active if any FMUs cannot be found at run'
+'time. You can try entering the file path again, or continue with the'
+'previously specified path.'
+*enditem
+            CALL EASKAB(' Cannot find this file!','Options:',
+     &        'respectify','continue',itmp,nbhelp)
+*subroutine FMI_EDINP
+*item FMI_EDINP FMU_input
+'Here the FMU inputs are defined. This creates directives for ESP-r to'
+'pass data to the FMU, for example a temperature. Inputs are first'
+'associated with a zone (including the ambient environment), and then'
+'a specific variable is selected. The available choice of variables is'
+'different depending on whether the ambient environment or a building'
+'zone is selected.'
+' '
+'There are two other data items, which correspond with entities defined'
+'in the FMU. The FMU instance name is an identifier for each component'
+'of the FMU. Guidance on this may be found in the relevant entry in the'
+'ESP-r manual FMU listings ([ESP-r installation directory]/manual/FMI),'
+'or the documentation for the FMU itself. The FMU variable name is an'
+'identifier that should be defined in the modelDescription.xml file'
+'within the FMU.'
+' '
+'Options a-z: edit data for a specific input. If there are a large'
+'             number of inputs, this part of the menu will be'
+'             paginated.'
+'Option 0: if the menu is paginated, this allows page control.'
+'Option +: manage inputs.'
+'Option !: list data for all inputs of the active FMU specification.'
+'Option ?: show this help text.'
+'Option -: exit this menu.'
+*enditem
+        CALL PHELPD('FMU inputs help',nbhelp,'-',0,0,IER)
+*item FMI_EDINP manage_inputs
+'Here you can add, delete or copy an FMU input. There is no undo for'
+'deleting an input (except reloading a previous file), so think'
+'carefully before doing so!'
+' '
+'When deleting or copying an input, you will be prompted for a number.'
+'This corresponds to the FMU input index, listed when the prompt is'
+'given. Inputs are added at the end of the list (i.e. if there are 2'
+'existing inputs and one is added, the new one will become number 3).'
+*enditem
+C Manage inputs.
+        helptopic='manage_inputs'
+        CALL gethelptext(helpinsub,helptopic,nbhelp)
+        CALL EASKABCD(' ','Options:',
+     &    'add','delete','copy','cancel',itmp,nbhelp)
+*item FMI_EDINP edit_input
+'Here you can edit data for an individual FMU input. Inputs are first'
+'associated with a zone (including the ambient environment), and then'
+'a specific variable is selected. The available choice of variables is'
+'different depending on whether the ambient environment or a building'
+'zone is selected. Some variable types require supplementary data; for'
+'guidance please refer to the FMI users manual found at:'
+'[ESP-r installation directory]/manual/FMI/Users.txt'
+' '
+'There are two other data items, which correspond with entities defined'
+'in the FMU. The FMU instance name is an identifier for each component'
+'of the FMU. Guidance on this may be found in the relevant entry in the'
+'ESP-r manual FMU listings ([ESP-r installation directory]/manual/FMI),'
+'or the documentation for the FMU itself. The FMU variable name is an'
+'identifier that should be defined in the modelDescription.xml file'
+'within the FMU.'
+' '
+'Option a: choose associated zone.'
+'Option b: choose ESP-r variable.'
+'Option c: define supplementary data.'
+'Option d: define FMU instance name.'
+'Option e: define FMU variable name.'
+'Option ?: show this help text.'
+'Option -: exit this menu.'
+*enditem
+          CALL PHELPD('FMU input editing help',nbhelp,'-',0,0,IER)
+*item FMI_EDINP sup_data
+'Supplementary data depends on what ESP-r variable you have selected for'
+'this input. Guidance on which variables require supplementary data, and'
+'what the supplementary data represents, is given in the FMI users'
+'manual found at:'
+'[ESP-r installation directory]/manual/FMI/Users.txt'
+*enditem
+              EASKS(ctmp_30,' ',' Supplementary data?',30,'  ',
+     &          'FMU sup data',IER,nbhelp)
+*subroutine FMI_EDOUT
+*item FMI_EDOUT FMU_output
+'Here the FMU outputs are defined. This creates directives for ESP-r to'
+'receive data from the FMU, for example a control signal. Outputs are'
+'first associated with a zone (including the ambient environment), and'
+'then a specific variable is selected. The available choice of'
+'variables is different depending on whether the ambient environment or'
+'a building zone is selected.'
+' '
+'There are two other data items, which correspond with entities defined'
+'in the FMU. The FMU instance name is an identifier for each component'
+'of the FMU. Guidance on this may be found in the relevant entry in the'
+'ESP-r manual FMU listings ([ESP-r installation directory]/manual/FMI),'
+'or the documentation for the FMU itself. The FMU variable name is an'
+'identifier that should be defined in the modelDescription.xml file'
+'within the FMU.'
+' '
+'Options a-z: edit data for a specific output. If there are a large'
+'             number of outputs, this part of the menu will be'
+'             paginated.'
+'Option 0: if the menu is paginated, this allows page control.'
+'Option +: manage outputs.'
+'Option !: list data for all outputs of the active FMU specification.'
+'Option ?: show this help text.'
+'Option -: exit this menu.'
+*enditem
+        CALL PHELPD('FMU outputs help',nbhelp,'-',0,0,IER)
+*item FMI_EDOUT manage_outputs
+'Here you can add, delete or copy an FMU output. There is no undo for'
+'deleting an output (except reloading a previous file), so think'
+'carefully before doing so!'
+' '
+'When deleting or copying an output, you will be prompted for a number.'
+'This corresponds to the FMU output index, listed when the prompt is'
+'given. outputs are added at the end of the list (i.e. if there are 2'
+'existing outputs and one is added, the new one will become number 3).'
+*enditem
+C Manage outputs.
+        helptopic='manage_outputs'
+        CALL gethelptext(helpinsub,helptopic,nbhelp)
+        CALL EASKABCD(' ','Options:',
+     &    'add','delete','copy','cancel',itmp,nbhelp)
+*item FMI_EDOUT edit_output
+'Here you can edit data for an individual FMU output. Outputs are first'
+'associated with a zone (including the ambient environment), and then'
+'a specific variable is selected. The available choice of variables is'
+'different depending on whether the ambient environment or a building'
+'zone is selected. Some variable types require supplementary data; for'
+'guidance please refer to the FMI users manual found at:'
+'[ESP-r installation directory]/manual/FMI/Users.txt'
+' '
+'There are two other data items, which correspond with entities defined'
+'in the FMU. The FMU instance name is an identifier for each component'
+'of the FMU. Guidance on this may be found in the relevant entry in the'
+'ESP-r manual FMU listings ([ESP-r installation directory]/manual/FMI),'
+'or the documentation for the FMU itself. The FMU variable name is an'
+'identifier that should be defined in the modelDescription.xml file'
+'within the FMU.'
+' '
+'Option a: choose associated zone.'
+'Option b: choose ESP-r variable.'
+'Option c: define supplementary data.'
+'Option d: define FMU instance name.'
+'Option e: define FMU variable name.'
+'Option ?: show this help text.'
+'Option -: exit this menu.'
+*enditem
+              CALL PHELPD('FMU output editing help',nbhelp,'-',0,0,IER)
+*item FMI_EDOUT sup_data
+'Supplementary data depends on what ESP-r variable you have selected for'
+'this output. Guidance on which variables require supplementary data,'
+'and what the supplementary data represents, is given in the FMI users'
+'manual found at:'
+'[ESP-r installation directory]/manual/FMI/Users.txt'
+*enditem
+              EASKS(ctmp_30,' ',' Supplementary data?',30,'  ',
+     &          'FMU sup data',IER,nbhelp)

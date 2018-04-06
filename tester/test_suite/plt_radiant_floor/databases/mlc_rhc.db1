@@ -1,5 +1,5 @@
 # composite construction db defined in ../databases/mlc_rhc.db1
-# based on materials db ../databases/constr_db2.materialdb
+# based on materials db ../databases/constr_db3.materialdb
    15     # no of composites 
 # layers  description   optics 
     5    extern_wall   OPAQ  OPAQUE              

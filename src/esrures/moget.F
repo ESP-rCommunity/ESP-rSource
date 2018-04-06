@@ -464,19 +464,18 @@ C Pre calculated data (filtered).
      &    RDFAVE(MCOM,3,MZRL),RDTFMAX(MCOM,3,MZRL),RDTFMIN(MCOM,3,MZRL)
 
 C Comfort parameters and hash table.
-      common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
+      common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset
+      common/timfltr/iwkdst,iwkdfn,isatst,isatfn,isunst,isunfn
       
-C MRT Sensors.
-      common/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
+C MRT Sensors via geometry.h.
 
-      CHARACTER ITEM(35)*24, MTITLE*22, values*20, CUBN*6
-      CHARACTER ITEMS(18)*23
-      CHARACTER ITEMC(25)*24
+      CHARACTER ITEM(35)*24, MTITLE*22, values*20
+      CHARACTER ITEMS(19)*23
+      CHARACTER ITEMC(29)*24
       character xfile*144,tg*1,delim*1
       character SUFFIX*8
       character ll1*12,ll2*12,ll3*12
-      CHARACTER outs*124,pifltog*4,lpifl*72
+      CHARACTER outs*124,pifltog*4,lpifl*72,hold*24
       CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16
       character graftitle*64,grlbl*24,t64*64,t24*24
 
@@ -500,9 +499,9 @@ C Note: 60 is the maximum number of items associated with an anchor point.
 
       logical SLIST,NLIST,MRTLIST,AGRLIST,OKL,dok,ok
 #ifdef OSI
-      integer iid1,iid2
+      integer iid1,iid2,iik,iixx,iiyy
 #else
-      integer*8 iid1,iid2
+      integer*8 iid1,iid2,iik,iixx,iiyy
 #endif
 
       logical dmdsok,xst
@@ -714,8 +713,10 @@ C Setup menu items.
       if (MENUTYPE.eq.3) then
         ITEM(25)='/ Clear all selections  '
       else
-        if(iocupf.eq.0)then
+        if(iocut.eq.0)then
           ITEM(25)='+ Filter >> none      '
+        elseif(iocut.eq.-1)then
+          ITEM(25)='+ Filter >> time based'
         else
           ITEM(25)='+ Filter >> occup only'
         endif
@@ -1457,7 +1458,7 @@ C IGET = 40 Solar absorbed in zone (W)
       elseif(INO.EQ.10)then
 
 C Zone flux paths. Additional items could be included if we went
-C to an emenu selection for izver >=4. << to be done >>
+C to an emenu selection for izver >=4.
         inoc=0
         idnoc=0
         helptopic='res_menu_zone_flux'
@@ -1467,10 +1468,11 @@ C to an emenu selection for izver >=4. << to be done >>
      &    'c Occupant casual gains (R+C)',
      &    'd Lighting casual gains (R+C)',
      &    'e Small power casual gains (R+C)',
-     &    'f Controlled casual gains (R+C',
-     &    'g Opaq surf conv @extrn','h Opaq surf conv @partns',
-     &    'i Tran surf conv @extrn','j Tran surf conv @partns',
-     &    'k Total surface conv',' ',inoc,idnoc,15)
+     &    'f Other casual gains (R+C)',
+     &    'g Controlled casual gains (R+C',
+     &    'h Opaq surf conv @extrn','i Opaq surf conv @partns',
+     &    'j Tran surf conv @extrn','k Tran surf conv @partns',
+     &    'l Total surface conv',inoc,idnoc,15)
         if(inoc.eq.0)goto 1
         call usrmsg('  ','  ','-')
         NGET=NGET+1
@@ -1548,9 +1550,24 @@ C IGET = 15  Casual gains by type.
             SLABEL(NGET)='Total small power gain (Whr)'
             LNSLABEL(NGET)=28
           endif
-        elseif(inoc.eq.6)then
+         elseif(inoc.eq.6)then
           IGETNO(NGET,1)=15
           IGETNO(NGET,3)=7
+          IGETNO(NGET,7)=15
+          SUFFIX=' EqpCasG'
+          if(IROC.eq.0)then
+            SLABEL(NGET)='Total other gain (W)'
+            LNSLABEL(NGET)=20
+          elseif(IROC.eq.1)then
+            SLABEL(NGET)='Total other gain (W/hr)'
+            LNSLABEL(NGET)=23
+          elseif(IROC.eq.-1)then
+            SLABEL(NGET)='Total other gain (Whr)'
+            LNSLABEL(NGET)=22
+          endif
+        elseif(inoc.eq.7)then
+          IGETNO(NGET,1)=15
+          IGETNO(NGET,3)=8
           IGETNO(NGET,7)=16
           SUFFIX=' CtlCasG'
           if(IROC.eq.0)then
@@ -1563,7 +1580,7 @@ C IGET = 15  Casual gains by type.
             SLABEL(NGET)='Total ctld casual gain (Whr)'
             LNSLABEL(NGET)=28
           endif
-        elseif(inoc.eq.7)then
+        elseif(inoc.eq.8)then
 
 C IGET = 42 Zone balance opaque exterior conv.
           IGETNO(NGET,1)=42
@@ -1579,7 +1596,7 @@ C IGET = 42 Zone balance opaque exterior conv.
             SLABEL(NGET)='Opaque surf exterior conv (Whr)'
             LNSLABEL(NGET)=31
           endif
-        elseif(inoc.eq.8)then
+        elseif(inoc.eq.9)then
 
 C IGET = 43 Zone balance opaque partitions conv.
           IGETNO(NGET,1)=43
@@ -1595,7 +1612,7 @@ C IGET = 43 Zone balance opaque partitions conv.
             SLABEL(NGET)='Opaque partitionns conv (Whr)'
             LNSLABEL(NGET)=29
           endif
-        elseif(inoc.eq.9)then
+        elseif(inoc.eq.10)then
 
 C IGET = 44 Zone balance transparent exterior conv.
           IGETNO(NGET,1)=44
@@ -1611,7 +1628,7 @@ C IGET = 44 Zone balance transparent exterior conv.
             SLABEL(NGET)='Transp surf exterior conv (Whr)'
             LNSLABEL(NGET)=31
           endif
-        elseif(inoc.eq.10)then
+        elseif(inoc.eq.11)then
 
 C IGET = 45 Zone balance transparent partitions conv.
           IGETNO(NGET,1)=45
@@ -1627,7 +1644,7 @@ C IGET = 45 Zone balance transparent partitions conv.
             SLABEL(NGET)='Transp partitions conv (Whr)'
             LNSLABEL(NGET)=28
           endif
-        elseif(inoc.eq.11)then
+        elseif(inoc.eq.12)then
           IGETNO(NGET,1)=16
           IGETNO(NGET,4)=3
           IGETNO(NGET,7)=10
@@ -1649,11 +1666,12 @@ C IGET = 16,17,18 Surface fluxes
 C IGET = 25 Surface flux (various IGET,4) where 1=conduction (inside),
 C   2=convec (inside), 3=LW radiation (inside), 4=SW rad absorb inside,
 C   5=radiant casual occup, 6=radiant casual light
-C   7=radiant casual equip, 8=contrld casual gains, 9=heat storage (inside)
-C   10=plant inj/extr (ins), 11=conduction (other fc), 12=convec (other),
-C   13=long wave > buildings
-C   14=long wave > sky, 15=long wave > ground, 16= SW radiation (othr),
-C   17= SW incident radiation (othr),18=heat storage (othr)
+C   7=radiant casual equip, 8=radiant casual other, 9=contrld casual gains,
+C   10=heat storage (inside)
+C   11=plant inj/extr (ins), 12=conduction (other fc), 13=convec (other),
+C   14=long wave > buildings
+C   15=long wave > sky, 16=long wave > ground, 17= SW radiation (othr),
+C   18= SW incident radiation (othr),19=heat storage (othr)
 C Set up surface flux selection items.
         helptopic='res_menu_surface_flux'
         call gethelptext(helpinsub,helptopic,nbhelp)
@@ -1664,20 +1682,21 @@ C Set up surface flux selection items.
         ITEMS(5) ='radiant casual occup   '
         ITEMS(6) ='radiant casual light   '
         ITEMS(7) ='radiant casual equip   '
-        ITEMS(8) ='contrld casual gains   '
-        ITEMS(9) ='heat storage (inside)  '
-        ITEMS(10)='plant inj/extr (inside)'
-        ITEMS(11)='conduction (other face)'
-        ITEMS(12)='convection (other face)'
-        ITEMS(13)='long wave > buildings  '
-        ITEMS(14)='long wave > sky        '
-        ITEMS(15)='long wave > ground     '
-        ITEMS(16)='SW rad abs (other fc)'
-        ITEMS(17)='SW rad incid (other fc)'
-        ITEMS(18)='heat storage (other fc)'
+        ITEMS(8) ='radiant casual other   '
+        ITEMS(9) ='contrld casual gains   '
+        ITEMS(10) ='heat storage (inside)  '
+        ITEMS(11)='plant inj/extr (inside)'
+        ITEMS(12)='conduction (other face)'
+        ITEMS(13)='convection (other face)'
+        ITEMS(14)='long wave > buildings  '
+        ITEMS(15)='long wave > sky        '
+        ITEMS(16)='long wave > ground     '
+        ITEMS(17)='SW rad abs (other fc)'
+        ITEMS(18)='SW rad incid (other fc)'
+        ITEMS(19)='heat storage (other fc)'
         IX=1
         CALL EPICKS(IX,IVALS,' ',' Surface fluxes:',
-     &    23,18,ITEMS,'surface fluxes',IER,nbhelp)
+     &    23,19,ITEMS,'surface fluxes',IER,nbhelp)
         if(IVALS(1).eq.0)goto 1
         dok=.false.
         call askok('Report per square meter of surface',' ',OK,dok,
@@ -1906,6 +1925,35 @@ C Report flux/m^2.
           endif
         elseif(inoc.eq.8)then
           IGETNO(NGET,1)=25
+          IGETNO(NGET,7)=14  ! ??
+          SUFFIX=' InSfOth'
+          if(IROC.eq.0)then
+            if (ISM.eq.0) then          
+              SLABEL(NGET)='Other rad @ an inside face (W)'
+              LNSLABEL(NGET)=30
+            else
+              SLABEL(NGET)='Other rad @ inside face (W/m^2)'            
+              LNSLABEL(NGET)=31
+            endif
+          elseif(IROC.eq.1)then
+            if (ISM.eq.0) then 
+              SLABEL(NGET)='Other rad @ an ins face (W/hr)'
+              LNSLABEL(NGET)=30
+            else
+              SLABEL(NGET)='Other rad@ins face (W/(hr*m^2))'
+              LNSLABEL(NGET)=31
+            endif
+          elseif(IROC.eq.-1)then
+            if (ISM.eq.0) then 
+              SLABEL(NGET)='Other rad @ an ins face (Whr)'
+              LNSLABEL(NGET)=29
+            else
+              SLABEL(NGET)='Other rad @ ins face (Whr/m^2)'            
+              LNSLABEL(NGET)=30
+            endif
+          endif
+        elseif(inoc.eq.9)then
+          IGETNO(NGET,1)=25
           IGETNO(NGET,7)=14
           SUFFIX=' InSfCtC'
           if(IROC.eq.0)then
@@ -1933,7 +1981,7 @@ C Report flux/m^2.
               LNSLABEL(NGET)=32
             endif           
           endif
-        elseif(inoc.eq.9)then
+        elseif(inoc.eq.10)then
           IGETNO(NGET,1)=25
           IGETNO(NGET,7)=15
           SUFFIX=' InSfHtS'
@@ -1962,7 +2010,7 @@ C Report flux/m^2.
               LNSLABEL(NGET)=32
             endif         
           endif
-        elseif(inoc.eq.10)then
+        elseif(inoc.eq.11)then
           IGETNO(NGET,1)=25
           IGETNO(NGET,7)=16
           SUFFIX=' InSfPlt'
@@ -1991,7 +2039,7 @@ C Report flux/m^2.
               LNSLABEL(NGET)=32
             endif
           endif
-        elseif(inoc.eq.11)then
+        elseif(inoc.eq.12)then
           IGETNO(NGET,1)=25
           IGETNO(NGET,7)=17
           SUFFIX=' ExSfCnd'
@@ -2020,7 +2068,7 @@ C Report flux/m^2.
               LNSLABEL(NGET)=32
             endif
           endif
-        elseif(inoc.eq.12)then
+        elseif(inoc.eq.13)then
           slist=.true.
           IGETNO(NGET,1)=25
           IGETNO(NGET,7)=16
@@ -2050,7 +2098,7 @@ C Report flux/m^2.
               LNSLABEL(NGET)=32
             endif           
           endif
-        elseif(inoc.eq.13)then
+        elseif(inoc.eq.14)then
           IGETNO(NGET,1)=25
           IGETNO(NGET,7)=9
           SUFFIX=' ExSfLWb'
@@ -2079,7 +2127,7 @@ C Report flux/m^2.
               LNSLABEL(NGET)=32
             endif
           endif
-        elseif(inoc.eq.14)then
+        elseif(inoc.eq.15)then
           IGETNO(NGET,1)=25
           IGETNO(NGET,7)=9
           SUFFIX=' ExSfLWs'
@@ -2108,7 +2156,7 @@ C Report flux/m^2.
               LNSLABEL(NGET)=32
             endif
           endif
-        elseif(inoc.eq.15)then
+        elseif(inoc.eq.16)then
           IGETNO(NGET,1)=25
           IGETNO(NGET,7)=9
           SUFFIX=' ExSfLWg'
@@ -2137,7 +2185,7 @@ C Report flux/m^2.
               LNSLABEL(NGET)=32
             endif
           endif
-        elseif(inoc.eq.16)then
+        elseif(inoc.eq.17)then
           slist=.true.
           IGETNO(NGET,1)=25
           IGETNO(NGET,6)=-104
@@ -2168,17 +2216,18 @@ C Report flux/m^2.
               LNSLABEL(NGET)=32
             endif
           endif
-        elseif(inoc.eq.17)then
+        elseif(inoc.eq.18)then
           slist=.true.
           IGETNO(NGET,1)=25
           IGETNO(NGET,6)=-104
           IGETNO(NGET,7)=10
-          SUFFIX=' ExSolAb'
+          SUFFIX=' ExSolIn'
           if(IROC.eq.0)then
             if (ISM.eq.0) then
               SLABEL(NGET)='Surface solar incid outside (W)'
               LNSLABEL(NGET)=31
             else
+              IGETNO(NGET,8)=3 ! see unit code in table.F, line 447 ff. **?
               SLABEL(NGET)='Surf solar incid outside (W/m^2)'
               LNSLABEL(NGET)=32
             endif
@@ -2199,7 +2248,7 @@ C Report flux/m^2.
               LNSLABEL(NGET)=31
             endif
           endif
-        elseif(inoc.eq.18)then
+        elseif(inoc.eq.19)then
           IGETNO(NGET,1)=25
           IGETNO(NGET,7)=15
           SUFFIX=' InSfHtS'
@@ -2479,22 +2528,28 @@ C IGET = 15  Casual gains.
           ITEMC(14)='equipment convective '
           ITEMC(15)='equipment radiant '
           ITEMC(16)='equipment latent '
-          ITEMC(17)='controlled fraction '
-          ITEMC(18)='controlled (conv+rad) '
-          ITEMC(19)='controlled convective '
-          ITEMC(20)='controlled radiant'
-          ITEMC(21)='aggregate occupant (c+r)'
-          ITEMC(22)='aggregate lighting (c+r)'
-          ITEMC(23)='aggregate equipment(c+r)'
-          ITEMC(24)='aggregate lights+equip'
+  
+          ITEMC(17)='other (conv+rad) '
+          ITEMC(18)='other convective '
+          ITEMC(19)='other radiant '
+          ITEMC(20)='other latent '
+  
+          ITEMC(21)='controlled fraction '
+          ITEMC(22)='controlled (conv+rad) '
+          ITEMC(23)='controlled convective '
+          ITEMC(24)='controlled radiant'
+          ITEMC(25)='aggregate occupant (c+r)'
+          ITEMC(26)='aggregate lighting (c+r)'
+          ITEMC(27)='aggregate equipment(c+r)'
+          ITEMC(28)='aggregate lights+equip'
           if(dmdsok)then
-            ITEMC(25)='dispersed demands'
+            ITEMC(29)='dispersed demands'
           else
-            ITEMC(25)='                 '
+            ITEMC(29)='                 '
           endif
           IX=1
           CALL EPICKS(IX,IVALC,' ','Casual sensible and latent:',
-     &      24,25,ITEMC,'Casual fluxes',IER,nbhelp)
+     &      24,29,ITEMC,'Casual fluxes',IER,nbhelp)
           if(IVALC(1).eq.0)goto 1
           inoc=IVALC(1)
           call usrmsg('  ','  ','-')
@@ -2544,7 +2599,7 @@ C IGET = 15  Casual gains.
               LNSLABEL(NGET)=31
             endif
           elseif(inoc.eq.4)then
-            IGETNO(NGET,3)=9   ! not avail for izver <4
+            IGETNO(NGET,3)=10   ! not avail for izver <4
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=11
             SUFFIX=' LatCasG'
             if(IROC.eq.0)then
@@ -2572,7 +2627,7 @@ C IGET = 15  Casual gains.
               LNSLABEL(NGET)=25
             endif
           elseif(inoc.eq.6)then
-            IGETNO(NGET,3)=10   ! not avail for izver <4
+            IGETNO(NGET,3)=11   ! not avail for izver <4
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=13
             SUFFIX=' OccCnvG'
             if(IROC.eq.0)then
@@ -2586,7 +2641,7 @@ C IGET = 15  Casual gains.
               LNSLABEL(NGET)=26
             endif
           elseif(inoc.eq.7)then
-            IGETNO(NGET,3)=11   ! not avail for izver <4
+            IGETNO(NGET,3)=12   ! not avail for izver <4
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=13
             SUFFIX=' OccRadG'
             if(IROC.eq.0)then
@@ -2600,7 +2655,7 @@ C IGET = 15  Casual gains.
               LNSLABEL(NGET)=27
             endif
           elseif(inoc.eq.8)then
-            IGETNO(NGET,3)=12   ! not avail for izver <4
+            IGETNO(NGET,3)=13   ! not avail for izver <4
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=13
             SUFFIX=' OccLatG'
             if(IROC.eq.0)then
@@ -2628,7 +2683,7 @@ C IGET = 15  Casual gains.
               LNSLABEL(NGET)=25
             endif
           elseif(inoc.eq.10)then
-            IGETNO(NGET,3)=13   ! not avail for izver <4
+            IGETNO(NGET,3)=14   ! not avail for izver <4
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=14
             SUFFIX=' LitCnvG'
             if(IROC.eq.0)then
@@ -2642,7 +2697,7 @@ C IGET = 15  Casual gains.
               LNSLABEL(NGET)=26
             endif
           elseif(inoc.eq.11)then
-            IGETNO(NGET,3)=14   ! not avail for izver <4
+            IGETNO(NGET,3)=15   ! not avail for izver <4
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=14
             SUFFIX=' LitRadG'
             if(IROC.eq.0)then
@@ -2656,7 +2711,7 @@ C IGET = 15  Casual gains.
               LNSLABEL(NGET)=27
             endif
           elseif(inoc.eq.12)then
-            IGETNO(NGET,3)=15   ! not avail for izver <4
+            IGETNO(NGET,3)=16   ! not avail for izver <4
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=14
             SUFFIX=' LitLatG'
             if(IROC.eq.0)then
@@ -2684,7 +2739,7 @@ C IGET = 15  Casual gains.
               LNSLABEL(NGET)=28
             endif
           elseif(inoc.eq.14)then
-            IGETNO(NGET,3)=16   ! not avail for izver <4
+            IGETNO(NGET,3)=17   ! not avail for izver <4
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=15
             SUFFIX=' EqpCnvG'
             if(IROC.eq.0)then
@@ -2698,7 +2753,7 @@ C IGET = 15  Casual gains.
               LNSLABEL(NGET)=27
             endif
           elseif(inoc.eq.15)then
-            IGETNO(NGET,3)=17   ! not avail for izver <4
+            IGETNO(NGET,3)=18   ! not avail for izver <4
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=15
             SUFFIX=' EqpRadG'
             if(IROC.eq.0)then
@@ -2712,7 +2767,7 @@ C IGET = 15  Casual gains.
               LNSLABEL(NGET)=28
             endif
           elseif(inoc.eq.16)then
-            IGETNO(NGET,3)=18   ! not avail for izver <4
+            IGETNO(NGET,3)=19   ! not avail for izver <4
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=15
             SUFFIX=' EqpLatG'
             if(IROC.eq.0)then
@@ -2725,8 +2780,66 @@ C IGET = 15  Casual gains.
               SLABEL(NGET)='Small pwr latent gain (Whr)'
               LNSLABEL(NGET)=27
             endif
+
           elseif(inoc.eq.17)then
-            IGETNO(NGET,3)=8  ! same as for izver <4
+            IGETNO(NGET,3)=7  ! same as for izver <4
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=15
+            SUFFIX=' EqpCasG'
+            if(IROC.eq.0)then
+              SLABEL(NGET)='Total other gain (W)'
+              LNSLABEL(NGET)=20
+            elseif(IROC.eq.1)then
+              SLABEL(NGET)='Total other gain (W/hr)'
+              LNSLABEL(NGET)=23
+            elseif(IROC.eq.-1)then
+              SLABEL(NGET)='Total other gain (Whr)'
+              LNSLABEL(NGET)=22
+            endif
+          elseif(inoc.eq.18)then
+            IGETNO(NGET,3)=20   ! not avail for izver <4
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=15
+            SUFFIX=' EqpCnvG'
+            if(IROC.eq.0)then
+              SLABEL(NGET)='Other convec gain (W)'
+              LNSLABEL(NGET)=21
+            elseif(IROC.eq.1)then
+              SLABEL(NGET)='Other convec gain chg (W/hr)'
+              LNSLABEL(NGET)=28
+            elseif(IROC.eq.-1)then
+              SLABEL(NGET)='Other convec gain (Whr)'
+              LNSLABEL(NGET)=23
+            endif
+          elseif(inoc.eq.19)then
+            IGETNO(NGET,3)=21   ! not avail for izver <4
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=15
+            SUFFIX=' EqpRadG'
+            if(IROC.eq.0)then
+              SLABEL(NGET)='Other radiant gain (W)'
+              LNSLABEL(NGET)=22
+            elseif(IROC.eq.1)then
+              SLABEL(NGET)='Other radiant gain chg (W/hr)'
+              LNSLABEL(NGET)=29
+            elseif(IROC.eq.-1)then
+              SLABEL(NGET)='Other radiant gain (Whr)'
+              LNSLABEL(NGET)=24
+            endif
+          elseif(inoc.eq.20)then
+            IGETNO(NGET,3)=22   ! not avail for izver <4
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=15
+            SUFFIX=' EqpLatG'
+            if(IROC.eq.0)then
+              SLABEL(NGET)='Other latent gain (W)'
+              LNSLABEL(NGET)=21
+            elseif(IROC.eq.1)then
+              SLABEL(NGET)='Other latent gain chg (W/hr)'
+              LNSLABEL(NGET)=28
+            elseif(IROC.eq.-1)then
+              SLABEL(NGET)='Other latent gain (Whr)'
+              LNSLABEL(NGET)=23
+            endif
+ 
+          elseif(inoc.eq.21)then
+            IGETNO(NGET,3)=9  ! same as for izver <4
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=16; IGETNO(NGET,8)=4
             SUFFIX=' CtlCasF'
             if(IROC.eq.0)then
@@ -2739,8 +2852,8 @@ C IGET = 15  Casual gains.
               SLABEL(NGET)='Frac of ctld casual gain (%hr)'
               LNSLABEL(NGET)=30
             endif
-          elseif(inoc.eq.18)then
-            IGETNO(NGET,3)=7  ! same as for izver <4
+          elseif(inoc.eq.22)then
+            IGETNO(NGET,3)=8  ! same as for izver <4
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=16
             SUFFIX=' CtlCasG'
             if(IROC.eq.0)then
@@ -2753,8 +2866,8 @@ C IGET = 15  Casual gains.
               SLABEL(NGET)='Total ctld casual gain (Whr)'
               LNSLABEL(NGET)=28
             endif
-          elseif(inoc.eq.19)then
-            IGETNO(NGET,3)=19   ! not avail for izver <4
+          elseif(inoc.eq.23)then
+            IGETNO(NGET,3)=23   ! not avail for izver <4
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=16
             SUFFIX=' CtlCnvG'
             if(IROC.eq.0)then
@@ -2767,8 +2880,8 @@ C IGET = 15  Casual gains.
               SLABEL(NGET)='Controlled convec gain (Whr)'
               LNSLABEL(NGET)=28
             endif
-          elseif(inoc.eq.20)then
-            IGETNO(NGET,3)=20   ! not avail for izver <4
+          elseif(inoc.eq.24)then
+            IGETNO(NGET,3)=24   ! not avail for izver <4
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=16
             SUFFIX=' CtlRadG'
             if(IROC.eq.0)then
@@ -2781,10 +2894,10 @@ C IGET = 15  Casual gains.
               SLABEL(NGET)='Controlled radiant gain (Whr)'
               LNSLABEL(NGET)=29
             endif
-          elseif(inoc.eq.21)then
+          elseif(inoc.eq.25)then
 
 C Aggregate occupant (r+c) for all currently selected zones. 
-            IGETNO(NGET,3)=21;  IGETNO(NGET,4)=2 ! signal aggregate
+            IGETNO(NGET,3)=25;  IGETNO(NGET,4)=2 ! signal aggregate
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=14
             SUFFIX=' AgrOcup'; AGRLIST=.TRUE.   ! draw aggregate
             if(IROC.eq.0)then
@@ -2794,10 +2907,10 @@ C Aggregate occupant (r+c) for all currently selected zones.
               SLABEL(NGET)='Agr occupant gain (Whr)'
               LNSLABEL(NGET)=23
             endif
-          elseif(inoc.eq.22)then
+          elseif(inoc.eq.26)then
 
 C Aggregate lighting (r+c) for all currently selected zones.
-            IGETNO(NGET,3)=22;  IGETNO(NGET,4)=2 ! signal aggregate
+            IGETNO(NGET,3)=26;  IGETNO(NGET,4)=2 ! signal aggregate
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=14
             SUFFIX=' AgrLtng'; AGRLIST=.TRUE.   ! draw aggregate
             if(IROC.eq.0)then
@@ -2807,8 +2920,8 @@ C Aggregate lighting (r+c) for all currently selected zones.
               SLABEL(NGET)='Agr lighting gain (Whr)'
               LNSLABEL(NGET)=23
             endif
-          elseif(inoc.eq.23)then
-            IGETNO(NGET,3)=23; IGETNO(NGET,4)=2 ! signal aggregate
+          elseif(inoc.eq.27)then
+            IGETNO(NGET,3)=27; IGETNO(NGET,4)=2 ! signal aggregate
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=15
             SUFFIX=' AgrSmPw'; AGRLIST=.TRUE.   ! draw aggregate
             if(IROC.eq.0)then
@@ -2818,8 +2931,8 @@ C Aggregate lighting (r+c) for all currently selected zones.
               SLABEL(NGET)='Agr small pwr gain (Whr)'
               LNSLABEL(NGET)=24
             endif
-          elseif(inoc.eq.24)then
-            IGETNO(NGET,3)=24; IGETNO(NGET,4)=2 ! signal aggregate
+          elseif(inoc.eq.28)then
+            IGETNO(NGET,3)=28; IGETNO(NGET,4)=2 ! signal aggregate
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=15
             SUFFIX=' AgrLtPw'; AGRLIST=.TRUE.   ! draw aggregate
             if(IROC.eq.0)then
@@ -2829,7 +2942,7 @@ C Aggregate lighting (r+c) for all currently selected zones.
               SLABEL(NGET)='Agr light+small pwr (Whr)'
               LNSLABEL(NGET)=25
             endif
-          elseif(inoc.eq.25)then
+          elseif(inoc.eq.29)then
             IGETNO(NGET,3)=25; IGETNO(NGET,4)=2 ! signal aggregate
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=15
             SUFFIX=' Dispers'; AGRLIST=.TRUE.   ! draw aggregate
@@ -3103,7 +3216,7 @@ C << then it could be automatically selected
           endif
           do 189 kk=1,nzsur(loop)
             if(ISURTMEAS(loop,kk).ne.0)then
-              write(outs,'(3a,i2)') 'measured surf T in ',
+              write(outs,'(3a,i3)') 'measured surf T in ',
      &          ZNAME(loop)(1:lnzname(loop)),' surf ',kk
               call edisp(iuout,outs)
             endif
@@ -3224,35 +3337,63 @@ C Casual gain type.  Ask user which constitutes occupancy.
 C Labels for loads, use first zones labels as examples. If time
 C based set iocut=-1, if always occup set iocut=0.
 
-C << revise for additional casual gain types >>
+C << revise for other casual gain slot >>
             write(ll1,'(a)') lodlabel(NZNO(1),1)
             write(ll2,'(a)') lodlabel(NZNO(1),2)
             write(ll3,'(a)') lodlabel(NZNO(1),3)
             call edisp(iuout,' ')
             helptopic='which_casual_gain_type'
             call gethelptext(helpinsub,helptopic,nbhelp)
-            IOT=1
+ 937        IOT=1
             CALL EASKATOG('Which casual gain represents occupancy:',
      &         '  ','Always occupied',ll1,ll2,ll3,'time',' ',' ',
      &         IOT,nbhelp)
             if (IOT.gt.1.and.IOT.lt.5) then
               call usrmsg('  ','  ','-')
-              iocupf=1
-              iocut=IOT-1
-              call scnocup(iier)
-              IFILT=iocut
+              if (izver.lt.4) then
+                write(outs,'(2a)')'Occupancy filtering not ',
+     &        'available for legacy results libraries before version 4.'
+                call usrmsg(outs,
+     &   'Please regenerate results library or use time filtering.','W')
+                goto 937
+              else
+                iocupf=1
+                iocut=IOT-1
+                IFILT=iocut
+              endif
             elseif(IOT.eq.5)then
               iocupf=1
               iocut=-1
-              call scnocup(iier)
               IFILT=iocut
+              write(HOLD,'(a)') '  0  24  '
+              CALL EASKS(HOLD,' ',' Weekday occupancy period: ',
+     &         24,' 0  24 ','wkd occup period',IER,nbhelp)
+              K=0
+              CALL EGETWI(HOLD,K,iwkdst,0,24,'W','iwkdst',IER)
+              CALL EGETWI(HOLD,K,iwkdfn,iwkdst,24,'W','iwkdst',IER)
+
+              write(HOLD,'(a)') '  0  24  '
+              CALL EASKS(HOLD,' ',
+     &         ' First weekend day occupancy period: ',24,' 0  24 ',
+     &         'sat occup period',IER,nbhelp)
+              K=0
+              CALL EGETWI(HOLD,K,isatst,0,24,'W','isatst',IER)
+              CALL EGETWI(HOLD,K,isatfn,isatst,24,'W','isatst',IER)
+
+              write(HOLD,'(a)') '  0  24  '
+              CALL EASKS(HOLD,' ',
+     &         ' Second weekend day occupancy period: ',24,' 0  24 ',
+     &         'sun occup period',IER,nbhelp)
+              K=0
+              CALL EGETWI(HOLD,K,isunst,0,24,'W','isunst',IER)
+              CALL EGETWI(HOLD,K,isunfn,isunst,24,'W','isunst',IER)
             elseif(IOT.eq.1)then
               iocupf=0
               iocut=0
-              call scnocup(iier)
             endif
           else
             iocupf=0
+            iocut=0
           endif
         endif
 
@@ -3494,11 +3635,11 @@ C If there are no labels or some label start at first, if more than 5 exit.
         endif
 
 C Find out point where text should be drawn.
-        CALL trackview(ii,ix,iy)
-        lblpx(igrl)=ix
-        lblpy(igrl)=iy
+        CALL trackview(iik,iixx,iiyy)
+        lblpx(igrl)=int(iixx)
+        lblpy(igrl)=int(iiyy)
+        iid1=int(iixx); iid2=int(iiyy);
         t24=grlbl(igrl)
-        iid1=lblpx(igrl); iid2=lblpy(igrl);
         call wstxpt(iid1,iid2,t24)
         dok=.false.
         CALL ASKOK('Include another user supplied label?',' ',OKL,dok,
@@ -4035,7 +4176,7 @@ C      character outs*124
       real perocupc,perocupr,perocupl ! average occupant to write out
       real perlightc,perlightr,perlightl ! average lighting to write out
       real perequipc,perequipr,perequipl ! average equipment to write out
-      real otherc,otherr,otherl ! average other (future expansion) to write out
+      real perotherc,perotherr,perotherl ! average other to write out
       integer theonectld  ! if non-zero the casual gain type that is controlled.
       integer iset    ! IGETNO(*,5)
       logical dmdsok,xst
@@ -4200,7 +4341,8 @@ C Get zone air temperatureand RH, use xdum and xdum1 for processing.
       elseif(IGETNO(KGET,1).eq.15)then
 
 C IGETNO(KGET,1) = 15 Casual gains. Total, convective, radiant or by type.
-C IGETNO(KGET,3) 1=all c+r, 2=all conv, 3=all rad, 4=ocup, 5=light, 6=sm pwr, 7=ctld
+C IGETNO(KGET,3) 1=all c+r, 2=all conv, 3=all rad, 4=ocup, 5=light, 6=sm pwr, 
+C 7=other, 8=ctld
 C (also check if aggregate occupant, lighting or small power or lighitng+small
 C power requested.
         iicrcg=IGETNO(KGET,3)
@@ -4212,9 +4354,9 @@ C If izver >= 4 the read the data directly for individual items.
           if(IGETNO(KGET,4).eq.0.or.IGETNO(KGET,4).eq.1)then
             DO J2=ISTART,IEND
               call getallcas(IDAY,IZ,ISET,J2,QCASR,QCASC,QCASL,FRAC,
-     &          perocupc,perlightc,perequipc,otherc,perocupr,
-     &          perlightr,perequipr,otherr,perocupl,perlightl,
-     &          perequipl,otherl,theonectld)
+     &          perocupc,perlightc,perequipc,perotherc,perocupr,
+     &          perlightr,perequipr,perotherr,perocupl,perlightl,
+     &          perequipl,perotherl,theonectld)
               if(IICRCG.eq.1)then
                 GC(J2)=QCASR+QCASC  ! Total casual gain (W)
               elseif(IICRCG.eq.2)then
@@ -4228,6 +4370,8 @@ C If izver >= 4 the read the data directly for individual items.
               elseif(IICRCG.eq.6)then
                 GC(J2)=perequipc+perequipr ! Total small power gain (W)
               elseif(IICRCG.eq.7)then
+                GC(J2)=perotherc+perotherr ! Total other gain (W)
+              elseif(IICRCG.eq.8)then
                 if(theonectld.eq.0)then ! Total controled casual gain (W)
                   GC(J2)=0.0
                 elseif(theonectld.eq.1)then
@@ -4236,30 +4380,38 @@ C If izver >= 4 the read the data directly for individual items.
                   GC(J2)=perlightc+perlightr
                 elseif(theonectld.eq.3)then
                   GC(J2)=perequipc+perequipr
+                elseif(theonectld.eq.4)then
+                  GC(J2)=perotherc+perotherr
                 endif
-              elseif(IICRCG.eq.8)then
-                GC(J2)=FRAC*100.     ! Frac of ctld casual gain (%)
               elseif(IICRCG.eq.9)then
-                GC(J2)=perocupl+perlightl+perequipl  ! Total casual gain latent (W)
+                GC(J2)=FRAC*100.     ! Frac of ctld casual gain (%)
               elseif(IICRCG.eq.10)then
-                GC(J2)=perocupc ! Occupant convec gain (W)
+                GC(J2)=perocupl+perlightl+perequipl+perotherl ! Total casual gain latent (W)
               elseif(IICRCG.eq.11)then
-                GC(J2)=perocupr ! Occupant radiant gain (W)
+                GC(J2)=perocupc ! Occupant convec gain (W)
               elseif(IICRCG.eq.12)then
-                GC(J2)=perocupl ! Occupant latent gain (W)
+                GC(J2)=perocupr ! Occupant radiant gain (W)
               elseif(IICRCG.eq.13)then
-                GC(J2)=perlightc ! Lighting convec gain (W)
+                GC(J2)=perocupl ! Occupant latent gain (W)
               elseif(IICRCG.eq.14)then
-                GC(J2)=perlightr ! Lighting radiant gain (W)
+                GC(J2)=perlightc ! Lighting convec gain (W)
               elseif(IICRCG.eq.15)then
-                GC(J2)=perlightl ! Lighting latent gain (W)
+                GC(J2)=perlightr ! Lighting radiant gain (W)
               elseif(IICRCG.eq.16)then
-                GC(J2)=perequipc    ! Small pwr convec gain (W)
+                GC(J2)=perlightl ! Lighting latent gain (W)
               elseif(IICRCG.eq.17)then
-                GC(J2)=perequipr    ! Small pwr radiant gain (W)
+                GC(J2)=perequipc    ! Small pwr convec gain (W)
               elseif(IICRCG.eq.18)then
-                GC(J2)=perequipl    ! Small pwr latent gain (W)
+                GC(J2)=perequipr    ! Small pwr radiant gain (W)
               elseif(IICRCG.eq.19)then
+                GC(J2)=perequipl    ! Small pwr latent gain (W)
+              elseif(IICRCG.eq.20)then
+                GC(J2)=perotherc    ! Other convec gain (W)
+              elseif(IICRCG.eq.21)then
+                GC(J2)=perotherr    ! Other radiant gain (W)
+              elseif(IICRCG.eq.22)then
+                GC(J2)=perotherl    ! Other latent gain (W)
+              elseif(IICRCG.eq.23)then
                 if(theonectld.eq.0)then ! Controlled convec gain (W)
                   GC(J2)=0.0
                 elseif(theonectld.eq.1)then
@@ -4269,7 +4421,7 @@ C If izver >= 4 the read the data directly for individual items.
                 elseif(theonectld.eq.3)then
                   GC(J2)=perequipc
                 endif
-              elseif(IICRCG.eq.20)then
+              elseif(IICRCG.eq.24)then
                 if(theonectld.eq.0)then ! Controlled radiant gain (W) 
                   GC(J2)=0.0
                 elseif(theonectld.eq.1)then
@@ -4290,7 +4442,7 @@ C aggregate figure for occupant, lights, small power or lights+smallpower.
             do i=1,N
               AGR(i)=0.0  ! clear the AGR array
             end do
-            if(IICRCG.ge.21.and.IICRCG.le.24)then
+            if(IICRCG.ge.25.and.IICRCG.le.28)then
               do izz=1,NZ
                 DO J2=ISTART,IEND
                   call getallcas(IDAY,NZNO(izz),ISET,J2,QCASR,QCASC,
@@ -4298,20 +4450,20 @@ C aggregate figure for occupant, lights, small power or lights+smallpower.
      &              perocupc,perlightc,perequipc,otherc,perocupr,
      &              perlightr,perequipr,otherr,perocupl,perlightl,
      &              perequipl,otherl,theonectld)
-                  if(IICRCG.eq.21)then
+                  if(IICRCG.eq.25)then
                     AGR(J2)=AGR(J2)+perocupc+perocupr ! occupant convec+r gain (W)
-                  elseif(IICRCG.eq.22)then
+                  elseif(IICRCG.eq.26)then
                     AGR(J2)=AGR(J2)+perlightc+perlightr ! Lighting convec+r gain (W)
-                  elseif(IICRCG.eq.23)then
+                  elseif(IICRCG.eq.27)then
                     AGR(J2)=AGR(J2)+perequipc+perequipr ! sm power convec+r gain (W)
-                  elseif(IICRCG.eq.24)then
+                  elseif(IICRCG.eq.28)then
                     AGR(J2)=AGR(J2)+
      &                perlightc+perlightr+perequipc+perequipr ! lights+small power gain (W)
                   endif
                 enddo  ! of j2 loop
               enddo    ! of izz loop
               CALL XTVAL1(AGR,ISTART,IEND,KGET)
-            elseif(IICRCG.eq.25)then
+            elseif(IICRCG.eq.29)then
 
 C If dispersed demands (via VAL3 arrays) sum them to VAL(14).
 C As dispersed demands are for whole model in the reporting
@@ -4424,6 +4576,7 @@ C recover data for sensor.
 
       elseif(IGETNO(KGET,1).eq.25)then
 
+C Older
 C IGET = 25 Surface flux (various IGET,4) where 1=conduction (inside),
 C   2=convec (inside), 3=LW radiation (inside), 4=SW rad absorb inside,
 C   5=radiant casual occup, 6=radiant casual light
@@ -4431,6 +4584,16 @@ C   7=radiant casual equip, 8=contrld casual gains, 9=heat storage (inside)
 C   10=plant inj/extr (ins), 11=conduction (other fc), 12=convec (other),
 C   13=long wave > buildings, 14=long wave > sky, 15=long wave > ground,
 C   16= SW rad (other), 17=heat storage (other fc)
+C Newer
+C IGET = 25 Surface flux (various IGET,4) where 1=conduction (inside),
+C   2=convec (inside), 3=LW radiation (inside), 4=SW rad absorb inside,
+C   5=radiant casual occup, 6=radiant casual light
+C   7=radiant casual equip, 8=radiant casual other, 9=contrld casual gains,
+C   10=heat storage (inside)
+C   11=plant inj/extr (ins), 12=conduction (other fc), 13=convec (other),
+C   14=long wave > buildings
+C   15=long wave > sky, 16=long wave > ground, 17= SW radiation (othr),
+C   18= SW incident radiation (othr),19=heat storage (othr)
         iz=IGETNO(KGET,2)
         is=IGETNO(KGET,3)
         IPK=IGETNO(KGET,4)
@@ -4460,20 +4623,19 @@ C Radiant plant is area AND emissivity weighted.
         do kk=1,NZSUR(iz)
           emarea=emarea+sna(iz,kk)*EMISI(kk)
         end do
-        if(IPK.GE.5.AND.IPK.LE.8)then
+        if(IPK.GE.5.AND.IPK.LE.9)then
 
 C Get inside casual radiant for this surface and store
-C requested uncontrolled and controlled types 1,2,3
-C from temporary storage in VAL3(15,?) to VAL3(20,?).
-
-C << is there a way to use data from GSURFB for this ?? >>
-
+C requested uncontrolled and controlled types 1,2,3,4 
+C from temporary storage in VAL3(15,?) to VAL3(22,?).
           CALL ZCASR(IZ,IS,IDAY)
           DO 199 JTS=ISTART,IEND
             IF(IPK.EQ.5)GVAL(JTS)=VAL3(15,JTS)
             IF(IPK.EQ.6)GVAL(JTS)=VAL3(16,JTS)
             IF(IPK.EQ.7)GVAL(JTS)=VAL3(17,JTS)
-            IF(IPK.EQ.8)GVAL(JTS)=VAL3(18,JTS)+VAL3(19,JTS)+VAL3(20,JTS)
+            IF(IPK.EQ.8)GVAL(JTS)=VAL3(18,JTS)
+            IF(IPK.EQ.9)GVAL(JTS)=VAL3(19,JTS)+VAL3(20,JTS)+
+     &        VAL3(21,JTS)+VAL3(22,JTS)
             GVAL(JTS)=GVAL(JTS)/SAREA
   199     CONTINUE
           CALL XTVAL1(GVAL,ISTART,IEND,KGET)
@@ -5145,7 +5307,7 @@ C max/min values. If there is no occupancy filter is there any
 C nneed to call getocup??
           ih=int(ATIME+1.)
           ioc=1
-          if(iocupf.eq.1) call getocup(IZONE,IDAY,ih,ioc,ier)
+          if(iocupf.eq.1) call getocup(IZONE,IDAY,ITS,ioc,ier)
           if (NOUT.gt.1) DATA(ICJUMP)=DATA(ICJUMP)/float(NOUT)
           if(ioc.ne.0) then
             if (DATA(ICJUMP).gt.DMAX) then
@@ -5291,7 +5453,7 @@ C Assume fully occupied.
           ih=int(ATIME+1.)
           ioc=1
           if(iocupf.eq.1)then
-            if(menutype.ne.3) call getocup(IZONE,IDAY,ih,ioc,ier)
+            if(menutype.ne.3) call getocup(IZONE,IDAY,J,ioc,ier)
           endif
           if(ioc.ne.0) then
             if (XVAL(KGET).gt.DMAX) then

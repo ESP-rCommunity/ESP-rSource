@@ -239,9 +239,10 @@ C Open the text display box equal to LIMTTY if MODEL = 8.
         iyofst=20
       ENDIF
 
-c Find minimum and maximum values for x-axis.
+C Find minimum and maximum values for x-axis. Add one day
+C to ensure last 24 hours is plotted.
       xmin=0.
-      nhours=(isf-iss+1)*24
+      nhours=((isf-iss)+1)*24
       xmax=float(nhours)
 
 c Display header information.
@@ -284,10 +285,14 @@ c Determine scaling ratios for other y axis.
      &      xsc,ysc1,sca1,xadd,yadd1)
 
 c Draw a scale horizontal axis, move to beginning point.
-      call horaxis(xmin,xmax,iigl,iigr,iigb,xadd,xsc,1,'Time (h)')
+      call dintervalf(Xmin,Xmax,ddy1,ny,1)
+      call horaxisdd(xmin,xmax,iigl,iigr,iigb,xadd,xsc,1,
+     &  ddy1,ny,'Time (h)')
 
 c Draw a scale vertical axis.
-      call vrtaxis(yminb(1),ymaxb(1),iigl,iigb,iigt,yadd,ysc,1,0,':')
+      call dintervalf(yminb(1),ymaxb(1),DY,NDEC,1)
+      call vrtaxisdd(yminb(1),ymaxb(1),iigl,iigb,iigt,yadd,ysc,1,
+     &  DY,NDEC,0,':')
       if(mbstv.eq.1.or.mbstv.eq.3) then
          call wstxpt(igl-5,igt-17,'Temp')
          call wstxpt(igl-5,igt-5,'deg.C')
@@ -299,12 +304,13 @@ c Draw a scale vertical axis.
       endif
 
       if(mbstv.eq.3) then
-         call vrtaxis(yminb(2),
-     &      ymaxb(2),iigr,iigb,iigt,yadd1,ysc1,1,1,':')
-          call wstxpt(igr,igt-17,'Plant')
-          call wstxpt(igr,igt-5,'  KW')
-          yminb(2)=yminb(2)*1000.
-          ymaxb(2)=ymaxb(2)*1000.
+         call dintervalf(yminb(2),ymaxb(2),DY,NDEC,1)
+         call vrtaxisdd(yminb(2),ymaxb(2),
+     &     iigr,iigb,iigt,yadd1,ysc1,1,DY,NDEC,1,':')
+         call wstxpt(igr,igt-17,'Plant')
+         call wstxpt(igr,igt-5,'  KW')
+         yminb(2)=yminb(2)*1000.
+         ymaxb(2)=ymaxb(2)*1000.
        endif
 
 c initialise data items count 'icount'.
@@ -393,7 +399,7 @@ c each curve as 'Z??' where 'Z' stands for zone.
                  endif
                endif
                clabel='                    '
-C               write(clabel,'(a1,i2,a1)')'Z',mzone(i),nterm
+C               write(clabel,'(a1,i3,a1)')'Z',mzone(i),nterm
                ln=lnzname(mzone(i))
                write(clabel,'(2a)') zname(mzone(i))(1:ln),nterm
                ncoord(i,1,1)=igl+int((0+xadd)*xsc)

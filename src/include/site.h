@@ -5,7 +5,7 @@ C parameters will have been defined.
 C Site position.
       real  sitelat  ! site latitude (degrees) 
       real  sitelongdif  ! longitudinal difference between the site and the
-                  ! reference time meridian (east +ve)
+                         ! reference time meridian (east +ve)
       COMMON/C4/sitelat,sitelongdif
 
 C Exposure of the building on the site as well as ground and snow reflection data.

@@ -692,7 +692,7 @@ C   prescribed by the user.
      2            AS(ntcelx,ntcely,ntcelz),AH(ntcelx,ntcely,ntcelz),
      3            AL(ntcelx,ntcely,ntcelz),SU(ntcelx,ntcely,ntcelz),
      4            SP(ntcelx,ntcely,ntcelz)
-
+      COMMON/ITERAT/NITER
       common/KEYVOLS/NVOL(MNZ),IVOLF(MNVLS,MNZ),IVCELLS(MNVLS,MNZ,2),
      &               JVCELLS(MNVLS,MNZ,2),KVCELLS(MNVLS,MNZ,2)
       common/KEYVDAT/IVTYPE(MNVLS,MNZ),VOLTemp(MNVLS,MNZ),
@@ -700,7 +700,9 @@ C   prescribed by the user.
      &          VOLCO2(MNVLS,MNZ),VOLVel(MNVLS,MNZ),VOLDir(MNVLS,MNZ,2),
      &          VOLArea(MNVLS,MNZ),VOLPres(MNVLS,MNZ),
      &          VOLPol(MCTM,MNVLS,MNZ)
-
+      common/ocflux/COflux,H2Oexp,H2Oswt
+      common/KEYVOLN/VOLNAME(MNVLS,MNZ),VCsurf(MNVLS,MNZ)
+      character VOLNAME*12
 C Set values for all faces.
       do 40 IFACE=1,6
         IST=IVCELLS(IBLK,ICFD,1)
@@ -782,7 +784,23 @@ C Blockage on High face of adjacent cell.
               endif
 
 C Set combined convective/ diffusive flux terms.
-              SU(II,JJ,KK)=SU(II,JJ,KK)+VOLHeat(IBLK,ICFD)*AREA/SH
+              If (VOLNAME(IBLK,ICFD).eq.'Occ'.or.
+     &             VOLNAME(IBLK,ICFD).eq.'Occ1'.or.
+     &             VOLNAME(IBLK,ICFD).eq.'Occ2'.or.
+     &             VOLNAME(IBLK,ICFD).eq.'Occ3'.or.
+     &             VOLNAME(IBLK,ICFD).eq.'Occ4'.or.
+     &             VOLNAME(IBLK,ICFD).eq.'Occ5'.or.
+     &             VOLNAME(IBLK,ICFD).eq.'Occ6'.or.
+     &             VOLNAME(IBLK,ICFD).eq.'Occ7')then
+!               call DynamicOcc(1,1.5,1)
+                SU(II,JJ,KK)=SU(II,JJ,KK)+COflux*AREA/SH
+                              
+!               if (NITER.eq.1) then
+!               print *, COflux 
+!               end if
+               else
+               SU(II,JJ,KK)=SU(II,JJ,KK)+VOLHeat(IBLK,ICFD)*AREA/SH
+               endif
 c       write(*,*)'SU_contrib=',VOLHeat(IBLK,ICFD) 
 c      pause'heat blockage'
  30         continue

@@ -49,6 +49,7 @@ C results library as well.
 #include "plant.h"
 #include "power.h"
 #include "net_flow.h"
+#include "uncertainty.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -72,17 +73,17 @@ C      common/rpath/path
 
 C Electrical results library name. 
       COMMON/ENETRES/ERESLIB
-      COMMON/ENTFILE/ENTFLNAM,IENTXIST
 
 C Electrical network results library details.
       COMMON/ENELIBRC/IELFIL,IELIBHL,IELIBW,IELSTREC,NETS,NTSREC,NHREC,
      &NPREC
 
 C CFD unit nos.
-      COMMON/ICFCHN/ICFMON,ICFTMP,ICFLIB
+      COMMON/ICFCHN/ICFMON(MNZ),ICFTMP,ICFLIB
 
 C Active domain common.
       common/ACTDOM/CFDOK
+      COMMON/UA5/IMET,ISIM,NRSIM
 
       COMMON/save/isave
 
@@ -90,7 +91,7 @@ C Active domain common.
 
       character outs*124,ltmp*72,longtfile*144
 C      character path*72
-      character*72 LAPROB,ENTFLNAM,ERESLIB,CFRESF
+      character*72 LAPROB,ERESLIB,CFRESF
       character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72
       dimension iflg(MCOM)
 
@@ -176,11 +177,11 @@ C the user will be asked to confirm the results file name (and path)
 
 C Note: the initial assumption of the record width of the zone results 
 C file is based on nzrl equal to MZRL (defined in building.h as MCOM+12
-C if MCOM>MS with a minimum width of 40 to allow for file names to be
-C held and air gap data to be written). Some records are written with 
-C values for all current zones, some are for all surfaces in the zone 
-C plus up to 12 other values. One set of records in MZLS1 is 5*MGP width 
-C which is currently 40.
+C if MCOM>MS or MS+12 if MS>MCOM and with a minimum width of 40 to 
+C allow for file names to be held and air gap data to be written). 
+C Some records are written with values for all current zones, some 
+C are for all surfaces in the zone plus up to 12 other values. One set
+C of records in MZLS1 is 5*MGP width which is currently 40.
       iminwid=40
       iswid=0
       DO 150 I = 1,NCOMP
@@ -286,7 +287,7 @@ C izver is the version flag for building results. Set at 4 since
 C Feb 2008. Earlier (depreciated) versions did not include explicit
 C casual gains and required re-scanning of zone operation files.
         izver=4
-        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver,IMET
       endif
 
 C Write header block information to building results library.
@@ -457,7 +458,7 @@ c Determine if design data has been changed.
 c Delete all simulations by setting NSIM=0.
         IREC=1
         NSIM=0
-        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver,IMET
       endif
 
 c Write header block information to plant library.
@@ -645,7 +646,7 @@ C Error handling
 C Error on read of zone library - reset and initialize.
    7  IREC=1
       NSIM=0
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver,IMET
       goto 8
 
 C Error on read of plant library - reset and initialize.
@@ -789,6 +790,7 @@ c MZDEL DELETES THE LAST RESULT-SET SAVED IN THE SOLUTION FILE.
       COMMON/FILEP/IFIL
       common/reclen/nzrl,nprl,nerl
       common/recver/izver,ipver,iever
+      COMMON/UA5/IMET,ISIM,NRSIM
 
       character outs*124
 
@@ -805,7 +807,7 @@ C DE-INCREMENT BY 1.
       NSIM=NSIM-1
 
 C WRITE THIS TO building SOLUTION FILE.
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver,IMET
       ISIMLB=NSIM
       goto 2
 
@@ -860,6 +862,7 @@ c IN THE OVERWRITING OF THESE RESULTS.
       COMMON/C6/INDCFG
       common/reclen/nzrl,nprl,nerl
       common/recver/izver,ipver,iever
+      COMMON/UA5/IMET,ISIM,NRSIM
 
       character outs*124
       integer nsim  ! number of simulations in libary
@@ -875,7 +878,7 @@ C INCREMENT BY 1.
       NSIM=NSIM+1
 
 C Update the zone library file.
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver,IMET
       ISIMN1=NSIM  ! pass this back
 
 C For plant results or building + plant results update the first

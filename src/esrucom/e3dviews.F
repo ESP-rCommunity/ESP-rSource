@@ -688,7 +688,7 @@ C used in subroutine arrow.  If the display supports colours then draw
 C the arrows in a medium grey.
       SUBROUTINE ORIGESP
 #include "building.h"
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
+#include "prj3dv.h"
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
       real P,Q
@@ -753,7 +753,7 @@ C Make up coordinate for arrow along Z axis.
 
 C---- SITE2D -----------------------------------------------------------
 C SITE2D Returns the 2D viewing coords of the current site extremes
-C found in common block RAY5.
+C found in common block RAY5 from prj3dv.h.
       SUBROUTINE SITE2D(SXMX,SXMN,SYMX,SYMN,ier)
 #include "building.h"
 #include "prj3dv.h"
@@ -762,16 +762,11 @@ C Parameters
       real SXMX,SXMN,SYMX,SYMN
       integer ier
 
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-
       real X1,X2,X3,X4,X5,X6,X7,X8 ! use with orttrn calls
       real Y1,Y2,Y3,Y4,Y5,Y6,Y7,Y8
       integer ierr   ! to trap errors 
 
-      SXMX=-1.E+7
-      SYMX=-1.E+7
-      SXMN=1.E+7
-      SYMN=1.E+7
+      SXMX=-1.E+7; SYMX=-1.E+7; SXMN=1.E+7; SYMN=1.E+7
 
       CALL  ORTTRN(XMN,YMN,ZMN,TEMAT,X0,Y0,Z0,IERR)
       CALL  ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
@@ -803,10 +798,8 @@ C Find maximum 2D x coordinate.
 C Find maximum 2D y coordinate.
       SYMX=AMAX1(Y1,Y2,Y3,Y4,Y5,Y6,Y7,Y8,SYMX)
 
-      SXMN=SXMN*1.1
-      SXMX=SXMX*1.1
-      SYMN=SYMN*1.1
-      SYMX=SYMX*1.1
+      SXMN=SXMN*1.1; SXMX=SXMX*1.1
+      SYMN=SYMN*1.1; SYMX=SYMX*1.1
 
       RETURN
       END
@@ -824,9 +817,6 @@ C XMN,YMN,ZMN are the model minimum bounds.
 C XMX,YMX,ZMX are the model maximum bounds.
 C iZBFLG()=0 bounds must be recalculated, iZBFLG()=1 use current value.
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
 
 C Ground geometry.
@@ -844,24 +834,21 @@ C Ground geometry.
 C Find the centroid of the collection of objects and each object. If 
 C the viewing bounds are not static then find axis max & min.
       IF(ITBND.NE.0)THEN
-        XMX=-1.E+7
-        YMX=-1.E+7
-        XMN=1.E+7
-        YMN=1.E+7
-        ZMX=-1.E+7
-        ZMN=1.E+7
+        XMX=-1.E+7; YMX=-1.E+7
+        XMN=1.E+7; YMN=1.E+7
+        ZMX=-1.E+7; ZMN=1.E+7
       ENDIF
 
 C If there is a ground geometry then check its bounds.
       if((ITDSP.EQ.5.or.ITDSP.EQ.6).and.NGTV.gt.0)then
-        do 41 iv = 1,NGTV
+        do iv = 1,NGTV
           XMN=AMIN1(XMN,XGT(iv))
           YMN=AMIN1(YMN,YGT(iv))
           ZMN=AMIN1(ZMN,ZGT(iv))
           XMX=AMAX1(XMX,XGT(iv))
           YMX=AMAX1(YMX,YGT(iv))
           ZMX=AMAX1(ZMX,ZGT(iv))
-  41    continue
+        enddo  ! of iv
       endif
 
       ISTOK=.TRUE.
@@ -897,19 +884,15 @@ C If bounds ok then update project bounds with saved zone values.
         else
 
 C If bounds for this zone need checking reset max & min.
-          ZXMX(IVZ)=-1.E+7
-          ZYMX(IVZ)=-1.E+7
-          ZZMX(IVZ)=-1.E+7
-          ZXMN(IVZ)=1.E+7
-          ZYMN(IVZ)=1.E+7
-          ZZMN(IVZ)=1.E+7
+          ZXMX(IVZ)=-1.E+7; ZYMX(IVZ)=-1.E+7; ZZMX(IVZ)=-1.E+7
+          ZXMN(IVZ)=1.E+7; ZYMN(IVZ)=1.E+7; ZZMN(IVZ)=1.E+7
         endif
 
 C If obstructions are to be drawn, transform the obstruction
 C description from commons and then get its bounds.
-        if(ITDSP.EQ.0.or.ITDSP.eq.5)then
+        if(ITDSP.EQ.0.or.ITDSP.eq.5.or.ITDSP.eq.7)then
           if(nbobs(ivz).gt.0)then
-            do 301 IB=1,nbobs(ivz)
+            do IB=1,nbobs(ivz)
 
 C Use the GB1 common block and CNVBLK or CNVBLK3A to find bounds.
               if(BLOCKTYP(ivz,IB)(1:4).eq.'obs ')then
@@ -924,7 +907,7 @@ C Use the GB1 common block and CNVBLK or CNVBLK3A to find bounds.
                 call CNVBLKP(ivz,IB) ! convert obsp type.
               endif
 
-              do 302 I=1,8    ! for each vertex in block
+              do I=1,8    ! for each vertex in block
                 if(ITBND.NE.0)then
 
 C Update the overall model bounds to include any obstructions.
@@ -935,11 +918,40 @@ C Update the overall model bounds to include any obstructions.
                   YMX=AMAX1(YMX,YB(I))
                   ZMX=AMAX1(ZMX,ZB(I))
                 endif
-  302         continue
-  301       continue
-          endif
-        endif
+              enddo  ! of I
+            enddo    ! of ib
+          endif  ! of nbobs
+        endif    ! of ITDISP
 
+C Check visual entities.
+        if(ITDSP.EQ.0.or.ITDSP.eq.6)then
+          do IB=1,nbvis(ivz)
+            if(VISTYP(ivz,IB)(1:4).eq.'vis ')then
+              CALL CNVBLK(XOV(ivz,IB),YOV(ivz,IB),ZOV(ivz,IB),
+     &          DXOV(ivz,IB),DYOV(ivz,IB),DZOV(ivz,IB),
+     &          BANGOV(ivz,IB,1))
+            elseif(VISTYP(ivz,IB)(1:4).eq.'vis3')then
+              CALL CNVBLK3A(XOV(ivz,IB),YOV(ivz,IB),ZOV(ivz,IB),
+     &          DXOV(ivz,IB),DYOV(ivz,IB),DZOV(ivz,IB),
+     &          BANGOV(ivz,IB,1),BANGOV(ivz,IB,2),BANGOV(ivz,IB,3))
+            elseif(VISTYP(ivz,IB)(1:4).eq.'visp')then
+              call CNVVISP(ivz,IB) ! convert visp type.
+            endif
+            do I=1,8    ! for each vertex in block
+              if(ITBND.NE.0)then
+
+C Update the overall model bounds to include any obstructions.
+                XMN=AMIN1(XMN,XB(I))
+                YMN=AMIN1(YMN,YB(I))
+                ZMN=AMIN1(ZMN,ZB(I))
+                XMX=AMAX1(XMX,XB(I))
+                YMX=AMAX1(YMX,YB(I))
+                ZMX=AMAX1(ZMX,ZB(I))
+              endif
+            enddo  ! of I
+          enddo    ! of ib
+        endif
+        
 C If zone bounds known jump to next zone.
         if(iZBFLG(IVZ).eq.1)goto 100
 
@@ -949,7 +961,7 @@ C If in single zone mode recover common data from memory.
 C Zone centre of gravity and update overall model bounds.
 C (No centre of gravity required if this is the site origin).
       IF(IZ.GE.1)THEN
-        DO 402 I=1,nztv(IVZ)
+        DO I=1,nztv(IVZ)
           IF(ITBND.NE.0)THEN
             ZXMN(IVZ)=AMIN1(ZXMN(IVZ),VCOORD(IVZ,I,1))
             ZYMN(IVZ)=AMIN1(ZYMN(IVZ),VCOORD(IVZ,I,2))
@@ -964,7 +976,7 @@ C (No centre of gravity required if this is the site origin).
             YMX=AMAX1(YMX,VCOORD(IVZ,I,2))
             ZMX=AMAX1(ZMX,VCOORD(IVZ,I,3))
           ENDIF
-  402   CONTINUE
+        ENDDO  ! of I
 
 C Set flag to denote that the zone bounds have been calculated.
         IVZ=nznog(IZ)
@@ -1012,15 +1024,10 @@ C If site grid then include one extra metre in the bounds if
 C a large site, otherwise include GRDIS to bounds.
   200 IF(ITGRD.EQ.0)THEN
         if(GRDIS.gt.2.0)then
-          XMN=XMN-1.0
-          XMX=XMX+1.0
-          YMN=YMN-1.0
-          YMX=YMX+1.0
+          XMN=XMN-1.0; XMX=XMX+1.0; YMN=YMN-1.0; YMX=YMX+1.0
         else
-          XMN=XMN-GRDIS
-          XMX=XMX+GRDIS
-          YMN=YMN-GRDIS
-          YMX=YMX+GRDIS
+          XMN=XMN-GRDIS; XMX=XMX+GRDIS
+          YMN=YMN-GRDIS; YMX=YMX+GRDIS
         endif
       ENDIF
 
@@ -1063,10 +1070,10 @@ C ********** INLNST
 C INLNST: Initializes surface linestyle array line style.
       SUBROUTINE INLNST(ITYP)
 #include "building.h"
+#include "prj3dv.h"
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/RAY6/LINSTY(MCON)
 
       do 10 I=1,NCON
         LINSTY(I) = ITYP
@@ -1092,7 +1099,6 @@ C angle of view and bounds.
       subroutine saveview
 #include "building.h"
 #include "prj3dv.h"
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/IMAGESV/imtsv,OEYEM(3),OVIEWM(3),OHITH,OYON,OANG,OHANG,
      &  OWIDE
       COMMON/RAY5SV/OXMN,OYMN,OZMN,OXMX,OYMX,OZMX
@@ -1124,7 +1130,6 @@ C angle of view and bounds.
       subroutine recoview
 #include "building.h"
 #include "prj3dv.h"
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/IMAGESV/imtsv,OEYEM(3),OVIEWM(3),OHITH,OYON,OANG,OHANG,
      &  OWIDE
       COMMON/RAY5SV/OXMN,OYMN,OZMN,OXMX,OYMX,OZMX

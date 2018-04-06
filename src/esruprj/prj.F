@@ -37,6 +37,7 @@ C ********** MAIN
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
+C UA1 in uncertainty.h
 #include "uncertainty.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -47,6 +48,7 @@ C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 C LSBEM (SBEM database)
+C LPREDEF (predefined objects)
 C default file names for databases
 #include "material.h"
 #include "espriou.h"
@@ -78,6 +80,7 @@ C IEEE callback (Solaris)
       common/GFONT/IFS,ITFS,IMFS
       common/FILEP/IFIL
       common/appw/iappw,iappx,iappy
+      integer iappw,iappx,iappy
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       
@@ -126,13 +129,7 @@ C IPV description via ipvdata.h.
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/gzonpik/izgfoc,nzg,nznog(mcom)
-      common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      common/RAY3/MODIFY,MODLEN,MODBND
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
-
-C Uncertainty.
-      COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
 
 C IDST tool commands
       common/idsta/CMDCFG,CMDCLM,CMDCLMN,CMDNOTE,CMDRES,CMDLBL(10),
@@ -146,14 +143,22 @@ C Name of current application
       common/APPNAME/cAppName
       character cAppName*12
 
+C Tollerance for surface matching.
+      real ANGCC  ! angle between surfaces tolerance
+      real CACC   ! tolerance between vertices
+      real DACC   ! angle tolerance along line
+      real COGCC  ! tolerance between surface COG
+      real SNACC  ! tolerance between surface areas
+      integer IACC ! number of matching corners outside dist tolerance
+      common/matching/ANGCC,CACC,DACC,COGCC,SNACC,IACC
+
       integer iverb     ! verbosity passed on command line
       logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,MODSIT,CFCDBOK
-      logical MODIFY,MODLEN,MODBND,browse,confirm,XST,ckpath
+      logical browse,confirm,XST,ckpath
       logical unixok,Vldtng,changedit
       logical itisanexemplar  ! passed to newprb to ensure browse mode.
 
       character dstmp*24,uname*24
-      character LUALF*72,LCNG*15,LLOC*15
       character LTMP*72
       character inf*144,inz*16,inzone*16,act*16,inact*16,LCMDFL*144
       character outs*124,outstr*124
@@ -181,7 +186,7 @@ C Passed parameters for pregist.
 
 C Returned parameters from silentread.
       character theprimedirective*8
-
+      integer iappwpc ! application height as % of nominal size
       integer itrc    ! feedback level during scans
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       real d1,d2,d3   ! data used with transfor or rotate command line
@@ -193,7 +198,9 @@ C Returned parameters from silentread.
 
       character cVnum*16      ! returned from ESPrVersionNum
       character pagestitle*42 ! for banner title via epages call
-
+      character subpath*84
+      character sfile*144
+    
 C Passed parameters to cfgtogg
 #ifdef OSI
       integer icfg_type  ! model cfg type
@@ -252,8 +259,8 @@ C  ifil+6 (databases and mass flow), ifil+7 (temporal )
 C  ifil+8 (  ), ifil+9 file export, ifil+10 (AIM and DHW and journal)
 C  ifil+11 (external help text), ifil+19 ifil+20 ifil+21 anlyt.
 
-C Recover command line parameters (terminal, size, config file, zone
-C focus and actions arguments).
+C Recover command line parameters (terminal, size (iappx) position (iappx iappy),
+C config file, zone focus and actions arguments).
       call parsprj(MODL,iappw,iappx,iappy,inf,inz,act,d1,d2,d3,iverb)
       itrc=iverb    ! set trace level after call to parsprj
       IFDAY=2
@@ -274,6 +281,9 @@ C that the default common data files will be defined explicitly).
       ipathapres=0; ipathoptdb=0; ipathpcdb=0; ipathprodb=0
       ipathmat=0; ipathmul=0; ipathclim=0; ipathsbem=0; ipathmsc=0
       ipathmould=0
+
+C Set initial values for surface-to-surface matching.
+      ANGCC=10.0; CACC=0.025; DACC=5.0; COGCC=1.0; SNACC=0.5; IACC=0 
       
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -382,21 +392,26 @@ C                or: Sun-4 f77.
 #endif
 
 C Initialise output device, assume minimal trace and a standard
-C display.  If passed zero size and offsets use default, if size
-C is <200 then take % of default, otherwise use passed width.
-C If left & top offsets are 0 then use defaults.
+C display.  If passed zero size and offsets use default (630 pixels
+C high). If size is <200 then assume it is intended as a % of the
+C nominal size and take % of default, otherwise use passed width.
+C If left & top offsets are 0 then use defaults. If > 200 then it
+C is treated as a specific pixel height.
       MMOD=MODL
       if(iappw.eq.0.and.iappx.eq.0.and.iappy.eq.0)then
-        iappw=630
+        iappw=630  ! default hight
         iappx=40
         iappy=40
+        iappwpc=100   ! remember %
       else
         if(iappx.lt.0)iappx=40
         if(iappy.lt.0)iappy=40
         if(iappw.le.200)then
+          iappwpc=iappw    ! remember %
           iappwi=int(630*iappw*0.01)
           iappw=iappwi
         elseif(iappw.gt.200)then
+          iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
           continue
         endif
       endif
@@ -405,10 +420,10 @@ C Set pixels high to iappw and pixels wide to factor in monitor size.
       iapphi=iappw
       iappwi=int(real(iappw)*(1024.0/780.0))
 
-      if(iappw.gt.0.and.iappw.lt.100)then
-        menuchw = MAX0(int(36*iappw*0.01),20)
-        LIMTTY= MAX0(int(10*iappw*0.01),6)
-        LIMIT = MAX0(int(10*iappw*0.01),6)
+      if(iappwpc.gt.0.and.iappwpc.lt.100)then
+        menuchw = MAX0(int(36*iappwpc*0.01),20)
+        LIMTTY= MAX0(int(10*iappwpc*0.01),6)
+        LIMIT = MAX0(int(10*iappwpc*0.01),6)
       else
         menuchw = 36
         LIMTTY=10
@@ -416,7 +431,8 @@ C Set pixels high to iappw and pixels wide to factor in monitor size.
       endif
       IF(MMOD.EQ.8)THEN
 
-C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback).
+C Set initial font sizes (IFS is for buttons & graphs, ITFS dialog & 
+C text feedback and IMFS for menus).
         IMFS=1
         IFS=1
         ITFS=1
@@ -467,6 +483,23 @@ C Setup and pass in parameters to win3d.
 
 C Generate the version report.
       CALL ESPrVersion("summary",cAppName,IUOUT)
+
+C Remember where prj was started (pwdinitial). If we are starting
+C within a model pwdinitial will end in cfg or cfg/ or cfg\
+
+      pwdinitial='  '  ! clear common
+      pwdtocfg='  '    ! and from pwd into cfg folder
+      call usrdir(pwdinitial)
+C      write(6,*) 'the pwd command is ',
+C     &   pwdinitial(1:lnblnk(pwdinitial))
+      lnpwdi=lnblnk(pwdinitial)
+C      write(6,*) lnpwdi,lnpwdi-2,' ',pwdinitial(lnpwdi-2:lnpwdi)
+      if(pwdinitial(lnpwdi-2:lnpwdi).eq.'cfg')then
+        pwdtocfg='!'             ! signal no need to append this
+        lnpwdc=lnblnk(pwdtocfg)  ! remember its length
+C        write(6,*) 'working in model cfg folder'
+      endif
+
 
 C Find the user's home folder then get user's custom settings
 C if defined. If there is no .esprc file in the users home folder
@@ -525,7 +558,7 @@ C Write header of the journal file and then close.
 C Scan the defaults file for default system configuration file.
 C Make temporary use of file unit IFIL+5.  Note: escdef must come
 C after scan of .esprc file.
-      call escdef(IFIL+5,IER)
+      call escdef(IFIL+5,'-',IER)
 
 C Debug.
 C      write(6,*) 'def mould is ',dmdbnam(1:lnblnk(dmdbnam))
@@ -592,6 +625,8 @@ C Set optical, mould event profiles etc. to default file names.
       ipathmsc=0
       write(LSBEM,'(a)')  DSBEM(1:lnblnk(DSBEM))  ! assign default SBEM db
       ipathsbem=0
+      write(LPREDEF,'(a)')  DPREDEF(1:lnblnk(DPREDEF))  ! assign default SBEM db
+      ipathpredef=0
 
 C Temporal information on channel IFIL+7.
       IUTDF=IFIL+7
@@ -625,6 +660,34 @@ C and if so do what it says.
             write(longtfile,'(a)') LCMDFL(1:lnblnk(LCMDFL))
             IUNIT=IFIL+1
             call silentread(iunit,longtfile,'-',theprimedirective,ier)
+            call edisp(iuout,theprimedirective)
+            call edisp(iuout,modeltitle)
+            call edisp248(iuout,modeldocblock,80)
+            if(theprimedirective(1:3).eq.'new')then
+              call usrmsg('Processing of silent file complete.',
+     &          'Exiting from project manager','P')
+
+C Clear allocatable arrays
+              CALL DeallocateAllArrays
+              CALL EPAGEND
+              STOP
+            else
+              goto 3
+            endif
+          endif
+        endif
+      elseif(inact(1:13).eq.'silentxmlread')then
+
+C Check to see if the -file parameter is a high level silent input file
+C and if so do what it says.
+        if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
+          INQUIRE (FILE=LCMDFL,EXIST=XST)
+          if(XST)then
+            call clrprb  ! clear the model common blocks prior to scan
+            write(longtfile,'(a)') LCMDFL(1:lnblnk(LCMDFL))
+            IUNIT=IFIL+1
+            call silentxmlread(iunit,longtfile,'-',theprimedirective,
+     &        ier)
             call edisp(iuout,theprimedirective)
             call edisp(iuout,modeltitle)
             call edisp248(iuout,modeldocblock,80)
@@ -769,6 +832,51 @@ C          call edisp(iuout,'* Loading supplied model description.')
           call tstamp('>','PRJ: loading supplied model')
           call tstamp('>',LCFGF)
         endif
+      else
+
+C Nothing on the command line and if we are in a cfg folder then
+C use the file browsing to see if there are any cfg files.
+        if(pwdinitial(lnpwdi-2:lnpwdi).eq.'cfg')then
+          write(6,*) 'looking for cfg files...'
+          write(subpath,'(a)') pwdinitial(1:lnpwdi)
+
+          call discovercfg(subpath,sfile,ier)
+
+C Return from discovercfg and derive the path and LCFGF portions
+C of the string sfile.
+          if(ier.eq.0)then
+            call fdroot(sfile,path,LCFGF)
+
+C Debug.
+C            write(6,*) 'sfile is ',sfile(1:lnblnk(sfile))
+C            write(6,*) 'path is ',path(1:lnblnk(path))
+C            write(6,*) 'lcfgf is ',LCFGF(1:lnblnk(LCFGF))
+
+            CALL ERPFREE(IFCFG,ISTAT)
+            call FINDFIL(LCFGF,XST)
+            if(XST)then
+              write(LCMDFL,'(a)') sfile(1:lnblnk(sfile)) ! as if included in cmd line
+              CALL ERPFREE(IFCFG,ISTAT)
+
+C Call newprb without the need to confirm model but to check its path.
+C Assume that the file passed is not an exemplar.
+              itisanexemplar=.false.
+              confirm=.false.
+              ckpath=.true.
+              call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
+              if(ier.eq.-3)then
+                ier=0
+                goto 3  ! cancel detected, redisplay menu
+              endif
+              call tstamp('>','PRJ: loading supplied model')
+              call tstamp('>',LCFGF)
+            endif
+          endif
+
+C   16     continue  ! write errors 
+C   17     continue
+        endif
+
       endif
 
 C Provide site information, update wireframe control with
@@ -811,12 +919,16 @@ C Scan for matching MLC for surfaces.
 C Find the index of the MLC which matches each surface.
             DO 9994 I=1,NZSUR(icomp)
               icn1=izstocn(icomp,i)
-              ssmlcindex(icn1)=0  ! assume no matching MLC          
-              do 5 ii=1,nmlc
-                if(SSMLCN(icn1)(1:12).eq.mlcname(ii)(1:12)) then
-                  ssmlcindex(icn1)=ii   ! remember MLC index  
-                endif
-  5           continue
+              if(icn1.gt.0)then
+                ssmlcindex(icn1)=0  ! assume no matching MLC          
+                lnssmlc=lnblnk(SSMLCN(icn1))
+                do 5 ii=1,nmlc
+                  if(SSMLCN(icn1)(1:lnssmlc).eq.
+     &               mlcname(ii)(1:lnmlcname(ii)))then
+                    ssmlcindex(icn1)=ii   ! remember MLC index  
+                  endif
+  5             continue
+              endif
  9994       continue
  30       continue
 
@@ -842,7 +954,7 @@ C focus on that zone.  If 'inzone' = 'UNKNOWN' or 0 present a list.
           call zindex(inzone,index)
           if(index.le.0)then
             if(indcfg.ne.2.and.indcfg.ne.0)then
-              MODIFY=.TRUE.
+              MODIFYVIEW=.TRUE.
               MODBND=.TRUE.
               MODLEN=.TRUE.
               nzg=NCOMP
@@ -898,7 +1010,7 @@ C Pass information to C library code if running in graphic mode.
 
 C Change focus to zone but do not act on any ianother jump command.
             CALL EDZONE(ITRC,index,ianother,IER)
-            MODIFY=.TRUE.
+            MODIFYVIEW=.TRUE.
           endif
         endif
       endif
@@ -982,7 +1094,7 @@ C to draw the model.
       elseif(indcfg.eq.0)then
         CALL USRMSG(' ',' ','-')
       else
-        if(CFGOK.AND.MODIFY)then
+        if(CFGOK.AND.MODIFYVIEW)then
           MODBND=.TRUE.
           MODLEN=.TRUE.
           ITSNM=1
@@ -1471,6 +1583,9 @@ C simula commissions technical assessments and analysis.
       subroutine simula(ier)
 #include "building.h"
 #include "model.h"
+#include "uncertainty.h"
+#include "plant.h"
+#include "power.h"
 #include "sbem.h"
 #include "ipvdata.h"
 #include "net_flow.h"
@@ -1483,6 +1598,7 @@ C to include the path and create a string to drive the modules.
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/appw/iappw,iappx,iappy
+      integer iappw,iappx,iappy
       integer childterminal  ! picks up mmod from starting of prj
       common/childt/childterminal
       COMMON/PREC7/ITCNST
@@ -1508,28 +1624,28 @@ C ispnstep (plant timesteps/hr), issave (results save level).
       integer noimg  ! number of images
       integer iton   ! zero if images not yet shown, one if yes
       common/imagfi/noimg,iton
-      COMMON/ENTFILE/ENTFLNAM,IENTXIST
       common/user/browse
 
       dimension ITEMS(25)
 
-      character doit*248,tmode*8,ITEMS*34,key*1
+      character doit*248,tmode*8,ITEMS*42,key*1
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spflnam*72,longtfile*144,longtfiledos*144
-      CHARACTER*72 LAPROB,ENTFLNAM,lipvdatf
-      character cr*32,spfdescr*8,ipvaction*3
+      CHARACTER*72 LAPROB,lipvdatf
+      character cr*32,spfdescr*30,ipvaction*3
 
 C dd is character array for selecting simulation parameter sets.
-      character dd(MSPS+3)*33,de*8,aut*12
+      character dd(MSPS+3)*55,de*30,aut*12
       character t72*72
 
       character brw*11,outs*124
       character descra*7,descrb*7,descrst*10,descrfn*10
 
       logical DOK,OK,MSTROK,MSTRZN,XST,modparms
-      logical browse,concat,hri,defok,unixok
+      logical browse,concat,hri,defok,unixok,LIBXST
       logical mlcok,bndryok,bndrysxc,confok,geofok,oprfok,prob
       logical tmcok,shdok
+      integer iappwpc ! application height as % of nominal size
 
       integer isstupt,isbnstept,ispnstept,issavet  ! for local editing
       integer MITEM,INO,ic,IRT ! max items and current menu item
@@ -1585,7 +1701,8 @@ C constructions are known.
       else
         write(ITEMS(1),'(a,i2,a,i2,a)')'a simulation presets (',isset,
      &    ' of',nsset,')'
-        write(ITEMS(2),'(a,a8)')      'b set name: ',spfdescr(isset)
+        write(ITEMS(2),'(a,a)')       'b set name: ',spfdescr(isset)
+     &                                   (1:lnblnk(spfdescr(isset)))
         write(ITEMS(3),'(a,i4)')      'c start-up days:',isstup
         if(isbnstep.le.1)then
           write(ITEMS(4),'(a,i2)')    'd zone timestep/h:',isbnstep
@@ -1671,7 +1788,7 @@ C Display the simulation period.
       ITEMS(M+5)   ='u NCM compliance checking        '
       ITEMS(M+6)   ='  ______________________________ '
       IF(ITRC.EQ.0)THEN
-        ITEMS(m+7) = 'v feedback >> silent              '
+        ITEMS(m+7) = 'v feedback >>               '
       ELSEIF(ITRC.EQ.1)THEN
         ITEMS(m+7) = 'v feedback >> summary             '
       ELSEIF(ITRC.EQ.2)THEN
@@ -1717,6 +1834,10 @@ C Toggle trace level.
       elseif(INO.EQ.MITEM-8)then
 
 C Invoke simulator for the case of a simulation parameter set.
+C If uncertanties included in model tell user to use silent mode.
+        INQUIRE (FILE=LUALF,EXIST=LIBXST)
+        if(LIBXST) call edisp(iuout,
+     &     'Use run silent for uncertainty assessments.')
         helptopic='prj_simulation_menu'
         call gethelptext(helpinsub,helptopic,nbhelp)
         if(nsset.gt.0)then
@@ -1774,16 +1895,25 @@ C command line.
           endif
 
 C If prj initial size is a % of default pass this on to child with
-C an offset from prj start position.
-          if(iappw.gt.0.and.iappw.le.200)then
+C an offset from prj start position.  Reconstitute the % of 
+C application vertical size.
+          if(iappw.eq.630)then
+            iappwpc=100
+          else
+            iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+          endif
+C          write(6,*) 'iappw,iappwpc',iappw,iappwpc
+
+          if(iappwpc.gt.0.and.iappwpc.le.200)then
             write(doit,'(3a,3i4,7a)') 'bps -mode ',tmode,
-     &        ' -s ',iappw,iappx+15,iappy+50,' -file ',
+     &        ' -s ',iappwpc,iappx+15,iappy+50,' -file ',
      &        longtfile(1:lnblnk(longtfile)),brw,' -p ',
-     &        spfdescr(isset),aut,' &'
+     &        spfdescr(isset)(1:lnblnk(spfdescr(isset))),aut,' &'
           else
             write(doit,'(9a)') 'bps -mode ',tmode,
      &        ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
-     &        brw,' -p ',spfdescr(isset),aut,' &'
+     &        brw,' -p ',spfdescr(isset)(1:lnblnk(spfdescr(isset))),aut,
+     &        ' &'
           endif
 
 C Debug.
@@ -1793,6 +1923,8 @@ C Debug.
         else
 
 C Invoke simulator for the case without a simulation parameter set.
+          if(NIACT.gt.0) call edisp(iuout,
+     &      'Use run silent for uncertainty assessments.')
           call tstamp('>','PRJ: beginning simulation')
           doit = ' '
           call terminalmode(childterminal,tmode)
@@ -1831,9 +1963,14 @@ C If browsing pass this information to bps.
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
-          if(iappw.gt.0.and.iappw.le.200)then
+          if(iappw.eq.630)then
+            iappwpc=100
+          else
+            iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+          endif
+          if(iappwpc.gt.0.and.iappwpc.le.200)then
             write(doit,'(3a,3i4,4a)') 'bps -mode ',tmode,
-     &        ' -s ',iappw,iappx+15,iappy+50,' -file ',
+     &        ' -s ',iappwpc,iappx+15,iappy+50,' -file ',
      &        longtfile(1:lnblnk(longtfile)),brw,' &'
           else
             write(doit,'(6a)') 'bps -mode ',tmode,
@@ -1860,9 +1997,14 @@ C Execute mfs.
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
-          if(iappw.gt.0.and.iappw.le.200)then
+          if(iappw.eq.630)then
+            iappwpc=100
+          else
+            iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+          endif
+          if(iappwpc.gt.0.and.iappwpc.le.200)then
             write(doit,'(3a,3i4,a)') 'mfs -mode ',tmode,
-     &        ' -s ',iappw,iappx+15,iappy+50,' &'
+     &        ' -s ',iappwpc,iappx+15,iappy+50,' &'
           else
             write(doit,'(3a)') 'mfs -mode ',tmode,' -s 0 0 0 &'
           endif
@@ -1872,6 +2014,9 @@ C          call usrmsg('Beginning flow only assessment via',doit,'-')
           call runit(doit,tmode)
         ELSEIF(IW.EQ.2)THEN
 
+C List available domain files.
+          call CFDLIST(iuout,ier)
+
 C Execute dfs.
           call tstamp('>','PRJ: beginning dfs')
           doit = ' '
@@ -1879,9 +2024,14 @@ C Execute dfs.
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
-          if(iappw.gt.0.and.iappw.le.200)then
+          if(iappw.eq.630)then
+            iappwpc=100
+          else
+            iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+          endif
+          if(iappwpc.gt.0.and.iappwpc.le.200)then
             write(doit,'(3a,3i4,a)') 'dfs -mode ',tmode,
-     &        ' -s ',iappw,iappx+15,iappy+50,' &'
+     &        ' -s ',iappwpc,iappx+15,iappy+50,' &'
           else
             write(doit,'(3a)') 'dfs -mode ',tmode,' -s 0 0 0 &'
           endif
@@ -1896,19 +2046,11 @@ C          call usrmsg('Beginning CFD only assessment via',doit,'-')
 C Visual simulation.  Starts e2r with configuration file. Depending on
 C if Unix or Windows setup the appropriate path.
 
-C If browsing pass this information to e2r.
-        if(browse)then
-          if(itrc.gt.1)then
-            brw = ' -v -b yes'
-          else
-            brw = ' -b yes'
-          endif
+C Set browse to no for e2r.
+        if(itrc.gt.1)then
+          brw = ' -v -b no '
         else
-          if(itrc.gt.1)then
-            brw = ' -v -b no '
-          else
-            brw = ' -b no '
-          endif
+          brw = ' -b no '
         endif
 
         call tstamp('>','PRJ: beginning e2r')
@@ -1926,9 +2068,14 @@ C and change any / to \.
           longtfile=' '
           longtfile=longtfiledos
         endif
-        if(iappw.gt.0.and.iappw.le.200)then
+        if(iappw.eq.630)then
+          iappwpc=100
+        else
+          iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+        endif
+        if(iappwpc.gt.0.and.iappwpc.le.200)then
           write(doit,'(3a,3i4,4a)') 'e2r -mode ',tmode,
-     &      ' -s ',iappw,iappx+35,iappy+40,' -file ',
+     &      ' -s ',iappwpc,iappx+35,iappy+40,' -file ',
      &      longtfile(1:lnblnk(longtfile)),brw,' &'
         else
           write(doit,'(6a)') 'e2r -mode ',tmode,
@@ -1938,6 +2085,7 @@ C and change any / to \.
 C Debug.
         call usrmsg('Beginning visual assessment via',doit,'-')
         call runit(doit,tmode)
+
       elseif(INO.EQ.MITEM-5)then
 
 C IPV for the actual number of simulations required.
@@ -2016,37 +2164,24 @@ C There may be ipv data held in the configuration file.
 C Setup one parameter set or several sets to match IPV description.
         if(ID.eq.1.or.ID.eq.3)then
           if(INDCFG.eq.2)then
-            nsset=1
-            isset=1
-            isstup=0
-            isbnstep=1
-            ispnstep=10
-            issave=4
-            isavgh=0
+            nsset=1; isset=1; isstup=0
+            isbnstep=1; ispnstep=10; issave=4; isavgh=0
           else
             call scntcnst(TDM,istd,TCM,ISTC)
-            nsset=1
-            isset=1
+            nsset=1; isset=1
             if(isstup.eq.0)isstup=ITCNST
-            isbnstep=1
-            ispnstep=10
-            issave=4
-            isavgh=0
+            isbnstep=1; ispnstep=10; issave=4; isavgh=0
           endif
           if(ID.eq.1)then
             de='default'
-            CALL EASKS(de,'Name for set?',' ',8,'win','set name',
+            CALL EASKS(de,'Name for set?',' ',30,'win','set name',
      &        IER,nbhelp)
-            write(spfdescr(isset),'(a8)')de(1:8)
+            write(spfdescr(isset),'(a30)')de(1:30)
             lde=lnblnk(spfdescr(isset))
-            spfdescr(2)='-'
-            spfdescr(3)='-'
-            spfdescr(4)='-'
-            spfdescr(5)='-'
-            isstday(isset)=9
-            isstmon(isset)=1
-            isfnday(isset)=15
-            isfnmon(isset)=1
+            spfdescr(2)='-'; spfdescr(3)='-'
+            spfdescr(4)='-'; spfdescr(5)='-'
+            isstday(isset)=9; isstmon(isset)=1
+            isfnday(isset)=15; isfnmon(isset)=1
             cr=cfgroot
             lr=lnblnk(cfgroot)
             if(INDCFG.ne.2)then
@@ -2098,7 +2233,8 @@ C Select an existing set, create a new one or cancel.
           CALL EDAY(isfnday(ii),isfnmon(ii),ijdfinish)
           call stdate(iyear,ijdfinish,descrb,descrfn)
           CALL EMKEY(ii,KEY,IER)
-          write(dd(ii),'(7a)') key,' ',spfdescr(ii),' ',descrst,'-',
+          write(dd(ii),'(7a)') key,' ',spfdescr(ii)
+     &      (1:lnblnk(spfdescr(ii))),' ',descrst,'-',
      &      descrfn
  60     continue
         if (nsset.lt.MSPS) then
@@ -2128,16 +2264,14 @@ C Select an existing set, create a new one or cancel.
 
 C It is possible to add another set so ask user and set file names.
           de='win'
-          CALL EASKS(de,' ','Name for set?',8,'win','set name',
+          CALL EASKS(de,' ','Name for set?',30,'win','set name',
      &      IER,nbhelp)
           nsset=nsset+1
           isset=nsset
-          write(spfdescr(isset),'(a8)')de(1:8)
+          write(spfdescr(isset),'(a30)')de(1:30)
           lde=lnblnk(spfdescr(isset))
-          isstday(isset)=9
-          isstmon(isset)=1
-          isfnday(isset)=15
-          isfnmon(isset)=1
+          isstday(isset)=9; isstmon(isset)=1
+          isfnday(isset)=15; isfnmon(isset)=1
           if(INDCFG.ne.2)then
             WRITE(sblres(isset),'(3a)')cr(1:lr),de(1:lde),'.res'
           else
@@ -2180,9 +2314,9 @@ C << IPV can co-exist with lots of parameter sets.
           call usrmsg('IPV set name is pre-defined,','.','W')
         else
           de=spfdescr(isset)
-          CALL EASKS(de,' ','Name for set?',8,spfdescr(isset),
+          CALL EASKS(de,' ','Name for set?',30,spfdescr(isset),
      &               'set name',IER,nbhelp)
-          write(spfdescr(isset),'(a8)')de(1:8)
+          write(spfdescr(isset),'(a30)')de(1:30)
           modparms=.true.
         endif
       elseif(MITEM.eq.25.and.INO.EQ.3)then
@@ -2374,6 +2508,7 @@ C to include the path and create a string to drive the modules.
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/appw/iappw,iappx,iappy
+      integer iappw,iappx,iappy
       integer childterminal  ! picks up mmod from starting of prj
       common/childt/childterminal
       common/IPVF/lipvdatf
@@ -2401,7 +2536,7 @@ C level), isavgh = 0 save every timestep = 1 save hourly zone data.
       dimension assmttag(MSPS),runtag(MSPS)
       character assmttag*8,runtag*16,brw*8
       character ltpath*72,filen*72,ltmp*72
-      character basefile*144,variantfile*144,outs*124
+      character basefile*144,variantfile*144,outs*124,louts*144
       character word1*20,word2*40,word3*20,outstr*124
       character xfile*144,tg*1,delim*1,tab*1,fs*1
       character ipvaction*3
@@ -2409,6 +2544,8 @@ C level), isavgh = 0 save every timestep = 1 save hourly zone data.
       logical XST,browse,remote,concat,unixok
       logical atreports,im2
       integer IWM   ! for radio button
+      integer lmsg  ! for length of message.
+      integer iappwpc ! application %
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -2578,9 +2715,14 @@ C << IPV will still run as required.
               
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
-          if(iappw.gt.0.and.iappw.le.200)then
+          if(iappw.eq.630)then
+            iappwpc=100
+          else
+            iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+          endif
+          if(iappwpc.gt.0.and.iappwpc.le.200)then
             write(doit,'(3a,3i4,5a)') 'bps -mode ',tmode,
-     &        ' -s ',iappw,iappx+15,iappy+50,' -file ',
+     &        ' -s ',iappwpc,iappx+15,iappy+50,' -file ',
      &        longtfile(1:lnblnk(longtfile)),brw,assmttag(ij),aut
           else
             write(doit,'(7a)') 'bps -mode ',tmode,
@@ -2674,9 +2816,14 @@ C              write(6,*) 'reset tfile to ',tfile
 
             endif
 
-            if(iappw.gt.0.and.iappw.le.200)then
+            if(iappw.eq.630)then
+              iappwpc=100
+            else
+              iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+            endif
+            if(iappwpc.gt.0.and.iappwpc.le.200)then
               write(doit,'(3a,3i4,4a)') 'res -mode ',tmode,
-     &          ' -s ',iappw,iappx+15,iappy+50,' -file ',
+     &          ' -s ',iappwpc,iappx+15,iappy+50,' -file ',
      &          tfile(1:lnblnk(tfile)),runtag(ij),aut
             else
               write(doit,'(6a)') 'res -mode ',tmode,
@@ -2714,9 +2861,14 @@ C Debug.
 C            write(6,*) 'itr3 reset tfile to ',tfile
 
           endif
-          if(iappw.gt.0.and.iappw.le.200)then
+          if(iappw.eq.630)then
+            iappwpc=100
+          else
+            iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+          endif
+          if(iappwpc.gt.0.and.iappwpc.le.200)then
             write(doit,'(3a,3i4,4a)') 'res -mode ',tmode,
-     &        ' -s ',iappw,iappx+15,iappy+50,' -file ',
+     &        ' -s ',iappwpc,iappx+15,iappy+50,' -file ',
      &        tfile(1:lnblnk(tfile)),' -act ipv_annual ',aut
           else
             write(doit,'(6a)') 'res -mode ',tmode,' -file ',
@@ -2895,10 +3047,22 @@ C We have done both passes, report differences and exit.
      &      anu_cl_m2(2),
      &      anu_cl_bld(2),anu_cl_cap_m2(2),anu_cl_cap_bld(2)
           call eddisp(iuout,outs)
-          write(outs,'(4a)')'Diff between ',
-     &      basefile(1:lnblnk(basefile)),
-     &      ' & ',variantfile(1:lnblnk(variantfile))
-          call edisp(iuout,outs)
+
+C Ensure long file names fit in buffer.
+          lmsg=lnblnk(basefile)+lnblnk(variantfile)+16
+          if(lmsg.lt.144)then
+            write(louts,'(4a)')'Diff between ',
+     &        basefile(1:lnblnk(basefile)),
+     &        ' & ',variantfile(1:lnblnk(variantfile))
+            call edisp(iuout,louts)
+          else
+            write(louts,'(2a)')'Diff between ',
+     &        basefile(1:lnblnk(basefile))
+            call edisp(iuout,louts)
+            write(louts,'(2a)')'Diff between ',
+     &        ' & ',variantfile(1:lnblnk(variantfile))
+            call edisp(iuout,louts)
+          endif
           if(delim.eq.'-')then
             call edisp(iuout,
      &            '        Demand              Capacity')
@@ -3116,6 +3280,8 @@ C  shdok checks if shading files are readable.
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive the modules.
       common/OUTIN/IUOUT,IUIN
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
       common/FILEP/IFIL
       
       integer ncomp,ncon
@@ -3130,12 +3296,16 @@ C to include the path and create a string to drive the modules.
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
 
       character CXSTR*78
+      character shdafile*72
       CHARACTER*72 LS
       character ZSDES*28,ZSDESC*20,ZSDESS*16
+      CHARACTER ZN*12,longtfile*144,longtfiledos*144
+      character DOIT*248,outs*248
 
-      logical XST,asked,dok,problem
+      logical XST,XSTA,asked,dok,problem
       logical mlcok,bndryok,bndrysxc,confok,geofok,oprfok,prob,dup
       logical tmcok,shdok
+      logical concat,unixok
       integer icple,iscple  ! coupled zone and surface for tmc check.
       integer itmc1,itmc2   ! non-zero if surface a tmc
 
@@ -3152,6 +3322,9 @@ C For help messages
 
       IUO=IFIL+1
       if(nsset.gt.0)isset=1
+
+C Check if Unix-based or DOS based.
+      call isunix(unixok)
 
 C Do an initial check to see if the model is attributed and
 C constructions are known.
@@ -3594,6 +3767,9 @@ C Zone construction file exists so attempt to scan it.
         CALL PHELPD('constructions checks',nbhelp,'-',0,0,IER)
       endif
 
+C Check for existance of zone shading files and if missing but
+C there is an ASCII shading file convert it otherwise attempt
+C to calculate.
       helptopic='has_unknown_shading'
       call gethelptext(helpinsub,helptopic,nbhelp)
       shdok=.true.
@@ -3606,16 +3782,62 @@ C Zone construction file exists so attempt to scan it.
             if(nbhelp.lt.60)then
               nbhelp=nbhelp+1
               write(h(nbhelp),'(3a)') 'Zone ',zname(i)(1:lnzname(i)),
-     &        ' shading undefined.'
+     &        ' shading expected but undefined.'
             endif
           else
             XST=.false.
             call FINDFIL(LS,XST)
+            write(shdafile,'(2a)') ls(1:lnblnk(ls)),'a'
+            call FINDFIL(shdafile,XSTA)
+
+C Setup file name depending on the machine type.
+            if(unixok)then
+              call addpath(LCFGF,longtfile,concat)
+            else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+              call addpath(LCFGF,longtfile,concat)
+              call cmdfiledos(longtfile,longtfiledos,ier)
+              longtfile=' '
+              longtfile=longtfiledos
+            endif
+            write(ZN,'(A)') zname(i)
+            doit = ' '
             if(.NOT.XST)then
-              if(nbhelp.lt.60)then
-                nbhelp=nbhelp+1
-                write(h(nbhelp),'(3a)') 'Zone ',zname(i)(1:lnzname(i)),
-     &        ' shading not found.'
+              if(XSTA)then
+                call edisp(iuout,'Importing missing shading...')
+                write(doit,'(6a)') 'ish -mode text -file ',
+     &            longtfile(1:lnblnk(longtfile)),' -zone ',
+     &            ZN(1:lnblnk(ZN)),' -act asci2bin ',
+     &            shdafile(1:lnblnk(shdafile))
+                call usrmsg('starting shading conversion via',doit,'-')
+                call runit(doit,'-')
+                write(outs,'(3a)') 'Shading for ',ZN(1:lnblnk(ZN)),
+     &            ' has been imported from ASCII.'
+                call edisp(iuout,outs)
+
+                if(nbhelp.lt.60)then
+                  nbhelp=nbhelp+1
+                  write(h(nbhelp),'(3a)') 'Shading for ',
+     &              ZN(1:lnblnk(ZN)),' has been imported from ASCII.'
+                endif
+              else
+                call edisp(iuout,'Regenerating missing shading...')
+                write(doit,'(5a)') 'ish -mode text -file ',
+     &            longtfile(1:lnblnk(longtfile)),' -zone ',
+     &            ZN(1:lnblnk(ZN)),' -act update_silent '
+                call usrmsg('starting shading calcs via',doit,'-')
+                call runit(doit,'-')
+                write(outs,'(3a)') 'Shading for ',ZN(1:lnblnk(ZN)),
+     &            ' has been calculated.'
+                call edisp(iuout,outs)
+                if(nbhelp.lt.60)then
+                  nbhelp=nbhelp+1
+                  write(ZN,'(A)') zname(i)
+                  write(h(nbhelp),'(3a)') 'Shading for ',
+     &              ZN(1:lnblnk(ZN)),' has been recalculated.'
+                endif
               endif
             else
 
@@ -3666,7 +3888,7 @@ C at maxrec=24 for older files. Remember maxrec for use in solar.F.
 
  1003   if(nbhelp.lt.59)then
           nbhelp=nbhelp+1
-          write(h(nbhelp),'(a,i2,a,i2,a,i2)') 'Model nsur=',NSUR,
+          write(h(nbhelp),'(a,i3,a,i3,a,i2)') 'Model nsur=',NSUR,
      &      ' db ns=',ns,' inext=',INEXT
           nbhelp=nbhelp+1
           write(h(nbhelp),'(A)') 
@@ -4254,6 +4476,7 @@ C << message to user that such a file does not exist
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "ipvdata.h"
+#include "cfd.h"
       
       integer lnblnk  ! function definition
 
@@ -4275,9 +4498,16 @@ C Path to model and command line file (if any).
       common/cctlnm/ctldoc,lctlf
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
+C To signal to MFWRIT that globals are available from graphic network.
+C Currently set true if graphic network file, false otherwise.
+      logical haveglobal
+      COMMON/MFLOW11/haveglobal
+
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/ICFNOD/ICFD,ICP
       COMMON/CONTM/CNTMFIL,CNTMDESC,NTSTEPC
+      common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
+      integer ncfdnd,icfdnd,NCONF
 
       DIMENSION IVALS(MCOM),IVALSS(8),SALT(8)
 
@@ -5159,11 +5389,15 @@ C CFD domain
         call askmultizone(inpic,ivals,
      &    ' Select zones for CFD variant?',
      &    'Zone CFD variant','d',ier)
-        ICFD=1
         if(inpic.gt.0)then
           EXT='.dfd'
           DO 178 IC=1,inpic
             ICOMP=ivals(IC)
+            do 234 iconf=1,nconf
+              if ( icfdnd(iconf).eq.ICOMP )then
+                ICFD = iconf
+              endif
+  234       continue
             ITRC=2
             ITU=6
             CALL DFDREAD(ICOMP,itrc,itu,IER)
@@ -5332,13 +5566,15 @@ C then an older file so rewind the file and call emfread.
           IF(ND.GE.4)THEN
             REWIND(IUM,ERR=999)
             CALL EMFREAD(IUM,IIER)
+            haveglobal=.FALSE.  ! a text-based flow network file
           elseif((ND.eq.1.or.ND.eq.2).and.
      &          OUTSTR(1:18).EQ.'*Graphical_network')then
 
 C Found a graphic network file, advise user and exit.
             call usrmsg(
      &      'This file is a graphic network file rather than a',
-     &      'flow network file!','W')
+     &      'flow network file!','W') 
+            haveglobal=.TRUE.  ! a graphic network file
           endif
           CALL MFWRIT(IUM)
         ENDIF
@@ -5516,7 +5752,7 @@ C        CALL EDISP(IUOUT,OUTS)
       ENDIF
 
 C If shading needs updating do this now.
-      IF(ISHAD.EQ.1)CALL EDDSHD
+      IF(ISHAD.EQ.1)CALL EDDSHD('site')
 
 C If calculated viewfactors need run do this now.
       if(nbvalsv.gt.0)then

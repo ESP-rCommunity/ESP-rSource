@@ -261,7 +261,7 @@ C Make temporary use of file unit IAF=IFIL+1.
 
 C Scan the defaults file for default configuration. << tmp name >>
       defdbfl='./gdefaults'
-      call escgdef(IAF,IER)
+      call escgdef(IAF,'s',IER)
 
       LGENDB=' '
 
@@ -852,11 +852,11 @@ C Passed paramters.
 
 C Depending on computer type set integer size of passed parameters.
 #ifdef OSI
-      integer JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
-      integer JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+      integer JITZNM,JITSNM,JITVNO,JITOBS,JITVIS,JITVOBJ,JITSNR,JITGRD
+      integer JITORG,JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
 #else
-      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
-      integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITVIS,JITVOBJ,JITSNR
+      integer*8 JITGRD,JITORG,JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
 #endif     
       return
       end
@@ -2236,6 +2236,14 @@ C calls in esru_lib.F
 
       SUBROUTINE EPKMLC(ISEL,PROMPT1,PROMPT2,IER)
       CHARACTER*(*) PROMPT1,PROMPT2
+      ier=0
+      return
+      end
+      
+      SUBROUTINE EDMLDB2(chgdb,ACTION,isel,IER)
+      logical chgdb
+      character*1 ACTION
+      integer isel,ier
       ier=0
       return
       end

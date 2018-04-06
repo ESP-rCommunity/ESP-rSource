@@ -940,8 +940,8 @@ C of validity in the selections.
           goto 92
         elseif(ISW.eq.1)then
 
-C Do not edit sensor information if Nicol control algorithm
-          IF(IFSN(II,2).EQ.7)THEN
+C Do not edit sensor information if Nicol control algorithm.
+          IF(IFSN(II,1).eq.-3.AND.IFSN(II,2).EQ.7)THEN
             CALL USRMSG(
      &      'Sensor not required for behavioural control model',
      &      ' ','W')
@@ -2592,32 +2592,47 @@ C The writing pattern here is taken from the flow controls
           endif
         else
           WRITE(outs,'(a,i3,a)')' For period',KK,' define...'
-          call edisp(iuout,outs)
         endif
+        call edisp(iuout,outs)
         call edisp(iuout,' ')
 
 C Optics controller.  Set type to same as initial for this optics
 C function (ie. all periods are the same).
         ictyp=IOCTYP(II,1,1)
         IOCTYP(II,JJ,KK)=ictyp
-        write(outs,'(a,i3)')' Current controller type: ',ictyp
-        call edisp(iuout,outs)
-        call edisp(iuout,
+        if(ictyp.eq.2)then
+          write(outs,'(a,i3)')' Current controller type: ',ictyp
+          call edisp(iuout,outs)
+          call edisp(iuout,
      &      'Note: to change this re-edit the optics sensor')
-
+        endif
         ino=iclaw
         idno=2
         write(outs,'(a,i3,a)')'Select a control law (currently: ',
      &    iclaw,')'
         call MENUATOL(outs,' Available laws',
-     &   'a switch optics above setpoint (NA)',
+     &   'a switch optics ',
      &   'b switch bidirectional sets (setp. & set)',' ',' ',' ',' ',
      &   ' ',' ',' ',' ',' ',' ',ino,idno,nbhelp)
         iclaw=ino
         IOCLAW(II,JJ,KK)=iclaw
 
-C Exclude here control law 1 as it is not available at the moment
-        if(ioclaw(II,JJ,KK).ne.1)then
+        if(ioclaw(II,JJ,KK).eq.1)then
+  61      CALL EASKR(tcps,' ',' Period start time ? ',
+     &      0.,'F',24.,'F',0.,'control start',IER,nbhelp)
+          if(KK.GT.1)then
+            IF(tocps(II,JJ,KK-1).GE.tcps)then
+              call usrmsg(' Periods out of order..',' ','W')
+              GOTO 61
+            endif
+          else
+            CALL ECLOSE(tcps,0.0,0.001,close1)
+            IF(.NOT.close1)then
+              call usrmsg(' ',' First control must begin @ 0','W')
+              GOTO 61
+            endif
+          endif
+        elseif(ioclaw(II,JJ,KK).eq.2)then
   62      CALL EASKR(tcps,' ',' Period start time ? ',
      &      0.,'F',24.,'F',0.,'control start',IER,nbhelp)
           if(KK.GT.1)then
@@ -2636,20 +2651,26 @@ C Exclude here control law 1 as it is not available at the moment
 
 C Ask for miscel. data.
         if(ioclaw(II,JJ,KK).eq.1)then
-C          cm(1)=2.
-C          cm(2)=10.0
-C          CALL EASKR(cm(2),' Set point:',' ',
-C     &      -1000.,'F',1000.,'F',10.,'setpoint',IER,nbhelp) 
-
-C Similar logic as the EDWINO Subroutine
-C          noptz=nopt        
-C          IX=1
-C          CALL EPICKS(IX,IGVAL,' ',' Glazing types: ',
-C     &      52,noptz,GS,'raw opticals (to use above setpoint)',
-C     &      IER,nbhelp)
-C          cm(3)=IGVAL(1)
-          WRITE(outs,'(a)')' This option is not currently available. '
+          call edisp(iuout,
+     &    'Parameters for this option need to be set in constructions')
+          call edisp(iuout,
+     &    'menu and only times of activation can be set in controls')
+          call edisp(iuout,
+     &    'If not done already set up transparent property replace-')
+          call edisp(iuout,
+     &    'ment set in constructions menu for optical property ')
+          call edisp(iuout,
+     &    'substitution. Only define here whether optical control is')
+          call edisp(iuout,
+     &    'ON or OFF and do not define sensor or actuator')
           call edisp(iuout,outs)
+          cm(1)=1
+          CALL EASKAB('Is optical control active in this period?',' ',
+     &        'No','Yes',iad,nbhelp)
+          cm(2)=real(iad - 1)
+          ioan(ii,1)=-98
+          iosn(ii,1)=-98
+          iosn(ii,2)=1 ! so range checking does not give an error
         elseif(ioclaw(II,JJ,KK).eq.2)then
 C          cm(1)=12.
 C          cm(2)=10.0
@@ -2847,7 +2868,7 @@ C ********************************************************************
 
       common/sctl/tcps,ictyp,iclaw,cm(misc)
 
-      DIMENSION SALT(7),PSALT (2), IVALS(7), IPVALS(1)
+      DIMENSION SALT(9), PSALT(9), IVALS(9), IPVALS(1)
       CHARACTER*82 VERT(20)
 
       CHARACTER outs*124,SSTR*96,TMP*96,SALT*40,KEY*1
@@ -3008,13 +3029,15 @@ C Remember current control type
         SALT(5)= 'senses wind speed actuates shade ON/OFF'
         SALT(6)= 'senses wind dir.  actuates shade ON/OFF'
         SALT(7)= 'no sensor (schedule only)              '
-        
+        SALT(8)= '* not defined *                        '
+        SALT(9)= 'no sensor (temporal data file)         '
+
         call edisp(iuout,' Current controller type: ')
         call edisp(iuout,SALT(iCFCctltype(II,JJ,KK)))
         
         IX=1
   64    CALL EPICKS(IX,IVALS,' ',' Controller type: (see help)',
-     &         40,7,SALT,'controller type',IER,nbhelp)
+     &         40,9,SALT,'controller type',IER,nbhelp)
         if(ix.eq.0.or.IVALS(1).eq.0)goto 64
         if(ix.ne.0)iCFCctltype(II,JJ,KK)=IVALS(1)
         ictyp=iCFCctltype(II,JJ,KK)
@@ -3022,50 +3045,61 @@ C Remember current control type
         if(ictyp.ne.icurrentctltype)then
 C Provide some default values for control data based on the
 C control type.
-        if(ictyp.eq.1)then     ! senses temp., actuates shade ON/OFF
-          cm(1)=2.0
-          cm(2)=25.0       ! shade ON setpoint [C]
-          cm(3)=22.0       ! shade OFF setpoint [C]
-        elseif(ictyp.eq.2)then ! senses temp., actuates slat angle
-          cm(1)=4.0
-          cm(2)=25.0       ! slats closed setpoint [C]
-          cm(3)=22.0       ! slats open setpoint [C]
-          cm(4)=80.0       ! closed slat angle [deg]
-          cm(5)=0.0        ! open slat angle [deg]
-        elseif(ictyp.eq.3)then ! senses solar radiation, actuates shade ON/OFF
-          cm(1)=2.0
-          cm(2)=500.0      ! shade ON setpoint [W/m2]
-          cm(3)=400.0      ! shade OFF setpoint [W/m2]
-        elseif(ictyp.eq.4)then ! senses solar radiation, actuates slat angle
-          cm(1)=4.0
-          cm(2)=500.0      ! slats closed setpoint [W/m2]
-          cm(3)=400.0      ! slats open setpoint [W/m2]
-          cm(4)=80.0       ! closed slat angle [deg]
-          cm(5)=0.0        ! open slat angle [deg]        
-        elseif(ictyp.eq.5)then ! senses wind speed, actuates shade ON/OFF
-          cm(1)=2.0
-          cm(2)=10.0       ! shade ON setpoint [m/s]
-          cm(3)=8.0        ! shade OFF setpoint [m/s]       
-        elseif(ictyp.eq.6)then ! senses wind direction, actuates shade ON/OFF
-          cm(1)=2.0
-          cm(2)=180.0       ! wind direction band start point for shade OFF[deg]
-          cm(3)=270.0       ! wind direction band end point for shade OFF [deg]               
-        elseif(ictyp.eq.7)then ! no control, schedule only
-          cm(1)=2.0
-          cm(2)=1.0       ! 0 shade OFF, 1 shade ON
-          cm(3)=45.0      ! default slat angle for current period[deg]  
-        endif  
+          if(ictyp.eq.1)then     ! senses temp., actuates shade ON/OFF
+            cm(1)=2.0
+            cm(2)=25.0       ! shade ON setpoint [C]
+            cm(3)=22.0       ! shade OFF setpoint [C]
+          elseif(ictyp.eq.2)then ! senses temp., actuates slat angle
+            cm(1)=4.0
+            cm(2)=25.0       ! slats closed setpoint [C]
+            cm(3)=22.0       ! slats open setpoint [C]
+            cm(4)=80.0       ! closed slat angle [deg]
+            cm(5)=0.0        ! open slat angle [deg]
+          elseif(ictyp.eq.3)then ! senses solar radiation, actuates shade ON/OFF
+            cm(1)=2.0
+            cm(2)=500.0      ! shade ON setpoint [W/m2]
+            cm(3)=400.0      ! shade OFF setpoint [W/m2]
+          elseif(ictyp.eq.4)then ! senses solar radiation, actuates slat angle
+            cm(1)=4.0
+            cm(2)=500.0      ! slats closed setpoint [W/m2]
+            cm(3)=400.0      ! slats open setpoint [W/m2]
+            cm(4)=80.0       ! closed slat angle [deg]
+            cm(5)=0.0        ! open slat angle [deg]
+          elseif(ictyp.eq.5)then ! senses wind speed, actuates shade ON/OFF
+            cm(1)=2.0
+            cm(2)=10.0       ! shade ON setpoint [m/s]
+            cm(3)=8.0        ! shade OFF setpoint [m/s]
+          elseif(ictyp.eq.6)then ! senses wind direction, actuates shade ON/OFF
+            cm(1)=2.0
+            cm(2)=180.0       ! wind direction band start point for shade OFF[deg]
+            cm(3)=270.0       ! wind direction band end point for shade OFF [deg]
+          elseif(ictyp.eq.7)then ! no control, schedule only
+            cm(1)=2.0
+            cm(2)=1.0       ! 0 shade OFF, 1 shade ON
+            cm(3)=45.0      ! default slat angle for current period[deg]
+          elseif(ictyp.eq.9)then ! no control, temporal data file (tdf)
+            cm(1)=2.0
+            cm(2)=0.0       ! 0 shade OFF, 1 shade ON
+            cm(3)=0.0       ! default slat angle for current period[deg]
+          endif
         endif
           
 C Complex fenestration contol law.
-        PSALT(1)= 'Basic control '
-        PSALT(2)= 'Schedule      '
+        PSALT(1)= 'Basic control      '
+        PSALT(2)= 'Schedule           '
+        PSALT(3)= '* undefined  *     '
+        PSALT(4)= '* undefined  *     '
+        PSALT(5)= '* undefined  *     '
+        PSALT(6)= '* undefined  *     '
+        PSALT(7)= '* undefined  *     '
+        PSALT(8)= '* undefined  *     '
+        PSALT(9)= 'Temporal data file '
         write(outs,'(a,a)')' Current control law: ',
      &                      PSALT(iCFCctllaw(II,JJ,KK))
         call edisp(iuout,outs)
         IX=1
   65    CALL EPICKS(IX,IPVALS,' ',' Complex fen. control law: ',
-     &         40,2,PSALT,'control law',IER,nbhelp)
+     &         40,9,PSALT,'control law',IER,nbhelp)
         if(ix.eq.0.or.IPVALS(1).eq.0)goto 65
         if(ix.ne.0)iclaw=IPVALS(1)
         iCFCctllaw(II,JJ,KK)=iclaw
@@ -3079,14 +3113,14 @@ C law can be jumped around.
         useold=.false.
         iclawt=-1
   77    if(useold)then
-          if(iclawt.ge.0.and.iclawt.le.2)then
+          if((iclawt.ge.0.and.iclawt.le.2).or.iclawt.eq.9)then
             iclaw=iclawt
             iCFCctllaw(II,JJ,KK)=iclaw
             useold=.false.
             goto 62
           endif
         endif
-        
+
         if(iclaw.ge.1)then
 
 C Remember the previous start (prevstart) and the total number of
@@ -5030,7 +5064,7 @@ C IVERT is the menu position, MVERT the current number of menu lines.
       elseif(icfoc.eq.5)then
         MHEAD=6
       elseif(icfoc.eq.6)then
-        MHEAD=12
+        MHEAD=13
       endif
       MCTL=3
       ILEN=NCOMP
@@ -5111,7 +5145,7 @@ C help text blocks for the current control domain.
         WRITE(VERT(4),'(a)') 'c   incident radiation at ext. surface'
         WRITE(VERT(5),'(a)') 'd senses lux levels                   '
         WRITE(VERT(6),'(a)') '  ------------------------------------'
-      elseif(icfoc.eq.6)then    ! complex fenistration
+      elseif(icfoc.eq.6)then    ! complex fenestration
         helptopic='senslocation_CFC'
         call gethelptext(helpinsub,helptopic,nbhelp)
         WRITE(VERT(1),'(a)') 'a sensor not used (schedule only)     '
@@ -5125,7 +5159,8 @@ C help text blocks for the current control domain.
         WRITE(VERT(9),'(a)') 'h   direct normal solar radiation     '
         WRITE(VERT(10),'(a)')'i   direct sol rad incident on surface'
         WRITE(VERT(11),'(a)')'j senses lux levels (not working)     '
-        WRITE(VERT(12),'(a)')'  ------------------------------------'
+        WRITE(VERT(12),'(a)')'k no sensor, temporal data file       '
+        WRITE(VERT(13),'(a)')'  ------------------------------------'
       endif
       M=M+1
       CALL EMKEY(M,KEY,IER)
@@ -5493,7 +5528,8 @@ C Senses external relative humidity.
         isn2=6
         isn3=0
         if(icfoc.eq.2)isense=0
-      elseif(ivert.eq.11.and.(icfoc.eq.0.or.icfoc.eq.1))then
+      elseif((ivert.eq.11.and.(icfoc.eq.0.or.icfoc.eq.1)).or.
+     &         (ivert.eq.12.and.icfoc.eq.6))then
 
 C Uses information in temporal file.
 C << check whether temporal file associated with model. >>
@@ -5671,6 +5707,8 @@ C flow connections.It is assumed that the user will make one selection only.
 #include "plant.h"
 #include "epara.h"
 #include "control.h"
+#include "esprdbfile.h"
+#include "material.h"
 #include "CFC_common.h"
       COMMON/OUTIN/IUOUT,IUIN
       
@@ -5695,6 +5733,7 @@ C flow connections.It is assumed that the user will make one selection only.
       integer ian1T,ian2T,ian3T,ilayt  ! local variable for editing.
       logical vb_xst ! local variable to check if slat type blind exists in CFC
       logical shd_xst ! local variable to check if shading alyer exists in CFC
+      logical modmlc  ! to select MLC
       integer MVERT,IVERT ! max items and current menu item
 
 C For help messages
@@ -5707,20 +5746,20 @@ C For help messages
 C Initialise zone menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
    3  SELECT=.FALSE.
-      if(icfoc.eq.0)then
+      if(icfoc.eq.0)then      ! Zone actuator
         MHEAD=3
-      elseif(icfoc.eq.1)then
+      elseif(icfoc.eq.1)then  ! Plant actuator
         MHEAD=2
-      elseif(icfoc.eq.2)then
+      elseif(icfoc.eq.2)then  ! Mass flow actuator
         MHEAD=3
-      elseif(icfoc.eq.3)then
+      elseif(icfoc.eq.3)then  ! Global actuator
         MHEAD=2
-      elseif(icfoc.eq.4)then
+      elseif(icfoc.eq.4)then  ! Power flow actuator
         MHEAD=2
-      elseif(icfoc.eq.5)then
+      elseif(icfoc.eq.5)then  ! Optical actuator
         MHEAD=1
-      elseif(icfoc.eq.6)then
-        MHEAD=3
+      elseif(icfoc.eq.6)then  ! CFC actuator
+        MHEAD=10
       endif
       MCTL=3
       ILEN=NCOMP
@@ -5793,10 +5832,16 @@ C Build up text strings for the menu.
       elseif(icfoc.eq.6)then
         helptopic='actlocation_CFC'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        WRITE(VERT(1),'(a)')'a shading layer ON/OFF                '
-        WRITE(VERT(2),'(a)')'b slat angle of Venetian blind        '
-        WRITE(VERT(3),'(a)')'c shade ON/OFF (& slat angle) schedule'
-        WRITE(VERT(4),'(a)')'  ------------------------------------'
+        WRITE(VERT(1),'(a)')'a shading layer ON/OFF                 '
+        WRITE(VERT(2),'(a)')'b slat angle of Venetian blind         '
+        WRITE(VERT(3),'(a)')'c shade ON/OFF (& slat angle) schedule '
+        WRITE(VERT(4),'(a)')'d * undefined *                        '
+        WRITE(VERT(5),'(a)')'e * undefined *                        '
+        WRITE(VERT(6),'(a)')'f * undefined *                        '
+        WRITE(VERT(7),'(a)')'g * undefined *                        '
+        WRITE(VERT(8),'(a)')'h * undefined *                        '
+        WRITE(VERT(9),'(a)')'i shade ON/OFF & slat angle via tdf    '
+        WRITE(VERT(10),'(a)')'  -------------------------------------'
       endif
       DO 10 L=1,ILEN
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
@@ -5979,7 +6024,12 @@ C and the third can be 0
      &        'datasets of the first control loop are used.'
         call edisp(iuout,outs)
         CALL EPMENSV
-        call epkmlc(iwhich,'Construction to control?',' ',ierr)
+        if(mlcver.eq.0)then
+          call epkmlc(iwhich,'Construction to control?',' ',ierr)
+        else
+          call edisp(iuout,'Construction to control?')
+          CALL EDMLDB2(modmlc,'-',iwhich,IER)
+        endif
         CALL EPMENRC
         if(iwhich.ne.0)then
           ian1=-5
@@ -6108,13 +6158,16 @@ C if isn1.eq.-3 then no supplemental.
 
       elseif(ivert.eq.2.and.(icfoc.eq.6))then
 C Complex Fenestration      
-C       ian1 = actuator type (0 - shade ON/OFF, 1 - slat angle 2- schedule )
+C       ian1 = actuator type (0 - shade ON/OFF,
+C                             1 - slat angle,
+C                             2 - schedule,
+C                             9 - tdf)
 C       ian2 = zone index
 C       ian3 = CFC type index for selected zone
 
 C Actuates slat angle of a slat-type shade
         ian1=1
-      
+
 C Ask for the specific zone.
         CALL EPMENSV
         idef=0
@@ -6139,15 +6192,22 @@ C Check that slat-type shade exists for selected CFC type.
             goto 92
         endif
         CALL EPMENRC
-        
-      elseif(ivert.eq.3.and.(icfoc.eq.6))then
-      
-C       ian1 = actuator type (0 - shade ON/OFF, 1 - slat angle 2- both (for schedule) )
+
+      elseif((ivert.eq.3.or.ivert.eq.9).and.(icfoc.eq.6))then
+
+C       ian1 = actuator type (0 - shade ON/OFF,
+C                             1 - slat angle,
+C                             2 - schedule,
+C                             9 - tdf)
 C       ian2 = zone index
 C       ian3 = CFC type index for selected zone
 
 C Actuates slat angle of a slat-type shade
-        ian1=2
+        if (ivert.eq.3) then
+          ian1=2
+        else
+          ian1=9
+        endif
       
 C Ask for the specific zone.
         CALL EPMENSV
@@ -6173,7 +6233,7 @@ C Check that shade exists for selected CFC type.
             goto 92
         endif
         CALL EPMENRC
-        
+
       else
 
 C Not one of the legal menu choices.
@@ -6756,10 +6816,17 @@ C The user did not alter the control law.
         endif
       
        elseif(icfoc.eq.6)then
-              
+
 C Complex fenestration control law        
-        SALT(1)= 'Basic control'
-        SALT(2)= 'Schedule'
+        SALT(1)= 'Basic control      '
+        SALT(2)= 'Schedule           '
+        SALT(3)= '* undefined  *     '
+        SALT(4)= '* undefined  *     '
+        SALT(5)= '* undefined  *     '
+        SALT(6)= '* undefined  *     '
+        SALT(7)= '* undefined  *     '
+        SALT(8)= '* undefined  *     '
+        SALT(9)= 'Temporal data file '
         if(iclawcurrent.ne.0)then
           write(outs,'(2a)') ' Current control law: ',
      &        SALT(iclawcurrent)
@@ -6771,7 +6838,7 @@ C Complex fenestration control law
 
 C Re-ask for the control law for the period.
   64    CALL EPICKS(IX,IVALS,' ',' Control law option:',
-     &      42,2,SALT,'control law ',IER,nbhelp)
+     &      42,9,SALT,'control law ',IER,nbhelp)
         if(ix.eq.0.or.IVALS(1).eq.0)goto 64
         if(iclawcurrent.ne.IVALS(1))then
 
@@ -7071,10 +7138,11 @@ C << other control laws where processing is required... >>
          elseif(ictyp.eq.2)then
 
          endif
-        
+
         elseif(icfoc.eq.6)then
          if(iclaw.ge.1)modval=.true.
-C        ADD CHECKS FOR MISC DATA (e.g. close setpoint must be higher than open setpoint, etc.)         
+C        ADD CHECKS FOR MISC DATA (e.g. close setpoint must be higher than open setpoint, etc.)
+cx << tdf ??
         endif 
       ELSE
 
@@ -8033,7 +8101,7 @@ C Create prompts, min/max values for complex fen. data based on control type
           menu(3)='End angle for shade OFF (deg)'
           prompt1(3)='End angle (deg) below which shade'
           prompt2(3)='is retracted.'
-          ndec(3)=1; vmin(3)=0.0; vmax(3)=360.0; vdef(3)=270.0              
+          ndec(3)=1; vmin(3)=0.0; vmax(3)=360.0; vdef(3)=270.0
          elseif(ictyp.eq.7)then ! no control, schedule only
           nmenulines=3
           prompt1(1)=' '
@@ -8046,9 +8114,24 @@ C Create prompts, min/max values for complex fen. data based on control type
           menu(3)='Slat angle (deg)'
           prompt1(3)='Slat angle for current period (deg).'
           prompt2(3)=''
-          ndec(3)=1; vmin(3)=-89.9; vmax(3)=89.9; vdef(3)=45.0        
+          ndec(3)=1; vmin(3)=-89.9; vmax(3)=89.9; vdef(3)=45.0
+
+         elseif(ictyp.eq.9)then ! no control, temporal data file
+          nmenulines=3
+          prompt1(1)=' '
+          prompt2(1)=' '
+          ndec(1)=-1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
+          menu(2)='0 for shade OFF, 1 for shade ON'
+          prompt1(2)='Flag for shade ON/OFF (1/0)'
+          prompt2(2)='for current period.'
+          ndec(2)=1; vmin(2)=0.0; vmax(2)=1.0; vdef(2)=1.0
+          menu(3)='Slat angle (deg)'
+          prompt1(3)='Slat angle for current period (deg).'
+          prompt2(3)=''
+          ndec(3)=1; vmin(3)=-89.9; vmax(3)=89.9; vdef(3)=0.0
+
          endif  
-       
+
         endif
       endif  
       return
@@ -8189,6 +8272,16 @@ C -------------------------------------------------------------------
                   else
                     checkOK=.false.
                   endif                
+                elseif(ictype.eq.9)then    ! tdf
+                  if(isen1.eq.-5.and.isen2.gt.0.and.isen3.eq.0)then
+                    if(iact1.eq.9.and.ilaw.eq.9)then
+                      checkOK=.true.
+                    else
+                      checkOK=.false.
+                    endif
+                  else
+                    checkOK=.false.
+                  endif                
                 else
                   checkOK=.false.
                 endif            
@@ -8216,6 +8309,9 @@ C ----------------Construct user message
                   elseif(ictype.eq.7)then
                     write(ctype,'(A)')
      &               ' no sensor > schedule only'                 
+                  elseif(ictype.eq.9)then
+                    write(ctype,'(A)')
+     &               ' no sensor > temporal df  '
                   else
                     write(ctype,'(A)')
      &               ' UNKNOWN'

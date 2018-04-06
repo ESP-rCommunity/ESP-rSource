@@ -32,6 +32,16 @@ extern FILE *wwc;
 extern gint f_height;
 extern gint f_width;
 
+/* flag for network graphics routines*/
+static int network_gpc;
+
+/* flags for network graphics - start in select mode */
+static int nselect = 1;	/* if 1 then allow select or deselect of icons */
+static int nconnect = 0;	/* if 1 then user in connection add mode */
+static int ndata = 0;	/* if 1 allow data editing */
+static long int isnap=1;
+static long int igrid=1;
+
 /* ************ Select a font **************** */
 /* select one of the 8 fonts by its index, load it and update the graphic context.
  * for some reason font_0 has been cleared after initial jwinint call and so
@@ -249,6 +259,17 @@ void capexall_(cmd,len_cmd)
   f_to_c_l(cmd,&len_cmd,&l_m); strncpy(capt_all_exe,cmd,(unsigned int)l_m);	/* copy to static array */
   capt_all_exe[l_m] = '\0';
   return;
+}
+
+/********* Switch between network drawing modes *********/
+void nwksmod_(sel,con,dat)
+long int *sel;
+long int *con;
+long int *dat;
+{
+nselect=*sel;	/* if 1 then user can select/unselect icons */
+nconnect=*con;
+ndata=*dat;
 }
 
 /* ********* userfonts_ set fonts for common display tasks ******* */

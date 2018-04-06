@@ -1069,16 +1069,16 @@ C Documentations text option.
           ACLAT=ABS(CLAT)
           ACLONG=ABS(CLONG)
           IF(CLONG.LT.0.0.AND.CLAT.GE.0.0)then
-            WRITE(clmlhelp(2),102)ACLAT,ACLONG,IYEAR
+            WRITE(clmlhelp(2),102)ACLAT,CLONG,IYEAR
  102        FORMAT(' Location:',F6.2,'N',F6.2,'W :',I5)
           elseif(CLONG.GE.0.0.AND.CLAT.LT.0.0)then
-            WRITE(clmlhelp(2),103)ACLAT,ACLONG,IYEAR
+            WRITE(clmlhelp(2),103)ACLAT,CLONG,IYEAR
  103        FORMAT(' Location:',F6.2,'S',F6.2,'E :',I5)
           elseif(CLONG.LT.0.0.AND.CLAT.LT.0.0)then
-            WRITE(clmlhelp(2),104)ACLAT,ACLONG,IYEAR
+            WRITE(clmlhelp(2),104)ACLAT,CLONG,IYEAR
  104        FORMAT(' Location:',F6.2,'S',F6.2,'W :',I5)
           else
-            WRITE(clmlhelp(2),101)ACLAT,ACLONG,IYEAR
+            WRITE(clmlhelp(2),101)ACLAT,CLONG,IYEAR
  101        FORMAT(' Location:',F6.2,'N',F6.2,'E :',I5)
           endif
 

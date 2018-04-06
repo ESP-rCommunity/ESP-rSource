@@ -396,6 +396,7 @@ C RCMGL  = Rate of contaminant mass gained/lost from each source/sink
       SUBROUTINE CTSASM
 #include "net_flow.h"
 #include "building.h"
+#include "FMI.h"
 
 C Simulation time commons
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -548,9 +549,20 @@ C Assume casual gain type 1 is occupancy
                       DO 577 IGNO=1,NCGPER(ICOMP,IDYTP,IGTYP)
                         IF(IHRP.GE.TCGS(ICOMP,IDYTP,IGTYP,IGNO).AND.
      &                     IHRP.LE.TCGS(ICOMP,IDYTP,IGTYP,IGNO+1))THEN
-                          POW=CGSENC(ICOMP,IDYTP,IGTYP,IGNO) +
-     &                        CGSENR(ICOMP,IDYTP,IGTYP,IGNO) +
-     &                        CGLAT(ICOMP,IDYTP,IGTYP,IGNO) 
+C <FMI>
+C If FMI occupancy control is active, need to multiply gains by control
+C value.
+                          if (FMUDOCTL(ICOMP,7)) then
+                            POW=(CGSENC(ICOMP,IDYTP,IGTYP,IGNO) +
+     &                           CGSENR(ICOMP,IDYTP,IGTYP,IGNO) +
+     &                           CGLAT(ICOMP,IDYTP,IGTYP,IGNO)) *
+     &                           FMUCTL(ICOMP,7)
+                          else
+C </FMI>
+                            POW=CGSENC(ICOMP,IDYTP,IGTYP,IGNO) +
+     &                          CGSENR(ICOMP,IDYTP,IGTYP,IGNO) +
+     &                          CGLAT(ICOMP,IDYTP,IGTYP,IGNO) 
+                          endif
                         ENDIF
  577                  CONTINUE
 

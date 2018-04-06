@@ -66,7 +66,7 @@ C Where ESP-r was installed (as recorded when it was compiled).
       integer icascf
       common/cctl/icascf(mcom)
 
-      DIMENSION ITEMS(21)
+      DIMENSION ITEMS(23)
       DIMENSION XX(MS),YY(MS)
 
 C px and py are the user coordinates for vertices (zone and/or ground),
@@ -98,6 +98,9 @@ C end indices for each zone.
       logical trimmed,completed,unique,CLOSEX,CLOSEY,addinganother
       logical clx0,cly0,clx1,cly1,clxm1,clym1
       logical unixok
+      logical modmlc  ! for selecting MLC
+      logical dodoor  ! true if adding door head points
+      logical dowindow ! true if adding window sill & head points
 
 C Signal first entry to subroutine with justentered as true, once
 C an object has been saved the set justentered to false.
@@ -106,24 +109,30 @@ C an object has been saved the set justentered to false.
       logical newgeo    ! to use for testing if new/old geometry file.
       integer IWM,IWMG  ! for radio buttons
       integer MITEM,INO ! max items and current menu item
+      integer lastwalllist ! remember when we stopped asking for plan corners
+      integer nbofdoorpts  ! remember how many door points added
+      integer nbofwindowpts  ! remember how many window points added
+      
       real blkopaq      ! opacity of obstruction
 
 #ifdef OSI
       integer iixs1,iiys1,iixs2,iiys2,iixtn1,iiytn1,iixtn2,iiytn2
       integer iixx1,iiyy1,iid1,iid2,iid3,iid4
       integer iixx2,iiyy2,iixx3,iiyy3,iix,iiy
+      integer iixx,iiyy,iizz,iik
       integer iicol
       integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iiw1,iiw2,iiw3,iiw4,iimenu,iixo,iiyo
       integer iixoffset,iiyoffset,iiwidth,iihight
       integer iixbul,iiybul,iixblr,iiyblr,iilix,iiliy
 #else
       integer*8 iixs1,iiys1,iixs2,iiys2,iixtn1,iiytn1,iixtn2,iiytn2
       integer*8 iixx1,iiyy1,iid1,iid2,iid3,iid4
       integer*8 iixx2,iiyy2,iixx3,iiyy3,iix,iiy
+      integer*8 iixx,iiyy,iizz,iik
       integer*8 iicol
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu,iixo,iiyo
       integer*8 iixoffset,iiyoffset,iiwidth,iihight
       integer*8 iixbul,iiybul,iixblr,iiyblr,iilix,iiliy
 #endif
@@ -140,14 +149,11 @@ C north defined), xbmscale (required scaling factor defined), xbmgrid
 C (optional gridding defined), xbmload (has bitmap been loaded), trimmed
 C has only part of bitmap been displayed, xbmsnap (snap to grid if xbmgrid
 C is true).
+      itru=iuout
       newgeo=.false.  ! assume older format geometry.
-      xbmorigin=.false.
-      xbmnorth=.false.
-      xbmscale=.false.
-      xbmgrid=.false.
-      xbmload=.false.
-      trimmed=.false.
-      xbmsnap=.false.
+      xbmorigin=.false.; xbmnorth=.false.; xbmscale=.false.
+      xbmgrid=.false.; xbmload=.false.; trimmed=.false.
+      xbmsnap=.false.; dodoor=.false.; dowindow=.false.
 
 C Set true to signal that user wants to add another zone.
       addinganother=.false.
@@ -170,12 +176,11 @@ C   inpmode: 8 = nothing (not enough toggles set to do this yet)
 
 C Assumed initial number of walls for extruded floor
 C plan case(NW), initial base Z (z1) initial top (z2).
-      NW=0
-      Z1=0.
-      Z2=2.4
-      Y1=0.0
-      X1=0.0
-      other=0.1
+      NW=0; Z1=0.0; Z2=2.4; Z3=2.1; Z4=0.7; Z5=2.1
+      Y1=0.0; X1=0.0; other=0.1
+
+C Reset index when last extrusion point entered.
+      lastwalllist=0; nbofdoorpts=0; nbofwindowpts=0
 
 C nbobs() is the number of obstruction blocks. NBL is number of
 C historical points for prior blocks (NBL = nbobs*3 because each
@@ -204,17 +209,13 @@ C uyoffset is the user coord at the bottom of the bitmap.
 
 C viewlim(1) and viewlim(2) are the user unit left and right boundaries and
 C viewlim(3) and viewlim(4) are the lower and upper boundaries.
-      viewlim(1)=0.0
-      viewlim(2)=0.0
-      viewlim(3)=0.0
-      viewlim(4)=0.0
+      viewlim(1)=0.0; viewlim(2)=0.0; viewlim(3)=0.0; viewlim(4)=0.0
+      
 C VIEWLIM(6)     - current view limits (x1,x2,y1,y2,z1,z2)
 
 C Gridding flag indicating the density of the grid.
       iwmg=0
-      GRSPC(1)=0.0
-      GRSPC(2)=0.0
-      GRSPC(3)=0.0
+      GRSPC(1)=0.0; GRSPC(2)=0.0; GRSPC(3)=0.0
 
 C Vertices and pixels (clear list of pixels for vertices and corners).
       INVERT=0
@@ -228,7 +229,8 @@ C Vertices and pixels (clear list of pixels for vertices and corners).
   8   continue
 
 C Clear history of pixel points. nipwhis is the cummulative number
-C of historical points.
+C of historical points. Should not include the door heads and window
+C sill and heads in this count.
       nipwhis=0
       do 9 i=1,MGTV
         ipxwhis(i)=0
@@ -331,60 +333,76 @@ C up and down (by 50 pixel increments).
         WRITE(ITEMS(9+m+n),'(A,1X,F8.4)')'j  Z coordinate @',Z1
         WRITE(ITEMS(10+m+n),'(A,1X,i4)') 'k  nb. of vertices ',INVERT
         ITEMS(11+m+n)='                             '
+        ITEMS(12+m+n)='                             '
+        ITEMS(13+m+n)='                             '
         if(trimmed)then
-          ITEMS(12+m+n)='m  start (type `e` end `p` pan)'
+          ITEMS(14+m+n)='m  start (type `e` end `p` pan)'
         else
-          ITEMS(12+m+n)='m  start (type `e` to end)   '
+          ITEMS(14+m+n)='m  start (type `e` to end)   '
         endif
       elseif(inpmode.eq.2)then
         ITEMS(8+m+n)='i mode >> pick vertices @ diff Z'
         ITEMS(9+m+n)='                             '
         WRITE(ITEMS(10+m),'(A,1X,i4)')  'k  nb. of vertices ',INVERT
         ITEMS(11+m+n)='                             '
+        ITEMS(12+m+n)='                             '
+        ITEMS(13+m+n)='                             '
         if(trimmed)then
-          ITEMS(12+m+n)='m  start (type `e` end `p` pan)'
+          ITEMS(14+m+n)='m  start (type `e` end `p` pan)'
         else
-          ITEMS(12+m+n)='m  start (type `e` to end)   '
+          ITEMS(14+m+n)='m  start (type `e` to end)   '
         endif
       elseif(inpmode.eq.3)then
+
+C Include extras for door heights and glazing sill & heads during
+C postprocessing.
         ITEMS(8+m+n)='i mode >> pick floor plan'
         WRITE(ITEMS(9+m+n),'(A,1X,F8.4)')  'j  floor @  :',Z1
         WRITE(ITEMS(10+m+n),'(A,1X,F8.4)') 'k  ceiling @:',Z2
-        WRITE(ITEMS(11+m+n),'(A,1X,i2)')   'l  nb. of walls ',NW
+        WRITE(ITEMS(11+m+n),'(A,1X,F8.4)') 'l  door head @:',Z3
+        WRITE(ITEMS(12+m+n),'(A,1X,2F6.3)')'m  wind sill head @:',
+     &    Z4,Z5
+        WRITE(ITEMS(13+m+n),'(A,1X,i3)')   'n  nb. of walls ',NW
         if(trimmed)then
-          ITEMS(12+m+n)='m  start (type `e` end `p` pan)'
+          ITEMS(14+m+n)='m  start (type `e` end `p` pan)'
         else
-          ITEMS(12+m+n)='m  start (type `e` to end)   '
+          ITEMS(14+m+n)='m  start (type `e` to end)   '
         endif
       elseif(inpmode.eq.4)then
         ITEMS(8+m+n)='i mode >> elevation (south)'
         WRITE(ITEMS(9+m+n),'(A,1X,F8.4)')'j  Y coordinate @',Y1
         WRITE(ITEMS(10+m+n),'(A,1X,i4)') 'k  nb. of vertices ',INVERT
         ITEMS(11+m+n)='                             '
+        ITEMS(12+m+n)='                             '
+        ITEMS(13+m+n)='                             '
         if(trimmed)then
-          ITEMS(12+m+n)='m  start (type `e` end `p` pan)'
+          ITEMS(14+m+n)='m  start (type `e` end `p` pan)'
         else
-          ITEMS(12+m+n)='m  start (type `e` to end)   '
+          ITEMS(14+m+n)='m  start (type `e` to end)   '
         endif
       elseif(inpmode.eq.5)then
         ITEMS(8+m+n)='i mode >> elevation (east)'
         WRITE(ITEMS(9+m+n),'(A,1X,F8.4)')'j  X coordinate @',X1
         WRITE(ITEMS(10+m+n),'(A,1X,i4)') 'k  nb. of vertices ',INVERT
         ITEMS(11+m+n)='                             '
+        ITEMS(12+m+n)='                             '
+        ITEMS(13+m+n)='                             '
         if(trimmed)then
-          ITEMS(12+m+n)='m  start (type `e` end `p` pan)'
+          ITEMS(14+m+n)='m  start (type `e` end `p` pan)'
         else
-          ITEMS(12+m+n)='m  start (type `e` to end)   '
+          ITEMS(14+m+n)='m  start (type `e` to end)   '
         endif
       elseif(inpmode.eq.6)then
         ITEMS(8+m+n)='i mode >> ground topology'
         ITEMS(9+m+n)='                             '
         WRITE(ITEMS(10+m+n),'(A,1X,i4)') 'k  nb. of vertices ',INVERT
         ITEMS(11+m+n)='                             '
+        ITEMS(12+m+n)='                             '
+        ITEMS(13+m+n)='                             '
         if(trimmed)then
-          ITEMS(12+m+n)='m  start (type `e` end `p` pan)'
+          ITEMS(14+m+n)='m  start (type `e` end `p` pan)'
         else
-          ITEMS(12+m+n)='m  start (type `e` to end)   '
+          ITEMS(14+m+n)='m  start (type `e` to end)   '
         endif
       elseif(inpmode.eq.7)then
         ITEMS(8+m+n)='i mode >> obstructions'
@@ -392,10 +410,12 @@ C up and down (by 50 pixel increments).
         WRITE(ITEMS(10+m+n),'(A,1X,F8.4)') 'k  height:',Z2
         WRITE(ITEMS(11+m+n),'(A,1X,i2)')   'l  nb. of obs ',
      &    nbobs(icomp)
+        ITEMS(12+m+n)='                             '
+        ITEMS(13+m+n)='                             '
         if(trimmed)then
-          ITEMS(12+m+n)='m  start (type `e` end `p` pan)'
+          ITEMS(14+m+n)='m  start (type `e` end `p` pan)'
         else
-          ITEMS(12+m+n)='m  start (type `e` to end)   '
+          ITEMS(14+m+n)='m  start (type `e` to end)   '
         endif
       elseif(inpmode.eq.8)then
         ITEMS(8+m+n)='i mode >>                        '
@@ -403,29 +423,31 @@ C up and down (by 50 pixel increments).
         ITEMS(10+m+n)='  . . .                         '
         ITEMS(11+m+n)='  . . .                         '
         ITEMS(12+m+n)='  . . .                         '
+        ITEMS(13+m+n)='  . . .                         '
+        ITEMS(14+m+n)='  . . .                         '
       endif
-      ITEMS(13+m+n)=  '  _________________________     '
+      ITEMS(15+m+n)=  '  _________________________     '
 
-      ITEMS(14+m+n)=  '! list coordinates              '
+      ITEMS(16+m+n)=  '! list coordinates              '
       if(justentered)then
-        ITEMS(15+m+n)=  '  . . .                       '
+        ITEMS(17+m+n)=  '  . . .                       '
       else
         if(inpmode.eq.7)then
-          ITEMS(15+m+n)='< create more obstructions    '
+          ITEMS(17+m+n)='< create more obstructions    '
         elseif(inpmode.eq.6)then
-          ITEMS(15+m+n)='< not applicable              '
+          ITEMS(17+m+n)='< not applicable              '
         else
-          ITEMS(15+m+n)='< create another zone         '
+          ITEMS(17+m+n)='< create another zone         '
         endif
       endif
       if(inpmode.eq.6)then
-        ITEMS(16+m+n)='> save ground topology          '
+        ITEMS(18+m+n)='> save ground topology          '
       else
-        ITEMS(16+m+n)='  . . .                         '
+        ITEMS(18+m+n)='  . . .                         '
       endif
-      ITEMS(17+m+n)=  '? help                          '
-      ITEMS(18+m+n)=  '- exit                          '
-      MITEM=18+m+n
+      ITEMS(19+m+n)=  '? help                          '
+      ITEMS(20+m+n)=  '- exit                          '
+      MITEM=20+m+n
 
 C Help text for this menu.
       helptopic='clickon_bitmap_menu'
@@ -495,10 +517,13 @@ C Offer to start another object.
           goto 142
         endif
 
+C Clear from any prior zone additions.
+        lastwalllist=0; nbofdoorpts=0; nbofwindowpts=0
+        dodoor=.false.; dowindow=.false.
+
 C Clear and start new zone or ground topology or obstruction.
         if(inpmode.eq.6)then
-          NGT=0
-          NGTV=0
+          NGT=0; NGTV=0
           if(gtgeom(1:4).eq.'UNKN'.or.gtgeom(1:2).eq.'  ')then
             write(ltmp,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.grnd'
           else
@@ -559,11 +584,8 @@ C Ask for initial block name.
           S12='blk_'
           CALL EASKS(S12,' ','Initail name for obstructions?',
      &      12,'obstruction','Block name',IER,nbhelp)
-          INVERT=0
-          NBFREL=0
-          nbobs(icomp)=0
-          NOX(icomp)=MOX
-          NOZ(icomp)=MOZ
+          INVERT=0; NBFREL=0; nbobs(icomp)=0
+          NOX(icomp)=MOX; NOZ(icomp)=MOZ
           ZN='obstructions'
         else
 
@@ -613,7 +635,7 @@ C << Unix vs NT needs to be updated >>
           IF(zd.eq.' '.or.ier.ne.0)goto 43
         endif
         call edisp(iuout,'BEGIN ENTERING POINTS NOW...')
-        INO=12+m+n
+        INO=14+m+n
         goto 29
 
       elseif(INO.EQ.MITEM-4)then
@@ -835,10 +857,8 @@ C Cast data types for C code.
                 ixblr=int(iixblr); iyblr=int(iiyblr)
               else
                 trimmed=.false.
-                ixoffset=0
-                iyoffset=0
-                iwidth=ibmwidth
-                ihight=ibmhight
+                ixoffset=0; iyoffset=0
+                iwidth=ibmwidth; ihight=ibmhight
 
 C Cast data types for C code.
                 iixoffset=ixoffset; iiyoffset=iyoffset
@@ -855,7 +875,7 @@ C After loading the bitmap populate the display with corners, north,
 C origin if these have been defined.
 
 C Debug.
-              write(6,*) 'bitmap drawn at ',ixbul,iybul,ixblr,iyblr
+C              write(6,*) 'bitmap drawn at ',ixbul,iybul,ixblr,iyblr
               iicol=0
               call winscl('z',iicol)
               iid1=ixbul; iid2=iybul;
@@ -905,11 +925,13 @@ C Support bitmap panning - left, right, up, down.
 C Refresh current bitmap and overlayed information.
           completed=.true.
           inpm=inpmode
+          lastwalllist=nw
           call refrshcur(fname,ixoffset,iyoffset,iwidth,ihight,inpm,
      &      ixbul,iybul,ixblr,iyblr,xbmnorth,xbmorigin,xbmgrid,
      &      xbmscale,iwmg,factor,viewlim,invert,nw,ixtn1,ixtn2,
      &      iytn1,iytn2,ixo,iyo,ipxx,ipyy,ipzz,ipxw,ipyw,nipwhis,
-     &      ipxwhis,ipywhis,iphisznst,iphisznfn,completed,other)
+     &      ipxwhis,ipywhis,iphisznst,iphisznfn,completed,other,
+     &      lastwalllist)
           goto 199
         endif
 
@@ -919,11 +941,12 @@ C Refresh current bitmap and overlayed information.
 C Refresh current bitmap and overlayed information.
         completed=.true.
         inpm=inpmode
+        lastwalllist=nw
         call refrshcur(fname,ixoffset,iyoffset,iwidth,ihight,inpm,
      &    ixbul,iybul,ixblr,iyblr,xbmnorth,xbmorigin,xbmgrid,
      &    xbmscale,iwmg,factor,viewlim,invert,nw,ixtn1,ixtn2,iytn1,
      &    iytn2,ixo,iyo,ipxx,ipyy,ipzz,ipxw,ipyw,nipwhis,ipxwhis,
-     &    ipywhis,iphisznst,iphisznfn,completed,other)
+     &    ipywhis,iphisznst,iphisznfn,completed,other,lastwalllist)
 
       elseif(INO.EQ.2+m+n)then
 
@@ -940,14 +963,18 @@ C Origin within the bitmap.
      &      ' ','-')
           iicol=0
           call winscl('z',iicol)
-          CALL trackview(ii,ixo,iyo)
-          iid1=ixo; iid2=iyo;
+          CALL trackview(iik,iixo,iiyo)
+
+C Debug
+C          write(6,*) 'origin track click',iik,iixo,iiyo
+          iid1=int(iixo); iid2=int(iiyo);
+          ixo=int(iixo); iyo=int(iiyo);
           call esymbol(iid1,iid2,24,1)
           write(temp6,'(A)')'Origin'
-          iix=ixo+5; iiy=iyo-5;
+          iix=iixo+5; iiy=iiyo-5;
           CALL wstxpt(iix,iiy,temp6)
           call winscl('-',iicol)
-          write(outs,'(a,2i6)')' origin X Y pixels =',ixo,iyo
+          write(outs,'(a,2i6)')' origin X Y pixels =',iixo,iiyo
           call edisp(iuout,outs)
           call usrmsg(' ',' ','-')
           xbmorigin=.true.
@@ -969,11 +996,13 @@ C North.
      &      ' ','-')
           iicol=0
           call winscl('z',iicol)
-          CALL trackview(ii,ixtn1,iytn1)
-          iid1=ixtn1; iid2=iytn1;
+          CALL trackview(iik,iixtn1,iiytn1)
+          ixtn1=int(iixtn1); iytn1=int(iiytn1)
+          iid1=int(iixtn1); iid2=int(iiytn1)
           call esymbol(iid1,iid2,11,1)
-          CALL trackview(ii,ixtn2,iytn2)
-          iid1=ixtn2; iid2=iytn2;
+          CALL trackview(iik,iixtn2,iiytn2)
+          ixtn2=int(iixtn2); iytn2=int(iiytn2);
+          iid1=int(iixtn2); iid2=int(iiytn2)
           call esymbol(iid1,iid2,18,1)
           iid1=ixtn1; iid2=iytn1; iid3=ixtn2; iid4=iytn2;
           call edwline(iid1,iid2,iid3,iid4)
@@ -1001,25 +1030,26 @@ C Scaling of a known line. Ask for two points and distance.
      &      'two points along a known line... ','-')
           iicol=0
           call winscl('z',iicol)
-          CALL trackview(ii,ixs1,iys1)
-          iid1=ixs1; iid2=iys1;
-          call esymbol(iid1,iid2,11,1)
-          CALL trackview(ii,ixs2,iys2)
-          iid1=ixs1; iid2=iys2;
-          call esymbol(iid1,iid2,11,2)
+
+C Get the pixel locations iixs1,iiys1 and iixs2,iiys2
+          CALL trackview(iik,iixs1,iiys1)
+          call esymbol(iixs1,iiys1,11,1)
+          CALL trackview(iik,iixs2,iiys2)
+          call esymbol(iixs2,iiys2,11,2)
           call winscl('-',iicol)
           call usrmsg(' ',' ','-')
-          disn=1.
+          disn=1.0
           CALL EASKR(disn,' ','Distance (metres) between points?',
      &      0.0001,'W',0.,'-',0.1,'dist',IER,nbhelp)
-          vdis= crowxyz(float(ixs1),float(iys1),0.0,float(ixs2),
-     &      float(iys2),0.0)
+          vdis= crowxyz(float(iixs1),float(iiys1),0.0,float(iixs2),
+     &      float(iiys2),0.0)
+          write(outs,*) 'pixels between points ',vdis
+          call edisp(iuout,outs)
           factor=vdis/disn
           write(outs,*)' There are ',factor,' pixels per metre.'
           call edisp(iuout,outs)
           iicol=0
           call winscl('z',iicol)
-          iixs1=ixs1; iiys1=iys1; iixs2=ixs2; iiys2=iys2;
           call eswline(iixs1,iiys1,iixs2,iiys2)
 
 C Try test point along screen Y and check for angle between it and the
@@ -1043,13 +1073,13 @@ C point nominated. No transform is yet applied.
           endif
 
 C Report where the two scaling points were.
-          pxs=float(ixs1-ixo)/factor
-          pys=float(iyo-iys1)/factor
+          pxs=float(iixs1-iixo)/factor
+          pys=float(iiyo-iiys1)/factor
           write(outs,'(a,f8.3,a,f8.3)') 'First scale point at X',pxs,
      &      ' Y ',pys
           call edisp(iuout,outs)
-          pxs=float(ixs2-ixo)/factor
-          pys=float(iyo-iys2)/factor
+          pxs=float(iixs2-iixo)/factor
+          pys=float(iiyo-iiys2)/factor
           write(outs,'(a,f8.3,a,f8.3)') '2nd scale point at X',pxs,
      &      ' Y ',pys
           call edisp(iuout,outs)
@@ -1060,7 +1090,7 @@ C in the width of the bitmap, Uxoffset is the user coord at the left of the bitm
 C uyoffset is the user coord at the bottom of the bitmap.
           bituwidth=float(ixblr-ixbul)/factor
           bituheight=float(iyblr-iybul)/factor
-          uxoffset=float(ixbul-ixo)/factor
+          uxoffset=float(ixbul-iixo)/factor
           uyoffset=float(iyo-iyblr)/factor
 
 C For purposes of drawing a grid find the nearest metre in the X and Y
@@ -1097,23 +1127,17 @@ C Gridding options. Check if user wants a grid.
      &      'none','2.0m','1.0m','0.5m','0.25m','0.1m','other',
      &      IWMG,nbhelp)
           if(iwmg.eq.1)then
-            GRSPC(1)=0.0; GRSPC(2)=0.0; GRSPC(3)=0.0
-            xbmgrid=.false.
+            GRSPC(1)=0.0; GRSPC(2)=0.0; GRSPC(3)=0.0; xbmgrid=.false.
           elseif(iwmg.eq.2)then
-            GRSPC(1)=2.0; GRSPC(2)=2.0; GRSPC(3)=2.0
-            xbmgrid=.true.
+            GRSPC(1)=2.0; GRSPC(2)=2.0; GRSPC(3)=2.0; xbmgrid=.true.
           elseif(iwmg.eq.3)then
-            GRSPC(1)=1.0; GRSPC(2)=1.0; GRSPC(3)=1.0
-            xbmgrid=.true.
+            GRSPC(1)=1.0; GRSPC(2)=1.0; GRSPC(3)=1.0; xbmgrid=.true.
           elseif(iwmg.eq.4)then
-            GRSPC(1)=0.5; GRSPC(2)=0.5; GRSPC(3)=0.5
-            xbmgrid=.true.
+            GRSPC(1)=0.5; GRSPC(2)=0.5; GRSPC(3)=0.5; xbmgrid=.true.
           elseif(iwmg.eq.5)then
-            GRSPC(1)=0.25; GRSPC(2)=0.25; GRSPC(3)=0.25
-            xbmgrid=.true.
+            GRSPC(1)=0.25; GRSPC(2)=0.25; GRSPC(3)=0.25; xbmgrid=.true.
           elseif(iwmg.eq.6)then
-            GRSPC(1)=0.1; GRSPC(2)=0.1; GRSPC(3)=0.1
-            xbmgrid=.true.
+            GRSPC(1)=0.1; GRSPC(2)=0.1; GRSPC(3)=0.1; xbmgrid=.true.
           elseif(iwmg.eq.7)then
             ZDI=0.1
             CALL EASKR(ZDI,' ',
@@ -1125,11 +1149,12 @@ C Gridding options. Check if user wants a grid.
           endif
           completed=.true.
           inpm=inpmode
+          lastwalllist=nw
           call refrshcur(fname,ixoffset,iyoffset,iwidth,ihight,inpm,
      &      ixbul,iybul,ixblr,iyblr,xbmnorth,xbmorigin,xbmgrid,
      &      xbmscale,iwmg,factor,viewlim,invert,nw,ixtn1,ixtn2,iytn1,
      &      iytn2,ixo,iyo,ipxx,ipyy,ipzz,ipxw,ipyw,nipwhis,ipxwhis,
-     &      ipywhis,iphisznst,iphisznfn,completed,other)
+     &      ipywhis,iphisznst,iphisznfn,completed,other,lastwalllist)
         endif
         goto 142
       elseif(INO.EQ.6+m+n)then
@@ -1231,10 +1256,7 @@ C stuff goes through the add-another facility in the main menu.
           elseif(inpt.eq.5)then
             INVERT=0; inpmode = inpt
           elseif(inpt.eq.6)then
-            NW=0
-            INVERT=0
-            NGT=0
-            NGTV=0
+            NW=0; INVERT=0; NGT=0; NGTV=0
             if(gtgeom(1:4).eq.'UNKN'.or.gtgeom(1:2).eq.'  ')then
               write(ltmp,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.grnd'
             else
@@ -1258,9 +1280,7 @@ C stuff goes through the add-another facility in the main menu.
             endif
             inpmode = inpt
           elseif(inpt.eq.7)then
-            NW=0
-            INVERT=0
-            NBFREL=0
+            NW=0; INVERT=0; NBFREL=0
             inpmode = inpt
           elseif(inpt.eq.8)then
             continue
@@ -1328,10 +1348,31 @@ C Top of obstruction..
         goto 142
 
       elseif(INO.EQ.11+m+n)then
+        if(inpmode.eq.3)then
+
+C Door head height.
+          Z3=2.1
+          CALL EASKR(Z3,' ','Elevation (m) at door head?',
+     &      0.000,'W',99.9,'W',2.7,'door head',IER,nbhelp)
+        endif
         goto 142
       elseif(INO.EQ.12+m+n)then
+        if(inpmode.eq.3)then
+
+C Window sill & head height.
+          Z4=0.9
+          CALL EASKR(Z4,' ','Elevation (m) at window sill?',
+     &      0.000,'W',99.9,'W',2.7,'door head',IER,nbhelp)
+          Z5=2.1
+          CALL EASKR(Z5,' ','Elevation (m) at window head?',
+     &      0.000,'W',99.9,'W',2.7,'door head',IER,nbhelp)
+        endif
+        goto 142
+
+      elseif(INO.EQ.14+m+n)then
 
 C First check to see if there is a non-blank ZN.
+C << convert to using new geometry file format with in-built obstructions >>
         if(inpmode.eq.7)then
           if(icomp.eq.0)then
             INPIC=1
@@ -1394,18 +1435,23 @@ C Adding vertices to the zone, if colour monitor use green colour.
           endif
           if(trimmed)call edisp(iuout,'and type `p` to pan bitmap.')
  146      if(inpmode.eq.1.or.inpmode.eq.2.or.inpmode.eq.6)then
-            CALL trackview(ii,ixx,iyy)
+            CALL trackview(iik,iixx,iiyy)
+            ixx=int(iixx); iyy=int(iiyy)
           elseif(inpmode.eq.4)then
-            CALL trackview(ii,ixx,izz)
+            CALL trackview(iik,iixx,iizz)
+            ixx=int(iixx); izz=int(iizz)
           elseif(inpmode.eq.5)then
-            CALL trackview(ii,iyy,izz)
+            CALL trackview(iik,iiyy,iizz)
+            iyy=int(iiyy); izz=int(iizz)
           endif
 
 C If user typed `e` then complete the process.
-          if(ii.eq.69.or.ii.eq.101)goto 147
-
+          if(iik.eq.69.or.iik.eq.101)then
+            goto 147
+          endif
+  
 C Toggle on/off the snap-to grid.
-          if(ii.eq.83.or.ii.eq.115)then
+          if(iik.eq.83.or.iik.eq.115)then
             if(xbmgrid)then
               if(xbmsnap)then
                 xbmsnap=.false.
@@ -1421,7 +1467,7 @@ C Toggle on/off the snap-to grid.
           endif
 
 C If user typed `p` or `P` then do panning until user says done and then continue.
-          if(ii.eq.80.or.ii.eq.112)then
+          if(iik.eq.80.or.iik.eq.112)then
             if(trimmed)then
               helptopic='click_pan_options'
               call gethelptext(helpinsub,helptopic,nbhelp)
@@ -1443,13 +1489,13 @@ C If user typed `p` or `P` then do panning until user says done and then continu
 
 C Refresh current bitmap and overlayed information.
                 completed=.false.
-                inpm=inpmode
+                inpm=inpmode; lastwalllist=nw
                 call refrshcur(fname,ixoffset,iyoffset,iwidth,ihight,
      &            inpm,ixbul,iybul,ixblr,iyblr,xbmnorth,xbmorigin,
      &            xbmgrid,xbmscale,iwmg,factor,viewlim,invert,nw,
      &            ixtn1,ixtn2,iytn1,iytn2,ixo,iyo,ipxx,ipyy,ipzz,
      &            ipxw,ipyw,nipwhis,ipxwhis,ipywhis,iphisznst,
-     &            iphisznfn,completed,other)
+     &            iphisznfn,completed,other,lastwalllist)
               endif
               goto 148
             endif
@@ -1457,32 +1503,29 @@ C Refresh current bitmap and overlayed information.
 
 C If user typed `d` or `D` then delete the latest coordinate. Then
 C refresh current bitmap and overlayed information.
-          if(ii.eq.67.or.ii.eq.100)then
+          if(iik.eq.67.or.iik.eq.100)then
             if(INVERT.gt.1)then
               INVERT=INVERT-1
               call edisp(iuout,'Last vertex deleted. Refreshing...')
               completed=.false.
-              inpm=inpmode
+              inpm=inpmode; lastwalllist=nw
               call refrshcur(fname,ixoffset,iyoffset,iwidth,ihight,
      &          inpm,ixbul,iybul,ixblr,iyblr,xbmnorth,xbmorigin,
      &          xbmgrid,xbmscale,iwmg,factor,viewlim,invert,nw,
      &          ixtn1,ixtn2,iytn1,iytn2,ixo,iyo,ipxx,ipyy,ipzz,ipxw,
      &          ipyw,nipwhis,ipxwhis,ipywhis,iphisznst,iphisznfn,
-     &          completed,other)
+     &          completed,other,lastwalllist)
               goto 146
             endif
           endif
 
 C If snap-to is true then find nearest user unit and cast back to pixels.
           if(inpmode.eq.1.or.inpmode.eq.2.or.inpmode.eq.6)then
-            tpx=float(ixx-ixo)/factor
-            tpy=float(iyo-iyy)/factor
+            tpx=float(ixx-ixo)/factor; tpy=float(iyo-iyy)/factor
           elseif(inpmode.eq.4)then
-            tpx=float(ixx-ixo)/factor
-            tpy=float(iyo-izz)/factor
+            tpx=float(ixx-iixo)/factor; tpy=float(iyo-izz)/factor
           elseif(inpmode.eq.5)then
-            tpx=float(iyy-ixo)/factor
-            tpy=float(iyo-izz)/factor
+            tpx=float(iyy-iixo)/factor; tpy=float(iyo-izz)/factor
           endif
 
 C If snap-to is true then find nearest user unit and cast back to pixels.
@@ -1512,14 +1555,11 @@ C If snap-to is true then find nearest user unit and cast back to pixels.
               tpy=tpy-REMY
             ENDIF
             if(inpmode.eq.1.or.inpmode.eq.2.or.inpmode.eq.6)then
-              ixx = int(tpx*factor) + ixo
-              iyy = iyo - int(tpy*factor)
+              ixx = int(tpx*factor) + ixo; iyy = iyo - int(tpy*factor)
             elseif(inpmode.eq.4)then
-              ixx = int(tpx*factor) + ixo
-              izz = iyo - int(tpy*factor)
+              ixx = int(tpx*factor) + ixo; izz = iyo - int(tpy*factor)
             elseif(inpmode.eq.5)then
-              iyy = int(tpx*factor) + ixo
-              izz = iyo - int(tpy*factor)
+              iyy = int(tpx*factor) + ixo; izz = iyo - int(tpy*factor)
             endif
           endif
 
@@ -1528,8 +1568,7 @@ C another pixel.
           if(INVERT.gt.1)then
             unique=.true.
             do 76,ij=1,INVERT
-              CLOSEX=.false.
-              CLOSEY=.false.
+              CLOSEX=.false.; CLOSEY=.false.
               if(inpmode.eq.1.or.inpmode.eq.2.or.inpmode.eq.6)then
                 CALL ECLOSE(px(ij),tpx,0.03,CLOSEX)
                 CALL ECLOSE(py(ij),tpy,0.03,CLOSEY)
@@ -1553,22 +1592,19 @@ C to green draw the symbol and index of vertex and do Z editing if requested.
           INVERT=INVERT+1
           if(inpmode.eq.1.or.inpmode.eq.2.or.inpmode.eq.6)then
             ipxx(INVERT)=ixx; ipyy(INVERT)=iyy
-            px(INVERT)=tpx;   py(INVERT)=tpy
-            iicol=3
+            px(INVERT)=tpx; py(INVERT)=tpy; iicol=3
             call winscl('z',iicol)
             iid1=ipxx(INVERT); iid2=ipyy(INVERT);
             call esymbol(iid1,iid2,24,1)
           elseif(inpmode.eq.4)then
             ipxx(INVERT)=ixx; ipzz(INVERT)=izz
-            px(INVERT)=tpx;   pz(INVERT)=tpy
-            iicol=3
+            px(INVERT)=tpx; pz(INVERT)=tpy; iicol=3
             call winscl('z',iicol)
             iid1=ipxx(INVERT); iid2=ipzz(INVERT);
             call esymbol(iid1,iid2,24,1)
           elseif(inpmode.eq.5)then
             ipyy(INVERT)=iyy; ipzz(INVERT)=izz
-            py(INVERT)=tpx;   pz(INVERT)=tpy
-            iicol=3
+            py(INVERT)=tpx; pz(INVERT)=tpy; iicol=3
             call winscl('z',iicol)
             iid1=ipyy(INVERT); iid2=ipzz(INVERT);
             call esymbol(iid1,iid2,24,1)
@@ -1581,8 +1617,7 @@ C to green draw the symbol and index of vertex and do Z editing if requested.
             call textatxy(ipxx(INVERT)+4,ipyy(INVERT)-1,temp3,'z',3)
             iicol=0
             call winscl('-',iicol)
-            X(INVERT)=px(INVERT)
-            Y(INVERT)=py(INVERT)
+            X(INVERT)=px(INVERT); Y(INVERT)=py(INVERT)
             if(inpmode.eq.1)then
               Z(INVERT)=Z1
             elseif(inpmode.eq.2)then
@@ -1612,8 +1647,7 @@ C to green draw the symbol and index of vertex and do Z editing if requested.
             call textatxy(ipxx(INVERT)+4,ipzz(INVERT)-1,temp3,'z',3)
             iicol=0
             call winscl('-',iicol)
-            X(INVERT)=px(INVERT)
-            Z(INVERT)=pz(INVERT)
+            X(INVERT)=px(INVERT); Z(INVERT)=pz(INVERT)
             Y(INVERT)=Y1
             if(INVERT.eq.1)then
               write(outs,'(a,i3,a,f8.3,a,f8.3)') 'Vertex ',INVERT,
@@ -1630,8 +1664,7 @@ C to green draw the symbol and index of vertex and do Z editing if requested.
             call textatxy(ipyy(INVERT)+4,ipzz(INVERT)-1,temp3,'z',3)
             iicol=0
             call winscl('-',iicol)
-            Y(INVERT)=py(INVERT)
-            Z(INVERT)=pz(INVERT)
+            Y(INVERT)=py(INVERT); Z(INVERT)=pz(INVERT)
             X(INVERT)=X1
             if(INVERT.eq.1)then
               write(outs,'(a,i3,a,f8.3,a,f8.3)') 'Vertex ',INVERT,
@@ -1650,8 +1683,7 @@ C Add to ground topology and confirm Z.
             call textatxy(ipxx(INVERT)+4,ipyy(INVERT)-1,temp3,'z',3)
             iicol=0
             call winscl('-',iicol)
-            XGT(INVERT)=px(INVERT)
-            YGT(INVERT)=py(INVERT)
+            XGT(INVERT)=px(INVERT); YGT(INVERT)=py(INVERT)
             if(INVERT.gt.1)then
               Z3=ZGT(INVERT-1)
             else
@@ -1695,16 +1727,16 @@ C dummy surface with the first three vertices.
 
 C Refresh the bitmap.
               completed=.true.
-              inpm=inpmode
+              inpm=inpmode; lastwalllist=nw
               call refrshcur(fname,ixoffset,iyoffset,iwidth,ihight,inpm,
      &         ixbul,iybul,ixblr,iyblr,xbmnorth,xbmorigin,xbmgrid,
      &         xbmscale,iwmg,factor,viewlim,invert,nw,ixtn1,ixtn2,iytn1,
      &         iytn2,ixo,iyo,ipxx,ipyy,ipzz,ipxw,ipyw,nipwhis,ipxwhis,
-     &         ipywhis,iphisznst,iphisznfn,completed,other)
+     &         ipywhis,iphisznst,iphisznfn,completed,other,lastwalllist)
 
 C Reset to enter the clicking.
               call edisp(iuout,'BEGIN RE-ENTERING POINTS NOW...')
-              INO=12+m+n
+              INO=14+m+n
               goto 29
             endif
           elseif(izclear.eq.3)then
@@ -1727,9 +1759,7 @@ C instanciate the common blocks.
             if(inpmode.eq.6)then
 
 C Create single ground surface.
-              NGTV=INVERT
-              NGT=1
-              NGVER(1)=3
+              NGTV=INVERT; NGT=1; NGVER(1)=3
               JGVN(1,1)=1; JGVN(1,2)=2; JGVN(1,3)=3
               GSNAME(1)='first'
               GMLCN(1)='UNKN'
@@ -1737,31 +1767,20 @@ C Create single ground surface.
 
 C Create a single surface out of first 3 vertices so that a
 C zone geometry file can be created. 
-              NTV=INVERT
-              NSUR=1
-              NZSUR(ICOMP)=NSUR
+              NTV=INVERT; NSUR=1; NZSUR(ICOMP)=NSUR
               NVER(1)=3
               JVN(1,1)=1; JVN(1,2)=2; JVN(1,3)=3
               NZTV(icomp)=NTV
               SNAME(ICOMP,1)='first'
-              SOTF(1)='OPAQUE'
-              SMLCN(1)='UNKN'
-              SVFC(1)='FLOR'
-              SOTHER(1,1)='UNKNOWN'
-              SOTHER(1,2)='0'
-              SOTHER(1,3)='0'
-              SUSE(1,1)='-'
-              SUSE(1,2)='-'
-              SPARENT(1)='-'
+              SOTF(1)='OPAQUE'; SMLCN(1)='UNKN'; SVFC(1)='FLOR'
+              SOTHER(1,1)='UNKNOWN'; SOTHER(1,2)='0'; SOTHER(1,3)='0'
+              SUSE(1,1)='-'; SUSE(1,2)='-'; SPARENT(1)='-'
 
 C Update the connection list for an initial surface.
               ICCC=NCON
               ICCC=ICCC+1
-              IC1(ICCC)=ICOMP
-              IE1(ICCC)=1
-              ICT(ICCC)=0
-              IC2(ICCC)=0
-              IE2(ICCC)=0
+              IC1(ICCC)=ICOMP; IE1(ICCC)=1; ICT(ICCC)=0
+              IC2(ICCC)=0; IE2(ICCC)=0
               SSNAME(iccc)=SNAME(ICOMP,1)
               SSOTF(iccc)=SOTF(1)
               SSMLCN(iccc)=SMLCN(1)
@@ -1781,6 +1800,7 @@ C of the floor plan extrusion block of code below.
               IF(zname(ICOMP)(1:2).EQ.'  ')THEN
                IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
                IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+               IF(ICOMP.GT.99)WRITE(zname(ICOMP),'(A5,I3)')'Zone-',ICOMP
                lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update length of this string.
               ENDIF
               if(zdesc(ICOMP)(1:2).EQ.'  ')then
@@ -1790,6 +1810,7 @@ C of the floor plan extrusion block of code below.
               endif
 
 C Set type type and version based on current value of igupgrade.
+C << convert to always using V 1.1 >>
               CTYPE(icomp)='GEN '
               if(igupgrade.eq.2)then
                 gversion(icomp)=1.1
@@ -1873,7 +1894,7 @@ C point of the zone.
                     if(j.eq.1)iphisznst(icomp)=nipwhis
                     ipxwhis(nipwhis)=ipxw(j)
                     ipywhis(nipwhis)=ipyw(j)
-                 endif
+                  endif
   218           continue
                 if(nipwhis+1.le.MGTV)then
                   nipwhis=nipwhis+1
@@ -1887,9 +1908,10 @@ C << to here >>
             endif
             justentered=.false.
           endif
+
         elseif(inpmode.eq.3)then
 
-C Floor plan extrusion. click on corners until list terminated, allowing
+C FLOOR PLAN extrusion. click on corners until list terminated, allowing
 C bitmap to be panned if necessary during the process.
           call edisp(iuout,
      & 'Input points around the base ANTI-clockwise looking from the')
@@ -1905,14 +1927,48 @@ C bitmap to be panned if necessary during the process.
             endif
           endif
           if(trimmed)call edisp(iuout,'type `p` to pan bitmap.')
-          NW=0
- 246      CALL trackview(ii,ixx,iyy)
+          NW=0  ! reset number of corners to zero
+ 246      CALL trackview(iik,iixx,iiyy)
+          ixx=int(iixx); iyy=int(iiyy)
 
-C If user typed `e` or `E` then complete the process.
-          if(ii.eq.69.or.ii.eq.101)goto 247
+C If user typed `e` or `E` then ask if doors and/or window points
+C should be added.
+          if(iik.eq.69.or.iik.eq.101)then
+            call easkabc(
+     &   'Options:(if adding both door & windows select doors first)',
+     &        ' ','add door head points',
+     &        'add glazing sill & head points','continue',izdoor,nbhelp)
+            if(izdoor.eq.1)then
+              dodoor=.true.
+              lastwalllist=NW  ! remember last extrusion corner
+              call edisp(iuout,
+     &        'Click existing corners where door head to be placed.')
+              call edisp(iuout,'Proceed anti-clockwise, `e` to end.')
+              goto 246  ! ask for another point
+            elseif(izdoor.eq.2)then
+              dowindow=.true.
+              if(dodoor)then
+                continue  ! previously did doors so already know lastwalllist
+              else
+                lastwalllist=NW  ! remember last extrusion corner
+              endif
+              call edisp(iuout,
+     &          'Click existing corners where window sill & head to')
+              call edisp(iuout,
+     &          'be placed. Proceed anti-clockwise, `e` to end.')
+              goto 246  ! ask for another point
+            else
+
+C If user did not add any window or door points then set lastwalllist
+              if(.NOT.dodoor.and..NOT.dowindow)then
+                lastwalllist=NW  ! remember last extrusion corner
+              endif      
+              goto 247  ! process
+            endif
+          endif
 
 C Toggle on/off the snap-to grid.
-          if(ii.eq.83.or.ii.eq.115)then
+          if(iik.eq.83.or.iik.eq.115)then
             if(xbmgrid)then
               if(xbmsnap)then
                 xbmsnap=.false.
@@ -1928,7 +1984,7 @@ C Toggle on/off the snap-to grid.
           endif
 
 C If user typed `p` or `P` then allow for panning and then continue.
-          if(ii.eq.80.or.ii.eq.112)then
+          if(iik.eq.80.or.iik.eq.112)then
             if(trimmed)then
               helptopic='click_pan_options'
               call gethelptext(helpinsub,helptopic,nbhelp)
@@ -1954,14 +2010,14 @@ C Refresh current bitmap and overlayed information.
      &            xbmgrid,xbmscale,iwmg,factor,viewlim,invert,nw,
      &            ixtn1,ixtn2,iytn1,iytn2,ixo,iyo,ipxx,ipyy,ipzz,ipxw,
      &            ipyw,nipwhis,ipxwhis,ipywhis,iphisznst,iphisznfn,
-     &            completed,other)
+     &            completed,other,lastwalllist)
               endif
             endif
             goto 246
           endif
 
 C If user typed `d` or `D` then delete the previous coordinate.
-          if(ii.eq.67.or.ii.eq.100)then
+          if(iik.eq.67.or.iik.eq.100)then
             if(NW.gt.1)then
               NW=NW-1
               call edisp(iuout,'Last corner deleted. Refreshing...')
@@ -1972,7 +2028,7 @@ C If user typed `d` or `D` then delete the previous coordinate.
      &          xbmgrid,xbmscale,iwmg,factor,viewlim,invert,nw,
      &          ixtn1,ixtn2,iytn1,iytn2,ixo,iyo,ipxx,ipyy,ipzz,ipxw,
      &          ipyw,nipwhis,ipxwhis,ipywhis,iphisznst,iphisznfn,
-     &          completed,other)
+     &          completed,other,lastwalllist)
               goto 246
             endif
           endif
@@ -1998,11 +2054,10 @@ C Check if the new point is close to one of the historical points.
           endif
 
 C If snap-to is true then find nearest user unit and cast back to pixels.
-  318     tpxw=float(ixx-ixo)/factor
-          tpyw=float(iyo-iyy)/factor
+  318     continue
+          tpxw=float(ixx-ixo)/factor; tpyw=float(iyo-iyy)/factor
           if(xbmsnap)then
-            REMX=AMOD(tpxw,GRSPC(1))
-            REMY=AMOD(tpyw,GRSPC(2))
+            REMX=AMOD(tpxw,GRSPC(1)); REMY=AMOD(tpyw,GRSPC(2))
             IF(ABS(REMX).GT.GRSPC(1)/2.)THEN
               if(tpxw.gt.0.0)then
                 tpxw=tpxw+(GRSPC(1)-REMX)
@@ -2029,17 +2084,93 @@ C If snap-to is true then find nearest user unit and cast back to pixels.
             iyy = iyo - int(tpyw*factor)
           endif
 
+C If adding door points we expect base coordinate to
+C match a previous zone corner. If dowindow also happens
+C to be true then skip the door loop.
+          if(.NOT.dowindow.and.dodoor)then
+            if(NW.gt.1)then
+              unique=.false.
+              do ij=1,lastwalllist
+                CLOSEX=.false.; CLOSEY=.false.
+                CALL ECLOSE(pxw(ij),tpxw,0.03,CLOSEX)
+                CALL ECLOSE(pyw(ij),tpyw,0.03,CLOSEY)
+                if(CLOSEX.and.CLOSEY)unique=.true.
+              enddo
+              if(unique)then
+                nbofdoorpts=nbofdoorpts+1
+
+C Draw it and index.
+                NW=NW+1
+                ipxw(NW)=ixx; ipyw(NW)=iyy
+                pxw(NW)=tpxw; pyw(NW)=tpyw; iicol=4
+                call winscl('z',iicol)
+                iid1=ipxw(NW); iid2=ipyw(NW);
+                call esymbol(iid1,iid2,24,1)
+                if(NW.gt.0.and.NW.le.9)write(temp3,'(i1)') NW
+                if(NW.gt.9.and.NW.le.99)write(temp3,'(i2)') NW
+                if(NW.gt.99)write(temp3,'(i3)') NW
+                call textatxy(ipxw(NW)+4,ipyw(NW)-1,temp3,'z',3)
+                write(outs,'(a,i3,a,f8.3,a,f8.3)') 'Door head ',NW,
+     &            ' @ X',pxw(NW),' Y',pyw(NW)
+                call edisp(iuout,outs)
+                XX(NW)=pxw(NW); YY(NW)=pyw(NW)
+                goto 246
+              else
+                call edisp(iuout,'not a duplicate corner...try again.')
+                goto 246
+              endif
+            endif
+          endif
+
+C If adding window sill head points we expect base coordinate to
+C match a previous zone corner. The logic assumes that the user
+C selects doors first.
+          if(dowindow)then
+            if(NW.gt.1)then
+              unique=.false.
+              do ij=1,lastwalllist
+                CLOSEX=.false.; CLOSEY=.false.
+                CALL ECLOSE(pxw(ij),tpxw,0.03,CLOSEX)
+                CALL ECLOSE(pyw(ij),tpyw,0.03,CLOSEY)
+                if(CLOSEX.and.CLOSEY)unique=.true.
+              enddo
+              if(unique)then
+                nbofwindowpts=nbofwindowpts+1
+
+C Draw it and index.
+                NW=NW+1
+                ipxw(NW)=ixx; ipyw(NW)=iyy
+                pxw(NW)=tpxw; pyw(NW)=tpyw; iicol=5
+                call winscl('z',iicol)
+                iid1=ipxw(NW); iid2=ipyw(NW);
+                call esymbol(iid1,iid2,24,1)
+                if(NW.gt.0.and.NW.le.9)write(temp3,'(i1)') NW
+                if(NW.gt.9.and.NW.le.99)write(temp3,'(i2)') NW
+                if(NW.gt.99)write(temp3,'(i3)') NW
+                call textatxy(ipxw(NW)+4,ipyw(NW)-1,temp3,'z',3)
+                write(outs,'(a,i3,a,f8.3,a,f8.3)') 'Door head ',NW,
+     &            ' @ X',pxw(NW),' Y',pyw(NW)
+                call edisp(iuout,outs)
+                XX(NW)=pxw(NW); YY(NW)=pyw(NW)
+                goto 246
+              else
+                call edisp(iuout,'not a duplicate corner...try again.')
+                goto 246
+              endif
+            endif
+          endif
+
 C Find if this corner is unique, if it is not unique then jump back and
-C slect another pixel.
+C slect another pixel. If adding door or window points we expect it to
+C match a previous zone corner.
           if(NW.gt.1)then
             unique=.true.
-            do 66,ij=1,NW
-              CLOSEX=.false.
-              CLOSEY=.false.
+            do ij=1,NW
+              CLOSEX=.false.; CLOSEY=.false.
               CALL ECLOSE(pxw(ij),tpxw,0.03,CLOSEX)
               CALL ECLOSE(pyw(ij),tpyw,0.03,CLOSEY)
               if(CLOSEX.and.CLOSEY)unique=.false.
-  66        continue
+            enddo
             if(.NOT.unique)then
               call edisp(iuout,'duplicate corner...try again.')
               goto 246
@@ -2049,9 +2180,7 @@ C slect another pixel.
 C Corner added draw it and index and a line from the previous to current.
           NW=NW+1
           ipxw(NW)=ixx; ipyw(NW)=iyy
-          pxw(NW)=tpxw; pyw(NW)=tpyw
-
-          iicol=3
+          pxw(NW)=tpxw; pyw(NW)=tpyw; iicol=3
           call winscl('z',iicol)
           iid1=ipxw(NW); iid2=ipyw(NW);
           call esymbol(iid1,iid2,24,1)
@@ -2078,8 +2207,7 @@ C Corner added draw it and index and a line from the previous to current.
      &        tdis,'m and @ aimuth ',az,' & elev ',el
           endif
           call edisp(iuout,outs)
-          XX(NW)=pxw(NW)
-          YY(NW)=pyw(NW)
+          XX(NW)=pxw(NW); YY(NW)=pyw(NW)
           goto 246
 
 C Selection terminated with `e`, ask user if they want to save the
@@ -2088,7 +2216,11 @@ C corner to first corner and return forground colour to black.
  247      continue
           iicol=3
           call winscl('z',iicol)
-          iid1=ipxw(NW); iid2=ipyw(NW)
+          if(dodoor.or.dowindow)then
+            iid1=ipxw(lastwalllist); iid2=ipyw(lastwalllist)  ! use lastwalllist
+          else
+            iid1=ipxw(NW); iid2=ipyw(NW)  ! std close of boundary lines
+          endif
           iid3=ipxw(1); iid4=ipyw(1)
           call edwline(iid1,iid2,iid3,iid4)
           iicol=0
@@ -2121,11 +2253,11 @@ C Refresh the bitmap.
      &         ixbul,iybul,ixblr,iyblr,xbmnorth,xbmorigin,xbmgrid,
      &         xbmscale,iwmg,factor,viewlim,invert,nw,ixtn1,ixtn2,iytn1,
      &         iytn2,ixo,iyo,ipxx,ipyy,ipzz,ipxw,ipyw,nipwhis,ipxwhis,
-     &         ipywhis,iphisznst,iphisznfn,completed,other)
+     &         ipywhis,iphisznst,iphisznfn,completed,other,lastwalllist)
 
 C Reset to enter the clicking.
               call edisp(iuout,'BEGIN RE-ENTERING POINTS NOW...')
-              INO=12+m+n
+              INO=14+m+n
               goto 29
             endif
           elseif(izclear.eq.3)then
@@ -2143,9 +2275,57 @@ C instanciate the common blocks.
               LPROJ(ICOMP)=OFILE
             endif
 
-C Convert into a gen body and update nzsur and nztv
-            CALL EREGC(NW,Z1,Z2,XX,YY)
-            NSUR=NW+2
+C Convert corners into a gen body and update nzsur and nztv
+            CALL EREGC(lastwalllist,Z1,Z2,XX,YY)
+            NSUR=lastwalllist+2
+C            write(6,*) 'i nw is ',NW,lastwalllist,NSUR,NTV
+
+C If there were door head points add them. Take from the
+C coordinates list beginning just after lastwalllist.
+            if(nbofdoorpts.gt.0)then
+              loop=lastwalllist+nbofdoorpts
+              INVERT=NTV  ! pick up nb of verts from EREGC call
+
+C Merging points into existing lines and zone structure.
+              do ij=lastwalllist+1,loop
+                INVERT=INVERT+1
+                call CKADDVERTINSURF(ITRU,ICOMP,xx(ij),yy(ij),Z3,IER)
+              enddo
+              dodoor=.false.  ! reset to show doors completed.
+            endif
+
+C If there were window sill and head points add them.
+            if(nbofdoorpts.gt.0.and.nbofwindowpts.gt.0)then
+              loop=lastwalllist+nbofdoorpts+1
+              loop2=lastwalllist+nbofdoorpts+nbofwindowpts
+              INVERT=NTV  ! pick up nb of verts from EREGC call
+              do ij=loop,loop2
+                INVERT=INVERT+1 
+
+C Merging point into existing lines and zone structure.
+                call CKADDVERTINSURF(ITRU,ICOMP,xx(ij),yy(ij),Z4,IER)
+                INVERT=INVERT+1
+                call CKADDVERTINSURF(ITRU,ICOMP,xx(ij),yy(ij),Z5,IER)
+              enddo
+              dowindow=.false.
+            endif
+            if(nbofdoorpts.eq.0.and.nbofwindowpts.gt.0)then
+              loop=lastwalllist+1
+              loop2=lastwalllist+nbofwindowpts
+              INVERT=NTV  ! pick up nb of verts from EREGC call
+
+C Merging points into existing lines and zone structure.
+              do ij=loop,loop2
+                INVERT=INVERT+1
+                call CKADDVERTINSURF(ITRU,ICOMP,xx(ij),yy(ij),Z4,IER)
+                INVERT=INVERT+1
+                call CKADDVERTINSURF(ITRU,ICOMP,xx(ij),yy(ij),Z5,IER)
+              enddo
+              dowindow=.false.
+            endif
+
+C Reset door and window points.
+            nbofdoorpts=0; nbofwindowpts=0
 
 C Begin with default assumptions for each surface then overwrite
 C this if user supplied information exists.
@@ -2154,12 +2334,8 @@ C this if user supplied information exists.
 C Update the connection list.
             ICCC=NCON
             DO 432 ICC=1,NSUR
-              ICCC=ICCC+1
-              IC1(ICCC)=ICOMP
-              IE1(ICCC)=ICC
-              ICT(ICCC)=0
-              IC2(ICCC)=0
-              IE2(ICCC)=0
+              ICCC=ICCC+1; IC1(ICCC)=ICOMP; IE1(ICCC)=ICC
+              ICT(ICCC)=0; IC2(ICCC)=0; IE2(ICCC)=0
               SSNAME(iccc)=SNAME(icomp,icc)
               SSOTF(iccc)=SOTF(icc)
               SSMLCN(iccc)=SMLCN(icc)
@@ -2179,6 +2355,7 @@ C Complete zone data before exiting.
             IF(zname(ICOMP)(1:2).EQ.'  ')THEN
               IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
               IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+              IF(ICOMP.GT.99)WRITE(zname(ICOMP),'(A5,I3)')'Zone-',ICOMP
               lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update length of this string.
             ENDIF
             if(zdesc(ICOMP)(1:2).EQ.'  ')then
@@ -2266,9 +2443,10 @@ C lastly, update the configuration file.
 
 C Save the extrusion points to the history list. Set iphisznst
 C to the first point in this zone and iphisznfn to the closing
-C point of the zone.
+C point of the zone and ignore any points related to door heads,
+C window sills & heads.
             if(NW.gt.0)then
-              do 217 j=1,NW
+              do 217 j=1,lastwalllist
                 if(nipwhis+1.le.MGTV)then
                   nipwhis=nipwhis+1
                   if(j.eq.1)iphisznst(icomp)=nipwhis
@@ -2282,6 +2460,10 @@ C point of the zone.
                 ipywhis(nipwhis)=ipyw(1)
               endif
               iphisznfn(icomp)=nipwhis
+
+C Debug.
+C              write(6,*) 'history ',icomp,iphisznst(icomp),
+C     &          iphisznfn(icomp),lastwalllist
             endif
             justentered=.false.
 
@@ -2292,7 +2474,7 @@ C Refresh current bitmap to recognise zone just saved.
      &    ixbul,iybul,ixblr,iyblr,xbmnorth,xbmorigin,xbmgrid,
      &    xbmscale,iwmg,factor,viewlim,invert,nw,ixtn1,ixtn2,iytn1,
      &    iytn2,ixo,iyo,ipxx,ipyy,ipzz,ipxw,ipyw,nipwhis,ipxwhis,
-     &    ipywhis,iphisznst,iphisznfn,completed,other)
+     &    ipywhis,iphisznst,iphisznfn,completed,other,lastwalllist)
           endif
 
 C Reset the temporary string variables used to name and describe zone.
@@ -2326,13 +2508,14 @@ C at the back corner from the front edge. No provision for rotation.
 
 C Pick up the origin of the block and/or instruction to end the
 C input or pan the bitmap.
- 346      CALL trackview(ii,ixx1,iyy1)
+ 346      CALL trackview(iik,iixx1,iiyy1)
+          ixx1=int(iixx1); iyy1=int(iiyy1)
 
 C If user typed `e` then complete the process.
-          if(ii.eq.69.or.ii.eq.101)goto 347
+          if(iik.eq.69.or.iik.eq.101)goto 347
 
 C Toggle on/off the snap-to grid.
-          if(ii.eq.83.or.ii.eq.115)then
+          if(iik.eq.83.or.iik.eq.115)then
             if(xbmgrid)then
               if(xbmsnap)then
                 xbmsnap=.false.
@@ -2348,7 +2531,7 @@ C Toggle on/off the snap-to grid.
           endif
 
 C If user typed `p` or `P` then do panning until user says done and then continue.
-          if(ii.eq.80.or.ii.eq.112)then
+          if(iik.eq.80.or.iik.eq.112)then
             if(trimmed)then
  348          helptopic='click_pan_options'
               call gethelptext(helpinsub,helptopic,nbhelp)
@@ -2370,29 +2553,28 @@ C If user typed `p` or `P` then do panning until user says done and then continu
 
 C Refresh current bitmap and overlayed information.
                 completed=.false.
-                inpm=inpmode
+                inpm=inpmode; lastwalllist=nw
                 call refrshcur(fname,ixoffset,iyoffset,iwidth,ihight,
      &            inpm,ixbul,iybul,ixblr,iyblr,xbmnorth,xbmorigin,
      &            xbmgrid,xbmscale,iwmg,factor,viewlim,invert,nw,
      &            ixtn1,ixtn2,iytn1,iytn2,ixo,iyo,ipxx,ipyy,ipzz,
      &            ipxw,ipyw,nipwhis,ipxwhis,ipywhis,iphisznst,
-     &            iphisznfn,completed,other)
+     &            iphisznfn,completed,other,lastwalllist)
               endif
               goto 348
             endif
           endif
 
 C Pick up the next two points
-          CALL trackview(ii,ixx2,iyy2)
-          CALL trackview(ii,ixx3,iyy3)
+          CALL trackview(iik,iixx2,iiyy2)
+          ixx2=int(iixx2); iyy2=int(iiyy2)
+          CALL trackview(iik,iixx3,iiyy3)
+          ixx3=int(iixx3); iyy3=int(iiyy3)
 
 C Convert three points.
-          tpx1=float(ixx1-ixo)/factor
-          tpy1=float(iyo-iyy1)/factor
-          tpx2=float(ixx2-ixo)/factor
-          tpy2=float(iyo-iyy2)/factor
-          tpx3=float(ixx3-ixo)/factor
-          tpy3=float(iyo-iyy3)/factor
+          tpx1=float(ixx1-ixo)/factor; tpy1=float(iyo-iyy1)/factor
+          tpx2=float(ixx2-ixo)/factor; tpy2=float(iyo-iyy2)/factor
+          tpx3=float(ixx3-ixo)/factor; tpy3=float(iyo-iyy3)/factor
 
 C If snap-to is true then find nearest user unit and cast back to pixels.
           if(xbmsnap)then
@@ -2409,8 +2591,7 @@ C If snap-to is true then find nearest user unit and cast back to pixels.
             ELSE
               tpx1=tpx1-REMX1
             ENDIF
-            REMX2=AMOD(tpx2,GRSPC(1))
-            REMY2=AMOD(tpy2,GRSPC(2))
+            REMX2=AMOD(tpx2,GRSPC(1)); REMY2=AMOD(tpy2,GRSPC(2))
             IF(ABS(REMX2).GT.GRSPC(1)/2.0)THEN
               if(tpx2.gt.0.0)then
                 tpx2=tpx2+(GRSPC(1)-REMX2)
@@ -2422,8 +2603,7 @@ C If snap-to is true then find nearest user unit and cast back to pixels.
             ELSE
               tpx2=tpx2-REMX2
             ENDIF
-            REMX3=AMOD(tpx3,GRSPC(1))
-            REMY3=AMOD(tpy3,GRSPC(2))
+            REMX3=AMOD(tpx3,GRSPC(1)); REMY3=AMOD(tpy3,GRSPC(2))
             IF(ABS(REMX3).GT.GRSPC(1)/2.0)THEN
               if(tpx3.gt.0.0)then
                 tpx3=tpx3+(GRSPC(1)-REMX3)
@@ -2480,8 +2660,7 @@ C If snap-to is true then find nearest user unit and cast back to pixels.
 C Remember the block origin.
           INVERT=INVERT+1
           ipxx(INVERT)=ixx1; ipyy(INVERT)=iyy1
-          px(INVERT)=tpx1;   py(INVERT)=tpy1
-          iicol=3
+          px(INVERT)=tpx1; py(INVERT)=tpy1; iicol=3
           call winscl('z',iicol)
           iid1=ipxx(INVERT); iid2=ipyy(INVERT);
           call esymbol(iid1,iid2,24,1)
@@ -2492,8 +2671,7 @@ C Remember the block origin.
 C Remember the point at the end of the front edge.
           INVERT=INVERT+1
           ipxx(INVERT)=ixx2; ipyy(INVERT)=iyy2
-          px(INVERT)=tpx2;   py(INVERT)=tpy2
-          iicol=3
+          px(INVERT)=tpx2; py(INVERT)=tpy2; iicol=3
           call winscl('z',iicol)
           iid1=ipxx(INVERT); iid2=ipyy(INVERT);
           call esymbol(iid1,iid2,24,1)
@@ -2540,8 +2718,7 @@ C Check if tollerably close to an axis.
 
           INVERT=INVERT+1
           ipxx(INVERT)=ixx3; ipyy(INVERT)=iyy3
-          px(INVERT)=tpx3;   py(INVERT)=tpy3
-          iicol=3
+          px(INVERT)=tpx3; py(INVERT)=tpy3; iicol=3
           call winscl('z',iicol)
           iid1=ipxx(INVERT); iid2=ipyy(INVERT);
           call esymbol(iid1,iid2,24,1)
@@ -2555,8 +2732,7 @@ C Check if tollerably close to an axis.
 C Try and complete the obstruction block by making a similar point
 C offset from the origin. Depending on the direction of the vector
 C between point 2 & 3 draw the two extra lines that complete the box.
-          ioffx=iabs(ixx3-ixx2)
-          ioffy=iabs(iyy3-iyy2)
+          ioffx=iabs(ixx3-ixx2); ioffy=iabs(iyy3-iyy2)
           if(ixx3.eq.ixx2)then
             ioffx=0
             if(iyy3.eq.iyy2)then
@@ -2628,12 +2804,13 @@ C          write(6,*) iyy3,iyy2,iyy1,ioffy,iyy1+ioffy
           if(.NOT.ok)then
             INVERT=INVERT-3
             completed=.false.
-            inpm=inpmode
+            inpm=inpmode; lastwalllist=nw
             call refrshcur(fname,ixoffset,iyoffset,iwidth,ihight,inpm,
      &        ixbul,iybul,ixblr,iyblr,xbmnorth,xbmorigin,xbmgrid,
      &        xbmscale,iwmg,factor,viewlim,invert,nw,ixtn1,ixtn2,
      &        iytn1,iytn2,ixo,iyo,ipxx,ipyy,ipzz,ipxw,ipyw,nipwhis,
-     &        ipxwhis,ipywhis,iphisznst,iphisznfn,completed,other)
+     &        ipxwhis,ipywhis,iphisznst,iphisznfn,completed,other,
+     &        lastwalllist)
             goto 346
           endif
           nbobs(ic)=nbobs(ic)+1
@@ -2658,11 +2835,16 @@ C          S12='blk_'
           CALL EASKR(blkopaq,' ',
      &     'Opacity of the obstruction 0=tran 1=opaque?',
      &      0.000,'W',1.0,'W',1.0,'opacity of obs base',IER,nbhelp)
-          CALL EPKMLC(ISEL,
+          if(mlcver.eq.0)then
+            CALL EPKMLC(ISEL,
      &      'Select an OPAQUE construction from the list to',
      &      'associate with the block for visualisation purposes.',IER)
+          else
+            call edisp(iuout,'Select an OPAQUE construction for block')
+            CALL EDMLDB2(modmlc,'-',ISEL,IER)
+          endif
           IF(ISEL.GT.0)then
-            WRITE(BLOCKMAT(IC,nbo),'(A)') mlcname(ISEL)(1:12)
+            WRITE(BLOCKMAT(IC,nbo),'(A)') mlcname(ISEL)
             LNBLOCKMAT(IC,nbo)=lnblnk(BLOCKMAT(IC,nbo))
           else
             WRITE(BLOCKMAT(IC,nbo),'(A)') 'UNKNOWN'
@@ -2670,8 +2852,7 @@ C          S12='blk_'
           endif
           XOB(IC,nbo)=tpx1; YOB(IC,nbo)=tpy1; ZOB(IC,nbo)=Z1
           DXOB(IC,nbo)=twid; DYOB(IC,nbo)=tdepth; DZOB(IC,nbo)=Z2
-          BANGOB(IC,nbo,1)=RO
-          BANGOB(IC,nbo,2)=0.0
+          BANGOB(IC,nbo,1)=RO; BANGOB(IC,nbo,2)=0.0
           BANGOB(IC,nbo,3)=0.0
           OPOB(IC,nbo)=blkopaq
           BLOCKTYP(IC,nbo)='obs '
@@ -3124,7 +3305,7 @@ C Other is the grid distance if user supplied (iwmg=7).
      &  inpm,ixbul,iybul,ixblr,iyblr,xbmnorth,xbmorigin,xbmgrid,
      &  xbmscale,iwmg,factor,viewlim,invert,nw,ixtn1,ixtn2,iytn1,iytn2,
      &  ixo,iyo,ipxx,ipyy,ipzz,ipxw,ipyw,nipwhis,ipxwhis,ipywhis,
-     &  iphisznst,iphisznfn,completed,other)
+     &  iphisznst,iphisznfn,completed,other,lastwalllist)
 #include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -3314,9 +3495,9 @@ C the zone draw back to the starting point.
 
 C If there is an extruded floor plan draw them. If of outside
 C of the displayed bitmap do not draw it or the line of the wall.
-C << code needs to be updated to allow for clipping >>
+C << code needs to be updated to allow for clipping
       if(NW.gt.0.and.inpm.eq.3)then
-        do 123 j=1,NW
+        do 123 j=1,lastwalllist
           if(((ipxw(j).ge.ixbul).and.(ipxw(j).le.ixblr)).and.
      &       ((ipyw(j).ge.iybul).and.(ipyw(j).le.iyblr)))then
             iicol=3
@@ -3338,7 +3519,8 @@ C << code needs to be updated to allow for clipping >>
   123   continue
 
 C If user has completed selection, draw the closing line if it is
-C within the extents of the displayed bitmap.
+C within the extents of the displayed bitmap. Use lastwalllist
+C to match logic elsewhere.
         if(completed)then
           if(((ipxw(1).ge.ixbul).and.(ipxw(1).le.ixblr)).and.
      &       ((ipyw(1).ge.iybul).and.(ipyw(1).le.iyblr)).and.
@@ -3346,7 +3528,7 @@ C within the extents of the displayed bitmap.
      &       ((ipyw(NW).ge.iybul).and.(ipyw(NW).le.iyblr)))then
             iicol=3
             call winscl('z',iicol)
-            iid1=ipxw(NW); iid2=ipyw(NW)
+            iid1=ipxw(lastwalllist); iid2=ipyw(lastwalllist)
             iid3=ipxw(1); iid4=ipyw(1)
             call edwline(iid1,iid2,iid3,iid4)
           endif
@@ -3398,9 +3580,7 @@ C load a sub-section of the bitmap into the current display.
           return
         elseif(ixoffset.gt.0.and.ixoffset.le.50)then
           call startbuffer()
-          idfxoffset=ixoffset
-          idfyoffset=0
-          ixoffset=0
+          idfxoffset=ixoffset; idfyoffset=0; ixoffset=0
           iwidth=ibmwidth
           if(igw.lt.ibmwidth) iwidth=igw
           ihight=ibmhight
@@ -3415,9 +3595,7 @@ C Cast for calling of C code.
           call edisp(iuout,'Back to left edge of bitmap.')
         else
           call startbuffer()
-          idfxoffset=50
-          idfyoffset=0
-          ixoffset=ixoffset-50
+          idfxoffset=50; idfyoffset=0; ixoffset=ixoffset-50
           iwidth=ibmwidth
           if(igw.lt.ibmwidth) iwidth=igw
           ihight=ibmhight
@@ -3436,9 +3614,7 @@ C Cast for calling of C code.
      &   ipxw,ipyw,nipwhis,ipxwhis,ipywhis)
       elseif(IWM.eq.3)then
         call startbuffer()
-        idfxoffset=-50
-        idfyoffset=0
-        ixoffset=ixoffset+50
+        idfxoffset=-50; idfyoffset=0; ixoffset=ixoffset+50
         iwidth=ibmwidth-50
         if(igw.lt.iwidth) iwidth=igw
         ihight=ibmhight
@@ -3460,9 +3636,7 @@ C Cast for calling of C code.
           return
         elseif(iyoffset.gt.0.and.iyoffset.le.50)then
           call startbuffer()
-          idfyoffset=iyoffset
-          idfxoffset=0
-          iyoffset=0
+          idfyoffset=iyoffset; idfxoffset=0; iyoffset=0
           iwidth=ibmwidth
           if(igw.lt.ibmwidth) iwidth=igw
           ihight=ibmhight
@@ -3481,9 +3655,7 @@ C Cast for calling of C code.
      &     ipzz,ipxw,ipyw,nipwhis,ipxwhis,ipywhis)
         else
           call startbuffer()
-          idfyoffset=50
-          idfxoffset=0
-          iyoffset=iyoffset-50
+          idfyoffset=50; idfxoffset=0; iyoffset=iyoffset-50
           iwidth=ibmwidth
           if(igw.lt.ibmwidth) iwidth=igw
           ihight=ibmhight
@@ -3503,9 +3675,7 @@ C Cast for calling of C code.
         endif
       elseif(IWM.eq.5)then
         call startbuffer()
-        idfxoffset=0
-        idfyoffset=-50
-        iyoffset=iyoffset+50
+        idfxoffset=0; idfyoffset=-50; iyoffset=iyoffset+50
         iwidth=ibmwidth
         if(igw.lt.ibmwidth) iwidth=igw
         ihight=ibmhight-50
@@ -3525,3 +3695,306 @@ C Cast for calling of C code.
       endif
       return
       end
+
+
+C ************* CKADDVERTINSURF
+C CKADDVERTINSURF confirm if a potential vertex (XQ,YQ,ZQ) is unique
+C (not really close to another) add to zone and if it is along 
+C the edge of an existing surface update the zone topology to include it.
+C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
+      SUBROUTINE CKADDVERTINSURF(ITRU,ICOMP,XQ,YQ,ZQ,IER)
+#include "building.h"
+#include "model.h"
+#include "geometry.h"
+#include "prj3dv.h"
+      COMMON/FILEP/IFIL
+      LOGICAL ok,dok,matchver
+
+C Tollerance for surface matching.
+      real ANGCC  ! angle between surfaces tolerance
+      real CACC   ! tolerance between vertices
+      real DACC   ! tolerance along line
+      real COGCC  ! tolerance between surface COG
+      real SNACC  ! tolerance between surface areas
+      integer IACC ! number of matching corners outside dist tolerance
+      common/matching/ANGCC,CACC,DACC,COGCC,SNACC,IACC
+
+      character outs*124
+      integer iwhich1,iwhich2,iwhich3  ! for user selections
+      logical found,closex,closey,closez
+      logical newgeo  ! to use for testing if new/old geometry file.
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CKADDVERTINSURF'  ! set for subroutine
+
+      iwhich3=0; iwhich1=0; iwhich2=0
+
+C Detect the version of the current file.
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+
+C Similar logic to ADDVERT. Consider found if within CACC.
+      if(NZTV(icomp)+1.le.MTV)then
+        found=.false.
+        do ixx = 1,NZTV(icomp)
+          CALL ECLOSE(XQ,X(ixx),CACC,closex)
+          CALL ECLOSE(YQ,Y(ixx),CACC,closey)
+          CALL ECLOSE(ZQ,Z(ixx),CACC,closez)
+          if(closex.and.closey.and.closez)then
+            found=.true.
+            goto 145
+          endif
+          CALL ECLOSE(XQ,X(ixx),CACC*2,closex)
+          CALL ECLOSE(YQ,Y(ixx),CACC*2,closey)
+          CALL ECLOSE(ZQ,Z(ixx),CACC*2,closez)
+          dist=crowxyz(QX,QY,QZ,X(ixx),Y(ixx),Z(ixx))
+          if(closex.and.closey.and.closez)then
+            write(outs,'(a,3f8.3,a,f6.3,a,i3,a,3f8.3)')
+     &        'New vertex @',QX,QY,QZ,' is close (',
+     &        dist,') to existing vertex',ixx,' @',
+     &        X(ixx),Y(ixx),Z(ixx)
+            call edisp(iuout,outs)
+            dok=.true.
+            call askok('Copied point close to existing vertex.',
+     &        'Skip copying it?',found,dok,nbhelp)
+            goto 145
+          endif
+        enddo  ! of ixx
+
+C If an existing vertex is close then skip to next, otherwise
+C add a new vertex to the end of the zone list and update vcoord.
+  145   if(found)then
+          continue
+        else
+          NTV=NTV+1
+          NZTV(icomp)=NTV
+          X(NTV)=XQ; Y(NTV)=YQ; Z(NTV)=ZQ
+          VCOORD(ICOMP,ntv,1)=XQ
+          VCOORD(ICOMP,ntv,2)=YQ
+          VCOORD(ICOMP,ntv,3)=ZQ
+          XMN=AMIN1(XMN,X(NTV))
+          YMN=AMIN1(YMN,Y(NTV))
+          ZMN=AMIN1(ZMN,Z(NTV))
+          XMX=AMAX1(XMX,X(NTV))
+          YMX=AMAX1(YMX,Y(NTV))
+          ZMX=AMAX1(ZMX,Z(NTV))
+
+C Update the geometry file to remember the new vertex.
+          if(newgeo)then
+            call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+          else
+            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+          endif
+
+C For a unique vertex also test to see if it is close (+-CACC) to
+C one of the existing lines. Also check the last edge in the surface.
+          iwhich3=NTV
+          do 2246 ivj=1,NSUR
+            ivjlimit=NVER(ivj)
+            do 2247 ivjj=1,ivjlimit
+              if(ivjj.eq.ivjlimit)then
+                iwhich1=JVN(ivj,ivjj)
+                iwhich2=JVN(ivj,1)
+              else
+                iwhich1=JVN(ivj,ivjj)
+                iwhich2=JVN(ivj,ivjj+1)
+              endif
+
+C Report length of line. Use method of Ward/Radiance in fvect.c
+C Consider close if less than 3mm.
+              call pointtoline(iwhich3,iwhich1,iwhich2,offset,
+     &          matchver)
+              if(.NOT.matchver) goto 2247
+              if(offset.lt.CACC)then
+                write(outs,'(a,i3,a,3f9.4,a,f6.4,a,i3,a,i3,2a)')
+     &            'New vertex ',iwhich3,' @',
+     &            X(NTV),Y(NTV),Z(NTV),' is close (',offset,
+     &            ') to edge ',IWHICH1,' &',IWHICH2,' of ',
+     &            sname(icomp,ivj)
+                call edisp(itru,outs)
+
+C If current surface (ivj) can take another vertex expand the
+C list. Logic works by looping down (from one more than the current
+C number of vertices associated with this surface) shifting
+C JVN indices up one until at the current edge (ivjj) and then
+C inserting the new vertex index.
+                if(NVER(ivj)+1.le.MV)then
+                  if(offset.le.CACC)then
+                    ok=.true.
+                  else
+                    dok=.true.
+                    helptopic='vertex_near_edge'
+                    call gethelptext(helpinsub,helptopic,nbhelp)
+                    call askok(
+     &                'Insert this vertex into the adjacent surface?',
+     &                '(see help)',ok,dok,nbhelp)
+                  endif
+                else
+                  ok=.false.
+                endif
+                if(ok)then
+                  NVER(ivj)=NVER(ivj)+1
+                  IXV=NVER(ivj)+1
+ 1148             continue
+                  IXV=IXV-1
+                  JVN(ivj,IXV)=JVN(ivj,IXV-1)
+                  IF(IXV.GT.ivjj+1)GOTO 1148
+                  JVN(ivj,ivjj+1)=iwhich3
+                  if(newgeo)then
+                    call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,
+     &                iuout,3,IER)
+                  else
+                    call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+                  endif
+
+C Debug.
+C                   write(6,'(a,42i4)') 'now jvn is ',
+C     &               (JVN(ivj,ii),ii=1,NVER(ivj))
+
+C Surface (ivj) vertex list has been updated. Go on to next surface.
+                  goto 2246 
+                endif
+              endif
+ 2247       continue
+ 2246     continue  ! end of loop of surfs in zone
+        endif
+      endif
+      end
+
+
+C ************* MERGEVERTINSURF
+C MERGEVERTINSURF merge a vertex (QX,QY,QZ) into a zone and if it is along 
+C the edge of an existing surface update the zone topology to include it.
+C IER=0 OK, IER=1 problem.
+      SUBROUTINE MERGEVERTINSURF(ICOMP,QX,QY,QZ,IER)
+#include "building.h"
+#include "model.h"
+#include "geometry.h"
+#include "prj3dv.h"
+
+      integer icomp
+      real QX,QY,QZ
+      integer ier
+
+      COMMON/FILEP/IFIL
+      LOGICAL ok,dok,matchver
+
+C Tollerance for surface matching.
+      real ANGCC  ! angle between surfaces tolerance
+      real CACC   ! tolerance between vertices
+      real DACC   ! tolerance along line
+      real COGCC  ! tolerance between surface COG
+      real SNACC  ! tolerance between surface areas
+      integer IACC ! number of matching corners outside dist tolerance
+      common/matching/ANGCC,CACC,DACC,COGCC,SNACC,IACC
+
+      character outs*124
+      integer iwhich1,iwhich2,iwhich3  ! for user selections
+      logical found
+      logical newgeo  ! to use for testing if new/old geometry file.
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MERGEVERTINSURF'  ! set for subroutine
+
+      iwhich3=0; iwhich1=0; iwhich2=0
+
+C Detect the version of the current file.
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+
+C Assumes that QX,QY,QZ already checked to see if they duplicate
+C anything in the zone. This code does the merge and save.
+      NTV=NTV+1
+      NZTV(icomp)=NTV
+      X(NTV)=QX; Y(NTV)=QY; Z(NTV)=QZ
+      VCOORD(ICOMP,ntv,1)=QX
+      VCOORD(ICOMP,ntv,2)=QY
+      VCOORD(ICOMP,ntv,3)=QZ
+      XMN=AMIN1(XMN,X(NTV))
+      YMN=AMIN1(YMN,Y(NTV))
+      ZMN=AMIN1(ZMN,Z(NTV))
+      XMX=AMAX1(XMX,X(NTV))
+      YMX=AMAX1(YMX,Y(NTV))
+      ZMX=AMAX1(ZMX,Z(NTV))
+
+C Update the geometry file to remember the new vertex.
+      if(newgeo)then
+        call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+      else
+        call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+      endif
+
+C For a unique vertex also test to see if it is close (+-CACC) to
+C one of the existing lines. nsur-1 because the new surface does
+C not need to be checked. Also check the last edge in the surface.
+      iwhich3=NTV
+      do 246 ivj=1,NSUR-1
+        ivjlimit=NVER(ivj)
+        do 247 ivjj=1,ivjlimit
+          if(ivjj.eq.ivjlimit)then
+            iwhich1=JVN(ivj,ivjj)
+            iwhich2=JVN(ivj,1)
+          else
+            iwhich1=JVN(ivj,ivjj)
+            iwhich2=JVN(ivj,ivjj+1)
+          endif
+
+C Report length of line. Use method of Ward/Radiance in fvect.c
+          call pointtoline(iwhich3,iwhich1,iwhich2,offset,matchver)
+          if(.NOT.matchver) goto 247
+          if(offset.lt.CACC)then
+            write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
+     &        'New vertex ',iwhich3,' @',
+     &        X(NTV),Y(NTV),Z(NTV),' is close (',offset,
+     &        ') to edge ',IWHICH1,' &',IWHICH2,' of surface ',
+     &        SNAME(ICOMP,ivj)
+            call edisp(iuout,outs)
+
+C If current surface (ivj) can take another vertex expand the
+C list. Logic works by looping down (from one more than the current
+C number of vertices associated with this surface) shifting
+C JVN indices up one until at the current edge (ivjj) and then
+C inserting the new vertex index.
+            if(NVER(ivj)+1.le.MV)then
+              if(offset.le.CACC)then
+                ok=.true.
+              else
+                dok=.true.
+                helptopic='vertex_close_edge'
+                call gethelptext(helpinsub,helptopic,nbhelp)
+                call askok(
+     &            'Insert this vertex into the adjacent surface?',
+     &            '(see help)',ok,dok,nbhelp)
+              endif
+            else
+              ok=.false.
+            endif
+            if(ok)then
+              NVER(ivj)=NVER(ivj)+1
+              IXV=NVER(ivj)+1
+  148         continue
+              IXV=IXV-1
+              JVN(ivj,IXV)=JVN(ivj,IXV-1)
+              IF(IXV.GT.ivjj+1)GOTO 148
+              JVN(ivj,ivjj+1)=iwhich3
+
+C Debug.
+C                write(6,'(a,42i4)') 'now jvn is ',
+C     &            (JVN(ivj,ii),ii=1,NVER(ivj))
+
+C Surface (ivj) vertex list has been updated. Go on to next surface.
+              goto 246 
+            endif
+          endif
+  247   continue
+  246 continue
+      return
+      end
+      
+

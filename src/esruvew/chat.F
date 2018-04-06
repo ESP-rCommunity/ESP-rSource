@@ -37,9 +37,11 @@ C Redirected text/graphics parameters.
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iid1,iid2,iixx,iiyy,iik
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iid1,iid2,iixx,iiyy,iik
 #endif
 
 C For help messages
@@ -433,11 +435,11 @@ C the normal offsets to show the image near the centre.
       addx=(FLOAT(igw)*0.4)/scap
       addy=(FLOAT(igwh)*0.4)/scap
       call linescale(iigl,addx,scap,iigb,addy,scap)
-      CALL trackview(ii,ix,iy)
+      CALL trackview(iik,iixx,iiyy)
 
 C Transform back from mouse position to actual coordinate.
-      x=((FLOAT(ix-igl)/scap)-addx)
-      y=((FLOAT(igb-iy)/scap)-addy)
+      x=((FLOAT(iixx-igl)/scap)-addx)
+      y=((FLOAT(igb-iiyy)/scap)-addy)
       WRITE(outs,53)x,y
   53  FORMAT(' selected point is at x=',F7.2,' & y=',F7.2)
       CALL EDISP(iuout,outs)

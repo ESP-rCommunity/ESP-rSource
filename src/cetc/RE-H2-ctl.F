@@ -25,8 +25,9 @@ C time-step.
 C-----------------------------------------------------------------------------------------
       SUBROUTINE RESH2_Ctl
       IMPLICIT NONE
-#include "power.h"
+#include "building.h"
 #include "plant.h"
+#include "power.h"
 #include "BATTERY.h"
 
 
@@ -37,32 +38,6 @@ C Input file information
                                 !- cogen controller is specified
       character*72 resh2flnam   !- name of file containing residential hydrogen cogen
                                 !- controller inputs
-
-C Common block storing electrical domain time-row data for additional data items.
-      common / Enet_Power_Time_Row_Data /
-     &    iPow_Time_Row_Count,
-     &    fPow_Time_Row_Present,
-     &    fPow_Time_Row_Future
-      integer iPow_Time_Row_Count ( MPOWCOM ) ! # of additional data items associated with power-only component.
-      real fPow_Time_Row_Present ( MPOWCOM, MEnet_Time_Row_MAX ) ! Component present time-row data
-      real fPow_Time_Row_Future ( MPOWCOM, MEnet_Time_Row_MAX ) ! Component future time-row data
-
-C Common block storing load, generation, and transmission at elec domain nodes.
-      COMMON/ENODLGT/PENODL(MENOD),QENODL(MENOD),
-     &PENODG(MENOD),QENODG(MENOD),PENODT(MENOD),QENODT(MENOD)
-      real    penodl         !- real power load on node
-      real    qenodl         !- reactive power load on node
-      real    penodg         !- real power generation at node
-      real    qenodg         !- reactive power generation at node
-      real    penodt         !- real transmitted power at node
-      real    qenodt         !- reactive transmitted power at node
-
-C Common block storing power load/generation and voltage of elec domain powoc's.
-      COMMON/ENETPOWC/PPOWOC(MPOWCOM),QPOWOC(MPOWCOM),
-     &VPOWC(MPOWCOM)
-      real    ppowoc         !-real power generated/load for power-only component
-      real    qpowoc         !-reactive power generated/load for power-only component
-      complex vpowc          !-voltage of power only component
 
 C Common block storing control and other data for plant components.
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
@@ -76,7 +51,7 @@ C Common block storing additional time-row data items for plant domain.
       real pcdatp                ! component additional data (present)
 
 
-C Power-only component information
+C Power-only component information specific to RE-H2 Ctl.
       common/resh2_powoc/IPWC_PVPCU,IPWC_gridconn,IPWC_ACDC,
      &                   IPWC_battery,IPWC_PEM_DCDC,IPWC_Elec_DCDC
       integer   IPWC_PVPCU      !-index number of PCU that is connected between the PV and the DC bus
@@ -127,13 +102,13 @@ C      data bResH2_ctl_unconverged/.false./ -> replaced by blockdata at end of t
 
 
 C Common block holding information on the battery's current operation.
-      COMMON/battery_op_data/maxPBatCharge_common,
-     &   maxPBatDischarge_common, RE_H2_control_scenario
+      COMMON/battery_op_data/maxPBatCharge_common(MPOWCOM),
+     &   maxPBatDischarge_common(MPOWCOM), RE_H2_control_scenario
       REAL maxPBatCharge_common      ! Maximum charge rate of battery (W) as determined
-                               ! for mode of operation at previous calulcation (charge or discharge).
-      REAL maxPBatDischarge_common      ! Maximum discharge rate of battery (W) as determined
-                               ! for mode of operation at previous calulcation (charge or discharge).
-      INTEGER RE_H2_control_scenario     ! Param indicating which control scenario is chosen
+                                     ! for mode of operation at previous calulcation (charge or discharge).
+      REAL maxPBatDischarge_common   ! Maximum discharge rate of battery (W) as determined
+                                     ! for mode of operation at previous calulcation (charge or discharge).
+      INTEGER RE_H2_control_scenario ! Param indicating which control scenario is chosen
 
 C Other controller inputs
       common/resh2/fH2_deadband
@@ -289,7 +264,7 @@ C-------------------------------------------------------------------------------
 C     Get historical battery data
 C----------------------------------------------------------------------------------------
 
-        fBattery_signal_old = batDemandP
+        fBattery_signal_old = batDemandP(IPWC_battery)
 
 C-----------------------------------------------------------------------------------------
 C Sense power generation from PCU that is connected between PV and DC bus.  This
@@ -406,7 +381,7 @@ C---------in H2 storage is below maximum pressure. CDATA(ipcomp,1) is ON/OFF sig
 C---------If maximum pressure in H2 storage reached, electrolyzer does not turn on
 C---------and excess power goes to grid.
             RE_H2_control_scenario = 1
-            batDemandP = 0.
+            batDemandP(IPWC_battery) = 0.
             CDATA( IPCOMP_PEMFC,1) = 0.
             CDATA( IPCOMP_PEMFC,2) = 0.
             CDATA( IPCOMP_PEM_pump,1 ) = 0.
@@ -437,7 +412,7 @@ C---------is below maximum pressure.
 C---------If maximum pressure in H2 storage reached, electrolyzer does not turn on
 C---------and excess power goes to grid.
             RE_H2_control_scenario = 2
-            batDemandP = 0.
+            batDemandP(IPWC_battery) = 0.
             CDATA( IPCOMP_PEMFC,1) = 0.
             CDATA( IPCOMP_PEMFC,2) = 0.
             CDATA( IPCOMP_PEM_pump,1 ) = 0.
@@ -475,7 +450,8 @@ C     &                               PEM_DCDC_loss
 
           ELSEIF (   (PV_power_to_DCbus - power_DC_to_AC_required
      &                                  - fH2_prod_allowance )
-     &             > ( maxPBatCharge_common + Elec_DCDC_loss )  ) THEN
+     &             > ( maxPBatCharge_common(IPWC_battery)
+     &                                    + Elec_DCDC_loss )  ) THEN
 C---------Battery cannot accept all available power. Rather than sending the excess
 C---------power to the grid, turn electrolyzer on and send it the power that the
 C---------battery cannot accept. Electrolyzer only turned on if pressure in H2 storage
@@ -484,7 +460,8 @@ C---------If maximum pressure in H2 storage reached, electrolyzer does not turn 
 C---------and excess power goes to grid.
 
             RE_H2_control_scenario = 3
-            batDemandP = -1. * maxPBatCharge_common     ! -ve = charge
+            batDemandP(IPWC_battery) = -1.
+     &                             * maxPBatCharge_common(IPWC_battery)     ! -ve = charge
 
             CDATA( IPCOMP_PEMFC,1) = 0.
             CDATA( IPCOMP_PEMFC,2) = 0.
@@ -496,8 +473,8 @@ C---------and excess power goes to grid.
                CDATA( IPCOMP_electrolyzer,2 ) = 0.
                CDATA( IPCOMP_electrolyzer,3 ) = PV_power_to_DCbus -
      &                                       power_DC_to_AC_required -
-     &                                       Elec_DCDC_loss -
-     &                                       maxPBatCharge_common
+     &                                       Elec_DCDC_loss
+     &                              - maxPBatCharge_common(IPWC_battery)
                CDATA( IPCOMP_elec_pump,1 ) = fElec_pump_flow
                bElectrolyzer_active = .true.
             else
@@ -521,7 +498,7 @@ C            endif
           ELSE
 C---------Send all the power to battery and set electrolyzer to standby. CDATA(ipcomp,2) is standby signal.
             RE_H2_control_scenario = 4
-            batDemandP = -1. * (PV_power_to_DCbus -
+            batDemandP(IPWC_battery) = -1. * (PV_power_to_DCbus -
      &                         power_DC_to_AC_required)  ! -ve = charge
             CDATA( IPCOMP_electrolyzer,1 ) = 0.
             CDATA( IPCOMP_electrolyzer,2 ) = 1.
@@ -545,7 +522,7 @@ C---------by the control signal CDATA(ipcomp,1).
             CDATA(IPCOMP_PEMFC,2) = power_DC_to_AC_required -
      &                              PV_power_to_DCbus +
      &                              PEM_DCDC_loss
-            batDemandP = 0.
+            batDemandP(IPWC_battery) = 0.
             CDATA( IPCOMP_electrolyzer,1 ) = 0.
             CDATA( IPCOMP_electrolyzer,2 ) = 0.
             CDATA( IPCOMP_electrolyzer,3 ) = 0.
@@ -559,7 +536,7 @@ C---------The battery has not been charged sufficiently: PEMFC continues to supp
 C---------load the PEMFC has to meet is provided by the control signal CDATA(ipcomp,2).
 C---------The PEMFC is actuated by the control signal CDATA(ipcomp,1).
             RE_H2_control_scenario = 6
-            batDemandP = 0.
+            batDemandP(IPWC_battery) = 0.
             CDATA(IPCOMP_PEMFC,1) = 2.             ! iPower_out_controlled
             CDATA(IPCOMP_PEMFC,2) = power_DC_to_AC_required -
      &                              PV_power_to_DCbus +
@@ -572,17 +549,18 @@ C---------The PEMFC is actuated by the control signal CDATA(ipcomp,1).
             bPEM_active = .true.
 
           ELSEIF ( ( power_DC_to_AC_required - PV_power_to_DCbus ) >
-     &               maxPBatDischarge_common ) then
+     &               maxPBatDischarge_common(IPWC_battery) ) then
 
 C---------The battery cannot supply all of the load. Battery supplies maximum it can and PEMFC
 C---------is turned on to meet the rest of the load.
             RE_H2_control_scenario = 7
-            batDemandP = maxPBatDischarge_common
+            batDemandP(IPWC_battery) =
+     &                          maxPBatDischarge_common(IPWC_battery)
             CDATA(IPCOMP_PEMFC,1) = 2.             ! iPower_out_controlled
             CDATA(IPCOMP_PEMFC,2) = power_DC_to_AC_required -
-     &                              PV_power_to_DCbus -
-     &                              maxPBatDischarge_common +
-     &                              PEM_DCDC_loss
+     &                              PV_power_to_DCbus
+     &                          - maxPBatDischarge_common(IPWC_battery)
+     &                          + PEM_DCDC_loss
             CDATA( IPCOMP_electrolyzer,1 ) = 0.
             CDATA( IPCOMP_electrolyzer,2 ) = 0.
             CDATA( IPCOMP_electrolyzer,3 ) = 0.
@@ -610,7 +588,8 @@ C            endif
 
 C---------The battery is charged sufficiently and supplies power, the PEMFC is off.
             RE_H2_control_scenario = 8
-            batDemandP = power_DC_to_AC_required - PV_power_to_DCbus   ! +ve = discharge
+            batDemandP(IPWC_battery) = power_DC_to_AC_required
+     &                                       - PV_power_to_DCbus   ! +ve = discharge
             CDATA(IPCOMP_PEMFC,1) = 0.             ! iEngine_deactivated
             CDATA(IPCOMP_PEMFC,2) = 0.0
             CDATA( IPCOMP_electrolyzer,1 ) = 0.
@@ -650,13 +629,13 @@ C and maximum setpoint range. If it is not, the battery load is set to zero.
             if ( bBattery_discharge .and.
      &           SOC_battery .lt. fSOC_battery_min ) then
 
-                 batDemandP = 0.
+                 batDemandP(IPWC_battery) = 0.
 
             elseif ( bBattery_charge .and.
      &               SOC_battery .gt. fSOC_battery_max ) then
-                 if (mandChargeCycle .NE. 1) then  ! Check on SOC above SOC_battery_max should only
+                 if (mandChargeCycle(IPWC_battery) .NE. 1) then  ! Check on SOC above SOC_battery_max should only
                                                   ! be done if battery is not performing mandatory charge cycle
-                    batDemandP = 0.
+                    batDemandP(IPWC_battery) = 0.
                  endif
             endif
 
@@ -688,7 +667,7 @@ C It is not clear why a change in the battery signal should trigger a plt-pfs
 C iteration since the battery is a pfs powoc model. This should be explored
 C in the future.
         call eclose ( fBattery_signal_old,
-     &                batDemandP,
+     &                batDemandP(IPWC_battery),
      &                2.0,                            ! 2W tolerance
      &                bBat_same_signal )
 
@@ -739,6 +718,7 @@ C-------------------------------------------------------------------------------
 
       SUBROUTINE RESH2_Ctl_Read
       IMPLICIT NONE
+#include "building.h"
 #include "plant.h"
 #include "power.h"
 
@@ -1148,6 +1128,8 @@ C----------------------------------------------------------------------
       subroutine RESH2_Ctl_PostProcess()
       use h3kmodule
       implicit none
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 #include "BATTERY.h"
 C Input file information
@@ -1157,6 +1139,17 @@ C Input file information
       character*72 resh2flnam   !- name of file containing residential hydrogen cogen
                                 !- controller inputs
 
+C Power-only component information
+      common/resh2_powoc/IPWC_PVPCU,IPWC_gridconn,IPWC_ACDC,
+     &                   IPWC_battery,IPWC_PEM_DCDC,IPWC_Elec_DCDC
+      integer   IPWC_PVPCU      !-index number of PCU that is connected between the PV and the DC bus
+      integer   IPWC_gridconn   !-index number of the grid-connection power-only component
+      integer   IPWC_ACDC       !-index number of the DC-AC converter (a PCU power-only component)
+      integer   IPWC_battery    !-index number of the battery power-only component
+      integer   IPWC_PEM_DCDC   !-index number of the DC/DC converter between the PEMFC
+                                !-and the DC bus
+      integer   IPWC_Elec_DCDC  !-index number of the DC/DC converter between the electrolyzer
+                                !-and the DC bus
 
 C Electric node information
       common/resh2_enode/IENOD_ACbus
@@ -1172,17 +1165,6 @@ C Flags indicating status of controller
      &                    bBattery_charge, bBattery_discharge
 
 
-
-C Common block storing load, generation, and transmission at elec domain nodes.
-      COMMON/ENODLGT/PENODL(MENOD),QENODL(MENOD),
-     &PENODG(MENOD),QENODG(MENOD),PENODT(MENOD),QENODT(MENOD)
-      real    penodl         !- real power load on node
-      real    qenodl         !- reactive power load on node
-      real    penodg         !- real power generation at node
-      real    qenodg         !- reactive power generation at node
-      real    penodt         !- real transmitted power at node
-      real    qenodt         !- reactive transmitted power at node
-
 C 'Network interaction'
       real fNetworkBalance
 
@@ -1197,7 +1179,7 @@ C Return if Res-H2 control not active.
 
       fNetworkBalance = penodg(IENOD_ACbus) + penodl(IENOD_ACbus)
 
-      IF (mandChargeCycle .EQ. 1) THEN
+      IF (mandChargeCycle(IPWC_battery) .EQ. 1) THEN
 C When the battery performs a mandatory charge mode, the direction of flow of power through the
 C DC/AC converter could be reversed. This will not be possible with the electric current network.
 C Instead of changing the electric network, the potential load of the DC node (node 1) is added to the

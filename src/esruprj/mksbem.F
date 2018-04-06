@@ -73,11 +73,14 @@ C MMGFUN controls all UK NCM related tasks
 #include "lookup_data.h"
 #include "roam.h"
 #include "net_flow.h"
+C UA1 in uncertainty.h
 #include "uncertainty.h"
 #include "model.h"
 #include "site.h"
 #include "ipvdata.h"
 #include "schedule.h"
+#include "plant.h"
+#include "power.h"
 
       integer lnblnk  ! function definition
 
@@ -96,7 +99,7 @@ C MMGFUN controls all UK NCM related tasks
       COMMON/SPFLDES/SPFDESCR(MSPS)
       INTEGER nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh,ISSTDAY
       INTEGER ISSTMON,ISFNDAY,ISFNMON
-      CHARACTER SPFDESCR*8
+      CHARACTER SPFDESCR*30
 
       COMMON/CFDFIL/LCFD(MCOM),IFCFD(MCOM)
       INTEGER IFCFD
@@ -146,9 +149,6 @@ C MMGFUN controls all UK NCM related tasks
       INTEGER NCOMP,NCON
       COMMON/C1/NCOMP,NCON
 
-      COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
-      CHARACTER LUALF*72,LCNG*15,LLOC*15
-
       COMMON/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
       INTEGER IPCONV
       REAL pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
@@ -172,10 +172,6 @@ C MMGFUN controls all UK NCM related tasks
       common/spmfxst/ispmxist,spflnam
       INTEGER ISPMXIST
       CHARACTER spflnam*72
-
-      common/entfile/entflnam,ientxist
-      INTEGER :: ientxist
-      CHARACTER entflnam*72
 
       common/IPVF/lipvdatf
       CHARACTER*72 LIPVDATF
@@ -3419,6 +3415,7 @@ C required models ') which returned iuact=1.
 #include "control.h"
 #include "model.h"
 #include "espriou.h"
+#include "prj3dv.h"
 
       integer lnblnk  ! function definition
 
@@ -3431,8 +3428,6 @@ C required models ') which returned iuact=1.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY6/LINSTY(MCON)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
@@ -3467,12 +3462,12 @@ C Where ESP-r was installed (as recorded when it was compiled).
       character subpath*72
       CHARACTER OUTSTR*124
 
-      CHARACTER ACT*1,ADF*124
+      CHARACTER ACT*1,ADF*12
       character NNAME*72
       character fs*1,msgl2*48,tab*1
       character outs*124,GUESS*24
 
-      LOGICAL NEWGEO,MODIFY,MODLEN,MODBND
+      LOGICAL NEWGEO
       logical unixok,XST
       logical ctl_Zonelink_match !This si to allow the sorted activity indices to be matched with
                                  !the original ones. The zone numbers can then be used to link the
@@ -3566,10 +3561,10 @@ C calculated in GTCALC
 
 C If surface is exterior then check if use is specified if not then ask
           IF(SSOTHER(ICN,1)(1:8).EQ.'EXTERIOR')THEN
-            ADF=SSUSE(ICN,1)
+            write(ADF,'(a)') SSUSE(ICN,1)
             IF(ADF(1:1).EQ.'-')THEN
               IZGFOC=ICOMP
-              MODIFY=.TRUE.
+              MODIFYVIEW=.TRUE.
               CALL INLNST(1)
               LINSTY(ICN)=2
               CALL ADJVIEW(IER)
@@ -4153,6 +4148,7 @@ C to a zone changes (but nothing else does).
 #include "control.h"
 #include "model.h"
 #include "espriou.h"
+#include "prj3dv.h"
 
       integer lnblnk  ! function definition
 
@@ -4165,8 +4161,6 @@ C to a zone changes (but nothing else does).
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY6/LINSTY(MCON)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
@@ -4201,12 +4195,12 @@ C Where ESP-r was installed (as recorded when it was compiled).
       character subpath*72
       CHARACTER OUTSTR*124
 
-      CHARACTER ACT*1,ADF*124
+      CHARACTER ACT*1,ADF*12
       character NNAME*72
       character fs*1,msgl2*48,tab*1
       character outs*124,GUESS*24
 
-      LOGICAL NEWGEO,MODIFY,MODLEN,MODBND
+      LOGICAL NEWGEO
       logical unixok,XST
       logical ctl_Zonelink_match !This si to allow the sorted activity indices to be matched with
                                  !the original ones. The zone numbers can then be used to link the
@@ -4771,11 +4765,11 @@ C facade.
 #include "esprdbfile.h"
 #include "model.h"
 #include "material.h"
+#include "prj3dv.h"
 
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer ncomp,ncon
@@ -4791,7 +4785,7 @@ C facade.
       character EXT*4    ! up to 4 characters in file extension
       character APE*6    ! up to 6 characters in variant name
       CHARACTER NNAME*72
-      CHARACTER OUTS*124,ADF*124,SNM*12,USE*8,USE2*8
+      CHARACTER OUTS*124,ADF*12,SNM*12,USE*12,USE2*12
       character SN*12,msg*42
       CHARACTER*12 XJCCU,XKCCU
       character DOIT*248
@@ -4814,7 +4808,7 @@ C ivalxocup array signals which zones are not occupied or controlled.
       DIMENSION XNWAREA(MCON) ! Normal window area in surface
       logical newgeo  ! to use for testing if new/old geometry file.
 C      logical closeelv ! true if surface is close to vertical
-      LOGICAL MODIFY,MODLEN,MODBND,QUIET,XST,NEAR
+      LOGICAL QUIET,XST,NEAR
       integer LOOPMAX  ! loop iterator for shifting surface list
       integer ISCURRENT ! the current connection to be deleted
       logical ok,dok
@@ -5003,8 +4997,10 @@ C        write(6,*) icomp,NZSUR(icomp),nmlc
         DO 9994 I=1,NZSUR(icomp)
           icn1=izstocn(icomp,i)
           ssmlcindex(icn1)=0  ! assume no matching MLC          
+          lnssmlc=lnblnk(SSMLCN(icn1))
           do 5 ii=1,nmlc
-            if(SSMLCN(icn1)(1:12).eq.mlcname(ii)(1:12)) then
+            if(SSMLCN(icn1)(1:lnssmlc).eq.
+     &         mlcname(ii)(1:lnmlcname(ii)))then
               ssmlcindex(icn1)=ii   ! remember MLC index     
             endif
   5       continue
@@ -5148,7 +5144,7 @@ C parent child relationships.
           call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
 
 C Get surface areas via call to zinfo.
-          call zinfo(sna,zoa,pazi,pelv,zvol)
+          call zinfo(sna,zoa,pazi,pelv,zvol,'-')
 
 C Get gross area of this surface (add child areas to it)
 C Areas of parents are hence held as parent + child in TARSURF and
@@ -5178,7 +5174,7 @@ C For each grand child.
                   KCC=IGCHILD(ICC,IGCD)      ! index of grand child
                   NRMV(icomp)=NRMV(icomp)+1  ! increment list of surfaces to remove
                   IRMV(ICOMP,NRMV(icomp))=KCC
-                  XKCCU=SSUSE(KCC,1)
+                  write(XKCCU,'(a)') SSUSE(KCC,1)
                   TARSURF(ICC)=TARSURF(ICC)+SSNA(KCC)
                   IF(XKCCU(1:6).EQ.'P-DOOR')THEN
                     XPDAREA(ICC)=XPDAREA(ICC)+SSNA(KCC)
@@ -5210,7 +5206,7 @@ C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
                   JCC=ICHILD(ICC,ICHL)        ! index of child surface
                   NRMV(icomp)=NRMV(icomp)+1   ! increment list of surfaces to remove
                   IRMV(ICOMP,NRMV(icomp))=JCC
-                  XJCCU=SSUSE(JCC,1)
+                  write(XJCCU,'(a)') SSUSE(JCC,1)
                   TARSURF(ICC)=TARSURF(ICC)+SSNA(JCC)
                   IF(XJCCU(1:6).EQ.'P-DOOR')THEN
                     XPDAREA(ICC)=XPDAREA(ICC)+SSNA(JCC)
@@ -5254,7 +5250,7 @@ C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
                     JCC=ICHILD(ICC,ICHL)
                     NRMV(icomp)=NRMV(icomp)+1
                     IRMV(ICOMP,NRMV(icomp))=JCC
-                    XJCCU=SSUSE(JCC,1)
+                    write(XJCCU,'(a)') SSUSE(JCC,1)
                     TARSURF(ICC)=TARSURF(ICC)+SSNA(JCC)
                     IF(XJCCU(1:6).EQ.'P-DOOR')THEN
                       XPDAREA(ICC)=XPDAREA(ICC)+SSNA(JCC)
@@ -5313,7 +5309,7 @@ C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
                     JCC=ICHILD(ICC,ICHL)
                     NRMV(icomp)=NRMV(icomp)+1
                     IRMV(ICOMP,NRMV(icomp))=JCC
-                    XJCCU=SSUSE(JCC,1)
+                    write(XJCCU,'(a)') SSUSE(JCC,1)
                     TARSURF(ICC)=TARSURF(ICC)+SSNA(JCC)
                     IF(XJCCU(1:6).EQ.'P-DOOR')THEN
                       XPDAREA(ICC)=XPDAREA(ICC)+SSNA(JCC)
@@ -5447,7 +5443,7 @@ C          write(6,*) 'after geowrite d ',NZSUR(icomp)
 C Update the image if working in graphics mode.
           if(MMOD.eq.8)then
             MODBND=.TRUE.
-            MODIFY=.TRUE.
+            MODIFYVIEW=.TRUE.
             CALL INLNST(1)
             nzg=1
             nznog(1)=ICOMP
@@ -5466,7 +5462,7 @@ C in the current zone check its attributes.
         if(.NOT.ivalocup(icomp)) goto 557  ! do not bother if unoccupied & unconditioned
         do 200 isur=1,nzsur(icomp)
           ICC=IZSTOCN(icomp,isur)
-          SNM=SSUSE(ICC,1)
+          write(SNM,'(a)') SSUSE(ICC,1)
 
 C For all exterior surfaces that are wall or roof define the
 C glazing and frame percentage.
@@ -5522,7 +5518,7 @@ C << need to trap error state in georead >>
           COE(1)=SSURCOG(ICC,1)     ! centre of gravity for current surface
           COE(2)=SSURCOG(ICC,2)
           COE(3)=SSURCOG(ICC,3)
-          SNM=SSUSE(ICC,1)
+          write(SNM,'(a)') SSUSE(ICC,1)
 
 C For all exterior surfaces that are wall or roof set the glazing
 C and frame areas.
@@ -5603,7 +5599,7 @@ C Add surfaces attribution parameters
 
 C Update connections list before displaying notional model zone
               call emkcfg('-',IER)
-              MODIFY=.TRUE.
+              MODIFYVIEW=.TRUE.
               NZSUR(ICOMP)=NSUR
               call zgupdate(itrc,icomp,ier)
               call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
@@ -5682,7 +5678,7 @@ C Add surfaces attribution parameters
 
 C Update connections list before displaying notional model zone
               call emkcfg('-',IER)
-              MODIFY=.TRUE.
+              MODIFYVIEW=.TRUE.
               NZSUR(ICOMP)=NSUR
               call zgupdate(itrc,icomp,ier)
               call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
@@ -5762,7 +5758,7 @@ C Add surfaces attribution parameters
 
 C Update connections list before displaying notional model zone
               call emkcfg('-',IER)
-              MODIFY=.TRUE.
+              MODIFYVIEW=.TRUE.
               NZSUR(ICOMP)=NSUR
               call zgupdate(itrc,icomp,ier)
               call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
@@ -5846,7 +5842,7 @@ C Add surfaces attribution parameters
 
 C Update connections list before displaying notional model zone
               call emkcfg('-',IER)
-              MODIFY=.TRUE.
+              MODIFYVIEW=.TRUE.
               NZSUR(ICOMP)=NSUR
               call zgupdate(itrc,icomp,ier)
               call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
@@ -5908,7 +5904,7 @@ C Add surfaces attribution parameters
 
 C Update connections list before displaying notional model zone
               call emkcfg('-',IER)
-              MODIFY=.TRUE.
+              MODIFYVIEW=.TRUE.
               NZSUR(ICOMP)=NSUR
               call zgupdate(itrc,icomp,ier)
               call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
@@ -5921,7 +5917,7 @@ C Update connections list before displaying notional model zone
 C View the zone after adding surfaces
         if(MMOD.eq.8)then
           MODBND=.TRUE.
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           CALL INLNST(1)
           nzg=1
           nznog(1)=ICOMP
@@ -5947,7 +5943,7 @@ C for all zones whether they are occupied and conditioned or not.
       
           USE=SSUSE(ICC,1)
           USE2=SSUSE(ICC,2)
-          ADF=SSVFC(icc)
+          write(ADF,'(a)') SSVFC(icc)
           IF(ssother(icc,1)(1:8).eq.'EXTERIOR')THEN
 
 C For surfaces facing the outside.
@@ -6010,7 +6006,7 @@ C For surfaces facing the outside.
               SSOTF(ICC)='OPAQUE'  ! OTF type
               if(haveframe) ssmlcindex(ICC)=mlciframe
             ELSE
-              SNM=SSNAME(ICC)
+              write(SNM,'(a)') SSNAME(ICC)
               WRITE(OUTS,'(5A)')'No relevant use defined for ',
      &          SNM(1:LNBLNK(SNM)),' in zone ',zname(icomp),
      &          ' setting to use: external wall'
@@ -6093,7 +6089,7 @@ C  party_wall_n if transparent use internal_glz.
 
 C This could be an internal partition. If original is opaque then use
 C  party_wall_n if transparent use internal_glz.
-              SNM=SSNAME(ICC)
+              write(SNM,'(a)') SSNAME(ICC)
               if(SSOTF(ICC)(1:6).eq.'OPAQUE')then
                 WRITE(OUTS,'(5A)')'No relevant use defined for ',
      &            SNM(1:LNBLNK(SNM)),' in zone ',zname(icomp),
@@ -6463,11 +6459,11 @@ C it also assumes that the cfg and cnn have already been setup.
 #include "esprdbfile.h"
 #include "model.h"
 #include "material.h"
+#include "prj3dv.h"
 
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer ncomp,ncon
@@ -6483,7 +6479,7 @@ C it also assumes that the cfg and cnn have already been setup.
       character EXT*4    ! up to 4 characters in file extension
       character APE*6    ! up to 6 characters in variant name
       CHARACTER NNAME*72
-      CHARACTER OUTS*124,ADF*124,SNM*12,USE*8,USE2*8
+      CHARACTER OUTS*124,ADF*12,SNM*12,USE*12,USE2*12
       character SN*12,SPN*12,msg*42
       CHARACTER*12 XJCCU,XKCCU
       character DOIT*248
@@ -6506,7 +6502,7 @@ C ivalxocup array signals which zones are not occupied or controlled.
       DIMENSION XNWAREA(MCON) ! Normal window area in surface
       logical newgeo  ! to use for testing if new/old geometry file.
 C      logical closeelv ! true if surface is close to vertical
-      LOGICAL MODIFY,MODLEN,MODBND,QUIET,XST,NEAR
+      LOGICAL QUIET,XST,NEAR
       integer LOOPMAX  ! loop iterator for shifting surface list
       integer ISCURRENT ! the current connection to be deleted
       logical ok,dok
@@ -6599,8 +6595,10 @@ C      write(6,*) icomp,NZSUR(icomp),nmlc
       DO 9994 I=1,NZSUR(icomp)
         icn1=izstocn(icomp,i)
         ssmlcindex(icn1)=0  ! assume no matching MLC          
+        lnssmlc=lnblnk(SSMLCN(icn1))
         do 5 ii=1,nmlc
-          if(SSMLCN(icn1)(1:12).eq.mlcname(ii)(1:12)) then
+          if(SSMLCN(icn1)(1:lnssmlc).eq.
+     &       mlcname(ii)(1:lnmlcname(ii)))then
             ssmlcindex(icn1)=ii   ! remember MLC index     
           endif
   5     continue
@@ -6724,7 +6722,7 @@ C then re-gather information on parent child relationships.
         IUF=IFIL+2
 
 C Get surface areas via call to zinfo.
-        call zinfo(sna,zoa,pazi,pelv,zvol)
+        call zinfo(sna,zoa,pazi,pelv,zvol,'-')
 
 C Get gross area of this surface (add child areas to it)
 C Areas of parents are hence held as parent + child in TARSURF and
@@ -6760,7 +6758,7 @@ C For each grand child.
                 call edisp(iuout,outs)
                 NRMV(icomp)=NRMV(icomp)+1    ! increment list of surfaces to remove
                 IRMV(ICOMP,NRMV(icomp))=KCC  ! remember its connection number
-                XKCCU=SSUSE(KCC,1)
+                write(XKCCU,'(a)') SSUSE(KCC,1)
                 TARSURF(ICC)=TARSURF(ICC)+SSNA(KCC)
                 IF(XKCCU(1:6).EQ.'P-DOOR')THEN
                   XPDAREA(ICC)=XPDAREA(ICC)+SSNA(KCC)
@@ -6795,7 +6793,7 @@ C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
                 call edisp(iuout,outs)
                 NRMV(icomp)=NRMV(icomp)+1   ! increment list of surfaces to remove
                 IRMV(ICOMP,NRMV(icomp))=JCC ! remember its connection
-                XJCCU=SSUSE(JCC,1)
+                write(XJCCU,'(a)') SSUSE(JCC,1)
                 TARSURF(ICC)=TARSURF(ICC)+SSNA(JCC)
                 IF(XJCCU(1:6).EQ.'P-DOOR')THEN
                   XPDAREA(ICC)=XPDAREA(ICC)+SSNA(JCC)
@@ -6842,7 +6840,7 @@ C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
                   call edisp(iuout,outs)
                   NRMV(icomp)=NRMV(icomp)+1   ! increment how many to remove
                   IRMV(ICOMP,NRMV(icomp))=JCC ! remember its connection
-                  XJCCU=SSUSE(JCC,1)
+                  write(XJCCU,'(a)') SSUSE(JCC,1)
                   TARSURF(ICC)=TARSURF(ICC)+SSNA(JCC)
                   IF(XJCCU(1:6).EQ.'P-DOOR')THEN
                     XPDAREA(ICC)=XPDAREA(ICC)+SSNA(JCC)
@@ -6904,7 +6902,7 @@ C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
                   call edisp(iuout,outs)
                   NRMV(icomp)=NRMV(icomp)+1   ! increment how many to remove
                   IRMV(ICOMP,NRMV(icomp))=JCC ! remember which connection
-                  XJCCU=SSUSE(JCC,1)
+                  write(XJCCU,'(a)') SSUSE(JCC,1)
                   TARSURF(ICC)=TARSURF(ICC)+SSNA(JCC)
                   IF(XJCCU(1:6).EQ.'P-DOOR')THEN
                     XPDAREA(ICC)=XPDAREA(ICC)+SSNA(JCC)
@@ -7030,7 +7028,7 @@ C Update the image if working in graphics mode.
         call edisp(iuout,
      &    'Displaying the zone with child surfaces removed...')
         MODBND=.TRUE.
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         CALL INLNST(1)
         nzg=1
         nznog(1)=ICOMP
@@ -7046,7 +7044,7 @@ C in the current zone check its attributes.
       if(.NOT.ivalocup(icomp)) goto 557  ! do not bother if unoccupied & unconditioned
       do 200 isur=1,nzsur(icomp)
         ICC=IZSTOCN(icomp,isur)
-        SNM=SSUSE(ICC,1)
+        write(SNM,'(a)') SSUSE(ICC,1)
 
 C For all exterior surfaces that are wall or roof define the
 C glazing and frame percentage.
@@ -7099,7 +7097,7 @@ C << need to trap error state in georead >>
         COE(1)=SSURCOG(ICC,1)     ! centre of gravity for current surface
         COE(2)=SSURCOG(ICC,2)
         COE(3)=SSURCOG(ICC,3)
-        SNM=SSUSE(ICC,1)
+        write(SNM,'(a)') SSUSE(ICC,1)
         SPN=SSNAME(ICC)  ! remember parent surface name
 
 C For all exterior surfaces that are wall or roof set the glazing
@@ -7182,7 +7180,7 @@ C Add surfaces attribution parameters
 
 C Update connections list before displaying notional model zone
             call emkcfg('-',IER)
-            MODIFY=.TRUE.
+            MODIFYVIEW=.TRUE.
             NZSUR(ICOMP)=NSUR
             call zgupdate(itrc,icomp,ier)
             call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
@@ -7264,7 +7262,7 @@ C Add surfaces attribution parameters
 
 C Update connections list before displaying notional model zone
             call emkcfg('-',IER)
-            MODIFY=.TRUE.
+            MODIFYVIEW=.TRUE.
             NZSUR(ICOMP)=NSUR
             call zgupdate(itrc,icomp,ier)
             call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
@@ -7345,7 +7343,7 @@ C Add surfaces attribution parameters
 
 C Update connections list before displaying notional model zone
             call emkcfg('-',IER)
-            MODIFY=.TRUE.
+            MODIFYVIEW=.TRUE.
             NZSUR(ICOMP)=NSUR
             call zgupdate(itrc,icomp,ier)
             call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
@@ -7431,7 +7429,7 @@ C Add surfaces attribution parameters
 
 C Update connections list before displaying notional model zone
             call emkcfg('-',IER)
-            MODIFY=.TRUE.
+            MODIFYVIEW=.TRUE.
             NZSUR(ICOMP)=NSUR
             call zgupdate(itrc,icomp,ier)
             call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
@@ -7494,7 +7492,7 @@ C Add surfaces attribution parameters
 
 C Update connections list before displaying notional model zone
             call emkcfg('-',IER)
-            MODIFY=.TRUE.
+            MODIFYVIEW=.TRUE.
             NZSUR(ICOMP)=NSUR
             call zgupdate(itrc,icomp,ier)
             call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
@@ -7507,7 +7505,7 @@ C Update connections list before displaying notional model zone
 C Update the image if running in graphic mode.
       if(MMOD.eq.8)then
         MODBND=.TRUE.
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         CALL INLNST(1)
         nzg=1
         nznog(1)=ICOMP
@@ -7528,7 +7526,7 @@ C for all zones whether they are occupied and conditioned or not.
         else
           USE=SSUSE(ICC,1)
           USE2=SSUSE(ICC,2)
-          ADF=SSVFC(icc)
+          write(ADF,'(a)') SSVFC(icc)
           IF(ssother(icc,1)(1:8).eq.'EXTERIOR')THEN
 
 C For surfaces facing the outside.
@@ -7591,7 +7589,7 @@ C For surfaces facing the outside.
               SSOTF(ICC)='OPAQUE'  ! OTF type
               if(haveframe) ssmlcindex(ICC)=mlciframe
             ELSE
-              SNM=SSNAME(ICC)
+              write(SNM,'(a)') SSNAME(ICC)
               WRITE(OUTS,'(5A)')'No relevant use defined for ',
      &          SNM(1:LNBLNK(SNM)),' in zone ',zname(icomp),
      &          ' setting to use: external wall'
@@ -7673,7 +7671,7 @@ C  party_wall_n if transparent use internal_glz.
 
 C This could be an internal partition. If original is opaque then use
 C  party_wall_n if transparent use internal_glz.
-              SNM=SSNAME(ICC)
+              write(SNM,'(a)') SSNAME(ICC)
               if(SSOTF(ICC)(1:6).eq.'OPAQUE')then
                 WRITE(OUTS,'(5A)')'No relevant use defined for ',
      &          SNM(1:LNBLNK(SNM)),' in zone ',zname(icomp),
@@ -7781,7 +7779,7 @@ C better to simply not write out any IPV definitions.
       INTEGER IER,LNBLNK,ICOMP,IUNIT,ITRU,ITRC,ILEN,IFU,IUF,I,ICC,lns
       LOGICAL QUIET,XST
       CHARACTER EXT*4,APE*6,TNAME*72,NNAME*72
-      character USE*8,OUTS*124,SNM*12
+      character USE*12,OUTS*124,SNM*12
 
 C Test whether required constructions exist.
       logical haveopDoor,haveVehicle,haveNot_D,haveNot_G,haveframe
@@ -7865,7 +7863,7 @@ C Read zone geometry file and copy this as well
 C Now change constructions.
         DO 601 I=1,NZSUR(icomp)
           icc=izstocn(icomp,i)
-          USE=SSUSE(ICC,1)
+          write(USE,'(a)') SSUSE(ICC,1)
           IF(ssother(icc,1)(1:8).eq.'EXTERIOR')THEN
             IF(USE(1:4).EQ.'WALL')THEN
               SSMLCN(ICC)='exWall_typic'
@@ -7898,7 +7896,7 @@ C Now change constructions.
               SSOTF(ICC)='OPAQUE'  ! OTF type
               if(haveframe) ssmlcindex(ICC)=mlciframe
             ELSE
-              SNM=SSNAME(ICC)
+              write(SNM,'(a)') SSNAME(ICC)
               WRITE(OUTS,'(5A)')'No relevant use defined for ',
      &        SNM(1:lnblnk(snm)),' in zone ',zname(icomp),
      &        ' setting to use: external wall in typical model'
@@ -10164,7 +10162,7 @@ C Building, owner, certifier detail...
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)'  P-NAME             = ',
      &  '"',pjname(1:lnblnk(pjname)),'"'
       IF(IBUSERTYP.NE.0)THEN
-        TMPSTR2=BTYPNAME(IBUSERTYP)
+        write(TMPSTR2,'(a)') BTYPNAME(IBUSERTYP)
       ELSE
         TMPSTR2='Building type not defined (yet)'
       ENDIF
@@ -10264,12 +10262,14 @@ c      EXP_COND=0.   ! External envelope conductance W/K
           if(TMPSTR(1:8).eq.'EXTERIOR'.OR.TMPSTR(1:6).EQ.'GROUND')then
 
 C Recover the ISO 6946 U values as in prjqa.F.
+           lnssmlc=lnblnk(SSMLCN(icc))
             do 7511 ii=1,nmlc
-              if(SSMLCN(icc)(1:12).eq.mlcname(ii)(1:12))then
+              if(SSMLCN(icc)(1:lnssmlc).eq.
+     &           mlcname(ii)(1:lnmlcname(ii)))then
                 call etmldbu(0,itu,ii,UVH,UVU,UVD,UVI,UVG)
               endif
  7511       continue
-            TMPSTR2=SSUSE(ICC,1)
+            write(TMPSTR2,'(a)') SSUSE(ICC,1)
 
 C Floors may not have usage defined (because it is mandatorily required
 C only for exterior surfaces)
@@ -10515,7 +10515,7 @@ C Write infiltration and permeability information
 
 C DHW checks
       DO 40 IDHWSYS=1,NDHWSYS
-        TMPSTR2=DHWNAME(IDHWSYS)
+        write(TMPSTR2,'(a)') DHWNAME(IDHWSYS)
         write(iuf,'(3a)',iostat=ios)'"',TMPSTR2(1:LNBLNK(TMPSTR2)),
      &    '" = CHECK2-DHW'
         write(iuf,'(a,I5)',iostat=ios)  '  HVACGUIDE-DHW      = ',
@@ -10527,7 +10527,7 @@ C DHW checks
 
 C Write information about systems
       DO 20  ICMSYS=1,NCMSYS
-        TMPSTR2=HVACNAME(ICMSYS)
+        write(TMPSTR2,'(a)') HVACNAME(ICMSYS)
         WRITE(IUF,'(3a)',iostat=ios)'"',TMPSTR2(1:LNBLNK(TMPSTR2)),
      &    '" = CHECK2-11'
 
@@ -10765,7 +10765,7 @@ C Section for each HVAC system
           endif
  15     continue
         if((hvacarea(ICMSYS)).gt.0.)then
-          TMPSTR2=HVACNAME(ICMSYS)
+          write(TMPSTR2,'(a)') HVACNAME(ICMSYS)
           LNB=lnblnk(TMPSTR2)
           WRITE(IUF,'(4a)',iostat=ios) '"',TMPSTR2(1:LNB),
      &      '"',' = HVAC-SYSTEM-DATA'
@@ -11020,7 +11020,7 @@ C Section for each HVAC system for the notional building
           endif
  225    continue
         if((hvacarea(ICMSYS)).gt.0.)then
-          TMPSTR2=HVACNAME(ICMSYS)
+          write(TMPSTR2,'(a)') HVACNAME(ICMSYS)
 
 C Same as actual building
           WRITE(IUF,'(4a)',iostat=ios) '"',TMPSTR2(1:LNBLNK(TMPSTR2)),
@@ -11358,7 +11358,7 @@ C B-INSP-DATE specifies the inspection date of the building by the Energy Assess
      &  D_inspect,'}'
 
       IF(IBUSERTYP.NE.0)THEN
-        TMPSTR2=BTYPNAME(IBUSERTYP)
+        write(TMPSTR2,'(a)') BTYPNAME(IBUSERTYP)
       ELSE
         TMPSTR2='Building type not defined (yet)'
       ENDIF
@@ -15106,7 +15106,7 @@ C Section for each HVAC system
           endif
  15     continue
         if((hvacarea(ICMSYS)).gt.0.)then
-          TMPSTR2=HVACNAME(ICMSYS)
+          write(TMPSTR2,'(a)') HVACNAME(ICMSYS)
           LNB=lnblnk(TMPSTR2)
           WRITE(IUF,'(4a)',iostat=ios) '"',TMPSTR2(1:LNB),
      &     '"',' = HVAC-SYSTEM-DATA'
@@ -15336,7 +15336,7 @@ C Section for each HVAC system for the notional building
           endif
  225    continue
         if((hvacarea(ICMSYS)).gt.0.)then
-          TMPSTR2=HVACNAME(ICMSYS)
+          write(TMPSTR2,'(a)') HVACNAME(ICMSYS)
 
 C Same as actual building
           WRITE(IUF,'(4a)',iostat=ios) '"',TMPSTR2(1:LNBLNK(TMPSTR2)),
@@ -15567,7 +15567,7 @@ C Section for each HVAC system for the reference building
           endif
  425    continue
         if((hvacarea(ICMSYS)).gt.0.)then
-          TMPSTR2=HVACNAME(ICMSYS)
+          write(TMPSTR2,'(a)') HVACNAME(ICMSYS)
 
 C Same as actual building
           WRITE(IUF,'(4a)',iostat=ios) '"',TMPSTR2(1:LNBLNK(TMPSTR2)),
@@ -15802,7 +15802,7 @@ C Section for each HVAC system for the notional building
           endif
  725    continue
         if((hvacarea(ICMSYS)).gt.0.)then
-          TMPSTR2=HVACNAME(ICMSYS)
+          write(TMPSTR2,'(a)') HVACNAME(ICMSYS)
           LNB=lnblnk(TMPSTR2)
 
 C Same as actual building

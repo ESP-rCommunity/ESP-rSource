@@ -78,11 +78,6 @@ C Interface frame dimensions
 C View point, view direction, ...
       COMMON/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
-C Scale the project
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-
 C Zone information
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       
@@ -145,7 +140,7 @@ C Name of current application
       logical closemat1,closemat2
 
       LOGICAL OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,SelSurf,CFCDBOK
-      LOGICAL MODIFY,MODLEN,MODBND,XST,chdb,BCFOK,unixok
+      LOGICAL XST,chdb,BCFOK,unixok
 
       DIMENSION ITEM(18) 
 
@@ -250,7 +245,7 @@ C Set defaults.
       MATDBOK=.FALSE.
       CTLOK=.FALSE.
       OPTKOK=.FALSE.
-      MODIFY=.FALSE.
+      MODIFYVIEW=.FALSE.
       MODLEN=.FALSE.
       MODBND=.FALSE.
       XST=.FALSE.
@@ -402,9 +397,9 @@ C Find the user's home folder then get users custom settings.
       endif
       call scesprc(esprc,IFIL+1,0,IIER)
 
-C Scan the defaults file for default configuration.
+C Scan the defaults file silently for default configuration.
 C Make temporary use of file unit IFIL+1.
-      call escdef(IFIL+1,IER)
+      call escdef(IFIL+1,'s',IER)
 
 C Take `c' command line file name, convert to fortran string LCMDFL.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
@@ -426,7 +421,7 @@ C properties, display it and then present the main menu.
           NZONES=NCOMP
           CALL ZDATA (ITRC,IER,NZONES,ISFSUM)
           CFGOK=.TRUE.
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           MODBND=.TRUE.
           MODLEN=.TRUE.
           nzg=NCOMP
@@ -1054,5 +1049,15 @@ C Dummy subroutine needed to compile (called from library code).
 
       return
       end
+
+      subroutine Find_season_parameters()
+      return
+      end
+
+      SUBROUTINE BASESIMP_INPUTS(ICOMP,IER)
+      integer icomp,ier
+      return
+      end
+
 
 

@@ -25,6 +25,7 @@ C  MZSIML   Sets the final simulation parameters prior to simulation.
 C  SIMTOG   Set simulation toggles
 C  MSTTOG   Set moisture flow toggles.
 C  STMTOG   Set building construction structured mesh toggles.
+C  CFDTOG   Set CFD coupling toggles.
 C  MZSPER   Definition of simulation period.
 C  MZSIMH   Lists the current simulator parameters (dates, save option etc.)
 C  MZTRAC   Define quantities to be traced.
@@ -50,6 +51,7 @@ C      USE H3KSTORE_FC_DATA,ONLY: iCurrent_FCT_OUTPUT_FILE
       include "SOFC.h"
       include "UserSimulationToggles.h"
       include "plant.h"
+      include "FMI.h"
 
       common/filep/ifil
       INTEGER :: ifil
@@ -91,10 +93,11 @@ C Tolerance for iteration of hydrogen flow matrix
       INTEGER :: indcfg
 
 C Uncertainty.
-      COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       COMMON/UA5/IMET,ISIM,NRSIM
       INTEGER :: imet,isim,nrsim
-
+      
+      real SNA
+      COMMON/PREC1/SNA(MCOM,MS)
 
 c Mechanical ventilation system activator
       Integer iMech
@@ -106,11 +109,12 @@ C Simulator parameter.
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical PBYFIL,OK,dok
 
-      character LUALF*72,LCNG*15,LLOC*15,outs*124
+      character outs*124
       
       INTEGER :: i,ier,irep,isimn1,isimn2,istat,iualf,iunit
       INTEGER :: nstep
       REAL :: tstep
+      integer J
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -132,7 +136,23 @@ C Set simulation control.
 C If simulator is in silent running mode, set flag to terminate run      
          if ( autook ) exitok = .true.
          return
-      endif 
+      endif
+
+C <FMI>
+C Read FMI spec file to set FMI commons.
+      if (is_FMU) then
+        IUNIT=IFIL+1
+        CALL ERPFREE(IUNIT,IER)
+        CALL EFOPSEQ(IUNIT,FMISFL,1,IER)
+        call FMI_RDSCFL(IUNIT,IER)
+        CALL ERPFREE(IUNIT,IER)
+        if (IER.eq.1) then
+C If simulator is in silent running mode, set flag to terminate run
+           if ( autook ) exitok = .true.
+           return
+        endif  
+      endif
+C </FMI>          
 
 C Calculate the BASESIMP heat loss factors.
       CALL BSFCCTL
@@ -201,6 +221,7 @@ C Re-scan the model description files silently.
         
 C MZNUMA is effectively a simulation clock.
         CALL MZNUMA
+C        write (36,*) 'after mznuma sna= ',(SNA(1,J),J=1,7)
 
 C Close ascii plant-side boundary data file if last simulation 
 C otherwise rewind for use in next simulation.
@@ -352,6 +373,7 @@ C and information on the saved result set.
       COMMON/SOLOFF/ISOLAR
       COMMON/SKYFLG/ISKYFL
       COMMON/PMSLV/IPMSLV
+      COMMON/PREC1/SNA(MCOM,MS)
 
       COMMON/FFN/IFLWN,ICFFS(MPCON)
       COMMON/MFSINC/MFBSNC
@@ -381,12 +403,14 @@ C Tolerance for iteration of hydrogen flow matrix
 
       COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
      &              zSWAp(mcom),zSWAf(mcom)
+      real zfldK,zfldD,zfldC,zfldA,zSWAp,zSWAf
       LOGICAL znotair
 
       CHARACTER*72 vsnam
       CHARACTER*29 ITEM(18)
       character outs*124
       integer NITMS,INO  ! max items and current menu item
+      integer J
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -463,10 +487,10 @@ C Initialize user defined plant side convergence params to default values
    
      
 
-C Initialise all zones to air-filled
-      do 114 iwz=1,mcom
-        znotair(iwz)=.false.
- 114  continue
+C Initialise all zones to air-filled (done in esystem.F)
+C      do 114 iwz=1,mcom
+C        znotair(iwz)=.false.
+C 114  continue
 
 C Initialise reading in of vertical solar data.
       VTSOL=.false.
@@ -711,6 +735,7 @@ C Set simulation toggles.
 #include "building.h"
 #include "geometry.h"
 #include "plant.h"
+#include "power.h"
 #include "net_flow.h"
 #include "UserSimulationToggles.h"
 
@@ -730,6 +755,9 @@ C Set simulation toggles.
 C Tolerance for iteration of hydrogen flow matrix 
       common/PITER_H2/fH2_iteration_tolerance
       real fH2_iteration_tolerance
+
+C Some of these variables may have been set in the mass flow
+C network file.
       COMMON/MFSINC/MFBSNC
       COMMON/MFCALC/IPSMOD,MSLVTP
       COMMON/MFLITR/MAXITF,FERREL,FERMFL,PMAX,STEFFR,MFTRAC,ITER,IOK
@@ -742,9 +770,7 @@ C Tolerance for iteration of hydrogen flow matrix
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-C Common for electrical file 
-      COMMON/ENTFILE/ENTFLNAM,IENTXIST
-      INTEGER :: ispmxist,ientxist
+      INTEGER :: ispmxist
 
 
       COMMON/GRSD100/IndxSt
@@ -762,7 +788,12 @@ C  zflsA - total shortwave absorptivity;
 C  zSWA - shortwave absorption (W).
       COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
      &              zSWAp(mcom),zSWAf(mcom)
+      real zfldK,zfldD,zfldC,zfldA,zSWAp,zSWAf
       LOGICAL znotair
+
+      common/ACTDOM/CFDOK
+
+      logical CFDOK
 
 C Treatment of solar radiation data in weather file
 C ESP-r operates on hourly-centered data. That is, the amount of solar
@@ -792,7 +823,7 @@ c This common block is used to define the sky temperature calculation method
                                    ! 4 = Swinbank (clear - uses dry bulb T);                  
                                    ! 5 = Swinbank (clear - uses wet bulb T);       
                                                                                                                                                     
-      CHARACTER*72 LAPROB,vsnam,lfil,entflnam
+      CHARACTER*72 LAPROB,vsnam,lfil
       CHARACTER*40 ITEMG(34)
       character SALT*51,spflnam*72,outs*124
       character HCALT*42
@@ -877,7 +908,11 @@ C Make up strings for the current set of toggles.
         ITEMG(12)=  'k Mass flow timestep >> 1 per zone_step '
       endif
       ITEMG(13)=    '  ________________________________      '
-      ITEMG(14)=    'l                                       '
+      if(CFDOK)then
+        ITEMG(14)=  'l CFD options                  '
+      else
+        ITEMG(14)=  'l CFD options (NA)             '
+      endif
       if(ICLMFL.eq.0) then
         ITEMG(15)=  'm Climate interpolation >> ON           '
       elseif(ICLMFL.eq.1) then
@@ -1068,7 +1103,11 @@ C This is over-ruled in case of plant fluid simulation
           MFBSNC=IW-1
         ENDIF
       elseif(INO.eq.14)then
-
+        if(CFDOK)then
+          call CFDTOG
+        else
+          call edisp(iuout,'No CFD domain defined for current model.')
+        endif
       elseif(INO.eq.15)then
         call tstamp('>','SIM: edit climate interpolation')
         helptopic='toggle_clm_interpolation'
@@ -1738,6 +1777,7 @@ C askaboutcfd confirms simulation periods for CFD assessments.
       subroutine askaboutcfd
 
 #include "building.h"
+#include "cfd.h"
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
@@ -1751,9 +1791,11 @@ C Active domain common.
 C CFD commons.
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/CFSEUP/CFTIMS,CFTIMF,ICFDYS,ICFDYF,ICFAUX(MCOM)
+      common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
       character outs*124,LCFD*72
       logical OK,dok
       logical CFDOK
+      integer preRF_DorU
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -1798,20 +1840,35 @@ C        write(6,*) isd1,ism1,isds,isd2,ism2,isdf
           call edisp(iuout,' Start/Finish days out of order.')
           goto 40
         endif
+        if (ICFDYS.lt.ISDS) then
+          call edisp(iuout,' Start day is before simulation start day.')
+          goto 40
+        endif
+        if (ICFDYF.gt.ISDF) then
+          call edisp
+     &             (iuout,' Finish day is after simulation finish day.')
+          goto 40
+        endif
 
-        CFTIMS=0.0
-        CFTIMF=24.0
+        if (ICFDYS.eq.ISDS) then
+          rtmp=1.0
+        else
+          rtmp=0.0
+        endif
+        CFTIMS=rtmp
+        CFTIMF=23.99
   50    write(outs,'(a)')'For the first day CFD is active specify'
-       CALL EASKR(CFTIMS,outs,'starting hour ',
-     &   0.0,'F',24.,'F',0.0,'Decimal fraction',IER,nbhelp)
+        CALL EASKR(CFTIMS,outs,'starting hour ',
+     &    rtmp,'F',23.99,'F',rtmp,'Decimal fraction',IER,nbhelp)
+        if (CFTIMS.gt.24.0) CFTIMS=CFTIMS-24.0
         write(outs,'(a)')'For the last day CFD is active specify'
         CALL EASKR(CFTIMF,outs,'finishing hour ',
-     &    0.0,'F',24.,'F',24.0,'Decimal fraction',IER,nbhelp)
+     &    0.0,'F',23.99,'F',23.99,'Decimal fraction',IER,nbhelp)
         if ((ICFDYF.eq.ICFDYS).and.(CFTIMF.lt.CFTIMS)) then
           call edisp(iuout,' Start/Finish hours out of order.')
           goto 50
         endif
-      
+
         DO 30 IC=1,NCOMP
           ICFAUX(IC)=IFCFD(IC)
           IFCFD(IC)=0
@@ -1840,6 +1897,7 @@ C prior to each simulation commencing.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC7/ITCNST
 
       COMMON/C6/INDCFG
@@ -1920,15 +1978,15 @@ C The record length of the results file is MS+5 words.
 c Added a 5th computed goto for save level 5
       goto (41,8,9,11,11,41),ISAV1
     8 if(irdact.ne.0)then
-        NWORD=(IDAYS*irdact*NCOMP*24*1+IRECPL)*(MS+5)
+        NWORD=(IDAYS*irdact*NCOMP*24*1+IRECPL)*(MS+12)
       else
-        NWORD=(IDAYS*NTSTEP*NCOMP*24*1+IRECPL)*(MS+5)
+        NWORD=(IDAYS*NTSTEP*NCOMP*24*1+IRECPL)*(MS+12)
       endif
       goto 12
     9 if(irdact.ne.0)then
-        NWORD=(IDAYS*irdact*NCOMP*24*3+IRECPL)*(MS+5)
+        NWORD=(IDAYS*irdact*NCOMP*24*3+IRECPL)*(MS+12)
       else
-        NWORD=(IDAYS*NTSTEP*NCOMP*24*3+IRECPL)*(MS+5)
+        NWORD=(IDAYS*NTSTEP*NCOMP*24*3+IRECPL)*(MS+12)
       endif
       goto 12
    11 NREC=0
@@ -1941,14 +1999,14 @@ c Added a 5th computed goto for save level 5
 
 C << with wider record width is MS+5 still ok for file size prediction ?? >>
       if(irdact.ne.0)then
-        NWORD=(IDAYS*irdact*NREC*24+IRECPL)*(MS+5)
+        NWORD=(IDAYS*irdact*NREC*24+IRECPL)*(MS+12)
       else
-        NWORD=(IDAYS*NTSTEP*NREC*24+IRECPL)*(MS+5)
+        NWORD=(IDAYS*NTSTEP*NREC*24+IRECPL)*(MS+12)
       endif
 
 C There are 4 bytes in a word therefore the number
 C of kilobytes required by the solution file is .....
-   12 BYTE=FLOAT(NWORD)*4.0/1024.0
+   12 BYTE=ABS(FLOAT(NWORD)*4.0/1024.0)
 
 C Determine the number of zone days simulated.
    41 NZTS=(NCOMP*(IDAYS+ITCNST))*NTSTEP*24
@@ -1990,35 +2048,35 @@ c Hot 3000: Added save level 5 zone save level info
       elseif(isave.eq.6)then
         call edisp(icout,' Zone save option     : 6 (No db created)')
       endif
-      write(outs,'(a,I5)') ' No. of warnings      : ',IWARN
+      write(outs,'(a,I6)') ' No. of warnings      : ',IWARN
       call edisp(icout,outs)
       call edisp(icout,' ')
 
       NPTS=NTSTEP*NTSTPP
       TMIN=60.0/NTSTEP
       TMINP=TIMSEC/60.
-      write(outs,'(a,I5,a)')' Simulation period    : ',IDAYS,' day(s)'
+      write(outs,'(a,I6,a)')' Simulation period    : ',IDAYS,' day(s)'
       call edisp(icout,outs)
 
 C Derive string for simulation period.
       CALL EPERSTR(IYEAR,ISDS,1,ISDF,24,1,2,0,PERST1,PERST2,PERST3,IER)
       write(outs,'(16X,A44)')PERST2
       call edisp(icout,outs)
-      write(outs,'(a,I5,a)')' Start-up period      : ',ITCNST,' day(s)'
+      write(outs,'(a,I6,a)')' Start-up period      : ',ITCNST,' day(s)'
       call edisp(icout,outs)
 
       IF(INDCFG.EQ.2)goto 131
       if(irdact.eq.0)then
-        write(outs,'(a,I6,a,F5.2,a)')' Zone time-steps      :',NTSTEP,
+        write(outs,'(a,I7,a,F5.2,a)')' Zone time-steps      :',NTSTEP,
      &    ' / hr ( ',TMIN,' min. intervals saved at each timestep)'
       else
-        write(outs,'(a,I6,a,F5.2,a)')' Zone time-steps      :',NTSTEP,
+        write(outs,'(a,I7,a,F5.2,a)')' Zone time-steps      :',NTSTEP,
      &    ' / hr ( ',TMIN,' min. intervals saved once per hour)'
       endif 
       call edisp(icout,outs)
-      write(outs,'(a,I5)') ' Number of zones      : ',NCOMP
+      write(outs,'(a,I6)') ' Number of zones      : ',NCOMP
       call edisp(icout,outs)
-      write(outs,'(a,I6)') ' Zone-time increments :',NZTS
+      write(outs,'(a,I7)') ' Zone-time increments :',NZTS
       call edisp(icout,outs)
 
       IF(INDCFG.EQ.1)goto 133
@@ -2030,13 +2088,13 @@ C Derive string for simulation period.
       call edisp(icout,    ' Zone results db size : Not applicable')
       goto 135
    42 IF(BYTE.GT.2000.0)goto 14
-      write(outs,'(a,F7.1,a)')' Zone results db size : ',BYTE,' Kbytes'
+      write(outs,'(a,F8.1,a)')' Zone results db size : ',BYTE,' Kbytes'
       if(isave.eq.1.or.isave.eq.2.or.isave.eq.3.or.isave.eq.4)then
         call edisp(icout,outs)
       endif
       goto 135
    14 BYTE=BYTE/1024.0
-      write(outs,'(a,F7.1,a)')' Zone results db size : ',BYTE,' Mbytes'
+      write(outs,'(a,F8.1,a)')' Zone results db size : ',BYTE,' Mbytes'
       if(isave.eq.1.or.isave.eq.2.or.isave.eq.3.or.isave.eq.4)then
         call edisp(icout,outs)
       endif
@@ -2199,7 +2257,9 @@ C Commence simulation.
 
 C If trace is active then write to the file the header 
 C information above to assist in identification.
-      IF(ITC.gt.0.and.ITU.ne.iuout)call mzinfo(ITU)
+      if(ITC.gt.0.and.ITU.ne.iuout)then
+        call mzinfo(ITU)
+      endif
     7 RETURN
       END
 
@@ -2244,7 +2304,7 @@ C Common for libsv3 trace
       COMMON/enbal/nsurf,insurf(MS)
 
       dimension IVALS(MCOM)
-      CHARACTER*29 ITEM(33)
+      CHARACTER*29 ITEM(35)
       character outs*124,dtrace*72,ltrace*72
       logical OK,dok
       integer NITEMS,INO  ! max items and current menu item
@@ -2287,10 +2347,12 @@ C For help messages
       ITEM(27)='3 control functions          '
       ITEM(28)='4 time-step controller       '
       ITEM(29)='5 network flow (asci results)'
-      ITEM(30)='  ___________________________'
-      ITEM(31)='/ clear trace selections     '
-      ITEM(32)='? help                       '
-      ITEM(33)='- exit                       '
+      ITEM(30)='6 Not applicable             '
+      ITEM(31)='7 CFD-MFS iteration          '
+      ITEM(32)='  ___________________________'
+      ITEM(33)='/ clear trace selections     '
+      ITEM(34)='? help                       '
+      ITEM(35)='- exit                       '
 
 C Initilise trace output facility.
       ITC=0
@@ -2324,7 +2386,7 @@ C Case for plant only.
  9990 CONTINUE
       GOTO 9988
 
- 9989 NITEMS=33
+ 9989 NITEMS=35
       call tstamp('>','SIM: use selective trace')
 
 C Help text for this menu.
@@ -2336,7 +2398,7 @@ C Help text for this menu.
       IF(INO.LE.0)then
         ino=-1
         goto 4
-      elseif(INO.EQ.30)then
+      elseif(INO.EQ.NITEMS-3)then
         ino=-1
         goto 4
       elseif(INO.eq.NITEMS)then
@@ -2471,7 +2533,13 @@ C If all plant turn on related traces as well.
         ITRACE(7)=1
         call edisp(iuout,'Selected network flow ascii trace.')
         goto 4
-      elseif(ino.eq.31)then
+C      elseif(ino.eq.30)then
+C        II=43
+C        call edisp(iuout,'Selected CFD cell velocities trace.')
+      elseif(ino.eq.31) then
+        II=44
+        call edisp(iuout,'Selected CFD-MFS iteration trace.')
+      elseif(ino.eq.NITEMS-2)then
 
 C Clear all selections.
         call edisp(iuout,'Selected CLEAR ALL trace.')
@@ -2630,5 +2698,121 @@ c added Save level 5 information
       endif
 
    12 return
+      end
+
+C ******************** CFDTOG
+C Set CFD coupling toggles.
+
+      subroutine CFDTOG
+#include "cfd.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/CFDTOGS/ACCON,CFD2BLD,CFD2MFS
+      COMMON/GGDH/GENB1(ntcelx,ntcely,ntcelz),GGDH
+
+      integer ACCON,CFD2BLD,CFD2MFS
+      logical GGDH
+
+      CHARACTER ITEMG(10)*40 
+      integer NITMS,INO  ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CFDTOG'  ! set for cfiles
+      
+ 10   INO=-4
+      ITEMG(1)=    ' ---------- COUPLING OPTIONS ---------- '
+      if(ACCON.eq.1)then
+        ITEMG(2)=  'a Adaptive turbulence model >> On       '
+      elseif(ACCON.eq.0)then
+        ITEMG(2)=  'a Adaptive turbulence model >> Off      '
+      else
+        call edisp(iuout,'Unrecognized value of ACCON')
+        return
+      endif
+      if(ACCON.eq.1)then
+        if(CFD2BLD.eq.1)then
+          ITEMG(3)='b Allow CFD to set air-surf. flux >> No '
+        elseif(CFD2BLD.eq.2)then
+          ITEMG(3)='b Allow CFD to set air-surf. flux >> Yes'
+        else
+          call edisp(iuout,'Unrecognized value of CFD2BLD')
+          return
+        endif
+      else
+        ITEMG(3)=  'b Allow CFD to set air-surf. flux >> NA '
+      endif
+      if(CFD2MFS.eq.1)then
+        ITEMG(4)=  'c Allow CFD-MFS iteration >> No         '
+      elseif(CFD2MFS.eq.2)then
+        ITEMG(4)=  'c Allow CFD-MFS iteration >> Yes        '
+      else
+        call edisp(iuout,'Unrecognized value of CFD2MFS')
+        return
+      endif
+      ITEMG(5)=    ' ----------- SOLVER OPTIONS ----------- '
+      if (GGDH) then
+        ITEMG(6)=  'd General Gradient Diffusion Hyp. >> On '
+      else
+        ITEMG(6)=  'd General Gradient Diffusion Hyp. >> Off'
+      endif
+      ITEMG(7)=    '  ________________________________      '
+      ITEMG(8)=    '? help                                  '
+      ITEMG(9)=    '- exit to simulation toggles menu       '
+      NITMS=9
+
+C Help text for this menu.
+      helptopic='cfd_coupling_toggles'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
+      CALL EMENU('CFD coupling toggles',ITEMG,NITMS,INO)
+
+      if(INO.eq.2)then
+        IF(ACCON.eq.1)then
+C Turn ACC off.
+          ACCON=0
+        else
+C Turn ACC on.
+          ACCON=1
+        endif
+      elseif((INO.eq.3).and.(ACCON.eq.1))then
+        if(CFD2BLD.eq.1)then
+C 2-way CFD-BLD conflation.
+          CFD2BLD=2
+        else
+C 1-way CFD-BLD conflation.
+          CFD2BLD=1
+        endif
+      elseif(INO.eq.4)then
+        if(CFD2MFS.eq.2)then
+C 1-way CFD-MFS conflation.
+          CFD2MFS=1
+        else
+C 2-way CFD-MFS conflation.
+          CFD2MFS=2
+        endif
+      elseif(INO.eq.6)then
+        if(.not.GGDH)then
+C GGDH on.
+          GGDH=.TRUE.
+        else
+C GGDH off.
+          GGDH=.FALSE.
+        endif
+      elseif(INO.eq.(NITMS-1))then
+C Help.
+        helptopic='cfd_coupling_toggles'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('CFD coupling toggles',nbhelp,'-',0,0,IER)
+      elseif(INO.eq.NITMS)then
+C Return to simulation toggles menu.
+        return
+      endif
+
+C Redisplay menu.
+      goto 10
       end
  

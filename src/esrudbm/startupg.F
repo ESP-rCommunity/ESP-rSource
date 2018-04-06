@@ -318,10 +318,6 @@ C Caputre text buffer to a file, capextf is in wwlib.c
         CALL EGETW(OUTSTR,K,cadfmt,'W','cad fnt',IER)
         write(outs,'(a,a,2x,a,2x,a)')' Local CAD: ',cadlbl,cadexe,cadfmt
         if(itrc.gt.0)call edisp(iuout,outs)
-      elseif(WORD(1:13).eq.'*tutorial_app')then
-
-C Tutorial application depreciated.
-        continue
       elseif(WORD(1:8).eq.'*journal')then
 
 C Turn journaling on/off.
@@ -420,12 +416,13 @@ C the default file and genereic database names via common block.
 C It uses espinstalldir.h which was created by the Install
 C script with the current esp-r install directory held
 C in a string instpath.
-      SUBROUTINE ESCGDEF(IFDEF,IER)
+      SUBROUTINE ESCGDEF(IFDEF,act,IER)
 #include "esprdbfile.h"
 C Use espriou.h for climatelist file name and defdbfl.
 #include "espriou.h"
       
       integer lnblnk  ! function definition
+      character act*1 ! s for silent - for normal
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -494,8 +491,8 @@ C        dinstpath = 'c:/esru/esp-r'
         write(DCLIM,'(2a)') di(1:ln),'/climate/clm67'
         write(DAPRES,'(2a)') di(1:min(ln,51)),'/databases/pressc.db1'
         write(DFCON,'(2a)') di(1:min(ln,51)),
-     &    '/databases/constr_db2.materialdb'
-        write(DFMUL,'(2a)') di(1:min(ln,51)),'/databases/multicon.db2'
+     &    '/databases/material.db4.'
+        write(DFMUL,'(2a)') di(1:min(ln,51)),'/databases/multicon.db4'
         write(DOPTDB,'(2a)') di(1:min(ln,51)),'/databases/optics.db2'
         write(DPRFDB,'(2a)') di(1:min(ln,51)),'/databases/profiles.db1'
         write(DPCDB,'(2a)') di(1:min(ln,51)),'/databases/plantc.db1'
@@ -525,11 +522,18 @@ C Open the defaults file, return if not found.
       IER=0
       CALL EFOPSEQ(IFDEF,defdbfl,1,IER)
       IF(IER.LT.0)THEN
-        write(outs248,'(3a)') 'The file ',defdbfl(1:lnblnk(defdbfl)),
-     &   ' was not found (assuming standard databases).'
-        call edisp248(IUOUT,outs248,100)
-        IER=1
-        RETURN
+
+C Application asked for a silent.
+        if(act.eq.'s')then
+          IER=1
+          RETURN
+        else
+          write(outs248,'(3a)') 'The file ',defdbfl(1:lnblnk(defdbfl)),
+     &    ' was not found (assuming standard databases).'
+          call edisp248(IUOUT,outs248,100)
+          IER=1
+          RETURN
+        endif
       ENDIF
 
 C Read '*ESP-r Defaults' tag.
@@ -940,7 +944,7 @@ C Application name
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24
-      character outs*248,sps*8,aut*12,actf*72,browse*4
+      character outs*248,sps*30,aut*12,actf*72,browse*4
       logical unixok
 
 C Determine if an X graphics library (GTK or X11) was linked
@@ -1461,7 +1465,7 @@ C Display detailed build information and then quit
         elseif(argument(1:4).eq.'-act')then
           i=i+1
           call getarg(i,act)
-	  if(act(1:6).eq.'rotate')then
+          if(act(1:6).eq.'rotate')then
             i=i+1
             call getarg(i,argument)
             read(argument,*,IOSTAT=IOS,ERR=2)data1
@@ -1481,7 +1485,7 @@ C Display detailed build information and then quit
             i=i+1
             call getarg(i,argument)
             read(argument,*,IOSTAT=IOS,ERR=2)data3
-	  endif
+          endif
         endif
         goto 41
 

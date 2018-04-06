@@ -45,6 +45,7 @@ C geometry.h provides commons G0/G2/c20/precz.
 #include "epara.h"
 #include "sbem.h"
 #include "CFC_common.h"
+#include "prj3dv.h"
 
       integer lnblnk  ! function definition
 
@@ -60,14 +61,11 @@ C geometry.h provides commons G0/G2/c20/precz.
       common/PRECT4/TOPTIC(MCOM,MTMC)
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/user/browse
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
-      LOGICAL MODIFY,MODLEN,MODBND,browse,savereturn
+      LOGICAL browse,savereturn
 
       DIMENSION VERT(35),libcmt(MTMC)
 
@@ -190,7 +188,7 @@ C On entry display the current zone. Reset all surface lines to std.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODLEN=.TRUE.
       MODBND=.TRUE.
       again=.false.
@@ -378,7 +376,7 @@ C of the *.cfc file is assembled in subroutine 'makeCFCfile'.
           icfc(icomp)=1
           lcfcin(icomp)=CFCFILE
           ltmp=lcfcin(icomp)
-          CALL EASKS(ltmp,'CFC file name?',
+          CALL EASKS(ltmp,'Complex fenistration (CFC) file name?',
      &      ' ',72,CFCFILE,'CFC file name',IER,nbehlp)
           if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
             lcfcin(icomp)=ltmp
@@ -432,9 +430,14 @@ C current menu line index. Build up text strings for the menu.
             optic=' - '
           endif
           icn1=izstocn(icomp,L)
-          WRITE(VERT(M),14)KEY,SSNAME(icn1),SSOTF(icn1)(1:4),
-     &      SSMLCN(icn1)(1:12),OPTIC
-   14     FORMAT(A1,1X,A12,1X,A4,1X,A12,1X,A12)
+          lnsmlcn=lnblnk(SSMLCN(icn1))
+          if(lnsmlcn.gt.16) lnsmlcn=16
+          lnsn=lnblnk(SSNAME(icn1))
+          lnop=lnblnk(OPTIC)
+          WRITE(VERT(M),14)KEY,SSNAME(icn1)(1:lnsn),
+     &      SSOTF(icn1)(1:4),
+     &      SSMLCN(icn1)(1:lnsmlcn),OPTIC(1:lnop)
+   14     FORMAT(A,2X,A,2X,A,2X,A,1X,A)
         ENDIF
    10 CONTINUE
 
@@ -443,18 +446,18 @@ C Number of actual items displayed.
 
 C If a long list include page facility text.
       IF(IPFLG.EQ.0)THEN
-        VERT(M+1)='  _____________________________   '
+        VERT(M+1)='  ________________________________   '
       ELSE
         WRITE(VERT(M+1),15)IPM,MPM
    15   FORMAT   ('0 Page ---- Part: ',I2,' of ',I2,' -----')
       ENDIF
-      VERT(1)    ='  Surface      Type  Composition  Optics'
-      VERT(M+2)  ='1 list construction details             '
-      VERT(M+3)  ='2 transparent layer properties          '
-      VERT(M+4)  ='3 linear thermal conductivity           '
-      VERT(M+5)  ='> save construction data                '
-      VERT(M+6)  ='? help                                  '
-      VERT(M+7)  ='- exit this menu                        '
+      VERT(1)    ='  Surface      Type  Composition   Optics'
+      VERT(M+2)  ='1 list construction details              '
+      VERT(M+3)  ='2 transparent layer properties           '
+      VERT(M+4)  ='3 linear thermal conductivity            '
+      VERT(M+5)  ='> save construction data                 '
+      VERT(M+6)  ='? help                                   '
+      VERT(M+7)  ='- exit this menu                         '
 
 C If editing the constructions and user has asked whether to save or
 C has resized the display, redraw.
@@ -614,7 +617,7 @@ C If any of the surfaces are transparent save this info.
       DO 61 IS=1,NZSUR(icomp)
         icn1=izstocn(icomp,is)
         IF(SSOTF(icn1)(1:4).NE.'OPAQ'.AND.
-     &            SSOTF(icn1)(1:3).NE.'CFC')TFOUND=.TRUE.
+     &     SSOTF(icn1)(1:3).NE.'CFC')TFOUND=.TRUE.
         IF(ITMCFL(ICOMP,IS).GT.0)TFOUND=.TRUE.
   61  CONTINUE
       IF(TFOUND)THEN
@@ -749,11 +752,11 @@ C Optical and geometric properties.
 C Material properties.
       integer matarrayindex ! the indes within matdatarray
 
-      LOGICAL closemat1,closemat2
+      LOGICAL closemat1,closemat2,modmlc
 
 C CFClayers db properties
       integer cfcarrayindex
-      logical closecfc1
+      logical closecfc1,closecfc2
 
       DIMENSION ISD(25)
       CHARACTER ISD*56
@@ -785,7 +788,8 @@ C with ier=1.
 C Establish if CFC layer data arrays have been filled. If not return
 C with ier=1.
       call eclose(cfcver,1.1,0.01,closecfc1)
-      if(closecfc1)then
+      call eclose(cfcver,1.2,0.01,closecfc2)
+      if(closecfc1.or.closecfc2)then
         continue
       else
         call usrmsg('The CFC layer arrays are incomplete so editing',
@@ -805,7 +809,7 @@ C Setup text for menu.
       else
         WRITE(ISD(2),'(A,A)') 'a optical set name: ',SSOTF(icn1)(1:12)
       endif
-      write(ISD(3),'(A,A)') 'b construction    : ',SSMLCN(icn1)(1:12)
+      write(ISD(3),'(A,A)') 'b construction    : ',SSMLCN(icn1)(1:16)
       if(ITMCFL(ICOMP,ISUR).GT.0)then
         optic=TOPTIC(ICOMP,ITMCFL(ICOMP,ISUR))
         write(ISD(4),'(2A)')'  optical property: ',optic
@@ -972,14 +976,19 @@ C Additional option to choose CFC type.
 
 C Select composite and then put the info into common, updating
 C the OPAQUE/TRANSPARENT flag as well.
-        CALL EPKMLC(IC,'Select one of these constructions ',
-     &    'or -Exit. ',IER)
+        if(mlcver.eq.0)then
+          CALL EPKMLC(IC,'Select one of these constructions ',
+     &      'or -Exit. ',IER)
+        else
+          call edisp(iuout,'Select one of these constructions')
+          CALL EDMLDB2(modmlc,'-',IC,IER)
+        endif
         IF(IER.EQ.1)THEN
           CALL USRMSG(' ',' A problem was encountered..','W')
           RETURN
         ENDIF
         IF(IC.GT.0)THEN
-          WRITE(SSMLCN(icn1),'(A)') mlcname(IC)(1:12)
+          WRITE(SSMLCN(icn1),'(A)') mlcname(IC)
           ssmlcindex(icn1)=IC   ! update array
           if(mlctype(IC)(1:4).EQ.'TRAN')then
             SSOTF(icn1)='TRAN'
@@ -1190,11 +1199,11 @@ C Material properties.
       integer matarrayindex ! the indes within matdatarray
 
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
-      logical closemat1,closemat2
+      logical closemat1,closemat2,modmlc
 
 C CFClayer db properties
       integer cfcarrayindex
-      logical closecfc1
+      logical closecfc1,closecfc2
 
       CHARACTER outs*124
 
@@ -1214,7 +1223,12 @@ C If the common block MLC has not yet been filled, read in the
 C composite construction database.
       IF(.NOT.MLDBOK)THEN
         CALL ERMLDB(0,iuout,IER)
-        IF(IER.NE.0)THEN
+        IF(IER.eq.4)THEN
+          CALL ERMLDB2(0,iuout,IER)
+          if(IER.eq.0)then
+            MLDBOK=.TRUE.
+          endif
+        ELSEIF(IER.EQ.1.or.IER.eq.2.or.IER.eq.3)THEN
           CALL USRMSG(' Error in reading composite construction.',
      &    ' Unable to create zone construction file!','W')
           RETURN
@@ -1239,7 +1253,8 @@ C with ier=1.
 C Establish if CFC layer data arrays have been filled. If not return
 C with ier=1.
       call eclose(cfcver,1.1,0.01,closecfc1)
-      if(closecfc1)then
+      call eclose(cfcver,1.2,0.01,closecfc2)
+      if(closecfc1.or.closecfc2)then
         continue
       else
         call usrmsg('The CFC layer arrays are incomplete so zone',
@@ -1262,9 +1277,14 @@ C << The logic for dealing with TRAN/OPAQ needs to be updated! >>
         IF(SSMLCN(ioc)(1:4).EQ.'UNKN')THEN
   245     WRITE(outs,'(3A)')' Composition of ',SSNAME(ioc),
      &                         ' is unknown.'
-          CALL EPKMLC(ISEL,outs,'Please select one...',IER)
+          if(mlcver.eq.0)then
+            CALL EPKMLC(ISEL,outs,'Please select one...',IER)
+          else
+            call edisp(iuout,'Please select one...')
+            CALL EDMLDB2(modmlc,'-',ISEL,IER)
+          endif
           IF(ISEL.GT.0)THEN
-            WRITE(SSMLCN(ioc),'(A)') mlcname(ISEL)(1:12)
+            WRITE(SSMLCN(ioc),'(A)') mlcname(ISEL)
             ssmlcindex(ioc)=ISEL  ! update other surf index
             if(mlctype(ISEL)(1:4).EQ.'TRAN')then
               SSOTF(ioc)='TRAN'
@@ -1292,11 +1312,13 @@ C Remember this change by saving the file.
         ENDIF
 
 C Reset number of layers, if at end of loop it is still 0 then
-C the material was not found and must be asked for.
+C the construction was not found and must be asked for.
         NE(IS)=0
+        lnsmlcn=lnblnk(SSMLCN(ioc))
         if(ssmlcindex(ioc).eq.0)then
-          write(outs,'(5A)') ' The construction ',SSMLCN(ioc),
-     &         ' of ',SSNAME(ioc),' was not found in the mlc db...'
+          write(outs,'(5A)') ' The construction ',
+     &      SSMLCN(ioc)(1:lnsmlcn),' of ',SSNAME(ioc),
+     &      ' was not found in the mlc db...'
           call usrmsg(outs,'resetting attribute to UNKNOWN.','W')
           SSMLCN(ioc)='UNKNOWN'
           goto 244
@@ -1326,11 +1348,12 @@ C...............information is, so set to arbitrary non-zero value.
               endif
             endif
 
-C CFC emissivity and absorptivity calclated elsewhere so set to 0.0
-            E=0.0
-            A=0.0
+C CFC emissivity and absorptivity calclated elsewhere, set to 0.001
+C to avoid warning messages
+            E=0.001
+            A=0.001
 
-          ELSE ! check_CFC2_or_MLC
+          ELSE ! we have a MLC
             matarrayindex=IPRMAT(IC,IL)   ! which materials array index
 
 C And if matarrayindex is zero then resetn dbcon dbden dbsht.
@@ -1615,6 +1638,7 @@ C through each of the existing surfaces and finds unique optical types.
       COMMON/TMCB3/NBCTT(MCOM,MBP,MTMC),BACTPT(MCOM,MBP,MTMC)
       LOGICAL found,OK,dok
       logical canceled   ! toggle set if user interupts an edit session.
+      logical modmlc     ! for selecting MLC
       integer IRT        ! for radio button
 
       CHARACTER OPT*12,lastopt*12,TOPTIC*12,GDESCR*36
@@ -1650,10 +1674,18 @@ C Use ssmlcindex to get matching MLC index
         IF(ICF.EQ.-1)THEN
           WRITE(outs,'(A,A12)')
      &    ' select a transparent one for: ',SSNAME(icn1)
-          CALL EPKMLC(ISEL,'From the available composites please',
-     &      outs,IER)
+          if(mlcver.eq.0)then
+            CALL EPKMLC(ISEL,'From the available composites please',
+     &        outs,IER)
+          else
+            WRITE(outs,'(2A)')
+     &      'From available composites select a transparent one for: ',
+     &      SSNAME(icn1)
+            call edisp(iuout,outs)
+            CALL EDMLDB2(modmlc,'-',ISEL,IER)
+          endif
           IF(ISEL.GT.0)THEN
-            WRITE(SSMLCN(icn1),'(A12)') mlcname(ISEL)(1:12)
+            WRITE(SSMLCN(icn1),'(A)') mlcname(ISEL)
             ssmlcindex(icn1)=ISEL   ! update array
             ICF=ISEL
           ELSE
@@ -1666,16 +1698,22 @@ C an associated set of optical properties. If no equivalent set of
 C optical properties then the user will have to supply this manually.
         helptopic='constr_attribute_checks'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        WRITE(outs,'(A12,A)') mlcname(ICF)(1:12),' is not transparent!'
+        WRITE(outs,'(2A)') mlcname(ICF)(1:lnmlcname(ICF)),
+     &    ' is not transparent!'
         IF(mlctype(ICF)(1:4).EQ.'OPAQ')THEN
           CALL EASKAB(outs,' do you want to:','switch to opaque',
      &    'select a transparent material',IWB,nbhelp)
           if(IWB.eq.1)then
 
 C Switch back to opaque construction.
-            CALL EPKMLC(ISEL,'Which OPAQUE construction?',' ',IER)
+            if(mlcver.eq.0)then
+              CALL EPKMLC(ISEL,'Which OPAQUE construction?',' ',IER)
+            else
+            call edisp(iuout,'Which OPAQUE construction?')
+              CALL EDMLDB2(modmlc,'-',ISEL,IER)
+            endif
             if(ISEL.GT.0)then
-              WRITE(SSMLCN(icn1),'(A12)') mlcname(ISEL)(1:12)
+              WRITE(SSMLCN(icn1),'(A)') mlcname(ISEL)
               ssmlcindex(icn1)=ISEL   ! update array
               ICF=ISEL
               ITMCFL(ICOMP,IS)=0
@@ -1686,10 +1724,15 @@ C Switch back to opaque construction.
               return
             endif
           elseif(IWB.eq.2)then
-            CALL EPKMLC(ISEL,'Which TRANSPARENT construction?',
-     &        ' ',IER)
+            if(mlcver.eq.0)then
+              CALL EPKMLC(ISEL,'Which TRANSPARENT construction?',
+     &          ' ',IER)
+            else
+              call edisp(iuout,'Which TRANSPARENT construction?')
+              CALL EDMLDB2(modmlc,'-',ISEL,IER)
+            endif
             if(ISEL.GT.0)then
-              WRITE(SSMLCN(icn1),'(A12)') mlcname(ISEL)(1:12)
+              WRITE(SSMLCN(icn1),'(A)') mlcname(ISEL)
               ssmlcindex(icn1)=ISEL   ! update array
               ICF=ISEL
             else
@@ -1702,7 +1745,7 @@ C Check to see if this new construction has a known set of opticals.
         WRITE(OPT,'(A)') mlcoptical(ICF)(1:12)
         IF(OPT(1:2).EQ.'  '.OR.OPT(1:7).EQ.'UNKNOWN'.OR.
      &     OPT(1:6).EQ.'OPAQUE')THEN
-          WRITE(outs,'(1X,A12,A)')SSMLCN(icn1),
+          WRITE(outs,'(1X,A,A)')SSMLCN(icn1),
      &      ' has unknown optical properties!'
           CALL EASKABC(outs,' Do you want to: ',
      &      'supply optical properties','select another composite',
@@ -1778,8 +1821,9 @@ C Display of current information...
       CALL EDISP(ITRU,' Name         Description  TRANS   Reference')
       DO 31, ISR=1,NZSUR(icomp)
         icn1=izstocn(icomp,isr)
-        WRITE(outs,'(1X,A12,2X,A12,2X,A6,I4)')SSNAME(icn1),
-     &    SSMLCN(icn1)(1:12),SSOTF(icn1)(1:6),ITMCFL(ICOMP,ISR)
+        lnsmlcn=lnblnk(SSMLCN(icn1))
+        WRITE(outs,'(1X,A,2X,A,2X,A,I4)')SSNAME(icn1),
+     &    SSMLCN(icn1)(1:lnsmlcn),SSOTF(icn1)(1:6),ITMCFL(ICOMP,ISR)
         CALL EDISP(ITRU,outs)
    31 CONTINUE
       DO 202 I=1,NTMC
@@ -2252,12 +2296,12 @@ c time constant.
       write(outs,'(A,G12.4)')' Maximum thermal diffusivity is',TDM
       call edisp(iuout,outs)
       write(outs,'(3A,i3,A,i3)')' Associated MLC is ',
-     &  mlcname(istd)(1:12),' (',istd,') Layer',IE
+     &  mlcname(istd)(1:lnmlcname(istd)),' (',istd,') Layer',IE
       call edisp(iuout,outs)
       write(outs,'(A,G12.4,A)')' Maximum time constant is',TCM,' secs.'
       call edisp(iuout,outs)
       write(outs,'(A,A)')' Associated MLC construction is',
-     &  mlcname(ISTC)(1:12)
+     &  mlcname(ISTC)(1:lnmlcname(ISTC))
       call edisp(iuout,outs)
       write(outs,'(A,I3,A)')' Simulation start-up is',ITCNST,' days.'
       call edisp(iuout,outs)

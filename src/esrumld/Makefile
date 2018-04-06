@@ -1,6 +1,13 @@
+architecture := $(shell uname -s)
+ifeq ($(architecture),Darwin)
+	SWTCH=
+else
+	SWTCH= -D
+endif
 SRCdir = `pwd`/..
 COMdir = $(SRCdir)/esrucom
 PROG = mld$(EXE)
+default: $(PROG)
 
 .SUFFIXES: .o .F
 .F.o:
@@ -27,10 +34,17 @@ startup.F:
 	ln -s $(COMdir)/startup.F .
 
 strip:
-	@if [ -f $(PROG) ]; then strip $(PROG); fi
+	strip $(PROG)
 
 install:
-	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
+	install $(SWTCH) $(PROG) $(ESPBinDir)/$(PROG)
 
 clean:
 	rm -f core $(PROG)  $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) c2fdum.F psychro.F startup.F
+
+distclean: clean
+
+uninstall:
+	-rm -f $(ESPBinDir)/$(PROG)
+	
+.PHONY: clean install default strip uninstall distclean

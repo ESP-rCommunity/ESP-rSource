@@ -44,6 +44,7 @@ C output; IER=0 indicates no error.
 
 C geometry.h provides commons G0/G1/G2/G7/prec2/precz.
 #include "geometry.h"
+C UA1 in uncertainty.h
 #include "uncertainty.h"
 #include "net_flow.h"
 #include "control.h"
@@ -52,6 +53,15 @@ C geometry.h provides commons G0/G1/G2/G7/prec2/precz.
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C LPRFDB,IPRODB (for event profile database)
+#include "plant.h"
+#include "power.h"
+#include "prj3dv.h"
+
+C espriou.h provides current file.
+#include "espriou.h"
+
+C FMI.h provides FMU connection flag.
+#include "FMI.h"
 
 C Function definition
       INTEGER :: lnblnk
@@ -68,14 +78,6 @@ C Function definition
       common/childt/childterminal
       common/gzonpik/izgfoc,nzg,nznog(mcom)
       INTEGER :: izgfoc,nzg,nznog
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      REAL :: GRDIS
-      INTEGER :: ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR
-      INTEGER :: ITOBS,ITHLS,ITHLZ,ITGRD,ITPPSW
-      common/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      REAL :: ZCOG,XMN,YMN,ZMN,XMX,YMX,ZMX
       
       INTEGER :: ncomp,ncon
       common/C1/NCOMP,NCON
@@ -93,14 +95,13 @@ C Plant network.
 C Defaults.
       character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      character DFCFD*72,DECMPDBFL*72,DICONDBFL*72
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
 
-C Uncertainty.
-      COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
-      common/entfile/entflnam,ientxist
 
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       INTEGER :: NPRE
@@ -114,40 +115,27 @@ C Uncertainty.
       COMMON/NWKVEW/SCALF,VIEWCEN(3),VIEWLIM(6),IVIEW
       REAL :: SCALF,VIEWCEN,VIEWLIM
       INTEGER :: IVIEW
-      COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
-      COMMON/ICONDBNAM/ICONDBFL      
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
+      COMMON/NWKSTR/NWKNAM,NWKDSC,NWKTYPSTR(MNWKTYP)
+      CHARACTER NWKNAM*72,NWKDSC*72,NWKTYPSTR*12
+      COMMON/ICONDBNAM/ICONDBFL
+      character ICONDBFL*72
       COMMON/NWKTYP/INWKTYP,vergnf
+      INTEGER :: inwktyp
       REAL :: vergnf
       COMMON/NWKGRDL/GON,SON
-      COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
-     & ATRICN(MICN,MIATRB,3),ATRTAG(MICN,MIATRB,5),ATRMENU(MICN,MIATRB),
-     & NCONP(MICN),CONCP(MICN,MCNP,2),ICNCT(MICN,MCNP),
-     & VCICON(MICN,MICNV,3),IVEICN(MICN,MICNE,5),NIVC(MICN),
-     & NIVE(MICN),NIVD(MICN),IVDOT(MICN,MICND,4),NIVA(MICN),
-     & IVARC(MICN,MICND,7),NIVL(MICN),IVLBL(MICN,MICND,3),NIVT(MICN)
-      INTEGER :: NNICN,ICONTP,NICONATR,NCONP,ICNCT,IVEICN,NIVC,NIVE,NIVD
-      INTEGER :: IVDOT,NIVA,IVARC,NIVL,IVLBL,NIVT
-      REAL :: XYZICON,CONCP,VCICON
+      LOGICAL GON,SON
      
-      COMMON/NWKCON/NICNN,ICNS(MNCNN),ICNE(MNCNN),ICNNT(MNCNN),
-     & ICNSP(MNCNN),ICNEP(MNCNN),CNWNP(MNCNN,MCIP,3),
-     & NCONWP(MNCNN),idatrdom(MNCNN),ddtagatr(MNCNN,MIATRB,5),
-     & ddatrib(MNCNN,MIATRB,3),ddmenuatr(MNCNN,MIATRB)
-      INTEGER :: NICNN,ICNS,ICNE,ICNNT,ICNSP,ICNEP,NCONWP,idatrdom
-      REAL ::CNWNP
-
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
       INTEGER :: NCONTM,NOCNTM
       logical DOK,OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
-      logical MODIFY,MODLEN,MODBND,browse
+      logical browse
       logical xst,clkok,havefile,unixok
-      LOGICAL GON,SON,concat,remote
+      LOGICAL concat,remote
       integer iglib   ! to test for X11 interface
+      integer iappwpc ! application height as % of nominal size
 
       dimension ITEMS(30)
-      character LUALF*72,LCNG*15,LLOC*15
       character*72 LAPROB,DFILE,LPNF,tfile
       character longtfile*144,longtfiledos*144
       character ITEMS*34,ETEXT*82
@@ -155,14 +143,10 @@ C Uncertainty.
       character*72 DCNN,ltmp
       character tmode*8,doit*248
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,entflnam*72
+      character selres*72
       character DEPRE*40,dstmp*24,tab*1,outsn*124,outsd*124
       character CXITM*48,outs*124,fs*1
-      CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM,ICONDBFL
-      character ATRTAG*12,ATRMENU*32,ATRICN*12,NWKTYPSTR*12
-      character ddtagatr*12,ddmenuatr*32,ddatrib*12
       character CONTMNAM*12
-      character*72 DFCFD,DECMPDBFL,DICONDBFL
       character ltpath*72,filen*72
       character t144*144    ! for passing to erprcdb
       integer ictl
@@ -173,7 +157,7 @@ C Uncertainty.
       
       INTEGER :: itrc,itru,i,ic,icc,istat
       INTEGER :: iacc,icfoc,iclkok,idindcfg
-      INTEGER :: ientxist,iier,im,ino,inwktyp,ios,ipedit,ipass,is
+      INTEGER :: iier,im,ino,ios,ipedit,ipass,is
       INTEGER :: isindcfg,iuf,ium,iuo,iv,iver,iw,iz
       INTEGER :: iser,lenlfil,ln,ltrf,nets,nitems
       REAL :: szlow,szcog,szhigh
@@ -243,7 +227,7 @@ C are active.
       if(ientxist.gt.0)nets=nets+1
       if(ihvacflag.gt.0)nets=nets+1
 
-      ictl=ncf+ncl+ncc+ngf+nof
+      ictl=ncf+ncl+ncc+ngf+nof+nCFCctlloops
       IER=0
       WRITE(ITEMS(1),'(A,A)') ' cfg file: ',LCFGF(1:22)
       IF(INDCFG.EQ.0)THEN 
@@ -256,87 +240,89 @@ C are active.
         ITEMS(2)= 'a model domains >> building/plant'
       ENDIF
       ITEMS(3)   ='b model context                '
-      ITEMS(4)   =' _____________________________ '
-      WRITE(ITEMS(5),'(A,I2,A)')' ... Zones.....(',NCOMP,' defined)'
-      ITEMS(6)   ='c composition                ' 
-      WRITE(ITEMS(7),'(A,I2,A)')' ... Networks......(',nets,' defined)'
+      WRITE(ITEMS(4),'(A,I2,A)')' ... Zones.....(',NCOMP,' defined)'
+      ITEMS(5)   ='c composition                '
+      WRITE(ITEMS(6),'(A,I2,A)')' ... Networks......(',nets,' defined)'
       if(indcfg.ge.2.or.ihvacflag.gt.0)then
-        ITEMS(8)='d plant & systems (defined)  '
+        ITEMS(7)='d plant & systems (defined)  '
       else
-        ITEMS(8)='d plant & systems            '
+        ITEMS(7)='d plant & systems            '
       endif
 
-C Check flags for air flow type
-      IF ((iairn.lt.1).AND.(iAIM2.EQ.0)) THEN
+C Check flags for air flow type. << How does the reference to iAIM2
+C work? if iAIM2=0 then the next line tests for iAIM2=1
+      IF (iairn.lt.1) THEN
         IF (iAIM2.EQ.1) THEN
-          ITEMS(9)='e empirical air infiltration'
-        ELSE 
-          ITEMS(9)='e air flow                  '
+          ITEMS(8)='e empirical air infiltration'
+        ELSE
+          ITEMS(8)='e air flow                  '
         ENDIF
       ELSE
-        if(iairn.eq.1)then
-          ITEMS(9)='e network flow (menu)       '
-        elseif(iairn.eq.2)then
-          ITEMS(9)='e network flow (graphic)    '
+        if(iairn.ge.1)then
+          ITEMS(8)='e network flow (defined)       '
         else
-          ITEMS(9)='e network flow              '
+          ITEMS(8)='e network flow              '
         endif
       ENDIF
       if(ientxist.gt.0)then
-        ITEMS(10)='f electrical (defined)      '
+        ITEMS(9)='f electrical (defined)      '
       else
-        ITEMS(10)='f electrical                '
+        ITEMS(9)='f electrical                '
       endif
       if(nocntm.gt.0)then
-        ITEMS(11)='g contaminant (defined)     '
+        ITEMS(10)='g contaminant (defined)     '
       else
-        ITEMS(11)='g contaminant               '
+        ITEMS(10)='g contaminant               '
       endif
-      WRITE(ITEMS(12),'(A,I2,A)')' ... Controls.....(',ictl,' defined)'
+      WRITE(ITEMS(11),'(A,I2,A)')' ... Controls.....(',ictl,' defined)'
       if(ncf.eq.0)then
-        WRITE(ITEMS(13),'(A)')     'j zones                       '
+        WRITE(ITEMS(12),'(A)')     'j zones                       '
       else
-        WRITE(ITEMS(13),'(A,I2,A)')'j zones (',ncf,' loops)       '
+        WRITE(ITEMS(12),'(A,I2,A)')'j zones (',ncf,' loops)       '
       endif
       if(ncl.eq.0)then
-        WRITE(ITEMS(14),'(A)')     'k plant & systems '
+        WRITE(ITEMS(13),'(A)')     'k plant & systems '
       else
-        WRITE(ITEMS(14),'(A,I2,A)')'k plant & systems (',ncl,' loops)'
+        WRITE(ITEMS(13),'(A,I2,A)')'k plant & systems (',ncl,' loops)'
       endif
       if(ncc.eq.0)then
-        WRITE(ITEMS(15),'(A)')     'l network flow                '
+        WRITE(ITEMS(14),'(A)')     'l network flow                '
       else
-        WRITE(ITEMS(15),'(A,I2,A)')'l network flow (',ncc,' loops)'
+        WRITE(ITEMS(14),'(A,I2,A)')'l network flow (',ncc,' loops)'
       endif
       if(nof.eq.0)then
-        WRITE(ITEMS(16),'(A)')     'm optics                '
+        WRITE(ITEMS(15),'(A)')     'm optics                '
       else
-        WRITE(ITEMS(16),'(A,I2,A)')'m optics (',nof,' loops)'
+        WRITE(ITEMS(15),'(A,I2,A)')'m optics (',nof,' loops)'
       endif
       if(ngf.eq.0)then
-        WRITE(ITEMS(17),'(A)')     'n global system '
+        WRITE(ITEMS(16),'(A)')     'n global system '
       else
-        WRITE(ITEMS(17),'(A,I2,A)')'n global system (',ngf,' loops)'
+        WRITE(ITEMS(16),'(A,I2,A)')'n global system (',ngf,' loops)'
       endif
       if(nCFCctlloops.eq.0)then
-        WRITE(ITEMS(18),'(A)')     'o complex fenestration '
+        WRITE(ITEMS(17),'(A)')     'o complex fenestration '
       else
-        WRITE(ITEMS(18),'(A,I2,A)')
+        WRITE(ITEMS(17),'(A,I2,A)')
      &   'o complex fenestration (',nCFCctlloops,' loops)'
       endif
-      WRITE(ITEMS(19),'(A)')       ' _____________________________   '
-      ITEMS(20)  ='p define uncertainties         '
-      ITEMS(21)  =' _____________________________ '
-      ITEMS(22)  =' ... Actions.....              '
-      ITEMS(23)  ='q visualisation                '
-      ITEMS(24)  ='r simulation                   '
-      ITEMS(25)  ='s results analysis             '
-      ITEMS(26)  ='t results & QA reporting       '
-      ITEMS(27)  =' _____________________________ '
-      ITEMS(28)  ='! save model                   '
-      ITEMS(29)  ='? help                         '
-      ITEMS(30)  ='- exit this menu               '
-      nitems=30
+      if(is_FMU)then
+        WRITE(ITEMS(18),'(A,I2,A)')'p FMI (',FMUNOF,' FMUs)          '
+      else
+        WRITE(ITEMS(18),'(A)')     'p FMI                            '
+      ENDIF
+      WRITE(ITEMS(19),'(A)')       ' ... Uncertainty.....            '
+      ITEMS(20)  ='q define uncertainties         '
+      ITEMS(21)  =' ... Actions.....              '
+      ITEMS(22)  ='r visualisation                '
+      ITEMS(23)  ='s simulation                   '
+      ITEMS(24)  ='t results analysis             '
+      ITEMS(25)  ='u results & QA reporting       '
+      ITEMS(26)  =' ... Miscellaneous.....        '
+      ITEMS(27)  ='! save model                   '
+      ITEMS(28)  ='? help                         '
+      ITEMS(29)  ='- exit this menu               '
+      nitems=29
 
 C Help text for this menu.
       helptopic='model_comprises_br_sim'
@@ -357,7 +343,7 @@ C redraw the model image.
           CALL EMENU('Browse/ Edit/ Simulate',ITEMS,nitems,INO)
         endif
       else
-        if(CFGOK.AND.MODIFY)then
+        if(CFGOK.AND.MODIFYVIEW)then
           MODBND=.TRUE.
           MODLEN=.TRUE.
           ITSNM=1
@@ -510,11 +496,11 @@ C Model context.
           CALL USRMSG('Please define your model first!',' ','W')
         ENDIF
         goto 3
-      elseif(INO.EQ.6)THEN
+      elseif(INO.EQ.5)THEN
 
 C Go to zones definintion menu.
         call EDZCOMP(ITRC,ITRU,IER)
-      ELSEIF(INO.EQ.8)THEN
+      ELSEIF(INO.EQ.7)THEN
 
 C ---------------------------------------------------------------------------------------------
 C -----------------------------------PLANT NETWORK DESCRIPTION---------------------------------
@@ -679,20 +665,50 @@ C If an error has been encountered then reset the configuration type.
           endif
           enddo  ! of while hvind ne nhvac_items
         endif
-        
-      ELSEIF(INO.EQ.9)THEN
+
+      ELSEIF(INO.EQ.8)THEN
 
 C Flow description.
+ 
+C An air flow network is either an existing legacy file or a graphic 
+C network file. If none exists create via graphics or if user asks 
+C to create a new network.
         helptopic='submenu_flow_options'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        call EASKATOG('Define air flow via:',' ',
-     &    'empirical air infiltration model','schedule',
-     &     'flow network (menu)','flow network (graphic)',
-     &    'cancel',' ',' ',IW,nbhelp)
+        if(IAIRN.eq.0)then
+          call EASKABCD('Define air flow via:',' ',
+     &      'empirical air infiltration model','via schedule',
+     &      'flow network','cancel',IW,nbhelp)
+        elseif(IAIRN.eq.1)then
+          XST=.false.
+          call FINDFIL(LAPROB,XST)
+          if(XST) then
+            call edisp(iuout,' ')
+            call edisp(iuout,'The current legacy flow network is:')
+            call edisp(iuout,LAPROB)
+          endif
+          call EASKATOG('Define air flow via:',' ',
+     &      'empirical air infiltration model','via schedule',
+     &      'flow network (defined)','new flow network',
+     &      'cancel',' ',' ',IW,nbhelp)
+        elseif(IAIRN.eq.2)then
+          XST=.false.
+          call FINDFIL(LAPROB,XST)
+          if(XST) then
+            call edisp(iuout,' ')
+            call edisp(iuout,'The current flow network is:')
+            call edisp(iuout,LAPROB)
+          endif
+          call EASKATOG('Define air flow via:',' ',
+     &      'empirical air infiltration model','via schedule',
+     &      'flow network (defined)','new flow network',
+     &      'cancel',' ',' ',IW,nbhelp)
+        endif
 
-C Use AIM2 interface     
+C Use AIM2 interface and jump back.     
         airflowtype: IF(IW.EQ.1)THEN
           CALL AIM2_Interface()
+          goto 3
         ELSE IF(IW.EQ.2)THEN airflowtype 
 
 C Operation file creation and editing. Set IVER to zero to signal
@@ -709,284 +725,369 @@ C Loop back and see if another zone is requested.
           GOTO 250
         ELSEIF(IW.EQ.3)THEN airflowtype
           call tstamp('>','PRJ: enter fluid network')
-          IAIRN=1
-          call MFPROB(IER)
+          if(IAIRN.eq.0)then  ! none defined ask user text or graphic
+            iacc=2
+            CALL EASKABC('Descriptive method to employ:',' ',
+     &        'menus & lists','graphic tool','continue',iacc,nbhelp)
+            if(iacc.eq.1)then
+              IAIRN=1
+              LAPROB='UNKN'
+              call MFPROB(IER)
+              goto 3   ! jump back
+            elseif(iacc.eq.2)then
+              IAIRN=2
+              LAPROB='UNKN'
+              continue
+            else
+              goto 3   ! jump back
+            endif
+          elseif(IAIRN.eq.1)then
+            call MFPROB(IER)
+            goto 3   ! jump back
+          elseif(IAIRN.eq.2)then
+            continue
+          endif
         elseif(IW.eq.4)then airflowtype
 
-C Guess graphic network flow file. If file has yet to be named then base
-C it on cfgroot and place it in the netpth folder (differienciate between
-C unix and non-unix machine types).
-          IAIRN=2
-          if(LAPROB(1:2).eq.'  '.or.LAPROB(1:4).eq.'UNKN')then
-            if(unixok)then
-              if(netpth(1:2).eq.'  '.or.netpth(1:2).eq.'./')then
-                WRITE(LAPROB,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.gnf'
-              else
-                WRITE(LAPROB,'(4a)') netpth(1:lnblnk(netpth)),fs,
-     &          cfgroot(1:lnblnk(cfgroot)),'.gnf'
-              endif
+C User asked for a new flow network, confirm their approach.
+          iacc=2
+          CALL EASKABC('Descriptive method to employ:',' ',
+     &      'menus & lists','graphic tool','continue',iacc,nbhelp)
+          if(iacc.eq.1)then
+
+C There might already be an existing LAPROB, the new name needs
+C not to clash with it so make a  *m.afn variant.
+            if(LAPROB(1:2).eq.'  '.or.LAPROB(1:4).eq.'UNKN')then
+              IAIRN=1
+              LAPROB='UNKN'
             else
-              if(netpth(1:2).eq.'  '.or.(ichar(netpth(1:1)).eq.46
-     &          .and.ichar(netpth(2:2)).eq.92))then
-                WRITE(LAPROB,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.gnf'
-              else
-                WRITE(LAPROB,'(4a)') netpth(1:lnblnk(netpth)),fs,
-     &            cfgroot(1:lnblnk(cfgroot)),'.gnf'
+              lenlfil=lnblnk(LAPROB)
+              if(LAPROB(lenlfil-3:lenlfil).eq.'.afn')then
+                write(ltmp,'(2a)',iostat=ios,err=13)
+     &            LAPROB(1:lenlfil-4),'m.afn'
+                LAPROB=ltmp
               endif
             endif
+            call MFPROB(IER)
+            goto 3   ! jump back after defining network
+          elseif(iacc.eq.2)then
+
+C There might already be an existing LAPROB, the new name needs
+C not to clash with it so make a *g.afn variant.
+            if(LAPROB(1:2).eq.'  '.or.LAPROB(1:4).eq.'UNKN')then
+              IAIRN=2
+              LAPROB='UNKN'
+            else
+              lenlfil=lnblnk(LAPROB)
+              if(LAPROB(lenlfil-3:lenlfil).eq.'.afn')then
+                write(ltmp,'(2a)',iostat=ios,err=13)
+     &            LAPROB(1:lenlfil-4),'g.afn'
+                LAPROB=ltmp
+              endif
+            endif
+          else
+            goto 3   ! jump back
           endif
-          LFIL=LAPROB
+        ELSEIF(IW.EQ.5)THEN airflowtype
+          GOTO 3     ! jump back
+        END IF airflowtype
+
+C If LAPROB not known or a new one requested setu graphic network flow file based
+C ion cfgroot and place it in the netpth folder (differienciate between
+C unix and non-unix machine types) and generate matching name for the summary
+C file that enet uses.
+        if(LAPROB(1:2).eq.'  '.or.LAPROB(1:4).eq.'UNKN')then
+          if(unixok)then
+            if(netpth(1:2).eq.'  '.or.netpth(1:2).eq.'./')then
+              WRITE(LAPROB,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.afn'
+              WRITE(ltmp,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.summary'
+            else
+              WRITE(LAPROB,'(4a)') netpth(1:lnblnk(netpth)),fs,
+     &          cfgroot(1:lnblnk(cfgroot)),'.afn'
+              WRITE(ltmp,'(4a)') netpth(1:lnblnk(netpth)),fs,
+     &          cfgroot(1:lnblnk(cfgroot)),'.summary'
+            endif
+          else
+            if(netpth(1:2).eq.'  '.or.(ichar(netpth(1:1)).eq.46.and.
+     &         ichar(netpth(2:2)).eq.92))then
+              WRITE(LAPROB,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.afn'
+              WRITE(ltmp,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.summary'
+            else
+              WRITE(LAPROB,'(4a)') netpth(1:lnblnk(netpth)),fs,
+     &          cfgroot(1:lnblnk(cfgroot)),'.afn'
+              WRITE(ltmp,'(4a)') netpth(1:lnblnk(netpth)),fs,
+     &          cfgroot(1:lnblnk(cfgroot)),'.summary'
+            endif
+          endif
+C          write(6,*) 'LAPROB ',LAPROB(1:lnblnk(LAPROB))
+C          write(6,*) 'ltmp ',ltmp(1:lnblnk(ltmp))
+        else
+
+C Non-blank name. Set a matching .summary file.
+          lenlfil=lnblnk(LAPROB)
+          if(LAPROB(lenlfil-3:lenlfil).eq.'.gnf')then
+            write(ltmp,'(2a)',iostat=ios,err=13)
+     &        LAPROB(1:lenlfil-3),'summary'
+          elseif(LAPROB(lenlfil-3:lenlfil).eq.'.afn')then
+            write(ltmp,'(2a)',iostat=ios,err=13)
+     &        LAPROB(1:lenlfil-3),'summary'
+          else
+            write(ltmp,'(2a)',iostat=ios,err=13)
+     &        LAPROB(1:lenlfil),'.summary'
+          endif
+C          write(6,*) 'LAPROB ',LAPROB(1:lnblnk(LAPROB))
+C          write(6,*) 'ltmp is',ltmp(1:lnblnk(ltmp))
+        endif
 
 C Graphic network. Create a summary file of zone domain information
-C for `net` to use. Begin by reading current pressure database by
+C for `enet` to use. Begin by reading current pressure database by
 C passing a black string to erprcdeb. Write to unit number 42.
-          call tstamp('>','PRJ: export to graphic agent')
-          t144='  '
-          CALL ERPRCDB(t144,0,3,IER)
-          if (ier.ne.0) THEN
-            CALL EDISP(IUOUT,
-     &        'Error opening pressure coefficients db!.')
-            call edisp(iuout,' ')
-            goto 3
-          endif 
-          lenlfil=lnblnk(LFIL)
-          write(ltmp,'(2a)',iostat=ios,err=13)
-     &      LFIL(1:lenlfil-4),'.summary'
-          CALL EFOPSEQ(42,ltmp,4,IER)
-          tab=','
-          call dstamp(dstmp)
-          write(42,'(3a)',iostat=ios,err=13) '*Synopsis',tab,
-     &      'for_flow'
-          write(42,'(3a)',iostat=ios,err=13) '*Date',tab,dstmp
-          write(42,'(3A)',iostat=ios,err=13) '*cfg',tab,
-     &      LCFGF(1:lnblnk(LCFGF))
-          write(42,'(2a,i3)',iostat=ios,err=13) '*Pressures',tab,
-     &      NPRE
-          do 201 IM=1,NPRE
-            write(42,'(a)') DEPRE(IM)
-  201     continue
-          write(42,'(a)',iostat=ios,err=13) '*End_Pressures'
-          write(42,'(2a,i3,a)',iostat=ios,err=13) '*Zones',tab,
-     &       NCOMP,' # name, volume, centre @ XYZ'
-          do 97 IZ=1,NCOMP
-            write(outsn,'(a,1x,f7.1,3f8.3)') 
+        call tstamp('>','PRJ: export to graphic agent')
+        t144='  '
+        CALL ERPRCDB(t144,0,3,IER)
+        if (ier.ne.0) THEN
+          CALL EDISP(IUOUT,
+     &      'Error opening pressure coefficients db!.')
+          call edisp(iuout,' ')
+          goto 3
+        endif
+
+C Start writing to the .summary file. Silently overwrite any existing
+C file by that name.
+        write(currentfile,'(a)') ltmp(1:lnblnk(ltmp))
+        CALL EFOPSEQ(42,ltmp,3,IER)
+        tab=','
+        call dstamp(dstmp)
+        write(42,'(3a)',iostat=ios,err=13) '*Synopsis',tab,
+     &    'for_flow'
+        write(42,'(3a)',iostat=ios,err=13) '*Date',tab,dstmp
+        write(42,'(3A)',iostat=ios,err=13) '*cfg',tab,
+     &    LCFGF(1:lnblnk(LCFGF))
+        write(42,'(3A)',iostat=ios,err=13) '*afn',tab,
+     &    LAPROB(1:lnblnk(LAPROB))
+        write(42,'(2a,i3)',iostat=ios,err=13) '*Pressures',tab,
+     &    NPRE
+        do 201 IM=1,NPRE
+          write(42,'(a)') DEPRE(IM)
+  201   continue
+        write(42,'(a)',iostat=ios,err=13) '*End_Pressures'
+        write(42,'(2a,i3,a)',iostat=ios,err=13) '*Zones',tab,
+     &    NCOMP,' # name, volume, centre @ XYZ'
+        do 97 IZ=1,NCOMP
+          write(outsn,'(a,1x,f7.1,3f8.3)') 
      &      zname(IZ),VOL(IZ),ZCOG(IZ,1),ZCOG(IZ,2),ZCOG(IZ,3)
-            call SDELIM(outsn,outsd,'C',IW)
-            write(42,'(a)') outsd(1:lnblnk(outsd))
-  97      continue
-          write(42,'(a)',iostat=ios,err=13) '*End_Zones'
+          call SDELIM(outsn,outsd,'C',IW)
+          write(42,'(a)') outsd(1:lnblnk(outsd))
+  97    continue
+        write(42,'(a)',iostat=ios,err=13) '*End_Zones'
 
 C Write surface attributes that might be of interest. Find
 C lowest and highest point and cog of surface.
-          write(42,'(2a,i4,2a)',iostat=ios,err=13) '*Surfaces',tab,NCON,
-     &      ' # connection, description, area, azimuth, elevation, ',
-     &      ' Z Min/COG/Max'
-          DO 930 IZ = 1,NCOMP
-            call georead(IUF,LGEOM(IZ),IZ,1,iuout,IER)
-            DO 931 IS = 1,NSUR
-              szlow= 1000.0
-              szcog= 0.0
-              szhigh= -1000.0
-              do 932 IV = 1, NVER(is)
-                if(Z(JVN(is,iv)).lt.szlow) szlow = Z(JVN(is,iv))
-                if(Z(JVN(is,iv)).gt.szhigh) szhigh = Z(JVN(is,iv))
-                szcog = szcog + Z(JVN(is,iv))
-  932         continue
-              szcog = szcog / real(nver(is))
-              icc=IZSTOCN(IZ,IS)
-              CALL CONXMENU(icc,CXITM)
-              write(outsn,'(a,1x,a,1x,6f9.3)',iostat=ios,err=13) 
-     &          zname(IZ),SSNAME(icc),SSNA(icc),SSPAZI(icc),
-     &          SSPELV(icc),szlow,szcog,szhigh
-              call SDELIM(outsn,outsd,'C',IW)
-              write(42,'(3a)',iostat=ios,err=13)
-     &          CXITM(1:lnblnk(CXITM)),tab,outsd(1:lnblnk(outsd))
- 931        continue
- 930      continue
-          write(42,'(a)',iostat=ios,err=13) '*End_Surfaces'
-          CALL ERPFREE(42,ios)
-          DFILE='network_flow.gnf'
-          CALL EASKS(LFIL,' ','Network graphics file?',72,
-     &      DFILE,'network file open',IER,nbhelp)
+        write(42,'(2a,i4,2a)',iostat=ios,err=13) '*Surfaces',tab,NCON,
+     &    ' # connection, description, area, azimuth, elevation, ',
+     &    ' Z Min/COG/Max'
+        DO 930 IZ = 1,NCOMP
+          call georead(IUF,LGEOM(IZ),IZ,1,iuout,IER)
+          DO 931 IS = 1,NSUR
+            szlow= 1000.0
+            szcog= 0.0
+            szhigh= -1000.0
+            do 932 IV = 1, NVER(is)
+              if(Z(JVN(is,iv)).lt.szlow) szlow = Z(JVN(is,iv))
+              if(Z(JVN(is,iv)).gt.szhigh) szhigh = Z(JVN(is,iv))
+              szcog = szcog + Z(JVN(is,iv))
+  932       continue
+            szcog = szcog / real(nver(is))
+            icc=IZSTOCN(IZ,IS)
+            CALL CONXMENU(icc,CXITM)
+            write(outsn,'(a,1x,a,1x,6f9.3)',iostat=ios,err=13) 
+     &        zname(IZ),SSNAME(icc),SSNA(icc),SSPAZI(icc),
+     &        SSPELV(icc),szlow,szcog,szhigh
+            call SDELIM(outsn,outsd,'C',IW)
+            write(42,'(3a)',iostat=ios,err=13)
+     &        CXITM(1:lnblnk(CXITM)),tab,outsd(1:lnblnk(outsd))
+ 931      continue
+ 930    continue
+        write(42,'(a)',iostat=ios,err=13) '*End_Surfaces'
+        CALL ERPFREE(42,ios)
 
-C Check if this file exists. If it does not fill a few of the
+C Check if graphic file exists. If it does not fill a few of the
 C graphic network commons and write out a minimal file for
 C a flow domain.
-          XST=.false.
-          call FINDFIL(LFIL,XST)
-          if(.not.xst) then
-            call usrmsg('Creating a NEW minimal graphic network',
-     &        'file for flow.','P')
-            write(NWKDSC,'(2a)') 'Flow network for ',
-     &        cfgroot(1:lnblnk(cfgroot))
-            INWKTYP=2
-            NWKTYPSTR(INWKTYP)='Flow'
-            ICONDBFL=DICONDBFL
-            IVIEW=1
+        XST=.false.
+        call FINDFIL(LAPROB,XST)
+        if(.not.xst) then
+          call usrmsg('Creating a NEW minimal graphic network',
+     &      'file for flow.','P')
+          write(NWKDSC,'(2a)') 'Flow network for ',
+     &      cfgroot(1:lnblnk(cfgroot))
+          INWKTYP=2
+          NWKTYPSTR(INWKTYP)='Flow'
+          ICONDBFL=DICONDBFL  ! set default icon file
+          IVIEW=1
+          VIEWCEN(1)=5.0; VIEWCEN(2)=5.0; VIEWCEN(3)=3.0
+          GRSPC(1)=0.5; GRSPC(2)=0.5; GRSPC(3)=1.0
+          SON=.true.
+          GON=.true.
+          NNICN=0; NICNN=0
+          IM=1
+          call NETWRITE(IM)
+        else
 
-C << TODO: take viewcen from wireframe view information. >>
-            VIEWCEN(1)=5.0
-            VIEWCEN(2)=5.0
-            VIEWCEN(3)=3.0
-            GRSPC(1)=0.5
-            GRSPC(2)=0.5
-            GRSPC(3)=1.0
-            SON=.true.
-            GON=.true.
-            NNICN=0
-            NICNN=0
-            IM=1
-            NWKFLNAM=LFIL
-            call NETWRITE(IM)
-          endif
+C The file exists continue.
+          continue
+        endif
 
-C append path to new command line depending on whether Unix or Dos.
-          call isunix(unixok)
-          if(unixok)then
-            call addpath(LFIL,longtfile,concat)
-          else
+C Append path to new command line depending on whether Unix or Dos.
+        call isunix(unixok)
+        if(unixok)then
+          call addpath(LAPROB,longtfile,concat)
+        else
 
 C If running on a non-unix machine see if there are spaces in the name
 C and change any / to \.
-            call addpath(LFIL,longtfile,concat)
-            call cmdfiledos(longtfile,longtfiledos,ier)
-            longtfile=' '
-            longtfile=longtfiledos
-          endif
+          call addpath(LAPROB,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
 
-C Run the `net` module with graphic network file.
-          write(doit,'(2a)')'net -file ',longtfile(1:lnblnk(longtfile))
-          call runit(doit,'-')
+C Run the `net` module and pass it graphic network file.
+        write(doit,'(2a)')'enet -mode graphic -file ',
+     &    longtfile(1:lnblnk(longtfile))
+        call edisp(iuout,doit)
+        call runit(doit,'-')
 
-          call edisp(iuout,'You will be asked to confirm the name of')
-          call edisp(iuout,'the graphic flow network file produced by')
-          call edisp(iuout,'the `net` program.')
-          call edisp(iuout,' ')
-          if(LFIL(1:2).ne.'  '.and.LFIL(1:7).ne.'UNKNOWN')then
-            NWKFLNAM=LFIL
-          else
-            NWKFLNAM=DFILE
-          endif
-          if(IPRODB.eq.IFIL+6)then
-            IUM=IPRODB
-          else
-            IUM=IFIL+6
-          endif
+C On return from enet display a message
+        call edisp(iuout,'You will be asked to confirm the names of')
+        call edisp(iuout,'the text and graphic flow network files')
+        call edisp(iuout,'produced by the `enet` program.')
+        call edisp(iuout,' ')
+        if(IPRODB.eq.IFIL+6)then
+          IUM=IPRODB
+        else
+          IUM=IFIL+6
+        endif
 
 C Free file unit IUM, initiat network flow commons, read the graphic
 C network file (asking user the confirm name), convert into flow
 C network commons and list out those commons.
-          CALL ERPFREE(IUM,ISTAT)
-          CALL MFCDAT
-          CALL NETREAD(IUM,'R',IER)
-          CALL NETTOFLW(ier)
-          call mflist(iuout)
+        CALL ERPFREE(IUM,ISTAT)
+        CALL MFCDAT
+        CALL NETREAD(IUM,'R',IER)
+        if(ier.ne.0)then
+          write(6,*) 'error state on return from enet ',ier
+        endif
+        CALL NETTOFLW(ier)
+        if(ier.ne.0)then
+          write(6,*) 'error state on filling common blocks ',ier
+        endif
+        call mflist(iuout)
+
+C << TODO look at the attributes of the nodes to see
+C << if we can find a matching associated zone
 
 C Link nodes and zones.
-          DO 33 IZ=1,NCOMP
-            if(ICAAS(IZ).gt.0)then
-              write(outs,'(3A)')zname(IZ)(1:lnzname(IZ)),
-     &          'is currently linked to:',NDNAM(ICAAS(IZ))
-              CALL EASKABC(outs,' ','ok',
-     &          'select another','free link',iacc,nbhelp)
-              if(iacc.eq.1)then
-                goto 33
-              elseif(iacc.eq.2)then
-                IC=0
-                call ASKRNOD('available nodes','-',IC,IER)
-                ICAAS(IZ)=IC
-              else
-                ICAAS(IZ)=0
-              endif
+        DO 33 IZ=1,NCOMP
+          if(ICAAS(IZ).gt.0)then
+            write(outs,'(3A)')zname(IZ)(1:lnzname(IZ)),
+     &        ' is currently linked to: ',NDNAM(ICAAS(IZ))
+            CALL EASKABC(outs,' ','ok',
+     &        'select another','free link',iacc,nbhelp)
+            if(iacc.eq.1)then
+              goto 33
+            elseif(iacc.eq.2)then
+              IC=0
+              call ASKRNOD('available nodes','-',IC,IER)
+              ICAAS(IZ)=IC
             else
-              write(outs,'(A,A)') zname(IZ)(1:lnzname(IZ)),
-     &          'has no mass flow node.'
-              CALL EASKAB(outs,' ','ok','select a node',iacc,nbhelp)
-              if(iacc.eq.1)then
-                ICAAS(IZ)=0
-              elseif(iacc.eq.2)then
-                IC=0
-                call ASKRNOD('available nodes','-',IC,IER)
-                ICAAS(IZ)=IC
-              endif
+              ICAAS(IZ)=0
             endif
-  33        CONTINUE
+          else
+            write(outs,'(2A)') zname(IZ)(1:lnzname(IZ)),
+     &        ' has no mass flow node.'
+            CALL EASKAB(outs,' ','ok','select a node',iacc,nbhelp)
+            if(iacc.eq.1)then
+              ICAAS(IZ)=0
+            elseif(iacc.eq.2)then
+              IC=0
+              call ASKRNOD('available nodes','-',IC,IER)
+              ICAAS(IZ)=IC
+            endif
+          endif
+  33    CONTINUE
 
 C Save the configuration file so that connections and graphic mass flow
-C network are know.
-            dok=.true.
-            CALL ASKOK('Save graphic flow network links to zones',
-     &        'in the configuration file?',OK,dok,nbhelp)
-            IF(OK)then
-              IAIRN=2
-              LAPROB=NWKFLNAM
-              call edisp(iuout,'Updating configuration flow links...')
-              CALL EMKCFG('-',IER)
-              call edisp(iuout,
-     &                  'Updating configuration flow links...done.')
-              call edisp(iuout,' ')
-            endif
-
-C << version with external agent >>
-C        elseif(IW.eq.4)then
-C          call tstamp('>','PRJ: export to java agent')
-C          doit = '/usr/esru/bin/flow_agent.sh'
-C          call runit(doit,'-')
-        ELSEIF(IW.EQ.5)THEN airflowtype
-         GOTO 3 
-        END IF airflowtype
-      ELSEIF(INO.EQ.10)THEN
+C network are know. Note: the bottom of the cfg file will hold the name
+C of the text based file (for use in bps and res).
+        dok=.true.
+        CALL ASKOK('Save flow network node links to zones',
+     &    'in the model configuration file?',OK,dok,nbhelp)
+        IF(OK)then
+          IAIRN=2
+          call edisp(iuout,'Updating configuration flow links...')
+          CALL EMKCFG('-',IER)
+          call edisp(iuout,'Updating configuration flow links...done.')
+          call edisp(iuout,' ')
+        endif
+      ELSEIF(INO.EQ.9)THEN
 
 C Electrical network description.
         call tstamp('>','PRJ: enter electrical network')
         call ELECNET
-      ELSEIF(INO.EQ.11)THEN
+      ELSEIF(INO.EQ.10)THEN
 
 C Contaminant model description
         call tstamp('>','PRJ: enter contaminant model')
         call CTPROB
-      ELSEIF(INO.EQ.13)THEN
+      ELSEIF(INO.EQ.12)THEN
 
 C Zone control description.
         call tstamp('>','PRJ: enter zone control')
         icfoc=0
         CALL CONTRL(ITRC,ITRU,icfoc,IER)
         CTLOK=.TRUE.
-      ELSEIF(INO.EQ.14)THEN
+      ELSEIF(INO.EQ.13)THEN
 
 C Plant control description.
         call tstamp('>','PRJ: enter plant control')
         icfoc=1
         CALL CONTRL(ITRC,ITRU,icfoc,IER)
         CTLOK=.TRUE.
-      ELSEIF(INO.EQ.15)THEN
+      ELSEIF(INO.EQ.14)THEN
 
 C Flow control description.
         call tstamp('>','PRJ: enter flow control')
         icfoc=2
         CALL CONTRL(ITRC,ITRU,icfoc,IER)
         CTLOK=.TRUE.
-      ELSEIF(INO.EQ.16)THEN
+      ELSEIF(INO.EQ.15)THEN
 
 C Optical control description.
         call tstamp('>','PRJ: enter optics control')
         icfoc=5
         CALL CONTRL(ITRC,ITRU,icfoc,IER)
         CTLOK=.TRUE.
-      ELSEIF(INO.EQ.17)THEN
+      ELSEIF(INO.EQ.16)THEN
 
 C Global control description.
         call tstamp('>','PRJ: enter global control')
         icfoc=3
         CALL CONTRL(ITRC,ITRU,icfoc,IER)
         CTLOK=.TRUE.
-      ELSEIF(INO.EQ.18)THEN
+      ELSEIF(INO.EQ.17)THEN
 
 C Complex fenestration control description.
         call tstamp('>','PRJ: enter complex fen. control')
         icfoc=6
         CALL CONTRL(ITRC,ITRU,icfoc,IER)
         CTLOK=.TRUE.
+
+C <FMI>
+      ELSEIF(INO.EQ.18)THEN
+        call tstamp('>','PRJ: enter FMI specification')
+        call FMI_ED(IER)
+C </FMI>
       ELSEIF(INO.EQ.20)THEN
 
 C Call uncertainty definition controller.
@@ -996,9 +1097,9 @@ C Call uncertainty definition controller.
      &    0,'-',0,'-',0,'password',IER,nbhelp)
         if (IPASS.eq.101) then
           call tstamp('>','PRJ: enter uncertainty control')
-          call UNCERTA(LUALF)
+          call UNCERTA()
         endif
-      ELSEIF(INO.EQ.23)THEN
+      ELSEIF(INO.EQ.22)THEN
 
 C Select visualisation option.
         IF(CFGOK)THEN
@@ -1017,12 +1118,12 @@ C Select visualisation option.
           CALL USRMSG(' ','Please define your model first!','W')
         ENDIF
         goto 3
-      ELSEIF(INO.EQ.24)THEN
+      ELSEIF(INO.EQ.23)THEN
 
 C Call simulation controller.
         call tstamp('>','PRJ: enter simulation setup')
         call simula(ier)
-      ELSEIF(INO.EQ.25)THEN
+      ELSEIF(INO.EQ.24)THEN
 
 C Call results analysis module assuming same simulation parameter
 C set as the last simulation. If isset not instanciated then set = 1.
@@ -1173,10 +1274,15 @@ C and or forward slashes.
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
-        if(iappw.gt.0.and.iappw.le.200)then
+        if(iappw.eq.630)then
+          iappwpc=100
+        else
+          iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+        endif
+        if(iappwpc.gt.0.and.iappwpc.le.200)then
           if(havefile)then
             write(doit,'(3a,3i4,3a)') 'res -mode ',tmode,
-     &        ' -s ',iappw,iappx+35,iappy+45,' -file ',
+     &        ' -s ',iappwpc,iappx+35,iappy+45,' -file ',
      &        longtfile(1:lnblnk(longtfile)),' & '
           else
             write(doit,'(3a,3i4,a)') 'res -mode ',tmode,
@@ -1194,7 +1300,7 @@ C an offset from prj start position.
         call usrmsg('Starting assessment recovery via',doit,'-')
         call runit(doit,tmode)
 
-      ELSEIF(INO.EQ.26)THEN
+      ELSEIF(INO.EQ.25)THEN
 
 C Execute editor and report generation tools. Start with assumption
 C that all zones in the model are to be included.
@@ -1231,6 +1337,7 @@ C output, IER=0 indicates no error.
 #include "material.h"
 #include "schedule.h"
 #include "prj3dv.h"
+#include "cfd.h"
       
       integer lnblnk  ! function definition
 
@@ -1240,9 +1347,6 @@ C output, IER=0 indicates no error.
       integer childterminal  ! picks up mmod from starting of prj
       common/childt/childterminal
       common/gzonpik/izgfoc,nzg,nznog(mcom)
-      common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      common/RAY3/MODIFY,MODLEN,MODBND
      
       integer ncomp,ncon
       common/C1/NCOMP,NCON
@@ -1252,6 +1356,7 @@ C output, IER=0 indicates no error.
 
       common/user/browse
       common/appw/iappw,iappx,iappy
+      integer iappw,iappx,iappy
       common/cctlnm/ctldoc,lctlf
       integer icascf
       common/cctl/icascf(mcom)
@@ -1265,18 +1370,54 @@ C output, IER=0 indicates no error.
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+
+C Commons related to tmc files (to support copy function).
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
+      COMMON/PRECT2/TMCT2(MCOM,MTMC,5,MBP),TMCA2(MCOM,MTMC,ME,5,MBP),
+     &              TVTR2(MCOM,MTMC,MBP)
+      COMMON/PRECT3/NTMC,NGLAZ(MTMC)
+      character TOPTIC*12
+      common/PRECT4/TOPTIC(MCOM,MTMC)
+      COMMON/TMCB1/IBCMT(MCOM,MTMC)
+      COMMON/TMCB2/NBCTMC(MCOM,MTMC),IBCST(MCOM,MBP,MTMC),
+     &             IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)
+      COMMON/TMCB3/NBCTT(MCOM,MBP,MTMC),BACTPT(MCOM,MBP,MTMC)
+
+      common/BSCTL/ITPREP(MCOM,MTMC),ICZN,IMDB(3),IGLZ(3)
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
+      common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
+      COMMON/ICFNOD/ICFD,ICP
+      INTEGER NCFDND,ICFDND,NCONF,ICFD,ICP
+
+C Zone casual gain control data.
+      character cgcdesc*64
+      common/CGCIND/cgcdesc(MCOM)
+      COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
+     & CGX(MCOM,MLCOM,MDF),CGY(MCOM,MLCOM,MDF),CGH(MCOM,MLCOM,MDF),
+     & UX(MCOM,MLCOM,MDF),UY(MCOM,MLCOM,MDF),UH(MCOM,MLCOM,MDF),
+     & SETPT(MCOM,MLCOM),SYSPER(MCOM,MLCOM),SOFFLL(MCOM,MLCOM),
+     & IOFFDT(MCOM,MLCOM),SMLOUT(MCOM,MLCOM),SMEOUT(MCOM,MLCOM)
+      COMMON/CGCIN3/ICGCS(MCOM,MDTY),ICGCF(MCOM,MDTY),
+     & ICGCFL(MCOM,MLCOM),SPELEC(MCOM,MLCOM),SLOPEM(MCOM,MLCOM)
+
+      COMMON/DAYF/NDF(MCOM,MLCOM),DFDAT(MCOM,MLCOM,MGT,MDF),
+     & AZIJL(MCOM,MGT),SUMDF(MCOM,MLCOM,MDF),NUDWIN(MCOM)
+
+C Daylight coefficient common block data definition:
+      COMMON/DCOEF/NDCFP,NDCFS(MDCFP),DCOEF(MDCFP,MDCFS,MDCFV),
+     & IDCFID(MCOM,MLCOM,MDF)
+
       logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,context,CFCDBOK
-      logical MODIFY,MODLEN,MODBND,concat,browse,QUIET
+      logical concat,browse,QUIET
       logical XST,OKOB,OKZT,OKZR
       logical BLDG3D,ZONE3D,MSTROK,MSTRZN,OKC,dok,clkok
       logical unixok
       logical silent
+      integer iappwpc ! application height as % of nominal size
 
 C Flag noting whether casual gain periods are currently sorted.
       logical sorted,problem
@@ -1293,7 +1434,7 @@ C Flag noting whether casual gain periods are currently sorted.
       character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
       character SFIL*72
       CHARACTER jsmlcn*32,jsvfc*4,jsotf*32,jsother*24,jsname*12
-      character jsparent*12,jsuse*8
+      character jsparent*12,jsuse*12
       character doit*248,tmode*8,DSFIL*72,ZN*12
       character outs*124,outs248*248
       character ctldoc*248,LCTLF*72,lctmp*72,longtfile*144
@@ -1370,14 +1511,14 @@ C Begin with high level menu.
       ITEMS(11)  ='f shading & insolation          '   
       ITEMS(12)  ='g convection coefficients       ' 
       ITEMS(13)  ='h view factors & radiant sensors'
-      ITEMS(14)  ='i casual gain control           '
+      ITEMS(14)  ='i casual gain (lighting) control'
       ITEMS(15)  ='j computational fluid dynamics  '
       ITEMS(16)  ='k adaptive gridding & moisture  '
       ITEMS(17)  =' _____________________________  '    
       ITEMS(18)  =' .... Special components ....   '
       ITEMS(19)  ='m integrated renewables'
       ITEMS(20)  ='n active materials              '
-      ITEMS(21)  ='o advanced optics               '
+      ITEMS(21)  ='o advanced surface/fixture optic'
       ITEMS(22)  =' _____________________________  '
       ITEMS(23)  ='* global tasks                  '
       ITEMS(24)  ='? help                          '
@@ -1386,7 +1527,7 @@ C Begin with high level menu.
 
 C If user has defined model and perhaps resized the display then
 C redraw the model image.
-      if(CFGOK.AND.MODIFY)then
+      if(CFGOK.AND.MODIFYVIEW)then
         MODBND=.TRUE.
         MODLEN=.TRUE.
         ITSNM=1
@@ -1475,7 +1616,7 @@ C Perform the global transform interactively.
           silent= .false.
           call globaltransform(valx,valy,valz,inpic,ivals,
      &      silent,itru,ier) 
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           MODBND=.TRUE.
 
         elseif(IRT.eq.2)then
@@ -1512,7 +1653,7 @@ C Implement the rotations for the selected zones.
             call globalrotate(val,x1,y1,inpic,ivals,silent,itru,ier)
 
           endif
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           MODBND=.TRUE.
 
         elseif(IRT.eq.3)then
@@ -1551,8 +1692,10 @@ C Find the index of the MLC which matches each surface.
             DO 9994 I=1,NZSUR(icomp)
               icn1=izstocn(icomp,i)
               ssmlcindex(icn1)=0  ! assume no matching MLC          
+              lnssmlc=lnblnk(SSMLCN(icn1))
               do 5 ii=1,nmlc
-                if(SSMLCN(icn1)(1:12).eq.mlcname(ii)(1:12)) then
+                if(SSMLCN(icn1)(1:lnssmlc).eq.
+     &             mlcname(ii)(1:lnmlcname(ii))) then
                   ssmlcindex(icn1)=ii   ! remember MLC index     
                 endif
   5           continue
@@ -1752,7 +1895,9 @@ C file and then recover the zone commons.
               CALL ERCZONE(NCOMP)
             endif
           elseif(IOBS(ic).eq.2)then
-            continue   ! obstr within geometry file so copy not required.
+
+C Obstructions in geo file so just set OKOB to true.
+            OKOB=.true.
           endif
 
 C Zone rotations and transforms.
@@ -2059,9 +2204,47 @@ C Also update lodlabel commons before writing out.
               if(ITW(IC).eq.1)then
 
 C Update itmcfl for the new zone.
+                NTMC=0
                 do 61 ISS=1,NZSUR(NCOMP)
                   ITMCFL(NCOMP,ISS)=ITMCFL(IC,ISS)
+                  IF(ITMCFL(IC,ISS).GT.NTMC)NTMC=ITMCFL(IC,ISS)
    61           continue
+                DO ISST=1,NTMC
+                  TOPTIC(NCOMP,ISST)=TOPTIC(IC,ISST)
+                  TMCT(NCOMP,ISST,1)=TMCT(IC,ISST,1)
+                  TMCT(NCOMP,ISST,2)=TMCT(IC,ISST,2)
+                  TMCT(NCOMP,ISST,3)=TMCT(IC,ISST,3)
+                  TMCT(NCOMP,ISST,4)=TMCT(IC,ISST,4)
+                  TMCT(NCOMP,ISST,5)=TMCT(IC,ISST,5)
+                  TVTR(NCOMP,ISST)=TVTR(IC,ISST)
+                  IBCMT(NCOMP,ISST)=IBCMT(IC,ISST)
+                  NBCTMC(NCOMP,ISST)=NBCTMC(IC,ISST)
+                  IBCSUR(NCOMP,ISST)=IBCSUR(IC,ISST)
+                  ITPREP(NCOMP,ISST)=ITPREP(IC,ISST)
+                  DO ISSTGL=1,NGLAZ(ISST)
+                   DO J5=1,5
+                    TMCA(NCOMP,ISST,ISSTGL,J5)=TMCA(IC,ISST,ISSTGL,J5)
+                   ENDDO ! of J5
+                  ENDDO  ! of ISSTGL
+                  DO IBC=1,NBCTMC(IC,ISST)
+                    IBCST(NCOMP,IBC,ISST)=IBCST(IC,IBC,ISST)
+                    IBCFT(NCOMP,IBC,ISST)=IBCFT(IC,IBC,ISST)
+                    NBCTT(NCOMP,IBC,ISST)=NBCTT(IC,IBC,ISST)
+                    BACTPT(NCOMP,IBC,ISST)=BACTPT(IC,IBC,ISST)
+                    TMCT2(NCOMP,IBC,1,ISST)=TMCT2(IC,IBC,1,ISST)
+                    TMCT2(NCOMP,IBC,2,ISST)=TMCT2(IC,IBC,2,ISST)
+                    TMCT2(NCOMP,IBC,3,ISST)=TMCT2(IC,IBC,3,ISST)
+                    TMCT2(NCOMP,IBC,4,ISST)=TMCT2(IC,IBC,4,ISST)
+                    TMCT2(NCOMP,IBC,5,ISST)=TMCT2(IC,IBC,5,ISST)
+                    TVTR2(NCOMP,IBC,ISST)=TVTR2(IC,IBC,ISST)
+                    DO ISSTGL=1,NGLAZ(ISST)
+                     DO J5=1,5
+                      TMCA2(NCOMP,IBC,ISSTGL,J5,ISST)=
+     &                  TMCA2(IC,IBC,ISSTGL,J5,ISST)
+                     ENDDO ! of J5
+                    ENDDO  ! of ISSTGL
+                  ENDDO  ! of IBC
+                ENDDO    ! of ISST
                 CALL EASKS(DFILE,' ','New zone tmc file name:',
      &            72,'new.tmc','tmc file',IER,nbhelp)
                 if(DFILE(1:2).NE.'  ')then
@@ -2324,13 +2507,57 @@ C See if the source zone has a casual gain control file.
      &          zname(NCOMP)(1:lnzname(NCOMP)),'.cgc'
             endif
             if(irop.eq.1)then
-              CALL ERPFREE(IUF,ISTAT)
+              IUNIT=IFIL+1
+              CALL ERPFREE(IUNIT,ISTAT)
               call ercgcf(0,iuout,LCGCIN(IC),IC,ier)
+
    93         CALL EASKS(DFILE,' ','Zone CG file name?',
-     &           72,'new.vwf','casual gain control file',IER,nbhelp)
+     &           72,'new.cgc','casual gain control file',IER,nbhelp)
               IF(DFILE.NE.' ')THEN
+
+C Copy across the common block variables to the new zone.
                 LCGCIN(NCOMP)=DFILE
                 ICGC(NCOMP)=1
+                cgcdesc(NCOMP)=cgcdesc(IC)
+                DO IDTY=1,nbdaytype
+                  NCGTC(NCOMP,IDTY)=NCGTC(IC,IDTY)
+                  ICGCS(NCOMP,IDTY)=ICGCS(IC,IDTY)
+                  ICGCF(NCOMP,IDTY)=ICGCF(IC,IDTY)
+                ENDDO  ! of IDTY
+                NLITZ(NCOMP)=NLITZ(IC)
+                NUDWIN(NCOMP)=NUDWIN(IC)
+                DO NLZ=1,NLITZ(IC)
+                  SETPT(NCOMP,NLZ)=SETPT(IC,NLZ)
+                  SOFFLL(NCOMP,NLZ)=SOFFLL(IC,NLZ)
+                  SMLOUT(NCOMP,NLZ)=SMLOUT(IC,NLZ)
+                  SMEOUT(NCOMP,NLZ)=SMEOUT(IC,NLZ)
+                  IOFFDT(NCOMP,NLZ)=IOFFDT(IC,NLZ)
+                  SYSPER(NCOMP,NLZ)=SYSPER(IC,NLZ)
+                  IDFST(NCOMP,NLZ)=IDFST(IC,NLZ)
+                  ICGCFL(NCOMP,NLZ)=ICGCFL(IC,NLZ)
+                  SPELEC(NCOMP,NLZ)=SPELEC(IC,NLZ)
+                  SLOPEM(NCOMP,NLZ)=SLOPEM(IC,NLZ)
+                  SPELEC(NCOMP,NLZ)=SPELEC(IC,NLZ)
+                  SLOPEM(NCOMP,NLZ)=SLOPEM(IC,NLZ)
+                  NDF(NCOMP,NLZ)=NDF(IC,NLZ)
+                  DO JLZ=1,NDF(IC,NLZ)
+                    CGX(NCOMP,NLZ,JLZ)=CGX(IC,NLZ,JLZ)
+                    CGY(NCOMP,NLZ,JLZ)=CGY(IC,NLZ,JLZ)
+                    CGH(NCOMP,NLZ,JLZ)=CGH(IC,NLZ,JLZ)
+                    UX(NCOMP,NLZ,JLZ)=UX(IC,NLZ,JLZ)
+                    UY(NCOMP,NLZ,JLZ)=UY(IC,NLZ,JLZ)
+                    UH(NCOMP,NLZ,JLZ)=UH(IC,NLZ,JLZ)
+                    IDCFID(NCOMP,NLZ,JLZ)=IDCFID(IC,NLZ,JLZ)
+                  ENDDO  ! of JLZ
+                  do IL=1,NUDWIN(IC)
+                    do IW = 1, NZSUR(ic)
+                      do L=1,NDF(IC,NLZ)
+                        DFDAT(NCOMP,NLZ,IW,L)=DFDAT(IC,NLZ,IW,L)
+                      enddo  ! of L
+                    enddo    ! of IW
+                  enddo      ! of IL
+                ENDDO    ! of NLZ
+                 
                 CALL ERPFREE(IUF,ISTAT)
                 call CASCTMK(LCGCIN(NCOMP),NCOMP,'-',IER)
               else
@@ -2437,7 +2664,7 @@ C writing out configuration file.
 
 C Update the configuration file.
           CALL EMKCFG('-',IER)
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           MODBND=.TRUE.
           IC = -1
           GOTO 3
@@ -2472,7 +2699,7 @@ C Obstructions are alread in common - no need to scan.
 C Present zone detail editing menu.
         ianother=0
  443    CALL EDZONE(ITRC,IC,ianother,IER)
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
 
 C If user asked for next or prior zone reset IC and call again.
         if(ianother.eq.0)then
@@ -2554,7 +2781,10 @@ C database gets its name corrupted requiring a re-scan).
         call FINDFIL(lworking,XST)
         if(XST)then
           CALL ERMLDB(0,IUOUT,IER)
-        else
+          IF(IER.eq.4)THEN
+            CALL ERMLDB2(0,iuout,IER)
+          endif
+         else
 
 C Could not find Constructions db at this time, report to user.
           write(outs248,'(3a)') 'Constructions db ',
@@ -2604,7 +2834,7 @@ C Operation file creation and editing.
         call askzone(ic,izdef,' ','Zone Operations Selection',
      &            'o','Zone index for operations.',ier)
         IF(IC.EQ.0.OR.IC.EQ.-1)then
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           GOTO 3
         endif
         if(IC.eq.99)then
@@ -2728,12 +2958,15 @@ C << geometry files are used. This is not yet done.
 C Global tasks.
           helptopic='global_shading_tasks'
           call gethelptext(helpinsub,helptopic,nbhelp)
-          CALL EASKABCD(' ','Options for multiple zones:',
-     &      'recalculate shading','dereference shading files',
-     &      'add insolation','cancel',IW,nbhelp)
+          CALL EASKATOG('Options for multiple zones:',' ',
+     &      're-establish missing shading','recalculate shading',
+     &      'dereference shading files','add insolation','cancel',
+     &      ' ',' ',IW,nbhelp)
           if(IW.eq.1)then
-            call eddshd
+            call eddshd('asci')
           elseif(IW.eq.2)then
+            call eddshd('site')
+          elseif(IW.eq.3)then
             inpic=0
             call askmultizone(inpic,ivals,
      &        'Select zones do dereference insolation?',
@@ -2744,7 +2977,7 @@ C Global tasks.
                 ISI(ICOMP)=0
  153          continue
             endif
-          elseif(IW.eq.3)then
+          elseif(IW.eq.4)then
             inpic=0
             call askmultizone(inpic,ivals,
      &        'Select zones to add insolation?',
@@ -2779,8 +3012,8 @@ C << geometry file (if version 1.1).
  151          continue
             endif
             CALL EMKCFG('-',IER)
-            call eddshd
-          elseif(IW.eq.4)then
+            call eddshd('site')
+          elseif(IW.eq.5)then
             continue
           endif
           IC=-1
@@ -2859,6 +3092,9 @@ C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive ish.
           call tstamp('>','PRJ: start shading')
           call comissionish(ic,'in ',ier)
+          if(ier.ne.0)then
+            call edisp(iuout,'Possible error in calculations.')
+          endif
         endif
 
 C Loop back and see if another zone is requested.
@@ -2885,7 +3121,7 @@ C If browsing, do not save files but allow ish to be started.
         IUO=IFIL+1
         call tstamp('>','PRJ: enter hc file')
         CALL HCFMK(ITRU,IUO,IC,IER)
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
 
 C Loop back and see if another zone is requested.
         IC=-1
@@ -3018,19 +3254,30 @@ C     &        ' Dereferencing casual gain control file...done.',' ','-')
      &        'In browse mode so nothing to do.','P')
             goto 252
           endif
-          CALL EASKABC(' ','Casual gain control options:',
-     &      'create or open','dereference','cancel',irpt,nbhelp)
-          if(irpt.eq.1)then
-            IUF=IFIL+1
-            call EDCASCTL(ITRC,IC,IER)
-          elseif(irpt.eq.2)then
-            ICGC(IC)=0
-            LCGCIN(IC)='UNKNOWN'
-C            call usrmsg(
-C     &        ' Dereferencing casual gain control file...',' ','-')
-            CALL EMKCFG('-',IER)
-C            call usrmsg(
-C     &        ' Dereferencing casual gain control file...done.',' ','-')
+          if(ICGC(IC).eq.0)then
+            CALL EASKAB(' ','Casual gain control options:',
+     &        'create','cancel',irpt,nbhelp)
+            if(irpt.eq.1)then
+              IUF=IFIL+1
+              call EDCASCTL(ITRC,IC,IER)
+            elseif(irpt.eq.2)then
+              goto 252
+            endif
+          else
+            CALL EASKABCD(' ','Casual gain control options:',
+     &        'create new','open exising','dereference','cancel',
+     &        irpt,nbhelp)
+            if(irpt.eq.1)then
+              IUF=IFIL+1
+              call EDCASCTL(ITRC,IC,IER)
+            elseif(irpt.eq.2)then
+              IUF=IFIL+1
+              call EDCASCTL(ITRC,IC,IER)
+           elseif(irpt.eq.3)then
+              ICGC(IC)=0
+              LCGCIN(IC)='UNKNOWN'
+              CALL EMKCFG('-',IER)
+            endif
           endif
         endif
 
@@ -3054,7 +3301,7 @@ C CFD.
 
         IUF=IFIL+1
         call cfdcomp(ic,iuf,ier)
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
 
 C If browsing do not offer inclusion option.
         if(browse)then
@@ -3067,12 +3314,14 @@ C If browsing do not offer inclusion option.
           IF(OK)then
             call usrmsg(' Including CFD domain...',' ','-')
             CALL EMKCFG('-',IER)
+            IF(ICFD.GT.NCONF)NCONF=NCONF+1
             call usrmsg(' Including CFD domain...done.',' ','-')
           else
             IFCFD(IC)=0 
             LCFD(IC)='UNKNOWN'
             call usrmsg(' Dereferencing CFD domain...',' ','-')
             CALL EMKCFG('-',IER)
+            IF(ICFD.LE.NCONF)NCONF=NCONF-1
             call usrmsg(' Dereferencing CFD domain...done.',' ','-')
           endif
         endif
@@ -3228,9 +3477,14 @@ C Confirm file names.
           call terminalmode(childterminal,tmode)
           CALL ADDPATH(LCFGF,longtfile,CONCAT)
           call tstamp('>','PRJ: edit adaptive gridding')
-          if(iappw.gt.0.and.iappw.le.200)then
+          if(iappw.eq.630)then
+            iappwpc=100
+          else
+            iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+          endif
+          if(iappwpc.gt.0.and.iappwpc.le.200)then
             write(doit,'(3a,3i4,5a)') 'grd -mode ',tmode,
-     &        ' -s ',iappw,iappx+10,iappy+40,' -file ',
+     &        ' -s ',iappwpc,iappx+10,iappy+40,' -file ',
      &        longtfile(1:lnblnk(longtfile)),' -zone ',
      &        ZN(1:lnblnk(ZN)),' &'
           else
@@ -3254,8 +3508,16 @@ C Call active materials menu.
 
       elseif(INO.EQ.21)THEN
 
-C Call advanced (bidirectional) optics.
-        call edbioptics()
+C Call advanced (bidirectional) optics or IES data management.
+        CALL EASKABC(' ','Advanced options options:',
+     &    'surface bidirectional optics','IES data for lighting',
+     &    'cancel ?',IRTP,nbhelp)
+        if(IRTP.eq.1)then
+          call edbioptics()
+        else
+          call setupies()
+        endif
+
       ELSE
 
 C Fall through case.
@@ -3298,7 +3560,6 @@ C espriou.h for parameter MFFOLD
       common/cctlnm/ctldoc,lctlf
       common/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/RAY3/MODIFY,MODLEN,MODBND
      
       integer ncomp,ncon
       common/C1/NCOMP,NCON
@@ -3315,26 +3576,18 @@ C Defaults.
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical XST,OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
-      logical MODIFY,MODLEN,MODBND,browse
+      logical browse
       logical confirm,ckpath,itisanexemplar
       logical unixok,prob
       
-      integer nboflistf  ! how many folders or file names passed
-      integer listfoldertype   ! zero if unused one if folder two if file
-      integer lenlistfolder    ! width of each string
-      character*72 listfolder  ! array of folder or file names
-      common/listfold/nboflistf,listfoldertype(MFFOLD),
-     &                lenlistfolder(MFFOLD),listfolder(MFFOLD)
-
-      dimension ivlist(MFFOLD)
-      character*70 listfc70(MFFOLD)
       character*32 WORDS(12)
 
       character path*72,LCMDFL*144,LTMP*144,GTGEOM*72
-      character MODE*4,fs*1,outs*124
+      character MODE*4,fs*1,outs*124,msg*96
       character OUTSTR*124,ctldoc*248,LCTLF*72,t96*96,t144*144,ETEXT*82
       character sfile*144,odir*84,subpath*84
-      character action*3,GTNAME*15
+      character fstring*144,ppath*72,filen*72
+      character GTNAME*15
       CHARACTER dinstpath*60,dirpath*72
 
 C Passed parameters for cfgtogg
@@ -3381,6 +3634,7 @@ C Set folder separator (fs) to \ or / as required.
       endif
       t96='  '
       t144='  '
+      msg='  '
 
 C Ask for source file name and if the file exists then read it;
 C otherwise make general defaults and allow input from scratch.
@@ -3542,6 +3796,15 @@ C Debug.
 C      write(6,*) 'c iaccess is ',iaccess,icerr,ifold,LCMDFL
 
       if(ifold.eq.0.and.icerr.eq.0)then
+
+C It is a file. Attempt to call fdpwdtocfg to see if there is
+C a pwdtocfg in it.
+        write(fstring,'(a)') LCMDFL(1:lnblnk(LCMDFL))
+        call fdpwdtocfg(fstring,ppath,filen)
+C        write(6,*) 'fs ',fstring(1:lnblnk(fstring))
+C        write(6,*) 'pp ',ppath(1:lnblnk(ppath))
+C        write(6,*) 'fi ',filen(1:lnblnk(filen))
+C        write(6,*) 'lc ',lcfgf(1:lnblnk(lcfgf))
         CALL ERPFREE(IFCFG,ISTAT)
         call FINDFIL(LCFGF,XST)
       elseif(ifold.eq.1.and.icerr.eq.0)then
@@ -3556,6 +3819,13 @@ C configuration files.
 C Debug.
 C        write(6,*) 'd iaccess is ',iaccess,icerr,ifold,t144
         if(ifold.eq.1.and.icerr.eq.0)then
+
+C What we found was a folder cfg so t144 is equivalent to pwdtocfg.
+          write(pwdtocfg,'(a)') t144(1:lnblnk(t144))
+          lnpwdc=lnblnk(pwdtocfg)  ! remember its length
+
+C The next lines take the model folder name passed in the
+C command line to build up the model root name.
           lex=MIN0(lnblnk(LCMDFL),32)
           write(cfgroot,'(a)',IOSTAT=ios,ERR=13) LCMDFL(1:lex)
           subpath=' '
@@ -3563,22 +3833,6 @@ C        write(6,*) 'd iaccess is ',iaccess,icerr,ifold,t144
           write(subpath,'(3a)',IOSTAT=ios,ERR=14) 
      &      odir(1:lnblnk(odir)),fs,t144(1:lnblnk(t144))
      
-#ifdef OSX
-C In OSX slightly different logic. If path ls ./ then standard logic
-C works. If path begins with /usr/esru then no need to prepend odir.
-          if(path(1:2).eq.'./')then
-            continue
-          elseif(path(1:9).eq.'/usr/esru')then
-            subpath=' '
-            write(subpath,'(a)',IOSTAT=ios,ERR=14) path(1:lnblnk(path))
-          else
-            continue
-          endif
-
-C Debug.
-C          write(6,*) ' subpath of folder is ',subpath(1:lnblnk(subpath))
-
-#endif
 #ifdef MINGW
 C In MINGW slightly different logic. If path ls ./ then standard logic
 C works. If path begins C:/ or D:/ or E:/ or F:/ no need to prepend odir.
@@ -3597,59 +3851,30 @@ C works. If path begins C:/ or D:/ or E:/ or F:/ no need to prepend odir.
             continue
           endif
 #endif
-          write(outs,*,IOSTAT=ios,ERR=16) 'models in folder ',subpath
-          call edisp(iuout,outs)
 
-C Re-establish action and file separator prior to call to getfileslist.
-          action='cfg'
-          if(unixok)then
-            fs = char(47)
-          else
-            fs = char(92)
-          endif
-          call getfileslist(subpath,action,nlistf)
-          call printfileslist(outs,'p')
+C Use standard call to discover if there are cfg files in the subpath
+C folder and which (sfile) the user has selected.
+          call discovercfg(subpath,sfile,ier)
 
-C Try to use information gathered from file scan.
-          if(nlistf.gt.0)then
-            ix=1
-            do 76 ij=1,nlistf
-              listfc70(ij)=' '
-              lex=lenlistfolder(ij)
-              if(lex.gt.70) lex=70
-              if(lex.le.1)then
-                write(listfc70(ij),'(a)') '  '
-              else
-                write(listfc70(ij),'(a)') listfolder(ij)(1:lex)
-              endif
-              if(lex.gt.maxw) maxw=lex  ! ensure widest string can be displayed
-  76        continue
-            if(maxw.gt.70) maxw=70  ! ensure list fits
-            if(maxw.lt.15) maxw=15  ! ensure title can be seen
-            CALL EPICKS(IX,ivlist,outs,' ',
-     &        maxw,nboflistf,listfc70,'Available files',IER,nbhelp)
-            if(ix.eq.1)then
-              write(t144,'(3a)',IOSTAT=ios,ERR=17)
-     &          LCMDFL(1:lnblnk(LCMDFL)),fs,'cfg'
-              write(sfile,'(3a)',IOSTAT=ios,ERR=17) 
-     &          t144(1:lnblnk(t144)),fs,
-     &          listfolder(ivlist(ix))(1:lenlistfolder(ivlist(ix)))
+C Return from discovercfg and derive the path and LCFGF portions
+C of the string sfile.
+          if(ier.eq.0)then
+            call fdroot(sfile,path,LCFGF)
 
 C Debug.
-C              write(6,*) 'sfile is ',sfile
+            write(6,*) 'sfile is ',sfile(1:lnblnk(sfile))
+            write(6,*) 'path is ',path(1:lnblnk(path))
+            write(6,*) 'pwdtocfg is ',pwdtocfg(1:lnblnk(pwdtocfg))
+            write(6,*) 'lcfgf is ',LCFGF(1:lnblnk(LCFGF))
 
-              call fdroot(sfile,path,LCFGF)
-              CALL ERPFREE(IFCFG,ISTAT)
-              call FINDFIL(LCFGF,XST)
-            endif
+            CALL ERPFREE(IFCFG,ISTAT)
+            call FINDFIL(LCFGF,XST)
           endif
         endif
       else
-        if(lnblnk(LCMDFL).le.72)then
-          write(LCFGF,'(a)',IOSTAT=ios,ERR=18) LCMDFL(1:lnblnk(LCMDFL))
-        else
-          write(LCFGF,'(a)',IOSTAT=ios,ERR=18) LCMDFL(1:72)
-        endif
+        write(LCFGF,'(a)',IOSTAT=ios,ERR=18) LCMDFL(1:lnblnk(LCMDFL))
+        CALL ERPFREE(IFCFG,ISTAT)
+        call FINDFIL(LCFGF,XST)
       endif
 
 C If not initially found check for if root name only given. Parse
@@ -3698,9 +3923,11 @@ C Check to see if LCFGF is in a cfg folder.
             else
               write(cfgroot,'(a)',IOSTAT=ios,ERR=13)WORDS(IW)(1:lwcfgr)
               lex=MIN0((3+1+4+lcfgr),96)
-              if(lex.ge.96)call usrmsg(
-     &          'The overall path is more than 96 char.',
-     &          'Suggest relocating model.','W')
+              if(lex.ge.96)then
+                write(msg,'(a,i2,a)') 'The overall path is',lex,
+     &            ' char (which is >96 char).'
+                call usrmsg(msg,'Suggest relocating model.','W')
+              endif
               write(t96,'(4a)',IOSTAT=ios,ERR=20) 'cfg',fs,
      &          LTMP(1:lcfgr),'.cfg'
             endif
@@ -3742,15 +3969,13 @@ C name as that the user entered.
      &              'The overall path is more than 96 char.',
      &              'Suggest relocating model.','W')
                   write(t96,'(6a)',IOSTAT=ios,ERR=20) 
-     &              LTMP(1:lcfgr),fs,'cfg',
-     &              fs,LTMP(1:lcfgr),'.cfg'
+     &              LTMP(1:lcfgr),fs,'cfg',fs,LTMP(1:lcfgr),'.cfg'
                 endif
               elseif(lwcfgr.le.4)then
                 write(cfgroot,'(a)',IOSTAT=ios,ERR=13) 
      &            WORDS(IW)(1:lwcfgr)
                 write(t96,'(6a)',IOSTAT=ios,ERR=20) 
-     &            LTMP(1:lcfgr),fs,'cfg',fs,
-     &            LTMP(1:lcfgr),'.cfg'
+     &            LTMP(1:lcfgr),fs,'cfg',fs,LTMP(1:lcfgr),'.cfg'
               endif
               if((t96(1:2).ne.'  ').and.(t96(1:4).ne.'UNKN'))then
                 XST=.false.
@@ -3894,8 +4119,10 @@ C Find the index of the MLC which matches each surface.
             icn1=izstocn(icomp,i)
             if(icn1.ge.1)then
               ssmlcindex(icn1)=0  ! assume no matching MLC          
+              lnssmlc=lnblnk(SSMLCN(icn1))
               do 5 ii=1,nmlc
-                if(SSMLCN(icn1)(1:12).eq.mlcname(ii)(1:12)) then
+                if(SSMLCN(icn1)(1:lnssmlc).eq.
+     &             mlcname(ii)(1:lnmlcname(ii)))then
                   ssmlcindex(icn1)=ii   ! remember MLC index     
                 endif
   5           continue
@@ -3965,7 +4192,7 @@ C Scan the model topology and report on any problems encountered.
         endif
 
         CFGOK=.TRUE.
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODLEN=.TRUE.
       ELSE
 
@@ -4027,20 +4254,6 @@ C Error messages.
       endif
       IER=1
       return
-   16 if(IOS.eq.2)then
-        CALL USRMSG('No permission to write outs',outs,'W')
-      else
-        CALL USRMSG('String write error in outs',outs,'W')
-      endif
-      IER=1
-      return
-   17 if(IOS.eq.2)then
-        CALL LUSRMSG('No permission to write t144',t144,'W')
-      else
-        CALL LUSRMSG('String write error in t144',t144,'W')
-      endif
-      IER=1
-      return
    18 if(IOS.eq.2)then
         CALL LUSRMSG('No permission to write LCFGF',LCFGF,'W')
       else
@@ -4067,29 +4280,36 @@ C Error messages.
 
 C ***** visualz
 C visualz drives visualisation process - hidden line or raytracing.
-C << this duplicates opts within the model export facility >>
+C It duplicates opts within the model export facility.
 C << it would be clearer if all model I/O happened there >>
       subroutine visualz(act,ier)
 #include "building.h"
 #include "model.h"
       
       integer lnblnk  ! function definition
+      integer ier
+
+C Parameters.
+      character act*1  !  V (for Viewer) or R (for Radiance)
 
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/appw/iappw,iappx,iappy
+      integer iappw,iappx,iappy
       integer childterminal  ! picks up mmod from starting of prj
       common/childt/childterminal
       common/user/browse
       character path*72
       common/rpath/path
-      logical concat,OK,DOK,browse,XST,deref,unixok
+      logical concat,OK,DOK,browse,XST,deref,unixok,modcfg
       character dradcf*72,OUTSTR*124,outs*124,outs248*248
       character dvfil*72,ltmp*72
-      character doit*144,tmode*8,act*1
-      character fs*1
+      character doit*248,tmode*8
+      character fs*1,tfile*72
       character longtfile*144,longtfiledos*144,L144*144,lltmp*144
       character brw*8   ! to signal model is being browsed
+      integer iappwpc   ! application height as % of nominal size
+      integer lnradcf,lnltmp  ! lengths of file names
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -4112,22 +4332,17 @@ C Set folder separator (fs) to \ or / as required.
   11  if(act.eq.'V')then
 
 C Construct a 'VIEWER' format file.  First get file name. Take
-C into account the current model path and whether it is in
-C a remote folder.
-        iw=0
-        if(path(1:2).ne.'./'.and.path(1:2).ne.'  ')then
-          write(outs,'(A,A)') 'The current path is: ',path
-          call edisp(iuout,outs)
-          CALL EASKAB('The model is in a remote folder.',
-     &    'Place exported file in:','current path','local folder',
-     &    IW,nbhelp)
-        endif
-        if(iw.eq.1)then
-          write(L144,'(4a)') path(1:lnblnk(path)),fs,
-     &      LCFGF(1:lnblnk(LCFGF)),'.vew'
+C into account the application start and model path.
+        if(pwdtocfg(1:1).eq.'!')then
+          write(L144,'(4a)')path(1:lnblnk(path)),fs,
+     &      cfgroot(1:lnblnk(cfgroot)),'.vew'
         else
-          write(L144,'(3a)') './',LCFGF(1:lnblnk(LCFGF)),'.vew'
+          write(L144,'(6a)') pwdinitial(1:lnpwdi),fs,
+     &      pwdtocfg(1:lnblnk(pwdtocfg)),fs,
+     &      cfgroot(1:lnblnk(cfgroot)),'.vew'
         endif
+C Debug write(6,*) 'c l144 is ',L144(1:lnblnk(L144))
+
         dvfil='std.vew'
         doit = ' '
 
@@ -4163,6 +4378,7 @@ C and change any / to \.
      &    longtfile(1:lnblnk(longtfile)),' -of viewer -out ',
      &    lltmp(1:lnblnk(lltmp))
         call usrmsg('starting conversion via',doit,'-')
+        write(6,*) doit(1:lnblnk(doit))
         call runit(doit,'-')
 
 C Tell user about the new file.
@@ -4178,9 +4394,14 @@ C Get logical name of child process terminal type and create a
 C string to drive VIEWER.
           doit = ' '
           call terminalmode(childterminal,tmode)
-          if(iappw.gt.0.and.iappw.le.200)then
+          if(iappw.eq.630)then
+            iappwpc=100
+          else
+            iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+          endif
+          if(iappwpc.gt.0.and.iappwpc.le.200)then
             write(doit,'(3a,3i4,3a)') 'viewer -mode ',tmode,
-     &        ' -s ',iappw,iappx+25,iappy+20,' -file ',
+     &        ' -s ',iappwpc,iappx+25,iappy+20,' -file ',
      &        lltmp(1:lnblnk(lltmp)),' &'
           else
             write(doit,'(5a)') 'viewer -mode ',tmode,
@@ -4193,45 +4414,78 @@ C string to drive VIEWER.
 
       elseif(act.eq.'R')then
 
-C If in browse mode then run e2r and return, otherwise check rcf name
-C and contents of file on return from e2r.
-
-C If browsing pass this information to e2r.
-        if(browse)then
-          brw = ' -b yes'
-        else
-          brw = ' -b no '
-        endif
-        if(.NOT.browse)then
-
-C Some small esp-r models may have all files in the same folder. If
-C that is the case then it is probably not safe to create a separate
-C rad folder. All need multi-folder models will have a rad folder.
-
+C Assume model is multi-folder with a rad folder.
 C Set rcf name if unknown and set default name. If path for radiance
-C files is ./ then update this to ../rad and create a folder.
-          if(lradcf(1:7).eq.'UNKNOWN')then
-            write(lradcf,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.rcf'
-          else
-            if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\ ')then
-              CALL PHELPD('visu-rad-warning',7,'-',0,0,IER)
-            endif
-          endif
+C files is ./ then update this to ../rad, create a folder. And
+C proceed on the basis that the rcf file will be in the rad folder.
+        modcfg=.false.
+        if(pwdtocfg(1:1).eq.'!')then
           if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\ ')then
+            CALL PHELPD('visu-rad-warning',7,'-',0,0,IER)
             write(radpth,'(3a)')'..',fs,'rad'
             write(doit,'(4a)') 'mkdir ',
      &        cfgroot(1:lnblnk(cfgroot)),fs,'rad'
             call usrmsg('Creating folder for radiance model:',doit,'P')
             call runit(doit,'-')
-          endif
- 319      ltmp=lradcf
-          dradcf='scene.rcf'
-          CALL EASKS(ltmp,' Radiance scene file for this model?',
-     &     '  ',72,dradcf,'Radiance scene file name',IER,nbhelp)
-          if(ltmp.eq.' ')goto 319 
 
-C rcf name OK, therefore save cfg file and start e2r.
+C And update radpath. The L144 is for future use of EASKXORGTKF
+            write(radpth,'(3a)') '..',fs,'rad'
+            modcfg=.true.
+          endif
+
+          if(lradcf(1:7).eq.'UNKNOWN')then  ! setup in form of ../rad/xx
+            write(lradcf,'(6a)') '..',fs,'rad',fs,
+     &        cfgroot(1:lnblnk(cfgroot)),'.rcf'
+C            write(L144,'(8a)')path(1:lnblnk(path)),fs,'..',fs,'rad',
+C     &        fs,cfgroot(1:lnblnk(cfgroot)),'.rcf'
+            modcfg=.true.
+          endif
+        else
+
+C Prj has not been invoked from within the model cfg folder.
+          if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\ ')then
+            CALL PHELPD('visu-rad-warning',7,'-',0,0,IER)
+            write(radpth,'(3a)')'..',fs,'rad'
+            write(doit,'(8a)') 'mkdir ',pwdinitial(1:lnpwdi),fs,
+     &        pwdtocfg(1:lnblnk(pwdtocfg)),fs,'..',fs,'rad'
+            call usrmsg('Creating folder for radiance model:',doit,'P')
+            call runit(doit,'-')
+
+C And update radpath.
+            write(radpth,'(3a)') '..',fs,'rad'
+            modcfg=.true.
+          endif
+
+          if(lradcf(1:7).eq.'UNKNOWN')then
+            write(lradcf,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.rcf'
+C            write(L144,'(10a)') pwdinitial(1:lnpwdi),fs,
+C     &        pwdtocfg(1:lnblnk(pwdtocfg)),fs,'..',fs,'rad',fs,
+C     &        cfgroot(1:lnblnk(cfgroot)),'.rcf'
+            modcfg=.true.
+          endif
+        endif
+        dvfil='std.rcf'
+
+C Check rcf name and contents of file on return from e2r.
+C Set browsing no.
+        brw = ' -b no '
+
+ 319    ltmp=lradcf
+        dradcf='scene.rcf'
+        CALL EASKS(ltmp,' Radiance scene file for this model?',
+     &    '  ',72,dradcf,'Radiance scene file name',IER,nbhelp)
+        if(ltmp.eq.' ')goto 319 
+
+C rcf name OK and differs from prior name, update cfg file and start e2r.
+        lnradcf=lnblnk(lradcf)
+        lntmp=lnblnk(ltmp)
+        if(ltmp(1:lntmp).eq.lradcf(1:lnradcf))then
+          continue
+        else
+          modcfg=.true.
           lradcf = ltmp
+        endif
+        if(modcfg)then
           call tstamp('>','PRJ: save configuration (with rcf file)')
           CALL EMKCFG('-',IER)
         endif
@@ -4244,9 +4498,14 @@ C to include the path and create a string to drive e2r.
 
 C If prj initial size is a % of default, pass this on to child with
 C an offset from prj start position.
-        if(iappw.gt.0.and.iappw.le.200)then
+        if(iappw.eq.630)then
+          iappwpc=100
+        else
+          iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+        endif
+        if(iappwpc.gt.0.and.iappwpc.le.200)then
           write(doit,'(3a,3i4,4a)') 'e2r -mode ',tmode,
-     &      ' -s ',iappw,iappx+35,iappy+40,' -file ',
+     &      ' -s ',iappwpc,iappx+35,iappy+40,' -file ',
      &      longtfile(1:lnblnk(longtfile)),brw,' &'
         else
           write(doit,'(6a)') 'e2r -mode ',tmode,
@@ -4261,14 +4520,33 @@ C an offset from prj start position.
 C Check if radiance scene file exists. If not or zero length or not correct 
 C file type then dereference it from the cfg file. The alternative location
 C for the scene file is in ../rad if user owned the model.  
-        if(.NOT.browse)then
-          IRCFG=IFIL+1
-          call ERPFREE(IRCFG,ISTAT)
-          XST=.FALSE.
-          deref=.FALSE.
-          call FINDFIL(lradcf,XST)
+        IRCFG=IFIL+1
+        call ERPFREE(IRCFG,ISTAT)
+        XST=.FALSE.
+        deref=.FALSE.
+C        write(6,*) 'expecting ',lradcf(1:lnblnk(lradcf))
+        call FINDFIL(lradcf,XST)
+        if(XST)then
+          CALL EFOPSEQ(IRCFG,lradcf,1,IER)
+
+C If end of file encountered on first line then remove the file.
+          if(IER.eq.-301)then
+            call EFDELET(IRCFG,ISTAT)
+            deref=.true.
+          else
+            CALL STRIPC(IRCFG,OUTSTR,99,ND,1,'line 1',IER)
+            if (OUTSTR(1:13).ne.'*ESP-r visual')deref=.true.
+            call ERPFREE(IRCFG,ISTAT)
+          endif
+        else
+
+C Check for it within the model rad folder. If so copy it
+C to the model cfg folder.
+          write(tfile,'(3a)')radpth(1:lnblnk(radpth)),fs,
+     &      LRADCF(1:lnblnk(LRADCF))
+          call FINDFIL(tfile,XST)
           if(XST)then
-            CALL EFOPSEQ(IRCFG,lradcf,1,IER)
+            CALL EFOPSEQ(IRCFG,tfile,1,IER)
 
 C If end of file encountered on first line then remove the file.
             if(IER.eq.-301)then
@@ -4279,21 +4557,30 @@ C If end of file encountered on first line then remove the file.
               if (OUTSTR(1:13).ne.'*ESP-r visual')deref=.true.
               call ERPFREE(IRCFG,ISTAT)
             endif
+
+C Found it and good so just point to the file in ../rad folder
+C and update the cfg file to remember this.
+            if(.NOT.deref)then
+              write(lradcf,'(a)') tfile(1:lnblnk(tfile))
+              call tstamp('>','PRJ: save configuration (no rcf file)')
+              CALL EMKCFG('-',IER)
+            endif
           else
             deref=.true.
           endif
-          if(deref)then
+        endif
+        if(deref)then
 
 C Problem with rcf file therefore dereference it.
-            call usrmsg(
-     &        'Could not find scene file so dereferencing it.',' ','W')
-            lradcf='UNKNOWN'
-            call tstamp('>','PRJ: save configuration (no rcf file)')
-            CALL EMKCFG('-',IER)
-          else
+          call usrmsg(
+     &      'Could not find scene file so dereferencing it.',' ','W')
+          lradcf='UNKNOWN'
+          call tstamp('>','PRJ: save configuration (no rcf file)')
+          CALL EMKCFG('-',IER)
+        else
 
 C << Place to associate images (when logic ready.) >>
-          endif
+
         endif
       endif
       return
@@ -4328,13 +4615,7 @@ C      of obstruction data.
       common/FILEP/IFIL
       integer iuout,iuin
       common/OUTIN/IUOUT,IUIN
-      
-      integer ncub,ivfok
-      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
-      character CUBN*6
-      COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
-      
+            
       logical newgeo  ! to use for testing if new/old geometry file.
       
       character*72 LTMP
@@ -4374,6 +4655,21 @@ C Find out the version number so we know what to do with obstructions later.
             Z(I)=Z(I)+VALZ
    62     continue
           iZBFLG(IICOMP)=0
+  
+          if(nbvis(iicomp).gt.0)then
+
+C Visual object transforms.
+            do ij=1,nbvis(iicomp)
+              XOV(iicomp,ij)=XOV(iicomp,ij)+VALX
+              YOV(iicomp,ij)=YOV(iicomp,ij)+VALY
+              ZOV(iicomp,ij)=ZOV(iicomp,ij)+VALZ
+              do ibe=1,8
+                XVP(iicomp,ij,ibe)=XVP(iicomp,ij,ibe)+VALX
+                YVP(iicomp,ij,ibe)=YVP(iicomp,ij,ibe)+VALY
+                ZVP(iicomp,ij,ibe)=ZVP(iicomp,ij,ibe)+VALZ
+              enddo  ! of ibe
+            enddo    ! of ij
+          endif
 
 C Decide whether to upgrade the geometry file format.
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
@@ -4394,9 +4690,9 @@ C Depending on the nature of the change update the common block pmchange.
 
 C Transform any MRT sensors associated with this zone.
           if (IVF(IICOMP).eq.1) then
-            NCUB = 0
+C            NCUB(IICOMP) = 0
             CALL ERMRT(ITRC,ITRU,IUF,LVIEW(IICOMP),IICOMP,IER)
-            if (NCUB.gt.0) then
+            if (NCUB(IICOMP).gt.0) then
               if(silent)then
                 ok= .true.
               else
@@ -4406,7 +4702,7 @@ C Transform any MRT sensors associated with this zone.
      &            OK,dok,nbhelp)
               endif
               if (OK) then
-                do 73 ij=1,NCUB
+                do 73 ij=1,NCUB(IICOMP)
                   XOC(ij)=XOC(ij)+VALX
                   YOC(ij)=YOC(ij)+VALY
                   ZOC(ij)=ZOC(ij)+VALZ
@@ -4471,6 +4767,7 @@ C apply the transform and write the file back out.
               endif
             endif
           endif
+
           write(outs,'(3a)') ' Transforming: ',zn(1:lnblnk(zn)),
      &      '...done'
           if(.NOT.silent)CALL USRMSG(' ',outs,'-')
@@ -4517,12 +4814,6 @@ C user can un-do this action.
       common/FILEP/IFIL
       integer iuout,iuin
       common/OUTIN/IUOUT,IUIN
-
-      integer ncub,ivfok
-      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
-      character CUBN*6
-      COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       
       logical newgeo  ! to use for testing if new/old geometry file.
       
@@ -4533,6 +4824,7 @@ C user can un-do this action.
       integer itrc,iuf,iicomp,ij,iz
       integer ibe   ! loop for faces of obstruction
       real A,pi,XR,YR,XXX,YYY,CA,SA
+      real angr   ! rotation angle
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -4559,6 +4851,30 @@ C Find out version number so we know if upgrade required.
           call georead(IUF,LTMP,IICOMP,1,iuout,IER)
           CALL ESCROT(VAL,x1,y1)
           iZBFLG(IICOMP)=0
+  
+          if(nbvis(iicomp).gt.0)then
+
+C Visual object rotation.
+            ANGR=VAL
+            PI = 4.0 * ATAN(1.0)
+            A=-ANGR*PI/180.
+            CA=COS(A)
+            SA=SIN(A)
+            do ij=1,nbvis(iicomp)
+              XXX=XOV(IICOMP,ij)-X1; YYY=YOV(IICOMP,ij)-Y1
+              XR=XXX*CA+YYY*SA; YR=YYY*CA-XXX*SA
+              XOV(IICOMP,ij)=XR+X1; YOV(IICOMP,ij)=YR+Y1
+              BANGOV(IICOMP,ij,1)=BANGOV(IICOMP,ij,1)+ANGR
+              do ibe=1,8
+                XXX=XVP(iicomp,ij,ibe)-X1
+                YYY=YVP(iicomp,ij,ibe)-Y1
+                XR=XXX*CA+YYY*SA; YR=YYY*CA-XXX*SA
+                XVP(iicomp,ij,ibe)=XR+X1
+                YVP(iicomp,ij,ibe)=YR+Y1
+              enddo  ! of ibe
+            enddo    ! of ij
+          endif
+
 
 C Remember user directive for future un-do.
           rotateit(iicomp,1)=0.0
@@ -4584,9 +4900,9 @@ C Depending on the nature of the change update the common block pmchange.
 
 C Rotate any MRT sensors associated with this zone.
           if (IVF(IICOMP).eq.1) then
-            NCUB = 0
+C            NCUB(IICOMP) = 0
             CALL ERMRT(ITRC,ITRU,IUF,LVIEW(IICOMP),IICOMP,IER)
-            if (NCUB.gt.0) then
+            if (NCUB(IICOMP).gt.0) then
               if(silent)then
                 ok= .true.
               else
@@ -4599,7 +4915,7 @@ C Rotate any MRT sensors associated with this zone.
                 A=-VAL*PI/180.
                 CA=COS(A)
                 SA=SIN(A)
-                do 76 ij=1,NCUB
+                do 76 ij=1,NCUB(IICOMP)
                   XXX=XOC(ij)-X1
                   YYY=YOC(ij)-Y1
                   XR=XXX*CA+YYY*SA

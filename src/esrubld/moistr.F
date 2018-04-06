@@ -1538,7 +1538,7 @@ C If this construction is lumped.
             SUM=FLOAT(MNDL(ICOMP,I,IL)/NNDL(ICOMP,I,IL))+1.0
             RMNDR=AMOD(SUM,2.0)
             IF(RMNDR.GT.1.0E-4)THEN
-              WRITE(MSG,'(1a,3(i2,a))')
+              WRITE(MSG,'(1a,3(i3,a))')
      &          'heat node numbers at layer (',ICOMP,',',I,',',IL,').'
               CALL USRMSG('un-acceptable ratio of moisture to',MSG,'W')
               IER=1

@@ -101,6 +101,11 @@
       return
       end subroutine
 !.....
+      subroutine rep_bool_config(cVariable)
+      character(len=*), intent(in)::cVariable
+      return
+      end subroutine
+!.....
       subroutine rep_update_config_file()
       return
       end subroutine

@@ -33,6 +33,8 @@ C      MZSHDO
 C      MZGREF
 C      PPGREF
 C      MZSCTL
+C      MZOCTL - optical control function executive
+C      OCL01  - set optical controls
 
 C ******************** MZSOLR ********************
 C MZSOLR initiates the computation of the solar gains impinging
@@ -179,6 +181,10 @@ C and future time rows. Units: W/m^2
       include "CFC_common.h"
       include "net_flow.h"
       include "tdf2.h"
+C <FMI>
+      include "FMI.h"
+C </FMI>
+
 C ADD NEW PARAMETER STATEMENT
 C MSTMC is number of different bidirectional datasets, limited
 C to 20 for the present.
@@ -331,8 +337,8 @@ C COMMONS FOR CFC type CONSTRUCTIONS
      &      transBB_S(mcom,ms),transD_S(mcom,ms),refl_S(mcom,ms),
      &      issur_self_shd(mcom,ms),proang_s(mcom,mcfc,ms),
      &      qtmca_ext(mcom,ms,mn),omega_v_s(mcom,mcfc,ms),
-     &	omega_h_s(mcom,mcfc,ms)
-	 
+     &      omega_h_s(mcom,mcfc,ms)
+ 
       real RadIncDirS,RadIncDifS,transBB_S,transD_S,refl_S
       real proang_s,qtmca_ext,omega_v_s,omega_h_s
       integer issur_self_shd
@@ -398,10 +404,11 @@ C zone fluid solar absorptions at the present and future time
 C rows respectively.
       COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
      &              zSWAp(mcom),zSWAf(mcom)
+      real zfldK,zfldD,zfldC,zfldA,zSWAp,zSWAf
       logical znotair
 
 C.....DECLARATIONS for H3Kreporting object
-      CHARACTER*2   cZone_Chars, cSurf_Chars
+      CHARACTER*12   cZone_Chars, cSurf_Chars
 
       ZAREA=zonetotsurfacearea(ICOMP)
 
@@ -704,6 +711,9 @@ C Sensing time to swtich to alternative properties.
                   IBOFOT(ICOMP,I)=1
                   ECRAT(ICOMP,I)=0.0
                   NBPONT(ICOMP,I)=K
+C Debug.
+C                  write(6,*) 'blind control ',icomp,i,IBOFOT(ICOMP,I),
+C     &               ECRAT(ICOMP,I),NBPONT(ICOMP,I)
                 ELSEIF(NBCTT(ICOMP,K,ITMC).EQ.1) THEN
 
 C External air temperature activation.
@@ -905,6 +915,27 @@ C POO/POO2 contains shading factor on corresponding opaque surface.
                     NBPONT(ICOMP,I)=K
                   ENDIF
                 ENDIF
+
+C <FMI>
+C If blinds control is active, set IBOFOT to control value from FMU if
+C this is the associated zone. It is assumed that control is set up such
+C that IBOFOT=1 (use alternative properties) corresponds to active
+C blinds, and hence the FMU control value is synonymous with IBOFOT.
+C TODO - maybe try and handle non-binary blind states?
+                if (FMUDOCTL(ICOMP,6)) then
+                  call eclose(FMUCTL(ICOMP,6),0.0,0.001,bCloseToZero)
+                  if (bCloseToZero) then
+                    IBOFOT(ICOMP,I)=0
+                    ECRAT(ICOMP,I)=1.
+                    NBPONT(ICOMP,I)=0
+                  else
+                    IBOFOT(ICOMP,I)=1
+                    ECRAT(ICOMP,I)=0.
+                    NBPONT(ICOMP,I)=K
+                  endif
+                endif
+C </FMI>
+
               ENDIF
    5        CONTINUE
           endif
@@ -915,13 +946,14 @@ C Update thermophysical properties here - we know the control state
 C so call bcl99 to update thermophysical props of controlled windows.
       ICALL=0
       DO 66 I=1,NC
-
-C Debug.
-C        write(6,'(a,2i4)') 'Blind state: ',IBOFOT(ICOMP,I),
-C     &                                       NBPONT(ICOMP,I)
-
         ITMC=ITMCFL(ICOMP,I)
         if(ITMC.GT.0)then
+
+C Debug.
+C        write(6,'(a,7i4)') 'Blind state: ',ICOMP,I,IBOFOT(ICOMP,I),
+C     &    NBPONT(ICOMP,I),ITMC,ITPREP(ICOMP,ITMC),
+C     &    IBCMT(ICOMP,ITMC)
+
           if(ITPREP(ICOMP,ITMC).gt.0)then
             if(IBCMT(ICOMP,ITMC).EQ.1) then
 
@@ -945,6 +977,8 @@ C << use? and what about the case of ITPREP being zero >>
                   write (33,*)
      &               'Too many controlled windows! Ignoring surface ',I
                 endif
+C                write(6,*) 'ask for alt optics',ICALL,IWC,IMDB(IWC),
+C     &            IGLZ(IWC)
               endif
             endif
           endif
@@ -1383,7 +1417,7 @@ C Set a local flag if bidirectional data available for this surface.
         IBIDIR=NSTMCFL(IZSTOCN(ICOMP,I))
 
         icfctp=icfcfl(icomp,i)              !CFC type
-		
+
 C Bidirectional case
         if(IBIDIR.NE.0)then
 
@@ -1623,19 +1657,34 @@ C Apply shading factor to external incident radiation
             EXDIFSKY(I) = SKYDIF(I)*(1.-POFF)
             EXDIFGRD(I) = GRDDIF(I)*(1.-POFF)
 
-C...........Pad zone index to 'XX'
-c            if ( ICOMP .gt. 9 ) then
-c              write (cZone_Chars,'(I2)') ICOMP
+C...........Switch for zone name output here
+c            if (ReportBoolConfig("use_zonenames")) then
+c              write (cZone_Chars,'(A)') zname(icomp)(1:lnzname(icomp))
 c            else
-c              write (cZone_Chars,'(A,I1)') '0', ICOMP
-c            endif
+C.............Pad zone index to 'XX'
+c              if ( icomp .gt. 9 ) then
+c                write (cZone_Chars,'(A,I2)') 'zone_',icomp
+c              else
+c                write (cZone_Chars,'(A,I1)') 'zone_0',icomp
+c              endif
+c            endif ! use_zonenames
 
-C...........Pad surface index to 'XX'
-c            if ( I .gt. 9 ) then
-c              write (cSurf_Chars,'(I2)') I
+C << the following would ideally require that surface name lengths
+C    are stored in a common like zone name lengths ... filled in
+C    georead() (egeometry.F line 1750 ff.)/ egomin() (egeometry.F line 594)? >>
+
+C...........Switch for surface name output here
+c            if (ReportBoolConfig ("use_surfacenames")) then
+c              write (cSurf_Chars,'(A)')
+c      &          sname(iZone,iSurface)(1:lnsname(icomp,isurf))
 c            else
-c              write (cSurf_Chars,'(A,I1)') '0', I
-c            endif
+C.............Pad surface index to 'XX'
+c              if ( iSurface .gt. 9 ) then
+c                write (cSurf_Chars,'(A,I2)') 'surface_',isurf
+c              else
+c                write (cSurf_Chars,'(A,I1)') 'surface_0',isurf
+c              endif
+c            endif ! use_surfacenames
 
 c            call AddToReport(
 c     &         rvSolarIncidentDirect%identifier,
@@ -1705,13 +1754,13 @@ C..............and absorbed fluxes in each CFC layer.
              temp1=0.
              temp2=0.
              temp3=0.
-		 
+ 
              proang_s(icomp,icfctp,i)=-1.    !save profile angle for CFC output, -1 indicates self shaded
 
 C Determine diffuse-diffuse solar properties for
 C each CFC layer. Incidence and profile angles set to 0 since self-shaded.
              call cfc_eff_opt_prop(icomp,i,icfctp,temp1,temp2,
-     &		 temp3)
+     &         temp3)
 
 C............Check whether sky and ground diffuse calc. is requested
              if(i_ground_sky_diff_calc.eq.1)then
@@ -2310,6 +2359,9 @@ C Output solar intensity details.
       call edisp(itu,outs)
 
 C Output QSOLE and QSOLI for each construction if sun up.
+
+C << does not reflect blind control alternative optics >>
+
       if(SALT.lt.-1.0)goto 9992
       call edisp(itu,' ')
       write(outs,'(a)') ' Solar nodal absorptions (W/m^2):'
@@ -2598,7 +2650,7 @@ C Solar radiation values are Global and Diffuse Horizontal.
       IF(QD.GT.1353.0)goto 2
       IF(QD.LT.0.0)goto 3
       goto 1
-    2 IF(SALT.GT.12.0)goto 4
+    2 IF(SALT.GT.13.0)goto 4
       IF(ICOMP.GT.1)goto 5
 
 C Warning : high direct normal.
@@ -2623,7 +2675,7 @@ C horizontal.
       QD=0.0
       goto 1
 
-C FATAL ERROR: direct normal > solar constant & altitude > 10deg
+C FATAL ERROR: direct normal > solar constant & altitude > 13deg
     4 CALL DAYCLK(IDYP,BTIMEF,iuout)
       write(outs,'(a,I7,a,F6.1,a)')' MZSINT fatal: @',NSINC,
      &  ' direct n.',QD,' > solar constant '
@@ -4133,9 +4185,9 @@ C        write(6,*) 'desc', mlcname(ictl_constrdbindex_number)
 C        write(6,*) 'ssmlcn', SSMLCN(izstocn(icomp,ISURFNumber))
 
               write(ctl_constrdb_name,'(a)')
-     &             mlcname(ictl_constrdbindex_number)(1:12)
+     &             mlcname(ictl_constrdbindex_number)
               write(name_constr_ofStudy,'(a)')
-     &             SSMLCN(izstocn(icomp,ISURFNumber))(1:12)
+     &             SSMLCN(izstocn(icomp,ISURFNumber))
 
 C controls start here
 C<<< Consider changing ioan(1,1) in the future to ioan(iol,1)>>>>
@@ -4469,3 +4521,90 @@ C End of all the bidirectional control options
       endif
       return
       END
+
+C ******************** MZOCTL
+
+C The main optical control function executive.
+
+      SUBROUTINE MZOCTL(icomp)
+#include "building.h"
+#include "control.h"
+
+      COMMON/OPTCTL/ICFO,IDTYPO,IPERO
+      common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      common/btime/btimep,btimef
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,NIN
+      integer N,iday,IFUNC
+      logical inPeriod
+
+C Control functions active at present.
+      ICFO=ICOMP
+      ipero=0  ! clear value prior to test
+      
+C If number of optical control day types are 0 then
+C same control on all day types.
+      N=NOCDT(ICFO) ! number of day types
+      iday=idyp
+      if(ihrp.eq.24)iday=idyf
+      if(N.eq.1)then ! All daytypes
+        IDTYPO=1
+      elseif(N.eq.0)then ! Follow calendar days
+        IDTYPO=ICALENDER(IDAY)
+      endif
+
+      n=nocdp(icfo,idtypo)
+      inPeriod=.false.
+      do 30 i=n,1,-1
+        if(.not.inPeriod.and.btimef.ge.tocps(icfo,idtypo,i))then
+          ipero=i
+          inPeriod=.true.
+        endif
+   30 continue
+C Debug.
+C      if(ipero.gt.0.and.IDTYPO.gt.0)then
+C        write(6,*) 'MZOCTL ',IDTYPO,ipero,n,inPeriod,
+C     &    IOCLAW(ICFO,IDTYPO,IPERO)
+C       endif
+
+C If there is an optical control period then invoke the control logic.
+      if(ipero.gt.0.and.IDTYPO.gt.0)then
+        IFUNC=IABS(IOCLAW(ICFO,IDTYPO,ipero))
+        CtlLaw: select case (IFUNC) 
+        case (1) 
+          call OCL01(icomp)
+        end select CtlLaw
+      endif
+
+      return
+      end
+
+C ******************** OCL01
+C Set optical controls defined in (ahem?) constructions files on or off
+C This is done by setting the flag IBCMDT=1 or 0
+      SUBROUTINE OCL01(icomp)
+#include "building.h"
+#include "control.h"
+
+      COMMON/OPTCTL/ICFO,IDTYPO,IPERO
+      COMMON/TMCB1/IBCMT(MCOM,MTMC)
+      COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
+     &             NPGAP(MCOM,MS,MGP)
+      COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
+     &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
+      integer NC,ISON
+      
+      ISON=nint(OMISCD(ICFO,IDTYPO,IPERO,2))
+      NC=NCONST(ICOMP)
+      Do 1 I=1,NC
+        ITMC=ITMCFL(ICOMP,I)
+        if(ITMC.gt.0)then
+          IBCMT(ICOMP,ITMC)=ISON
+C Debug.
+C          write(6,*) 'OCL01 icomp,i,itmc,ison,IDTYPO,IPERO'
+C          write(6,*) icomp,i,itmc,ison,IDTYPO,IPERO
+        endif
+ 1    continue
+    
+      return
+      end

@@ -21,7 +21,8 @@ C Boston, MA 02111-1307 USA.
 C ESRU: radiance translator - sky, room and outside definition facilities.
 C  SKYFORM: Sky calculations & file generation.
 C  E2RFORM: Inside and outside materials and composition generation.
-C  mkriofil Write inside/outside materials and composition files.
+C  mkriofil: Write inside/outside materials and composition files.
+C  mkxform: creates a file to hold xform commands for IES.rad entries.
 
 C ******* Sky calculations. *******
       SUBROUTINE SKYFORM(IER)
@@ -171,6 +172,9 @@ C which includes redirection of output to the sky definition file.
         elseif (SCENEPURP(ISCENE)(1:8).eq.'Internal') then
           xga=ga/10.
           call RADPAR('av',xga)
+        elseif (SCENEPURP(ISCENE)(1:9).eq.'Night_ext') then
+          xga=0.0005
+          call RADPAR('av',xga)
         endif
       elseif(INO.EQ.9)then
         helptopic='sky_description_browse'
@@ -253,6 +257,7 @@ C ACT = 's' silent, ACT = 'i' interactive.
 #include "building.h"
 #include "model.h"
 #include "e2r_common.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -263,9 +268,6 @@ C ACT = 's' silent, ACT = 'i' interactive.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/GTFIL/GTGEOM
-
-      LOGICAL MODIFY,MODLEN,MODBND
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       LOGICAL OK,DOK,XST,fict
 
@@ -317,10 +319,11 @@ C Fictitious transmission threshhold.
       ITEM(9) =       'f  Opaque surface properites   '
       ITEM(10) =      'g  Outside composition         '
       ITEM(11) =      'h  Inside composition          '
-      ITEM(12) =      '  ______________________       '
-      ITEM(13)=       '? Help                         '
-      ITEM(14)=       '- Exit                         '
-      NITEMS = 14
+      ITEM(12) =      'i  IES entity xforms           '
+      ITEM(13) =      '  ______________________       '
+      ITEM(14)=       '? Help                         '
+      ITEM(15)=       '- Exit                         '
+      NITEMS = 15
 
 C Help text for this menu.
   20  helptopic='e2r_outside_comp'
@@ -371,7 +374,7 @@ C the image.
         call georead(ITA1,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
         nzg=1
         nznog(1)=ICOMP
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODBND=.TRUE.
         izgfoc=ICOMP
         CALL ADJVIEW(IER)
@@ -424,6 +427,18 @@ C the image.
      &                          rzfil(1:lnblnk(rzfil))
           call vifile(irzfil,tfile,'e',ier)
         endif
+      elseif(INO.EQ.12)then
+        CALL EASKABC(' IES entity xforms:',' ',
+     &   'browse file','edit file','ignore',IW,nbhelp)
+        if(IW.eq.1)then
+          write (tfile,'(a,a)') runpath(1:lnrp),
+     &                          iesfil(1:lnblnk(iesfil))
+          call vifile(iiesfil,tfile,'b',ier)
+        elseif(IW.eq.2)then
+          write (tfile,'(a,a)') runpath(1:lnrp),
+     &                          iesfil(1:lnblnk(iesfil))
+          call vifile(iiesfil,tfile,'e',ier)
+        endif
       elseif(INO.EQ.(NITEMS-1))then
 
 C Explains composition/geometry menu.
@@ -459,7 +474,8 @@ C If ACT='i' then interactive, ACT='s' for silent.
 #include "esprdbfile.h"
 #include "material.h"
 #include "e2r_common.h"
-      
+#include "prj3dv.h"
+    
       integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
@@ -480,12 +496,10 @@ C TMC data
 
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
-C For obstruction blocks of type "obsp":
+C For obstruction blocks of type "obsp" as well as converted obs3.
+C << and probably also for obs3 ? >>
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
 
-      LOGICAL MODIFY,MODLEN,MODBND
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY6/LINSTY(MCON)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
 
@@ -500,13 +514,15 @@ C For obstruction blocks of type "obsp":
       DIMENSION XX(MV),YY(MV),ZZ(MV),XT(MV),YT(MV),ZT(MV),TRNS(3)
 
       character ZSN*28
-      character ZN*12,outs*124,material*12,QT*1
+      character ZN*12,outs*124,material*32,QT*1
       character GDESCR*36,DESCRC*25
       CHARACTER OPT*12  ! for optical name of the MLC
       CHARACTER ACT*1,doit*144
       character outsn*124,outsd*124, tfile*72
       character pfile*72,atfile*72,ltmp72*72,dtmp72*72,ObsMatName*32
       integer lnbm  ! length of block material
+      integer nobs  ! number of obstructions
+      integer nvis  ! number of visual entities
 
       LOGICAL OK,DOK,fict,extern,XST,similar
 
@@ -521,6 +537,7 @@ C For help messages
       ITA2 = IFIL+7
       ITA3 = IFIL+10
       nobs=0
+      nvis=0
       ISTAT=0
       IER=0
 
@@ -638,16 +655,40 @@ C the existing mlc db and create a set of properties.
       WRITE(imatfil,'(a)') '# (first line of file must not be edited)'
       WRITE(imatfil,'(a)') '  '
 
-C Define a finished effect for surfaces.
+C Define rough medium and fine finish effects for surfaces.
+      WRITE(imatfil,'(a)') '# use this for fine surface finish '
       WRITE(imatfil,'(a)') 'void brightfunc fin_in'
-      WRITE(imatfil,'(a)') '4 dirt dirt.cal -s 0.05'
+      WRITE(imatfil,'(a)') '4 dirt dirt.cal -s 0.005'
       WRITE(imatfil,'(a)') '0 '
       WRITE(imatfil,'(a)') '1 0.05'
       WRITE(imatfil,'(a)') '  '
       WRITE(imatfil,'(a)') 'void texfunc fin_ex'
+      WRITE(imatfil,'(a)') '6 cdx cdy cdz adobe.cal -s 0.02'
+      WRITE(imatfil,'(a)') '0 '
+      WRITE(imatfil,'(a)') '1 0.01'
+      WRITE(imatfil,'(a)') '  '
+      WRITE(imatfil,'(a)') '# use this for medium surface finish '
+      WRITE(imatfil,'(a)') 'void brightfunc min_in'
+      WRITE(imatfil,'(a)') '4 dirt dirt.cal -s 0.01'
+      WRITE(imatfil,'(a)') '0 '
+      WRITE(imatfil,'(a)') '1 0.05'
+      WRITE(imatfil,'(a)') '  '
+      WRITE(imatfil,'(a)') 'void texfunc min_ex'
+      WRITE(imatfil,'(a)') '6 cdx cdy cdz adobe.cal -s 0.03'
+      WRITE(imatfil,'(a)') '0 '
+      WRITE(imatfil,'(a)') '1 0.015'
+      WRITE(imatfil,'(a)') '  '
+      WRITE(imatfil,'(a)') '# use this for rough surface finish '
+      WRITE(imatfil,'(a)') 'void brightfunc rin_in'
+      WRITE(imatfil,'(a)') '4 dirt dirt.cal -s 0.05'
+      WRITE(imatfil,'(a)') '0 '
+      WRITE(imatfil,'(a)') '1 0.05'
+      WRITE(imatfil,'(a)') '  '
+      WRITE(imatfil,'(a)') 'void texfunc rin_ex'
       WRITE(imatfil,'(a)') '6 cdx cdy cdz adobe.cal -s 0.05'
       WRITE(imatfil,'(a)') '0 '
       WRITE(imatfil,'(a)') '1 0.05'
+      WRITE(imatfil,'(a)') '  '
 
 C Always include a colour for external UNKNOWN mlc.
       WRITE(imatfil,'(a)') 'void plastic rc_ex_unknown'
@@ -731,7 +772,7 @@ C If TMC has an opaque layer then set gvt to a small number.
 
 C Setup equivalent for default use. 
           WRITE(iglzfil,'(a,a)') 'void glass ',
-     &      mlcname(IM)(1:lnblnk(mlcname(IM)))
+     &      mlcname(IM)(1:lnmlcname(IM))
           WRITE(iglzfil,'(a)') '0 '
           WRITE(iglzfil,'(a)') '0 '
           WRITE(iglzfil,'(a,3F6.2)') '3  ',gvt,gvt,gvt
@@ -747,7 +788,7 @@ C Check for blind shutter control.
                ICN=IZSTOCN(newfoc,isf)
                if(ITMCFL(newfoc,isf).gt.0.AND.
      &            SSMLCN(icn)(1:lnblnk(SSMLCN(icn))).eq.
-     &            mlcname(IM)(1:lnblnk(mlcname(IM))))then
+     &            mlcname(IM)(1:lnmlcname(IM)))then
                 if (IBCMT(newfoc,ITMCFL(newfoc,isf)).gt.0) then
                  VTRAN=TVTR2(newfoc,ITMCFL(newfoc,isf),NABS)
                  if(VTRN.gt.0.02)then
@@ -762,7 +803,7 @@ C Check for blind shutter control.
  111         continue
  100        continue
             WRITE(ita2,'(3a)')'void glass ',
-     &        mlcname(IM)(1:lnblnk(mlcname(IM))),'_sw'
+     &        mlcname(IM)(1:lnmlcname(IM)),'_sw'
             WRITE(ita2,'(a)') '0 '
             WRITE(ita2,'(a)') '0 '
             WRITE(ita2,'(a,3F6.2)') '3  ',gvt,gvt,gvt
@@ -772,12 +813,21 @@ C Check for blind shutter control.
         else
           WRITE(imatfil,'(a)') '# External MLC Colours... '
           if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
+     &        SCENEPURP(ISCENE)(1:9).eq.'Night_ext'.or.
      &        SCENEPURP(ISCENE)(1:8).eq.'Internal') then
-            WRITE(imatfil,'(a,a)') 'fin_ex plastic rc_ex_',
-     &        mlcname(IM)(1:lnblnk(mlcname(IM)))
+            if(iadobe.eq.3)then
+              WRITE(imatfil,'(2a)') 'fin_ex plastic rc_ex_',
+     &          mlcname(IM)(1:lnmlcname(IM))
+            elseif(iadobe.eq.2)then
+              WRITE(imatfil,'(2a)') 'min_ex plastic rc_ex_',
+     &          mlcname(IM)(1:lnmlcname(IM))
+            elseif(iadobe.eq.1)then
+              WRITE(imatfil,'(2a)') 'rin_ex plastic rc_ex_',
+     &          mlcname(IM)(1:lnmlcname(IM))
+            endif
           else
             WRITE(imatfil,'(a,a)') 'void plastic rc_ex_',
-     &        mlcname(IM)(1:lnblnk(mlcname(IM)))
+     &        mlcname(IM)(1:lnmlcname(IM))
           endif
           WRITE(imatfil,'(a)') '0 '
           WRITE(imatfil,'(a)') '0 '
@@ -787,12 +837,21 @@ C Check for blind shutter control.
 
           WRITE(imatfil,'(a)') '# Internal MLC Colours... '
           if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
+     &        SCENEPURP(ISCENE)(1:9).eq.'Night_ext'.or.
      &        SCENEPURP(ISCENE)(1:8).eq.'Internal') then
-            WRITE(imatfil,'(a,a)') 'fin_in plastic rc_in_',
-     &        mlcname(IM)(1:lnblnk(mlcname(IM)))
+            if(iadobe.eq.3)then
+              WRITE(imatfil,'(a,a)') 'fin_in plastic rc_in_',
+     &          mlcname(IM)(1:lnmlcname(IM))
+            elseif(iadobe.eq.2)then
+              WRITE(imatfil,'(a,a)') 'min_in plastic rc_in_',
+     &          mlcname(IM)(1:lnmlcname(IM))
+            elseif(iadobe.eq.1)then
+              WRITE(imatfil,'(a,a)') 'rin_in plastic rc_in_',
+     &          mlcname(IM)(1:lnmlcname(IM))
+            endif
           else
             WRITE(imatfil,'(a,a)') 'void plastic rc_in_',
-     &        mlcname(IM)(1:lnblnk(mlcname(IM)))
+     &        mlcname(IM)(1:lnmlcname(IM))
           endif
           WRITE(imatfil,'(a)') '0 '
           WRITE(imatfil,'(a)') '0 '
@@ -830,8 +889,37 @@ C Open the outsite geometry/composition file.
       WRITE(irofil,'(a)') '# BEWARE: the RGB figures in the glow'
       WRITE(irofil,'(a)') '#   definitions must integrate to one.'
 
-C Do not use sky for Day_coef purpose.
-      if (SCENEPURP(ISCENE)(1:8).ne.'Day_coef') then
+      if (SCENEPURP(ISCENE)(1:9).eq.'Night_ext') then
+
+C Use values suggested by Radiance book.
+        WRITE(irofil,'(a)') '# define night sky... '
+        WRITE(irofil,'(a)') '  '
+        WRITE(irofil,'(a)') 'skyfunc glow sky_glow'
+        WRITE(irofil,'(a)') '0  '
+        WRITE(irofil,'(a)') '0  '
+        WRITE(irofil,'(a)') '4 2e-6 2e-6 1e-5 0 '
+        WRITE(irofil,'(a)') '  '
+        WRITE(irofil,'(a)') 'sky_glow source sky'
+        WRITE(irofil,'(a)') '0  '
+        WRITE(irofil,'(a)') '0  '
+        WRITE(irofil,'(a)') '4 0 0 1 180  '
+        WRITE(irofil,'(a)') '  '
+        WRITE(irofil,'(a)') '# define ground... '
+        WRITE(irofil,'(a)') 'skyfunc glow ground_glow'
+        WRITE(irofil,'(a)') '0  '
+        WRITE(irofil,'(a)') '0  '
+        WRITE(irofil,'(a)') '4 1e-5 8e-6  5e-6 0'
+        WRITE(irofil,'(a)') '  '
+        WRITE(irofil,'(a)') 'ground_glow source ground'
+        WRITE(irofil,'(a)') '0  '
+        WRITE(irofil,'(a)') '0  '
+        WRITE(irofil,'(a)') '4 0 0 -1 180  '
+        WRITE(irofil,'(a)') '  '
+      elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_coef') then
+        continue ! Do not use sky for Day_coef purpose
+      else
+
+C All other scene types use this standard approach.
         WRITE(irofil,'(a)') '# define sky... '
         WRITE(irofil,'(a)') '  '
         WRITE(irofil,'(a)') 'skyfunc glow sky_glow'
@@ -877,7 +965,7 @@ C by the ground reflectivity (thus the ground is a shade of brown).
 C Make sure the ground ring is at least 30m radius.
       if(grdd.lt.15.)grdd=15.0
       WRITE(irofil,'(a,2F7.1,a,F7.1)') '8 ',grcx,grcy,
-     &                                 ' -0.01  0. 0. 1. 0. ',grdd*2.
+     &  ' -0.01  0. 0. 1. 0. ',grdd*2.
       WRITE(irofil,'(a)') ' '
       if(ngt.gt.0)then
 
@@ -953,7 +1041,7 @@ C Read zone constructions file.
 
 C Display the other zone, resetting all surface lines to std.
         if(ACT.eq.'i')then
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           MODLEN=.TRUE.
           MODBND=.TRUE.
           CALL INLNST(1)
@@ -964,10 +1052,10 @@ C Display the other zone, resetting all surface lines to std.
         endif
 
 C Generate combined zone & generate surface names as identifiers.
-        DO 60 IS=1,NSUR
+        DO IS=1,NSUR
           ICN=IZSTOCN(newfoc,is)
           write(zsn(is),'(3a)') ZN(1:lnblnk(ZN)),':',SSNAME(icn)
-  60    continue
+        ENDDO  ! IS
 
         WRITE(irofil,'(3a)')'# ',ZN(1:lnblnk(ZN)),' Surface defs..'
         WRITE(irofil,'(a)') '  '
@@ -1006,6 +1094,8 @@ C Create a genrbox command to match the obstruction.
 C BLOCKTYP (4 char) type of block:
 C   'obs ' - standard block (origin, three dimensions, one rotation)
 C   'obs3' - general block (origin, three dimensions, three rotations)
+C            which must be converted as per obsp so that rotations do
+C            not rely on xform
 C   'obsp' - general polygon (six sides formed from 8 vertices)
 
 C Set material name
@@ -1029,23 +1119,15 @@ C Create a >genrbox< command to match the obstruction.
               WRITE(irofil,'(a)') ' '
             elseif (BLOCKTYP(newfoc,ib).eq.'obs3') then
 
-C Create a >genrbox< command to match the obstruction with 
-C rz, ry, rx rotations.
-              WRITE(irofil,'(4a,3f9.3,3(a,f9.3),a,3f9.3)')
-     &          '!genrbox rc_ex_',ObsMatName(1:lnbm),
-     &          '  ',        
-     &          BLOCKNAME(newfoc,IB)(1:LNBLOCKNAME(newfoc,IB)),
-     &          DXOB(newfoc,ib),DYOB(newfoc,ib),DZOB(newfoc,ib),
-     &          ' | xform -rz ',BANGOB(newfoc,ib,1),
-     &          ' -ry ',-1.0*BANGOB(newfoc,ib,2),
-     &          ' -rx ',BANGOB(newfoc,ib,3),
-     &          ' -t ',XOB(newfoc,ib),YOB(newfoc,ib),ZOB(newfoc,ib)
-              WRITE(irofil,'(a)') ' '
-
-            elseif (BLOCKTYP(newfoc,ib).eq.'obsp') then
+C Convert obs3 to polygons here because of differences in how
+C xform does rotations different from how obs3 does rotations
+              CALL CNVBLK3A(XOB(newfoc,IB),YOB(newfoc,IB),
+     &          ZOB(newfoc,IB),DXOB(newfoc,IB),DYOB(newfoc,IB),
+     &          DZOB(newfoc,IB),BANGOB(newfoc,IB,1),
+     &          BANGOB(newfoc,IB,2),BANGOB(newfoc,IB,3))
 
 C Create a >polygon< command for each of 6 faces
-              do 785 isf=1,6 ! hard-code this?
+              do isf=1,6 ! hard-code this?
                 WRITE(irofil,'(5a,I1)')'rc_ex_',
      &            ObsMatName,'  polygon ',
      &            BLOCKNAME(newfoc,IB)(1:LNBLOCKNAME(newfoc,IB)),
@@ -1055,19 +1137,140 @@ C Create a >polygon< command for each of 6 faces
                 WRITE(irofil,'(I3)') 12 ! NGVER(???)*3 
 
 C Write the coordinates for face isf.
-                do 784 iv=1,4 ! NGVER(???)
+                do iv=1,4 ! NGVER(???)
+                  K = JVNB(isf,iv) ! variable for obstruction blocks?
+                  WRITE(irofil,'(3F11.5)') XB(K),YB(K),ZB(K)
+                enddo
+                WRITE(irofil,'(a)') '  '
+              enddo   ! isf
+
+            elseif (BLOCKTYP(newfoc,ib).eq.'obsp') then
+
+C Create a >polygon< command for each of 6 faces
+              do isf=1,6 ! hard-code this?
+                WRITE(irofil,'(5a,I1)')'rc_ex_',
+     &            ObsMatName,'  polygon ',
+     &            BLOCKNAME(newfoc,IB)(1:LNBLOCKNAME(newfoc,IB)),
+     &            '_', isf  ! add face number to block name
+                WRITE(irofil,'(a)') '0 '
+                WRITE(irofil,'(a)') '0 '
+                WRITE(irofil,'(I3)') 12 ! NGVER(???)*3 
+
+C Write the coordinates for face isf.
+                do iv=1,4 ! NGVER(???)
                   K = JVNB(isf,iv) ! variable for obstruction blocks?
                   WRITE(irofil,'(3F11.5)')
      &              XBP(newfoc,IB,K),YBP(newfoc,IB,K),ZBP(newfoc,IB,K)
-784             continue
+                enddo  ! iv
                 WRITE(irofil,'(a)') '  '
-785           continue
+              enddo  ! isf
             else
                ! error, shouldn't end up here ...
             endif  ! check BLOCKTYP()
  43       continue ! loop through all obstructions of zone
         endif      ! nbobs() .ge. 1
-  61    continue
+
+
+C Confirm inclusion of visual object.
+        if(nbvis(newfoc).ge.1)then
+          if(ACT.eq.'i')then
+            write(outs,'(3a)') ' Include ',ZN(1:lnblnk(ZN)),
+     &                         ' visual entities ? '
+            dok=.true.
+            CALL ASKOK(' ',outs,OK,dok,nbhelp)
+          else
+            OK=.TRUE.
+          endif
+          if(.not.OK)goto 61
+
+          WRITE(irofil,'(a)') '# visual object defs... '
+          WRITE(irofil,'(a)') '  '
+
+          nvis=nvis+nbvis(newfoc)  ! increment count of visual entities
+
+          do 143 ib=1,nbvis(newfoc)
+
+C Create a genrbox command to match the visual entities.
+C VISTYP (4 char) type of block:
+C   'vis ' - standard block (origin, three dimensions, one rotation)
+C   'vis3' - general block (origin, three dimensions, three rotations)
+C            which must be converted as per visp so that rotations do
+C            not rely on xform
+C   'visp' - general polygon (six sides formed from 8 vertices)
+
+C Set material name
+            if (VISMAT(newfoc,ib)(1:4).eq.'NONE') then
+              lnbm=7
+              ObsMatName='unknown'
+            else
+              lnbm=LNVISMAT(newfoc,ib)
+              ObsMatName=VISMAT(newfoc,ib)
+            endif
+
+            if (VISTYP(newfoc,ib).eq.'vis ') then
+
+C Create a >genrbox< command to match the obstruction.
+              WRITE(irofil,'(4a,3f9.3,a,f9.3,a,3f9.3)')
+     &          '!genrbox rc_ex_',ObsMatName(1:lnbm),'  ',        
+     &          VISNAME(newfoc,IB)(1:LNVISNAME(newfoc,IB)),
+     &          DXOV(newfoc,ib),DYOV(newfoc,ib),DZOV(newfoc,ib),
+     &          ' | xform -rz ',BANGOV(newfoc,ib,1),
+     &          ' -t ',XOV(newfoc,ib),YOV(newfoc,ib),ZOV(newfoc,ib)
+              WRITE(irofil,'(a)') ' '
+            elseif (VISTYP(newfoc,ib).eq.'vis3') then
+
+C Convert vis3 to polygons here because of differences in how
+C xform does rotations different from how obs3 does rotations
+              CALL CNVBLK3A(XOV(newfoc,IB),YOV(newfoc,IB),
+     &          ZOV(newfoc,IB),DXOV(newfoc,IB),DYOV(newfoc,IB),
+     &          DZOV(newfoc,IB),BANGOV(newfoc,IB,1),
+     &          BANGOV(newfoc,IB,2),BANGOV(newfoc,IB,3))
+
+C Create a >polygon< command for each of 6 faces
+              do isf=1,6 ! hard-code this?
+                WRITE(irofil,'(5a,I1)')'rc_ex_',
+     &            ObsMatName,'  polygon ',
+     &            VISNAME(newfoc,IB)(1:LNVISNAME(newfoc,IB)),
+     &            '_', isf  ! add face number to block name
+                WRITE(irofil,'(a)') '0 '
+                WRITE(irofil,'(a)') '0 '
+                WRITE(irofil,'(I3)') 12 ! NGVER(???)*3 
+
+C Write the coordinates for face isf.
+                do iv=1,4 ! NGVER(???)
+                  K = JVNB(isf,iv) ! variable for visual blocks?
+                  WRITE(irofil,'(3F11.5)') XB(K),YB(K),ZB(K)
+                enddo  ! iv
+                WRITE(irofil,'(a)') '  '
+              enddo  ! isf
+
+            elseif (VISTYP(newfoc,ib).eq.'visp') then
+
+C Create a >polygon< command for each of 6 faces
+              do isf=1,6 ! hard-code this?
+                WRITE(irofil,'(5a,I1)')'rc_ex_',
+     &            ObsMatName,'  polygon ',
+     &            VISNAME(newfoc,IB)(1:LNVISNAME(newfoc,IB)),
+     &            '_', isf  ! add face number to block name
+                WRITE(irofil,'(a)') '0 '
+                WRITE(irofil,'(a)') '0 '
+                WRITE(irofil,'(I3)') 12 ! NGVER(???)*3 
+
+C Write the coordinates for face isf.
+                do iv=1,4 ! NGVER(???)
+                  K = JVNB(isf,iv) ! variable for visual blocks?
+                  WRITE(irofil,'(3F11.5)')
+     &              XVP(newfoc,IB,K),YVP(newfoc,IB,K),ZVP(newfoc,IB,K)
+                enddo  ! iv
+                WRITE(irofil,'(a)') '  '
+              enddo  ! isf
+            else
+               ! error, shouldn't end up here ...
+            endif  ! check VISTYP()
+ 143      continue ! if nbvis
+        endif
+
+  61    continue  ! jump point
 
 C Now surface information.
         WRITE(irofil,'(a)') '# Outside zone Surface defs... '
@@ -1093,20 +1296,22 @@ C   All connections: create one surface (no shift).
           endif
 
 C Find the matching mlc index and set the material name.
-
+C Radiance does not yet know what to do with CFC and CFC2.
 C << use call to matchmlcdesc >>
           ICF=-1
           ifict=0
           call matchmlcdesc(SSMLCN(icn),icf)
           if(ICF.eq.-1.or.SSMLCN(icn)(1:4).eq.'UNKN')then
             if (SSOTF(icn)(1:4).ne.'OPAQ'.and.
-     &          SSOTF(icn)(1:4).ne.'CFC ') then
+     &          SSOTF(icn)(1:4).ne.'CFC '.and.
+     &          SSOTF(icn)(1:4).ne.'CFC2') then
               material='unknown_glz'
             else
               material='unknown'
             endif
           else
-            write(material,'(a)') SSMLCN(icn)(1:12)
+            lnsm=lnblnk(SSMLCN(icn))
+            write(material,'(a)') SSMLCN(icn)(1:lnsm)
             if(iskip(icf).eq.1)ifict=1
           endif
 
@@ -1124,7 +1329,8 @@ C Aternative glazing descriptions file.
               WRITE(ita2,'(a)') '  '
             endif
           elseif(SSOTF(icn)(1:4).ne.'OPAQ'.and.
-     &           SSOTF(icn)(1:4).ne.'CFC ')then
+     &           SSOTF(icn)(1:4).ne.'CFC '.and.
+     &           SSOTF(icn)(1:4).ne.'CFC2')then
 
 C Create surface based on the following:
 C  Focus zone - create.
@@ -1145,7 +1351,7 @@ C Logic - ask about precalc in all internal zones.
 
 C Highlight surface on image.
                 if(ACT.eq.'i')then
-                  MODIFY=.TRUE.
+                  MODIFYVIEW=.TRUE.
                   CALL INLNST(1)
                   CALL SURADJ(ifocz,isf,IE,TMP,IZC,ISC,IC,DESCRC)
                   LINSTY(IC)=2
@@ -1195,21 +1401,21 @@ C IRECT: -1 not rectangular; 0 error; 1 rectangular.
                   if (IR.eq.0) then
                     QT=CHAR(39)
                     WRITE(iglzfil,666)'!gensurf',
-     &                    material(1:lnblnk(material)),
-     &                    zsn(isf)(1:lnblnk(zsn(isf))),
-     &                    QT,SVALS(1),'*s+',TVALS(1),'*t',QT,
-     &                    QT,SVALS(2),'*s+',TVALS(2),'*t',QT,
-     &                    QT,SVALS(3),'*s+',TVALS(3),'*t',QT,' 2  2',
-     &                    ' | xform -t ',(TFORM(IXX),IXX=1,3)
+     &                material(1:lnblnk(material)),
+     &                zsn(isf)(1:lnblnk(zsn(isf))),
+     &                QT,SVALS(1),'*s+',TVALS(1),'*t',QT,
+     &                QT,SVALS(2),'*s+',TVALS(2),'*t',QT,
+     &                QT,SVALS(3),'*s+',TVALS(3),'*t',QT,' 2  2',
+     &                ' | xform -t ',(TFORM(IXX),IXX=1,3)
                     if (NABS.gt.0) then
                       write(outs,'(a,a)') 
-     &                               material(1:lnblnk(material)),'_sw'
+     &                  material(1:lnblnk(material)),'_sw'
                       WRITE(ita2,666)'!gensurf',outs(1:lnblnk(outs)),
-     &                    zsn(isf)(1:lnblnk(zsn(isf))),
-     &                    QT,SVALS(1),'*s+',TVALS(1),'*t',QT,
-     &                    QT,SVALS(2),'*s+',TVALS(2),'*t',QT,
-     &                    QT,SVALS(3),'*s+',TVALS(3),'*t',QT,' 2  2',
-     &                    ' | xform -t ',(TFORM(IXX),IXX=1,3)
+     &                  zsn(isf)(1:lnblnk(zsn(isf))),
+     &                  QT,SVALS(1),'*s+',TVALS(1),'*t',QT,
+     &                  QT,SVALS(2),'*s+',TVALS(2),'*t',QT,
+     &                  QT,SVALS(3),'*s+',TVALS(3),'*t',QT,' 2  2',
+     &                  ' | xform -t ',(TFORM(IXX),IXX=1,3)
                     endif
  666                format (3(a,1x),3(a,f8.4,a,f8.4,a,a,1x),a,a,3f8.4)
                   endif
@@ -1225,46 +1431,46 @@ C IRECT: -1 not rectangular; 0 error; 1 rectangular.
                   IR=1
                 endif
                 if (IR.ne.0) then
-                  WRITE(iglzfil,'(a,a,a)')material(1:lnblnk(material)),
-     &                        '  polygon  ',zsn(isf)(1:lnblnk(zsn(isf)))
+                  WRITE(iglzfil,'(3a)')material(1:lnblnk(material)),
+     &              '  polygon  ',zsn(isf)(1:lnblnk(zsn(isf)))
                   WRITE(iglzfil,'(a)') '0 '
                   WRITE(iglzfil,'(a)') '0 '
                   WRITE(iglzfil,'(I3)')NVER(isf)*3
                   do 1274 iv=NVER(isf),1,-1
                     WRITE(iglzfil,'(3F11.5)')
-     &                     X(JVN(isf,iv)),Y(JVN(isf,iv)),Z(JVN(isf,iv))
+     &                X(JVN(isf,iv)),Y(JVN(isf,iv)),Z(JVN(isf,iv))
  1274             continue
                   if (NABS.gt.0) then
-                    WRITE(ita2,'(a,a,a)')material(1:lnblnk(material)),
-     &                     '_sw  polygon  ',zsn(isf)(1:lnblnk(zsn(isf)))
+                    WRITE(ita2,'(3a)')material(1:lnblnk(material)),
+     &                '_sw  polygon  ',zsn(isf)(1:lnblnk(zsn(isf)))
                     WRITE(ita2,'(a)') '0 '
                     WRITE(ita2,'(a)') '0 '
                     WRITE(ita2,'(I3)')NVER(isf)*3
                     do 1275 iv=NVER(isf),1,-1
                       WRITE(ita2,'(3F11.5)')
-     &                     X(JVN(isf,iv)),Y(JVN(isf,iv)),Z(JVN(isf,iv))
+     &                  X(JVN(isf,iv)),Y(JVN(isf,iv)),Z(JVN(isf,iv))
  1275               continue
                   endif
                 endif
               else
-                WRITE(iglzfil,'(a,a,a)') material(1:lnblnk(material)),
-     &                        '  polygon  ',zsn(isf)(1:lnblnk(zsn(isf)))
+                WRITE(iglzfil,'(3a)') material(1:lnblnk(material)),
+     &            '  polygon  ',zsn(isf)(1:lnblnk(zsn(isf)))
                 WRITE(iglzfil,'(a)') '0 '
                 WRITE(iglzfil,'(a)') '0 '
                 WRITE(iglzfil,'(I3)')NVER(isf)*3
                 do 1174 iv=NVER(isf),1,-1
                   WRITE(iglzfil,'(3F11.5)')
-     &                     X(JVN(isf,iv)),Y(JVN(isf,iv)),Z(JVN(isf,iv))
+     &              X(JVN(isf,iv)),Y(JVN(isf,iv)),Z(JVN(isf,iv))
  1174           continue
                 if (NABS.gt.0) then
-                  WRITE(ita2,'(a,a,a)') material(1:lnblnk(material)),
-     &                     '_sw  polygon  ',zsn(isf)(1:lnblnk(zsn(isf)))
+                  WRITE(ita2,'(3a)') material(1:lnblnk(material)),
+     &              '_sw  polygon  ',zsn(isf)(1:lnblnk(zsn(isf)))
                   WRITE(ita2,'(a)') '0 '
                   WRITE(ita2,'(a)') '0 '
                   WRITE(ita2,'(I3)')NVER(isf)*3
                   do 1175 iv=NVER(isf),1,-1
                     WRITE(ita2,'(3F11.5)')
-     &                     X(JVN(isf,iv)),Y(JVN(isf,iv)),Z(JVN(isf,iv))
+     &                X(JVN(isf,iv)),Y(JVN(isf,iv)),Z(JVN(isf,iv))
  1175             continue
                 endif
               endif
@@ -1290,9 +1496,9 @@ C for inside.)
               YY(iv) = Y(JVN(isf,iv))
               ZZ(iv) = Z(JVN(isf,iv))
   150       CONTINUE
-            WRITE(irzfil,'(a,a,a,a)')'rc_in_',
-     &                      material(1:lnblnk(material)),'  polygon  ',
-     &                                      zsn(isf)(1:lnblnk(zsn(isf)))
+            WRITE(irzfil,'(4a)')'rc_in_',
+     &        material(1:lnblnk(material)),'  polygon  ',
+     &        zsn(isf)(1:lnblnk(zsn(isf)))
             WRITE(irzfil,'(a)') '0 '
             WRITE(irzfil,'(a)') '0 '
             WRITE(irzfil,'(I3)')NVER(isf)*3
@@ -1328,9 +1534,9 @@ C            endif
             WRITE(irzfil,'(a)') '  '
 
             if (extern) then
-              WRITE(irofil,'(a,a,a,a)')'rc_ex_',
-     &                      material(1:lnblnk(material)),'  polygon  ',
-     &                                      zsn(isf)(1:lnblnk(zsn(isf)))
+              WRITE(irofil,'(4a)')'rc_ex_',
+     &          material(1:lnblnk(material)),'  polygon  ',
+     &          zsn(isf)(1:lnblnk(zsn(isf)))
               WRITE(irofil,'(a)') '0 '
               WRITE(irofil,'(a)') '0 '
               WRITE(irofil,'(I3)')NVER(isf)*3
@@ -1368,11 +1574,12 @@ C Find transformation matrices that normalise face.
       CALL ERPFREE(iglzfil,ISTAT)
       CALL ERPFREE(ita2,ISTAT)
 
-C If there are more than 6 obstructions it is worth expanding
-C the outside definition via an 'xform -e' command to speed
+C If there are more than 6 obstructions or visual entities it is worth
+C expanding the outside definition via an 'xform -e' command to speed
 C calculation.
-      if(nobs.gt.6)then
-        write(outs,'(a,i3,a)') 'expanding ',nobs,' obstructions...'
+      if(nobs.gt.6.or.nvis.gt.6)then
+        write(outs,'(a,i3,a,i3,a)') 'expanding ',nobs,
+     &    ' obstructions and ',nvis,' visual entities...'
         call usrmsg(outs,' ','-')
         write(tfile,'(a,a)') runpath(1:lnrp),'exprofil'
         INQUIRE (FILE=tfile,EXIST=XST)
@@ -1454,4 +1661,220 @@ C Remove temporary file and close.
       call erpfree(irofil,istat)
       return
 
+      end
+
+C mkxform creates a file to hold xform commands for IES.rad entries.
+C If ACT='i' then interactive, ACT='s' for silent.
+      subroutine mkxform(ACT,IER)
+#include "building.h"
+#include "model.h"
+#include "geometry.h"
+#include "esprdbfile.h"
+#include "material.h"
+#include "e2r_common.h"
+#include "prj3dv.h"
+    
+      integer lnblnk  ! function definition
+
+C Passed parameters.
+      character act*1
+      integer ier
+
+      COMMON/FILEP/IFIL
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      real BB(2,3)   ! bounding box in site coordinates
+      real roties    ! assumed rotation
+
+C Local variables
+      logical found
+      character ltmp72*72,dtmp72*72,tfile*72
+      real trnsx,trnsy,trnsz  ! transforms IES entity to surface cog.
+      character combinedname*36,outs*124
+      character iescontrolledname*36  ! ies2rad will have generated several
+      dimension iescontrolledname(5)  ! rad files for different control states
+      integer loop,loop2,iiessteps(5)
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='mkxform'  ! set for subroutine
+
+      ITA1 = IFIL+6
+      ISTAT=0
+      IER=0
+
+      if(nbofies.eq.0)then
+        return
+      endif
+
+C Generate help for the various dialogs.
+      helptopic='writing_ies_xforms'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
+C Loop through all the surfaces looking for SUSE=FIXTURE.
+      found=.false.
+      do icn=1,ncon
+        if(SSUSE(icn,1)(1:7).eq.'FIXTURE')then
+          if(SSUSE(icn,2)(1:2).eq.'- ')then
+            continue
+          else
+
+C Found something - think of what to do...
+            found=.true.
+            write(outs,*) 'found surface with fixture',icn,
+     &        SSUSE(icn,1),SSUSE(icn,2)
+            call edisp(iuout,outs)
+          endif
+        endif
+      enddo  ! if icn
+
+C If no surfaces were associated with an IES entity then
+C no need to create this file.
+      if(.NOT.found) return
+
+C Generate a file name.
+      if(ACT.eq.'i')then
+ 22     ltmp72=iesfil
+        dtmp72=iesfil
+        CALL EASKS(ltmp72,' IES data xforms file name ?','  ',
+     &    72,dtmp72,'ies data xforms file name',IER,nbhelp)
+        if(ltmp72(1:2).eq.'  ') goto 22
+        iesfil=ltmp72
+        write(tfile,'(a,a)')runpath(1:lnrp),iesfil(1:lnblnk(iesfil))
+        call FPOPEN(iiesfil,ISTAT,1,4,tfile)
+      else
+        write(tfile,'(a,a)')runpath(1:lnrp),iesfil(1:lnblnk(iesfil))
+        call FPOPEN(iiesfil,ISTAT,1,3,tfile)
+      endif
+
+C Write a header into this file.
+      WRITE(iiesfil,'(a)') '# Radiance IES transforms file '
+      WRITE(iiesfil,'(a)') '# (do not modify first line) '
+
+C Process each zone.
+      do newfoc=1,ncomp
+        do isf=1,nzsur(newfoc)
+          ICN=IZSTOCN(newfoc,isf)
+          if(SSUSE(icn,1)(1:7).eq.'FIXTURE')then
+            if(SSUSE(icn,2)(1:2).eq.'- ')then
+              continue
+            else
+
+C Loop through the known IES entities to find a match.
+              do loop=1,nbofies
+                if(iesname(loop).eq.SSUSE(icn,2))then
+
+C The transform (assuming the IES data is centred at the
+C site origin) is to the surface centre of gravity.
+                  trnsx=ssurcog(icn,1)
+                  trnsy=ssurcog(icn,2)
+                  trnsz=ssurcog(icn,3)-0.01   ! bit lower in case embedded in bounding surface
+
+C The rotation of the IES data is assumed to be a match
+C of its longer dimension axis (X or Y) and the longest
+C axis of the surface.
+                  call SUR3DLEHI(newfoc,isf,WID,HIGH,BB)
+                  if((BB(2,1)-BB(1,1)).ge.(BB(2,2)-BB(1,2)))then
+
+C Associated surface is longer along X axis. If IES entity is
+C also longer along X no rotation needed. 
+                    if(iesalong(loop).eq.'X'.or.
+     &                 iesalong(loop).eq.'x')then
+                      roties=0.0
+                    else
+                      roties=90.0
+                    endif
+                  else
+
+C Associated surface is wider along Y axis.
+                    if(iesalong(loop).eq.'Y'.or.
+     &                 iesalong(loop).eq.'y')then
+                      roties=0.0
+                    else
+                      roties=90.0
+                    endif
+                  endif
+                  
+C Name for the beastie - probably based on zone:surface:iesname
+                  lnz=lnblnk(zname(newfoc))
+                  lns=lnblnk(ssname(icn))
+                  lnu=lnblnk(SSUSE(icn,2))
+                  write(combinedname,'(5a)') zname(newfoc)(1:lnz),
+     &              ':',ssname(icn)(1:lns),':',SSUSE(icn,2)(1:lnu)
+                  lncmb=lnblnk(combinedname)
+
+C Similar logic to edoptic.F
+                  if(iespercents(loop).eq.1)then
+                    iiessteps(1)=100; iiessteps(2)=001
+                  elseif(iespercents(loop).eq.2)then
+                    iiessteps(1)=100; iiessteps(2)=001
+                  elseif(iespercents(loop).eq.4)then
+                    iiessteps(1)=100; iiessteps(2)=50
+                    iiessteps(3)=20; iiessteps(4)=01
+                  elseif(iespercents(loop).eq.5)then
+                    iiessteps(1)=100; iiessteps(2)=75
+                    iiessteps(3)=50; iiessteps(4)=25; iiessteps(5)=01
+                  endif
+              
+C Report what has been decided.
+C Debug
+                  write(6,*) 'found surface with fixture',icn,
+     &              SSUSE(icn,1),SSUSE(icn,2),combinedname,trnsx,
+     &              trnsy,trnsz,roties
+                  write(6,*) iescontrolledname(1)
+                  write(6,*) iescontrolledname(2)
+                  write(6,*) iescontrolledname(3)
+                  write(6,*) iescontrolledname(4)
+
+C For each control state.  Put a hash in front of subsequent lines (it is
+C up to the user to edit the file at simulation run time).
+                  do loop2=1,iespercents(loop)
+                    write(iescontrolledname(loop2),'(a,i3.3,a)')
+     &                SSUSE(icn,2)(1:lnu),iiessteps(loop2),'.rad'
+                    lnctl=lnblnk(iescontrolledname(loop2))
+                    if(loop2.eq.1)then
+                      WRITE(iiesfil,'(3a,f7.2,a,3f7.3,2a)') 
+     &                  ' !xform -e -n ',combinedname(1:lncmb),
+     &                  ' -rz ',roties,' -rx 0 -t ',
+     &                  trnsx,trnsy,trnsz,' ',
+     &                  iescontrolledname(loop2)(1:lnctl)
+                      WRITE(6,'(3a,f7.2,a,3f7.3,2a)') ' !xform -e -n ',
+     &                  combinedname(1:lncmb),' -rz ',roties,
+     &                  ' -rx 0 -t ',trnsx,trnsy,trnsz,' ',
+     &                  iescontrolledname(loop2)(1:lnctl)
+                    else
+                      WRITE(iiesfil,'(3a,f7.2,a,3f7.3,2a)') 
+     &                  '# !xform -e -n ',combinedname(1:lncmb),
+     &                  ' -rz ',roties,' -rx 0 -t ',
+     &                  trnsx,trnsy,trnsz,' ',
+     &                  iescontrolledname(loop2)(1:lnctl)
+                      WRITE(6,'(3a,f7.2,a,3f7.3,2a)') 
+     &                  '# !xform -e -n ',combinedname(1:lncmb),' -rz ',
+     &                  roties,' -rx 0 -t ',trnsx,trnsy,trnsz,' ',
+     &                  iescontrolledname(loop2)(1:lnctl)
+                    endif
+                  enddo  ! of loop2
+
+C Depending on the control need to write out multiple lines but
+C initially only uncomment the ON state.
+
+                else
+                  continue
+                endif
+              enddo  ! of loop
+            endif
+          endif
+        enddo  ! of isf
+      enddo    ! of newfoc     
+      CALL ERPFREE(iiesfil,ios)
+
+      return
       end

@@ -42,73 +42,15 @@ C network. For a listing of variable and string definitions see the ENETREWR
 C subroutine. 
       SUBROUTINE ENETINIT
 
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 C
 C Common Blocks
 
-C Common for electrical file 
-      COMMON/ENTFILE/ENTFLNAM,IENTXIST
 
-C The electrical network
-      COMMON/ENET/ENTYPE
-
-C More network-related info
-      COMMON/ENETMSC/PHASEANG(MPHAS)
-
-C The electrical nodes
-      COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
-     &ENODPH(MENOD),ENODTYP(MENOD),ENODBASEV(MENOD),
-     &ENODBASEP
-
-C The connected hybrid components
-      COMMON/HYBE/NHYBCOM,HYBCOMNO(MHYCOM),HYCOMTYP(MHYCOM),
-     &HYCOMPHTYP(MHYCOM),HYCONEN(MHYCOM,MPHAS),HYLOC(MHYCOM,MPHAS),
-     &NHYBDAT(MHYCOM),HYBDAT(MHYCOM,MHYDAT)
-
-C The connected power only components
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-
-C The connecting components
-      COMMON/CONCOM/NCONECOM,CONECOMNO(MCONECOM),CONECOMID(MCONECOM),
-     &CONECOMPHTYP(MCONECOM),NCONECOMDAT(MCONECOM),
-     &CONECOMDAT(MCONECOM,MCCDAT)
-
-C The electrical network topology
-      COMMON/ECONN/NECON,ECONO(MECON),CONPHTYP(MECON),
-     &CONPH(MECON,MPHAS),CCNO(MECON),SENOD(MECON,MPHAS),
-     &EENOD(MECON,MPHAS)
-
-C The descriptive strings
-      COMMON/ECDESC/ENTYPESTR(MENTYP),PHTYPSTR(MPHATY),ENDESC,
-     &ENODTYPSTR(MENOD),HYDESC(MHYCOM),CONECOMDESC(MCONECOM),
-     &POWCOMDESC(MPOWCOM)
+      INTEGER I,J
      
-     
-C Node and component names
-      COMMON/ECNAMES/ENODNAM(MENOD),HYCOMNAM(MHYCOM),
-     &HYCOMTYPSTR(MHYCOM),POWCOMNAM(MPOWCOM),POWCDATS(MPOWCOM,MPCDS),
-     &CONECOMNAM(MCONECOM)
-
-C Type casting (all varaiables and arrays cast explicitly)
-      INTEGER NENOD,ENODNO,ENODPHTYP,ENODPH,ENODTYP,NHYBCOM,HYBCOMNO,
-     &HYCOMTYP,HYCOMPHTYP,HYCONEN,HYLOC,NHYBDAT,NPOWCOM,POWCOMNO,
-     &POWCOMID,POWCOMPHTYP,POWCONEN,NPOWCDAT,NPOWCDATS,NCONECOM,
-     &CONPH,CONECOMNO,CONECOMID,CONECOMPHTYP,NCONECOMDAT,NECON,
-     &ECONO,CONPHTYP,CCNO,SENOD,EENOD
-
-      INTEGER IENTXIST,ENTYPE,I,J
-     
-      REAL PHASEANG,ENODBASEV,ENODBASEP,HYBDAT,POWCDAT,CONECOMDAT
-
-C Characters
-      CHARACTER*12 ENTYPESTR,ENODTYPSTR,ENODNAM,HYCOMTYPSTR,HYCOMNAM,
-     &POWCOMNAM,CONECOMNAM,PHTYPSTR
-      CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
-     &ENTFLNAM
-
-
 C Set initial network variables
       IENTXIST=1
       IF(ENTFLNAM(1:2).EQ.'  ') ENTFLNAM='UNKNOWN'
@@ -287,6 +229,8 @@ C Presents a list of electrical nodes to the user and returns the selected node 
 
       SUBROUTINE ELNODMLS(NPK,IPK)
 
+#include "building.h"
+#include "plant.h"
 #include "epara.h"
 #include "power.h"
 
@@ -294,35 +238,13 @@ C Commons
       COMMON/POPHELP/H(60)
       COMMON/OUTIN/IUOUT,IUIN
 
-C The electrical nodes
-      COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
-     &ENODPH(MENOD),ENODTYP(MENOD),ENODBASEV(MENOD),
-     &ENODBASEP
-
-C Node and component names
-      COMMON/ECNAMES/ENODNAM(MENOD),HYCOMNAM(MHYCOM),
-     &HYCOMTYPSTR(MHYCOM),POWCOMNAM(MPOWCOM),POWCDATS(MPOWCOM,MPCDS),
-     &CONECOMNAM(MCONECOM)
-
-C The descriptive strings
-      COMMON/ECDESC/ENTYPESTR(MENTYP),PHTYPSTR(MPHATY),ENDESC,
-     &ENODTYPSTR(MENOD),HYDESC(MHYCOM),CONECOMDESC(MCONECOM),
-     &POWCOMDESC(MPOWCOM)
-
 C Type casting (all varaiables and arrays cast explicitly)
-      INTEGER NENOD,ENODNO,ENODPHTYP,ENODPH,ENODTYP
-
       DIMENSION VERT(35),IPK(MENOD)
-
-      REAL ENODBASEV,ENODBASEP
 
 C Characters
       CHARACTER*1 KEY
       CHARACTER*54 VERT
-      CHARACTER*12 ENTYPESTR,ENODTYPSTR,ENODNAM,HYCOMTYPSTR,HYCOMNAM,
-     &POWCOMNAM,CONECOMNAM,PHTYPSTR
-      CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
-     &H
+      CHARACTER*72 H
       integer MVERT,IVERT  ! max items and current menu item
 
 C Zero picked items. 
@@ -425,6 +347,8 @@ C ******************************* ELHYBMLS  ************************************
 C Presents a list of hybrid components to the user and returns the selected 
 C component number.
       SUBROUTINE ELHYBMLS(NPK,IPK)
+#include "building.h"
+#include "plant.h"
 #include "epara.h"
 #include "power.h"
 
@@ -432,36 +356,13 @@ C Commons
       COMMON/POPHELP/H(60)
       COMMON/OUTIN/IUOUT,IUIN
 
-C The connected hybrid components
-      COMMON/HYBE/NHYBCOM,HYBCOMNO(MHYCOM),HYCOMTYP(MHYCOM),
-     &HYCOMPHTYP(MHYCOM),HYCONEN(MHYCOM,MPHAS),HYLOC(MHYCOM,MPHAS),
-     &NHYBDAT(MHYCOM),HYBDAT(MHYCOM,MHYDAT)
-
-C Node and component names
-      COMMON/ECNAMES/ENODNAM(MENOD),HYCOMNAM(MHYCOM),
-     &HYCOMTYPSTR(MHYCOM),POWCOMNAM(MPOWCOM),POWCDATS(MPOWCOM,MPCDS),
-     &CONECOMNAM(MCONECOM)
-
-C The descriptive strings
-      COMMON/ECDESC/ENTYPESTR(MENTYP),PHTYPSTR(MPHATY),ENDESC,
-     &ENODTYPSTR(MENOD),HYDESC(MHYCOM),CONECOMDESC(MCONECOM),
-     &POWCOMDESC(MPOWCOM)
-
 C Type casting (all variables and arrays cast explicitly)
-      INTEGER NHYBCOM,HYBCOMNO,HYCOMTYP,HYCOMPHTYP,HYCONEN,HYLOC,
-     &NHYBDAT
-
-      REAL HYBDAT
-
       DIMENSION VERT(35),IPK(MHYCOM)
 
 C Characters
       CHARACTER*1 KEY
       CHARACTER*66 VERT
-      CHARACTER*12 ENTYPESTR,ENODTYPSTR,ENODNAM,HYCOMTYPSTR,HYCOMNAM,
-     &POWCOMNAM,CONECOMNAM,PHTYPSTR
-      CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
-     &H
+      CHARACTER*72 H
       integer MVERT,IVERT  ! max items and current menu item
 
 C Zero picked items. 
@@ -567,6 +468,8 @@ C ******************************* ELPOWMLS  ************************************
 C Presents a list of hybrid components to the user and returns the selected 
 C component number.
       SUBROUTINE ELPOWMLS(NPK,IPK)
+#include "building.h"
+#include "plant.h"
 #include "epara.h"
 #include "power.h"
 
@@ -574,35 +477,12 @@ C Commons
       COMMON/POPHELP/H(60)
       COMMON/OUTIN/IUOUT,IUIN
 
-C The connected power only components
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-
-C Node and component names
-      COMMON/ECNAMES/ENODNAM(MENOD),HYCOMNAM(MHYCOM),
-     &HYCOMTYPSTR(MHYCOM),POWCOMNAM(MPOWCOM),POWCDATS(MPOWCOM,MPCDS),
-     &CONECOMNAM(MCONECOM)
-
-C The descriptive strings
-      COMMON/ECDESC/ENTYPESTR(MENTYP),PHTYPSTR(MPHATY),ENDESC,
-     &ENODTYPSTR(MENOD),HYDESC(MHYCOM),CONECOMDESC(MCONECOM),
-     &POWCOMDESC(MPOWCOM)
-
-C Type casting (all varaiables and arrays cast explicitly)
-      INTEGER NPOWCOM,POWCOMNO,POWCOMID,POWCOMPHTYP,POWCONEN,NPOWCDAT,
-     &NPOWCDATS
-
-      REAL POWCDAT
-
       DIMENSION VERT(35),IPK(MPOWCOM)
 
 C Characters
       CHARACTER*1 KEY
       CHARACTER*46 VERT
-      CHARACTER*12 ENTYPESTR,ENODTYPSTR,ENODNAM,HYCOMTYPSTR,HYCOMNAM,
-     &POWCOMNAM,CONECOMNAM,PHTYPSTR
-      CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,H
+      character*72 H
       integer MVERT,IVERT ! max items and current menu item
 
 C Zero picked items. 
@@ -707,6 +587,10 @@ C ******************************* ELCNCMLS  ************************************
 C Presents a list of connecting components to the user and returns the selected 
 C component number.
       SUBROUTINE ELCNCMLS(NPK,IPK)
+      implicit none
+
+#include "building.h"
+#include "plant.h"
 #include "epara.h"
 #include "power.h"
 
@@ -714,36 +598,16 @@ C Commons
       COMMON/POPHELP/H(60)
       COMMON/OUTIN/IUOUT,IUIN
 
-C The connecting components
-      COMMON/CONCOM/NCONECOM,CONECOMNO(MCONECOM),CONECOMID(MCONECOM),
-     &CONECOMPHTYP(MCONECOM),NCONECOMDAT(MCONECOM),
-     &CONECOMDAT(MCONECOM,MCCDAT)
-
-C Node and component names
-      COMMON/ECNAMES/ENODNAM(MENOD),HYCOMNAM(MHYCOM),
-     &HYCOMTYPSTR(MHYCOM),POWCOMNAM(MPOWCOM),POWCDATS(MPOWCOM,MPCDS),
-     &CONECOMNAM(MCONECOM)
-
-C The descriptive strings
-      COMMON/ECDESC/ENTYPESTR(MENTYP),PHTYPSTR(MPHATY),ENDESC,
-     &ENODTYPSTR(MENOD),HYDESC(MHYCOM),CONECOMDESC(MCONECOM),
-     &POWCOMDESC(MPOWCOM)
-
-C Type casting (all varaiables and arrays cast explicitly)
-      INTEGER NCONECOM,CONECOMNO,CONECOMID,CONECOMPHTYP,NCONECOMDAT
-
-      REAL CONECOMDAT
-
       DIMENSION VERT(35),IPK(MCONECOM)
+
+      integer IUOUT,IUIN
 
 C Characters
       CHARACTER*1 KEY
       CHARACTER*34 VERT
-      CHARACTER*12 ENTYPESTR,ENODTYPSTR,ENODNAM,HYCOMTYPSTR,HYCOMNAM,
-     &POWCOMNAM,CONECOMNAM,PHTYPSTR
-      CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
-     &H
-      integer MVERT,IVERT  ! max items and current menu item
+      CHARACTER*72 H
+      integer MVERT,IVERT,NPK,I,L,M,IPK  ! max items and current menu item
+      integer IER,IFOC,IPACT,IO
 
 C Zero picked items. 
       NPK=0
@@ -848,6 +712,8 @@ C Presents a list of electrical connections to the user and returns the selected
 C connection number.
       SUBROUTINE ELCONMLS(NPK,IPK)
 
+#include "building.h"
+#include "plant.h"
 #include "epara.h"
 #include "power.h"
 
@@ -855,33 +721,13 @@ C Commons
       COMMON/POPHELP/H(60)
       COMMON/OUTIN/IUOUT,IUIN
 
-C The electrical network topology
-      COMMON/ECONN/NECON,ECONO(MECON),CONPHTYP(MECON),
-     &CONPH(MECON,MPHAS),CCNO(MECON),SENOD(MECON,MPHAS),
-     &EENOD(MECON,MPHAS)
-
-C Node and component names
-      COMMON/ECNAMES/ENODNAM(MENOD),HYCOMNAM(MHYCOM),
-     &HYCOMTYPSTR(MHYCOM),POWCOMNAM(MPOWCOM),POWCDATS(MPOWCOM,MPCDS),
-     &CONECOMNAM(MCONECOM)
-
-C The descriptive strings
-      COMMON/ECDESC/ENTYPESTR(MENTYP),PHTYPSTR(MPHATY),ENDESC,
-     &ENODTYPSTR(MENOD),HYDESC(MHYCOM),CONECOMDESC(MCONECOM),
-     &POWCOMDESC(MPOWCOM)
-
 C Type casting (all varaiables and arrays cast explicitly)
-      INTEGER NECON,ECONO,CONPHTYP,CONPH,CCNO,SENOD,EENOD
-
       DIMENSION VERT(35),IPK(MECON)
 
 C Characters
       CHARACTER*1 KEY
       CHARACTER*60 VERT
-      CHARACTER*12 ENTYPESTR,ENODTYPSTR,ENODNAM,HYCOMTYPSTR,HYCOMNAM,
-     &POWCOMNAM,CONECOMNAM,PHTYPSTR
-      CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
-     &H
+      CHARACTER*72 H
       integer MVERT,IVERT  ! max items and current menu item
 
 C Zero picked items. 

@@ -626,16 +626,16 @@ C Get common block precz/lnprecz from geometry.h
         return
       else
         if(NZ.eq.1)then
-         WRITE(ZDESCR,'(A,I2,A,A)')' Zone (',NZNO(1),') ',zname(NZNO(1))
+         WRITE(ZDESCR,'(A,I3,A,A)')' Zone (',NZNO(1),') ',zname(NZNO(1))
         elseif(NZ.gt.1.and.NZ.LE.20)THEN
          WRITE(ZDESCR,6)(NZNO(I),I=1,NZ)
-    6    FORMAT(' Zones: ',20(I2,','))
+    6    FORMAT(' Zones: ',20(I3,','))
         ELSEIF(NZ.GT.20.AND.NZ.LE.24)THEN
          WRITE(ZDESCR,7)(NZNO(I),I=1,9),(NZNO(J),J=10,NZ)
-    7    FORMAT(' Zones: ',9(I1,','),15(I2,','))
+    7    FORMAT(' Zones: ',9(I1,','),15(I3,','))
         ELSEIF(NZ.GT.24.AND.NZ.LE.28)THEN
          WRITE(ZDESCR,8)(NZNO(I),I=1,9),(NZNO(J),J=10,NZ)
-    8    FORMAT(' Zn: ',9(I1,','),20(I2,','))
+    8    FORMAT(' Zn: ',9(I1,','),20(I3,','))
         ELSEIF(NZ.GT.28)THEN
          WRITE(ZDESCR,8)(NZNO(I),I=1,9),(NZNO(J),J=10,28)
         ENDIF
@@ -769,7 +769,7 @@ C There are more than 140 characters so write numbers instead.
             iiline=line; iicx=icx; iisize=isize
             call findviewtext(iicx,iiline,iisize,iix,iiy)
             lna=2
-            write(word,'(i2.2)',iostat=ios,err=1) NZNO(I)
+            write(word,'(i3.3)',iostat=ios,err=1) NZNO(I)
             call textatxy(iix,iiy,word,'z',NZNO(i))
             icx=icx+lna+1
           enddo
@@ -791,7 +791,7 @@ C Write out digits on two lines.
             iiline=line; iicx=icx; iisize=isize
             call findviewtext(iicx,iiline,iisize,iix,iiy)
             lna=2
-            write(word,'(i2.2)',iostat=ios,err=1) NZNO(I)
+            write(word,'(i3.3)',iostat=ios,err=1) NZNO(I)
             call textatxy(iix,iiy,word,'z',NZNO(i))
             icx=icx+lna+1
           enddo
@@ -806,7 +806,7 @@ C Write out digits on two lines.
             iiline=line+1; iicx=icx; iisize=isize
             call findviewtext(iicx,iiline,iisize,iix,iiy)
             lna=2
-            write(word,'(i2.2)',iostat=ios,err=1) NZNO(I)
+            write(word,'(i3.3)',iostat=ios,err=1) NZNO(I)
             call textatxy(iix,iiy,word,'z',NZNO(i))
             icx=icx+lna+1
           enddo
@@ -1164,12 +1164,10 @@ C Returns zone and sensor number via IZNSEL and ISFSEL respectively.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
       DIMENSION IV(60),IZLST(MCON),ISLST(MCON),ILZNO(MCON),ILSNO(MCON)
 
-      character ST(60)*22,outs*124,LMRT*72,CUBN*6
+      character ST(60)*22,outs*124,LMRT*72
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -1182,15 +1180,15 @@ C For help messages
 
 C Create list of MRT sensors: loop through zones and read any view 
 C factor files remembering sensor names only.
-C Remember the total number os sensors.
+C Remember the total number of sensors.
       NTSEN=0
       do 10 I=1,NCOMP
         IF(IVF(I).EQ.1)THEN
           IUF=IFIL+1
           LMRT=LVIEW(I)
           call ERMRT(0,IUOUT,IUF,LMRT,I,IER)
-          if (NCUB.gt.0) then
-            do 20 J=1,NCUB
+          if (NCUB(I).gt.0) then
+            do 20 J=1,NCUB(I)
               NTSEN=NTSEN+1
               write (ST(NTSEN),'(a,a,a)') zname(I),':',CUBN(J)
               ILZNO(NTSEN)=I

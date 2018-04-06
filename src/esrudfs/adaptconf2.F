@@ -37,13 +37,13 @@ C to the thermal domain for inclusion in the zone matrix.
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
      &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
      &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
-     &              SSBHC(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
       COMMON/ICFNOD/ICFD,ICP
       common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/ypave/ypavg(MCOM)
-      COMMON/ACCrec/IACC
+      COMMON/ACCrec/IACC(MNZ)
 
       CHARACTER*72 LCFD
       LOGICAL laccept
@@ -117,10 +117,11 @@ C Accept CFD HC if above conditions met.
               endif
               
 C Record ACC actions (begin).
-              write(IACC,*)
-              write(IACC,*)'  ASSESS has accepted HC (true/false)  at ',
+              write(IACC(icfd),*)
+              write(IACC(icfd),*)
+     &          '  ASSESS has accepted HC (true/false)  at ',
      &                         'surface?: ',ISUR,' : ',laccept
-              write(IACC,*) '   HCIF = ',HCtemp,' HCICFD = ',
+              write(IACC(icfd),*) '   HCIF = ',HCtemp,' HCICFD = ',
      &                          HCICFD(ICOMP,ISUR),' ratio = ',ratio
 C Record ACC actions (end).
 

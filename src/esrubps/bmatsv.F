@@ -56,6 +56,7 @@ C HOT3000: Fuel cell.
 #include "qrun.h"
 #include "h3k_report_data.h"
 #include "hvac_parameters.h"
+#include "FMI.h"
 
       integer lnblnk  ! function definition
 
@@ -124,6 +125,7 @@ C Air flow network
 C CFD
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/CFSEUP/CFTIMS,CFTIMF,ICFDYS,ICFDYF,ICFAUX(MCOM)
+      COMMON/calcdCFD/mICORcfd(MCOM),mHCcfd(MCOM)
 
 C Simulation start day required by cmp70c.
       common/simsdy/iss,isf
@@ -164,7 +166,7 @@ C so configuration can be passed to h3kreports
       common/avrage/idaver
 
 C Uncertainty common.
-      COMMON/UATD/UACLIM(6,3),UACTL(7,4),UAMCSA(MNACT)
+      COMMON/UATD/UACLIM(6,4),UACTL(7,5),UAMCSA(MNACT)
 
 C Common holding flag indicating presence of hvac data input file:
 C ihvacflag=1 there is hvac file; ihvacflag=0 no hvac file.
@@ -189,9 +191,9 @@ C simulation is still in the startup period
 
 C Active domain common.
       common/ACTDOM/CFDOK
-
-C Common for electrical file.
-      COMMON/ENTFILE/ENTFLNAM,IENTXIST
+C CFD coupling toggles
+      common/CFDTOGS/ACCON,CFD2BLD,CFD2MFS
+      integer ACCON,CFD2BLD,CFD2MFS
 
 C Common for results file names (ag@20131221)
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
@@ -223,7 +225,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       character SHOCCshlFile*72,SHOCCshzFile*72
 
       character outs*124
-      character*72 LCFD,ENTFLNAM
+      character*72 LCFD
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,L3DNDD,L3DTLW,L3DLWV
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ
 
@@ -420,6 +422,18 @@ C iblnd(i,j) contains the index to the SHOCC zone blind array [1,~]
     5   continue
       endif
 
+C <FMI>
+      if (is_FMU) then
+C Initialise FMI and FMUs.
+        call FMI_INIT(IER)
+C Tell FMUs to being simulation.
+        call FMI_SIMSTART(IER)
+      else
+C Ensure all control commons are initialised to "off".
+        call FMI_CLEARCTL()
+      endif
+C </FMI>
+
 C Initialize HVAC variables
       call ZERO_HVAC_VAR
 
@@ -524,6 +538,10 @@ C.....->Set flags indicating if h3kreports should (re)initialize
 88       continue
         bFirst_call_fan = .true.
         bFirst_call_hrv = .true.
+c ---   27-08-2014: Patrice Pinel: Added variable to report Energy revovery ventilation
+        bFirst_call_erv = .true.
+c ---   27-02-2018: ADW: Added variable to report Energy fans no HR ventilation
+        bFirst_call_noHR = .true.
         bFirst_call_dhw = .true.
         WRITE(H3K_rep_NAME,'(A)')'minutes_per_step'
         WRITE(H3K_rep_VALUE,'(f7.3)') 60./real(ntstep)
@@ -1220,10 +1238,25 @@ C Set `itsmus' if output is required at this time-row.
             call eclose(rem,0.00,0.0001,close)
             if (close.and.itrflg.eq.0) itsmus=1
 
-C Activate CFD model during an intended period.
-C Do this by resetting IFCFD variable this is then checked in MZCONV.
+            outs='not yet'
             DO 15 ICP=1,NCOMP
               IF(ICFAUX(ICP).NE.0)THEN
+C Check CFD coupling toggles to see if ACC has been turned off
+C or if 2-way CFD-BLD conflation has been activated.
+C (CFD-MFS conflation is checked in CFMNGE)
+                if(ACCON.eq.0)then
+C ACC has been turned off, set conflation type to 1.
+                  if(abs(ICFAUX(ICP)).gt.1)
+     &                                  ICFAUX(ICP)=sign(1,ICFAUX(ICP))
+                endif
+                if(CFD2BLD.eq.2)then
+C 2-way CFD-BLD conflation has been activated, set conflation type to 5.
+                  if(abs(ICFAUX(ICP)).eq.4)
+     &                                  ICFAUX(ICP)=sign(5,ICFAUX(ICP))
+                endif
+
+C Activate CFD model during an intended period.
+C Do this by resetting IFCFD variable this is then checked below.
                 if(icfaux(icp).gt.0) then
                   if(idyp.lt.isds) then
                     IFCFD(ICP)=ICFAUX(ICP)
@@ -1231,14 +1264,61 @@ C Do this by resetting IFCFD variable this is then checked in MZCONV.
                     IFCFD(ICP)=0
                   endif
                 endif
-                IF(IDYP.GE.ICFDYS.AND.IDYP.LE.ICFDYF)THEN
-                  IF(btimef.GT.CFTIMS.AND.btimef.LE.CFTIMF)THEN
-                    IFCFD(ICP)=ICFAUX(ICP)
-                  ELSEIF(btimef.GT.CFTIMF)THEN
+
+C 1st clause: Present day is within defined range.
+                IF((IDYP.GE.ICFDYS.AND.IDYP.LE.ICFDYF).or.
+
+C 2nd clause: Future time is the first time step of CFD start day, but
+C             present time is still the previous day.
+C             May need results for this time step.
+     &    (IDYP.eq.(ICFDYS-1).and.CFTIMS.eq.1.0.and.btimef.eq.1.0))THEN
+
+                  IF(btimef.GE.CFTIMS.and.abs(IFCFD(ICP)).eq.0)THEN
+C Ensure IFCFD is negative, necessary for SURFCONF.
+                    IFCFD(ICP)=-abs(ICFAUX(ICP))
+                  ELSEIF(btimef.GT.CFTIMF.and.IDYP.eq.ICFDYF)THEN
                     IFCFD(ICP)=0
                     ICFAUX(ICP)=0
+                    if(outs.eq.'not yet')then
+                      write(outs,'(2a)')'CFD has now run for the ',
+     &                                               'selected period.'
+                      call edisp(itu,outs)
+                      write(outs,'(2a)')'Disabling CFD for the ',
+     &                                   'remainder of the simulation.'
+                      call edisp(itu,outs)
+                    endif
                   ENDIF
                 ENDIF
+
+              ENDIF
+C Set flag indicating that surface-convection correlation indices have
+C not yet been calculated.
+              mICORcfd(ICP) = 0
+
+C Set flag indicating HCs have not been calculated by CFD for the 
+C current zone for the current time step: this will be reset if CFD is 
+C invoked.
+              mHCcfd(ICP) = 0
+
+C Debug
+C             write(6,*) 'MZNUMA (ICP,IFCFD(ICP))',ICP,IFCFD(ICP)
+
+C Invoke CFD if there is `surface conflation' between the thermal domain
+C and CFD. 
+              IF( ABS(IFCFD(ICP)).eq.1 .or. 
+     &           (ABS(IFCFD(ICP)).eq.4 .or. 
+     &            ABS(IFCFD(ICP)).eq.5) )THEN
+                CALL SURFCONF(ICP)
+              ELSEIF(IFCFD(ICP).ne.0)then
+                write(outs,'(a,i2)')'Unrecognized conflation mode: ',
+     &                                                  ABS(IFCFD(ICP))
+                call edisp(itu,outs)
+                write(outs,'(a,I3,a)')'CFD for building zone ',ICP,
+     &                                                     ' disabled.'
+                call edisp(itu,outs)
+                IFCFD(ICP)=0
+                ICFAUX(ICP)=0
+                outs='not yet'
               ENDIF
   15        CONTINUE
 
@@ -1252,6 +1332,16 @@ C reflectivity; simple model; or advanced model)
 C Execute complex fenestration control to determine state of shading
 C layers for the current time step.
             call CFC_control()
+
+C <FMI>
+            if (is_FMU) then
+              if (.not.bInStartup()) then
+                call FMI_SIMSTEP(IER)
+              else
+                call FMI_CLEARCTL()
+              endif
+            endif
+C </FMI>
 
 C Consider each zone in turn.
             do 40 l=1,ncomp
@@ -1379,6 +1469,9 @@ C Call matrix handling routines depending on the location
 C of the control point node.
                   CALL MTXCTL(ICOMP)
 
+C Call optical control here as well
+                  call mzoctl(icomp)
+
 C Call the zone moisture calculations controller.
                   IF(MSTRZN(ICOMP))CALL MZMSTR(ICOMP)
                 ENDIF
@@ -1452,7 +1545,7 @@ C For 3D zone model, close the associated files.
               ENDIF
 
 C CFC output
-C             call CFCoutputH3K(icomp)
+c              call CFCoutput(icomp)
 
    40       continue
 
@@ -1861,6 +1954,12 @@ C GSHP system is defined.
 C Day loop now complete.
    10 continue
 
+C <FMI>
+      if (is_FMU) then
+        CALL FMI_DONE(IER)
+      endif
+C </FMI>
+
 C Close the file opened for dumping the structured mesh temperatures.
       IF(InSvST.EQ.1)close(ISTemp)
 
@@ -1907,7 +2006,7 @@ C SUN F90 has spotty support for cpu_time intrinsic
 C write out simulation runtime - useful for investating the impact
 C of modifications on simulation times.
       CALL cpu_time(sec_b)
-      write(outs,'(A,F7.2,A)')
+      write(outs,'(A,F9.1,A)')
      &     'Simulation cpu runtime: ',sec_b-sec_a,' seconds'
       CALL EDISP(IOUTS,' ')
       CALL EDISP(IUOUT,outs)
@@ -1923,17 +2022,19 @@ C the H3Kreports demarcaration comments.
 C
 C Set the .csv output root file name to the root file name of the 
 C building results library file.
-      call GETTOKENS(sblres(1),IW,LocalWords)
-      iRootLen=lnblnk(LocalWords(IW))
+      if ( isH3Kenabled() ) then
+        call GETTOKENS(sblres(1),IW,LocalWords)
+        iRootLen=lnblnk(LocalWords(IW))
 
 C     -4 implies a 3-letter ending and the "."; a more general solution
 C     would be preferable
-      iRootLen=iRootLen-4
+        iRootLen=iRootLen-4
 
-      write(cOutputRoot,'(A)')LocalWords(IW)(1:iRootLen)
+        write(cOutputRoot,'(A)')LocalWords(IW)(1:iRootLen)
 
-      CALL GenerateOutput(cOutputRoot(1:iRootLen))
+        CALL GenerateOutput(cOutputRoot(1:iRootLen))
 cx      CALL GenerateOutput
+      endif
 C........H3Kreports.(SUMMARY).end........................
 
 

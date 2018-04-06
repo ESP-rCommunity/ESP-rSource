@@ -89,16 +89,18 @@ C from the zone geometry file.
       if(icont.eq.0)then
          if(newgeo)then
             call edisp(iuout,
-     &        'No shaded surfaces in zone geometry file - skipping!')
+     &      'No shading directives in zone geometry file - skipping!')
             return
          else
             if(act.eq.'s')then
-               call edisp(iuout,'No surfaces, shading skipped!')
-               return
+              call edisp(iuout,
+     &        'No shading directives in zone geometry file-skippimg!')
+              return
             else
                dok=.true.
-               call askok('No surfaces selected!','Re-specify?',
-     &           ok,dok,nbhelp)
+               call askok(
+     &           'No shading directives in zone geometry file.',
+     &           'Re-specify?',ok,dok,nbhelp)
                if(ok)goto 35
                call edisp(iuout,'Shading computation abandoned!')
                return
@@ -203,9 +205,6 @@ C iaplic(1) toggle for shading;
 C iaplic(2) toggle for insolation;
 C           where 1 means consider all applicable surfaces and 0
 C           means manual selection of surfaces.
-C iaplic(3) toggle for assessment where:
-C         1 is 'all_applicable',
-C         0 is manual selection of surfaces.
 C nsurfcalc is number of shaded surfaces.
 C lstsfcalc list of applicable surfaces.
 C nsurfinso number of insolation sources.
@@ -348,6 +347,7 @@ C performed and is set to 1 when they have.
       character outs*124,paction*16
       character month*3,mode*3
       logical tok
+      real xxop,zzop  ! to pass to point1
 
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &           'Sep','Oct','Nov','Dec'/
@@ -427,7 +427,8 @@ C Reset foshd each hour, setting any grid point not within surface
 C to -1.0.
             do 401 i=1,nox(icomp)
                do 402 j=1,noz(icomp)
-                  call point1(icomp,itsur,xop(i,j),zop(i,j),ians)
+                  xxop=xop(i,j); zzop=zop(i,j)  ! to pass to point1
+                  call point1(icomp,itsur,xxop,zzop,i,j,ians)
                   foshd(i,j)=0
                   if(ians.eq.0)foshd(i,j)=-1.0
   402          continue
@@ -475,7 +476,8 @@ C Reset ioshd() and oshd() before each sun or sky patch loop, setting
 C ioshd() for any grid point not within target surface to -1.
               do 403 i=1,nox(icomp)
                  do 404 j=1,noz(icomp)
-                    call point1(icomp,itsur,xop(i,j),zop(i,j),ians)
+                    xxop=xop(i,j); zzop=zop(i,j)  ! to pass to point1
+                    call point1(icomp,itsur,xxop,zzop,i,j,ians)
                     oshd(i,j)=0.0
                     ioshd(i,j)=0
                     if(ians.eq.0)ioshd(i,j)=-1
@@ -595,6 +597,26 @@ C considered (psof).
    70             continue
                   if(iptch.eq.145)call tfile3(icomp,itsur,mode)
                endif
+
+C Dump intermediate calculations.
+               if(tok)then
+                 write(icout,*) ' '
+                 write(icout,'(a,i3,a,f6.2,a,f6.2,2a)') 
+     &             'SHADC patch loop ',ip,' azimuth ',
+     &             sazi1,' elevation ',salt1,' mode ',mode
+                 write(icout,*) 'obstructions ihit array'
+                 call dumpnoxnozi(icomp,ihour,ihit)
+                 write(icout,*) ' '
+                 write(icout,*) 'obstructions ioshd array'
+                 call dumpnoxnozi(icomp,ihour,ioshd)
+                 write(icout,*) ' '
+                 write(icout,*) 'obstructions foshd array'
+                 call dumpnoxnozr(icomp,ihour,foshd)
+                 write(icout,*) ' '
+                 write(icout,*) 'obstructions oshd array'
+                 call dumpnoxnozr(icomp,ihour,oshd)
+               endif
+
                goto 40
 
 C Surface cannot see sun or sky patch.
@@ -606,13 +628,31 @@ C Surface cannot see sun or sky patch.
   100                continue
    90             continue
                elseif(mode.eq.'dif')then
+
 C Ipexcl counts the number of sky patches that are behind the target
 C surface. It is used in tfile3 to ensure that the diffuse shading
 C factor relates only to the visible sky portion.
                   ipexcl=ipexcl+1
                endif
+               if(tok)write(icout,*) 'Cannot see sky patch @ ',iptch
                if(ip.eq.1.or.ip.eq.146)call tfile3(icomp,itsur,mode)
    40       continue        ! sky patch loop
+
+C Dump intermediate calculations after patch loop completed.
+            if(tok)then
+              write(icout,*) 'shdcon end of patch loop======= ',mode
+              write(icout,*) 'obstructions ihit array'
+              call dumpnoxnozi(icomp,ihour,ihit)
+              write(icout,*) ' '
+              write(icout,*) 'obstructions ioshd array'
+              call dumpnoxnozi(icomp,ihour,ioshd)
+              write(icout,*) '  '
+              write(icout,*) 'obstructions foshd array'
+              call dumpnoxnozr(icomp,ihour,foshd)
+              write(icout,*) '  '
+              write(icout,*) 'obstructions oshd array'
+              call dumpnoxnozr(icomp,ihour,oshd)
+            endif
 
 C Indicate that sky vault has been processes once in case idifc = 0
 C (i.e. time invariant geometry and sky irradiance distribution).
@@ -664,6 +704,7 @@ C points are located and a modified shadow polygon produced.
 #include "geometry.h"
 
       common/tracech/icout
+      common/tc/itc,icnt
       common/transform/xt(4),yt(4),zt(4)
       common/proj/xp(4),yp(4),zp(4)
       common/shad2/ishd,npoint,xs(5),zs(5)
@@ -674,8 +715,9 @@ C points are located and a modified shadow polygon produced.
       dimension ipc(4)
       integer lnzsn
 
+C If writing fort.33 file and verbose then include this.
       tok=.false.
-      if(icout.eq.33)tok=.true.
+      if(icout.eq.33.and.itc.eq.2)tok=.true.
 
 C If one or more of the 4 projected point yp values are > 0 then the
 C obstruction block surface crosses the x`z` plane. Depending on the
@@ -857,7 +899,7 @@ C Trace output.
         call edisp(icout,' ')
         call zsid(izone,itsur,ZSDES,ZSDESC,ZSDESS)
         lnzsn=lnblnk(zsdes)
-        write(outs,'(3a,i2,3a,i2,a,i1,a)')
+        write(outs,'(3a,i3,3a,i3,a,i1,a)')
      &    '*** DECOMP: Target surface ',zsdes(1:lnzsn),' (',itsur,
      &    ') obstruction ',
      &    blockname(izone,ibn)(1:lnblockname(izone,ibn)),' (',ibn,

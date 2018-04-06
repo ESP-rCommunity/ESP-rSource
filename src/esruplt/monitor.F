@@ -260,10 +260,14 @@ c Determine scaling ratios for the drawing and axis.
      &      xadd,yadd)
 
 c Draw a scale horizontal axis, move to beginning point.
-      call horaxis(xmin,xmax,iigl,iigr,iigb,xadd,xsc,1,'Time (hours)')
+      call dintervalf(xmin,xmax,DY,NDEC,1)
+      call horaxisdd(xmin,xmax,iigl,iigr,iigb,xadd,xsc,1,
+     &  DY,NDEC,'Time (hours)')
 
 c Draw a scale vertical axis.
-      call vrtaxis(ymin,ymax,iigl,iigb,iigt,yadd,ysc,1,0,label1)
+      call dintervalf(ymin,ymax,DY,NDEC,1)
+      call vrtaxisdd(ymin,ymax,iigl,iigb,iigt,yadd,ysc,1,
+     &  DY,NDEC,0,label1)
 
 c Restore original values for next call.
       if(mstate.eq.2.or.mstate.eq.3) then

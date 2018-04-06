@@ -10,10 +10,10 @@
 /* #endif */
 
 #ifndef TRUE
-#define TRUE		1
-#define FALSE		0
+#define TRUE  1
+#define FALSE 0
 #endif /* TRUE */
-# define NULLPTR(x)	((x *)0)	/* null (coerced) */
+# define NULLPTR(x) ((x *)0) /* null (coerced) */
 
 typedef unsigned char byte;
 
@@ -21,10 +21,10 @@ typedef unsigned char byte;
  * structure that holds the corners of a box
  */
 typedef struct _box{
-	int	b_left;
-	int	b_top;
-	int	b_right;
-	int	b_bottom;
+  int b_left;
+  int b_top;
+  int b_right;
+  int b_bottom;
 }box;
 /*
  * define box arguments that can be or-ed together
@@ -34,7 +34,7 @@ typedef struct _box{
 #define BMNOTALL	04	/* not all of box */
 #define BMNOT		010	/* not inside of box */
 #define BMEDGES		020	/* draw edges of box, using dd->d_line */
-/* 
+/*
  * define wwcut arguments
  */
 #define IPON		1
@@ -174,6 +174,7 @@ void	egdispclr_();
 void	trackview_(long int* ichar,long int* irx,long int* iry);
 void	eline_(long int* x,long int* y,long int* operation);
 void	u2pixel_(float* ux,float* uy,long int* ix,long int* iy);
+void	etplotwwc_(float* ux,float* uy,long int* updown,long int* sym);
 void 	etplot_(float* ux,float* uy,long int* updown,long int* sym);
 void	edline_(long int* x1,long int* y1,long int* x2,long int* y2,long int* ipdis);
 void	drawdwl(int xa,int ya,int xb,int yb);
@@ -197,15 +198,14 @@ void	axiscale_(long int* gw,long int* gh,float* xmn,float* xmx,float* ymn,
 	float* ymx,float* xsc,float* ysc,float* sca,float* xadd,float* yadd);
 void	linescale_(long int* loff,float* ladd,float* lscale,long int* boff,float* badd,
 	float* bscale);
-void	dinterval_(float* v1,float* v2,float* dv,long int* ndec,long int* mode);
 void	labelstr(long int* n,float* val,long int* WticC,char* sstr);
-void	vrtaxis_(float* ymn,float* ymx,long int* offl,long int* offb,long int* offt,
-	float* yadd,float* sca,long int* mode,long int* side,char* msg,int mlen);
-void	horaxis_(float* xmn,float* xmx,long int* offl,long int* offr,long int* offb,
-	float* xadd,float* sca,long int* mode,char* msg,int mlen);
-void	horaxishdw_(float* xmn,float* xmx,long int* offl,long int* offr,long int* offb,
-	float* xadd,float* sca,long int* mode,long int* ind,long int* idiv,long int* isjday,
-	char* msg,int mlen);
+void	vrtaxisdd_(float* ymn,float* ymx,long int* offl,long int* offb,long int* offt,
+	float* yadd,float* sca,long int* mode,float *ddx, long int *nx,long int* side,char* msg,int mlen);
+void 	horaxisdd_(float *xmn,float *xmx,long int *offl,long int *offr,long int *offb,
+        float *xadd,float *sca,long int *mode,float *ddx, long int *nx, char* msg,int mlen);
+void	horaxishdwdd_(float *xmn,float *xmx,long int *offl,long int *offr,long int *offb,
+        float *xadd,float *sca,long int *mode,float *ddx, long int *nx,long int *ind,
+	long int *idiv,long int *isjday,char* msg,int mlen);
 void	updmenu_(char* items,char* itypes,long int* nitmsptr,long int* iw,int len_items);
 void	evwmenu_(char* titleptr,long int* impx,long int* impy,long int* iwth,long int* irpx,
 	long int* irpy,long int* ino,long int* ipflg,long int* uresp,int len_title);

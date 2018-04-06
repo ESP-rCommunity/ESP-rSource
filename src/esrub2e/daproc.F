@@ -900,7 +900,7 @@ C Check if the read record falls within the tolerance band.
             if(.NOT.closet)then
               write(outs,'(a,i5,3F11.6)')'RDOTY != TIMEJDIP',ip,RDOTY,
      &          TIMEJD,STARTNG
-	      call edisp(iuout,outs)
+              call edisp(iuout,outs)
               ier=1
               goto 99
             else

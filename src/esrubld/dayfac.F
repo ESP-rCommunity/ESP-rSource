@@ -38,13 +38,15 @@ C Initiate calc. of daylight factor(s) for standard CIE overcast sky.
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
 
       COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
      & CGX(MCOM,MLCOM,MDF),CGY(MCOM,MLCOM,MDF),CGH(MCOM,MLCOM,MDF),
      & UX(MCOM,MLCOM,MDF),UY(MCOM,MLCOM,MDF),UH(MCOM,MLCOM,MDF),
      & SETPT(MCOM,MLCOM),SYSPER(MCOM,MLCOM),SOFFLL(MCOM,MLCOM),
      & IOFFDT(MCOM,MLCOM),SMLOUT(MCOM,MLCOM),SMEOUT(MCOM,MLCOM)
-      COMMON/CGCIN3/ICGCS(MCOM),ICGCF(MCOM),
+      COMMON/CGCIN3/ICGCS(MCOM,MDTY),ICGCF(MCOM,MDTY),
      & ICGCFL(MCOM,MLCOM),SPELEC(MCOM,MLCOM),SLOPEM(MCOM,MLCOM)
      
       COMMON/DAYF/NDF(MCOM,MLCOM),DFDAT(MCOM,MLCOM,MGT,MDF),
@@ -74,16 +76,16 @@ c Trace output ? Use same slot as zone casual gains.
  9996   FORMAT(' Subroutine DAYFAC  Trace output',I4,' Zone',I3,1x,A /)
         ICNT=ICNT+1
 
-        WRITE(ITU,9989)(NCGTC(ICOMP,I),I=1,NBDAYTYPE)
- 9989   FORMAT(' Casual gain type to control for each day type=',12I3)
-        DO 9992 N=1,NLITZ(ICOMP)
-        WRITE(ITU,9995)
- 9995   FORMAT(/,' Light| Start| Finish| Control|' /
-     &           ' Zone | Hour | Hour  | Type   |' /)
-          WRITE(ITU,9993)N,ICGCS(ICOMP),ICGCF(ICOMP),
-     &    ICGCFL(ICOMP,N)
- 9993     FORMAT(I6,2I7,I9)
- 9992   CONTINUE
+        do loop=1,nbdaytype
+          DO N=1,NLITZ(ICOMP)
+            WRITE(ITU,'(2a)')
+     &      'Day    |Type| Light| Start| Finish| Control|',
+     &      '       |    | Zone | Hour | Hour  | Type   |'
+            WRITE(ITU,'(a,2i6,2i7,i9)') calentag(loop),
+     &        NCGTC(ICOMP,loop),N,ICGCS(ICOMP,loop),ICGCF(ICOMP,loop),
+     &        ICGCFL(ICOMP,N)
+          enddo  ! of n
+        enddo    ! of loop
       ENDIF
 
 C Loop through all lighting zones
@@ -101,11 +103,11 @@ C Exterior sensor, don't bother to calculate daylight factors, set to 1.0.
         IF(close)THEN
           IF(ITFLG.EQ.1)WRITE(ITU,896) zname(icomp),N,ISS
   896     FORMAT(' Zone ',A,' Light zone',I1,/,
-     &  ' Exterior horiz sensor @ surface ',I2)
+     &  ' Exterior horiz sensor @ surface ',I3)
         ELSE
           IF(ITFLG.EQ.1)WRITE(ITU,897) zname(icomp),N,ISS
   897     FORMAT(' Zone ',A,' Light zone',I1,/,
-     &  ' Exterior vert sensor @ surface ',I2)
+     &  ' Exterior vert sensor @ surface ',I3)
         ENDIF
 
 C User specified DF, no preprocessing required.
@@ -141,7 +143,7 @@ C of total windows in zone with nt. Exclude skylights.
             IF(close.AND.(ITMCFL(ICOMP,J).GT.0))THEN
               IF (NVER(J).NE.4)THEN
                 WRITE(ITU,811) zname(icomp),J
-  811           format('Zone ',A,' TMC surf ',I2,' not 4 vertexes!')
+  811           format('Zone ',A,' TMC surf ',I3,' not 4 vertexes!')
 
 C This would be a good place to calculate an alternative bounding box
 C for use in width/height calculations.
@@ -180,7 +182,7 @@ C and high WIDTH, HIGH:
                 ENDIF
               ELSE
                 WRITE(ITU,812) zname(icomp),J
-  812           format('Zone ',A,'TMC',I2,' may not be rectangular!')
+  812           format('Zone ',A,'TMC',I3,' may not be rectangular!')
               ENDIF 
 
               XX1=XPL(1)
@@ -412,7 +414,7 @@ C available and method should check for transp MLC.
       W=WIDTH*HIGH
 
 C Get information about areas of all surfaces opaque and TMC:
-      call ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+      call ZINFO(SNA,ZOA,PAZI,PELV,ZVOL,'q')
 
       DO 10 I=1,NSUR
       call eclose(PAZI(I),PAZI(J),0.5,close)

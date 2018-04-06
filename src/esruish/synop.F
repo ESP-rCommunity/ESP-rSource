@@ -31,11 +31,13 @@ C Displays a table showing the percentage direct and diffuse
 C surface shading for each hour based on information held within
 C a zone transitional shading file.
 
-      subroutine shsynp(icomp)
+      subroutine shsynp(icomp,allsurf)
 #include "building.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
+      integer icomp   ! focus zone
+      logical allsurf ! if true then do not ask user confirmation
 
       common/outin/iuout,iuin
       common/filep/ifil
@@ -59,7 +61,8 @@ C a zone transitional shading file.
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
 
-C If output to file, alter the edisp unit number.
+C If output to file, alter the edisp unit number. Also auto yes
+C for user questions about surfaces and months.
       itru=iuout
       if(ixopen.eq.1)then
         itru = ixunit
@@ -88,7 +91,7 @@ C hours.
 
 C Write output header information.
         sn=ssname(icn)
-        write(outs,'(a,i2,3a)') 'Surface ',i,' (',sn(1:lnblnk(sn)),')'
+        write(outs,'(a,i3,3a)') 'Surface ',i,' (',sn(1:lnblnk(sn)),')'
         call edisp(itru,outs)
         write(outs,'(3a)') ' Hour   Direct   Diffuse   Solar   Solar'
         call edisp(itru,outs)
@@ -202,9 +205,13 @@ C Determine if results are available for another surface?
            if(isc(j).ne.0)mores=1
    30   continue
         if(mores.eq.0)return
-        dok=.true.
-        call askok(' ','Consider next surface?',ok,dok,0)
-        if(.not.ok)return
+        if(allsurf)then
+          continue
+        else
+          dok=.true.
+          call askok(' ','Consider next surface?',ok,dok,0)
+          if(.not.ok)return
+        endif
    10 continue
 
  1000 write(outs,1001)irec
@@ -275,7 +282,7 @@ C hours.
         ishdh=0
 
 C Write output header information.
-        write(outs,'(a,i2,3a)') 'Surface ',i,' (',sn(1:lnblnk(sn)),')'
+        write(outs,'(a,i3,3a)') 'Surface ',i,' (',sn(1:lnblnk(sn)),')'
         call edisp(itru,outs)
         write(outs,'(3a)') ' Hour   Direct   Diffuse   Solar   Solar'
         call edisp(itru,outs)
@@ -353,11 +360,14 @@ C Determine if results are available for another surface?
 C ********** INSYNP **********
 C Outputs information on internal surface insolation.
 C parameter act (1 char) is 's' for silent mode and 'i' for interacitve
-      subroutine insynp(icomp,act)
+      subroutine insynp(icomp,act,allsurf)
 #include "building.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
+      integer icomp   ! focus zone
+      character act*1
+      logical allsurf ! if true then do not ask user confirmation
 
       common/outin/iuout,iuin
       common/filech/ixopen,ixunit,ixpunit
@@ -371,7 +381,6 @@ C parameter act (1 char) is 's' for silent mode and 'i' for interacitve
       common/data4/insst(mgt,24,misur),pinsst(mgt,24,misur)
 
       character month*3,outs*124,sn*12
-      character act*1
       dimension month(12),iavdec(12)
       logical close,ok,dok
 
@@ -380,10 +389,10 @@ C parameter act (1 char) is 's' for silent mode and 'i' for interacitve
      &'Aug','Sep','Oct','Nov','Dec'/
 
       if(isadd(mon).eq.0.or.ishd(mon).eq.1)then
-         call edisp(iuout,' ')
-         write(outs,'(3a)')'No insolation data for ',month(mon),'!'
-         call edisp(iuout,outs)
-         return
+        call edisp(iuout,' ')
+        write(outs,'(3a)')'No insolation data for ',month(mon),'!'
+        call edisp(iuout,outs)
+        return
       endif
 
 C If output to file, alter the edisp unit number.
@@ -401,99 +410,107 @@ C If output to file, alter the edisp unit number.
 
 C Display on a surface-by-surface basis.
       do 10 i=1,nzsur(icomp)
-         if(ntmc(i).eq.0)goto 10
-         icn=izstocn(icomp,i)
-         sn=ssname(icn)
+        if(ntmc(i).eq.0)goto 10
+        icn=izstocn(icomp,i)
+        sn=ssname(icn)
 
 C ntmc is 0 or 1.
-         kount=kount+ntmc(i)
-         write(outs,'(a,i2,3a)') 'Source surface is ',i,' (',
+        kount=kount+ntmc(i)
+        write(outs,'(a,i3,3a)') 'Source surface is ',i,' (',
      &                           sn(1:lnblnk(sn)),').'
-         call edisp(itru,outs)
-         call edisp(itru,
+        call edisp(itru,outs)
+        call edisp(itru,
      & ' Hour  Source   Receiving     Proportion   Solar   Solar')
-         call edisp(itru,
+        call edisp(itru,
      & '       Shading  Surface       Received     Azimuth Altitude')
 
-         iprint=0
-         do 20 j=1,24
-            stime=float(j)
-            call eazalts(stime,iyd,slat,slon,isunupx,sazi,salt)
+        iprint=0
+        do 20 j=1,24
+          stime=float(j)
+          call eazalts(stime,iyd,slat,slon,isunupx,sazi,salt)
+          
 C Sun not up.
-            if(insst(kount,j,1).eq.-1)then
-               if(iprint.eq.2)then
-                  write(outs,'(i2,a)')j,':00  After sun-set'
-                  call edisp(itru,outs)
+          if(insst(kount,j,1).eq.-1)then
+            if(iprint.eq.2)then
+              write(outs,'(i2,a)')j,':00  After sun-set'
+              call edisp(itru,outs)
 C Don't write again.
-                  iprint=-1
-               else
-                  iprint=1
-               endif
-C Surface shaded.
-            elseif(insst(kount,j,1).eq.0)then
-               if(iprint.eq.1)then
-                  write(outs,'(i2,a)')j-1,':00  Before sun-rise'
-                  call edisp(itru,outs)
-               endif
-               write(outs,'(i2,a,28x,2f8.1)')  j,':00  100.0%',sazi,salt
-               call edisp(itru,outs)
-               iprint=2
-C Surface insolated.
+             iprint=-1
             else
-               if(iprint.eq.1)then
-                  write(outs,'(i2,a)')j-1,':00  Before sun-rise'
-                  call edisp(itru,outs)
-               endif
-               if(pso(i,j).gt.0.999)then
-                  write(outs,1000)j,sazi,salt
- 1000             format(i2,':00 100.0%',2f8.1)
-                  call edisp(itru,outs)
-               else
-                  do 30 k=1,misur
+             iprint=1
+            endif
+            
+C Surface shaded.
+          elseif(insst(kount,j,1).eq.0)then
+            if(iprint.eq.1)then
+              write(outs,'(i2,a)')j-1,':00  Before sun-rise'
+              call edisp(itru,outs)
+            endif
+            write(outs,'(i2,a,28x,2f8.1)')  j,':00  100.0%',sazi,salt
+            call edisp(itru,outs)
+            iprint=2
+            
+C Surface insolated.
+          else
+            if(iprint.eq.1)then
+              write(outs,'(i2,a)')j-1,':00  Before sun-rise'
+              call edisp(itru,outs)
+            endif
+            if(pso(i,j).gt.0.999)then
+              write(outs,1000)j,sazi,salt
+ 1000         format(i2,':00 100.0%',2f8.1)
+              call edisp(itru,outs)
+            else
+              do k=1,misur
+
 C Of misur possibilities only print internal surfaces with
 C non zero pinsst.
-                     call eclose(pinsst(kount,j,k),0.0,0.001,close)
-                     if(.not.close)then
-                        if(k.eq.1)then
-                           l=insst(kount,j,k)
-                           icm=izstocn(icomp,l)
-                           sn=ssname(icm)
-                           write(outs,1001)j,pso(i,j)*100.0,l,
-     &                       sn(1:7),pinsst(kount,j,k)*100.0,sazi,salt
- 1001                      format(i2,':00',f6.1,'%   ',i2,' (',a,')',
-     &                             f9.1,'%',4x,2f8.1)
-                           call edisp(itru,outs)
-                        else
-                           l=insst(kount,j,k)
-                           icm=izstocn(icomp,l)
-                           sn=ssname(icm)
-                           write(outs,1002)l,sn(1:7),
-     &                             pinsst(kount,j,k)*100.0
- 1002                      format(15x,i2,' (',a,')',f9.1,'%')
-                           call edisp(itru,outs)
-                        endif
-                     endif
-   30             continue
-               endif
-               iprint=2
+                call eclose(pinsst(kount,j,k),0.0,0.001,close)
+                if(.not.close)then
+                  if(k.eq.1)then
+                    l=insst(kount,j,k)
+                    icm=izstocn(icomp,l)
+                    sn=ssname(icm)
+                    write(outs,1001)j,pso(i,j)*100.0,l,
+     &                sn(1:12),pinsst(kount,j,k)*100.0,sazi,salt
+ 1001               format(i2,':00',f6.1,'% ',i2,' (',a,')',
+     &                     f6.1,'%',4x,2f8.1)
+                    call edisp(itru,outs)
+                  else
+                    l=insst(kount,j,k)
+                    icm=izstocn(icomp,l)
+                    sn=ssname(icm)
+                    write(outs,1002)l,sn(1:12),
+     &                    pinsst(kount,j,k)*100.0
+ 1002               format(13x,i2,' (',a,')',f6.1,'%')
+                    call edisp(itru,outs)
+                  endif
+                endif
+              enddo
             endif
-   20    continue
+            iprint=2
+          endif
+   20   continue
 
 C Determine if results are available for another surface? If silent
 C mode then list all surfaces.
-         if(i.eq.nzsur(icomp))return
-         mores=0
-         do 40 j=i+1,nzsur(icomp)
-            if(ntmc(j).ne.0)mores=1
-   40    continue
-         if(mores.eq.0)return
-         dok=.true.
-         if(act.eq.'s')then
-           ok=.true.
-         else
-           call askok(' ','Consider next surface?',ok,dok,0)
-         endif
-         if(.not.ok)return
+        if(i.eq.nzsur(icomp))return
+        mores=0
+        do 40 j=i+1,nzsur(icomp)
+          if(ntmc(j).ne.0)mores=1
+   40   continue
+        if(mores.eq.0)return
+        dok=.true.
+        if(act.eq.'s')then
+          ok=.true.
+        else
+          if(allsurf)then
+            ok=.true.
+          else
+            call askok(' ','Consider next source surface?',ok,dok,0)
+          endif
+        endif
+        if(.not.ok)return
    10 continue
       return
       end

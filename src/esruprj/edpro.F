@@ -838,11 +838,15 @@ C Setup and pass in parameters to win3d.
       call axiscale(igwid,igheight,0.0,24.0,YMIN,YMAX,xsc,ysc,sca,
      &  Xadd,Yadd)
       call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
-      call horaxis(0.,24.,iigl,iigr,iigb,Xadd,xsc,1,'Time (hours)')
-      call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,'Percent')
+      call dintervalf(0.,24.0,DY,NDEC,1)
+      call horaxisdd(0.,24.,iigl,iigr,iigb,Xadd,xsc,1,
+     &  DY,NDEC,'Time (hours)')
+      call dintervalf(YMIN,YMAX,DY,NDEC,0)
+      call vrtaxisdd(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,
+     &  DY,NDEC,0,'Percent')
 
 C Pick up the data increment for the horizontal axis.
-      call dinterval(0.,24.,DT,NDEC,1)
+      call dintervalf(0.,24.,DT,NDEC,1)
 
 C Print header
       WRITE(etext,16)IPRO,PDBDESC(IPRO)

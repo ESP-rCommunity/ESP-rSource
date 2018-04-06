@@ -80,7 +80,7 @@ static box	cfgz,cfgn,cfgc,cfgdfn;	/* boxes for problem type */
 static box	mouse,mouse1,mouse2,mouse3;	/* box for mouse button help */
 static char mseb1h[10],mseb2h[10],mseb3h[10]; /* mouse help strings */
 static int aziplus_left,aziminus_left,azi_left,elevplus_left,elevminus_left,elev_left; /* left of azi&elev boxes */
-static int b_setup, l_setup, b_cpw, l_cpw, b_tut, l_tut;	/* ll of setup, copyright, tutorial boxs */
+static int b_setup, l_setup, b_cpw, l_cpw;	/* ll of setup, copyright boxs */
 static int wire_left,capture_left,captext_left;	/* left of wire frame and capture control box */
 static long int ocfgz,ocfgn,ocfgc,ocfgdfn; /* persistant toggles for problem type boxes */
 static long int iiocfgz,iiocfgn,iiocfgc,iiocfgdfn; /* persistant toggles for problem type images */
@@ -89,7 +89,6 @@ static int dialogue_lines = 0;  /* number of lines of text in dialogue box */
 static int disp_lines = 0;      /* number of lines of text in text display box */
 static int menu_offset = 24;    /* character offset to right side of feedback  */
 static int fbb_b_lines = 2;    /* character offset to bottom of feedback      */
-static int tut_avail = 0;       /* tutorial box existence */
 static int setup_avail = 0;     /* setup box existence */
 static int cpw_avail = 0;       /* copyright box existence */
 static int mouse_avail = 0;     /* mouse help box existence */

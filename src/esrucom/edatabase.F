@@ -22,11 +22,13 @@ C The file edatabase.f is a collection of support facilities for
 C reading and reporting ESP-r databases and contains the following:
 
 C  ERMLDB:  Read an ASCII composite db and return data via block MLC.
+C  ERMLDB2:  Read an ASCII composite db with categories and return data via block MLC.
 C  matchmlcdesc: parse string (DES) and see if it matches a MLC
 C  ETMLDB:  Provides reporting on current description of a composite.
 C  ETMLDBU returns U value of construction based on contents of common MLC.
 C  EPKMLC:  Select a composite construction with display of details.
-C  EMKAMLD: Creates an ascii composite constr db based on common MLC.
+C  EMKAMLD: Creates an ascii composite constr db V0 based on common MLC.
+C  EMKAMLD2: Creates an ascii composite constr db V1 based on common MLC.
 C  EROPTDB: Returns optical properties for TMC.
 C  EDWINO:  Allow user to select a glazing type by name.
 C  module_opendb: open materials constructions, multi-layer constructions and
@@ -58,7 +60,7 @@ C espriou.h provides currentfile.
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,layermatch
       LOGICAL        CFCDBOK
 
-      logical closemat1,closemat2,close4, closecfc1
+      logical closemat1,closemat2,close4,closecfc1,closecfc2
       logical unixok
 
       CHARACTER OUTSTR*124,NAM*72,H*72,outs*124
@@ -85,6 +87,7 @@ C Keep track of how many times materials db read fails.
 
 C Flag for CFC layers db version
       closecfc1=.false.
+      closecfc2=.false.
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -140,7 +143,8 @@ C is true then the material arrays could be problematic.
 C Find version of CFClayers database, if not closecfc1
 C is true then the CFC layer arrays could be problematic.
       call eclose(cfcver,1.1,0.01,closecfc1)
-      if(closecfc1)then
+      call eclose(cfcver,1.2,0.01,closecfc2)
+      if(closecfc1.or.closecfc2)then
         continue
       else
         CALL USRMSG('CFC layers database data probably corrupt.',
@@ -168,8 +172,15 @@ C expanded name to be used later.
 
 C Read the number of items in the constructions file, followed by
 C the number of layers & construction name.
-      CALL STRIPC(IFMUL,OUTSTR,1,ND,1,'mlc db items',IER)
+      CALL STRIPC(IFMUL,OUTSTR,99,ND,1,'mlc db items',IER)
       IF(IER.NE.0)RETURN
+      if(OUTSTR(1:14).eq.'*CONSTRUCTIONS')then
+        if(ITRC.gt.1)CALL USRMSG(
+     &    'Newer constructions database. Calling',
+     &    'alternative scanning code.','P')
+        ier=4
+        return
+      endif
       K=0
       CALL EGETWI(OUTSTR,K,NMLC,0,MMLC,'F',
      &              'no of composite constructions',IER)
@@ -181,10 +192,13 @@ C the number of layers & construction name.
 
 C Fill the MLC commons.
       mlcver = 0     ! constructions version (short names)
-      write(mlcdbdoc,'(a)')
+      write(mlcdbdoc(1),'(a)')
      &  'These constructions have not yet been documented.'
+      mlcdocs=1      ! only 1 line in mlcver=0 constructions
       mlccats=1      ! put everything in one category
       write(mlccatname(1),'(a)') 'general constructions'
+      lnmlccatname(1)=21
+      write(mlccatmenu(1),'(a)') 'general constructions'
       write(mlccatdoc(1),'(2a)')
      &  'Category general constructions includes all of the ',
      &  'MLC constructions in the file.'
@@ -221,13 +235,18 @@ C of a MLC with inverted layers or the keywords SYMMETRIC or NONSYMMERTIC).
         IF(IER.NE.0)GOTO 99
 
 C Parse the DES string into string tokens. Also fill the MLC common blocks.
+C Note: this version of db only works with initial 12 char for mlcname.
         mlcoptical(I)=' '
         mlcsymetric(I)=' '
         matsymindex(I)=0   ! not yet known 
         mlccatindex(I)= 1  ! only one class for now  
         WRITE(MLCN,'(A)')DES(1:12)
         WRITE(mlcname(I),'(A)')DES(1:12)
+        lnmlcname(i)=lnblnk(mlcname(i))
+        WRITE(mlcmenu(I),'(A)')DES(1:12)
+        lnmlcmenu(i)=lnblnk(mlcmenu(i))
         WRITE(mlcdoc(I),'(2A)')DES(1:12),' is a ...'
+        WRITE(mlcincat(I),'(A)') 'general constructions'
         WRITE(mlctype(I),'(A)') DES(15:18)
         IF(mlctype(I).EQ.'  ') mlctype(I)='OPAQ'
         IF(mlctype(I)(1:4).NE.'OPAQ'.AND.mlctype(I)(1:3).NE.'CFC')THEN
@@ -274,6 +293,18 @@ C materials db.
 
 C Increment thickness of MLC.
             THKMLC(I)=THKMLC(I)+DTHK(I,IL)
+
+C Read logical value for "layer flipped?" if using v. 1.2 CFClayers.db
+C or higher (this is not entirely "clean", as actually the CFClayers.db
+C version has nothing to do with the mlc construction file version ...):
+            if (closecfc2) then
+              CALL EGETW(OUTSTR,K,RSTR,'W','CFC layer flipped?',IER)
+              if (RSTR(1:1).eq.'T') then
+                CFC_layer_flipped(I,IL)=.true.
+              else
+                CFC_layer_flipped(I,IL)=.false.
+              endif
+            endif
 
 C Current MLDB also includes the name of the layer from the
 C CFClayers db.
@@ -353,9 +384,9 @@ C to write less than 72 char into NAM
           IF(ND.GT.2)THEN
             CALL EGETRM(OUTSTR,K,RSTR,'W','layer name:gap R',IER)
             lex=MIN0(LNBLNK(RSTR),72)
-	    write(NAM,'(a)')RSTR(1:lex)
+            write(NAM,'(a)')RSTR(1:lex)
             lex=MIN0(LNBLNK(RSTR),124)
-	    write(LAYDESC(I,IL),'(a)')RSTR(1:lex)
+            write(LAYDESC(I,IL),'(a)')RSTR(1:lex)
 
 C Generally we want to assign values to the IPRMAT array so for each legacy 
 C IPR. NOTE: in case there are multiple items with the same characters
@@ -462,7 +493,7 @@ C And check the matarray index in case this is a gap and assign values.
               if(matarrayindex.gt.0)then
 
 C If g air gap and version 1.2 then assign DRAIR
-	        if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+                if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &             matopaq(matarrayindex)(1:1).eq.'h')then
                   if(closemat2)then
                     DRAIR(I,IL,1)=matgapares(matarrayindex,1)
@@ -486,8 +517,7 @@ C values, otherwise get element name from materials db.
       H(2)='case the composite construction is used in different'
       H(3)='orientations are requested.  This information supports'
       H(4)='the automatic creation of zone construction files.'
-              lnt32=lnblnk(mlcname(i))
-              WRITE(OUTSTR,117)IL,mlcname(I)(1:lnt32),
+              WRITE(OUTSTR,117)IL,mlcname(I)(1:lnmlcname(i)),
      &          DTHK(I,IL)*1000.0
   117         FORMAT('Default R value for air gap ',I2,' in ',a,
      &            ' (which is',F7.1,' mm thick)')
@@ -594,8 +624,579 @@ C Look for index for mlcsymetric in all the items in the file.
       do i=1,nmlc
         lnsym=lnblnk(mlcsymetric(I))         
         do 5 ii=1,nmlc
-          lnmlcn=lnblnk(mlcname(ii))
-          if(mlcsymetric(I)(1:lnsym).eq.mlcname(ii)(1:lnmlcn))then
+          if(mlcsymetric(I)(1:lnsym).eq.
+     &       mlcname(ii)(1:lnmlcname(ii)))then
+            matsymindex(I)=ii   ! remember MLC index     
+          endif
+  5     continue
+      end do
+
+C Debug.
+C      write(6,*) matsymindex
+
+C Close file before exiting.
+  88  CALL ERPFREE(IFMUL,ISTAT)
+      RETURN
+
+C If there were more than 5 misses in the database then
+C warn the user that the materials database was probably
+C the wrong format.
+  99  if(matmiss.gt.5)then
+        CALL USRMSG(
+     &'Quite a few materials were found to be undefined or all zero',
+     &'values. The materials db is probably for a different computer',
+     &'W')
+        IER=2
+      elseif(matmiss.gt.1.and.matmiss.le.5)then
+        CALL USRMSG(
+     &'A few materials were found to be undefined or all zero values.',
+     &'The materials db might not match the construction db.','W')
+        IER=1
+      else
+        CALL USRMSG(
+     &'A problem was encountered scanning the constructions db',
+     &'and you might want to check further.','W')
+        IER=1
+      endif
+      GOTO 88
+
+      END
+      
+
+C ************* ERMLDB2
+C Given file name and unit number, read an ASCII construction
+C common file with categories and return data via common block MLC.
+C IFMUL is the database unit, ITRU unit number for user output,
+C IER=0 OK, IER=1 problem. 
+C DRAIR is the air gap layer resistance for 3 orientations.
+
+      SUBROUTINE ERMLDB2(ITRC,ITRU,IER)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
+#include "espriou.h"
+#include "CFC_common.h"
+C espriou.h provides currentfile.
+      
+      integer lnblnk  ! function definition
+
+      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+      
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,layermatch
+      LOGICAL        CFCDBOK
+
+      logical closemat1,closemat2,close4,closecfc1,closecfc2
+      logical unixok
+
+      CHARACTER OUTSTR*124,NAM*72,H*72,outs*124
+      CHARACTER RSTR*124,WORD32*32,WORD248*248,LOUTSTR*248
+      CHARACTER WORD*20,MLCN*32
+      character DES*48   ! the contents of line with MLC attributes
+      character lworking*144,fs*1
+
+      integer ier
+      integer ileghope  ! for legacy record
+      integer matarrayindex  ! for materials array index
+      integer lex,lnt32,lnsym,lnmlcn     ! lenght of string
+      integer cfcarrayindex ! for CFC layers db array index
+
+C Note that the text which follows the thickness of the layer
+C is extracted from the materials database and should not
+C be edited by the user as it is scanned to check the specific
+C named material matches.
+
+C Keep track of how many times materials db read fails.
+      matmiss=0
+      closemat1=.false.  ! assume binary materils until proven otherwise
+      closemat2=.false.
+      mlcver = 0         ! assume older constructions version
+      mlcloop = 0
+      
+C Flag for CFC layers db version
+      closecfc1=.false.
+      closecfc2=.false.
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C If materials database not opened it should have been opened
+C prior to this call and matdbok would be false if it
+C had been previously opened and failed.
+      IF(.NOT.MATDBOK)THEN
+        IER=0
+
+C Scan the materials (either binary or ascii) file data into materials
+C commons and if this was sucessful and matver was set to 1.2 then
+C we can carry on using the materials common blocks for subsequent access.
+        call scananymat(ier)
+        if(ier.ne.0)then
+          call usrmsg('No readable materials file was found so',
+     &                'constructions attributes could be at risk.','W')
+        endif
+      ENDIF
+
+C Do the same for CFClayers db
+      IF(.NOT.CFCDBOK)THEN
+        IER=0
+
+C Scan the CFClayers db file data into CFC layers
+C commons and if this was sucessful and cfcver was set to 1.1 then
+C we can carry on using the CFC layers common blocks for subsequent access.
+        call scancfcdb(ier)
+        if(ier.ne.0)then
+          call usrmsg('No readable CFC layers file was found so',
+     &                'CFC attributes could be at risk.','W')
+        endif
+      ENDIF
+
+C Find version of materials database, if neither closemat1 or closemat2
+C is true then the material arrays could be problematic.
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        CALL USRMSG('Materials database data probably corrupt.',
+     &    'Please fix this first.','W')
+        ier=2
+        return
+      endif
+
+C Find version of CFClayers database, if not closecfc1
+C is true then the CFC layer arrays could be problematic.
+      call eclose(cfcver,1.1,0.01,closecfc1)
+      call eclose(cfcver,1.2,0.01,closecfc2)
+      if(closecfc1.or.closecfc2)then
+        continue
+      else
+        CALL USRMSG('CFC layers database data probably corrupt.',
+     &    'Please fix this first.','W')
+        ier=2
+        return
+      endif
+
+C Free unit and check if constructions file exists.  Setup lworking for the
+C expanded name to be used later.
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        lworking=LFMUL
+        write(currentfile,'(a)') LFMUL(1:lnblnk(LFMUL))
+        CALL EFOPSEQ(IFMUL,LFMUL,1,IER)
+      elseif(ipathmul.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LFMUL(1:lnblnk(LFMUL))
+        write(currentfile,'(a)') lworking(1:lnblnk(lworking))
+        CALL EFOPSEQ(IFMUL,lworking,1,IER)
+      endif
+      IER=0
+
+      IF(IER.NE.0)RETURN
+
+C Read the number of items in the constructions file, followed by
+C the number of layers & construction name.
+      CALL STRIPC(IFMUL,OUTSTR,99,ND,1,'mlc header',IER)
+      IF(IER.NE.0)RETURN
+      if(OUTSTR(1:14).eq.'*CONSTRUCTIONS')then
+
+C Set and clear initial db values.
+        mlcver = 1     ! constructions with categories
+        NMLC = 0; mlcdbitems = 0     ! reset counters
+        mlcdocs=0; mlccats=0
+        do loop=1,MGCL
+          mlccatitems(loop)=0; mlccatname(loop)='  '
+          mlccatmenu(loop)='  '; mlccatdoc(loop)='  '
+        enddo 
+        do loop=1,MMLC
+          mlcname(loop)='  '; mlcmenu(loop)='  '; mlcdoc(loop)='  '
+          mlcincat(loop)='  '; mlctype(loop)='  '
+          mlcoptical(loop)='  '; mlcsymetric(loop)='  '      
+        enddo 
+      endif
+
+C If old constructions exit with warning.
+      if(mlcver.eq.0)then
+        CALL USRMSG('Older constructions db exiting.',
+     &    'Should use different parsing code.','W')
+        ier=3
+        return
+      endif
+
+C From this point lines might be long so use LSTRIPC
+  41  CALL LSTRIPC(IFMUL,LOUTSTR,0,ND,1,'mlc header lines',IER)
+      IF(IER.NE.0)RETURN
+C      write(6,*) LOUTSTR(1:lnblnk(LOUTSTR))
+      K=0
+      CALL EGETW(LOUTSTR,K,WORD,'-','*date',IER)
+      if(WORD(1:5).eq.'*Date'.or.WORD(1:5).eq.'*date')then
+        CALL EGETRM(LOUTSTR,K,mlcdbdate,'W','date stamp',IER)
+        goto 41
+
+      elseif(WORD(1:5).eq.'*TEXT'.or.WORD(1:5).eq.'*Text')then
+
+C Read up to 15 lines of db documentation.
+  70    CALL LSTRIPC(IFMUL,LOUTSTR,0,ND,1,'mlc documentaton',IER)
+        mlcdocs=mlcdocs+1
+        write(mlcdbdoc(mlcdocs),'(a)') LOUTSTR(1:lnblnk(LOUTSTR))
+        DO WHILE(LOUTSTR(1:9).NE.'*End_text')
+          CALL LSTRIPC(IFMUL,LOUTSTR,0,ND,1,'mlc documentaton',IER)
+C          write(6,*) LOUTSTR(1:lnblnk(LOUTSTR))
+          mlcdocs=mlcdocs+1
+          write(mlcdbdoc(mlcdocs),'(a)') LOUTSTR(1:lnblnk(LOUTSTR))
+        END DO
+        mlcdocs=mlcdocs-1  ! decrement to remove *End_text from docs
+        goto 41  ! read another line
+
+      elseif(WORD(1:9).eq.'*Category')then
+
+C Parse category line...mlccatname, mlccatmenu, mlccatdoc >>
+        mlccats=mlccats+1      ! increment category
+        CALL EGETP(LOUTSTR,K,mlccatname(mlccats),'-','cat name',IER)
+        lnmlccatname(mlccats)=lnblnk(mlccatname(mlccats))
+        CALL EGETP(LOUTSTR,K,mlccatmenu(mlccats),'-','cat menu',IER)
+        CALL EGETRM(LOUTSTR,K,mlccatdoc(mlccats),'W','cat doc',IER)
+        goto 41  ! read another line
+
+      elseif(WORD(1:8).eq.'*itemdoc')then
+
+C Parse current item documentation.
+        CALL EGETRM(LOUTSTR,K,mlcdoc(mlcloop),'W','layer descr',IER)
+        goto 41  ! read another line
+
+      elseif(WORD(1:6).eq.'*incat')then
+
+C Parse current item category and increment matching cat counter.
+        CALL EGETP(LOUTSTR,K,mlcincat(mlcloop),'-','item in cat',IER)
+        lncatn=lnblnk(mlcincat(mlcloop))
+        do loop=1,mlccats
+          if(mlcincat(mlcloop)(1:lncatn).eq.
+     &       mlccatname(loop)(1:lnmlccatname(loop)))then
+            mlccatitems(loop)=mlccatitems(loop)+1
+C            write(6,*) 'Another for ',mlccatname(loop),' ',
+C     &        mlcloop,loop,mlccatitems(loop)
+          endif
+        enddo
+        goto 41  ! read another line
+
+      elseif(WORD(1:6).eq.'*type')then
+
+C Parse current item type...mlctype mlcoptical mlcsymetric >>
+        CALL EGETW(LOUTSTR,K,mlctype(mlcloop),'-','*type',IER)
+        CALL EGETW(LOUTSTR,K,mlcoptical(mlcloop),'-','item optical',IER)
+        CALL EGETW(LOUTSTR,K,mlcsymetric(mlcloop),'-','item symetric',
+     &    IER)
+        goto 41  ! read another line
+
+      elseif(WORD(1:6).eq.'*layer')then
+
+C Parse current item layer. Increment loops get material index, thickness
+C and then the rest of the line is the material documentation.
+        LAYERS(mlcloop)=LAYERS(mlcloop)+1
+        layloop=LAYERS(mlcloop)
+
+C IF construction is of type CFC2, read layer properties from
+C the CFC layers db. Otherwise read layer properties from the 
+C materials db. 
+        check_CFC2_or_MLC:
+     &  IF(mlctype(mlcloop)(1:4).EQ.'CFC2') THEN
+
+          CALL EGETWI(LOUTSTR,K,ITMCFCDB(mlcloop,layloop),-1,MGIT_CFC,
+     &      'F','CFClayer db index',IER)
+          CALL EGETWR(LOUTSTR,K,DTHK(mlcloop,layloop),0.0001,0.5,'W',
+     &      'layer thickness',IER)
+
+C Increment thickness of MLC.
+          THKMLC(mlcloop)=THKMLC(mlcloop)+DTHK(mlcloop,layloop)
+
+C Read logical value for "layer flipped?" if using v. 1.2 CFClayers.db
+C or higher (this is not entirely "clean", as actually the CFClayers.db
+C version has nothing to do with the mlc construction file version ...):
+            if (closecfc2) then
+              CALL EGETW(LOUTSTR,K,RSTR,'W','CFC layer flipped?',IER)
+              if (RSTR(1:1).eq.'T') then
+                CFC_layer_flipped(mlcloop,layloop)=.true.
+              else
+                CFC_layer_flipped(mlcloop,layloop)=.false.
+              endif
+            endif
+
+C Current MLDB also includes the name of the layer from the
+C CFClayers db.
+
+          CALL EGETRM(LOUTSTR,K,RSTR,'W','CFC layer name',IER)
+          lex=MIN0(LNBLNK(RSTR),72)
+          write(NAM,'(a)')RSTR(1:lex)
+          lex=MIN0(LNBLNK(RSTR),124)
+          write(LAYDESC(mlcloop,layloop),'(a)')RSTR(1:lex)
+
+          call parsecfcdesc(ITMCFCDB(mlcloop,layloop),NAM,
+     &      cfcarrayindex)
+          if(cfcarrayindex.ne.0)then
+
+C If a mis-match echo to the user corrective actions.
+            if(cfcarrayindex.ne.ITMCFCDB(mlcloop,layloop))then
+              call edisp(iuout,' --- WARNING --- ')
+              write(outs,'(a,i3,a,i3,2a)') 
+     &          'Duplicate CFC layer names ',
+     &          cfcitmindex(cfcarrayindex),' index does not match ',
+     &          cfcitmindex(ITMCFCDB(mlcloop,layloop)),' name: ',
+     &          NAM(1:lnblnk(NAM))
+              call edisp(iuout,outs)
+              write(outs,*) 'as referenced in ',
+     &          MLCN(1:lnblnk(MLCN))
+              call edisp(iuout,outs)
+              write(outs,'(2a)') 
+     &          'Marking the confused layer with a 0. Check the ',
+     &          'CFC layers database for two identically named'
+              call edisp(iuout,outs)
+              write(outs,'(2a)') 
+     &          'layers, edit to make names unique, save and ',
+     &          'then rescan databases and re-make zone files.'
+              call edisp(iuout,outs)
+              write(outs,'(2a)') 
+     &          'Or use the interface to locate the named construc-',
+     &          'tion and re-select the correct CFC layer.'
+              call edisp(iuout,outs)
+              call edisp(iuout,' --- make a note of this NOW --- ')
+              ITMCFCDB(mlcloop,layloop)=0  ! could not find it
+            else
+
+C Found a matching cfcarray index, assign value to the ITMCFCDB.
+              ITMCFCDB(mlcloop,layloop)=cfcarrayindex
+            endif    
+          else
+
+C Did not find it, mark as -1
+C so that other facilities know about the confusion.
+            ITMCFCDB(mlcloop,layloop)=-1  ! could not find it
+            write(outs,*)'a CFC layer referenced in ',
+     &        MLCN(1:lnblnk(MLCN)),
+     &        ' was not found (setting array index to -1).'
+            call edisp(iuout,outs)
+          endif
+
+C Standard MLC
+        ELSE  ! check_CFC2_or_MLC
+
+C This construction is not of type CFC2 so set ITMCFCDB = -1
+          ITMCFCDB(mlcloop,layloop) = -1
+C If the model is associated with a version 1.1 or 1.2 materials file
+C some newer entities in the GAPS category may have an index of
+C -99 which requires further logic in order to locate the relevant
+C material properties.
+          CALL EGETWI(LOUTSTR,K,IPR(mlcloop,layloop),-99,600,'F',
+     &        'materials db index',IER)
+          CALL EGETWR(LOUTSTR,K,DTHK(mlcloop,layloop),0.0001,0.5,'W',
+     &        'layer thickness',IER)
+
+          THKMLC(mlcloop)=THKMLC(mlcloop)+DTHK(mlcloop,layloop)
+          CALL EGETRM(LOUTSTR,K,RSTR,'W','layer name:gap R',IER)
+          lex=MIN0(LNBLNK(RSTR),72)
+          write(NAM,'(a)')RSTR(1:lex)
+          lex=MIN0(LNBLNK(RSTR),124)
+          write(LAYDESC(mlcloop,layloop),'(a)')RSTR(1:lex)
+
+C Generally we want to assign values to the IPRMAT array so for each legacy 
+C IPR. NOTE: in case there are multiple items with the same characters
+C in the name also check to see if the legacy index associated
+C with the found item matches the IPR scanned above. If we are
+C still confused mark IPRMAT as -1.
+          ileghope=IPR(mlcloop,layloop)   ! what we hope we will find a match for
+
+C Pass the legacy record number (ileghope) along with the name (NAM) of the
+C material and get back the index of the material array that fits. If
+C nothing found matarrayindex is zero.
+          call parsematdesc(ileghope,NAM,matarrayindex)
+          if(matarrayindex.ne.0)then
+
+C If a mis-match echo to the user corrective actions.
+            if(matlegindex(matarrayindex).ne.IPR(mlcloop,layloop))then
+              call edisp(iuout,' --- WARNING --- ')
+              write(outs,'(a,i3,a,i3,2a)') 
+     &          'Duplicate material names ',
+     &          matlegindex(matarrayindex),' index does not match ',
+     &          IPR(mlcloop,layloop),' name: ',NAM(1:lnblnk(NAM))
+              call edisp(iuout,outs)
+              write(outs,*) 'as referenced in ',MLCN(1:lnblnk(MLCN))
+              call edisp(iuout,outs)
+              write(outs,'(2a)') 
+     &          'Marking the confused layer with a -99. Check the ',
+     &          'materials database for two identically named'
+              call edisp(iuout,outs)
+              write(outs,'(2a)') 
+     &          'materials, edit to make names unique, save and ',
+     &          'then rescan databases and re-make zone files.'
+              call edisp(iuout,outs)
+              write(outs,'(2a)') 
+     &          'Or use the interface to locate the named construc-',
+     &          'tion and re-select the correct material.'
+              call edisp(iuout,outs)
+              call edisp(iuout,' --- make a note of this NOW --- ')
+              IPRMAT(mlcloop,layloop)=-1  ! could not find it
+            else
+
+C Found a matching matarray index, assign value to the IPRMAT. If
+C it actually is equivalent to the legacy zero gap material reflect this
+C in the value of IPRMAT (in case parsematdesc did not do this).
+              if(IPR(mlcloop,layloop).eq.0)then
+                IPRMAT(mlcloop,layloop)=0  ! to signal std air gap
+              else
+                IPRMAT(mlcloop,layloop)=matarrayindex
+              endif
+            endif    
+          else
+
+C Did not find it, check if IPR(mlcloop,layloop) is zero, if so set
+C IPRMAT to zero to signal an air gap.  If not mark as -1
+C so that other facilities know about the confusion.
+            if(IPR(mlcloop,layloop).eq.0)then
+              IPRMAT(mlcloop,layloop)=0  ! to signal std air gap
+            else
+              IPRMAT(mlcloop,layloop)=-1  ! could not find it
+              write(outs,*)'a material referenced in ',
+     &          MLCN(1:lnblnk(MLCN)),
+     &          ' was not found (setting array index to -1).'
+              call edisp(iuout,outs)
+            endif
+          endif
+
+C For a standard gap pick up 'AIR' or 'gap' followed by assumed R values.
+C Currently space in the gap name are not allowed.
+          IF(IPR(mlcloop,layloop).EQ.0)THEN
+            K=0
+            CALL EGETW(NAM,K,WORD,'W','gap label',IER)
+            CALL EGETWR(NAM,K,VAL,0.,99.0,'W','vert R',IER)
+            DRAIR(mlcloop,layloop,1)=VAL
+            CALL EGETWR(NAM,K,VAL,0.,99.0,'W','floor:ceil R',IER)
+            DRAIR(mlcloop,layloop,2)=VAL
+            CALL EGETWR(NAM,K,VAL,0.,99.0,'W','other R',IER)
+            DRAIR(mlcloop,layloop,3)=VAL
+          ELSEIF(IPR(mlcloop,layloop).LT.0)THEN
+
+C For a layer with no legacy index use the matarray index and assign values.
+            matarrayindex=IPRMAT(mlcloop,layloop)
+            if(matarrayindex.ne.0)then
+              DBCON=matdbcon(matarrayindex)
+              DBDEN=matdbden(matarrayindex)
+              DBSHT=matdbsht(matarrayindex)
+
+C If g air gap and version 1.2 then assign DRAIR
+              if(matopaq(matarrayindex)(1:1).eq.'g')then
+                if(closemat2)then
+                  DRAIR(mlcloop,layloop,1)=matgapares(matarrayindex,1)
+                  DRAIR(mlcloop,layloop,2)=matgapares(matarrayindex,2)
+                  DRAIR(mlcloop,layloop,3)=matgapares(matarrayindex,3)
+                else
+                  continue
+                endif
+              endif
+            endif
+          ELSE
+            DRAIR(mlcloop,layloop,1)=0.0
+            DRAIR(mlcloop,layloop,2)=0.0
+            DRAIR(mlcloop,layloop,3)=0.0
+
+C And check the matarray index in case this is a gap and assign values.
+            matarrayindex=IPRMAT(mlcloop,layloop)
+            if(matarrayindex.gt.0)then
+
+C If g air gap and version 1.2 then assign DRAIR
+              if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &           matopaq(matarrayindex)(1:1).eq.'h')then
+                if(closemat2)then
+                  DRAIR(mlcloop,layloop,1)=matgapares(matarrayindex,1)
+                  DRAIR(mlcloop,layloop,2)=matgapares(matarrayindex,2)
+                  DRAIR(mlcloop,layloop,3)=matgapares(matarrayindex,3)
+                endif
+              endif
+            endif
+          ENDIF
+
+C Debug.
+C          write(6,*)mlcloop,layloop,DRAIR(mlcloop,layloop,1),
+C     &      DRAIR(mlcloop,layloop,2),DRAIR(mlcloop,layloop,3)
+          IF(IER.NE.0)GOTO 99
+
+        ENDIF check_CFC2_or_MLC
+
+C Now that layers have been scanned we can check to see if they
+C are symmetric or not. If the symmetric tag has not yet been 
+C set check and set mlcsymetric.
+        if(mlcsymetric(mlcloop)(1:2).EQ.'  ')then
+          call ismlcsymmetric(mlcloop,layermatch)
+          if(layermatch)then
+            mlcsymetric(mlcloop)='SYMMETRIC   '
+          else
+            mlcsymetric(mlcloop)='NONSYMMETRIC'
+          endif
+        elseif(mlcsymetric(mlcloop)(1:9).EQ.'SYMMETRIC')then
+          continue
+        elseif(mlcsymetric(mlcloop)(1:12).EQ.'NONSYMMETRIC')then
+          continue
+        endif
+        goto 41  ! read another line
+
+      elseif(WORD(1:5).eq.'*item')then
+
+C Clear item common, Parse item block, increment counter NMLC...mlcname mlcmenu
+        NMLC=NMLC+1   ! increment
+        mlcloop=NMLC  ! this is the current focus
+        mlcname(mlcloop)=' '; mlcmenu(mlcloop)=' '
+        mlcincat(mlcloop)=' '; mlcdoc(mlcloop)=' '
+        mlctype(mlcloop)=' '; mlcoptical(mlcloop)=' '
+        mlcsymetric(mlcloop)=' '
+        matsymindex(mlcloop)=0   ! not yet known 
+        mlccatindex(mlcloop)= 0; lnmlcname(mlcloop)=0
+        THKMLC(mlcloop) =0.0; LAYERS(mlcloop)=0
+
+C EGETP for the mlcname & mlcmenu so spaces can be handled.
+        CALL EGETP(LOUTSTR,K,mlcname(mlcloop),'-','MLC name',IER)
+        MLCN=mlcname(mlcloop)
+        lnmlcname(mlcloop)=lnblnk(mlcname(mlcloop))
+        CALL EGETP(LOUTSTR,K,mlcmenu(mlcloop),'-','MLC menu',IER)
+        lnmlcmenu(mlcloop)=lnblnk(mlcmenu(mlcloop))
+        goto 41  ! read another line
+
+      elseif(WORD(1:9).eq.'*end_item')then
+
+C Debug.
+C        write(6,*)'mlc index name doc ',mlcloop,mlcname(mlcloop),' : ',
+C     &    mlcdoc(mlcloop)(1:lnblnk(mlcdoc(mlcloop)))
+C        write(6,*)'type optical sym ',mlctype(mlcloop),' : ',
+C     &    mlcoptical(mlcloop),' : ',mlcsymetric(mlcloop)
+
+        goto 41  ! read another line
+
+      ENDIF
+
+C After full scan fill the MLC commons.
+      mlcdbitems=NMLC      ! remember how many items
+
+      DO 10 I = 1,NMLC
+
+C Earlier scanning of the construction data base might
+C not have required checking the contents of the materials
+C database. ETMLDB does ( it creates those messages about 
+C a material having all zero values). Keep track of how
+C many of these instances. If there are
+        CALL ETMLDB(ITRC,ITRU,I,imerr)
+        if(imerr.eq.1) matmiss=matmiss+1
+        IF(imerr.NE.0.and.matmiss.gt.5)GOTO 99
+  10  CONTINUE
+      MLDBOK=.TRUE.
+
+C Look for index for mlcsymetric in all the items in the file.
+      do i=1,nmlc
+        lnsym=lnblnk(mlcsymetric(I))         
+        do 5 ii=1,nmlc
+          if(mlcsymetric(I)(1:lnsym).eq.
+     &       mlcname(ii)(1:lnmlcname(ii)))then
             matsymindex(I)=ii   ! remember MLC index     
           endif
   5     continue
@@ -632,6 +1233,8 @@ C the wrong format.
 
       END
 
+
+
 C ******* matchmlcdesc
 C matchmlcdesc parse string (DES) and see if it matches a MLC
 C item - if so return its MLC index. DES might be from SMLCN or some 
@@ -651,12 +1254,11 @@ C Local variable.
 
 C Look for index for MLCN in the current constructions file.
       imlcindex=0  ! assume no matching MLC          
-      lnmlcn=lnblnk(DES)
       WRITE(MLCN,'(A)')DES
+      lnmlcn=lnblnk(MLCN)
       if(MLCN(1:4).eq.'UNKN') return
       do ii=1,nmlc
-        lndesc=lnblnk(mlcname(ii))
-        if(MLCN(1:lnmlcn).eq.mlcname(ii)(1:lndesc)) then
+        if(MLCN(1:lnmlcn).eq.mlcname(ii)(1:lnmlcname(ii))) then
           imlcindex=ii   ! remember MLC index     
         endif
       end do
@@ -809,6 +1411,7 @@ C ileghope is -1 then return what was found as an index match not possible.
           do 43 imt=1,matdbitems
             if(testname(1:ltnam).eq.matname(imt)(1:ltnam))then
               if(matlegindex(imt).eq.ileghope)then
+cx                matarrayindex=ileghope  ! ?? (seems to work for CFC ...)
                 matarrayindex=imt
                 return
               else
@@ -837,10 +1440,6 @@ C check first the lenght of strings, if the stringsa re not equal the
 C material is different
           if(lnblnk(matname(imt)).eq.lnam) then        
              if(PNAM(1:lnam).eq.matname(imt)(1:lnam))then
-
-C Debug.
-C            write(6,*) imt,' name x: match ',PNAM(1:lnam),' ',
-C     &        matname(imt)(1:lnblnk(matname(imt)))
                matarrayindex=imt
                return
              endif
@@ -850,10 +1449,6 @@ C     &        matname(imt)(1:lnblnk(matname(imt)))
 C If we got to this point also check for a matching matdoc string.
         do 45 imt=1,matdbitems
           if(PNAM(1:lnam).eq.matdoc(imt)(1:lnam))then
-
-C Debug.
-C            write(6,*) imt,' doc x: match ',PNAM(1:lnam),' ',
-C     &        matdoc(imt)(1:lnam)
             matarrayindex=imt
             return
           endif
@@ -863,10 +1458,6 @@ C     &        matdoc(imt)(1:lnam)
 C There might have been a ' : ' but a text mismatch for matname so check matdoc.
       do 46 imt=1,matdbitems
         if(PNAM(1:lnam).eq.matdoc(imt)(1:lnam))then
-
-C Debug.
-C          write(6,*) imt,' doc match ',PNAM(1:lnam),' ',
-C     &      matdoc(imt)(1:lnam)
           matarrayindex=imt
           return
         endif
@@ -922,7 +1513,7 @@ C warning is given and matarrayindex is returned as zero.
 
 C Parameters
       integer cfclikelyidx
-      character NAM*72      ! passed string from MLC
+      character NAM*72      ! passed stringeddbmlcon from MLC
       integer cfcarrayindex ! returned index in materials array
 
       integer iuout,iuin
@@ -955,13 +1546,12 @@ C the cfcname matches.
           write(testname,'(a)') PNAM(1:ipos-1)
           ltnam=lnblnk(testname)
 C Find a matching cfcname, if the CFClayers db index associated with this item
-C matches ileghope then our search is complete.  If it does not match
-C ileghope then there could be duplicate names to check further. If
-C ileghope is -1 then return what was found as an index match not possible.
+C matches cfclikelyidx then our search is complete.  If it does not match
+C cfclikelyidx then there could be duplicate names to check further.
           do 43 imt=1,cfcdbitems
             if(testname(1:ltnam).eq.cfcname(imt)(1:ltnam))then
-              if(imt.eq.cfclikelyidx)then
-                cfcarrayindex=imt
+              if(cfcitmindex(imt).eq.cfclikelyidx)then
+                cfcarrayindex=cfclikelyidx
                 return
               else
                 continue   ! keep looking for a text and index match
@@ -983,7 +1573,7 @@ C check first the lenght of strings, if the stringsa re not equal the
 C CFC layer is different
           if(lnblnk(cfcname(imt)).eq.lnam) then        
              if(PNAM(1:lnam).eq.cfcname(imt)(1:lnam))then
-               cfcarrayindex=imt
+               cfcarrayindex=cfcitmindex(imt)
                return
              endif
           endif
@@ -992,7 +1582,7 @@ C CFC layer is different
 C If we got to this point also check for a matching cfcdoc string.
         do 45 imt=1,cfcdbitems
           if(PNAM(1:lnam).eq.cfcdoc(imt)(1:lnam))then
-            cfcarrayindex=imt
+            cfcarrayindex=cfcitmindex(imt)
             return
           endif
   45    continue
@@ -1001,7 +1591,7 @@ C If we got to this point also check for a matching cfcdoc string.
 C There might have been a ' : ' but a text mismatch for cfcname so check cfcdoc.
       do 46 imt=1,cfcdbitems
         if(PNAM(1:lnam).eq.cfcdoc(imt)(1:lnam))then
-          cfcarrayindex=imt
+          cfcarrayindex=cfcitmindex(imt)
           return
         endif
   46  continue
@@ -1034,7 +1624,7 @@ C based on contents of material.h. Should work for mlcver 0 and 1.
       integer cfcarrayindex ! CFClayers db index
       integer lnam    ! length of material name
       integer lfordoc ! length available for material documentation
-      logical closemat1,closemat2, closecfc1
+      logical closemat1,closemat2,closecfc1,closecfc2
       logical bCloseToZero
       integer lnlist
 
@@ -1043,11 +1633,12 @@ C based on contents of material.h. Should work for mlcver 0 and 1.
       CHARACTER SOPT*12,GDESCR*36
       integer lnmlcn,lnmlco,lnother
       CHARACTER layertp*9
+      real kgpm2(me),tkgpm2   ! weight per m2 of layer and total for constr
 
       real RSI  ! used in reporting of R value in SI units
       
 C Pick up general description of the composite.
-      lnmlcn=lnblnk(mlcname(ifoc))
+      tkgpm2=0.0
       lnmlco=lnblnk(mlcoptical(ifoc))
       isymindex=matsymindex(ifoc)
       ier=0
@@ -1057,30 +1648,39 @@ C Pick up general description of the composite.
      &     mlctype(IFOC)(1:3).NE.'CFC')THEN
           WRITE(OUTSTR,'(5a,f6.3)')
      &      ' Details of transparent construction: ',
-     &      mlcname(ifoc)(1:lnmlcn),' with ',
+     &      mlcname(ifoc)(1:lnmlcname(ifoc)),' with ',
      &      mlcoptical(ifoc)(1:lnmlco),
      &      ' optics and overall thickness ',THKMLC(ifoc)
           CALL EDISP(ITRU,OUTSTR)
         ELSEIF(mlctype(IFOC)(1:3).EQ.'CFC')THEN
           WRITE(OUTSTR,'(3a)')' ',
      &      'Details of complex fenestration construction: ',
-     &      mlcname(ifoc)(1:lnmlcn)
+     &      mlcname(ifoc)(1:lnmlcname(ifoc))
           CALL EDISP(ITRU,OUTSTR)
         ELSE
           if(isymindex.eq.0)then
             WRITE(OUTSTR,'(3a,f6.3)')
      &      ' Details of opaque construction: ',
-     &      mlcname(ifoc)(1:lnmlcn),
+     &      mlcname(ifoc)(1:lnmlcname(ifoc)),
      &      ' and overall thickness ',THKMLC(ifoc)
           else
-            lnother=lnblnk(mlcname(isymindex))
             WRITE(OUTSTR,'(5a,f6.3)')
      &      ' Details of opaque construction: ',
-     &      mlcname(ifoc)(1:lnmlcn),
-     &      ' linked to ',mlcname(isymindex)(1:lnother),
+     &      mlcname(ifoc)(1:lnmlcname(ifoc)),' linked to ',
+     &      mlcname(isymindex)(1:lnmlcname(isymindex)),
      &      ' & with overall thickness ',THKMLC(ifoc)
           endif
           CALL EDISP(ITRU,OUTSTR)
+
+C If newer MLC also display documentation of the MLC.
+          if(mlcver.eq.1)then
+            WRITE(OUTSTR,'(4a)')
+     &        ' In category ',mlcincat(ifoc)(1:lnblnk(mlcincat(ifoc))),
+     &        ' also shown in menus as: ',
+     &        mlcmenu(ifoc)(1:lnmlcmenu(ifoc))
+            CALL EDISP(ITRU,OUTSTR)
+            call edisp248(ITRU,mlcdoc(ifoc),100)
+          endif
         ENDIF
       ENDIF
 
@@ -1095,7 +1695,8 @@ C Check version of materials database.
 
 C Check version of CFClayers database.
       call eclose(cfcver,1.1,0.01,closecfc1)
-      if(closecfc1)then
+      call eclose(cfcver,1.2,0.01,closecfc2)
+      if(closecfc1.or.closecfc2)then
         continue
       else
         CALL EDISP(ITRU,'CFClayers data may be incomplete.')
@@ -1106,7 +1707,7 @@ C for reporting
       check_CFC2_or_MLC:
      &If(mlctype(IFOC)(1:4).EQ.'CFC2')THEN
 
-C Reporting based on report level.
+C CFC2 Reporting based on report level.
       IF(ITRC.GT.1)THEN
         CALL EDISP(ITRU,' ')
         write(OUTSTR,'(2a)')
@@ -1130,19 +1731,15 @@ C If data available in CFClayers array gather it.
         cfcarrayindex=ITMCFCDB(IFOC,IL)   ! which array index
         if(cfcarrayindex.le.0)then
 C Referenced item was not found. Write zeros.
-          DBCON=0.0
-          DBDEN=0.0
-          DBSHT=0.0
-          E=0.0
-          A=0.0
+          DBCON=0.0; DBDEN=0.0; DBSHT=0.0
+          E=0.0; A=0.0
           write(PNAM(IL),'(a)') 'unknown : unknown '
           write(layertp,'(a)') 'unknown' 
         else
           DBCON=cfcdbcon(cfcarrayindex)
           DBDEN=cfcdbden(cfcarrayindex)
           DBSHT=cfcdbsht(cfcarrayindex)
-          E=0.0
-          A=0.0
+          E=0.0; A=0.0
           if(CFCshdtp(cfcarrayindex).eq.iGasGap)then
             write(layertp,'(a)') 'Gap'
           elseif(CFCshdtp(cfcarrayindex).eq.iGlazing)then          
@@ -1200,16 +1797,16 @@ C Compact report has more room for material description.
 
       ELSE ! standard MLC (not CFC)
 
-C Reporting based on report level.
+C MLC Reporting based on report level.
       IF(ITRC.GT.1)THEN
         CALL EDISP(ITRU,' ')
         write(OUTSTR,'(2a)')
      &' Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu|',
-     &' R    |Description'
+     &' R    | Kg |Description'
         CALL EDISP(ITRU,OUTSTR)
         write(OUTSTR,'(2a)')
      &'      |(mm)  |tivity |       |heat  |emis|abs  |resis|',
-     &'m^2K/W'
+     &'m^2K/W| m^2|'
         CALL EDISP(ITRU,OUTSTR)
       ELSEIF(ITRC.EQ.1)THEN
         CALL EDISP(ITRU,' ')
@@ -1228,21 +1825,20 @@ C reset dbcon dbden dbsht andinclude the R values in the display.
         if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &     matopaq(matarrayindex)(1:1).eq.'h'.or.
      &     matarrayindex.eq.0)then
+C          RT=1.0   ! to prevent divide by zero later
           DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
           E=0.99; A=0.99; DRV=1.0
-
+          kgpm2(il)=1.225*DTHK(IFOC,IL)
+          tkgpm2=tkgpm2+kgpm2(il)
           WRITE(PNAM(IL),'(A,3F5.2)')'air ',(DRAIR(IFOC,IL,IY),IY=1,3)
           RT=RT+DRAIR(IFOC,IL,1)
           RSI=DRAIR(IFOC,IL,1)
         elseif(matarrayindex.lt.0)then
 
 C Referenced item was not in the materials hash list. Write zeros.
-          DBCON=0.0
-          DBDEN=0.0
-          DBSHT=0.0
-          E=0.0
-          A=0.0
-          DRV=0.0
+          RT=1.0   ! to prevent divide by zero later
+          DBCON=0.0; DBDEN=0.0; DBSHT=0.0
+          E=0.0; A=0.0; DRV=0.0
           write(PNAM(IL),'(a)') 'unknown : unknown '
 
         else
@@ -1252,6 +1848,8 @@ C Referenced item was not in the materials hash list. Write zeros.
           E=matdbine(matarrayindex)
           A=matdbina(matarrayindex)
           DRV=matdbdrv(matarrayindex)
+          kgpm2(il)=DBDEN*DTHK(IFOC,IL)
+          tkgpm2=tkgpm2+kgpm2(il)
 
 C Make up PNAM as combination of matnam and matdoc.
           lnam=lnblnk(matname(matarrayindex))
@@ -1279,19 +1877,19 @@ C Reporting.
           lnlist = MIN0(LNBLNK(PNAM(IL)),82)    ! space left for doc
           if(LAYERS(IFOC).eq.1)then 
             WRITE(OUTSTR,24)IL,DTHK(IFOC,IL)*1000.0,
-     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:lnlist)
+     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
           elseif(LAYERS(IFOC).ge.2.and.IL.eq.1)then 
             WRITE(OUTSTR,25)' Ext ',DTHK(IFOC,IL)*1000.0,
-     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:lnlist)
+     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
           elseif(LAYERS(IFOC).ge.2.and.IL.eq.LAYERS(IFOC))then 
             WRITE(OUTSTR,25)' Int ',DTHK(IFOC,IL)*1000.0,
-     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:lnlist)
+     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
           else 
             WRITE(OUTSTR,24)IL,DTHK(IFOC,IL)*1000.0,
-     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:lnlist)
+     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
           endif
-  24      FORMAT(I5,F7.1,F10.3,F7.0,F7.0,F5.2,F5.2,F7.0,F6.2,1X,A)
-  25      FORMAT(A5,F7.1,F10.3,F7.0,F7.0,F5.2,F5.2,F7.0,F6.2,1X,A)
+  24      FORMAT(I5,F7.1,F10.3,F7.0,F7.0,F5.2,F5.2,F7.0,F6.2,F6.1,1X,A)
+  25      FORMAT(A5,F7.1,F10.3,F7.0,F7.0,F5.2,F5.2,F7.0,F6.2,F6.1,1X,A)
           CALL EDISP(ITRU,OUTSTR)
         ELSEIF(ITRC.EQ.1)THEN
 
@@ -1307,14 +1905,10 @@ C Compact report has more room for material description.
 C ISO 6946 hc assumptions are 0.04 external, 0.13 inside horizontal,
 C 0.10 inside upward flow and 0.17 inside downward flow.
       CLAMDA(IFOC)=1./RT
-      RTH=RT+0.04+0.13
-      UVALUEH=1.0/RTH
-      RTU=RT+0.04+0.10
-      UVALUEU=1.0/RTU
-      RTD=RT+0.04+0.17
-      UVALUED=1.0/RTD
-      RTI=RT+0.13+0.13
-      UVALUEI=1.0/RTI
+      RTH=RT+0.04+0.13; UVALUEH=1.0/RTH
+      RTU=RT+0.04+0.10; UVALUEU=1.0/RTU
+      RTD=RT+0.04+0.17; UVALUED=1.0/RTD
+      RTI=RT+0.13+0.13; UVALUEI=1.0/RTI
 
       If(mlctype(IFOC)(1:4).NE.'CFC2')THEN
         write(OUTSTR,'(A,3F7.3,a,F7.3)')
@@ -1324,9 +1918,12 @@ C 0.10 inside upward flow and 0.17 inside downward flow.
         IF(ITRC.NE.0)call edisp(itru,OUTSTR)
 
 C Include admittance calculations (use TM33 Table 4.5 values for admittance calcs)
-C If in verbose mode, otherwise ignore.
+C If in verbose mode, otherwise ignore. Also report kg/m^2 for the construction.
 C << NOTE this code needs further debugging.
         if(ITRC.gt.1)then
+          write(OUTSTR,'(A,F7.2)') 
+     &      ' Weight per m^2 of this construction',tkgpm2
+          call edisp(itru,OUTSTR)
           Rsi=0.12
           Rso=0.06
           call ADMIT(ITRU,IFOC,Rsi,Rso)
@@ -1430,16 +2027,11 @@ C ISO 6946 surface resistance assumptions are 0.04 external, 0.13 inside horizon
 C 0.10 inside upward flow and 0.17 inside downward flow as well as
 C an inside wall to inside wall hc 0.13 both sides. For the case
 C of a foundation only the inside surface resistance is used.
-      RTH=RT+0.04+0.13
-      UVH=1.0/RTH
-      RTU=RT+0.04+0.10
-      UVU=1.0/RTU
-      RTD=RT+0.04+0.17
-      UVD=1.0/RTD
-      RTI=RT+0.13+0.13
-      UVI=1.0/RTI
-      RTG=RT+0.17
-      UVG=1.0/RTG
+      RTH=RT+0.04+0.13; UVH=1.0/RTH
+      RTU=RT+0.04+0.10; UVU=1.0/RTU
+      RTD=RT+0.04+0.17; UVD=1.0/RTD
+      RTI=RT+0.13+0.13; UVI=1.0/RTI
+      RTG=RT+0.17; UVG=1.0/RTG
       write(OUTSTR,'(A,4F7.3)')
      &  ' ISO 6946 U values (horizontal/upward/downward/partition)= ',
      &  UVH,UVU,UVD,UVI
@@ -1448,13 +2040,13 @@ C of a foundation only the inside surface resistance is used.
         if(mlctype(IFOC)(1:4).NE.'OPAQ'.AND.
      &     mlctype(IFOC)(1:3).NE.'CFC')then
           WRITE(OUTSTR,'(5a,F6.3,a,F6.3,a,f6.3,a,f6.3,a,f6.3)')
-     &    ' ISO 6946 U values of ',mlcname(ifoc)(1:lnmlcn),
+     &    ' ISO 6946 U values of ',mlcname(ifoc)(1:lnmlcname(ifoc)),
      &    ' with ',mlcoptical(ifoc)(1:lnmlco),
      &    ' optics are (horiz flow)',UVH,' (upwards flow)',UVU,
      &    ' (downwards flow)',UVD,' (partition) ',UVI,' (fndtn) ',UVG
         ELSE
           WRITE(OUTSTR,'(3a,F6.3,a,f6.2,a,f6.2,a,f6.3,a,f6.3)')
-     &    ' ISO 6946 U values of ',mlcname(ifoc)(1:lnmlcn),
+     &    ' ISO 6946 U values of ',mlcname(ifoc)(1:lnmlcname(ifoc)),
      &    ' are (horiz flow)',UVH,' (upwards flow)',UVU,
      &    ' (downwards flow)',UVD,' partition ',UVI,' (fndtn) ',UVG
         ENDIF
@@ -1493,7 +2085,12 @@ C If the common block MLC has not yet been filled the read in the
 C conposite construction database.
       IF(.NOT.MLDBOK)THEN
         CALL ERMLDB(0,iuout,IER)
-        IF(IER.NE.0)THEN
+        IF(IER.eq.4)THEN
+          CALL ERMLDB2(0,iuout,IER)
+          if(IER.eq.0)then
+            MLDBOK=.TRUE.
+          endif
+        ELSEIF(IER.EQ.1.or.IER.eq.2.or.IER.eq.3)THEN
           CALL USRMSG(' ',' Unable to display selections ','W')
           RETURN
         ELSE
@@ -1522,8 +2119,7 @@ C in the materials database.
 C Present list based on the name and type of the MLC.
       WRITE(COMPS(1),'(A)')'UNKNOWN (at this time) '
       DO 66 IWW=1,NMLC
-        lnmlcn=lnblnk(mlcname(iww))
-        WRITE(COMPS(IWW+1),'(3A)')mlcname(IWW)(1:lnmlcn),' ',
+        WRITE(COMPS(IWW+1),'(3A)')mlcname(IWW)(1:lnmlcname(iww)),' ',
      &    mlctype(IWW)
    66 CONTINUE
       IX=1
@@ -1575,12 +2171,12 @@ C Parameters
       integer lfordoc ! length available for material documentation
       integer izero   ! transitional trick for air gap
       logical closemat1,closemat2
-      logical closecfc1
+      logical closecfc1,closecfc2
       
       integer cfcarrayindex
 
       DIMENSION PNAM(ME)
-      CHARACTER NAM*72,PNAM*72
+      CHARACTER NAM*72,PNAM*72,flipped*1
       character lworking*144,fs*1
       integer lndbp   ! for length of standard database path
       logical unixok  ! to check for database path file separators
@@ -1619,7 +2215,8 @@ C Check version of material database.
 
 C Check version of material database.
       call eclose(cfcver,1.1,0.01,closecfc1)
-      if(closecfc1)then
+      call eclose(cfcver,1.2,0.01,closecfc2)
+      if(closecfc1.or.closecfc2)then
         continue
       else
         CALL USRMSG('CFC layers database data not yet filled.',
@@ -1641,7 +2238,7 @@ C The ASCII file will be overwritten if it exists.
 C Write out a file header.
       WRITE(IFMUL,30)LFMUL(1:lnblnk(LFMUL)),LFMAT(1:lnblnk(LFMAT)),
      &               LCFCDB(1:lnblnk(LCFCDB))
-  30  FORMAT('# composite construction db defined in ',A,/,
+  30  FORMAT('# Composite construction db defined in ',A,/,
      &       '# based on materials db ',A,/,
      &       '# and based on CFClayers db ',A)
 
@@ -1703,6 +2300,7 @@ C Make up NAM as combination of matnam and matdoc.
   116   CONTINUE
 
 C Write via material commons with comment before and after names.
+C Note: this version only handles first 12 char of mlcname.
         write(IFMUL,'(a)')
      &    '# layers  description  type  optics name   symmetry tag'
         write(IFMUL,'(i5,4x,8a)')LAYERS(I),mlcname(i)(1:12),'  ',
@@ -1718,8 +2316,20 @@ C a gap layer.
           check_CFC2_or_MLC_2:
      &    IF(mlctype(I)(1:4).EQ.'CFC2') THEN
             cfcarrayindex=ITMCFCDB(I,IL)
-            WRITE(IFMUL,'(I5,F10.4,2X,A)')ITMCFCDB(I,IL),
-     &        DTHK(I,IL),PNAM(IL)(1:lnblnk(PNAM(IL)))
+C           Only write out flipped switch if using CFClayers.db v. 1.2
+C           or later ... (see comments above, line 298 ff.)
+            if (closecfc2) then
+              if (CFC_layer_flipped(I,IL)) then
+                flipped='T'
+              else
+                flipped='F'
+              endif
+              WRITE(IFMUL,'(I5,F10.4,2X,1A,2X,A)')ITMCFCDB(I,IL),
+     &                  DTHK(I,IL),flipped,PNAM(IL)(1:lnblnk(PNAM(IL)))
+            else ! Version 1.1
+              WRITE(IFMUL,'(I5,F10.4,2X,A)')ITMCFCDB(I,IL),
+     &                  DTHK(I,IL),PNAM(IL)(1:lnblnk(PNAM(IL)))
+            endif
           ELSE ! check_CFC2_or_MLC_2
             matarrayindex=IPRMAT(I,IL)
             if(matopaq(matarrayindex)(1:1).eq.'g'.or.
@@ -1736,6 +2346,180 @@ C a gap layer.
   115   CONTINUE
   110 CONTINUE
 
+      CALL ERPFREE(IFMUL,ISTAT)
+      RETURN
+
+      END
+
+
+C *************** EMKAMLD2 
+C EMKAMLD2: Creates a V1 ascii constructions database based on the
+C current contents of common MLC.  In the case of an air layer sub-
+C stitute the U value for each layer unless we are dealing with
+C one of the [g] or [h] material types in which case the name
+C is written out.
+
+      SUBROUTINE EMKAMLD2(ITRU,IER)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
+      
+      integer lnblnk  ! function definition
+
+C Parameters
+      integer itru    ! feedback or file unit
+      integer ier     ! zero is ok, one mlc error, two mat array issue
+     
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+
+      integer lnam    ! length of material name
+      integer lfordoc ! length available for material documentation
+      integer izero   ! transitional trick for air gap
+      logical closemat1,closemat2
+      logical closecfc1,closecfc2
+      
+      integer cfcarrayindex
+      integer loop,loop2,lnda,lndb,lndc,lndd,lnde,lndf,lndg
+
+      DIMENSION PNAM(ME)
+      CHARACTER NAM*72,PNAM*72
+      character lworking*144,fs*1,tab*1,flipped*1
+      character outs*148,outsd*148
+      integer lndbp   ! for length of standard database path
+      logical unixok  ! to check for database path file separators
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+      tab=','       ! create tab separator.
+
+C Assume that data on composites is in common MLC.
+      IF(.NOT.MLDBOK)THEN
+        CALL LUSRMSG(' no information to put in ',LFMUL,'W')
+        IER=1
+        RETURN
+      ENDIF
+      IF(NMLC.GT.MMLC)THEN
+        CALL LUSRMSG(' too many items to put in ',LFMUL,'W')
+        IER=1
+        RETURN
+      ENDIF
+
+C Check version of material database.
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        CALL USRMSG('Materials database data not yet filled.',
+     &    'Please fix this first.','W')
+        ier=2
+        return
+      endif
+
+C Check version of CFC database.
+      call eclose(cfcver,1.1,0.01,closecfc1)
+      call eclose(cfcver,1.2,0.01,closecfc2)
+      if (closecfc1.or.closecfc2) then
+        continue
+      else
+        CALL USRMSG('CFC layers database data not yet filled.',
+     &    'Please fix this first.','W')
+        ier=2
+        return
+      endif
+
+C The ASCII file will be overwritten if it exists.
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        CALL EFOPSEQ(IFMUL,LFMUL,4,IER)
+      elseif(ipathmul.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LFMUL(1:lnblnk(LFMUL))
+        CALL EFOPSEQ(IFMUL,lworking,4,IER)
+      endif
+
+C Get and set date stamp for the MLC arrays (since legacy file does not
+C include this information.
+      call dstamp(mlcdbdate)
+      
+C Write out a file header.
+      WRITE(IFMUL,'(a)')'*CONSTRUCTIONS,1.0 # multilayer constructions'
+      WRITE(IFMUL,'(a)')'*Text'
+      if(mlcdocs.le.1)then
+        WRITE(IFMUL,'(a)')'No documentation included (yet)'
+      else
+        do loop=1,mlcdocs
+          lnd=lnblnk(mlcdbdoc(loop))
+          WRITE(IFMUL,'(a)')mlcdbdoc(loop)(1:lnd)
+        enddo
+      endif
+      WRITE(IFMUL,'(a)')'*End_text'
+      write(IFMUL,'(3A)') '*date',tab,mlcdbdate
+
+C Loop through categories.
+      do loop=1,mlccats
+        lnda=lnmlccatname(loop)
+        lndb=lnblnk(mlccatmenu(loop))
+        lndc=lnblnk(mlccatdoc(loop))
+        write(IFMUL,'(7A)') '*Category',tab,mlccatname(loop)(1:lnda),
+     &    tab,mlccatmenu(loop)(1:lndb),tab,mlccatdoc(loop)(1:lndc)
+      enddo
+      WRITE(IFMUL,'(a)')'#'
+
+C Loop through items.
+      do loop=1,mlcdbitems
+        lnda=lnmlcname(loop)
+        lndb=lnmlcmenu(loop)
+        lndc=lnblnk(mlcdoc(loop))
+        lndd=lnblnk(mlcincat(loop))
+        lnde=lnblnk(mlctype(loop))
+        lndf=lnblnk(mlcoptical(loop))
+        lndg=lnblnk(mlcsymetric(loop))
+        write(IFMUL,'(6A)') '*item',tab,mlcname(loop)(1:lnda),tab,
+     &    mlcmenu(loop)(1:lndb),' # tag name menu entry'     
+        write(IFMUL,'(3A)') '*itemdoc',tab,mlcdoc(loop)(1:lndc)
+        write(IFMUL,'(3A)') '*incat',tab,mlcincat(loop)(1:lndd)
+        write(IFMUL,'(7A)') '*type',tab,mlctype(loop)(1:lnde),tab,
+     &    mlcoptical(loop)(1:lndf),tab,mlcsymetric(loop)(1:lndg)
+
+C Loop through layers. Write to string and then do comma separation
+C for the initial bit and add in documentation.
+        do loop2=1,LAYERS(loop)
+          lnda=lnblnk(LAYDESC(loop,loop2))
+          IF(mlctype(loop)(1:4).EQ.'CFC2') THEN
+C           Output of CFC2 type constructions depending on version
+            if (closecfc2) then
+              if (CFC_layer_flipped(loop,loop2)) then
+                flipped='T'
+              else
+                flipped='F'
+              endif
+              write(outs,'(2A,i5,a,f10.4,a,a)') '*layer',' ',
+     &          ITMCFCDB(loop,loop2),' ',DTHK(loop,loop2),' ',
+     &          flipped
+            else
+              write(outs,'(2A,i5,a,f10.4)') '*layer',' ',
+     &          ITMCFCDB(loop,loop2),' ',DTHK(loop,loop2)
+            endif
+          ELSE
+C           All other cases (... behaviour unchanged)
+            write(outs,'(2A,i5,a,f10.4)') '*layer',' ',
+     &        IPR(loop,loop2),' ',DTHK(loop,loop2)
+          ENDIF
+          call SDELIM(outs,outsd,'C',IW)
+          write(IFMUL,'(3a)') outsd(1:lnblnk(outsd)),tab,
+     &      LAYDESC(loop,loop2)(1:lnda)
+        enddo
+        WRITE(IFMUL,'(a)')'*end_item'
+      enddo
+      WRITE(IFMUL,'(a)')'*db_end'
+      
       CALL ERPFREE(IFMUL,ISTAT)
       RETURN
 
@@ -1855,7 +2639,7 @@ C tents of the optical database.
       IF(SOPT(1:3).EQ.'ALL')THEN
         if(nopt+1.LE.MGOPT)then
           nopt=nopt+1
-          WRITE(GS(nopt),'(A12,3X,A36)')GTYPE,GDESCR
+          WRITE(GS(nopt),'(A,3X,A)')GTYPE,GDESCR
         else
           call usrmsg('Optics database can hold no more data sets.',
      &      'Please revise the database.','W')
@@ -1880,7 +2664,7 @@ C Reporting.
         IF(FOUND.OR.SOPT(1:3).EQ.'ALL')THEN
           CALL EDISP(ITOPT,' ')
           WRITE(OUTSTR,22)GDESCR(1:LNBLNK(GDESCR)),GTYPE
-   22     FORMAT(' ',A,': with id of: ',A12)
+   22     FORMAT(' ',A,': with id of: ',A)
           CALL EDISP(ITOPT,OUTSTR)
           WRITE(OUTSTR,23)NTL,VTRN
    23     FORMAT(' with ',I1,
@@ -1960,7 +2744,7 @@ C One item read, if 'ALL' then loop back, otherwise if a match exit.
 C Write out item GTYPE to copy of db. 
         write(ITOPT,'(a)')
      &    '# 12 char id |  description       | thick | blind'
-        write(ITOPT,'(a12,a,a)')GTYPE,'  :',GDESCR(1:lnblnk(GDESCR))
+        write(ITOPT,'(a,a,a)')GTYPE,'  :',GDESCR(1:lnblnk(GDESCR))
         write(ITOPT,'(a)')
      &    '# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val'
         write(ITOPT,'(a,i3,4f7.3)')'  1 ',NTL,VTRN,SRF,SAB,UVAL
@@ -2122,6 +2906,11 @@ C that the file exists.
           call edisp(iuout,
      &      'There were many undefined materials in the constructions')
           call edisp(iuout,'please check your model.')
+        ELSEIF(IER.eq.4)THEN
+          CALL ERMLDB2(0,iuout,IER)
+          if(IER.eq.0)then
+            MLDBOK=.TRUE.
+          endif
         else
 
 C Scan was ok so set mldbok to true.

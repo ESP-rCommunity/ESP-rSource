@@ -174,18 +174,20 @@ C ZoneDisp - displays zone based information and allows....
 C geometry.h provides commons G0/G1/G2/G4/prec2/precz/prec17.
 #include "geometry.h"
 
+C viewing common blocks
+#include "prj3dv.h"
+
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/gzonpik/izgfoc,nzg,nznog(mcom)
 
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
 
       CHARACTER outs*124
 
-      LOGICAL MODIFY,MODLEN,MODBND,zbzero
+      LOGICAL zbzero
       logical context
 
 C Initialisation
@@ -194,7 +196,7 @@ C Initialisation
 C Read geometry file for chosen zone.
       ITMP=IFIL+1
       call georead(ITMP,LGEOM(ICOMP),ICOMP,0,iuout,IER)
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.  ! signal view and view bounds to be updated
       MODBND=.TRUE.
       nzg=1
       nznog(1)=ICOMP
@@ -202,7 +204,7 @@ C Read geometry file for chosen zone.
       CALL ADJVIEW(IER)
 
 C Recover zone data (read only, no display).
-      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL,'q')
       Vol(icomp)= ZVOL
       CALL ECLOSE(ZBASEA(ICOMP),0.0,0.001,zbzero)
       OPQ=0.
@@ -286,13 +288,14 @@ C Read database if not already done.
       NComPik=0
 
 C Otherwise select the constructions from a list of names.
+C << Copy mlcname array into a local array for use with epicks >>
       call edisp(iuout,' Composite(s) selection... ')
       call edisp(iuout,'  ')
  7    helptopic='aco_constr_to_include'
       call gethelptext(helpinsub,helptopic,nbhelp)
       INPIC=NMLC
       CALL EPICKS(INPIC,IVALZ,' ','Which constructions to include:',
-     &  20,NMLC,Desc,' Composite(s) list',IDerr,nbhelp)
+     &  24,NMLC,mlcname,' Composite(s) list',IDerr,nbhelp)
 
 C Check for errors (if => exit sub).
       if (IDerr.ne.0) RETURN
@@ -563,7 +566,7 @@ C for each surface in the zone according to the frequency band
                  call edisp(Ichanel,outs)
               endif
               call georead(ITMP,LGEOM(nZnog(J)),nZnog(J),0,iuout,IER)
-              CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+              CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL,'q')
             DO 400 I = 1,NSUR
               icon=IZSTOCN(nZnog(J),I)
               In = MLCIndex(SSMLCN(icon))
@@ -571,13 +574,13 @@ C for each surface in the zone according to the frequency band
                 if (IOctave .EQ. 1) then
                   WRITE(outs,311) SSNAME(icon), SSMLCN(icon),
      &                           (SysAbsCo(In,IY),IY=2,17,3)
- 311              FORMAT(1X,A12,3x, 5x, 3x, A12, 6(4x, F4.2))
+ 311              FORMAT(1X,A,3x, 5x, 3x, A, 6(4x, F4.2))
                   call edisp(Ichanel,outs)
                 elseif (IOctave .EQ. 2) then
                   IF (ICompact.EQ.1) THEN
                     WRITE(outs,321) SSNAME(icon),SNA(I), 
      &                 SSMLCN(icon),(SysAbsCo(In,IY),IY=3,15,3)
- 321                FORMAT(1X,A12,3x,F5.1,3x,a12, 6(4x, F4.2))
+ 321                FORMAT(1X,A,3x,F5.1,3x,a, 6(4x, F4.2))
                     call edisp(Ichanel,outs)
                     WRITE(outs,322) (SysAbsCo(In,IY),IY=2,17,3)
  322                FORMAT(36X,6(4x, F4.2))
@@ -590,7 +593,7 @@ C for each surface in the zone according to the frequency band
 C Display material name rather surface name
                     WRITE(outs,324) SSMLCN(icon),
      &               (SysAbsCo(In,IY),IY=1,17)
- 324                FORMAT(1X,A12,2x,7x, 17(2x, F4.2))
+ 324                FORMAT(1X,A,2x,7x, 17(2x, F4.2))
                     call edisp(Ichanel,outs)
                   ENDIF
                 endif
@@ -746,7 +749,7 @@ C Display equivalent surface for MATERIAL
                 call edisp(Ichanel,'-----')
               endif
               call georead(ITMP,LGEOM(nZnog(k)),nZnog(k),0,iuout,IER)
-              CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+              CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL,'q')
               call SurfEquiCalc(nznog(k), M, IAirAb)
             DO 200 I = 1,NSUR
               icon=IZSTOCN(nZnog(k),I)
@@ -755,14 +758,14 @@ C Display equivalent surface for MATERIAL
                 if (IOctave .EQ. 1) then
                   WRITE(outs,111)SSNAME(icon),SNA(I),SSMLCN(icon),
      &                           (SurfEquM(I,IY),IY=2,17,3)
- 111              FORMAT(1X,A12,1x, F7.1, 1x, A12, 2x, 6(2x, F6.1))
+ 111              FORMAT(1X,A,1x, F7.1, 1x, A, 2x, 6(2x, F6.1))
                   call edisp(Ichanel,outs)
                   IF (ABS(SNA(I)-SNAeff(I)).GT.0.001) THEN
                     DO 997 J = 1,MaxFur
                       if (CovSurf(J).EQ.SSNAME(icon)) then
                         WRITE(outs,116) '*',-XNbFur(J),FurType(J),
      &                    (-XNbFur(J)* SysAbsCo(ISys,IY),IY=2,17,3)
- 116                    FORMAT(13x,A1,1x,F7.1,1x,A12,2x, 6(2x,F6.1))
+ 116                    FORMAT(13x,A,1x,F7.1,1x,A,2x, 6(2x,F6.1))
                         call edisp(Ichanel,outs)
                       endif
  997                CONTINUE
@@ -771,7 +774,7 @@ C Display equivalent surface for MATERIAL
                   IF (ICompact.EQ.1) THEN
                     WRITE(outs,206)SSNAME(icon),SNA(I),
      &                SSMLCN(icon),(SurfEquM(I,IY),IY=3,15,3)
- 206                FORMAT(1X,A12,3x, F7.1, 3x, A12, 6(2x, F6.1))
+ 206                FORMAT(1X,A,3x, F7.1, 3x, A, 6(2x, F6.1))
                     call edisp(Ichanel,outs)
                     WRITE(outs,208) (SurfEquM(I,IY),IY=2,17,3)
  208                FORMAT(37X,6(2x, F6.1))
@@ -996,7 +999,7 @@ C Display equivalent surface for Air absorption
 C Should any way compute the equivalent area
             DO 691 k =1,NZG 
               call georead(ITMP,LGEOM(nZnog(k)),nZnog(k),0,iuout,IER)
-              CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+              CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL,'q')
               call SurfEquiCalc(nznog(k), M, IAirAb)
  691        CONTINUE
           ENDIF
@@ -1124,9 +1127,12 @@ C Calculate plotting box locations.
         CALL linescale(iigl,xadd,xsc,iigb,yadd,ysc)
 
 C Scale and draw monitoring plot.
-        Call horaxis(plxmin,plxmax,iigl,iigr,iigb,xadd,XSC,0,
-     &    'Frequ.[Hz]')
-        call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,'RT  s')
+        call dintervalf(plxmin,plxmax,ddy1,ny,0)
+        Call horaxisdd(plxmin,plxmax,iigl,iigr,iigb,xadd,XSC,0,
+     &    ddy1,ny,'Frequ.[Hz]')
+        call dintervalf(YMIN,YMAX,DY,NDEC,0)
+        call vrtaxisdd(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,
+     &    DY,NDEC,0,'RT  s')
 
 C Print title. IPS is used to keep track of number of title lines.
         IPS=1

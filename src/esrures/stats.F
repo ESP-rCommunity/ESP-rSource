@@ -135,7 +135,11 @@ C      ITEM(10)='e CEN statistics     '
       ITEM(24)='- exit               '
 
  2    NITMS=24
-      INO=-3
+      if(MMOD.eq.8)then
+        INO=-1
+      else
+        INO=-2
+      endif
 
 C Instanciate help strings for the menu.
       helptopic='res_statistics_menu'
@@ -796,14 +800,9 @@ C If output to file alter the edisp unit number. Skip if in IPV mode.
       endif
 
 C Set all returned data to zero.
- 1    VMX=0.
-      VMN=0.
-      VAVE=0.
-      VTOT=0.
-      DIVMX=0.
-      DIVMN=0.
-      DISTMX=0.
-      DISTMN=0.
+ 42   continue
+      VMX=0.0; VMN=0.0; VAVE=0.0; VTOT=0.0
+      DIVMX=0.0; DIVMN=0.0; DISTMX=0.0; DISTMN=0.0
 
 C Call the menu of choices (this also sets some default options).
 C The logical variable totals controls the displaying of cumulative 
@@ -847,16 +846,9 @@ C GOGET recovers the data in VAL2 (and averages output if required.)
 C Variables begining X are for all zones selected whereas variables 
 C starting Y are zone based.
       do 5 I=1,MZS
-        YTOTSD(I)=0.0
-        YSTD(I)=0.0
-        NY(I)=0
-        YTOT(I)=0.0
+        YTOTSD(I)=0.0; YSTD(I)=0.0; NY(I)=0; YTOT(I)=0.0
  5    continue
-      XMAX=-1.E+10
-      XMIN=1.E+10
-      XTOT=0.0
-      XAVE=0.0
-      NX=0
+      XMAX=-1.E+10; XMIN=1.E+10; XTOT=0.0; XAVE=0.0; NX=0
       call usrmsg(prompt,' ','-')
 
 C First recover bounds of selected data and calculate distributed max, min.
@@ -912,7 +904,7 @@ C If there is occupancy filter and occupancy then include in check.
 C Assume fully occupied.
             ih=int(ATIME+1.)
             ioc=1
-            if(iocupf.eq.1) call getocup(IZONE,IDAY,ih,ioc,ier)
+            if(iocupf.eq.1) call getocup(IZONE,IDAY,J,ioc,ier)
             if(ioc.ne.0) then
               YTOTSD(IX)=YTOTSD(IX)+((YAVE(IX)-VAL2(IX,J))**2)
               NY(IX)=NY(IX)+1
@@ -964,10 +956,7 @@ C Calculate standard deviation and averages.
 
 C Set IPV data and return.
       if(act(1:1).eq.'i') then
-        VMX=XMAX
-        VMN=XMIN
-        VAVE=XAVE
-        VTOT=XTOT
+        VMX=XMAX; VMN=XMIN; VAVE=XAVE; VTOT=XTOT
         return
       endif
 
@@ -1248,7 +1237,7 @@ C Allow other/ re- display?
       if(act(1:1).eq.'p')then
         return
       else
-        goto 1
+        goto 42
       endif
 
       END
@@ -1333,19 +1322,11 @@ C GOGET recovers the data in VAL2 (and averages output if required.)
 C Variables begining X are for all zones selected whereas variables 
 C starting Y are zone based.
       do 5 I=1,MZS
-        YMAX(I)=-1.E+10
-        YMIN(I)=1.E+10
-        YTOT(I)=0.0
-        YTOTSD(I)=0.0
-        YAVE(I)=0.0
-        NY(I)=0
+        YMAX(I)=-1.E+10; YMIN(I)=1.E+10; YTOT(I)=0.0
+        YTOTSD(I)=0.0; YAVE(I)=0.0; NY(I)=0
  5    continue
-      XMAX=-1.E+10
-      XMIN=1.E+10
-      XTOT=0.0
-      XTOTSD=0.0
-      XAVE=0.0
-      NX=0
+      XMAX=-1.E+10; XMIN=1.E+10; XTOT=0.0
+      XTOTSD=0.0; XAVE=0.0; NX=0
       call usrmsg(prompt,'Scanning for range of values...','-')
 
 C TSTART and TFINISH - start and finish times in hours from 0000 on the 
@@ -1381,7 +1362,7 @@ C If there is occupancy filter and occupancy then include in check.
 C Assume fully occupied.
             ih=int(ATIME+1.)
             ioc=1
-            if(iocupf.eq.1) call getocup(IZONE,IDAY,ih,ioc,ier)
+            if(iocupf.eq.1) call getocup(IZONE,IDAY,J,ioc,ier)
             if(ioc.ne.0) then
               if (display) then
                 XTOTSD=XTOTSD+((XAVE-VAL2(IX,J))**2)
@@ -1445,10 +1426,10 @@ C Now display the calculated data.
       call edisp(itru,outs)
       do 30 I=1,NGET
         if (NY(I).eq.0) then
-          write (outs,'(i2,1x,a12,a)') NZNO(I), zname(IGETNO(I,2)), 
+          write (outs,'(i3,1x,a12,a)') NZNO(I), zname(IGETNO(I,2)), 
      &                           'No data: probably due to filtering.'
         else
-          write (outs,'(i2,1x,a12,3(f8.1,f6.1))') NZNO(I),
+          write (outs,'(i3,1x,a12,3(f8.1,f6.1))') NZNO(I),
      &         zname(IGETNO(I,2)),YMAX(I),(YMAX(I)-CENMAX(I)),
      &         YMIN(I),(YMIN(I)-CENMIN(I)),YAVE(I),(YAVE(I)-CENAVE(I))
         endif
@@ -1493,6 +1474,8 @@ C act='p' iget parameters already set.
 
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
+      COMMON/AVRAGE/IDAVER
+
       character prompt*124,outs*124
       CHARACTER DESCR*7,DESCR1*10,DESCRH*5,DESCRD*5,NT*14,XT*14
       CHARACTER RSNAME*40
@@ -1500,9 +1483,16 @@ C act='p' iget parameters already set.
       CHARACTER PDESCR*60,SDESCR*44,act*1
 
       dimension YMAX(MZS), YMIN(MZS), YTOT(MZS)
-      dimension YAVE(MZS), NY(MZS),NYABOVE(MZS),NYBELOW(MZS)
+      dimension YAVE(MZS), NY(MZS)
       dimension TMAX(MZS), TMIN(MZS)
       integer lsn1
+
+      integer isAct(MZS),isOcc(MZS),isActPrev(MZS),isOccPrev(MZS)
+      real TActive(MZS),TOccup(MZS),TPerStart(MZS),TPerFinish(MZS)
+      real TOccStart(MZS),TOccFinish(MZS),TSTIME,TActiveTot,TOccupTot
+      
+
+      real toAdd
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -1556,28 +1546,37 @@ C GOGET recovers the data in VAL2 (and averages output if required.)
 C Variables begining X are for all zones selected whereas variables 
 C starting Y are zone based.
       do 5 I=1,MZS
-        YMAX(I)=-1.E+10
-        YMIN(I)=1.E+10
-        YTOT(I)=0.0
-        YAVE(I)=0.0
-        NY(I)=0
-        TMAX(I)=0.0
-        TMIN(I)=0.0
-        NYABOVE(I)=0
-        NYBELOW(I)=0
+        YMAX(I)=-1.E+10; YMIN(I)=1.E+10
+        YTOT(I)=0.0; YAVE(I)=0.0; NY(I)=0
+        TMAX(I)=0.0; TMIN(I)=0.0
  5    continue
-      XMAX=-1.E+10
-      XMIN=1.E+10
-      XTOT=0.0
-      NX=0
-      NXABOVE=0
-      NXBELOW=0
+      XMAX=-1.E+10; XMIN=1.E+10
+      XTOT=0.0; NX=0
+      
       call usrmsg(prompt,'Scanning for range of values...','-')
 
 C TSTART and TFINISH - start and finish times in hours from 0000 on the 
 C first day of output.
       TSTART=FLOAT(IOH1)
       TFINSH=FLOAT(((IODF)*24+IOH2)-(IODS)*24)
+
+C Initialise arrays.
+      do IX=1,NGET
+        isAct(IX)=-1
+        isOcc(IX)=-1
+        TActive(IX)=0.0
+        TOccup(IX)=0.0
+        isActPrev(IX)=0
+        isOccPrev(IX)=0
+        TOccStart(IX)=0.0
+        TOccFinish(IX)=0.0 
+      enddo
+
+C Calculate time values for first and last time steps, and duration
+C of 1 time step (in hours).
+      TSTIME=1.0/NTS
+      TFirst=TSTART-1.0+TSTIME/2
+      TLast=TFINSH-TSTIME/2
 
 C NDTS - the number of timesteps in a day.
       NDTS=24*NTS
@@ -1588,6 +1587,10 @@ C Check values in VAL2 against XQUERY.
         do 400 IX=1,NGET
           IZONE=IGETNO(IX,2)
           DO 421 J = 1,NDTS,NOUT
+
+C Keep track of previous active and occupancy flags.
+            isActPrev(IX)=isAct(IX)
+            isOccPrev(IX)=isOcc(IX)
 
 C Compute current time.
 C IHRD - number of days since start of plotting period in hours.
@@ -1603,8 +1606,16 @@ C If there is occupancy filter and occupancy then include in check.
 C Assume fully occupied.
             ih=int(ATIME+1.)
             ioc=1
-            if(iocupf.eq.1) call getocup(IZONE,IDAY,ih,ioc,ier)
+            if(iocupf.eq.1) call getocup(IZONE,IDAY,J,ioc,ier)
             if(ioc.ne.0) then
+
+C Is occupied (or there is no occupancy filtering).
+              isOcc(IX)=1
+
+C Begin occupancy period, remember start time.
+              if (isOccPrev(IX).eq.0) then
+                TOccStart(IX)=TIME
+              endif
 
 C Find largest value for current timestep and zone.
               IF (VAL2(IX,J).GT.XMAX) XMAX=VAL2(IX,J)
@@ -1624,25 +1635,108 @@ C Find largest value for current timestep, note time.
               YTOT(IX)=YTOT(IX)+VAL2(IX,J)
               NY(IX)=NY(IX)+1
 
-C Check current value against query value.
+C Hours above query value are "active".
               if (iabove.gt.0) then
-                if (VAL2(IX,J).gt.XQUERY) then
-                  NYABOVE(IX)=NYABOVE(IX)+1
-                  NXABOVE=NXABOVE+1
-                else
-                  NYBELOW(IX)=NYBELOW(IX)+1
-                  NXBELOW=NXBELOW+1
+                if (VAL2(IX,J).gt.XQUERY) then ! Active
+                  isAct(IX)=1
+
+C Active period has started. Remember start time.
+                  if (isActPrev(IX).eq.0) then
+
+C If currently on the first time step, take actual start time instead of
+C first time steps time stamp. This preserves the correct duration if 
+C there is no occupancy filtering.
+                    if (TIME.eq.TFIRST) then
+                      TPerStart(IX)=TSTART-1.0
+                    else
+                      TPerStart(IX)=TIME
+                    endif
+                  endif
+                else ! Not active
+                  isAct(IX)=0
+
+C Active period has ended. Work out period duration and add to aggregate.
+                  if (isActPrev(IX).eq.1) then
+C If time step averaging is off (IDAVER=1) then each value represents a
+C time step instead of an instantaneous value.  Add a time step onto each
+C active period to approximate this.
+                    if (IDAVER.eq.1) then
+                      TPerFinish(IX)=TIME
+                    else
+                      TPerFinish(IX)=TIME-TSTIME
+                    endif
+                    TActive(IX)=TActive(IX)+TPerFinish(IX)-TPerStart(IX)
+                  endif
                 endif
+
+C Hours below query value are "active". See above for annotations.
               else
-                if (VAL2(IX,J).lt.XQUERY) then
-                  NYBELOW(IX)=NYBELOW(IX)+1
-                  NXBELOW=NXBELOW+1
-                else
-                  NYABOVE(IX)=NYABOVE(IX)+1
-                  NXABOVE=NXABOVE+1
+                if (VAL2(IX,J).lt.XQUERY) then ! Active
+                  isAct(IX)=1
+                  if (isActPrev(IX).eq.0) then
+                    if (TIME.eq.TFIRST) then
+                      TPerStart(IX)=TSTART-1.0
+                    else
+                      TPerStart(IX)=TIME
+                    endif
+                  endif
+                else ! Not active
+                  isAct(IX)=0
+                  if (isActPrev(IX).eq.1) then
+                    if (IDAVER.eq.1) then
+                      TPerFinish(IX)=TIME
+                    else
+                      TPerFinish(IX)=TIME-TSTIME
+                    endif
+                    TActive(IX)=TActive(IX)+TPerFinish(IX)-TPerStart(IX)
+                  endif
                 endif
               endif
+
+            else ! Not occupied
+              isOcc(IX)=0
+
+C End occupancy period. Calculate period duration and add to aggregate.
+              if (isOccPrev(IX).eq.1) then
+                if (IDAVER.eq.1) then
+                  TOccFinish(IX)=TIME
+                else
+                  TOccFinish(IX)=TIME-TSTIME
+                endif
+                TOccup(IX)=TOccup(IX)+TOccFinish(IX)-TOccStart(IX)
+              endif
+
+C If there is no occupancy, assume not active, and end any active periods.
+              isAct(IX)=0
+              if (isActPrev(IX).eq.1) then
+                if (IDAVER.eq.1) then
+                  TPerFinish(IX)=TIME
+                else
+                  TPerFinish(IX)=TIME-TSTIME
+                endif
+                TActive(IX)=TActive(IX)+TPerFinish(IX)-TPerStart(IX)
+              endif
             endif
+
+C On last time step, end any current active or occupancy periods. Take
+C actual finish time instead of last time steps time stamp to preserve
+C actual duration.
+            if (TIME.eq.TLAST) then
+              if (isAct(IX).eq.1) then
+                TPerFinish(IX)=TFINSH
+                TActive(IX)=TActive(IX)+TPerFinish(IX)-TPerStart(IX)
+              endif 
+              if (isOcc(IX).eq.1) then
+                TOccFinish(IX)=TFINSH
+                TOccup(IX)=TOccup(IX)+TOccFinish(IX)-TOccStart(IX)
+              endif
+            endif 
+
+C Debug.
+C            write(375,*)'TIME,IX,isAct(IX),isOcc(IX),isActPrev(IX),',
+C     & 'isOccPrev(IX),TActive(IX),TOccup(IX)=',TIME,IX,isAct(IX),
+C     & isOcc(IX),isActPrev(IX),isOccPrev(IX),TActive(IX),TOccup(IX)
+
  421      CONTINUE
  400    CONTINUE
  10   continue
@@ -1713,8 +1807,26 @@ C Create string description for time of minimum occurrance.
           call STDATE(IYEAR,MINDOY,DESCR,DESCR1)
           call EDTIME(TMINHR,DESCRH,DESCRD,TIMER)
           write (NT,'(3a)')DESCR(1:6),'@',DESCRH
-          AYAB=float(NYABOVE(1))*float(NOUT)/float(NTS)
-          AYBE=float(NYBELOW(1))*float(NOUT)/float(NTS)
+
+C Calculate total time above and below query value. If there is
+C filtering, take total period as the time occupied.
+          if (iocupf.eq.1) then
+            if (iabove.gt.0) then
+              AYAB=TActive(1)
+              AYBE=TOccup(1)-TActive(1)
+            else
+              AYBE=TActive(1)
+              AYAB=TOccup(1)-TActive(1)
+            endif
+          else
+            if (iabove.gt.0) then
+              AYAB=TActive(1)
+              AYBE=TFINSH-(TSTART-1.0)-TActive(1)
+            else
+              AYBE=TActive(1) 
+              AYAB=TFINSH-(TSTART-1.0)-TActive(1)
+            endif
+          endif
           write (outs,'(2(f7.1,2x,a12,1x),3f8.2)')YMAX(1),XT,
      &                                  YMIN(1),NT,YAVE(1),AYAB,AYBE
         endif
@@ -1767,9 +1879,28 @@ C Create string description for time of minimum occurrance.
             call STDATE(IYEAR,MINDOY,DESCR,DESCR1)
             call EDTIME(TMINHR,DESCRH,DESCRD,TIMER)
             write (NT,'(3a)')DESCR(1:6),'@',DESCRH
-            AYAB=float(NYABOVE(I))*float(NOUT)/float(NTS)
-            AYBE=float(NYBELOW(I))*float(NOUT)/float(NTS)
+
+C Calculate total time above and below query value. If there is
+C filtering, take total period as the time occupied.
+            if (iocupf.eq.1) then
+              if (iabove.gt.0) then
+                AYAB=TActive(I)
+                AYBE=TOccup(I)-TActive(I)
+              else
+                AYBE=TActive(I)
+                AYAB=TOccup(I)-TActive(I)
+              endif
+            else
+              if (iabove.gt.0) then
+                AYAB=TActive(I) 
+                AYBE=TFINSH-(TSTART-1.0)-TActive(I)
+              else
+                AYBE=TActive(I) 
+                AYAB=TFINSH-(TSTART-1.0)-TActive(I)
+              endif
+            endif
             APYAB=(AYAB/(AYAB+AYBE))*100.
+
             if(IGETNO(NGET,9).ge.15)then
               write (outs,1102) GLABEL(I)(1:20),YMAX(I),XT,YMIN(I),NT,
      &          YAVE(I),AYAB,AYBE,APYAB
@@ -1794,8 +1925,34 @@ C 'greater than' or 'greater than or equal' to the query point.
           call edisp(itru,outs)
         else
           call edisp(itru,'  ')
-          AXAB=float(NXABOVE)*float(NOUT)/float(NTS)
-          AXBE=float(NXBELOW)*float(NOUT)/float(NTS)
+          
+C Sum all active and occupied periods.
+          TActiveTot=0.0
+          TOccupTot=0.0
+          do I=1,NGET
+            TActiveTot=TActiveTot+TActive(I)
+            TOccupTot=TOccupTot+TOccup(I)
+          enddo
+
+C Calculate total time above and below query value, aggregated over all
+C metrics. If there is filtering, take total period as the time occupied.
+          if (iocupf.eq.1) then
+            if (iabove.gt.0) then
+              AXAB=TActiveTot
+              AXBE=TOccupTot-TActiveTot
+            else
+              AXBE=TActiveTot
+              AXAB=TOccupTot-TActiveTot
+            endif
+          else
+            if (iabove.gt.0) then
+              AXAB=TActiveTot
+              AXBE=(TFINSH-(TSTART-1.0))*NGET-TActiveTot
+            else
+              AXBE=TActiveTot
+              AXAB=(TFINSH-(TSTART-1.0))*NGET-TActiveTot
+            endif
+          endif 
           APXAB=(AXAB/(AXAB+AXBE))*100.
           APXBE=(AXBE/(AXAB+AXBE))*100.
           if (iabove.gt.0) then
@@ -1868,7 +2025,14 @@ C Also called by recovert if act = 'p' << needs checking >>
       CHARACTER RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER PDESCR*60,SDESCR*44,act*1
-      DIMENSION YDUM(MTS)
+      DIMENSION YDUM(MTS),YAGRHT(MTS),YAGRCL(MTS)
+      logical close
+
+C Bookkeepping variables.
+      real THE,TCE,tzhtime,tzctime
+      real TLHE,TLCE,tzlhtime,tzlctime
+      real ZHE,ZCE,zhtime,zctime,ZLHE,ZLCE,zlhtime,zlctime
+      integer AGRHTSTEPS,AGRCLSTEPS
 
 C If output to file alter the edisp unit number.
       prompt = ' '
@@ -1885,20 +2049,18 @@ C If output to file alter the edisp unit number.
       endif
 
 C Set all returned data to zero.
-C THE is total sensible heating, TCE is total sensible cooling.
-      THE=0.
-      TCE=0.
+      THE=0.0  ! total sensible heating
+      TCE=0.   ! total sensible cooling
       tzhtime=0.
       tzctime=0.
 
-C TLHE is total latent humidification, TLCE is total latent dehumidification.
-      TLHE=0.
-      TLCE=0.
+      TLHE=0.  ! total latent humidification
+      TLCE=0.  ! total latent dehumidification
       tzlhtime=0.
       tzlctime=0.
 
 C Call the menu of choices (this also sets some default options).
- 1    if(act(1:1).ne.'i') then
+      if(act(1:1).ne.'i') then
         MENUTYPE=10
         call GOMSETUP
         call GOMENU
@@ -1942,19 +2104,18 @@ C Energy requirements.
         call edisp(itru,outs)
 
         call edisp(itru,' ')
-        call edisp(itru,
-     &' Zone total sensible and latent plant used (kWhrs)')
+        call edisp(itru,' Zone energy requirements summary')
         write(outs,'(2A)')
-     &'    Zone             Sensible heating  Sensible cooling',
-     &'   Humidification     Dehumidification'
+     &'    Zone                 Sensible heating            Sensible ',
+     &'cooling         Humidification    Dehumidification'
         call edisp(itru,outs)
         write(outs,'(2A)')
-     &' id name             Energy   No. of   Energy   No. of ',
-     &'   Energy   No. of    Energy   No. of'
+     &' id name                 Energy       Hours          Energy   ',
+     &'    Hours       Energy   Hours    Energy  Hours'
         call edisp(itru,outs)
         write(outs,'(2A)')
-     &'                     (kWhrs)  Hr rqd   (kWhrs)  Hr rqd ',
-     &'   (kWhrs)  Hr rqd    (kWhrs)  Hr rqd'
+     &'                     kWhrs  kWhrs/m2 required    kWhrs  kWhrs/',
+     &'m2 required     kWhrs  required   kWhrs  required'
         call edisp(itru,outs)
       endif
 
@@ -1965,14 +2126,8 @@ C For each requested zone and for every computational time-step, get
 C results for complete day.
       DO 65 J=1,NZ
         IZ=NZNO(J)
-        ZHE=0.
-        ZCE=0.
-        ZLHE=0.
-        ZLCE=0.
-        zhtime=0.
-        zctime=0.
-        zlhtime=0.
-        zlctime=0.
+        ZHE=0.0; ZCE=0.0; ZLHE=0.0; ZLCE=0.0
+        zhtime=0.0; zctime=0.0; zlhtime=0.0; zlctime=0.0
         DO 55 I=IODS,IODF
           ID=I
           NEL=0
@@ -2018,26 +2173,78 @@ C Calcalate the sums and statistics to display during relevant period.
         tzlhtime=tzlhtime+zlhtime
         tzlctime=tzlctime+zlctime
         if(act(1:1).ne.'i') then
-          write(outs,66)IZ,zname(IZ),ZHE,ZHTIME,ZCE,Zctime,ZLHE,
-     &      ZLHTIME,ZLCE,zlctime
-   66     format(I3,1X,A12,4(F11.2,F8.1))
+          write(outs,'(I3,1x,a12,2(f11.2,f9.2,f8.1),2(f11.2,f8.1))')
+     &      IZ,zname(IZ),ZHE,ZHE/ZBASEA(IZ),ZHTIME,ZCE,ZCE/ZBASEA(IZ),
+     &      Zctime,ZLHE,ZLHTIME,ZLCE,zlctime
           call eddisp(itru,outs)
         endif
    65 CONTINUE
       if(act(1:1).ne.'i') then
         if(THE.gt.99999.0.or.TCE.lt.-99999.0)then
-          write(outs,67)THE,tzhtime,TCE,tzctime,TLHE,tzlhtime,TLCE,
-     &      tzlctime
-   67     format(1X,'   All',8X,4(F11.1,F8.0))
+          write(outs,'(a,2(f11.1,f9.1,f8.0),2(f11.1,f8.0))') 
+     &    '   All        ',THE,THE/ZBASEA(IZ),tzhtime,TCE,
+     &    TCE/ZBASEA(IZ),tzctime,TLHE,tzlhtime,TLCE,tzlctime
         else
-          write(outs,68)THE,tzhtime,TCE,tzctime,TLHE,tzlhtime,TLCE,
-     &      tzlctime
-   68     format(1X,'   All',9X,4(F11.1,F8.1))
+          write(outs,'(a,2(f11.1,f9.1,f8.0),2(f11.1,f8.1))')
+     &    '   All         ',THE,THE/ZBASEA(IZ),tzhtime,TCE,
+     &    TCE/ZBASEA(IZ),tzctime,TLHE,tzlhtime,TLCE,tzlctime
         endif
         call edisp(itru,' ')
         call eddisp(itru,outs)
         call edisp(itru,' ')
       endif
+
+C Find the aggregate number of hours heating used (considered true for a
+C timestep if any zone needs heating. So for the current day loop through
+C each timestep, at each timestep check if any zone heating is non-zero.
+      AGRHTSTEPS=0; AGRCLSTEPS=0  ! reset counters
+      DO I=1,MTS
+        YAGRHT(I)=0.0  ! clear heat array for the day
+        YAGRCL(I)=0.0  ! clear cool array for the day
+      ENDDO
+      DO I=IODS,IODF   ! loop each day
+        ID=I
+        NEL=0
+        DO J=1,NZ      ! and for each zone
+          IZ=NZNO(J)
+
+C Get the zone plant flux and average if required. Array YDUM has
+C the values for the day. Copy into the YAGRHT or HAGRCL as appropriate
+          CALL GZQM(ID,IZ,ISET)
+          CALL FLTIAV(ID,GVAL,YDUM,NEL)
+          CALL CHKTIME(ID,ISTART,IEND)
+          DO K=ISTART,IEND  ! and for each timestep
+            call eclose(YDUM(K),0.0,0.001,close)
+            if(.NOT.close)then
+              if(YDUM(K).lt.0.0) YAGRCL(K)=YAGRCL(K)+YDUM(K)
+              if(YDUM(K).gt.0.0) YAGRHT(K)=YAGRHT(K)+YDUM(K)
+            endif
+          ENDDO ! of K for each timestep
+        ENDDO   ! of J for each zone
+
+C Having looped through all the zones now loop through YAGRCL
+C and YAGRHT and if non-zero increment.
+        DO L=ISTART,IEND  ! and for each timestep
+          call eclose(YAGRCL(L),0.0,0.001,close)
+          if(.NOT.close) AGRCLSTEPS=AGRCLSTEPS+1
+          call eclose(YAGRHT(L),0.0,0.001,close)
+          if(.NOT.close) AGRHTSTEPS=AGRHTSTEPS+1
+        ENDDO   ! of timesteps in day
+
+C Clear the day array.
+        DO M=1,MTS
+          YAGRHT(M)=0.0  ! clear heat array for the day
+          YAGRCL(M)=0.0  ! clear cool array for the day
+        ENDDO
+
+      ENDDO    ! of I loop of days.
+      write(outs,'(f8.1,a)') AGRHTSTEPS*TFACT,
+     &  ' hours when heating required in at least one zone.'
+      call eddisp(itru,outs)
+      write(outs,'(f8.1,a)') AGRCLSTEPS*TFACT,
+     &  ' hours when cooling required in at least one zone.'
+      call eddisp(itru,outs)
+
       call usrmsg(prompte,'  ','P')
       if(MMOD.eq.8)call usrmsg('  ','  ','-')
 
@@ -2148,16 +2355,12 @@ C Energy requirements.
       call edisp(itru,outs)
 
 C Initialiase variables for totals over all selected zones.
-      TPTTOTCG=0.
-      TPCV=0.
-      TPTTR=0.
-      TPTOTE=0.
-      TPTTI=0.
-      TPTTG=0.
+      TPTTOTCG=0.0; TPCV=0.0; TPTTR=0.0; TPTOTE=0.0
+      TPTTI=0.0; TPTTG=0.
  
       do 66 ii=1,10
         do 67 ij=1,6
-          ST(ij,ii)=0.
+          ST(ij,ii)=0.0
  67     continue
  66   continue
 
@@ -2170,23 +2373,25 @@ C Read geometry and construction files and setup labels.
         CALL ECONST(LTHRM(IZONE),IUNIT,izone,0,IUOUT,IER)
 
 C Update labels to match the current zone.
-C << revise for additional casual gains >>
         write(LABELS(1),'(1x,a)')lodlabel(izone,1)
         write(LABELS(2),'(1x,a)')lodlabel(izone,1)
         write(LABELS(3),'(1x,a)')lodlabel(izone,2)
         write(LABELS(4),'(1x,a)')lodlabel(izone,2)
         write(LABELS(5),'(1x,a)')lodlabel(izone,3)
         write(LABELS(6),'(1x,a)')lodlabel(izone,3)
-        write(LABELS(7),'(2a)')' Ctl ',lodlabel(izone,1)
-        write(LABELS(8),'(2a)')' Ctl ',lodlabel(izone,1)
-        write(LABELS(9),'(2a)')' Ctl ',lodlabel(izone,2)
-        write(LABELS(10),'(2a)')' Ctl ',lodlabel(izone,2)
-        write(LABELS(11),'(2a)')' Ctl ',lodlabel(izone,3)
-        write(LABELS(12),'(2a)')' Ctl ',lodlabel(izone,3)
-        write(LABELS(13),'(a)')' Totals'
+        if(lodslot(izone,4).ne.0)then
+          write(LABELS(7),'(1x,a)')lodlabel(izone,4)
+          write(LABELS(8),'(1x,a)')lodlabel(izone,4)
+        else
+          write(LABELS(7),'(1x,a)')'--'
+          write(LABELS(8),'(1x,a)')'--'
+        endif
+        write(LABELS(9),'(a)') ' Ctl cas'
+        write(LABELS(10),'(a)')' Ctl cas'
+        write(LABELS(11),'(a)')' Totals'
 
 C Output general header information.
-        write(outs,'(3a,i2,a)')
+        write(outs,'(3a,i3,a)')
      &    ' Casual gains distribution (kWhrs) for ',
      &    zname(IZONE)(1:lnzname(IZONE)),' (',IZONE,')'
         call edisp(itru,' ')
@@ -2201,7 +2406,7 @@ C Prepare to recover information from results library.
           IUNIT=IFIL+1
           CALL EROPER(0,iuout,iunit,izone,IER)  ! for older results library
           if(ip3ver(izone).eq.0)then
-            write(outs,'(a,i2,a)') 
+            write(outs,'(a,i3,a)') 
      &      'Operation file for zone ',izone,' periods being sorted!'
             call edisp(iuout,outs)
             call PROCESSOLDCAS(izone,0,iuout)
@@ -2216,15 +2421,10 @@ C Prepare to recover information from results library.
         NN=NZSUR(IZONE)
 
 C IGT is number of occupied timesteps, IGTL is number of lighting timesteps, IGTS
-C is number of small power timesteps, IGTC is controlled timesteps.
-        IGT=0
-        IGTL=0
-        IGTS=0
-        IGTC=0
-        ZOTIME=0.
-        ZLTIME=0.
-        ZSTIME=0.
-        ZCTIME=0.
+C is number of small power timesteps, IGTOTH other timesteps, IGTC
+C is controlled timesteps.
+        IGT=0; IGTL=0; IGTS=0; IGTOTH=0; IGTC=0
+        ZOTIME=0.0; ZLTIME=0.0; ZSTIME=0.0; ZOTHTIME=0.0; ZCTIME=0.0
 
 C Find the number of hours represented by an output timestep.
         TFACT=FLOAT(NOUT)/FLOAT(NTS)
@@ -2245,12 +2445,8 @@ C Initialise summation locations: VAL1(I,J).
 
 C Find the total surface area * emissivity in each surface
 C connection class. << This could be simplified with new izver. >>
-        SURFAE=0.
-        SURFAI=0.
-        SURFAG=0.
-        SURFTE=0.
-        SURFTG=0.
-        SURFTI=0.
+        SURFAE=0.0; SURFAI=0.0; SURFAG=0.0; SURFTE=0.0; SURFTG=0.0
+        SURFTI=0.0
         DO 210 ISN= 1,NN
           CALL SURADJ(IZONE,ISN,IE,T,IZC,ISC,ICN,CSTR)
           IF(IE.EQ.0)THEN
@@ -2290,7 +2486,7 @@ C Clear VAL1.
 
 C For requested zone and day get convective casual gains results.
 C If type one casual > 0. then occupied during timestep (and increment
-C IGTL, IGTS, IGTC.
+C IGTL, IGTS, IGTOTH, IGTC. Stuff data into VAL1(1,I) to VAL1(5,I)
           CALL ZCASC(IZONE,IDAY)
           DO 50, I=1,IEND
             VAL1(1,I)=VAL3(15,I)
@@ -2300,24 +2496,25 @@ C IGTL, IGTS, IGTC.
             VAL1(3,I)=VAL3(17,I)
             if(I.ge.ISTART.and.VAL1(3,I).gt.0.0)IGTS=IGTS+1
             VAL1(4,I)=VAL3(18,I)
-            if(I.ge.ISTART.and.VAL1(4,I).gt.0.0)IGTC=IGTC+1
-            VAL1(5,I)=VAL3(19,I)
-            if(I.ge.ISTART.and.VAL1(5,I).gt.0.0)IGTC=IGTC+1
-            VAL1(6,I)=VAL3(20,I)
-            if(I.ge.ISTART.and.VAL1(6,I).gt.0.0)IGTC=IGTC+1
+            if(I.ge.ISTART.and.VAL1(4,I).gt.0.0)IGTOTH=IGTOTH+1
+            VAL1(5,I)=VAL3(19,I)+VAL3(20,I)+VAL3(21,I)+VAL3(22,I)
+            if(I.ge.ISTART.and.VAL3(19,I).gt.0.0)IGTC=IGTC+1
+            if(I.ge.ISTART.and.VAL3(20,I).gt.0.0)IGTC=IGTC+1
+            if(I.ge.ISTART.and.VAL3(21,I).gt.0.0)IGTC=IGTC+1
+            if(I.ge.ISTART.and.VAL3(22,I).gt.0.0)IGTC=IGTC+1
    50     CONTINUE
 
 C Get casual radiant amount for all surfaces and store uncontrolled
-C and controlled types 1,2,3 in VAL1(5,I) to VAL1(10,I).
+C and controlled types 1,2,3 4 in VAL1(6,I) to VAL1(10,I).
           do 52 ISS=1,NN
             CALL ZCASR(IZONE,ISS,IDAY)
             DO 28 I=1,N
-              VAL1(7,I)=VAL1(7,I)+VAL3(15,I)
-              VAL1(8,I)=VAL1(8,I)+VAL3(16,I)
-              VAL1(9,I)=VAL1(9,I)+VAL3(17,I)
-              VAL1(10,I)=VAL1(10,I)+VAL3(18,I)
-              VAL1(11,I)=VAL1(11,I)+VAL3(19,I)
-              VAL1(12,I)=VAL1(12,I)+VAL3(20,I)
+              VAL1(6,I)=VAL1(6,I)+VAL3(15,I)
+              VAL1(7,I)=VAL1(7,I)+VAL3(16,I)
+              VAL1(8,I)=VAL1(8,I)+VAL3(17,I)
+              VAL1(9,I)=VAL1(9,I)+VAL3(18,I)
+              VAL1(10,I)=
+     &          VAL1(10,I)+VAL3(19,I)+VAL3(20,I)+VAL3(21,I)+VAL3(22,I)
    28       CONTINUE
    52     continue
 
@@ -2325,10 +2522,10 @@ C and controlled types 1,2,3 in VAL1(5,I) to VAL1(10,I).
             JT=J
 
 C Compute average of VAL1() based on IAV.
-            CALL VALIAV(12,JT,XVAL1)
+            CALL VALIAV(10,JT,XVAL1)
 
 C Sum to VAL2 for printing.
-            DO 410 K=1,12
+            DO 410 K=1,10
               VAL2(K,1)=VAL2(K,1)+XVAL1(K)*TCMULT
   410       CONTINUE
   400     CONTINUE
@@ -2338,6 +2535,7 @@ C Find number of hours for occupants, lights, small power, controlled.
         ZOTIME=FLOAT(IGT)*TFACT
         ZLTIME=FLOAT(IGTL)*TFACT
         ZSTIME=FLOAT(IGTS)*TFACT
+        ZOTHTIME=FLOAT(IGTOTH)*TFACT
         ZCTIME=FLOAT(IGTC)*TFACT
 
 C Print the data and labels for uncontrolled casual gains.
@@ -2353,22 +2551,12 @@ C Print the data and labels for uncontrolled casual gains.
 C Split radiant by surface connection type, begin by multiplying
 C each casual by total surface area for that connnection type
 C and dividing by the zone opaque area.  Write it out and then
-C sum it to TOT0 etc. If no casual gain control then don't bother
-C to print out latter 6 rows.
-        IF(ICGC(IZONE).EQ.0)THEN
-          IRLC=9
-        else
-          IRLC=12
-        endif
+C sum it to TOT0 etc.
+        IRLC=10
 
-        TR=0.
-        TOR=0.
-        TTR=0.
-        TOTE=0.
-        TTI=0.
-        TTG=0.
-        TTOTCG=0.
-        DO 420 IR=7,IRLC
+        TR=0.0; TOR=0.0; TTR=0.0; TOTE=0.0
+        TTI=0.0; TTG=0.0; TTOTCG=0.0
+        DO 420 IR=6,IRLC
 
 C Apply radiant by surface groupings.
           CE =VAL2(IR,1)*SURFAE/emarea
@@ -2377,19 +2565,19 @@ C Apply radiant by surface groupings.
           CTI=VAL2(IR,1)*SURFTI/emarea
           CG =VAL2(IR,1)*SURFAG/emarea
           CTG=VAL2(IR,1)*SURFTG/emarea
-          TOR =CE+CI+CG
+          TOR=CE+CI+CG
           TR =CTE+CTI+CTG
-          TOTCG=VAL2(IR-6,1) + TOR + TR
+
+          TOTCG=VAL2(IR-5,1) + TOR + TR
 
 C Update IR.
-          IF(IR.EQ.7)IRL=1
-          IF(IR.EQ.8)IRL=3
-          IF(IR.EQ.9)IRL=5
-          IF(IR.EQ.10)IRL=7
-          IF(IR.EQ.11)IRL=9
-          IF(IR.EQ.12)IRL=11
+          IF(IR.EQ.6)IRL=1
+          IF(IR.EQ.7)IRL=3
+          IF(IR.EQ.8)IRL=5
+          IF(IR.EQ.9)IRL=7
+          IF(IR.EQ.10)IRL=9
 
-          write(outs,126)LABELS(IRL)(1:12),TOTCG,VAL2(IR-6,1),
+          write(outs,126)LABELS(IRL)(1:12),TOTCG,VAL2(IR-5,1),
      &                   TOR,LABSurf(1),CE,CI,CG
           call edisp(itru,outs)
           write(outs,127) TR, LABSurf(2),CTE,CTI,CTG
@@ -2401,26 +2589,26 @@ C Update IR.
           TTOTCG=TTOTCG+TOTCG
 
 C Add each value to have the sub-total over all the selected zones
-          ST(IR-6,1)=ST(IR-6,1)+TOTCG
-          ST(IR-6,2)=ST(IR-6,2)+VAL2(IR-6,1)
-          ST(IR-6,3)=ST(IR-6,3)+TOR
-          ST(IR-6,4)=ST(IR-6,4)+CE
-          ST(IR-6,5)=ST(IR-6,5)+CI
-          ST(IR-6,6)=ST(IR-6,6)+CG
-          ST(IR-6,7)=ST(IR-6,7)+TR
-          ST(IR-6,8)=ST(IR-6,8)+CTE
-          ST(IR-6,9)=ST(IR-6,9)+CTI
-          ST(IR-6,10)=ST(IR-6,10)+CTG
+          ST(IR-5,1)=ST(IR-5,1)+TOTCG
+          ST(IR-5,2)=ST(IR-5,2)+VAL2(IR-5,1)
+          ST(IR-5,3)=ST(IR-5,3)+TOR
+          ST(IR-5,4)=ST(IR-5,4)+CE
+          ST(IR-5,5)=ST(IR-5,5)+CI
+          ST(IR-5,6)=ST(IR-5,6)+CG
+          ST(IR-5,7)=ST(IR-5,7)+TR
+          ST(IR-5,8)=ST(IR-5,8)+CTE
+          ST(IR-5,9)=ST(IR-5,9)+CTI
+          ST(IR-5,10)=ST(IR-5,10)+CTG
   420   CONTINUE
 
 C Totals:
-        CV=VAL2(1,1)+VAL2(2,1)+VAL2(3,1)+VAL2(4,1)+VAL2(5,1)+VAL2(6,1)
+        CV=VAL2(1,1)+VAL2(2,1)+VAL2(3,1)+VAL2(4,1)+VAL2(5,1)
 
         write(outs,118)' Totals    ',TTOTCG,CV,TTR,TOTE,TTI,TTG
         call edisp(itru,outs)
 
   126   format(A,3F12.2,A,3F12.2)
-  127   format(35X,F12.2,A,3F12.2)
+  127   format(36X,F12.2,A,3F12.2)
   118   format(A,3F12.2,4x,3F12.2)
 
         write(outs,'(a,f9.2)') ' Number of hours occupied: ',ZOTIME
@@ -2429,6 +2617,9 @@ C Totals:
         call edisp(itru,outs)
         write(outs,'(a,f9.2)') ' Number of hours with small power: ',
      &    ZSTIME
+        call edisp(itru,outs)
+        write(outs,'(a,f9.2)') ' Number of hours with other gains: ',
+     &    ZOTHTIME
         call edisp(itru,outs)
         write(outs,'(a,f9.2)') ' Number of hours with ctld gains: ',
      &    ZCTIME
@@ -2443,7 +2634,7 @@ C Total of 'Totals' over selected zones
         TPTTG=TPTTG+TTG
   65  continue
 
-C Display tthe total over all selected zones
+C Display the total over all selected zones
       IF((JZ.EQ.NZ+1).AND.(NZ.GT.1)) THEN
 C Output general header information.
         call edisp(itru,'  ')
@@ -2459,26 +2650,25 @@ C Print the data and labels for uncontrolled casual gains.
      &    ' type       | (Con+Rad) | part (air)|     on surf   | ',
      &    '    external    internal     ground '
         call edisp(itru,outs)
-        DO 520 IIR=7,IRLC
-          IF(IIR.EQ.7)IRL=1
-          IF(IIR.EQ.8)IRL=3
-          IF(IIR.EQ.9)IRL=5
-          IF(IIR.EQ.10)IRL=7
-          IF(IIR.EQ.11)IRL=9
-          IF(IIR.EQ.12)IRL=11
-          write(outs,226)LABELS(IRL)(1:12),ST(IIR-6,1),ST(IIR-6,2),
-     &      ST(IIR-6,3),LABSurf(1),ST(IIR-6,4),ST(IIR-6,5),ST(IIR-6,6)
+        DO 520 IIR=6,IRLC
+          IF(IIR.EQ.6)IRL=1
+          IF(IIR.EQ.7)IRL=3
+          IF(IIR.EQ.8)IRL=5
+          IF(IIR.EQ.9)IRL=7
+          IF(IIR.EQ.10)IRL=9
+          write(outs,226)LABELS(IRL)(1:12),ST(IIR-5,1),ST(IIR-5,2),
+     &      ST(IIR-5,3),LABSurf(1),ST(IIR-5,4),ST(IIR-5,5),ST(IIR-5,6)
           call edisp(itru,outs)
 
-          write(outs,227)ST(IIR-6,7),LABSurf(2),ST(IIR-6,8),ST(IIR-6,9),
-     &                   ST(IIR-6,10)
+          write(outs,227)ST(IIR-5,7),LABSurf(2),ST(IIR-5,8),ST(IIR-5,9),
+     &                   ST(IIR-5,10)
           call edisp(itru,outs)
   520   CONTINUE
         write(outs,218)' Totals    ',TPTTOTCG,TPCV,TPTTR,TPTOTE,TPTTI,
      &    TPTTG
         call edisp(itru,outs)
   226   format(A,3F12.2,A,3F12.2)
-  227   format(35X,F12.2,A,3F12.2)
+  227   format(36X,F12.2,A,3F12.2)
   218   format(A,3F12.2,5x,3F12.2)
       ENDIF
 

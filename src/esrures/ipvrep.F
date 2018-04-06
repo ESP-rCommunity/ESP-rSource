@@ -59,7 +59,7 @@ C Write IPV report based on description held in common.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C Comfort parameters and hash table.
-      common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
+      common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
 
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
@@ -135,6 +135,7 @@ C Remember the initial periods.
       jiav=IAV
       pvok=.false.
       dmdsok=.false.
+      itru = icout
 
 C Make up a single quote for IPV
       sq = char(39)
@@ -564,8 +565,11 @@ C Loop first through any demand sets and then loop through any metrics.
             if(nzedg(ij).le.9)then
               write(outsn,'(2a,i1)')zedsdoc(ij)(1:lnblnk(zedsdoc(ij))),
      &          tab,nzedg(ij)
-            else
+            elseif(nzedg(ij).gt.9.and.nzedg(ij).lt.99)then
               write(outsn,'(2a,i2)')zedsdoc(ij)(1:lnblnk(zedsdoc(ij))),
+     &          tab,nzedg(ij)
+            else
+              write(outsn,'(2a,i3)')zedsdoc(ij)(1:lnblnk(zedsdoc(ij))),
      &          tab,nzedg(ij)
             endif
 
@@ -1146,7 +1150,6 @@ C Frequency binning for comfort, when finished, reset iocupf.
             if(imetmsc(ig,2).ne.0)then
               iocupf=1
               iocut=imetmsc(ig,1)
-              call scnocup(iier)
             else
               iocupf=0
             endif

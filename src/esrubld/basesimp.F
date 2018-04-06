@@ -66,7 +66,7 @@ C (20 x 20 meters).
       character outs*124,OUTSTR*124,dllsubr*12,dllmesg*124,t60*60
       logical dll
 
-      REAL fBASESIMPVersionNumber	! version number of BASESIMP input file
+      REAL fBASESIMPVersionNumber  ! version number of BASESIMP input file
 C Limits for parameter values to be read in
       REAL fMinFoundLength, fMaxFoundLength, fMinFoundWidth,
      &     fMaxFoundWidth, fMinInsulRSI,  fMaxInsulRSI, fMinSoilCond,
@@ -170,7 +170,7 @@ c-----5m minimum are reasonable. Consequently, the limits imposed here for
 c-----BASESIMP foundations allow widths from 1 to 20 m and lengths from 1 to 100 m.
       IF(CLOSE99) THEN     ! set parameter windows on BASECALC dimensions (type 999)
         fMinFoundLength = 2.0   ! meter
-        fMaxFoundLength = 20.0  ! meter
+        fMaxFoundLength = 25.0  ! meter
         fMinFoundWidth = 2.0    ! meter
         fMaxFoundWidth = 20.0   ! meter
         fMinInsulRSI = 0.0      ! m2K/W
@@ -942,7 +942,7 @@ C weather file and Moore model.
       endif
 
 C Steady component of below-grade heat loss (W).
-	  Qbgavg = Sbgavg(icon) *
+      Qbgavg = Sbgavg(icon) *
      &             ( TBSAVG-basesimp_grd_temp_avg )
 
 C Time-varying component of below-grade heat loss (W). `time' measures the

@@ -34,6 +34,7 @@ C time-dependent variables to be plotted for one or more zones.
 
       SUBROUTINE VWLIN
 #include "building.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -45,10 +46,8 @@ C time-dependent variables to be plotted for one or more zones.
       COMMON/VGRAF2/NPICK,IVV,IVH,IVCON(MCOM),IVELT(MCOM),
      &              IVPOS(MCOM),IVNOD(MCOM),VPSAT(MCOM)
       COMMON/VGRAF3/CONVER
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
-      LOGICAL MODIFY,MODLEN,MODBND
 
       CHARACTER*24 ITEM(42)
       character VITEM*24,HITEM*24,xfile*144,tg*1,delim*1
@@ -61,7 +60,7 @@ C For help messages
 
       helpinsub='VWLIN'  ! set for subroutine
 
-      MODIFY=.FALSE.
+      MODIFYVIEW=.FALSE.
       VITEM=' '
       HITEM=' '
 
@@ -126,11 +125,11 @@ C Menu display.
 
 C In case the user has resized the display redraw
 C the image before presenting the command menu.
-    5 if(MODIFY)then
+    5 if(MODIFYVIEW)then
         CALL VGHED(VITEM,HITEM)
         CALL VGDRW(VITEM,HITEM)
         INO=-2
-        MODIFY=.FALSE.
+        MODIFYVIEW=.FALSE.
       endif
 
 C Instanciate help string arrays for this menu.
@@ -314,7 +313,7 @@ C Establish associated information if JPICK = 8,9,12,23,25,26 or 35.
       RETURN
 
 C Which surface ?
-    3 WRITE(outs,'(A,I2,A)')' Zone ',II,': which surface for output ?'
+    3 WRITE(outs,'(A,I3,A)')' Zone ',II,': which surface for output ?'
       call edisp(iuout,outs)
       CALL ASKSUR(II,ISUR)
       IVCON(IZ)=ISUR
@@ -322,7 +321,7 @@ C Which surface ?
       goto 1
 
 C Construction node: which one ?
-    5 WRITE(outs,'(A,I2,A)')' Zone ',II,
+    5 WRITE(outs,'(A,I3,A)')' Zone ',II,
      &                       ': which construction for output ?'
       call edisp(iuout,outs)
       CALL ASKSUR(II,ISUR)
@@ -336,7 +335,7 @@ C Ask for node number.
 C Dew point temperature: what % saturation ?
     6 helptopic='res_inside_saturation'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      WRITE(outs,'(A,I2,A)')' Zone ',II,': inside % saturation :'
+      WRITE(outs,'(A,I3,A)')' Zone ',II,': inside % saturation :'
       CALL EASKR(V,outs,' ?',0.,'F',100.,'F',50.,
      &    '% saturation',IER,nbhelp)
       VPSAT(IZ)=V
@@ -939,10 +938,13 @@ C Copy axis labels into local variable and then display the
 C horizontal and vertical axis.
       HIT=' '
       HIT=HITEM
-      call horaxis(YMINH,YMAXH,iigl,iigr,iigb,Xadd,xsc,0,HIT)
+      call dintervalf(YMINH,YMAXH,ddy1,ny,0)
+      call horaxisdd(YMINH,YMAXH,iigl,iigr,iigb,Xadd,xsc,0,ddy1,ny,HIT)
       VIT=' '
       VIT=VITEM
-      call vrtaxis(YMINV,YMAXV,iigl,iigb,iigt,Yadd,ysc,0,0,VIT)
+      CALL dintervalf(YMINV,YMAXV,ddy1,ny,0)
+      call vrtaxisdd(YMINV,YMAXV,iigl,iigb,iigt,Yadd,ysc,0,
+     &  ddy1,ny,0,VIT)
 
       RETURN
 

@@ -175,8 +175,10 @@ C layer of each surface in the zone. IPRZ is used elsewhere.
           IPRZ(ISUR,IL)=IPRMAT(IC,IL)
    23   CONTINUE
         if(ICKNE.eq.0)then
-          write(outs,'(5A)') ' The construction ',SSMLCN(ICN)(1:12),
-     &       ' of ',SSNAME(ICN),' was not found in the mlc db...'
+          lml=lnblnk(SSMLCN(ICN))
+          write(outs,'(5A)') ' The construction ',
+     &      SSMLCN(ICN)(1:lml),' of ',SSNAME(ICN),
+     &      ' was not found in the mlc db...'
           call edisp(iuout,outs)
           call edisp(iuout,' ')
           IER=1
@@ -369,10 +371,12 @@ C memory for access by plotting code.
       call axiscale(igwid,igheight,XMIN,XMAX,TMIN,TMAX,xsc,ysc,sca,
      &              Xadd,Yadd)
       call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
-      call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
-     &  'Thickness (mm)')
-      call vrtaxis(TMIN,TMAX,iigl,iigb,iigt,Yadd,ysc,0,0,
-     &  'Temp. Deg.C')
+      call dintervalf(Xmin,Xmax,ddy1,ny,0)
+      call horaxisdd(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
+     &  ddy1,ny,'Thickness (mm)')
+      CALL dintervalf(TMIN,TMAX,ddy1,ny,0)
+      call vrtaxisdd(TMIN,TMAX,iigl,iigb,iigt,Yadd,ysc,0,
+     &  ddy1,ny,0,'Temp. Deg.C')
       RETURN
       END
 
@@ -485,12 +489,15 @@ C Setup and pass in parameters to win3d.
         call edisp(iuout,ETEXT)
       endif
 
-C Determine if the surface is transparent or opaque.
+C Determine if the surface is transparent or opaque. At this point
+C CFC and CFC2 are still classed with opaque.
       IF(SSOTF(ICN)(1:4).EQ.'OPAQ'.OR.
      &   SSOTF(ICN)(1:4).EQ.'UNKN')THEN
          TSTR='opaque'
       ELSEIF(SSOTF(ICN)(1:4).EQ.'CFC ')THEN
          TSTR='CFC'
+      ELSEIF(SSOTF(ICN)(1:4).EQ.'CFC2')THEN
+         TSTR='CFC2'
       ELSE
          TSTR='trnsp.'
       ENDIF

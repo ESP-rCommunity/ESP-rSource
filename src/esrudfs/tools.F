@@ -91,53 +91,53 @@ C ********* scan3di
       end
 
 c*********************************************************************
-      subroutine tecplotend-old
+C      subroutine tecplotend_old
 c*********************************************************************
-#include "cfd.h"
+C #include "cfd.h"
 
-      COMMON/FILEP/IFIL
-      COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),
-     1            Wf(ntcelx,ntcely,ntcelz),
-     2            P(ntcelx,ntcely,ntcelz),PP(ntcelx,ntcely,ntcelz),
-     3            TEf(ntcelx,ntcely,ntcelz),EDf(ntcelx,ntcely,ntcelz)
-      COMMON/TEMPf/Tf(ntcelx,ntcely,ntcelz),GAMH(ntcelx,ntcely,ntcelz),
-     1             RESORT,NSWPT,URFT,FSDTT,PRANDL,PFUN
-      COMMON/LOCAGE/AGEf(ntcelx,ntcely,ntcelz) 
-      COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
-     1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
-     2            DZHP(ntcelz),DZPL(ntcelz),
-     3            SEW(ntcelx),SNS(ntcely),SHL(ntcelz),
-     4            XU(ntcelx),YV(ntcely),ZW(ntcelz)
-      COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
-      COMMON/CFDPOL/POLCONCp(MCTM,ntcelx,ntcely,ntcelz),
-     1              POLCONCf(MCTM,ntcelx,ntcely,ntcelz)
+C      COMMON/FILEP/IFIL
+C      COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),
+C     1            Wf(ntcelx,ntcely,ntcelz),
+C     2            P(ntcelx,ntcely,ntcelz),PP(ntcelx,ntcely,ntcelz),
+C     3            TEf(ntcelx,ntcely,ntcelz),EDf(ntcelx,ntcely,ntcelz)
+C      COMMON/TEMPf/Tf(ntcelx,ntcely,ntcelz),GAMH(ntcelx,ntcely,ntcelz),
+C     1             RESORT,NSWPT,URFT,FSDTT,PRANDL,PFUN
+C      COMMON/LOCAGE/AGEf(ntcelx,ntcely,ntcelz) 
+C      COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
+C     1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
+C     2            DZHP(ntcelz),DZPL(ntcelz),
+C     3            SEW(ntcelx),SNS(ntcely),SHL(ntcelz),
+C     4            XU(ntcelx),YV(ntcely),ZW(ntcelz)
+C      COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
+C      COMMON/CFDPOL/POLCONCp(MCTM,ntcelx,ntcely,ntcelz),
+C     1              POLCONCf(MCTM,ntcelx,ntcely,ntcelz)
 
-      character lflname*72,tfile*72
+C      character lflname*72,tfile*72
 
 
 C Ask for file name.
-      tfile='TECend.DAT'
-      lflname='TECend.DAT'
-      CALL EASKS(lflname,'TECPLOT file name?','  ',
-     &                           72,tfile,'TECPL file',IER,0)
-      IUNIT=IFIL+1
-      call EFOPSEQ(IUNIT,lflname,4,ier)
+C      tfile='TECend.DAT'
+C      lflname='TECend.DAT'
+C      CALL EASKS(lflname,'TECPLOT file name?','  ',
+C     &                           72,tfile,'TECPL file',IER,0)
+C      IUNIT=IFIL+1
+C      call EFOPSEQ(IUNIT,lflname,4,ier)
 
 C Heading
-      write(IUNIT,'(2a)') 'VARIABLES = ', 
-     &      '"XP","YP","ZP","Uf","Vf","Wf","Tf","LMA","CTM1","CTM2"'
-      write(IUNIT,'(3(a,i5))')'ZONE F=POINT, I=',ni,', J=',nj,', K=',nk
+C      write(IUNIT,'(2a)') 'VARIABLES = ', 
+C     &      '"XP","YP","ZP","Uf","Vf","Wf","Tf","LMA","CTM1","CTM2"'
+C      write(IUNIT,'(3(a,i5))')'ZONE F=POINT, I=',ni,', J=',nj,', K=',nk
      
-      do 100 k=1,nk
-        do 100 j=1,nj
-          do 100 i=1,ni
-            write(IUNIT,200)XP(I),YP(J),ZP(K),
-     &        Uf(I,J,K),Vf(I,J,K),Wf(I,J,K),Tf(I,J,K),AGEf(I,J,K),
-     &        POLCONCf(1,I,J,K),POLCONCf(2,I,J,K)
- 100  continue                      
+C      do 100 k=1,nk
+C        do 100 j=1,nj
+C          do 100 i=1,ni
+C            write(IUNIT,200)XP(I),YP(J),ZP(K),
+C     &        Uf(I,J,K),Vf(I,J,K),Wf(I,J,K),Tf(I,J,K),AGEf(I,J,K),
+C     &        POLCONCf(1,I,J,K),POLCONCf(2,I,J,K)
+C 100  continue                      
       
- 200  format(10E14.6)
-      call ERPFREE(IUNIT,ISTAT)
+C 200  format(10E14.6)
+C      call ERPFREE(IUNIT,ISTAT)
       
-      return
-      end
+C      return
+C      end

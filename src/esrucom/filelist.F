@@ -94,9 +94,12 @@ C   `hva` hvac files, `bsm` (looks for BASESIMP files).
       character fs*1,act*1
       character dinstpath*60
       integer lex
+      character*72 listfolders(MFFOLD)  ! for sorted
+      integer lenlistfolders(MFFOLD)    ! for sorted
 
 C Array for browse menu.
       character*70 listfc70(MFFOLD)
+      character*70 listfc70s(MFFOLD)
 
 C relative is the portion of the path which needs to be prepended
 C to the selected file to have it relative to the cfg folder.
@@ -105,6 +108,7 @@ C to the selected file to have it relative to the cfg folder.
       character subpathd*84  ! to use for native windows
       character odir*84      ! the directory executable was started from
       logical unixok
+      integer lnodir, lnpath
 
 C Set folder separator (fs) to \ or / as required.
       ier=0
@@ -120,13 +124,15 @@ C Save back any file name passed into the subroutine.
 
 C Make up the path (usually relative to the cfg folder of the
 C model. odir is the current working directory (which is where the
-C project manager was started from).
-      subpath=' '
+C project manager was started from). On OSX odir is the full path
+C to the current working directory.
+      subpath=' '; odir=' '
       call usrdir(odir)
+      lnodir=lnblnk(odir); lnpath=lnblnk(path)
 
 C Debug.
-C      write(6,*) 'odir is ',odir(1:lnblnk(odir))
-C      write(6,*) 'path is ',path(1:lnblnk(path))
+C      write(6,*) 'odir is ',odir(1:lnblnk(odir)),' ',lnodir
+C      write(6,*) 'path is ',path(1:lnblnk(path)),' ',lnpath
 C      write(6,*) 'imgpth is ',imgpth(1:lnblnk(imgpth))
 
       if(where(1:3).eq.'cfg')then
@@ -134,6 +140,9 @@ C      write(6,*) 'imgpth is ',imgpth(1:lnblnk(imgpth))
      &    path(1:lnblnk(path))
         write(relative,'(a)',iostat=ios,err=2) path(1:lnblnk(path))
       elseif(where(1:3).eq.'dbs')then
+
+C If the initial parts of odir and path are the same then only need
+C to use one of them.
         write(subpath,'(5a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
      &    path(1:lnblnk(path)),dbspth(1:lnblnk(dbspth)),fs
         write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
@@ -227,27 +236,13 @@ C needs to be backslashed to properly work in Native Windows.
      &    bsmpth(1:lnblnk(bsmpth))
       endif
 
-#ifdef OSX
-C In OSX if path begins with /usr/esru then no need to prepend odir
-C (just use the relative path defined above).
-      if(path(1:2).eq.'./')then
-        continue
-      elseif(path(1:9).eq.'/usr/esru')then
-        subpath=' '
-        if(where(1:3).eq.'usr')then
-          write(subpath,'(2a)',iostat=ios,err=1)
-     &      upath(1:lnblnk(upath)),fs
-        else
-          write(subpath,'(a)',iostat=ios,err=2)
-     &      relative(1:lnblnk(relative))
-        endif
-      else
-        continue
-      endif
-#endif
-
 #ifdef MINGW
 C In DOS no need to prepend odir (just use the relative path defined above).
+      write(subpath,'(a)',iostat=ios,err=2)
+     &  relative(1:lnblnk(relative))
+#endif
+#ifdef OSX
+C In OSX no need to prepend odir (just use the relative path defined above).
       write(subpath,'(a)',iostat=ios,err=2)
      &  relative(1:lnblnk(relative))
 #endif
@@ -391,17 +386,33 @@ C            write(6,*) lex,listfolder(ij)
             if(lex.gt.maxw) maxw=lex  ! ensure widest string can be displayed
             if(maxw.lt.15) maxw=15    ! ensure title can be read
   76      continue
+
+C Sort both file name lists in ascending order.
+          do ij=1,nboflistf
+            listfc70s(ij)=listfc70(ij)
+            listfolders(ij)=listfolder(ij)
+          enddo
+          call SORTSTRA(listfc70s,nboflistf)
+          call SORTSTRA(listfolders,nboflistf)
+          do ij=1,nboflistf
+C            write(6,*) ij,' ',listfc70s(ij)
+C            write(6,*) ij,' ',listfolders(ij)
+            lenlistfolders(ij)=lnblnk(listfolders(ij))
+          enddo
+
+C Present menu of sorted files and then use listfolders
+C (which is sorted the same way) for the returned file name.
           CALL EPICKS(IX,ivlist,outs,' ',
-     &      maxw,nboflistf,listfc70,'Available files',IER,3)
+     &      maxw,nboflistf,listfc70s,'Available files',IER,3)
           if(ix.eq.1)then
             write(sfile,'(3a)')relative(1:lnblnk(relative)),fs,
-     &        listfolder(ivlist(ix))(1:lenlistfolder(ivlist(ix)))
+     &        listfolders(ivlist(ix))(1:lenlistfolders(ivlist(ix)))
 
 C Debug.
 C            write(6,*) sfile
 
             write(snpfile,'(a)')
-     &        listfolder(ivlist(ix))(1:lenlistfolder(ivlist(ix)))
+     &        listfolders(ivlist(ix))(1:lenlistfolders(ivlist(ix)))
 
 C Debug.
 C            write(6,*) snpfile
@@ -489,16 +500,31 @@ C Passed parameters
       character*72 printfile
       integer lntitle
 
+      character*72 listfolders(MFFOLD)  ! for sorted
+      integer lenlistfolders(MFFOLD)    ! for sorted
+
       if(nboflistf.eq.0)then
         return
       else
+
+C Sort file name list in ascending order.
+        do ij=1,nboflistf
+          listfolders(ij)=listfolder(ij)
+        enddo
+        call SORTSTRA(listfolders,nboflistf)
+        do ij=1,nboflistf
+C          write(6,*) ij,' ',listfolders(ij)
+          lenlistfolders(ij)=lnblnk(listfolders(ij))
+        enddo
+
         call edisp(iuout,'  ')
         lntitle=lnblnk(title)
         call edisp248(iuout,title,90)
         if(act.eq.'l')then
           do 42 i=1,nboflistf
-            if(lenlistfolder(i).gt.1)then  ! do not bother with blank or 1 char names
-              write(printfile,'(a)') listfolder(i)(1:lenlistfolder(i))
+            if(lenlistfolders(i).gt.1)then  ! do not bother with blank or 1 char names
+              write(printfile,'(a)') 
+     &          listfolders(i)(1:lenlistfolders(i))
               call edisp(iuout,printfile)
             endif
   42      continue
@@ -507,7 +533,7 @@ C Passed parameters
           itrunc=1
           ipos=1
           do while (itrunc.ne.0)
-            call asflist(ipos,nboflistf,listfolder,MFFOLD,'S',t96,
+            call asflist(ipos,nboflistf,listfolders,MFFOLD,'S',t96,
      &        louts,itrunc)
             call edisp(iuout,t96)
             ipos=itrunc+1

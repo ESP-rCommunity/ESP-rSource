@@ -22,6 +22,7 @@ C ################### MFPRB2
 C This file contains the following subroutines
 C     MF010I
 C     MF011I   Air inlet device self-adjustable, (polinomial)
+C     MF012I   Power law flow component with max flow or shut-off setp.
 C     MF015I
 C     MF017I
 C     MF020I
@@ -148,6 +149,75 @@ C Flow coefficients.
       IF(IER.NE.0) GOTO 43
       SUPCMP(ICMP,2)=VAL2
       SUPCMP(ICMP,3)=VAL3
+
+      RETURN
+      END
+
+C ****************** MF012I 
+C Fluid flow component supplementary data input for
+C power law volume flow resistance component (m = rho . a . dP^b [m^3/s])
+C with max flow or shut-off behaviour.
+C
+C A.Geissler, Sept. 2014
+C
+      SUBROUTINE MF012I(ICMP,IER)
+
+#include "net_flow.h"
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
+      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
+     &              SUPCMP(MCMP,MCMS)
+      COMMON/MFLOWIT/fndegc,imix 
+      CHARACTER LTPCMP*60,CMNAM*12,prompt*48,hold*48,outs*124
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MF012I'  ! set for subroutine
+
+C Set number of supplementary data items.
+      IER=0
+      ISDCMP(ICMP)=5
+      ISDCNN(ICMP)=0
+
+C Synopsis of flow component.
+      WRITE(outs,'(A)') LTPCMP(ICMP)
+      call edisp(iuout,outs)
+      helptopic='flow_cmp_012'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
+C Input fluid type.
+      if(imix.eq.1)then
+        SUPCMP(ICMP,1)=1.0
+      elseif(imix.eq.2)then
+        SUPCMP(ICMP,1)=2.0
+      else
+        write(prompt,'(3a)') 'Fluid through ',CMNAM(ICMP),':'
+        CALL EASKAB(prompt,'(help for synopsis)','air','water',
+     &    IW,nbhelp)
+        SUPCMP(ICMP,1)=REAL(IW)
+      endif
+
+C Flow coefficients, max flow and type switch.
+      write(hold,'(4f11.5)')SUPCMP(ICMP,2),SUPCMP(ICMP,3),
+     &  SUPCMP(ICMP,4),SUPCMP(ICMP,5)
+  43  CALL EASKS(hold,
+     & 'Coef `a` and exp. `b` in Q=a.dP^b(m^3/s), `max flow`/`dp`',
+     & ' (m^3/s)/(Pa), switch ? (help for synopsis)',
+     & 48,' 0.001  0.67  0.01  0. ','comp 12',
+     & IER,nbhelp)
+      K=0
+      CALL EGETWR(hold,K,VAL2,0.,99999.,'W','coef a',IER)
+      CALL EGETWR(hold,K,VAL3,0.,99999.,'W','exp b',IER)
+      CALL EGETWR(hold,K,VAL4,0.,99999.,'W','max flow/dp',IER)
+      CALL EGETWR(hold,K,VAL5,0.,1.1,'W','switch',IER)
+      IF(IER.NE.0) GOTO 43
+      SUPCMP(ICMP,2)=VAL2
+      SUPCMP(ICMP,3)=VAL3
+      SUPCMP(ICMP,4)=VAL4
+      SUPCMP(ICMP,5)=VAL5
 
       RETURN
       END

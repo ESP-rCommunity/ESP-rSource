@@ -25,10 +25,10 @@ GEN  Foundation-1  simplified basement elevation  # type, name, descr
 # surface attributes follow: 
 # id surface       geom  loc/   mlc db      environment
 # no name          type  posn   name        other side
-  1, bsm_Mainfloor2  OPAQ  VERT  foundation   BASESIMP       
-  2, bsm_Mainfloor1  OPAQ  VERT  foundation   BASESIMP       
-  3, bsm_Mainfloor4  OPAQ  VERT  foundation   BASESIMP       
-  4, bsm_Mainfloor3  OPAQ  VERT  foundation   BASESIMP       
+  1, bsm_Mainflr2  OPAQ  VERT  foundation   BASESIMP       
+  2, bsm_Mainflr1  OPAQ  VERT  foundation   BASESIMP       
+  3, bsm_Mainflr4  OPAQ  VERT  foundation   BASESIMP       
+  4, bsm_Mainflr3  OPAQ  VERT  foundation   BASESIMP       
   5, slab          OPAQ  FLOR  slab_floor   BASESIMP       
   6, to_main       OPAQ  CEIL  floors_r     Main           
 # base
