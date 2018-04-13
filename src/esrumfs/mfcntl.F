@@ -141,6 +141,7 @@ C prevailing controller type, determines sensed condition (SVCTL).
 #include "plant.h"
 #include "building.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -148,10 +149,6 @@ C prevailing controller type, determines sensed condition (SVCTL).
      &             DFLP,DFLF,HFLP,HFLF
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
       common/fctl4/iasocc(MCF,MCMP),nfsup(MCF)
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
       COMMON/CONTM8/CCONC(MNOD,MCONTM)
@@ -443,14 +440,12 @@ C << what comprises ON
       SUBROUTINE FCL00
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "building.h"
 #include "control.h"
 #include "FMI.h"
       COMMON/mfctl/ctlpos(MCNN)
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       logical close
 
       SETPNT=fmiscd(ICFP,IDTYPP,IPERP,2)
@@ -514,14 +509,12 @@ C *******  FCL01 Proportional controller with hysteresis
       SUBROUTINE FCL01
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "building.h"
 #include "control.h"
 
       COMMON/mfctl/ctlpos(MCNN)
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
 
       if(ifan(ICFP,1).eq.-3)then
 
@@ -555,14 +548,12 @@ C 1.0 is nominal rate or area, 1.5 would be 1.5 x nominal etc.).
       SUBROUTINE FCL02
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "building.h"
 #include "control.h"
 
       COMMON/mfctl/ctlpos(MCNN)
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
 
       SETLOW=fmiscd(ICFP,IDTYPP,IPERP,2)
       SETMID=fmiscd(ICFP,IDTYPP,IPERP,3)
@@ -685,13 +676,11 @@ C logical AND/OR as specified in the sensor definition
       subroutine FCL03
  
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "building.h"
 #include "control.h"
  
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       common/MFCTL/CTLPOS(MCNN)
       common/FCLSOL/ICFP,IDTYPP,IPERP
       common/fcl0305/TSETPO
@@ -849,6 +838,7 @@ C by setting the ALPHA parameter = 0.
       subroutine FCL04
  
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "building.h"
 #include "geometry.h"
 #include "control.h"
@@ -859,10 +849,6 @@ C climate file commons
       integer ncomp,ncon
       common/c1/ncomp,ncon
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/MFCTL/CTLPOS(MCNN)
       common/FCLSOL/ICFP,IDTYPP,IPERP
@@ -1162,15 +1148,13 @@ C 1.0 is nominal rate or area, 1.5 would be 1.5 x nominal etc.).
       SUBROUTINE FCL05
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "building.h"
 #include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/mfctl/ctlpos(MCNN)
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/BTIME/BTIMEP,BTIMEF
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       common/fclp05/times,deltai,icfpp
@@ -1265,15 +1249,13 @@ C PCL14 (multisensor of plant loops)
       SUBROUTINE FCL06
       
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "building.h"
 #include "control.h"
 
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
       COMMON/mfctl/ctlpos(MCNN)
       COMMON/PLNFMN/ACTFRAC(MCF)
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
 
 C Get plant loop number 
       IPLN=nint(FMISCD(ICFP,IDTYPP,IPERP,2))

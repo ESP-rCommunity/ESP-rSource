@@ -41,6 +41,7 @@ C     VOL() -  volume used for calculating change rate in case IDIM=3
 #include "espriou.h"
 C espriou.h provides currentfile.
 #include "net_flow.h"
+#include "net_flow_data.h"
       
       integer lnblnk  ! function definition
 
@@ -51,10 +52,6 @@ C espriou.h provides currentfile.
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/DISPL/IDAYF,IDAYL,IFDAY,IFTIME
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
@@ -74,7 +71,7 @@ C Currently only one node plotted.
       DIMENSION        FLWSIN(MPTS),FLWSUT(MPTS)
       CHARACTER LABEL1*10,LABEL2*10
       CHARACTER ETEXT*72,temp*28,WORD*20,OUTSTR*124
-      character outs*124,nterm*1,NDNAM*12
+      character outs*124,nterm*1
       character PERST1*14,PERST2*44,PERST3*44
       character LAPROB*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
@@ -216,8 +213,8 @@ C Set number and name of node for output.
           helptopic='mfs_volume_same_as'
           call gethelptext(helpinsub,helptopic,nbhelp)
           VOLUME=SUPNOD(NDONUM,2)
-          write(outs,'(A,A12,A,F8.2,A)')' The current volume of ',
-     &                 NDNAM(NDONUM),' is ',VOLUME,'m^3'
+          write(outs,'(3A,F8.2,A)')' The current volume of ',
+     &      NDNAM(NDONUM),' is ',VOLUME,'m^3'
           CALL EASKR(VOLUME,' ',
      &     ' Volume (m^3) in evaluating fluid change rates/hour? ',
      &     0.0,'F',0.,'-',1.,'volume per hour',IER,nbhelp)

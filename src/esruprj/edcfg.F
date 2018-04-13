@@ -49,6 +49,7 @@ C geometry.h provides commons G0/G1/G2/G7/prec2/precz.
 C UA1 in uncertainty.h
 #include "uncertainty.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "tdf2.h"
 #include "control.h"
 #include "gnetwk.h"
@@ -88,6 +89,8 @@ C Function definition
       common/C6/INDCFG
       INTEGER :: IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
+      integer IC1,IE1,ICT,IC2,IE2
+      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
 
       common/user/browse
 
@@ -113,7 +116,6 @@ C Defaults.
       REAL :: FPRE
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       INTEGER :: iairn,icaas
-      COMMON/MFLOW2/NDNAM(0:MNOD)
       common/MFLDOC/DEPRE(MPRD)
       COMMON/NWKGRD/GRMAX(3),GRSPC(3),GRLYRH(MLYRS)
       REAL :: GRMAX,GRSPC,GRLYRH
@@ -148,7 +150,6 @@ C TDF related.
       character*72 LAPROB,DFILE,LPNF,tfile
       character longtfile*144,longtfiledos*144
       character ITEMS*34,ETEXT*82
-      character NDNAM*12
       character*72 DCNN,ltmp
       character tmode*8,doit*248
       character DEPRE*40,dstmp*24,tab*1,outsn*124,outsd*124
@@ -161,13 +162,15 @@ C TDF related.
       dimension ivals(MCOM) ! list of zones
       logical silent        ! if true do not interact with user
       integer ier           ! non-zero if a problem
-      
+      integer loop
+
       INTEGER :: itrc,itru,i,ic,icc,istat
       INTEGER :: iacc,icfoc,iclkok,idindcfg
       INTEGER :: iier,im,ino,ios,ipedit,ipass,is
       INTEGER :: isindcfg,iuf,ium,iuo,iv,iver,iw,iz
       INTEGER :: iser,lenlfil,ln,ltrf,nets,nitems
       REAL :: szlow,szcog,szhigh
+      integer haveflowattributes
 C Function definition      
       INTEGER :: igraphiclib
 
@@ -507,13 +510,14 @@ C Go to zones definintion menu.
         call EDZCOMP(ITRC,ITRU,IER)
       ELSEIF(INO.EQ.7)THEN
 
-C ---------------------------------------------------------------------------------------------
-C -----------------------------------PLANT NETWORK DESCRIPTION---------------------------------
-C Plant network description, select either an idealized HVAC network (5 choices currently 
-C available) or define and explicit plant network. If an idealized model is selected, choose 
-C an option and set required parameters. If an explicit model is chosen, ask for plant network 
-C file and then display it before starting up editing facilities.
-C ---------------------------------------------------------------------------------------------
+C ----------------------------------------------------------------------------------
+C ------------------------PLANT NETWORK DESCRIPTION---------------------------------
+C Plant network description, select either an idealized HVAC network (5 choices  
+C currently available) or define and explicit plant network. If an idealized model  
+C is selected, choose an option and set required parameters. If an explicit model 
+C is chosen, ask for plant network file and then display it before starting up
+C editing facilities.
+C ----------------------------------------------------------------------------------
 
         IF(.NOT.CFGOK)THEN
           CALL USRMSG('Please define your model first!',' ','W')
@@ -709,6 +713,18 @@ C to create a new network.
      &      'empirical air infiltration model','via schedule',
      &      'flow network (defined)','new flow network',
      &      'cancel',' ',' ',IW,nbhelp)
+        elseif(IAIRN.eq.3)then
+          XST=.false.
+          call FINDFIL(LAPROB,XST)
+          if(XST) then
+            call edisp(iuout,' ')
+            call edisp(iuout,'The current flow network is:')
+            call edisp(iuout,LAPROB)
+          endif
+          call EASKATOG('Define air flow via:',' ',
+     &      'empirical air infiltration model','via schedule',
+     &      'flow network (3D defined)','new flow network',
+     &      'cancel',' ',' ',IW,nbhelp)
         endif
 
 C Use AIM2 interface and jump back.     
@@ -731,12 +747,105 @@ C Loop back and see if another zone is requested.
           GOTO 250
         ELSEIF(IW.EQ.3)THEN airflowtype
           call tstamp('>','PRJ: enter fluid network')
-          if(IAIRN.eq.0)then  ! none defined ask user text or graphic
+          if(IAIRN.eq.0)then  ! none defined
+
+C Look and see if any surfaces have USE attributes. If so
+C ask user if they want to scan otherwise ask user text or graphic.
+            haveflowattributes=0
+            do loop=1,NCON
+              iz=IC1(loop); is=IE1(loop)  ! get current zone & surface.
+              if(SSUSE(loop,1)(1:1).eq.'-'.or.
+     &           SSUSE(loop,1)(1:5).eq.'FLOOR'.or.
+     &           SSUSE(loop,1)(1:5).eq.'FURNI'.or.
+     &           SSUSE(loop,1)(1:7).eq.'ITEQUIP'.or.
+     &           SSUSE(loop,1)(1:5).eq.'PARTN'.or.
+     &           SSUSE(loop,1)(1:4).eq.'ROOF'.or.
+     &           SSUSE(loop,1)(1:5).eq.'STRUC'.or.
+     &           SSUSE(loop,1)(1:7).eq.'FIXTURE'.or.
+     &           SSUSE(loop,1)(1:6).eq.'PLANTS')then
+                CYCLE
+              endif
+              if(SSUSE(loop,1)(1:4).eq.'DOOR'.or.
+     &           SSUSE(loop,1)(1:6).eq.'P-DOOR'.or.
+     &           SSUSE(loop,1)(1:6).eq.'H-DOOR'.or.
+     &           SSUSE(loop,1)(1:6).eq.'H-DOOR')then
+                if(SSUSE(loop,2)(1:6).eq.'CLOSED')then
+                  continue   ! no flow
+                elseif(SSUSE(loop,2)(1:8).eq.'UNDERCUT')then
+                  haveflowattributes=haveflowattributes+1
+                elseif(SSUSE(loop,2)(1:4).eq.'OPEN')then
+                  haveflowattributes=haveflowattributes+1
+                elseif(SSUSE(loop,2)(1:5).eq.'BIDIR')then
+                  haveflowattributes=haveflowattributes+1
+                endif
+              elseif(SSUSE(loop,1)(1:5).eq.'FRAME'.or.
+     &               SSUSE(loop,1)(1:7).eq.'F-FRAME')then
+                if(SSUSE(loop,2)(1:6).eq.'CLOSED')then
+                  continue   ! no flow
+                elseif(SSUSE(loop,2)(1:5).eq.'CRACK')then
+                  haveflowattributes=haveflowattributes+1
+                elseif(SSUSE(loop,2)(1:4).eq.'VENT')then
+                  haveflowattributes=haveflowattributes+1
+                endif
+              elseif(SSUSE(loop,1)(1:5).eq.'GRILL')then
+                if(SSUSE(loop,2).eq.'CLOSED')then
+                  continue   ! no flow
+                elseif(SSUSE(loop,2)(1:5).eq.'CRACK')then
+                  haveflowattributes=haveflowattributes+1
+                elseif(SSUSE(loop,2)(1:5).eq.'INLET')then
+                  haveflowattributes=haveflowattributes+1
+                elseif(SSUSE(loop,2)(1:7).eq.'EXTRACT')then
+                  haveflowattributes=haveflowattributes+1
+                elseif(SSUSE(loop,2)(1:4).eq.'OPEN')then
+                  haveflowattributes=haveflowattributes+1
+                endif
+              elseif(SSUSE(loop,1)(1:6).eq.'WINDOW'.or.
+     &               SSUSE(loop,1)(1:8).eq.'D-WINDOW'.or.
+     &               SSUSE(loop,1)(1:8).eq.'S-WINDOW'.or.
+     &               SSUSE(loop,1)(1:8).eq.'C-WINDOW')then
+                if(SSUSE(loop,2).eq.'CLOSED')then
+                  continue   ! no flow
+                elseif(SSUSE(loop,2)(1:5).eq.'CRACK')then
+                  haveflowattributes=haveflowattributes+1 
+                elseif(SSUSE(loop,2)(1:4).eq.'OPEN')then
+                  haveflowattributes=haveflowattributes+1 
+                elseif(SSUSE(loop,2)(1:4).eq.'SASH')then
+                  haveflowattributes=haveflowattributes+2 
+                elseif(SSUSE(loop,2)(1:5).eq.'BIDIR')then
+                  haveflowattributes=haveflowattributes+1 
+                endif
+              elseif(SSUSE(loop,1)(1:4).eq.'FICT')then
+                if(SSUSE(loop,2).eq.'CLOSED')then
+                  continue   ! no flow
+                elseif(SSUSE(loop,2)(1:5).eq.'CRACK')then
+                  haveflowattributes=haveflowattributes+1 
+                elseif(SSUSE(loop,2)(1:4).eq.'OPEN')then
+                  haveflowattributes=haveflowattributes+1 
+                elseif(SSUSE(loop,2)(1:5).eq.'BIDIR')then
+                  haveflowattributes=haveflowattributes+1 
+                endif
+              endif
+            enddo
+
+C If there are surface attributes for flow offer use the option
+C to create the initial network based on the attributes.
             iacc=2
-            CALL EASKABC('Descriptive method to employ:',' ',
-     &        'menus & lists','graphic tool','continue',iacc,nbhelp)
+            if(haveflowattributes.gt.2)then
+              call edisp(iuout,
+     &          'There are surfaces with mass flow USE attributes.')
+              call edisp(iuout,
+     &          'These can be used to help building your network.')
+              iacc=3
+              CALL EASKABCD('Descriptive method to employ:',' ',
+     &          'menus & lists','graphic tool',
+     &          'build network from scan surface USE attributes',
+     &          'continue',iacc,nbhelp)
+            else
+              CALL EASKABC('Descriptive method to employ:',' ',
+     &          'menus & lists','graphic tool','continue',iacc,nbhelp)
+            endif
             if(iacc.eq.1)then
-              IAIRN=1
+              IAIRN=3   ! new networks include position  ??
               LAPROB='UNKN'
               call MFPROB(IER)
               goto 3   ! jump back
@@ -745,9 +854,25 @@ C Loop back and see if another zone is requested.
               LAPROB='UNKN'
               continue
             else
-              goto 3   ! jump back
+              if(haveflowattributes.gt.2)then
+                call scan_flow_use()
+                IAIRN=3
+                write(outs,'(2a)') '!!In next dialog use:',
+     &            NWKNAM(1:lnblnk(NWKNAM))
+                call edisp(iuout,outs)
+                write(LAPROB,'(a)') NWKNAM(1:lnblnk(NWKNAM))  ! update LAPROB
+                call edisp(iuout,
+     &            'Updating configuration flow links...')
+                CALL EMKCFG('-',IER)
+                call edisp(iuout,
+     &            'Updating configuration flow links...done.')
+                call MFPROB(IER)  ! and now browse/edit the network
+                goto 3   ! jump back
+              else
+                goto 3   ! jump back
+              endif
             endif
-          elseif(IAIRN.eq.1)then
+          elseif(IAIRN.eq.1.or.IAIRN.eq.3)then
             call MFPROB(IER)
             goto 3   ! jump back
           elseif(IAIRN.eq.2)then
@@ -769,8 +894,13 @@ C not to clash with it so make a  *m.afn variant.
             else
               lenlfil=lnblnk(LAPROB)
               if(LAPROB(lenlfil-3:lenlfil).eq.'.afn')then
-                write(ltmp,'(2a)',iostat=ios,err=13)
-     &            LAPROB(1:lenlfil-4),'m.afn'
+                if(IAIRN.eq.1)then
+                  write(ltmp,'(2a)',iostat=ios,err=13)
+     &              LAPROB(1:lenlfil-4),'m.afn'
+                elseif(IAIRN.eq.3)then
+                  write(ltmp,'(2a)',iostat=ios,err=13)
+     &              LAPROB(1:lenlfil-6),'m.3dafn'
+                endif
                 LAPROB=ltmp
               endif
             endif
@@ -798,7 +928,7 @@ C not to clash with it so make a *g.afn variant.
           GOTO 3     ! jump back
         END IF airflowtype
 
-C If LAPROB not known or a new one requested setu graphic network flow file based
+C If LAPROB not known or a new one requested setup graphic network flow file based
 C ion cfgroot and place it in the netpth folder (differienciate between
 C unix and non-unix machine types) and generate matching name for the summary
 C file that enet uses.
@@ -1384,6 +1514,7 @@ C output, IER=0 indicates no error.
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
 
 C Commons related to tmc files (to support copy function).
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
@@ -2976,7 +3107,7 @@ C File is older format and assumed to be unsorted.
                     if(browse)then
                       continue
                     else
-                      ip3ver(icomp)=2
+                      ip3ver(icomp)=21
                       CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
                     endif
                   else
@@ -2997,7 +3128,7 @@ C browsing update the operation file.
                       if(browse)then
                         continue
                       else
-                        ip3ver(icomp)=2
+                        ip3ver(icomp)=21
                         CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
                       endif
                     endif
@@ -3682,7 +3813,7 @@ C Defaults.
       character*32 WORDS(12)
 
       character path*72,LCMDFL*144,LTMP*144,GTGEOM*72
-      character MODE*4,fs*1,outs*124,msg*96
+      character MODE*4,fs*1,outs*144,msg*96
       character OUTSTR*124,ctldoc*248,LCTLF*72,t96*96,t144*144,ETEXT*82
       character sfile*144,odir*84,subpath*84
       character fstring*144,ppath*72,filen*72
@@ -3906,10 +4037,39 @@ C a pwdtocfg in it.
         call fdpwdtocfg(fstring,ppath,filen)
 C        write(6,*) 'fs ',fstring(1:lnblnk(fstring))
 C        write(6,*) 'pp ',ppath(1:lnblnk(ppath))
+        lnpth=lnblnk(ppath)
+        if(lnpth.eq.2)then  ! if ./ keep the ./
+          write(cfgpath,'(a)') ppath(1:lnpth)
+        else
+          write(cfgpath,'(a)') ppath(1:lnpth-1)
+        endif
 C        write(6,*) 'fi ',filen(1:lnblnk(filen))
 C        write(6,*) 'lc ',lcfgf(1:lnblnk(lcfgf))
+        write(thecfgis,'(a)') lcfgf(1:lnblnk(lcfgf))
+        write(outs,'(2a)') 'thecfgis is ',thecfgis(1:lnblnk(thecfgis))
+        call edisp(iuout,outs)
+        write(outs,'(2a)') 'cfgpath is ',cfgpath(1:lnblnk(cfgpath))
+        call edisp(iuout,outs)
+
         CALL ERPFREE(IFCFG,ISTAT)
         call FINDFIL(LCFGF,XST)
+
+C If it exists and the path is something other than ./
+C then we can refocus.
+        if(XST.and.lnpth.gt.2)then
+          call pausems(1000)
+
+C Suggest to user to refocus prj within the model cfg folder at
+C this specific cfg file.
+          call refocus(cfgpath,thecfgis,iret)
+          if(iret.eq.0)then
+            continue
+          elseif(iret.eq.-2)then
+            call edisp(iuout,
+     &      'Features using Radiance calls may not work as expected.')
+          endif
+          goto 444
+        endif
       elseif(ifold.eq.1.and.icerr.eq.0)then
 
 C The supplied name is a folder name so check and see if there
@@ -4001,6 +4161,18 @@ C            lnpth=lnblnk(path)
 C            write(cfgpath,'(a)') path(1:lnpth-1)  ! omit trailing /
 C            write(6,*) 'cfgroot is ',cfgroot
 C            write(6,*) 'thecfgis is ',thecfgis
+            lnpth=lnblnk(path)
+            if(lnpth.eq.2)then  ! if ./ keep the ./
+              write(cfgpath,'(a)') path(1:lnpth)
+            else
+              write(cfgpath,'(a)') path(1:lnpth-1)
+            endif
+            write(outs,'(2a)') 'thecfgis is ',
+     &        thecfgis(1:lnblnk(thecfgis))
+            call edisp(iuout,outs)
+            write(outs,'(2a)') 'cfgpath is ',
+     &        cfgpath(1:lnblnk(cfgpath))
+            call edisp(iuout,outs)
             call edisp(iuout,
      &        'Model configuration file is in folder:')
             call edisp(iuout,path)
@@ -4018,9 +4190,7 @@ C this specific cfg file.
               call edisp(iuout,
      &       'Features using Radiance calls may not work as expected.')
             endif
-            
-            CALL ERPFREE(IFCFG,ISTAT)
-            call FINDFIL(LCFGF,XST)
+            goto 444
           endif
         endif
       else
@@ -4080,7 +4250,6 @@ C this specific cfg file.
             call edisp(iuout,
      &      'Features using Radiance calls may not work as expected.')
           endif
-
           goto 444
         else
 
@@ -4140,7 +4309,6 @@ C this specific cfg file.
                 call edisp(iuout,
      &       'Features using Radiance calls may not work as expected.')
               endif
-
               goto 444
             else
 

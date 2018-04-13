@@ -944,7 +944,7 @@ C Application name
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24
-      character outs*248,sps*30,aut*12,actf*72,browse*4
+      character outs*248,sps*30,aut*12,actf*96,browse*4
       logical unixok
 
 C Determine if an X graphics library (GTK or X11) was linked
@@ -1096,7 +1096,7 @@ C Application name
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24
-      character outs*248,actf*72,act*16,aut*12
+      character outs*248,actf*96,act*16,aut*12
       logical unixok
 
 C Determine if an X graphics library (GTK or X11) was linked
@@ -1232,7 +1232,7 @@ C Application name
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24
-      character outs*248,ascif*72,act*16,aut*12
+      character outs*248,ascif*96,act*16,aut*12
       logical unixok
 
 
@@ -1895,7 +1895,7 @@ C Application name
       integer termtype,iappw,iappx,iappy
       character*48 prog
       integer iargc,m
-      character argument*72,mode*8,inf*144,actf*72,appn*24
+      character argument*72,mode*8,inf*144,actf*96,appn*24
       character outs*248,act*16
       logical unixok
 

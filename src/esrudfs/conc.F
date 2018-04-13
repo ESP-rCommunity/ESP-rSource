@@ -59,6 +59,7 @@ C
       SUBROUTINE CALCCONC(ICTMNO) 
 #include "cfd.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 
       COMMON/ICFNOD/ICFD,ICP
       COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),
@@ -109,7 +110,6 @@ C
       COMMON/CFDMFS1/ICFDNOD(MNZ),ICFDCNN(MNVLS,MNZ)
       COMMON/CFDMFS2/MFNEWN(MNVLS,MNZ),NFNDN,NCFDOPNO(MNVLS,MNZ),
      &               NFNPDN(MNZ)
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/ACT/ACTCNN(MCNN)
       logical ACTCNN
 
@@ -137,8 +137,6 @@ C Common blocks for blockages and small supply openings
      &          INSSO(MNVLS,MNZ)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       common/ocflux/COflux,H2Oexp,H2Oswt
 
       DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW

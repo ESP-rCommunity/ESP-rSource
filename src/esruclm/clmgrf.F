@@ -622,7 +622,7 @@ C the top of the graph.
               call wstxpt(iix,iiz,'Winter')
             endif
             iiz=igt-5
-            call esymbol(iix,iiz,8,0)
+            call esymbol(iix,iiz,8,1)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok)then
               iicol=0
@@ -658,7 +658,8 @@ C the top of the graph.
               call wstxpt(iix,iiz,'Summer')
             endif
             iiz=igt-5
-            call esymbol(iix,iiz,32,0)
+C            call esymbol(iix,iiz,32,0)
+            call esymbol(iix,iiz,8,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok)then
               iicol=0
@@ -711,7 +712,7 @@ C Typical week in each season.
             endif
             call u2pixel(TIME,0.0,iix,iiy)
             iiz=igt
-            call esymbol(iix,iiz,8,0)
+            call esymbol(iix,iiz,8,1)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok)then
               iicol=0
@@ -725,7 +726,7 @@ C Typical week in each season.
             endif
             call u2pixel(TIME,0.0,iix,iiy)
             iiz=igt
-            call esymbol(iix,iiz,8,0)
+            call esymbol(iix,iiz,8,1)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok)then
               iicol=0
@@ -739,7 +740,7 @@ C Typical week in each season.
             endif
             call u2pixel(TIME,0.0,iix,iiy)
             iiz=igt
-            call esymbol(iix,iiz,8,0)
+            call esymbol(iix,iiz,8,1)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok)then
               iicol=0
@@ -753,7 +754,7 @@ C Typical week in each season.
             endif
             call u2pixel(TIME,0.0,iix,iiy)
             iiz=igt
-            call esymbol(iix,iiz,8,0)
+            call esymbol(iix,iiz,8,1)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok)then
               iicol=0
@@ -767,7 +768,7 @@ C Typical week in each season.
             endif
             call u2pixel(TIME,0.0,iix,iiy)
             iiz=igt
-            call esymbol(iix,iiz,8,0)
+            call esymbol(iix,iiz,8,1)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok)then
               iicol=0
@@ -1030,7 +1031,7 @@ C two axis on left, otherwise use igl.
             iiw1=25; iiw2=igt-40; iiw3=60; iiw4=igt-40
             call eswline(iiw1,iiw2,iiw3,iiw4)
             iix=46; iiz=igt-40
-            call esymbol(iix,iiz,8,0)
+            call esymbol(iix,iiz,8,1)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok)then
               iicol=0
@@ -1051,7 +1052,7 @@ C two axis on left, otherwise use igl.
             iiw1=25; iiw2=igt-40; iiw3=60; iiw4=igt-40
             call eswline(iiw1,iiw2,iiw3,iiw4)
             iix=46; iiz=igt-40
-            call esymbol(iix,iiz,8,0)
+            call esymbol(iix,iiz,8,1)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok)then
               iicol=0

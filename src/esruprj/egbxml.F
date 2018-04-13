@@ -342,7 +342,7 @@ C hasname (string array) the surface name for each surface (so fillsur does not 
       LOGICAL QUIET,closez
       logical anunknownmlc ! if true then there was an unknown MLC
 
-      character choices(7)*32
+      character choices(14)*32
       character defmlc*32  ! names of default MLC for Office
       dimension defmlc(13)
 
@@ -789,9 +789,16 @@ C via calls to initcaspattern.
         choices(3)='c open plan office (9 m2/occ)'
         choices(4)='d office corridor or stair   '
         choices(5)='e meeting room (3-6 occ) '
-        choices(6)='f dining room (house 2-4 occ)'
-        choices(7)='g lounge (house 2-3 occ)     '
-        NIGU=7
+        choices(6)='f office WC (5-10 uses/hr)   '
+        choices(7)='g ceiling void recessed ltng '
+        choices(8)='h dining room (house 2-4 occ)'
+        choices(9)='i lounge (house 2-3 occ)     '
+        choices(10)='j kitchen (house 1-2 occ)    '
+        choices(11)='k kitchen/dining/liv (~3 occ)'
+        choices(12)='l master bed room (~2 occ)   '
+        choices(13)='m small bed room (~1 occ)    '
+        choices(14)='n residential corridor/stair '
+        NIGU=14
         IIGU=-2
         CALL EMENU('Usage pattern for room',choices,NIGU,IIGU)
       endif
@@ -1132,7 +1139,6 @@ C For each of the possible ESP-r zones, clear values.
         zorigin(iz,3) = 0.0
         zsize(iz,1) = 0.0; zsize(iz,2) = 0.0
         zsize(iz,3) = 0.0
-        znbglz(iz) = 0; znbdoor(iz) = 0; 
         znbmass(iz) = 0
         do 39 isu=1,MS
           iszlname(iz,isu)=' '; iszname(iz,isu)=' '
@@ -1143,8 +1149,6 @@ C For each of the possible ESP-r zones, clear values.
           zboundarytype(iz,isu,2)=0
           zboundarytype(iz,isu,3)=0
           sname(iz,isu)=' '
-          zhasglaze(iz,isu)=0.0
-          zhasdoor(iz,isu)=0.0
           isznver(iz,isu)=0
           do 54 ivu=1,MV
             iszjvn(iz,isu,ivu)=0

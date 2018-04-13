@@ -352,7 +352,7 @@ C      logical gopher  ! not references
 
       character*29 item(15)
       character OUTS*124
-      character inf*144,sps*30,aut*12,fs*1,actf*72
+      character inf*144,sps*30,aut*12,fs*1,actf*96
       character llclmdb*144
       character browsing*4
       character bresfil*72
@@ -1469,7 +1469,7 @@ C  Set parameters for esp-r engine as if running
 C  in silent mode and text mode
 C      subroutine SetDllParms(termtype,iappw,iappx,iappy,inf,sps,aut,
 C     & actf)
-C      character inf*72,sps*30,aut*12,fs*1,actf*72
+C      character inf*144,sps*30,aut*12,fs*1,actf*96
 C      integer termtype,iappw,iappx,iappy
 
 C Place holder (actual code omitted from this version of bps).

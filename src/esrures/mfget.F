@@ -118,6 +118,7 @@ C columns listed above.
 #include "geometry.h"
 #include "schedule.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
       
       integer lnblnk  ! function definition
 
@@ -127,12 +128,6 @@ C columns listed above.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
 
       common/recov01/pifltog,lpifl
@@ -170,8 +165,8 @@ C air flow reporting.
       CHARACTER ITEM(35)*23, MTITLE*22, values*20
       character xfile*144,tg*1,delim*1
       character SUFFIX*6
-      CHARACTER outs*124,pifltog*4,lpifl*72,hold*24
-      CHARACTER NDNAM*12,PROMPT1*72,PROMPT2*72,CONTMNAM*12
+      CHARACTER outs*124,pifltog*4,lpifl*96,hold*24
+      CHARACTER PROMPT1*72,PROMPT2*72,CONTMNAM*12
       character graftitle*64,grlbl*24,t64*64,t24*24
       character ll1*12,ll2*12,ll3*12
       character zn*12
@@ -1995,18 +1990,13 @@ C to arrays IMFGETNO and MFRECVR.
 
       SUBROUTINE GOMFGET(IDAY,IHR,ITS)
 #include "net_flow.h"
+#include "net_flow_data.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
 
       COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,8)
@@ -2300,10 +2290,8 @@ C MASS2VOL: Converts mass flow rate to volume flow rate (kg/s) -> (m^3/s)
 
       SUBROUTINE MASS2VOL(ICON,VFLOW1,VFLOW2)
 #include "net_flow.h"
+#include "net_flow_data.h"
 
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
 
       COMMON/MFREC/FRDAT(MCNN+2+MCONTM,NMRL)
@@ -2340,11 +2328,8 @@ C IUNIT: 1=kg/s; 2=m^3/s; 3=ac/h
 
       SUBROUTINE MFSUMCON(IG,IUNIT,FLIN,FLOUT)
 #include "net_flow.h"
+#include "net_flow_data.h"
 
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
 
       COMMON/MFREC/FRDAT(MCNN+2+MCONTM,NMRL)

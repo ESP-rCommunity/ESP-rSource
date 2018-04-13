@@ -991,6 +991,11 @@ C Parameters
       character cfgpath*144 ! full path to cfg folder for refocus
       character thecfgis*72 ! cfg file only & cfg/cfg_file
       integer ier  ! zero if ok -2 if user delines refocus
+      common/appw/iappw,iappx,iappy
+      integer iappw,iappx,iappy
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
+      integer iappwpc ! application %
 
       common/pophelp/h(60)
       character h*72
@@ -1006,6 +1011,14 @@ C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
       write(6,*) 'using refocus'
 
+C If original application was started with -s X figure out what this was.
+      call terminalmode(childterminal,tmode)
+      if(iappw.eq.630)then
+        iappwpc=100
+      else
+        iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+      endif
+
 C Test if we can start a new prj within the model cfg folder.
       if(unixok)then
         h(1)='To provide full functionality prj should'
@@ -1020,8 +1033,19 @@ C Test if we can start a new prj within the model cfg folder.
           call pausems(1000)
           call usrmsg('Invoking new prj focused on the model',
      &      ' and this instance will close.','P')
-          write(doit,'(5a)') 'cd ',cfgpath(1:lnblnk(cfgpath)),
-     &      '; prj -file ',thecfgis(1:lnblnk(thecfgis)),' &'
+
+C Invoke prj in same mode and size and initial start.
+          if(iappwpc.gt.0.and.iappwpc.le.200)then
+            write(doit,'(5a,3i4,3a)')  'cd ',
+     &        cfgpath(1:lnblnk(cfgpath)),'; prj -mode ',tmode,
+     &        ' -s ',iappwpc,iappx+10,iappy+10,' -file ',
+     &        thecfgis(1:lnblnk(thecfgis)),' &'
+          else
+            write(doit,'(5a)') 'cd ',cfgpath(1:lnblnk(cfgpath)),
+     &        '; prj -file ',thecfgis(1:lnblnk(thecfgis)),' &'
+          endif
+C          write(doit,'(5a)') 'cd ',cfgpath(1:lnblnk(cfgpath)),
+C     &      '; prj -file ',thecfgis(1:lnblnk(thecfgis)),' &'
           call edisp248(iuout,doit,100)
           call runit(doit,'-')
           call pausems(1000)
@@ -1062,8 +1086,19 @@ C Separate two dos cmds with & but do not include & at end to force background
 C mode via runit parameter. The initial prj tends not to close unless the
 C DOS cmd window is Xed.
           doit='  '
-          write(doit,'(4a)') 'cd ',cfgpath(1:lnblnk(cfgpath)),
-     &      ' & prj -file ',thecfgis(1:lnblnk(thecfgis))
+
+C Invoke prj in same mode and size and initial start.
+          if(iappwpc.gt.0.and.iappwpc.le.200)then
+            write(doit,'(5a,3i4,2a)')  'cd ',
+     &        cfgpath(1:lnblnk(cfgpath)),'& prj -mode ',tmode,
+     &        ' -s ',iappwpc,iappx+10,iappy+10,' -file ',
+     &        thecfgis(1:lnblnk(thecfgis))
+          else
+            write(doit,'(4a)') 'cd ',cfgpath(1:lnblnk(cfgpath)),
+     &        ' & prj -file ',thecfgis(1:lnblnk(thecfgis))
+          endif
+C          write(doit,'(4a)') 'cd ',cfgpath(1:lnblnk(cfgpath)),
+C     &      ' & prj -file ',thecfgis(1:lnblnk(thecfgis))
           call edisp248(iuout,doit,100)
           call pausems(1000)
 C << see if we can implement a bg for tmode in esru_lib.F

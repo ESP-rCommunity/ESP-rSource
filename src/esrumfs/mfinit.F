@@ -28,6 +28,7 @@ C and results (IFRES) files.
 
 #include "building.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
@@ -44,7 +45,6 @@ C default file names for databases
 C Defaults.
       character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG
       COMMON/MFCALC/IPSMOD,MSLVTP

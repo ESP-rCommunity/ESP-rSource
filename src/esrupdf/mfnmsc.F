@@ -29,21 +29,13 @@ C    mode = 2  : Writes mass flow network description to a file.
 
 #include "building.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "plant.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FFN/IFLWN,ICFFS(MPCON)
       character LAPROB*72
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLCLM/DRYB,QDIF,QDNR,IRVH,WDIR,WSPD,WRED
       COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG
       COMMON/MFLITR/MAXITF,FERREL,FERMFL,PMAX,STEFFR,MFTRAC,ITER,IOK
@@ -68,7 +60,6 @@ C Currently set true if graphic network file, false otherwise.
       dimension rcvnod(mpcon), sndnod(mpcon), indxcn(mpcom)
       character  rcvstr*12, sndstr*12, str*12
       character  rcvnod*12, sndnod*12, ltpcmf*60
-      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12
 
 C Initialise mass flow netwrk variables.
       nnod=0; ncmp=0; ncnn=0; wred=1.0
@@ -144,7 +135,7 @@ C Also find flow network node type (ie. boundary node)
           ndnam(nnod)=rcvstr
           ndfld(nnod)=1
           ndtyp(nnod)=0
-          hnod (nnod)=1.0
+          hnod(nnod,1)=0.0; hnod(nnod,2)=0.0; hnod(nnod,3)=1.0
           tnod (nnod)=20.0
           supnod(nnod,1)=0.0
           supnod(nnod,2)=0.0
@@ -159,13 +150,13 @@ C Special case for a boundary node.
             ndtyp(nnod)=3
             supnod(nnod,1)=18.0
             supnod(nnod,2)=180.0
-            hnod (nnod)=1.0
+            hnod(nnod,1)=0.0; hnod(nnod,2)=0.0; hnod(nnod,3)=1.0
             tnod (nnod)=0.0
           else
             ndtyp(nnod)=0
             supnod(nnod,1)=0.0
             supnod(nnod,2)=0.0
-            hnod (nnod)=1.0
+            hnod(nnod,1)=0.0; hnod(nnod,2)=0.0; hnod(nnod,3)=1.0
             tnod (nnod)=20.0
           endif
         endif
@@ -246,14 +237,18 @@ C If control index not set then only initial parameters are required.
         call mflist(iuout)
       else
 
-C << Note need a check so network flow file data is not written
-C << to a graphic network flow file.
+C Use IAIRN check so network flow file data is not written
+C to a graphic network flow file.
         if(IAIRN.eq.1)then
           haveglobal=.FALSE.
-        elseif(IAIRN.eq.2)then
+        elseif(IAIRN.eq.2.or.IAIRN.eq.3)then
           haveglobal=.TRUE.
         endif
-        call mfwrit(mfunit)
+        if(IAIRN.eq.1)then
+          CALL MFWRIT(mfunit)
+        elseif(IAIRN.eq.3)then
+          CALL MF3DWRIT(mfunit)
+        endif
       endif
       return
       end

@@ -34,7 +34,8 @@ C     MFSTFL
 C ************* MFLOAD
 C This subroutine uses MFREAD of MFPROB of ESRUmfs to read data from
 C a mass flow network description file (IAIRN=1) or via NETREAD if
-C a graphic definition; all data transfer unformatted
+C a graphic definition or via MF3DREAD if a 3D network file;
+C All data transfer is unformatted
 C Performs some validity checks similar to what is done by the
 C subroutines MFNDES, MFCDES and MFLDES of MFPROB of ESRUmfs
 
@@ -45,21 +46,14 @@ C             connections between nodes I and J
 
 #include "building.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       INTEGER :: iairn,icaas
 
       DIMENSION    ICONS(MCNN,MCNN)
       character outs*124
-      CHARACTER NDNAM*12
       CHARACTER LAPROB*72
 
 C Read the fluid flow description file depending on the value
@@ -75,6 +69,12 @@ C      write(6,*) iairn,laprob
 C Scan the graphics file and then convert to flow common blocks.
         CALL NETREAD(IFPRB,'S',IER)
         CALL NETTOFLW(ier)
+      elseif(iairn.eq.3)then
+
+C Scan 3D mass flow file.
+        CALL MFCDAT
+        CALL EMF3DREAD(IFPRB,'R',IER)
+        CALL ERPFREE(IFPRB,ISTAT)
       endif
       IF(IER.NE.0)then
         call usrmsg(' Problem finding flow network description',
@@ -313,21 +313,12 @@ C     IER    - 0 they do match; 1 they don't match
       SUBROUTINE MFCRIM(IFRES,IER)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
       COMMON/OUTIN/IUOUT,IUIN
-
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
 
       CHARACTER*20 WORD
       CHARACTER*12  CHRIN(3)
       character OUTSTR*124
-      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12
 
       IER=0
 
@@ -548,12 +539,8 @@ C     DIMFAC - factor for calculating the appropriate flow dimension
       SUBROUTINE MFSNFL(IDIM,NODE,NODC,FLIN,FLUT)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
 
@@ -624,12 +611,8 @@ C     DIMFAC - factor for calculating the appropriate flow dimension
       SUBROUTINE MFSTFL(IDIM,FLWIN,FLWUT)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
 

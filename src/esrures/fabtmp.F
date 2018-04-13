@@ -529,7 +529,7 @@ C MOFDRW displays the construction temperature profiles.
 C Passed parameters
       integer icomp  ! zone index
       integer isur   ! surface index
-      integer ispeed ! 1 is 200ms 2 is 100ms 3 is 50ms
+      integer ispeed ! 1 is 200ms 2 is 100ms 3 is 50ms 4 is 25ms
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -640,6 +640,8 @@ C each timestep. Pause 200msec at each timestep.
               call pausems(100)
             elseif(ispeed.eq.3)then
               call pausems(50)
+            elseif(ispeed.eq.4)then
+              call pausems(25)
             endif
             if(nifgrey.lt.4)then
               call MOFHED(ICOMP,ISUR,'s')
@@ -712,6 +714,8 @@ C Re-Draw construction section.
               call pausems(60)
             elseif(ispeed.eq.3)then
               call pausems(40)
+            elseif(ispeed.eq.4)then
+              call pausems(35)
             endif
           endif
    20   CONTINUE

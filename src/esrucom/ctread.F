@@ -44,6 +44,7 @@ C different from ambient concentration)
 
       SUBROUTINE CTREAD(ier)
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "building.h"
       
       integer lnblnk  ! function definition
@@ -51,9 +52,6 @@ C different from ambient concentration)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/ER1/IER1
       COMMON/FILEP/IFIL
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
       COMMON/CONTM/CNTMFIL,CNTMDESC,NTSTEPC
@@ -66,7 +64,7 @@ C different from ambient concentration)
 
       CHARACTER*124 OUTSTR,CNTMDESC
       CHARACTER CNTMFIL*72,LAPROB*72
-      CHARACTER CONTMNAM*12,COMPNAM*12,CMNAM*12,LTPCMP*60,SSNAME*12
+      CHARACTER CONTMNAM*12,COMPNAM*12,SSNAME*12
       CHARACTER*12 CONTM1,CONTM2,PHRASE
       INTEGER SPMTYP,SSLINK1,SSLINK2
       REAL SPMSUP

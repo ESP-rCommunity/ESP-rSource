@@ -3733,7 +3733,7 @@ C resloc(i,j) for each variable type (i.e. 1,1=for group 1, slot 1)
 C izb() specific zones of interest. 
 C isb() 2nd index to specify model entity.
 C bemstime time (fraction of julian day) for assessment.
-      character actf*72,bact*4
+      character actf*96,bact*4
 
 C Call the bems interaction file.
 C      call rintera(actf,iier)

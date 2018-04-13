@@ -176,7 +176,7 @@ C so configuration can be passed to h3kreports
       common/avrage/idaver
 
 C Uncertainty common.
-      COMMON/UATD/UACLIM(6,4),UACTL(7,5),UAMCSA(MNACT)
+      COMMON/UATD/UACLIM(6,4),UACTL(7,6),UAMCSA(MNACT)
 
 C Common holding flag indicating presence of hvac data input file:
 C ihvacflag=1 there is hvac file; ihvacflag=0 no hvac file.
@@ -1055,12 +1055,17 @@ C Set present and future hours.
           ihrf=j+1
           if(ihrf.eq.25)ihrf=1
 
-C Check for uncertainty associated with control data.
+C Check for uncertainty associated with control data. The
+C UACTL array will be zero during the base case run but will
+C be populated in subsequent runs.
           UAFLG=0.
           do 67 IUA=1,7
             UAFLG=UAFLG+UACTL(IUA,1)
  67       continue
-          if (UAFLG.gt.0.01) call UAT01a(idyp,ihrp)
+          if (UAFLG.gt.0.01)then
+	    write(6,*)'bmatsv calling uat01a for',idyp,ihrp
+            call UAT01a(idyp,ihrp)
+          endif
 
 C Increment number of TSC operations counter if present hour
 C is greater than finish hour for present TSC operation.

@@ -23,10 +23,8 @@ C Fills valid fluid flow component type arrays
       SUBROUTINE MFCDAT
 
 #include "net_flow.h"
-      COMMON/MFLOW6/IVALCM(MCMV)
-      COMMON/MFLOW7/LVALCM(MCMV)
+#include "net_flow_data.h"
 
-      CHARACTER*60 LVALCM
 C String sizer:
 C      123456789 123456789 123456789 123456789 123456789 1234567890
       IVALCM(1)=10

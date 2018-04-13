@@ -242,7 +242,7 @@ C If plotting colours for different lines set this.
           iid1=525; iid2=igt-20;
           call eline (iid1,iid2, LNDRAB)
           iid1=510; iid2=igt-20;
-          call esymbol(iid1,iid2,8,0)
+          call esymbol(iid1,iid2,8,1)
           IFSYM(9)=8
         ENDIF
 

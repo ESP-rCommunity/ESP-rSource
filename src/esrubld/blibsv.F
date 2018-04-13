@@ -586,13 +586,16 @@ c hold in memory for subsequent simulation result entry to library.
 
 C Ask for result-set information phrase.
 C Ignore if in autoexec mode - used the default.
-C Generate automatically if an uncertainty analysis.
       write(RSNAME,'(2a)') 'For ',cfgroot(1:lnblnk(cfgroot))
       if (NRSIM.gt.1) then
         if (ISIM.eq.1) then
           RSNAME='Base case'
         else
           if (IMET.eq.1) then
+  
+C Generate automatically if an uncertainty analysis. Note
+C RSNAME will be later updated based on a synopsis of the
+C change that is being applied.
             IACT=ISIM/2
             if ((IACT*2).eq.ISIM) then
               write(RSNAME,'(a,a)')LCNG(IACTD(IACT,1)),' - High change'
@@ -603,11 +606,11 @@ C Generate automatically if an uncertainty analysis.
             write (RSNAME,'(a,10i3)') 'FC:',(IADIR(IX),IX=1,NFA)
           elseif (IMET.eq.3) then
 
-C A better name for each M-C run is generated and will overwrite
-C the following initial string.
-            if(NSIM.lt.10)write (RSNAME,'(a,i2)') 'M-C run:',NSIM
-            if(NSIM.lt.100)write (RSNAME,'(a,i3)') 'M-C run:',NSIM
-            if(NSIM.ge.100)write (RSNAME,'(a,i4)') 'M-C run:',NSIM
+C Default name takes into account the existance of base case as the
+C first simulation set.
+            if(ISIM.lt.10)write (RSNAME,'(a,i2)') 'M-C run:',ISIM
+            if(ISIM.lt.100)write (RSNAME,'(a,i3)') 'M-C run:',ISIM
+            if(ISIM.ge.100)write (RSNAME,'(a,i4)') 'M-C run:',ISIM
           endif
         endif
       endif

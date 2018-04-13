@@ -1256,13 +1256,11 @@ C NH is number of help strings.
 
       SUBROUTINE ASKMFNOD(IOPT,NNPK,INPK,PROMPT1,PROMPT2,NH)
 #include "net_flow.h"
-
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
+#include "net_flow_data.h"
 
       DIMENSION INPK(MNOD)
 
-      CHARACTER VERT(MNOD)*12, NDNAM*12
+      CHARACTER VERT(MNOD)*12
       CHARACTER PROMPT1*72, PROMPT2*72
 
 C Set up array of menu strings.
@@ -1310,18 +1308,13 @@ C (absolute value of INODE).
 
       SUBROUTINE ASKMFCON(INODE,NNPK,ICPK)
 #include "net_flow.h"
+#include "net_flow_data.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
 
       DIMENSION IPK(MCNN),ICPK(MCNN),ICID(MCNN)
 
       CHARACTER VRT(MCNN)*43
-      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12
       character outs*124
       logical unixok
 
@@ -1345,7 +1338,7 @@ C A node has been specified -> only list its connections.
             NITMS=NITMS+1
             ICID(NITMS)=I
             write(VRT(NITMS),'(5a)')
-     &                      NDNAM(IP),'->',NDNAM(IN),' via ',CMNAM(IC)
+     &        NDNAM(IP),'->',NDNAM(IN),' via ',CMNAM(IC)
           endif
         else
 
@@ -1353,7 +1346,7 @@ C List all connections.
           NITMS=NITMS+1
           ICID(NITMS)=I
           write(VRT(NITMS),'(5a)')
-     &                      NDNAM(IP),'->',NDNAM(IN),' via ',CMNAM(IC)
+     &      NDNAM(IP),'->',NDNAM(IN),' via ',CMNAM(IC)
         endif
  10   continue
 

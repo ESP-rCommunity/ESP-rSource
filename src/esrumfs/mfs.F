@@ -56,6 +56,7 @@ C     MMOD   - determines the device type attached to the current job.
 #include "building.h"
 #include "model.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "esprdbfile.h"
 #include "espriou.h"
       
@@ -101,8 +102,6 @@ C Once per hour storage of results, averaged over that hour.
       common/rdcgen/irdact
       common/rdcmfs/irdcm,sFLWTIM,sDRYB,sWDIR,sWSPD,sITER,sIOK,
      &              sTNOD(MNOD)
-
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
 
 C Name of current application
       common/APPNAME/cAppName
@@ -647,6 +646,7 @@ C Indicate start of simulation and show iteration parameters
 
 #include "building.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
@@ -658,8 +658,6 @@ C ICLIM,LCLIM (for climate file)
       COMMON/MFTRA/IMFTU
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
       COMMON/MFLW11/PSTACK(MCNN),HDP(MCNN),HDV(MCNN),HFL(MCNN)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
@@ -1002,3 +1000,4 @@ C Should be the same logic as in esru_x.c.
       ndec = nd
       return
       end
+

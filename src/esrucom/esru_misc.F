@@ -498,8 +498,6 @@ C Per-zone areas and U-values.
           zboundarytype(IX,IXS,1)=0  ! clear surface boundary
           zboundarytype(IX,IXS,2)=0
           zboundarytype(IX,IXS,3)=0
-          zhasglaze(ix,ixs)=0.0
-          zhasdoor(ix,ixs)=0.0
           isznver(ix,ixs)=0
           do iivu=1,MV
             iszjvn(ix,ixs,iivu)=0
@@ -591,7 +589,7 @@ C Clear SHOCC zone information as well.
         rotateit(ix,5)=0.0; rotateit(ix,6)=0.0
         zorigin(ix,1)=0.0; zorigin(ix,2)=0.0; zorigin(ix,3)=0.0
         zsize(ix,1)=0.0; zsize(ix,2)=0.0; zsize(ix,3)=0.0
-        znbglz(ix) = 0; znbdoor(ix) = 0; znbmass(ix) = 0
+        znbmass(ix) = 0
         do imu=1,4
           zdatamass(ix,imu,1)=0.0
           zdatamass(ix,imu,2)=0.0

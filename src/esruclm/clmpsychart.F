@@ -225,7 +225,8 @@ C              write(6,*) ihrplt,colmult,icolindex,iix,iiy,CTMP(K),CHUM(K)
 
               ipixhist(ihrplt,1)= int(iix)
               ipixhist(ihrplt,2)= int(iiy)
-              call esymbol(iix,iiy,32,1)
+C              call esymbol(iix,iiy,32,1)
+              call esymbol(iix,iiy,8,0)
             endif
  41       continue
  31     continue

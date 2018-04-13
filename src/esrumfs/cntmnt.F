@@ -37,12 +37,9 @@ C AFLOWM   = Airmass flow matrix with reaction rate coefficients ((K))
 
 #include "building.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 
       COMMON/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
@@ -311,8 +308,8 @@ C to CCONC(NNOD,NCONTM)
       SUBROUTINE PRERES
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
       COMMON/CONTM2/CNCAJAM(MPRODI),ZMCPAM(MPRODI)
       COMMON/CONTM8/CCONC(MNOD,MCONTM)
@@ -404,6 +401,7 @@ C RCMGL  = Rate of contaminant mass gained/lost from each source/sink
 
       SUBROUTINE CTSASM
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "building.h"
 #include "FMI.h"
 
@@ -420,9 +418,7 @@ C Calendar commons
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
 C Mass flow and Contaminant commons
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
 
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
       COMMON/CONTM2/CNCAJAM(MPRODI),ZMCPAM(MPRODI)

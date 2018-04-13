@@ -94,7 +94,7 @@ C Common block for the window model.
       REAL fDeltaTInttoExt !Temperature difference (Tinterior - Texterior) required to open windows (so they are only opened when natural cooling will occur and is of significance)
       REAL fMinAmbTemp !The minimum ambient temperature that windows are allowed to open too (otherwise it is possible to open windows when it is cold and replace the entire zone air mass in the timestep)
       LOGICAL bWindowsAreOpen(MCOM) !Array to store the window position for each zone
-
+      INTEGER IDTYPP  ! use in case IDTYP is zero
 
 
 C DEBUG for Checking Controller values
@@ -102,6 +102,12 @@ C DEBUG for Checking Controller values
 !    &  IPER, '; fACsetpoint is ', fACSetPoint, '; fACCapacityW is', 
 !    &  fACCapacityW
 
+C If IDTYP is zero reset to one to prevent fault.
+      IF(IDTYP.eq.0)then
+       IDTYPP=1
+      ELSE
+       IDTYPP=IDTYP
+      ENDIF
 
 C LOGIC
 C     Check if WindowOpenControl model is not running 
@@ -111,8 +117,8 @@ C     Check if WindowOpenControl model is not running
 C     Check if the cooling system has capacity AND will turn on
 C       BMISCD(1,IDTYP,IPER,4) is hardcoded to controller 1 cooling capacity
 C       BMISCD(1,IDTYP,IPER,7) is hardcoded to controller 1 cooling temperature setpoint
-      ELSEIF ( BMISCD(1,IDTYP,IPER,4) .ge. 1 .and. !Check cooling capacity is greater than 1 W
-     &  TFA(iCoolingControlZone) .ge. BMISCD(1,IDTYP,IPER,7)) THEN
+      ELSEIF ( BMISCD(1,IDTYPP,IPER,4) .ge. 1 .and. !Check cooling capacity is greater than 1 W
+     &  TFA(iCoolingControlZone) .ge. BMISCD(1,IDTYPP,IPER,7)) THEN
         bWindowsAreOpen(iComp) = .false.
     
 C     Check if Cooling or Heating is on in the zone based on the air point heat flux

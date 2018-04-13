@@ -4117,10 +4117,15 @@ C Generate menu strings for constructions in the class.
             pointback(mclist)=loop
 
 C Test if the construction fits within the current paged menu and then
-C remember the array index that goes with the menu position (m).
+C remember the array index that goes with the menu position (m). In
+C case a new construction or a copy re-check iwid.
             if(mclist.GE.IST.AND.(mclist.LE.(IST+MIFULL)))then
               M=M+1
               iwhicharray(M)=loop  ! menu position M relates to data array loop
+              lsn=lnmlcname(loop)
+              lsm=lnmlcmenu(loop)
+              lso=lnblnk(mlcoptical(loop))
+              if((lsn+lsm+lso+5).gt.iwid) iwid=lsn+lsm+lso+5
               CALL EMKEY(mclist,KEY,IER)
               if(iwid.lt.66)then
                 lsn=lnmlcname(loop)
@@ -4129,9 +4134,9 @@ C remember the array index that goes with the menu position (m).
                 WRITE(MLCITM(M),'(a,1x,5a)')KEY,mlcname(loop)(1:lsn),
      &            '  ',mlcoptical(loop)(1:lso),' ',mlcmenu(loop)(1:lsm)          
               else
-                lsn=MIN0(lnmlcname(loop),24)
-                lsm=MIN0(lnmlcmenu(loop),24)
-                lso=MIN0(lnblnk(mlcoptical(loop)),15)
+                lsn=MIN0(lnmlcname(loop),23)
+                lsm=MIN0(lnmlcmenu(loop),23)
+                lso=MIN0(lnblnk(mlcoptical(loop)),14)
                 WRITE(MLCITM(M),'(a,1x,5a)')KEY,mlcname(loop)(1:lsn),
      &            '  ',mlcoptical(loop)(1:14),' ',mlcmenu(loop)(1:lsm)
               endif         
@@ -4394,7 +4399,8 @@ C In this case the category stays the same so just jump back.
           elseif(IW.EQ.2)then
 
 C Compact the list by moving all the items in common MLC up one.
-C We have to select via epkmlc so as not to be recursive.
+C We have to select via epkmlc so as not to be recursive. In order
+C not to do recursive calls use epkmlc rather than EDMLDB2.
             CALL EPMENSV
             if(mlcver.eq.0)then
               call epkmlc(iwhich,'Delete which construction?',' ',ierr)
@@ -5454,11 +5460,9 @@ C Loop is one less than half the number of layers. Copy each layer
 C into temporary space and then write to opposite side.
                     LOOP=INT(FLOAT(LAYERS(k))/2.)
                     DO 692 ILL=1,LOOP
-                      DT=DTHK(k,ILL)
-                      IPRT=IPR(k,ILL)
+                      DT=DTHK(k,ILL); IPRT=IPR(k,ILL)
                       IPRMT=IPRMAT(k,ILL)
-                      DRT1=DRAIR(k,ILL,1)
-                      DRT2=DRAIR(k,ILL,2)
+                      DRT1=DRAIR(k,ILL,1); DRT2=DRAIR(k,ILL,2)
                       DRT3=DRAIR(k,ILL,3)
                       LAYD=LAYDESC(k,ILL)
 
@@ -5473,11 +5477,9 @@ C Opposite layer is IOP. Copy its data into ILL layer.
                       LAYDESC(k,ILL)=LAYDESC(k,IOP)
 
 C Finally copy temporary data into opposite layer.
-                      DTHK(k,IOP)=DT
-                      IPR(k,IOP)=IPRT
+                      DTHK(k,IOP)=DT; IPR(k,IOP)=IPRT
                       IPRMAT(k,IOP)=IPRMT
-                      DRAIR(k,IOP,1)=DRT1
-                      DRAIR(k,IOP,2)=DRT2
+                      DRAIR(k,IOP,1)=DRT1; DRAIR(k,IOP,2)=DRT2
                       DRAIR(k,IOP,3)=DRT3
                       LAYDESC(k,IOP)=LAYD
   692               CONTINUE
@@ -5587,9 +5589,7 @@ C close to VALZ.
               write(outs,'(a,f6.3,a)') 'Improvement of ',deltau,
      &          ' needed.'
               call edisp(iuout,outs)
-              icontinue=1
-              startm=VALX/1000.0
-              currentm=startm
+              icontinue=1; startm=VALX/1000.0; currentm=startm
               finishm=VALY/1000.0
               do while (icontinue.ne.0)
                 currentm=currentm+0.001  ! 1mm increment
@@ -5691,10 +5691,7 @@ C close to VALZ.
               write(outs,'(a,f6.3,a)') 'Improvement of ',deltau,
      &          ' needed.'
               call edisp(iuout,outs)
-              icontinue=1
-              startm=VALX
-              currentm=startm
-              finishm=VALY
+              icontinue=1; startm=VALX; currentm=startm; finishm=VALY
               do while (icontinue.ne.0)
                 currentm=currentm+0.002  ! resistance increment
                 if(currentm.gt.finishm)then
@@ -5854,10 +5851,8 @@ C << to cancel part way through the process.
      &          IER,nbhelp)
               CALL EPMENRC
               if(IX.eq.1.and.imlay(1).gt.2)then
-                IWHICH=imlay(1)-2
-                ILN=IWHICH
-                LAYERS(IFOC)=LAYERS(IFOC)+1
-                IVV=LAYERS(IFOC)+1
+                IWHICH=imlay(1)-2; ILN=IWHICH
+                LAYERS(IFOC)=LAYERS(IFOC)+1; IVV=LAYERS(IFOC)+1
   792           CONTINUE
                 IVV=IVV-1
                 IF(mlctype(ifoc)(1:4).EQ.'CFC2')THEN
@@ -6091,13 +6086,15 @@ C If they do then warn the user.
           write(outs,'(a)') ' Checking surface attributes...'
           CALL USRMSG(' ',outs,'-')
           do icc=1,ncon
-            lnssmlc=lnblnk(SSMLCN(icc))
+            lnssmlc=lnblnk(SSMLCN(icc)); lnsn=lnblnk(SSNAME(icc))
+            lnso=lnblnk(SSOTHER(icc,1))
             if(SSMLCN(icc)(1:lnssmlc).eq.T32(1:lnt32))then
               WRITE(outs,'(a,I3,1X,F7.2,F5.0,F5.0,1X,A,1X,A,
      &          1X,A,1X,A,1X,A)')'found: ',icc,
-     &          SSNA(icc),SSPAZI(icc),SSPELV(icc),SSNAME(icc),
+     &          SSNA(icc),SSPAZI(icc),SSPELV(icc),
+     &          SSNAME(icc)(1:lnsn),
      &          SSOTF(icc),SSVFC(icc),SSMLCN(icc)(1:lnssmlc),
-     &          SSOTHER(icc,1)
+     &          SSOTHER(icc,1)(1:lnso)
               call edisp(iuout,outs)
               modgeo=.true.
             endif
@@ -6408,8 +6405,7 @@ C Extract strings from focus construction prior to updating its SYM tag.
               mlcsymetric(ifoc)=mlcname(iwhich)  ! update array
               matsymindex(ifoc)=iwhich   ! remember its array position
               matsymindex(iwhich)=ifoc   ! update other to point to this one
-              moddb = .true.
-              showother = .true.
+              moddb = .true.; showother = .true.
             else
               write(outs,'(5a)') 'Constructions ',
      &          mlcname(IFOC)(1:lnmlcname(IFOC)),
@@ -6428,8 +6424,7 @@ C construction and reset showother.
               mlcsymetric(ifoc)='NONSYMMETRIC'
             endif
 
-            moddb = .true.
-            showother = .false.
+            moddb = .true.; showother = .false.
           endif
         endif
       ELSEIF(ILED.GT.8.AND.ILED.LE.NLED-6)THEN
@@ -6592,16 +6587,14 @@ C Now update LAYDESC & PNAM.
 
 C This is a confused material (perhaps a duplicate). Assign zero
 C for air gap resistances and 0.1m estimated thickness.
-            DRAIR(IFOC,ILED-11,1)=0.0
-            DRAIR(IFOC,ILED-11,2)=0.0
+            DRAIR(IFOC,ILED-11,1)=0.0; DRAIR(IFOC,ILED-11,2)=0.0
             DRAIR(IFOC,ILED-11,3)=0.0
             guessthick=0.1
           ELSE
 
 C Non zero legacy index so assign thickness. And check if the
 C material attribute is a [g] and might have gap R values.
-            DRAIR(IFOC,ILED-11,1)=0.0
-            DRAIR(IFOC,ILED-11,2)=0.0
+            DRAIR(IFOC,ILED-11,1)=0.0; DRAIR(IFOC,ILED-11,2)=0.0
             DRAIR(IFOC,ILED-11,3)=0.0
             if(matarrayindex.eq.0)then
               guessthick=0.1

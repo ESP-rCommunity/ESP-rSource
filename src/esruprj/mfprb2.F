@@ -49,15 +49,25 @@ C     MF500I
 C ****************** MF010I 
 C Fluid flow component supplementary data input for
 C power law volume flow resistance component (m = rho . a . dP^b [m^3/s])
+C Supports position - needs testing.
       SUBROUTINE MF010I(ICMP,IER)
-
+#include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
       COMMON/MFLOWIT/fndegc,imix 
-      CHARACTER LTPCMP*60,CMNAM*12,prompt*48,hold*32,outs*124
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
+      CHARACTER LAPROB*72
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
+
+      CHARACTER prompt*48,hold*32,outs*124,name*12
+      real VALHX,VALHY,VALHZ
+      real cx,cy,cz
+      integer loop
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -76,6 +86,20 @@ C Synopsis of flow component.
       call edisp(iuout,outs)
       helptopic='flow_cmp_010'
       call gethelptext(helpinsub,helptopic,nbhelp)
+
+C If in graphic mode and IAIRN=3 then highlight the component.
+      if(IAIRN.eq.3)then
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('g')  ! draw in grey first
+          call pausems(100)
+          VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
+          VALHZ=HCMP(ICMP,1,3)
+          name=CMNAM(ICMP)
+          call symbol_flow_cmp(name,'bx','r',valhx,valhy,valhz) ! highlight
+          call pausems(100)
+        endif
+      endif
 
 C Input fluid type.
       if(imix.eq.1)then
@@ -100,21 +124,70 @@ C Flow coefficients.
       SUPCMP(ICMP,2)=VAL2
       SUPCMP(ICMP,3)=VAL3
 
+C Position in space if IAIRN=3.
+      if(IAIRN.eq.3)then
+        call mfcompposition(ICMP,izn,iso,cx,cy,cz,carea,cperim,
+     &    cwidth,cheight,IERM)
+        if(ierm.lt.3)then
+          HCMP(ICMP,1,1)=cx  ! update position
+          HCMP(ICMP,1,2)=cy
+          HCMP(ICMP,1,3)=cz
+          if(ierm.eq.0.and.izn.gt.0.and.iso.gt.0)then
+            loop=izstocn(izn,iso) ! update associated zone & surface
+            CMPASSOC(ICMP,1)=ZNAME(IZN); CMPASSOC(ICMP,2)=SSNAME(loop)
+          endif
+
+C Look for any connections which use this component and update
+C their Delta Z.
+          lncn=lnblnk(CMNAM(ICMP))
+          do loop=1,NCNN
+            lncn2=lnblnk(CMNAM(ITPCON(loop)))
+            if(CMNAM(ITPCON(loop))(1:lncn2).eq.CMNAM(ICMP)(1:lncn))then
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODPS(loop),3)  ! diff comp & node
+              HGTPS(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating +Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODNE(loop),3)  ! diff comp & node
+              HGTNE(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating -Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+            endif
+          enddo
+        endif
+
+C Refresh the network overly.
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('r')
+        endif
+      endif
       RETURN
       END
 
 C ****************** MF011I 
 C Fluid flow component supplementary data input for
-C Self regulating vent for 15 or 30 m3/h at 20 Pa)
+C Self regulating vent for 15 or 30 m3/h at 20 Pa).
+C Supports position - needs testing.
       SUBROUTINE MF011I(ICMP,IER)
-
+#include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLOWIT/fndegc,imix 
-      CHARACTER LTPCMP*60,CMNAM*12,prompt*48,hold*32,outs*124
+C      COMMON/MFLOWIT/fndegc,imix 
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
+      CHARACTER LAPROB*72
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
+
+      CHARACTER hold*32,outs*124,name*12
+      real VALHX,VALHY,VALHZ
+      real cx,cy,cz
+      integer loop
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -135,6 +208,20 @@ C Show short description of flow component.
       call gethelptext(helpinsub,helptopic,nbhelp)
       CALL PHELPD('comp 11',nbhelp,'-',0,0,IER)
 
+C If in graphic mode and IAIRN=3 then highlight the component.
+      if(IAIRN.eq.3)then
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('g')  ! draw in grey first
+          call pausems(100)
+          VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
+          VALHZ=HCMP(ICMP,1,3)
+          name=CMNAM(ICMP)
+          call symbol_flow_cmp(name,'bx','r',valhx,valhy,valhz) ! highlight crack 
+          call pausems(100)
+        endif
+      endif
+
 C Input fluid type.
       SUPCMP(ICMP,1)=1.0
 
@@ -150,6 +237,45 @@ C Flow coefficients.
       SUPCMP(ICMP,2)=VAL2
       SUPCMP(ICMP,3)=VAL3
 
+C Position in space if IAIRN=3.
+      if(IAIRN.eq.3)then
+        call mfcompposition(ICMP,izn,iso,cx,cy,cz,carea,cperim,
+     &    cwidth,cheight,IERM)
+        if(ierm.lt.3)then
+          HCMP(ICMP,1,1)=cx  ! update position
+          HCMP(ICMP,1,2)=cy
+          HCMP(ICMP,1,3)=cz
+          if(ierm.eq.0.and.izn.gt.0.and.iso.gt.0)then
+            loop=izstocn(izn,iso) ! update associated zone & surface
+            CMPASSOC(ICMP,1)=ZNAME(IZN); CMPASSOC(ICMP,2)=SSNAME(loop)
+          endif
+
+C Look for any connections which use this component and update
+C their Delta Z.
+          lncn=lnblnk(CMNAM(ICMP))
+          do loop=1,NCNN
+            lncn2=lnblnk(CMNAM(ITPCON(loop)))
+            if(CMNAM(ITPCON(loop))(1:lncn2).eq.CMNAM(ICMP)(1:lncn))then
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODPS(loop),3)  ! diff comp & node
+              HGTPS(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating +Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODNE(loop),3)  ! diff comp & node
+              HGTNE(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating -Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+            endif
+          enddo
+        endif
+
+C Refresh the network overly.
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('r')
+        endif
+      endif
       RETURN
       END
 
@@ -161,14 +287,23 @@ C
 C A.Geissler, Sept. 2014
 C
       SUBROUTINE MF012I(ICMP,IER)
-
+#include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
       COMMON/MFLOWIT/fndegc,imix 
-      CHARACTER LTPCMP*60,CMNAM*12,prompt*48,hold*48,outs*124
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
+      CHARACTER LAPROB*72
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
+
+      CHARACTER prompt*48,hold*48,outs*124,name*12
+      real VALHX,VALHY,VALHZ
+      real cx,cy,cz
+      integer loop
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -187,6 +322,20 @@ C Synopsis of flow component.
       call edisp(iuout,outs)
       helptopic='flow_cmp_012'
       call gethelptext(helpinsub,helptopic,nbhelp)
+
+C If in graphic mode and IAIRN=3 then highlight the component.
+      if(IAIRN.eq.3)then
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('g')  ! draw in grey first
+          call pausems(100)
+          VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
+          VALHZ=HCMP(ICMP,1,3)
+          name=CMNAM(ICMP)
+          call symbol_flow_cmp(name,'bx','r',valhx,valhy,valhz) ! highlight crack 
+          call pausems(100)
+        endif
+      endif
 
 C Input fluid type.
       if(imix.eq.1)then
@@ -219,22 +368,73 @@ C Flow coefficients, max flow and type switch.
       SUPCMP(ICMP,4)=VAL4
       SUPCMP(ICMP,5)=VAL5
 
+C Position in space if IAIRN=3.
+      if(IAIRN.eq.3)then
+        call mfcompposition(ICMP,izn,iso,cx,cy,cz,carea,cperim,
+     &    cwidth,cheight,IERM)
+        if(ierm.lt.3)then
+          HCMP(ICMP,1,1)=cx  ! update position
+          HCMP(ICMP,1,2)=cy
+          HCMP(ICMP,1,3)=cz
+          if(ierm.eq.0.and.izn.gt.0.and.iso.gt.0)then
+            loop=izstocn(izn,iso) ! update associated zone & surface
+            CMPASSOC(ICMP,1)=ZNAME(IZN); CMPASSOC(ICMP,2)=SSNAME(loop)
+          endif
+
+C Look for any connections which use this component and update
+C their Delta Z.
+          lncn=lnblnk(CMNAM(ICMP))
+          do loop=1,NCNN
+            lncn2=lnblnk(CMNAM(ITPCON(loop)))
+            if(CMNAM(ITPCON(loop))(1:lncn2).eq.CMNAM(ICMP)(1:lncn))then
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODPS(loop),3)  ! diff comp & node
+              HGTPS(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating +Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODNE(loop),3)  ! diff comp & node
+              HGTNE(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating -Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+            endif
+          enddo
+        endif
+
+C Refresh the network overly.
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('r')
+        endif
+      endif
+
+C Does user want to revise data?
+C << TODO >>
       RETURN
       END
 
 C ***************** MF015I 
 C Fluid flow component supplementary data input for
 C power law mass flow resistance component (m = a . dP^b [kg/s])
+C Supports position - needs testing.
       SUBROUTINE MF015I(ICMP,IER)
-
+#include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
       COMMON/MFLOWIT/fndegc,imix 
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
+      CHARACTER LAPROB*72
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
-      CHARACTER LTPCMP*60,CMNAM*12,prompt*48,hold*32,outs*124
+      CHARACTER prompt*48,hold*32,outs*124,name*12
+      real VALHX,VALHY,VALHZ
+      real cx,cy,cz
+      integer loop
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -253,6 +453,20 @@ C Synopsis of flow component.
       call edisp(iuout,outs)
       helptopic='flow_cmp_015'
       call gethelptext(helpinsub,helptopic,nbhelp)
+
+C If in graphic mode and IAIRN=3 then highlight the component.
+      if(IAIRN.eq.3)then
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('g')  ! draw in grey first
+          call pausems(100)
+          VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
+          VALHZ=HCMP(ICMP,1,3)
+          name=CMNAM(ICMP)
+          call symbol_flow_cmp(name,'bx','r',valhx,valhy,valhz) ! highlight
+          call pausems(100)
+        endif
+      endif
 
 C Input fluid type.
       if(imix.eq.1)then
@@ -277,22 +491,73 @@ C Flow coefficients.
       SUPCMP(ICMP,2)=VAL2
       SUPCMP(ICMP,3)=VAL3
 
+C Position in space if IAIRN=3.
+      if(IAIRN.eq.3)then
+        call mfcompposition(ICMP,izn,iso,cx,cy,cz,carea,cperim,
+     &    cwidth,cheight,IERM)
+        if(ierm.lt.3)then
+          HCMP(ICMP,1,1)=cx  ! update position
+          HCMP(ICMP,1,2)=cy
+          HCMP(ICMP,1,3)=cz
+          if(ierm.eq.0.and.izn.gt.0.and.iso.gt.0)then
+            loop=izstocn(izn,iso) ! update associated zone & surface
+            CMPASSOC(ICMP,1)=ZNAME(IZN); CMPASSOC(ICMP,2)=SSNAME(loop)
+          endif
+
+C Look for any connections which use this component and update
+C their Delta Z.
+          lncn=lnblnk(CMNAM(ICMP))
+          do loop=1,NCNN
+            lncn2=lnblnk(CMNAM(ITPCON(loop)))
+            if(CMNAM(ITPCON(loop))(1:lncn2).eq.CMNAM(ICMP)(1:lncn))then
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODPS(loop),3)  ! diff comp & node
+              HGTPS(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating +Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODNE(loop),3)  ! diff comp & node
+              HGTNE(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating -Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+            endif
+          enddo
+        endif
+
+C Refresh the network overly.
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('r')
+        endif
+      endif
+
+C Does user want to revise data?
+C << TODO >>
       RETURN
       END
 
 C ***************** MF017I 
 C Fluid flow component supplementary data input for
 C power law mass flow resistance component (m = a.rho^1/2.dP^b [kg/s])
+C Supports position - needs testing.
       SUBROUTINE MF017I(ICMP,IER)
-
+#include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
       COMMON/MFLOWIT/fndegc,imix 
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
+      CHARACTER LAPROB*72
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
-      CHARACTER LTPCMP*60,CMNAM*12,prompt*48,hold*32,outs*124
+      CHARACTER prompt*48,hold*32,outs*124,name*12
+      real VALHX,VALHY,VALHZ
+      real cx,cy,cz
+      integer loop
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -311,6 +576,20 @@ C Synopsis of flow component.
       call edisp(iuout,outs)
       helptopic='flow_cmp_017'
       call gethelptext(helpinsub,helptopic,nbhelp)
+
+C If in graphic mode and IAIRN=3 then highlight the component.
+      if(IAIRN.eq.3)then
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('g')  ! draw in grey first
+          call pausems(100)
+          VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
+          VALHZ=HCMP(ICMP,1,3)
+          name=CMNAM(ICMP)
+          call symbol_flow_cmp(name,'bx','r',valhx,valhy,valhz) ! highlight
+          call pausems(100)
+        endif
+      endif
 
 C Input fluid type.
       if(imix.eq.1)then
@@ -336,6 +615,49 @@ C Flow coefficients.
       SUPCMP(ICMP,2)=VAL2
       SUPCMP(ICMP,3)=VAL3
 
+C Position in space if IAIRN=3.
+      if(IAIRN.eq.3)then
+        call mfcompposition(ICMP,izn,iso,cx,cy,cz,carea,cperim,
+     &    cwidth,cheight,IERM)
+        if(ierm.lt.3)then
+          HCMP(ICMP,1,1)=cx  ! update position
+          HCMP(ICMP,1,2)=cy
+          HCMP(ICMP,1,3)=cz
+          if(ierm.eq.0.and.izn.gt.0.and.iso.gt.0)then
+            loop=izstocn(izn,iso) ! update associated zone & surface
+            CMPASSOC(ICMP,1)=ZNAME(IZN); CMPASSOC(ICMP,2)=SSNAME(loop)
+          endif
+
+C Look for any connections which use this component and update
+C their Delta Z.
+          lncn=lnblnk(CMNAM(ICMP))
+          do loop=1,NCNN
+            lncn2=lnblnk(CMNAM(ITPCON(loop)))
+            if(CMNAM(ITPCON(loop))(1:lncn2).eq.CMNAM(ICMP)(1:lncn))then
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODPS(loop),3)  ! diff comp & node
+              HGTPS(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating +Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODNE(loop),3)  ! diff comp & node
+              HGTNE(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating -Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+            endif
+          enddo
+        endif
+
+C Refresh the network overly.
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('r')
+        endif
+      endif
+
+C Does user want to revise data?
+C << TODO >>
+
       RETURN
       END
 
@@ -343,15 +665,23 @@ C ***************** MF020I
 C Fluid flow component supplementary data input or check for
 C quadratic law volume flow resistance component (dP = a.m/ro+b.(m/ro)^2)
       SUBROUTINE MF020I(ICMP,IER)
-
+#include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
       COMMON/MFLOWIT/fndegc,imix 
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
+      CHARACTER LAPROB*72
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
-      CHARACTER LTPCMP*60,CMNAM*12,prompt*48,hold*32,outs*124
+      CHARACTER prompt*48,hold*32,outs*124,name*12
+      real VALHX,VALHY,VALHZ
+      real cx,cy,cz
+      integer loop
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -370,6 +700,20 @@ C Synopsis of flow component.
       call edisp(iuout,outs)
       helptopic='flow_cmp_020'
       call gethelptext(helpinsub,helptopic,nbhelp)
+
+C If in graphic mode and IAIRN=3 then highlight the component.
+      if(IAIRN.eq.3)then
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('g')  ! draw in grey first
+          call pausems(100)
+          VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
+          VALHZ=HCMP(ICMP,1,3)
+          name=CMNAM(ICMP)
+          call symbol_flow_cmp(name,'bx','r',valhx,valhy,valhz) ! highlight crack 
+          call pausems(100)
+        endif
+      endif
 
 C Input fluid type.
       if(imix.eq.1)then
@@ -395,6 +739,48 @@ C Flow coefficients.
       SUPCMP(ICMP,2)=VAL2
       SUPCMP(ICMP,3)=VAL3
 
+C Position in space if IAIRN=3.
+      if(IAIRN.eq.3)then
+        call mfcompposition(ICMP,izn,iso,cx,cy,cz,carea,cperim,
+     &    cwidth,cheight,IERM)
+        if(ierm.lt.3)then
+          HCMP(ICMP,1,1)=cx  ! update position
+          HCMP(ICMP,1,2)=cy
+          HCMP(ICMP,1,3)=cz
+          if(ierm.eq.0.and.izn.gt.0.and.iso.gt.0)then
+            loop=izstocn(izn,iso) ! update associated zone & surface
+            CMPASSOC(ICMP,1)=ZNAME(IZN); CMPASSOC(ICMP,2)=SSNAME(loop)
+          endif
+
+C Look for any connections which use this component and update
+C their Delta Z.
+          lncn=lnblnk(CMNAM(ICMP))
+          do loop=1,NCNN
+            lncn2=lnblnk(CMNAM(ITPCON(loop)))
+            if(CMNAM(ITPCON(loop))(1:lncn2).eq.CMNAM(ICMP)(1:lncn))then
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODPS(loop),3)  ! diff comp & node
+              HGTPS(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating +Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODNE(loop),3)  ! diff comp & node
+              HGTNE(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating -Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+            endif
+          enddo
+        endif
+
+C Refresh the network overly.
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('r')
+        endif
+      endif
+
+C Does user want to revise data?
+C << TODO >>
       RETURN
       END
 
@@ -402,15 +788,23 @@ C ***************** MF025I
 C Fluid flow component supplementary data input or check for
 C quadratic law mass flow resistance component (dP = a.m + b.m^2)
       SUBROUTINE MF025I(ICMP,IER)
-
+#include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
       COMMON/MFLOWIT/fndegc,imix 
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
+      CHARACTER LAPROB*72
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
-      CHARACTER LTPCMP*60,CMNAM*12,prompt*48,hold*32,outs*124
+      CHARACTER prompt*48,hold*32,outs*124,name*12
+      real VALHX,VALHY,VALHZ
+      real cx,cy,cz
+      integer loop
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -429,6 +823,20 @@ C Synopsis of flow component.
       call edisp(iuout,outs)
       helptopic='flow_cmp_025'
       call gethelptext(helpinsub,helptopic,nbhelp)
+
+C If in graphic mode and IAIRN=3 then highlight the component.
+      if(IAIRN.eq.3)then
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('g')  ! draw in grey first
+          call pausems(100)
+          VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
+          VALHZ=HCMP(ICMP,1,3)
+          name=CMNAM(ICMP)
+          call symbol_flow_cmp(name,'bx','r',valhx,valhy,valhz) ! highlight 
+          call pausems(100)
+        endif
+      endif
 
 C Input fluid type.
       if(imix.eq.1)then
@@ -454,6 +862,48 @@ C Flow coefficients.
       SUPCMP(ICMP,2)=VAL2
       SUPCMP(ICMP,3)=VAL3
 
+C Position in space if IAIRN=3.
+      if(IAIRN.eq.3)then
+        call mfcompposition(ICMP,izn,iso,cx,cy,cz,carea,cperim,
+     &    cwidth,cheight,IERM)
+        if(ierm.lt.3)then
+          HCMP(ICMP,1,1)=cx  ! update position
+          HCMP(ICMP,1,2)=cy
+          HCMP(ICMP,1,3)=cz
+          if(ierm.eq.0.and.izn.gt.0.and.iso.gt.0)then
+            loop=izstocn(izn,iso) ! update associated zone & surface
+            CMPASSOC(ICMP,1)=ZNAME(IZN); CMPASSOC(ICMP,2)=SSNAME(loop)
+          endif
+
+C Look for any connections which use this component and update
+C their Delta Z.
+          lncn=lnblnk(CMNAM(ICMP))
+          do loop=1,NCNN
+            lncn2=lnblnk(CMNAM(ITPCON(loop)))
+            if(CMNAM(ITPCON(loop))(1:lncn2).eq.CMNAM(ICMP)(1:lncn))then
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODPS(loop),3)  ! diff comp & node
+              HGTPS(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating +Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODNE(loop),3)  ! diff comp & node
+              HGTNE(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating -Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+            endif
+          enddo
+        endif
+
+C Refresh the network overly.
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('r')
+        endif
+      endif
+
+C Does user want to revise data?
+C << TODO >>
       RETURN
       END
 
@@ -461,17 +911,24 @@ C ******************* MF030I
 C Fluid flow component supplementary data input or check for
 C constant volume flow rate component (m = rho . a)
       SUBROUTINE MF030I(ICMP,IER)
-
+#include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
       COMMON/MFLOWIT/fndegc,imix 
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
+      CHARACTER LAPROB*72
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
-      CHARACTER LTPCMP*60,CMNAM*12,H*72,prompt*72,hold*32,outs*124
+      CHARACTER H*72,prompt*72,hold*32,outs*124,name*12
       logical ok,dok
+      real VALHX,VALHY,VALHZ
+      real cx,cy,cz
+      integer loop
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -490,6 +947,20 @@ C Synopsis of flow component.
       call edisp(iuout,outs)
       helptopic='flow_cmp_030'
       call gethelptext(helpinsub,helptopic,nbhelp)
+
+C If in graphic mode and IAIRN=3 then highlight the component.
+      if(IAIRN.eq.3)then
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('g')  ! draw in grey first
+          call pausems(100)
+          VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
+          VALHZ=HCMP(ICMP,1,3)
+          name=CMNAM(ICMP)
+          call symbol_flow_cmp(name,'bx','r',valhx,valhy,valhz) ! highlight crack 
+          call pausems(100)
+        endif
+      endif
 
 C Input fluid type.
   42  if(imix.eq.1)then
@@ -512,16 +983,15 @@ C Offer shortcut definition.
 
 C Flow m^3/s (zero flow allowed).
         VAL=SUPCMP(ICMP,2)
-        write(prompt,'(3a)') 'Flow through ',CMNAM(ICMP),' (m^3/s) ?'
+        write(prompt,'(3a)') 'Flow through ',CMNAM(ICMP),' (m^3/s)?'
    20   CALL EASKR(VAL,prompt,'(help for synopsis)',0.,'W',0.,'-',1.,
      &    'flow in comp',IER,nbhelp)
         IF(IER.NE.0) GOTO 20
         SUPCMP(ICMP,2)=VAL
-        return
       elseif(iw.eq.2)then
 
 C Derive from litres/second/person and nb of people.
-        write(prompt,'(3a,F8.5,a)') ' The current flow of ',CMNAM(ICMP),
+        write(prompt,'(3a,F8.5,a)') 'The current flow of ',CMNAM(ICMP),
      &  ' (m^3/s) is ',SUPCMP(ICMP,2),'.'
         call edisp(iuout,prompt)
         hold = '  6.0    1.0 '
@@ -533,17 +1003,16 @@ C Derive from litres/second/person and nb of people.
         IF(IER.NE.0) GOTO 43
 
         VAL= (val2/1000.0) * val3
-        write(prompt,'(3a,F8.5,a)') ' The flow through ',CMNAM(ICMP),
+        write(prompt,'(3a,F8.5,a)') 'The flow through ',CMNAM(ICMP),
      &  ' (m^3/s) is now ',VAL,'.'
         dok=.true.
-        call askok(prompt,' Is this ok? ',OK,dok,nbhelp)
+        call askok(prompt,'Is this ok?',OK,dok,nbhelp)
         if (.NOT.OK) goto 42
         SUPCMP(ICMP,2)=VAL
-        return
       elseif(iw.eq.3)then
 
 C Convert any existing value to m3/hr
-        write(prompt,'(3a,F8.5,a)') ' The current flow of ',CMNAM(ICMP),
+        write(prompt,'(3a,F8.5,a)') 'The current flow of ',CMNAM(ICMP),
      &  ' (m^3/s) is ',SUPCMP(ICMP,2),'.'
         call edisp(iuout,prompt)
         VAL2=SUPCMP(ICMP,2)*3600.0
@@ -552,17 +1021,16 @@ C Convert any existing value to m3/hr
      &    'flow m3/hr in comp',IER,nbhelp)
         IF(IER.NE.0) GOTO 21
         if(val2.gt.0.0) VAL = (val2/3600.0)
-        write(prompt,'(3a,F8.5,a)') ' The flow through ',CMNAM(ICMP),
+        write(prompt,'(3a,F8.5,a)') 'The flow through ',CMNAM(ICMP),
      &  ' (m^3/s) is now ',VAL,'.'
         dok=.true.
-        call askok(prompt,' Is this ok? ',OK,dok,nbhelp)
+        call askok(prompt,'Is this ok?',OK,dok,nbhelp)
         if (.NOT.OK) goto 42
         SUPCMP(ICMP,2)=VAL
-        return
       elseif(iw.eq.4)then
 
 C Based on ach against the volume of a particular node.
-        write(prompt,'(3a,F8.5,a)') ' The current flow of ',CMNAM(ICMP),
+        write(prompt,'(3a,F8.5,a)') 'The current flow of ',CMNAM(ICMP),
      &  ' (m^3/s) is ',SUPCMP(ICMP,2),'.'
         call edisp(iuout,prompt)
         call ASKRNOD(' volume from which node','-',IV,IER)
@@ -574,29 +1042,80 @@ C Based on ach against the volume of a particular node.
      &    1.,'flow ach in comp',IER,nbhelp)
         IF(IER.NE.0) GOTO 22
         VAL = (SUPNOD(IV,2) * VAL2)/3600.0
-        write(prompt,'(3a,F8.5,a)') ' The flow through ',CMNAM(ICMP),
+        write(prompt,'(3a,F8.5,a)') 'The flow through ',CMNAM(ICMP),
      &  ' (m^3/s) is now ',VAL,'.'
         dok=.true.
-        call askok(prompt,' Is this ok? ',OK,dok,nbhelp)
+        call askok(prompt,'Is this ok?',OK,dok,nbhelp)
         if (.NOT.OK) goto 42
         SUPCMP(ICMP,2)=VAL
-        return
       endif
 
+C Position in space if IAIRN=3.
+      if(IAIRN.eq.3)then
+        call mfcompposition(ICMP,izn,iso,cx,cy,cz,carea,cperim,
+     &    cwidth,cheight,IERM)
+        if(ierm.lt.3)then
+          HCMP(ICMP,1,1)=cx  ! update position
+          HCMP(ICMP,1,2)=cy
+          HCMP(ICMP,1,3)=cz
+          if(ierm.eq.0.and.izn.gt.0.and.iso.gt.0)then
+            loop=izstocn(izn,iso) ! update associated zone & surface
+            CMPASSOC(ICMP,1)=ZNAME(IZN); CMPASSOC(ICMP,2)=SSNAME(loop)
+          endif
+
+C Look for any connections which use this component and update
+C their Delta Z.
+          lncn=lnblnk(CMNAM(ICMP))
+          do loop=1,NCNN
+            lncn2=lnblnk(CMNAM(ITPCON(loop)))
+            if(CMNAM(ITPCON(loop))(1:lncn2).eq.CMNAM(ICMP)(1:lncn))then
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODPS(loop),3)  ! diff comp & node
+              HGTPS(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating +Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODNE(loop),3)  ! diff comp & node
+              HGTNE(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating -Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+            endif
+          enddo
+        endif
+
+C Refresh the network overly.
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('r')
+        endif
+      endif
+
+C Does user want to revise data?
+C << TODO >>
+      RETURN
       END
 
 C **************** MF035I 
 C Fluid flow component supplementary data input or check for
 C constant mass flow rate component (m = a)
       SUBROUTINE MF035I(ICMP,IER)
+#include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
       COMMON/MFLOWIT/fndegc,imix 
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
+      CHARACTER LAPROB*72
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
-      CHARACTER LTPCMP*60,CMNAM*12,prompt*48,outs*124
+      CHARACTER prompt*48,outs*124,name*12
+      real VALHX,VALHY,VALHZ
+      real cx,cy,cz
+      integer loop
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -616,6 +1135,20 @@ C Synopsis of flow component.
       helptopic='flow_cmp_035'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
+C If in graphic mode and IAIRN=3 then highlight the component.
+      if(IAIRN.eq.3)then
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('g')  ! draw in grey first
+          call pausems(100)
+          VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
+          VALHZ=HCMP(ICMP,1,3)
+          name=CMNAM(ICMP)
+          call symbol_flow_cmp(name,'bx','r',valhx,valhy,valhz) ! highlight crack 
+          call pausems(100)
+        endif
+      endif
+
 C Input fluid type.
       if(imix.eq.1)then
         SUPCMP(ICMP,1)=1.0
@@ -630,12 +1163,54 @@ C Input fluid type.
 
 C Flow m^3/s (zero flow allowed).
       VAL=SUPCMP(ICMP,2)
-      write(prompt,'(3a)') 'Flow through ',CMNAM(ICMP),'(kg/s) ?'
+      write(prompt,'(3a)') 'Flow through ',CMNAM(ICMP),'(kg/s)?'
    20 CALL EASKR(VAL,prompt,'(help for synopsis)',0.,'W',0.,'-',1.,
      &  'flow in comp',IER,nbhelp)
       IF(IER.NE.0) GOTO 20
       SUPCMP(ICMP,2)=VAL
 
+C Position in space if IAIRN=3.
+      if(IAIRN.eq.3)then
+        call mfcompposition(ICMP,izn,iso,cx,cy,cz,carea,cperim,
+     &    cwidth,cheight,IERM)
+        if(ierm.lt.3)then
+          HCMP(ICMP,1,1)=cx  ! update position
+          HCMP(ICMP,1,2)=cy
+          HCMP(ICMP,1,3)=cz
+          if(ierm.eq.0.and.izn.gt.0.and.iso.gt.0)then
+            loop=izstocn(izn,iso) ! update associated zone & surface
+            CMPASSOC(ICMP,1)=ZNAME(IZN); CMPASSOC(ICMP,2)=SSNAME(loop)
+          endif
+
+C Look for any connections which use this component and update
+C their Delta Z.
+          lncn=lnblnk(CMNAM(ICMP))
+          do loop=1,NCNN
+            lncn2=lnblnk(CMNAM(ITPCON(loop)))
+            if(CMNAM(ITPCON(loop))(1:lncn2).eq.CMNAM(ICMP)(1:lncn))then
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODPS(loop),3)  ! diff comp & node
+              HGTPS(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating +Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODNE(loop),3)  ! diff comp & node
+              HGTNE(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating -Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+            endif
+          enddo
+        endif
+
+C Refresh the network overly.
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('r')
+        endif
+      endif
+
+C Does user want to revise data?
+C << TODO >>
       RETURN
       END
 
@@ -643,15 +1218,23 @@ C ***************** MF040I
 C Fluid flow component supplementary data input or check for
 C common orifice flow component (m = rho Cd A (2/rho dP)**.5)
       SUBROUTINE MF040I(ICMP,IER)
-
+#include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
       COMMON/MFLOWIT/fndegc,imix 
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
+      CHARACTER LAPROB*72
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
-      CHARACTER LTPCMP*60,CMNAM*12,hold*32,prompt*48,outs*124
+      CHARACTER hold*32,prompt*48,outs*124,name*12
+      real VALHX,VALHY,VALHZ
+      real cx,cy,cz
+      integer loop
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -671,6 +1254,20 @@ C Synopsis of flow component.
       helptopic='flow_cmp_040'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
+C If in graphic mode and IAIRN=3 then highlight the component.
+      if(IAIRN.eq.3)then
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('g')  ! draw in grey first
+          call pausems(100)
+          VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
+          VALHZ=HCMP(ICMP,1,3)
+          name=CMNAM(ICMP)
+          call symbol_flow_cmp(name,'or','r',valhx,valhy,valhz) ! highlight orifice 
+          call pausems(100)
+        endif
+      endif
+
 C Input fluid type.
       if(imix.eq.1)then
         SUPCMP(ICMP,1)=1.0
@@ -685,7 +1282,7 @@ C Input fluid type.
 
 C Opening area and discharge factor.
       write(hold,'(2f12.5)')SUPCMP(ICMP,2),SUPCMP(ICMP,3)
-  43  CALL EASKS(hold,' Opening area (m^2) and discharge factor (-)?',
+  43  CALL EASKS(hold,'Opening area(m^2) and discharge factor(-)?',
      &  '(help for synopsis)',32,' 1. 0.63 ','comp 40',IER,nbhelp)
       K=0
       CALL EGETWR(hold,K,VAL2,0.,99999.,'W','area',IER)
@@ -694,22 +1291,73 @@ C Opening area and discharge factor.
       SUPCMP(ICMP,2)=VAL2
       SUPCMP(ICMP,3)=VAL3
 
+C Position in space if IAIRN=3.
+      if(IAIRN.eq.3)then
+        call mfcompposition(ICMP,izn,iso,cx,cy,cz,carea,cperim,
+     &    cwidth,cheight,IERM)
+        if(ierm.lt.3)then
+          HCMP(ICMP,1,1)=cx  ! update position
+          HCMP(ICMP,1,2)=cy
+          HCMP(ICMP,1,3)=cz
+          if(ierm.eq.0.and.izn.gt.0.and.iso.gt.0)then
+            loop=izstocn(izn,iso) ! update associated zone & surface
+            CMPASSOC(ICMP,1)=ZNAME(IZN); CMPASSOC(ICMP,2)=SSNAME(loop)
+          endif
+
+C Look for any connections which use this component and update
+C their Delta Z.
+          lncn=lnblnk(CMNAM(ICMP))
+          do loop=1,NCNN
+            lncn2=lnblnk(CMNAM(ITPCON(loop)))
+            if(CMNAM(ITPCON(loop))(1:lncn2).eq.CMNAM(ICMP)(1:lncn))then
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODPS(loop),3)  ! diff comp & node
+              HGTPS(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating +Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODNE(loop),3)  ! diff comp & node
+              HGTNE(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating -Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+            endif
+          enddo
+        endif
+
+C Refresh the network overly.
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('r')
+        endif
+      endif
+
+C Does user want to revise data?
+C << TODO >>
       RETURN
       END
 
 C ***************** MF050I 
 C Fluid flow component supplementary data input or check for
 C laminar pipe volume flow rate component (m = rho (dP/(8 mu L)) pi R**4)
+C Supports positioin - needs testing.
       SUBROUTINE MF050I(ICMP,IER)
-
+#include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
       COMMON/MFLOWIT/fndegc,imix 
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
+      CHARACTER LAPROB*72
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
-      CHARACTER LTPCMP*60,CMNAM*12,hold*32,prompt*48,outs*124
+      CHARACTER hold*32,prompt*48,outs*124,name*12
+      real VALHX,VALHY,VALHZ
+      real cx,cy,cz
+      integer loop
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -729,6 +1377,20 @@ C Synopsis of flow component.
       helptopic='flow_cmp_050'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
+C If in graphic mode and IAIRN=3 then highlight the component.
+      if(IAIRN.eq.3)then
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('g')  ! draw in grey first
+          call pausems(100)
+          VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
+          VALHZ=HCMP(ICMP,1,3)
+          name=CMNAM(ICMP)
+          call symbol_flow_cmp(name,'cd','r',valhx,valhy,valhz) ! highlight  
+          call pausems(100)
+        endif
+      endif
+
 C Input fluid type.
       if(imix.eq.1)then
         SUPCMP(ICMP,1)=1.0
@@ -743,7 +1405,7 @@ C Input fluid type.
 
 C Length of flow path (m) and radius of opening (m).
       write(hold,'(2f12.5)')SUPCMP(ICMP,2),SUPCMP(ICMP,3)
-  43  CALL EASKS(hold,' Length of flow path (m) & opening radius (m)?',
+  43  CALL EASKS(hold,'Length of flow path(m) & opening radius(m)?',
      &  '(help for synopsis)',32,' 1. 0.025 ','comp 50',IER,nbhelp)
       K=0
       CALL EGETWR(hold,K,VAL2,0.,99999.,'W','length',IER)
@@ -752,21 +1414,72 @@ C Length of flow path (m) and radius of opening (m).
       SUPCMP(ICMP,2)=VAL2
       SUPCMP(ICMP,3)=VAL3
 
+C Position in space if IAIRN=3.
+      if(IAIRN.eq.3)then
+        call mfcompposition(ICMP,izn,iso,cx,cy,cz,carea,cperim,
+     &    cwidth,cheight,IERM)
+        if(ierm.lt.3)then
+          HCMP(ICMP,1,1)=cx  ! update position
+          HCMP(ICMP,1,2)=cy
+          HCMP(ICMP,1,3)=cz
+          if(ierm.eq.0.and.izn.gt.0.and.iso.gt.0)then
+            loop=izstocn(izn,iso) ! update associated zone & surface
+            CMPASSOC(ICMP,1)=ZNAME(IZN); CMPASSOC(ICMP,2)=SSNAME(loop)
+          endif
+
+C Look for any connections which use this component and update
+C their Delta Z.
+          lncn=lnblnk(CMNAM(ICMP))
+          do loop=1,NCNN
+            lncn2=lnblnk(CMNAM(ITPCON(loop)))
+            if(CMNAM(ITPCON(loop))(1:lncn2).eq.CMNAM(ICMP)(1:lncn))then
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODPS(loop),3)  ! diff comp & node
+              HGTPS(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating +Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODNE(loop),3)  ! diff comp & node
+              HGTNE(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating -Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+            endif
+          enddo
+        endif
+
+C Refresh the network overly.
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('r')
+        endif
+      endif
+
+C Does user want to revise data?
+C << TODO >>
       RETURN
       END
 
 C ***************** MF110I 
 C Fluid flow component supplementary data input or check for
 C Specific air flow opening.
+C Support position.
       SUBROUTINE MF110I(ICMP,IER)
-
+#include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
+      CHARACTER LAPROB*72
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
-      CHARACTER LTPCMP*60,CMNAM*12,prompt*48,outs*124
+      CHARACTER prompt*48,outs*124,name*12
+      real VALHX,VALHY,VALHZ
+      real cx,cy,cz
+      integer loop
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -786,32 +1499,96 @@ C Synopsis of flow component.
       helptopic='flow_cmp_110'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
+C If in graphic mode and IAIRN=3 then highlight the component.
+      if(IAIRN.eq.3)then
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('g')  ! draw in grey first
+          call pausems(100)
+          VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
+          VALHZ=HCMP(ICMP,1,3)
+          name=CMNAM(ICMP)
+          call symbol_flow_cmp(name,'or','r',valhx,valhy,valhz) ! highlight 
+          call pausems(100)
+        endif
+      endif
+
 C Set fluid type.
       SUPCMP(ICMP,1)=1.
 
 C Opening area (m^2).
       VAL=SUPCMP(ICMP,2)
-      write(prompt,'(3a)')' Opening area of ',CMNAM(ICMP),' (m^2) ?'
+      write(prompt,'(3a)')'Opening area of ',CMNAM(ICMP),' (m^2)?'
    20 CALL EASKR(VAL,'(help for synopsis)',prompt,0.,'F',0.,'-',1.,
      &  'opening area',IER,nbhelp)
       IF(IER.NE.0) GOTO 20
       SUPCMP(ICMP,2)=VAL
+
+C Position in space if IAIRN=3.
+      if(IAIRN.eq.3)then
+        call mfcompposition(ICMP,izn,iso,cx,cy,cz,carea,cperim,
+     &    cwidth,cheight,IERM)
+        if(ierm.lt.3)then
+          HCMP(ICMP,1,1)=cx  ! update position
+          HCMP(ICMP,1,2)=cy
+          HCMP(ICMP,1,3)=cz
+          if(ierm.eq.0.and.izn.gt.0.and.iso.gt.0)then
+            loop=izstocn(izn,iso) ! update associated zone & surface
+            CMPASSOC(ICMP,1)=ZNAME(IZN); CMPASSOC(ICMP,2)=SSNAME(loop)
+          endif
+
+C Look for any connections which use this component and update
+C their Delta Z.
+          lncn=lnblnk(CMNAM(ICMP))
+          do loop=1,NCNN
+            lncn2=lnblnk(CMNAM(ITPCON(loop)))
+            if(CMNAM(ITPCON(loop))(1:lncn2).eq.CMNAM(ICMP)(1:lncn))then
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODPS(loop),3)  ! diff comp & node
+              HGTPS(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating +Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODNE(loop),3)  ! diff comp & node
+              HGTNE(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating -Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+            endif
+          enddo
+        elseif(ierm.eq.3)then
+          ier=1
+        endif
+
+C Refresh the network overly.
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('r')
+        endif
+      endif
 
       RETURN
       END
 
 C ******************* MF120I 
 C Fluid flow component supplementary data input or check for
-C specific air flow crack component.
+C specific air flow crack component. Supports position.
       SUBROUTINE MF120I(ICMP,IER)
-
+#include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
+      CHARACTER LAPROB*72
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
-      CHARACTER LTPCMP*60,CMNAM*12,hold*32,outs*124
+      CHARACTER hold*32,outs*124,name*12
+      real VALHX,VALHY,VALHZ
+      logical ok,dok
+      integer loop
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -831,12 +1608,26 @@ C Synopsis of flow component.
       helptopic='flow_cmp_120'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
+C If in graphic mode and IAIRN=3 then highlight the component.
+      if(IAIRN.eq.3)then
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('g')  ! draw in grey first
+          call pausems(100)
+          VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
+          VALHZ=HCMP(ICMP,1,3)
+          name=CMNAM(ICMP)
+          call symbol_flow_cmp(name,'cr','r',valhx,valhy,valhz) ! highlight crack 
+          call pausems(100)
+        endif
+      endif
+
 C Set fluid type.
       SUPCMP(ICMP,1)=1.
 
 C Crack width (mm) and length (m).
       write(hold,'(2f12.5)')SUPCMP(ICMP,2)*1000.0,SUPCMP(ICMP,3)
-  43  CALL EASKS(hold,' Crack width (mm) and length (m) ?',
+  43  CALL EASKS(hold,'Crack width(mm) and length(m)?',
      &  '(help for synopsis)',32,' 5. 1.0 ','comp 120',IER,nbhelp)
       K=0
       CALL EGETWR(hold,K,VAL2,0.01,100.,'W','width',IER)
@@ -845,21 +1636,88 @@ C Crack width (mm) and length (m).
       SUPCMP(ICMP,2)=VAL2/1000.
       SUPCMP(ICMP,3)=VAL3
 
+C Position in space if IAIRN=3.
+      if(IAIRN.eq.3)then
+        call mfcompposition(ICMP,izn,iso,cx,cy,cz,carea,cperim,
+     &    cwidth,cheight,IERM)
+        if(ierm.lt.3)then
+          HCMP(ICMP,1,1)=cx  ! update position
+          HCMP(ICMP,1,2)=cy
+          HCMP(ICMP,1,3)=cz
+          if(ierm.eq.0.and.izn.gt.0.and.iso.gt.0)then
+            loop=izstocn(izn,iso) ! update associated zone & surface
+            CMPASSOC(ICMP,1)=ZNAME(IZN); CMPASSOC(ICMP,2)=SSNAME(loop)
+          endif
+
+C Look for any connections which use this component and update
+C their Delta Z.
+          lncn=lnblnk(CMNAM(ICMP))
+          do loop=1,NCNN
+            lncn2=lnblnk(CMNAM(ITPCON(loop)))
+            if(CMNAM(ITPCON(loop))(1:lncn2).eq.CMNAM(ICMP)(1:lncn))then
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODPS(loop),3)  ! diff comp & node
+              HGTPS(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating +Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODNE(loop),3)  ! diff comp & node
+              HGTNE(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating -Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+            endif
+          enddo
+        endif
+
+C Refresh the network overly.
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('r')
+        endif
+
+C Ask if crack length should be updated.
+        if(ier.eq.0)then
+          dok=.false.
+          CALL ASKOK('Update crack width & length?',' ',OK,dok,nbhelp)
+          if(OK)then
+            write(hold,'(2f12.5)')SUPCMP(ICMP,2)*1000.0,SUPCMP(ICMP,3)
+ 143        CALL EASKS(hold,'Crack width(mm) and length(m)?',
+     &        '(help for synopsis)',32,' 5. 1.0 ','comp 120',IER,nbhelp)
+            K=0
+            CALL EGETWR(hold,K,VAL2,0.01,100.,'W','width',IER)
+            CALL EGETWR(hold,K,VAL3,0.01,999.,'W','length',IER)
+            IF(IER.NE.0) GOTO 143
+            SUPCMP(ICMP,2)=VAL2/1000.
+            SUPCMP(ICMP,3)=VAL3
+          endif
+        else
+          ier=0
+        endif
+      endif
       RETURN
       END
 
 C ********************* MF130I 
 C Fluid flow component supplementary data input or check for
-C specific air flow door.
+C specific air flow door (bi-directional flow).
+C Supports position - needs testing.
       SUBROUTINE MF130I(ICMP,IER)
-
+#include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
+      CHARACTER LAPROB*72
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
-      CHARACTER LTPCMP*60,CMNAM*12,hold*48,outs*124
+      CHARACTER hold*48,outs*124,name*12
+      real VALHX,VALHY,VALHZ
+      real cx,cy,cz
+      integer loop
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -878,6 +1736,20 @@ C Synopsis of flow component.
       call edisp(iuout,outs)
       helptopic='flow_cmp_130'
       call gethelptext(helpinsub,helptopic,nbhelp)
+
+C If in graphic mode and IAIRN=3 then highlight the component.
+      if(IAIRN.eq.3)then
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('g')  ! draw in grey first
+          call pausems(100)
+          VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
+          VALHZ=HCMP(ICMP,1,3)
+          name=CMNAM(ICMP)
+          call symbol_flow_cmp(name,'bi','r',valhx,valhy,valhz) ! highlight 
+          call pausems(100)
+        endif
+      endif
 
 C Set fluid type.
       SUPCMP(ICMP,1)=1.
@@ -900,6 +1772,49 @@ C Door width, height, reference ht (m) & discharge factor.
       SUPCMP(ICMP,4)=VAL4
       SUPCMP(ICMP,5)=VAL5
 
+C Position in space if IAIRN=3.
+      if(IAIRN.eq.3)then
+        call mfcompposition(ICMP,izn,iso,cx,cy,cz,carea,cperim,
+     &    cwidth,cheight,IERM)
+        if(ierm.lt.3)then
+          HCMP(ICMP,1,1)=cx  ! update position
+          HCMP(ICMP,1,2)=cy
+          HCMP(ICMP,1,3)=cz
+          if(ierm.eq.0.and.izn.gt.0.and.iso.gt.0)then
+            loop=izstocn(izn,iso) ! update associated zone & surface
+            CMPASSOC(ICMP,1)=ZNAME(IZN); CMPASSOC(ICMP,2)=SSNAME(loop)
+          endif
+
+C Look for any connections which use this component and update
+C their Delta Z.
+          lncn=lnblnk(CMNAM(ICMP))
+          do loop=1,NCNN
+            lncn2=lnblnk(CMNAM(ITPCON(loop)))
+            if(CMNAM(ITPCON(loop))(1:lncn2).eq.CMNAM(ICMP)(1:lncn))then
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODPS(loop),3)  ! diff comp & node
+              HGTPS(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating +Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODNE(loop),3)  ! diff comp & node
+              HGTNE(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating -Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+            endif
+          enddo
+        endif
+
+C Refresh the network overly.
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('r')
+        endif
+      endif
+
+C Does user want to revise data?
+C << TODO >>
+
       RETURN
       END
 
@@ -912,18 +1827,26 @@ C     SUPCMP(ICMP,3) - cross-sectional area (m^2)
 C     SUPCMP(ICMP,4) - conduit length (m)
 C     SUPCMP(ICMP,5) - absolute wall roughness (m)
 C     SUPCMP(ICMP,6) - sum of local dynamic loss factors (-)
-
+C Supports position - needs testing.
       SUBROUTINE MF210I(ICMP,IER)
-
+#include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
       COMMON/MFLOWIT/fndegc,imix 
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
+      CHARACTER LAPROB*72
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
-      CHARACTER LTPCMP*60,CMNAM*12,hold*48,prompt*48,outs*124
+      CHARACTER hold*48,prompt*48,outs*124,name*12
       logical close
+      real VALHX,VALHY,VALHZ
+      real cx,cy,cz
+      integer loop
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -943,6 +1866,20 @@ C Synopsis of flow component.
       call edisp(iuout,outs)
       helptopic='flow_cmp_210'
       call gethelptext(helpinsub,helptopic,nbhelp)
+
+C If in graphic mode and IAIRN=3 then highlight the component.
+      if(IAIRN.eq.3)then
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('g')  ! draw in grey first
+          call pausems(100)
+          VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
+          VALHZ=HCMP(ICMP,1,3)
+          name=CMNAM(ICMP)
+          call symbol_flow_cmp(name,'cd','r',valhx,valhy,valhz) ! highlight 
+          call pausems(100)
+        endif
+      endif
 
 C Input fluid type.
       if(imix.eq.1)then
@@ -997,6 +1934,48 @@ C Sum of local dynamic loss factors (-).
       IF(IER.NE.0) GOTO 60
       SUPCMP(ICMP,6)=VAL
 
+C Position in space if IAIRN=3.
+      if(IAIRN.eq.3)then
+        call mfcompposition(ICMP,izn,iso,cx,cy,cz,carea,cperim,
+     &    cwidth,cheight,IERM)
+        if(ierm.lt.3)then
+          HCMP(ICMP,1,1)=cx  ! update position
+          HCMP(ICMP,1,2)=cy
+          HCMP(ICMP,1,3)=cz
+          if(ierm.eq.0.and.izn.gt.0.and.iso.gt.0)then
+            loop=izstocn(izn,iso) ! update associated zone & surface
+            CMPASSOC(ICMP,1)=ZNAME(IZN); CMPASSOC(ICMP,2)=SSNAME(loop)
+          endif
+
+C Look for any connections which use this component and update
+C their Delta Z.
+          lncn=lnblnk(CMNAM(ICMP))
+          do loop=1,NCNN
+            lncn2=lnblnk(CMNAM(ITPCON(loop)))
+            if(CMNAM(ITPCON(loop))(1:lncn2).eq.CMNAM(ICMP)(1:lncn))then
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODPS(loop),3)  ! diff comp & node
+              HGTPS(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating +Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODNE(loop),3)  ! diff comp & node
+              HGTNE(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating -Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+            endif
+          enddo
+        endif
+
+C Refresh the network overly.
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('r')
+        endif
+      endif
+
+C Does user want to revise data?
+C << TODO >>
       RETURN
       END
 
@@ -1026,19 +2005,25 @@ C     K =       SUPCMP(ICMP,3) - local dynamic loss factors (-)
 C     B =       SUPCMP(ICMP,4) - coefficient of cowl
 C     n =       SUPCMP(ICMP,5) - coefficient of cowl
 C     WINDEFF = SUPCMP(ICMP,6) - FLAG =1 CONSIDER WIND EFFECT, =0 DONT
-
+C Supports position - needs testing.
       SUBROUTINE MF211I(ICMP,IER)
-
+#include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
       COMMON/MFLOWIT/fndegc,imix 
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
+      CHARACTER LAPROB*72
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
-      CHARACTER LTPCMP*60,CMNAM*12
-      character outs*124,hold*48,prompt*48
-      logical close
+      character outs*124,hold*48,prompt*48,name*12
+      real VALHX,VALHY,VALHZ
+      real cx,cy,cz
+      integer loop
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -1059,6 +2044,20 @@ C Show short description of flow component.
       helptopic='flow_cmp_211'
       call gethelptext(helpinsub,helptopic,nbhelp)
       CALL PHELPD('comp 211',nbhelp,'-',0,0,IER)
+
+C If in graphic mode and IAIRN=3 then highlight the component.
+      if(IAIRN.eq.3)then
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('g')  ! draw in grey first
+          call pausems(100)
+          VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
+          VALHZ=HCMP(ICMP,1,3)
+          name=CMNAM(ICMP)
+          call symbol_flow_cmp(name,'bx','r',valhx,valhy,valhz) ! highlight 
+          call pausems(100)
+        endif
+      endif
 
 C Set fluid type.
       SUPCMP(ICMP,1)=1.0
@@ -1088,6 +2087,48 @@ C Wind effect 1 include  0 don't include
      &  IER,nbhelp)
       IF(IER.NE.0) GOTO 20
       SUPCMP(ICMP,6)=VAL
+
+C Position in space if IAIRN=3.
+      if(IAIRN.eq.3)then
+        call mfcompposition(ICMP,izn,iso,cx,cy,cz,carea,cperim,
+     &    cwidth,cheight,IERM)
+        if(ierm.lt.3)then
+          HCMP(ICMP,1,1)=cx  ! update position
+          HCMP(ICMP,1,2)=cy
+          HCMP(ICMP,1,3)=cz
+          if(ierm.eq.0.and.izn.gt.0.and.iso.gt.0)then
+            loop=izstocn(izn,iso) ! update associated zone & surface
+            CMPASSOC(ICMP,1)=ZNAME(IZN); CMPASSOC(ICMP,2)=SSNAME(loop)
+          endif
+
+C Look for any connections which use this component and update
+C their Delta Z.
+          lncn=lnblnk(CMNAM(ICMP))
+          do loop=1,NCNN
+            lncn2=lnblnk(CMNAM(ITPCON(loop)))
+            if(CMNAM(ITPCON(loop))(1:lncn2).eq.CMNAM(ICMP)(1:lncn))then
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODPS(loop),3)  ! diff comp & node
+              HGTPS(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating +Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+              VAL= HCMP(ITPCON(loop),1,3)-HNOD(NODNE(loop),3)  ! diff comp & node
+              HGTNE(ITPCON(loop))=VAL
+              write(outs,'(a,f6.3,a,i3)') 'updating -Delta Z to ',
+     &          VAL,'for cnn',loop
+              call edisp(iuout,outs)
+            endif
+          enddo
+        endif
+
+C Refresh the network overly.
+        if(MMOD.eq.8)then
+          call win3dclr
+          call MFWFDRAW('r')
+        endif
+      endif
+C Does user want to revise data?
+C << TODO >>
            
       RETURN
       END
@@ -1107,14 +2148,11 @@ C      '  '   '   '     '    '  '  '    '  '
 C     SUPCMP(ICMP,13) - Ccp coefficient a5 (-)
 
       SUBROUTINE MF220I(ICMP,IER)
-
 #include "net_flow.h"
+#include "net_flow_data.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      CHARACTER LTPCMP*60,CMNAM*12
-      character outs*124
+
+      CHARACTER outs*124
       logical OK,dok,close
 
 C For help messages
@@ -1194,11 +2232,8 @@ C     SUPCMP(ICMP,13) - Ccp coefficient a5 (-)
       SUBROUTINE MF230I(ICMP,IER)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      CHARACTER LTPCMP*60,CMNAM*12
       character outs*124
       logical OK,dok,close
 
@@ -1280,11 +2315,8 @@ C     SUPCMP(ICMP,17) - Ccp coefficient a9 (-)
       SUBROUTINE MF240I(ICMP,IER)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      CHARACTER LTPCMP*60,CMNAM*12
       character outs*124
       logical OK,dok,close
 
@@ -1369,11 +2401,8 @@ C     SUPCMP(ICMP,17) - Ccp coefficient a9 (-)
       SUBROUTINE MF250I(ICMP,IER)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      CHARACTER LTPCMP*60,CMNAM*12
       character outs*124
       logical OK,dok,close
 
@@ -1448,14 +2477,12 @@ C                       only valid for q,min <= m/ro <= q,max )
 C << consider what would need to change to implement a cancel
 C << option within this interface and the degree to which the
 C << data instanciation needs to change.
-
+C << Position not yet done >>
       SUBROUTINE MF310I(ICMP,IER)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
       COMMON/MFLOWIT/fndegc,imix 
 
 C Maxp is max number of points on performance curve and ideg is one
@@ -1463,7 +2490,6 @@ C more than degree of curve (maxp>=ideg)
       parameter (maxp=20)
       parameter (ideg=4)
 
-      CHARACTER LTPCMP*60,CMNAM*12
       character outs*124,hold*48,prompt*48
       logical OK,dok,closea,closeb,closec,SINGUL
       doubleprecision xval(maxp),yval(maxp),RIHAS(IDEG)
@@ -1619,12 +2645,10 @@ C general flow corrector (ie. valve or damper)
       SUBROUTINE MF410I(ICMP,IER)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
       COMMON/MFLOWIT/fndegc,imix 
-      CHARACTER LTPCMP*60,CMNAM*12,prompt*48,outs*124
+      CHARACTER prompt*48,outs*124
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -1713,12 +2737,10 @@ C See synopsis for SUPCMP data.
       SUBROUTINE MF420I(ICMP,IER)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
       COMMON/MFLOWIT/fndegc,imix 
-      CHARACTER LTPCMP*60,CMNAM*12,hold*48,prompt*48,outs*124
+      CHARACTER hold*48,prompt*48,outs*124
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -1784,12 +2806,10 @@ C Fluid flow component supplementary data input or check for
 C fixed flow rates controller. See synopsis for SUPCMP data.
       SUBROUTINE MF460I(ICMP,IER)
 #include "net_flow.h"
+#include "net_flow_data.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
       COMMON/MFLOWIT/fndegc,imix 
-      CHARACTER LTPCMP*60,CMNAM*12,hold*32,prompt*48,outs*124
+      CHARACTER hold*32,prompt*48,outs*124
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -1840,12 +2860,10 @@ C Fluid flow component supplementary data input or check for
 C fixed flow rates controller. See synopsis for SUPCMP data.
       SUBROUTINE MF500I(ICMP,IER)
 #include "net_flow.h"
+#include "net_flow_data.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
       COMMON/MFLOWIT/fndegc,imix 
-      CHARACTER LTPCMP*60,CMNAM*12,prompt*48,outs*124
+      CHARACTER prompt*48,outs*124
       PARAMETER (MCCN=3)
 
 C For help messages

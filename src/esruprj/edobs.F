@@ -353,7 +353,6 @@ C Offset is thickness + 5mm, block other dimension is 10mm.
           OWID=0.01
 
 C Material to associate with the reveal.
-C << extend string mat at some point to 32 char >>
           CALL EPMENSV
           if(mlcver.eq.0)then
             CALL EPKMLC(ISEL,

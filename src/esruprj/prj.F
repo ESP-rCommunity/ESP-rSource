@@ -83,6 +83,7 @@ C IEEE callback (Solaris)
       integer iappw,iappx,iappy
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
@@ -1681,6 +1682,7 @@ C to include the path and create a string to drive the modules.
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       LOGICAL MSTROK,MSTRZN
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
@@ -4682,6 +4684,7 @@ C << message to user that such a file does not exist
 #include "esprdbfile.h"
 #include "ipvdata.h"
 #include "cfd.h"
+#include "espriou.h"
       
       integer lnblnk  ! function definition
 
@@ -4705,6 +4708,7 @@ C Path to model and command line file (if any).
 
       common/cctlnm/ctldoc,lctlf
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
 
 C To signal to MFWRIT that globals are available from graphic network.
 C Currently set true if graphic network file, false otherwise.
@@ -5603,8 +5607,9 @@ C Older format writing to separate IPV file (depreciate).
         
       ELSEIF(M.EQ.18)THEN
          
-C variant fluid flow network
-        IF(IAIRN.EQ.1)THEN
+C Variant fluid flow network. Use OS to copy the file. Update
+C LAPROB name and then read the file.
+        IF(IAIRN.GE.1)THEN
           EXT='.afn'
           CALL FNCNGR(LAPROB,APE,EXT,NNAME)
           call isunix(unixok)
@@ -5628,20 +5633,41 @@ C          CALL USRMSG('Copying flow network via:',doit,'-')
 C Read the file header and check for first-line tag. If 4 items
 C then an older file so rewind the file and call emfread.
           CALL STRIPC(IUM,OUTSTR,99,ND,0,'1st line of file',IER)
-          IF(ND.GE.4)THEN
-            REWIND(IUM,ERR=999)
-            CALL EMFREAD(IUM,IIER)
-            haveglobal=.FALSE.  ! a text-based flow network file
-          elseif((ND.eq.1.or.ND.eq.2).and.
-     &          OUTSTR(1:18).EQ.'*Graphical_network')then
+          if(ier.eq.0)then
+            write(currentfile,'(a)') LAPROB(1:lnblnk(LAPROB))
+            if(OUTSTR(1:18).EQ.'*Graphical_network')then
 
-C Found a graphic network file, advise user and exit.
-            call usrmsg(
-     &      'This file is a graphic network file rather than a',
-     &      'flow network file!','W') 
-            haveglobal=.TRUE.  ! a graphic network file
+C Found a graphic network file, scan it (silently) and then convert it
+C into network flow common blocks.
+              IAIRN = 2
+              CALL ERPFREE(IUM,ISTAT)
+              call NETREAD(IUM,'S',IER)
+              CALL NETTOFLW(ier)
+              call usrmsg(
+     &        'This file is a graphic network file rather than a',
+     &        'flow network file!','W') 
+              haveglobal=.TRUE.  ! a graphic network file
+              CALL MFWRIT(IUM)
+            elseif(OUTSTR(1:13).EQ.'*Flow_network')then
+
+C Found 3D flow network file.
+              IAIRN = 3
+              CALL ERPFREE(IUM,ISTAT)
+              CALL MFCDAT
+              CALL EMF3DREAD(IUM,'S',IER)
+              CALL ERPFREE(IUM,ISTAT)
+              CALL EFOPSEQ(IUM,LAPROB,4,IER)
+              call MF3DWRIT(IUM)
+            else
+
+C Found legacy text mass flow file.
+              REWIND(IUM,ERR=999)
+              CALL EMFREAD(IUM,IER)
+              CALL ERPFREE(IUM,ISTAT)
+              IAIRN = 1
+              CALL MFWRIT(IUM)
+            endif
           endif
-          CALL MFWRIT(IUM)
         ENDIF
         msg1='updating model for air flow network changes...'
         docnn=.true.

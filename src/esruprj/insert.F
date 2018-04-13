@@ -2189,7 +2189,7 @@ C Update the geometry file.
       END
 
 C ************* INSREC
-C Add a rectanguular surface within or at bottom of existing surface.
+C Add a rectangular surface within or at bottom of existing surface.
 C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 C act is 'ii' insert interactive, 'sw' insert window silently, or
 C act = 'sd' insert door silently or 'sp' insert window percentage silently.
@@ -2285,7 +2285,7 @@ C Depending on act.
         continue    ! insert interactive
       elseif(act(1:2).eq.'sw')then
 
-C Insert window silently.
+C Insert window silently, code assumes G1 common block is fresh.
         IRT=1
         IF((NSUR+1.GT.MS).OR.(NTV+4.GT.MTV).OR.(NVER(IS)+6.GT.MV).OR.
      &     (NCON+1.GT.MCON))THEN
@@ -2322,7 +2322,8 @@ C Insert percentage silently.
         PERC = XO1
 
 C Determine opening width, height, X offset and z offset.
-        CALL SURLEHI(IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)
+        CALL ZSURLEHI(ICOMP,IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)
+C        CALL SURLEHI(IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)
         XW=(XYMAX*SQRT(PERC))/10
         ZH=(ZMAX*SQRT(PERC))/10
         XO1=((XYMAX-XW)/2)
@@ -2419,7 +2420,8 @@ C edited to a thick line if currently in graphics mode.
       endif
 
 C Report parent surface length and height (bounding box).
-      CALL SURLEHI(IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)
+      CALL ZSURLEHI(ICOMP,IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)
+C      CALL SURLEHI(IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)
       Write(outs,'(a,f6.3,a,f6.3,a)') 'Parent surface width = ',
      &  XYMAX,' m, surface height = ',ZMAX,' m (bounding box).'
       call edisp(itru,outs)
@@ -3294,7 +3296,8 @@ C Feedback.
 
 C ******************
 C mergechildinparent works with current common block variables.
-C Called from INSREC as well as clickonbitmap.
+C Called from INSREC as well as clickonbitmap. Assumes that
+C common G1 is fresh.
       subroutine mergechildinparent(itrc,IPS,ICS,IRT,ier)
 #include "building.h"
 #include "geometry.h"
@@ -3328,10 +3331,10 @@ C Debug.
      &  isur,NVER(isur),(jvn(isur,j),J=1,NVER(isur))
       if(itrc.gt.0)call edisp248(iuout,louts,100)
       CALL SURLEHI(IPS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)
-C      write(6,*) 'par llpos lrpos ulpos urpos',llpos,lrpos,ulpos,urpos
+      write(6,*) 'par llpos lrpos ulpos urpos',llpos,lrpos,ulpos,urpos
       CALL SURLEHI(ICS,XYMAX,ZMAX,lldpos,lrdpos,uldpos,urdpos)
-C      write(6,*) 'win lldpos lrdpos uldpos urdpos',
-C     &  lldpos,lrdpos,uldpos,urdpos
+      write(6,*) 'win lldpos lrdpos uldpos urdpos',
+     &  lldpos,lrdpos,uldpos,urdpos
      
 C For each of the child vertex closest to LL LR UL UR find the
 C distance to parent vertices and report on the shortest.

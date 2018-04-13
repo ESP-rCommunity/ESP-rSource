@@ -43,6 +43,7 @@ C     XRHS   - right hand side vector of matrix equation: PCOF . XNOD = XRHS
 
 #include "building.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -80,13 +81,6 @@ C Hourly ventilation conductances and temperature of incoming air.
 !      INTEGER ICCN
 !      REAL CVIN,CVVN,TIAN
 
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
 

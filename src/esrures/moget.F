@@ -487,7 +487,7 @@ C MRT Sensors via geometry.h.
       character xfile*144,tg*1,delim*1
       character SUFFIX*8
       character ll1*12,ll2*12,ll3*12
-      CHARACTER outs*124,pifltog*4,lpifl*72,hold*24
+      CHARACTER outs*124,pifltog*4,lpifl*96,hold*24
       CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16
       character graftitle*64,grlbl*24,t64*64,t24*24
 

@@ -1076,6 +1076,13 @@ C Update the flow commons, list and over-write legacy flow file.
           haveglobal=.FALSE. ! do not yet include simulation preference
           CALL MFWRIT(IUM)
           CALL ERPFREE(IUM,ISTAT)
+
+C Also write 3D network file.
+          write(LTMP,'(2a)') LAPROB(1:lnf-3),'3dafn'
+          CALL EFOPSEQ(IUM,LTMP,3,IER)
+          haveglobal=.TRUE. ! include simulation preference
+          CALL MF3DWRIT(IUM)
+          CALL ERPFREE(IUM,ISTAT)
         endif
 
       ELSEIF(INO.EQ.24)THEN
@@ -1105,6 +1112,24 @@ C Update the flow commons, list them out and write legacy file.
 
           haveglobal=.TRUE. ! include simulation preference
           CALL MFWRIT(IUM)
+          CALL ERPFREE(IUM,ISTAT)
+
+          lnf=lnblnk(LAPROB) ! and alto to a 3D file
+          write(LTMP,'(2a)') LAPROB(1:lnf-3),'3dafn'
+          helptopic='convert_to_3D_network'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL EASKS(LTMP,'3DFluid flow network file?',
+     &      '(see help)',72,' ','mass flow file',IER,nbhelp)
+          if(LTMP(1:2).ne.'  '.and.LTMP(1:4).ne.'UNKN')then
+            continue
+          else
+            goto 78
+          endif
+          CALL EFOPSEQ(IUM,LTMP,4,IER)
+          IF(IER.NE.0)goto 78
+
+          haveglobal=.TRUE. ! include simulation preference
+          CALL MF3DWRIT(IUM)
           CALL ERPFREE(IUM,ISTAT)
         endif
 
@@ -2806,9 +2831,11 @@ C Draw small or large dot.
             if(IVDOT(ICN,I,4).eq.0)then
               call esymbol(iix1,iiy1,8,1)
             elseif(IVDOT(ICN,I,4).eq.1)then
-              call esymbol(iix1,iiy1,33,1)
+C              call esymbol(iix1,iiy1,33,1)
+              call esymbol(iix1,iiy1,8,2)
             else
-              call esymbol(iix1,iiy1,33,1)
+C              call esymbol(iix1,iiy1,33,1)
+              call esymbol(iix1,iiy1,8,2)
             endif
             iicol=0
             call winscl('-',iicol)

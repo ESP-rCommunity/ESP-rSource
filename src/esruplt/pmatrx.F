@@ -123,6 +123,7 @@ C             new non-zero elements.
       SUBROUTINE MZPMXT(IUNIT)
 #include "plant.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "building.h"
 #include "gencompDB.h"  
 #include "gencompDB_common.h"
@@ -146,10 +147,6 @@ C             new non-zero elements.
       COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
 
       COMMON/FFN/IFLWN,ICFFS(MPCON)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
 
       COMMON/PCPAR/NPI(MPCOM), TADATA(MPCOM,MADATA)
 

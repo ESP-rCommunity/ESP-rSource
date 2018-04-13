@@ -32,6 +32,14 @@ C   CALIB:    Top level facility for invoking sensitivity assessments.
 C EGETJSNTAGPHR parses a json tag and phrase from a STRING
 C EGETJSNTAGR parses a json tag and real number from the STRING
 C splitstratchar splits a string at a specific character returning 2 str.
+C UMLCAE02    Edits layer thicknesses in MLC db.
+C UCASAE04    Edits casual gains and scheduled air movement in zone files.
+C UAEDIT      Edits the given data item depending on change flag (copy)
+C UMATAE01    Updates conductivity, density or specific heat values in 
+C             model databases and zone files.
+C CHKPRIM     Scans the layers of the MLC for a specific surface (copy)
+C UCTLAT01    Identifies control data should be changed for calibration.
+C
 
 C ***************** UNCERTA *********************
       subroutine UNCERTA()
@@ -329,6 +337,8 @@ C Present list of currently defined then remove chosen from it.
               do 711 IDCOMP=1,MCOM
                 NZNOGU(ID,IDCOMP)=NZNOGU(ID+1,IDCOMP)
                 NSGU(ID,IDCOMP)=NSGU(ID+1,IDCOMP)
+                NTGU(ID,IDCOMP,1)=NTGU(ID+1,IDCOMP,1)
+                NTGU(ID,IDCOMP,2)=NTGU(ID+1,IDCOMP,2)
                 do 721 IDSUR=1,MCOM
                   NSNOG(ID,IDCOMP,IDSUR)=NSNOG(ID+1,IDCOMP,IDSUR)
  721            continue
@@ -355,8 +365,7 @@ C Present list of currently defined then remove chosen from it.
         endif
       ELSEIF(INO.EQ.NITMS-5)THEN
 
-C Add entry.
-C If error 101 then do not save the new entry.
+C Add entry. If error 101 then do not save the new entry.
         if (ITYP.eq.1) then
           IFOC=0
           call CNGDEF(IFOC,IER)
@@ -439,6 +448,13 @@ C IDTYPU = 5 : Convection coefficients
 C        IDTYPU(ICDEF)=5
 C        call SDDFLT005
 
+C IDTYPU = 6 : blind controls
+C        IDTYPU(ICDEF)=6
+C        call ??
+
+C IDTYPU = 1001 : Control definitions
+C        IDTYPU(ICDEF)=1001
+C        call SDDEF1001(ICDEF,IER)
 
       return
       END
@@ -493,8 +509,8 @@ C sorted into different `types' or categories.
       ITEM(3) ='   Pressure (N/A)            '
       ITEM(4) ='c  Thermophysical properties '
       ITEM(5) ='d  Construction composites   '
-      ITEM(6) ='   Optical properties (N/A)  '
-      ITEM(7) ='   Ideal controls (N/A)'
+      ITEM(6) ='e  Optical properties (draft)'
+      ITEM(7) ='f  Ideal controls'
       ITEM(8) =' --------------------------- '
       ITEM(9) =' Zones composition ...       '
       ITEM(10)='g  Geometry (air volume)     '
@@ -550,6 +566,11 @@ C IDTYPU = 1 : Materials properties
 C IDTYPU = 2 : Composite constructions
         IDTYPU(ICDEF)=2
         call SDDEF002(ICDEF,IER)
+      elseif (INO.eq.6) then
+
+C IDTYPU = 6 : blind controls
+        IDTYPU(ICDEF)=6
+        call SDDEF006(ICDEF,IER)
       elseif (INO.eq.7) then
 
 C IDTYPU = 1001 : Control definitions
@@ -619,6 +640,7 @@ C IERR is zero is ok, 101 if there was a problem with the location
 C   specification and 2 if there was a cancel issued during editing.
       subroutine LOCDEF(ITEM,IERR)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
@@ -626,12 +648,17 @@ C Common blocks UA1 UA2 within uncertainty.h
 #include "uncertainty.h"
 
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON      
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
+     &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
+      COMMON/TMCB2/NBCTMC(MCOM,MTMC),IBCST(MCOM,MBP,MTMC),
+     &             IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)
 
       COMMON/UA2T/NTLOC(MNIL),NTG(MNIL,4)
 
@@ -644,6 +671,7 @@ C Common blocks UA1 UA2 within uncertainty.h
       integer idst,ihst,idft,ihft   ! for local editing.
       integer idf,ids,ihf,ihs
       integer icc,jjj    ! loops
+      integer icurrent   ! which location we are dealing with
       logical found,foundmat,chdb,modmlc
 
 C For help messages
@@ -653,18 +681,31 @@ C For help messages
 
       helpinsub='LOCDEF'  ! set for subroutine
       
-C Set initial values.
+C Set initial values (for the whole year).
       IERR=0
       IER=0
       ids=1; ihs=1; 
       idf=365; ihf=24
 
-C Increment number of uncertainty locations or periods.
-      NILOC=NILOC+1
-      NZGU(NILOC)=0
-      NTLOC(NILOC)=0
+C Increment number of uncertainty locations or periods
+C if ITEM is zero. Whether new or existing set icurrent.
+      if(ITEM.eq.0)then
+        NILOC=NILOC+1
+        NZGU(NILOC)=0
+        NTLOC(NILOC)=0
+        icurrent=NILOC
+      else
+        icurrent=ITEM
+      endif
 
 C First discover if the location is spatial or temporal
+      if(NTLOC(icurrent).eq.(-1))then
+        call edisp(iuout,'The current location is temporal')
+      endif
+      if(NZGU(icurrent).gt.0)then
+        call edisp(iuout,'The current location is spacial')
+      endif
+
       helptopic='uncert_location'
       call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKABC(' ',
@@ -674,17 +715,33 @@ C First discover if the location is spatial or temporal
       if (IW.eq.1.or.IW.eq.3) then
 
 C Options a) surfaces using MLC, b) surfaces using material,
-C c) all surfaces facing outside d) other
+C c) all surfaces facing outside d) a blind location e) other
 C Internal location => ask for zone, surface and layer.
 C If only one zone then set NZNO and NZ accordingly. 
 C Clear zone selected array first.
-        CALL EASKABCD('Spatial options:','I ',
+        CALL EASKATOG('Spatial options:','I ',
      &    'surfaces using MLC','surfaces using material',
-     &    'surfaces facing outside','Other ',IWA,nbhelp)
+     &    'surfaces facing outside','blind to control','Other','  ',
+     &    '  ',IWA,nbhelp)
 
-C Clear arrays in all cases.
+C Echo if existing.
+        if(NZGU(icurrent).gt.0)then
+          do 30 J=1,NZGU(icurrent)
+            if(NSGU(icurrent,J).gt.0)then
+              write (outs,'(1x,a,a,25i3)')ZNAME(NZNOGU(icurrent,J)),
+     &          ':',(NSNOG(icurrent,J,K),K=1,NSGU(icurrent,J))
+            else
+              write (outs,'(1x,a,a,2i3,a)')ZNAME(NZNOGU(icurrent,J)),
+     &          ':',NTGU(icurrent,J,1),NTGU(icurrent,J,2),
+     &          ' tmc type & period'
+            endif
+            call edisp (iuout,outs)
+ 30       continue
+        endif
+
+C Clear arrays in all cases. << ?? existing entity? >>
  5      do II=1,MCOM
-          NZNOGU(NILOC,II)=0
+          NZNOGU(icurrent,II)=0
         enddo
 
         if(IWA.eq.1)then
@@ -698,7 +755,7 @@ C Ask for the MLC.
           endif
 
 C Initial location name to reflect MLC name.
-          write(LLOC(NILOC),'(2a)') 'all_',mlcname(ISEL)(1:10)
+          write(LLOC(icurrent),'(2a)') 'all_',mlcname(ISEL)(1:10)
 
 C Scan all connections looking for this MLC.
           write (outs,'(2a)') 'scanning for ',mlcname(ISEL)
@@ -708,44 +765,46 @@ C Scan all connections looking for this MLC.
 
 C If this zone referenced by IC1(icc) not yet registered add it.
 C First the case of nothing known.
-              if(NZGU(NILOC).eq.0)then
-                NZGU(NILOC)=NZGU(NILOC)+1  ! another zone
-                NZNOGU(NILOC,1)=IC1(icc)
-                NSGU(NILOC,1)=NSGU(NILOC,1)+1
-                NSNOG(NILOC,1,1)=IE1(icc)
+              if(NZGU(icurrent).eq.0)then
+                NZGU(icurrent)=NZGU(icurrent)+1  ! another zone
+                NZNOGU(icurrent,1)=IC1(icc)
+                NSGU(icurrent,1)=NSGU(icurrent,1)+1
+                NSNOG(icurrent,1,1)=IE1(icc)
               else
 
 C The location array is partly filled.
                 found=.false.   ! do we know about this zone
-                do izz=1,NZGU(NILOC)
-                  if(IC1(icc).eq.NZNOGU(NILOC,izz))then
+                do izz=1,NZGU(icurrent)
+                  if(IC1(icc).eq.NZNOGU(icurrent,izz))then
                     found=.true.
                     kkk=izz  ! remember which NZNOGU
                   endif
                 enddo
                 if(.NOT.found)then  ! add it and the surface to the list
-                  NZGU(NILOC)=NZGU(NILOC)+1  ! another zone
-                  NZNOGU(NILOC,NZGU(NILOC))=IC1(icc)
-                  NSGU(NILOC,NZGU(NILOC))=NSGU(NILOC,NZGU(NILOC))+1
-                  jjj=NSGU(NILOC,NZGU(NILOC))
-                  NSNOG(NILOC,NZGU(NILOC),jjj)=IE1(icc)
+                  NZGU(icurrent)=NZGU(icurrent)+1  ! another zone
+                  NZNOGU(icurrent,NZGU(icurrent))=IC1(icc)
+                  NSGU(icurrent,NZGU(icurrent))=
+     &              NSGU(icurrent,NZGU(icurrent))+1
+                  jjj=NSGU(icurrent,NZGU(icurrent))
+                  NSNOG(icurrent,NZGU(icurrent),jjj)=IE1(icc)
                 else  ! add surface to the list
-                  NSGU(NILOC,NZGU(NILOC))=NSGU(NILOC,NZGU(NILOC))+1
-                  jjj=NSGU(NILOC,NZGU(NILOC))
-                  NSNOG(NILOC,NZGU(NILOC),jjj)=IE1(icc)
+                  NSGU(icurrent,NZGU(icurrent))=
+     &              NSGU(icurrent,NZGU(icurrent))+1
+                  jjj=NSGU(icurrent,NZGU(icurrent))
+                  NSNOG(icurrent,NZGU(icurrent),jjj)=IE1(icc)
                 endif
               endif
             endif
           enddo
         elseif(IWA.eq.2)then
 
-          call usrmsg('Not yet available',' ','W')
 C Ask for the material.
           iwhich = 0
           CALL EPMENSV
           CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
           CALL EPMENRC
-          write(LLOC(NILOC),'(2a)') 'all_',matname(matarrayindex)(1:10)
+          write(LLOC(icurrent),'(2a)') 'all_',
+     &      matname(matarrayindex)(1:10)
   
 C Scan all connections looking for this material.
           write (outs,'(2a)') 'scanning for ',matname(matarrayindex)
@@ -765,31 +824,33 @@ C we are looking for?
 
 C If this zone referenced by IC1(icc) not yet registered add it.
 C First the case of nothing known.
-              if(NZGU(NILOC).eq.0)then
-                NZGU(NILOC)=NZGU(NILOC)+1  ! another zone
-                NZNOGU(NILOC,1)=IC1(icc)
-                NSGU(NILOC,1)=NSGU(NILOC,1)+1
-                NSNOG(NILOC,1,1)=IE1(icc)
+              if(NZGU(icurrent).eq.0)then
+                NZGU(icurrent)=NZGU(icurrent)+1  ! another zone
+                NZNOGU(icurrent,1)=IC1(icc)
+                NSGU(icurrent,1)=NSGU(icurrent,1)+1
+                NSNOG(icurrent,1,1)=IE1(icc)
               else
 
 C The location array is partly filled.
                 found=.false.   ! do we know about this zone
-                do izz=1,NZGU(NILOC)
-                  if(IC1(icc).eq.NZNOGU(NILOC,izz))then
+                do izz=1,NZGU(icurrent)
+                  if(IC1(icc).eq.NZNOGU(icurrent,izz))then
                     found=.true.
                     kkk=izz  ! remember which NZNOGU
                   endif
                 enddo
                 if(.NOT.found)then  ! add it and the surface to the list
-                  NZGU(NILOC)=NZGU(NILOC)+1  ! another zone
-                  NZNOGU(NILOC,NZGU(NILOC))=IC1(icc)
-                  NSGU(NILOC,NZGU(NILOC))=NSGU(NILOC,NZGU(NILOC))+1
-                  jjj=NSGU(NILOC,NZGU(NILOC))
-                  NSNOG(NILOC,NZGU(NILOC),jjj)=IE1(icc)
+                  NZGU(icurrent)=NZGU(icurrent)+1  ! another zone
+                  NZNOGU(icurrent,NZGU(icurrent))=IC1(icc)
+                  NSGU(icurrent,NZGU(icurrent))=
+     &              NSGU(icurrent,NZGU(icurrent))+1
+                  jjj=NSGU(icurrent,NZGU(icurrent))
+                  NSNOG(icurrent,NZGU(icurrent),jjj)=IE1(icc)
                 else  ! add surface to the list
-                  NSGU(NILOC,NZGU(NILOC))=NSGU(NILOC,NZGU(NILOC))+1
-                  jjj=NSGU(NILOC,NZGU(NILOC))
-                  NSNOG(NILOC,NZGU(NILOC),jjj)=IE1(icc)
+                  NSGU(icurrent,NZGU(icurrent))=
+     &              NSGU(icurrent,NZGU(icurrent))+1
+                  jjj=NSGU(icurrent,NZGU(icurrent))
+                  NSNOG(icurrent,NZGU(icurrent),jjj)=IE1(icc)
                 endif
               endif
             endif
@@ -797,50 +858,139 @@ C The location array is partly filled.
         elseif(IWA.eq.3)then
 
 C Scan all connections for outside facing surfaces.
-          write(LLOC(NILOC),'(a)') 'all_facade'
+          write(LLOC(icurrent),'(a)') 'all_facade'
           call edisp(iuout,'scanning for outside connections.')
           do icc = 1, NCON
             if(ICT(icc).eq.0)then
 
 C If this zone referenced by IC1(icc) not yet registered add it.
 C First the case of nothing known.
-              if(NZGU(NILOC).eq.0)then
-                NZGU(NILOC)=NZGU(NILOC)+1  ! another zone
-                NZNOGU(NILOC,1)=IC1(icc)
-                NSGU(NILOC,1)=NSGU(NILOC,1)+1
-                NSNOG(NILOC,1,1)=IE1(icc)
+              if(NZGU(icurrent).eq.0)then
+                NZGU(icurrent)=NZGU(icurrent)+1  ! another zone
+                NZNOGU(icurrent,1)=IC1(icc)
+                NSGU(icurrent,1)=NSGU(icurrent,1)+1
+                NSNOG(icurrent,1,1)=IE1(icc)
               else
 
 C The location array is partly filled.
                 found=.false.   ! do we know about this zone
-                do izz=1,NZGU(NILOC)
-                  if(IC1(icc).eq.NZNOGU(NILOC,izz))then
+                do izz=1,NZGU(icurrent)
+                  if(IC1(icc).eq.NZNOGU(icurrent,izz))then
                     found=.true.
                     kkk=izz  ! remember which NZNOGU
                   endif
                 enddo
                 if(.NOT.found)then  ! add it and the surface to the list
-                  NZGU(NILOC)=NZGU(NILOC)+1  ! another zone
-                  NZNOGU(NILOC,NZGU(NILOC))=IC1(icc)
-                  NSGU(NILOC,NZGU(NILOC))=NSGU(NILOC,NZGU(NILOC))+1
-                  jjj=NSGU(NILOC,NZGU(NILOC))
-                  NSNOG(NILOC,NZGU(NILOC),jjj)=IE1(icc)
+                  NZGU(icurrent)=NZGU(icurrent)+1  ! another zone
+                  NZNOGU(icurrent,NZGU(icurrent))=IC1(icc)
+                  NSGU(icurrent,NZGU(icurrent))=
+     &              NSGU(icurrent,NZGU(icurrent))+1
+                  jjj=NSGU(icurrent,NZGU(icurrent))
+                  NSNOG(icurrent,NZGU(icurrent),jjj)=IE1(icc)
                 else  ! add surface to the list
-                  NSGU(NILOC,NZGU(NILOC))=NSGU(NILOC,NZGU(NILOC))+1
-                  jjj=NSGU(NILOC,NZGU(NILOC))
-                  NSNOG(NILOC,NZGU(NILOC),jjj)=IE1(icc)
+                  NSGU(icurrent,NZGU(icurrent))=
+     &              NSGU(icurrent,NZGU(icurrent))+1
+                  jjj=NSGU(icurrent,NZGU(icurrent))
+                  NSNOG(icurrent,NZGU(icurrent),jjj)=IE1(icc)
                 endif
               endif
             endif
           enddo
 
         elseif(IWA.eq.4)then
+
+C Identify a zone and a TMC type and TMC period for blind control
           if(NCOMP.EQ.1)then
             call edisp(iuout,
      &      'Single zone model, therefore zone 1 selected.')
             call edisp(iuout,'  ')
-            NZGU(NILOC)=1
-            NZNOGU(NILOC,1)=1
+            NZGU(icurrent)=1
+            NZNOGU(icurrent,1)=1
+            IZ=1
+          else
+
+C Otherwise select the zones from a list of zone names.
+            call edisp(iuout,'Zone selection... ')
+            call edisp(iuout,'  ')
+
+            INPIC=1
+            CALL EPICKS(INPIC,IVALZ,' ',' Which zone:',
+     &        12,NCOMP,ZNAME,' zone list',IERR,nbhelp)
+
+C Check for errors.
+            if (IERR.ne.0) goto 999
+
+C If no zone selected then return to main SA menu.
+            if (INPIC.eq.0) then
+              call edisp(iuout,' Returning to main menu....')
+              call edisp(iuout,
+     &          ' * No data saved from location specification! ')
+              IERR=101
+              if(icurrent.eq.NILOC) NILOC=NILOC-1
+              return
+            endif
+            NZGU(icurrent)=1
+            NZNOGU(icurrent,1)=IVALZ(1)
+            IZ=IVALZ(1)
+          endif
+
+C Scan TMC file for this zone to see how many TMCs included and
+C ask which to identify.
+
+C Read in the related geometry construction and TMC files into common.
+          call georead(IFIL+1,LGEOM(IZ),IZ,1,IUOUT,IER)
+          IUF=IFIL+2
+          CALL ECONST(LTHRM(IZ),IFIL+1,IZ,0,IUOUT,IER)
+          if(ITW(IZ).eq.1)then
+            CALL ERTWIN(ITRC,IUOUT,IUF,LTWIN(IZ),IZ,IER)
+          endif
+
+          nboftmctypes=0
+          do loop=1,nzsur(IZ)
+            if(ITMCFL(IZ,loop).gt.nboftmctypes)then
+              nboftmctypes=ITMCFL(IZ,loop)
+            endif
+          enddo
+          write(outs,'(a,i2,a)') 'There are ',nboftmctypes,
+     &      ' TMC types in zone.'
+          call edisp(iuout,outs)
+          iwhich=1
+          call EASKI(iwhich,' ','Which TMC type to focus on',1,'W',
+     &      nboftmctypes,'W',1,'TMC type for uncertainty',IERI,nbhelp)
+          if(ieri.eq.-3) then
+            if(icurrent.eq.NILOC) NILOC=NILOC-1
+            IERR=2
+            return
+          endif
+          NSGU(icurrent,IZ)=0  ! no specific surfaces
+          NSNOG(icurrent,IZ,1)=0
+          NTGU(icurrent,IZ,1)=iwhich
+
+C Also report on the number of TMC control periods and then
+C ask which to focus on.
+          write(outs,'(a,i2,a)') 'There are ',NBCTMC(IZ,iwhich),
+     &      ' TMC control periods.'
+          call edisp(iuout,outs)
+
+          iwhichp=1
+          call EASKI(iwhichp,' ','Which TMC period',1,'F',3,
+     &      'F',1,'TMC period for uncertainty',IERI,nbhelp)
+          if(ieri.eq.-3) then
+            if(icurrent.eq.niloc) NILOC=NILOC-1
+            IERR=2
+            return
+          endif
+          NTGU(icurrent,IZ,2)=iwhichp! is the TMC period
+  
+        elseif(IWA.eq.5)then
+
+C The 'Other ' option.
+          if(NCOMP.EQ.1)then
+            call edisp(iuout,
+     &      'Single zone model, therefore zone 1 selected.')
+            call edisp(iuout,'  ')
+            NZGU(icurrent)=1
+            NZNOGU(icurrent,1)=1
           else
 
 C Otherwise select the zones from a list of zone names.
@@ -860,20 +1010,20 @@ C If no zones have been selected then return to main SA menu.
               call edisp(iuout,
      &          ' * No data saved from location specification! ')
               IERR=101
-              NILOC=NILOC-1
+              if(icurrent.eq.niloc) NILOC=NILOC-1
               return
             endif
-            NZGU(NILOC)=INPIC
+            NZGU(icurrent)=INPIC
             do I=1,INPIC
-              NZNOGU(NILOC,I)=IVALZ(I)
+              NZNOGU(icurrent,I)=IVALZ(I)
             enddo
           endif
 
 C For each zone selected ask for the surfaces which the uncertainties 
 C are applicable. 
-          do 50 IZ=1,NZGU(NILOC)
-            NSGU(NILOC,IZ)=0
-            IZONE=NZNOGU(NILOC,IZ)
+          do 50 IZ=1,NZGU(icurrent)
+            NSGU(icurrent,IZ)=0
+            IZONE=NZNOGU(icurrent,IZ)
 
             if(IZONE.GT.NCOMP.OR.IZONE.EQ.0)THEN
               call USRMSG('  ','Zone number out of range!','W')
@@ -887,7 +1037,7 @@ C are applicable.
             do I=1,INPIC
               icn1=izstocn(izone,i)
               STMP(I)=SSNAME(icn1)
-              NSNOG(NILOC,IZ,I)=0
+              NSNOG(icurrent,IZ,I)=0
             enddo
             call edisp(iuout,'Surface selection ')
             call edisp(iuout,'  ')
@@ -904,12 +1054,12 @@ C If no surfaces have been selected then return to main SA menu.
               call edisp(iuout,
      &          ' * No data saved from location specification!')
               IERR=101
-              NILOC=NILOC-1
+              if(icurrent.eq.niloc) NILOC=NILOC-1
               return
             endif
-            NSGU(NILOC,IZ)=INPIC
+            NSGU(icurrent,IZ)=INPIC
             do 512 I=1,INPIC
-              NSNOG(NILOC,IZ,I)=IVALS(I)
+              NSNOG(icurrent,IZ,I)=IVALS(I)
  512        continue
 
 C For each surface selected in the current zone ask for the layers
@@ -922,13 +1072,13 @@ C * selection.
       endif
       if (IW.eq.2.or.IW.eq.3) then
 
-C Temporal locations.
-        NTLOC(NILOC)=-1
+C Temporal locations (control and weather).
+        NTLOC(icurrent)=-1
         idst=ids
         call EASKI(IDST,' ','Start day? ',1,'F',365,'F',9,
      &    'day of year',IERI,nbhelp)
         if(ieri.eq.-3) then
-          NILOC=NILOC-1
+          if(icurrent.eq.niloc) NILOC=NILOC-1
           IERR=2
           return
         endif
@@ -937,7 +1087,7 @@ C Temporal locations.
         call EASKI(IHST,' ','Start hour? ',1,'F',24,'F',1,
      &    'hour of day',IERI,nbhelp)
         if(ieri.eq.-3) then
-          NILOC=NILOC-1
+          if(icurrent.eq.niloc) NILOC=NILOC-1
           IERR=2
           return
         endif
@@ -946,7 +1096,7 @@ C Temporal locations.
         call EASKI(IDFT,' ','Finish day? ',1,'F',365,'F',15,
      &    'day of year',IERI,nbhelp)
         if(ieri.eq.-3) then
-          NILOC=NILOC-1
+          if(icurrent.eq.niloc) NILOC=NILOC-1
           IERR=2
           return
         endif
@@ -955,24 +1105,24 @@ C Temporal locations.
         call EASKI(IHFT,' ','Finish hour? ',1,'F',24,'F',24,
      &    'hour of day',IERI,nbhelp)
         if(ieri.eq.-3) then
-          NILOC=NILOC-1
+          if(icurrent.eq.niloc) NILOC=NILOC-1
           IERR=2
           return
         endif
 
 C Ok to instanciate the data and complete the editing.
-        NTG(NILOC,1)=IDST
-        NTG(NILOC,2)=IHST
-        NTG(NILOC,3)=IDFT
-        NTG(NILOC,4)=IHFT
+        NTG(icurrent,1)=IDST  ! julian day start
+        NTG(icurrent,2)=IHST  ! start hour
+        NTG(icurrent,3)=IDFT  ! julian day finish
+        NTG(icurrent,4)=IHFT  ! hour finish
       endif
 
 C Provide id string name.
- 99   t24=LLOC(NILOC)
+ 99   t24=LLOC(icurrent)
       CALL EASKS(t24,' ','Name for location/period?',
      &  15,' ','Location/period name',IERR,nbhelp)
       if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')then
-        LLOC(NILOC)=t24
+        LLOC(icurrent)=t24
       else
         goto 99
       endif
@@ -982,7 +1132,7 @@ C Provide id string name.
       call EDISP(IUOUT,' Error in location specification! ')
       call EDISP(IUOUT,' Please try again. ')
       IERR=101
-      NILOC=NILOC-1
+      if(icurrent.eq.niloc) NILOC=NILOC-1
       return
 
       END
@@ -1178,6 +1328,8 @@ C Function definition
       common/C1/NCOMP,NCON
       INTEGER :: indcfg
       common/C6/INDCFG
+      common/cctlnm/ctldoc,lctlf
+      character ctldoc*248,lctlf*72
 
       common/user/browse
 
@@ -1202,18 +1354,20 @@ C TDF related.
 
       COMMON/UA31/MATNAM(MNCNG,2)
       COMMON/UA32/IMISCD(MNCNG,2)
+      integer nbpastmlc,pastmlc,nbpastmat,pastmat
+      COMMON/UA33/nbpastmlc,nbpastmat,pastmlc(10),pastmat(10)
 
       logical DOK,OK
       logical browse
       logical havefile,unixok,LIBXST
       logical located
       LOGICAL concat,remote,anymeasured
-      logical domlc,dogeo,doopr  ! tasks to do
+      logical domlc,dogeo,doopr,doctl,doblnd  ! tasks to do
       character*72 tfile,OLDLCFGF
       character longtfile*144,longtfiledos*144
       character loutstr*248
       character tmode*8,doit*248
-      character outs*124,fs*1,aut*12,key*1
+      character outs*148,fs*1,aut*12,key*1
       character descra*7,descrb*7,descrst*10,descrfn*10
       character ltpath*72,filen*72
       character weather_extr*96
@@ -1484,7 +1638,8 @@ C Look at uncertainties and see if any of them relate to
 C materials or constructions. If so we will need to have
 C a local variant of materials and constructions databases
 C to work with.
-      domlc=.false.; dogeo=.false.; doopr=.false.
+      domlc=.false.; dogeo=.false.; doopr=.false.; doctl=.false.
+      doblnd=.false.
       do loop=1,NICNG  ! for each distribution
         if (IDTYPU(loop).eq.1) then  ! if materials focus
           IDB=IDMAT(loop,1)
@@ -1500,7 +1655,7 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht
           endif
           call edisp (iuout,'  ')
           write(outs,'(a,i4,4a)')'Distribution :',loop,'; ',LCNG(loop),
-     &      ' requires a variant of material ',NAM
+     &      ' requires a variant of material ',NAM(1:lnblnk(NAM))
           call edisp (iuout,outs)
           domlc=.true.; dogeo=.true.
         elseif(IDTYPU(loop).eq.2) then  ! if MLC focus
@@ -1519,6 +1674,18 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht
             call edisp (iuout,outs)
           endif
           doopr=.true.
+        elseif(IDTYPU(loop).eq.6) then  ! if optical focus
+          if (IDMAT(loop,1).eq.1) then
+            write(outs,'(a,i4,3a)')'Distribution :',loop,'; ',
+     &        LCNG(loop),' requires a variant of zone tmc file'
+            call edisp (iuout,outs)
+          endif
+          doblnd=.true.
+        elseif(IDTYPU(loop).eq.1001) then  ! if ideal control focus
+          write(outs,'(a,i4,3a)')'Distribution :',loop,'; ',LCNG(loop),
+     &      ' requires a variant control file.'
+          call edisp (iuout,outs)
+          doctl=.true.
         endif
       enddo  ! of loop
 
@@ -1537,7 +1704,7 @@ C to the run assessment phase.
         call edisp(iuout,NNAME)
         CALL EASKABCD(' ','Options:',
      &    're-generate model files','do calibration runs with it',
-     &    'read json file','cancel',ioption,nbhelp)
+     &    'read calibro json file','cancel',ioption,nbhelp)
         if(ioption.eq.1)then
           continue
         elseif(ioption.eq.2)then
@@ -1587,9 +1754,9 @@ C Switch focus to the calibration variant and jump to 43.
 
       endif
       
-C If materials and/or mlc call VER_MLC_MAT
+C If materials and/or mlc or optical call VER_MLC_MAT
       write(APE,'(a)') '_cal'
-      if(domlc)then
+      if(domlc.or.doblnd)then
         call VER_MLC_MAT(APE)
       endif
 
@@ -1611,11 +1778,25 @@ C If operations then call VER_OPR.
         enddo
         call VER_OPR(nbitem,items,APE,docnn)
       endif
+      if(doctl)then
+        EXT='.ctl'
+        IUNIT=12
+        call FINDFIL(LCTLF,XST)
+        IF(.NOT.XST)THEN
+          CALL EDISP(IUOUT,'* Control file does not exist!')
+          RETURN
+        ENDIF
+        CALL FNCNGR(LCTLF,APE,EXT,NNAME)
+        write(LCTLF,'(a)') NNAME(1:lnblnk(NNAME))
+        CALL CTLWRT(IUNIT,IER)
+        docnn=.true.
+        call edisp(iuout,'* Control file being copied.')
+      endif
 
 C Write out configuration file
 C But first change names of results libraries zones, flow, plant,
 C moisture, electrical cfd and IPV
-      if(domlc.or.dogeo.or.doopr)then
+      if(domlc.or.dogeo.or.doopr.or.doctl.or.doblnd)then
         DO 123 ISPS=1,NSSET
           EXT='.res'
           CALL FNCNGR(SBLRES(ISPS),APE,EXT,NNAME)
@@ -2158,13 +2339,13 @@ C And repeat for the next observation.
      &  'to calibrate the model do this next...')
       CALL EASKABC(
      &  'After sending the csv files to calibro you will be given',
-     &  'a json file:','scan it','delay scanning','cancel',
-     &  isauto,nbhelp)
+     &  'a json file:','scan & act on directives','delay scanning',
+     &  'cancel',isauto,nbhelp)
       if(isauto.eq.1)then
 
 C Ask for file name. Parse the file and report directives.
         LTEMP='  '; DTEMP='  '; nbhelp=1
-        call EASKS(LTEMP,'Json file name from Calibro?',
+        call EASKS(LTEMP,'Json file name from Calibro (full path):',
      &    ' ',72,DTEMP,'Json file from calibro',IER,nbhelp)
         INQUIRE (FILE=LTEMP,EXIST=LIBXST)
         if (LIBXST) then
@@ -2183,7 +2364,9 @@ C Ask for file name. Parse the file and report directives.
 
 C Read lines from the file looking for specific key phrases.
   77      call lstripc(IUNIT,loutstr,99,ND,1,'json line 1',IER)
-          IF(IER.NE.0)goto 1001
+
+C If we reach the end of the file.
+          IF(IER.NE.0)goto 1002
           k=0
           call egetrm(loutstr,K,buffer,'W','tokens',IER)
           if(buffer(1:1).eq.lcurley) goto 77
@@ -2210,8 +2393,10 @@ C Use splitstratchar FIRST is the uncertainty and
 C SECOND is the scope/location.
             CH='.'; FIRST='  '; SECOND='  '
             call splitstratchar(PHRASE,CH,FIRST,SECOND,ier)
-            write(6,*) 'what is ',first(1:lnblnk(first))
-            write(6,*) 'where scope is ',second(1:lnblnk(second))
+            write(outs,'(4a)') 'Uncertainty what is ',
+     &        first(1:lnblnk(first)),' & where ',
+     &        second(1:lnblnk(second))
+            call edisp(iuout,outs)
 
 C Loop through existing uncertainty defs to find matching LCNG
             itis=0
@@ -2247,10 +2432,20 @@ C If the uncertainty type is MLC layer thickness ...
           endif
 
 C Identify what to do.
- 1001     CALL ERPFREE(IUNIT,ios)
-          if (IDTYPU(itis).eq.1) then  ! if materials focus
-            call edisp(iuout,'thermophysical change not yet done.')
-            continue
+ 1001     if (IDTYPU(itis).eq.1) then  ! if materials focus
+
+C Clear MLC and material lists of what has been processed.
+            nbpastmlc=0; nbpastmat=0
+            do loop=1,10
+              pastmlc(loop)=0
+              pastmat(loop)=0
+            enddo
+
+            call edisp(iuout,'thermophysical property test...')
+            do IZ=1,NCOMP
+              call UMATAE01(iz,itis,rv)
+            enddo
+            call edisp(iuout,'thermophysical property test...done.')
           elseif(IDTYPU(itis).eq.2) then  ! if MLC focus
 
             write(outs,'(3a,i2)')' Composite construction: ',
@@ -2274,20 +2469,39 @@ C Next step is to update each of the zone construction files.
             call edisp(iuout,'weather change not yet done.')
             continue
           elseif(IDTYPU(itis).eq.4) then  ! if operation focus
-            call edisp(iuout,'zone operations change not yet done.')
-            continue
+
+C For each zone in the model call UCASAE04 to see if it is associated
+C with an uncertainty location.
+             do IZ=1,NCOMP
+               call UCASAE04(IZ,itis,rv)
+             enddo
+
           elseif(IDTYPU(itis).eq.5) then  ! if hc coefficients
             call edisp(iuout,'zone hc change not yet done.')
+            continue
+          elseif(IDTYPU(itis).eq.6) then  ! if optical
+            call edisp(iuout,'zone optical change not yet done.')
             continue
           elseif(IDTYPU(itis).eq.101) then  ! if geometry focus
             call edisp(iuout,'zone surf area change not yet done.')
             continue
+          elseif(IDTYPU(itis).eq.1001) then  ! if control focus
+
+C Apply changes to zone controls.
+            call edisp(iuout,'Updating zone control file.')
+            call UCTLAT01(itis,rv)
           endif
+
+C Check and see if there are other directives in the json file.
+          IW=0
+          CALL EASKAB('Proceed with next json directive:',
+     &      'no','yes','check for more directives',IW,nbhelp)
+          if(IW.eq.2) goto 77
+
         endif
 
-C Resetablish the original model and represent user choices.
-
 C Re-establish the base case model and return.
+ 1002   CALL ERPFREE(IUNIT,ios)
         call edisp(iuout,'Reverting to original model...')
         write(LCFGF,'(a)') OLDLCFGF(1:lnblnk(OLDLCFGF))
         MODE='ALL '
@@ -2720,7 +2934,6 @@ C#include "espriou.h"
       CHARACTER*(*) STRING,FIRST,SECOND
       CHARACTER CH*1
       CHARACTER A*1,loutstr*248,outs*124
-      logical unixok
       integer K
 
 C LST is th maximum length of STRING, L the current position,
@@ -2816,7 +3029,7 @@ C Common blocks UA2 UA3 UA4 within uncertainty.h
 
       CHARACTER MATNAM*32
 
-      character strval*12,uhphrase*42
+      character uhphrase*42,outs*124
 
 C Data stored in UA02 has the following meaning in this routine:
 C IDMAT(?,1): The material in the chosen MLC, if this is 0 then 
@@ -2826,9 +3039,6 @@ C IDMAT(?,3): Change type (%; +/-; explicit).
 C Define variables for current location and change.
       ICL=IACTD(IACT,2)
       ICC=IACTD(IACT,1)
-
-      write (6,'(a)') '   '
-      write (6,'(a)') 'Entering subroutine UMLCAE02'
 
 C If the common block MLC has not yet been filled then read in the
 C composite construction database.
@@ -2869,11 +3079,10 @@ C Make specific header string for each change (to match urunvals)
       uhphrase=' '
       write(uhphrase,'(3a)')LCNG(ICC)(1:lncng),':',LLOC(ICL)(1:lnloc)
       luhphrase=lnblnk(uhphrase)
-      write(6,'(2a)') 'Implementing ',uhphrase(1:luhphrase)
-      write (6,'(a,f9.4)') 'DTHK: ',DTHK(imlc,ie)
-
-C The new value is...
-      strval=' '        ! clear string buffer for the value changed
+      write(outs,'(2a)') 'UMLCAE02 Implementing ',uhphrase(1:luhphrase)
+      call edisp(iuout,outs)
+      write (outs,'(a,f9.4)') 'DTHK: ',DTHK(imlc,ie)
+      call edisp(iuout,outs)
 
 C Either edit layer thickness.
       if (IDMAT(ICC,3).eq.1) then
@@ -2883,7 +3092,6 @@ C Percentage change. Ensure it does not go below 1mm.
      &    DIR,(((DATU(ICC,1)/100.)*DIR)+1.0)
         DTHK(imlc,ie)=DTHK(imlc,ie)*(((DATU(ICC,1)/100.)*DIR)+1.0)
         if(DTHK(imlc,ie).lt.0.001)DTHK(imlc,ie)=0.001
-        call relstr(DTHK(imlc,ie),strval,lna,ier)
       elseif (IDMAT(ICC,3).eq.2) then
 
 C Absolute change. Ensure it does not go below 1mm. 
@@ -2891,7 +3099,6 @@ C Absolute change. Ensure it does not go below 1mm.
      &    DATU(ICC,1),DIR,(DATU(ICC,1)*DIR)
         DTHK(imlc,ie)=DTHK(imlc,ie)+(DATU(ICC,1)*DIR)
         if(DTHK(imlc,ie).lt.0.001)DTHK(imlc,ie)=0.001
-        call relstr(DTHK(imlc,ie),strval,lna,ier)
       elseif (IDMAT(ICC,3).eq.3) then
 
 C Explicit change. Ensure it does not go below 1mm.
@@ -2903,16 +3110,953 @@ C Explicit change. Ensure it does not go below 1mm.
           DTHK(imlc,ie)=DTHK(imlc,ie)-(DATU(ICC,2)-DTHK(imlc,ie))*DIR
           if(DTHK(imlc,ie).lt.0.001)DTHK(imlc,ie)=0.001
         endif
-        call relstr(DTHK(imlc,ie),strval,lna,ier)
       endif
-      write (6,'(a)') 'to:'
-      write (6,'(a,f9.4)') 'DTHK: ',DTHK(imlc,ie)
+      write (outs,'(a)') 'to:'
+      call edisp(iuout,outs)
+      write (outs,'(a,f9.4)') 'DTHK: ',DTHK(imlc,ie)
+      call edisp(iuout,outs)
 
 C Now update the MLC database.
       call edisp(iuout,'Updating the MLC database...')
       CALL EMKAMLD2(iuout,IER) ! write it out
-      call edisp(iuout,'Updating the MLC database...done.')
       RETURN
       END
 
 
+C In esrubld/sensit
+C      elseif (IDTYPU(IACTD(IACT,1)).eq.4) then 
+C        call UAE04(IZONE,IACT,DIR)  ! casual gains or scheduled air
+C UCASAE04 edits casual gains and scheduled air movement in zone files.
+
+      SUBROUTINE UCASAE04(IZONE,IACT,DIR)
+      include "building.h"
+      include "model.h"
+      include "schedule.h"
+C Common blocks UA2 UA3 UA4 within uncertainty.h
+      include "uncertainty.h"
+      common/FILEP/IFIL
+      INTEGER :: ifil
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: iuout,iuin
+
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
+
+      character uhphrase*42,outs*124
+      logical XST
+
+C Data stored in UA04 has the following meaning in this routine:
+C IDMAT(?,1): Casual gain type(1/2/3)/ scheduled air flow(0)
+C IDMAT(?,2): Cas Gn: sensible(1)/ latent(2)/ radiant(3)/ convective(4)/
+C IDMAT(?,2):         total Q (same split) (5)/ Period start (6)/
+C IDMAT(?,2):         N/A (7)/ 
+C IDMAT(?,2):         same total frac diff split (8)
+C IDMAT(?,2): Sched Air flow: infiltration(1)/ ventilation(2)/
+C IDMAT(?,2):         N/A (3)/ vent source temp(4)
+C IDMAT(?,3): Change type (%; +/-; explicit).
+C Define variables for current location and change.
+      ICL=IACTD(IACT,2)
+      ICC=IACTD(IACT,1)
+
+C Loop through all zones listed in NZNOGU for the defined location ICL.
+      do 10 II=1,NZGU(ICL)
+        IZ=NZNOGU(ICL,II)
+        if (IZ.eq.IZONE) then
+
+C Re-read the zone operation file.
+          ITRC=0
+          ITRU=0
+          IUO=IFIL+1
+          INQUIRE (FILE=LPROJ(IZONE),EXIST=XST)
+          IF(XST)THEN
+            call edisp(iuout,'Scanning zone operation file...')
+            CALL ERPFREE(IUO,ISTAT)
+            CALL EROPER(ITRC,ITRU,IUO,IZONE,IER)
+            call edisp(iuout,'Scanning zone operation file...done.')
+          ELSE
+            call usrmsg('Operation file not found.','returning','W')
+            return
+          ENDIF
+
+
+C Define max number of periods for common P2 (flow) and P3 (Cas gns).
+          IMP2=NAC(1)
+          IMP3=NCAS(1)
+          DO IDTY=1,NBDAYTYPE
+            IF(NAC(IDTY).GT.IMP2)IMP2=NAC(IDTY)
+            if (NCAS(IDTY).gt.IMP3) IMP3=NCAS(IDTY)
+          ENDDO
+
+C Edit casual gains.
+          if (IDMAT(ICC,1).eq.0) then
+
+C Edit scheduled air flows.
+C Check that we have the right element(period). << TO DO >>
+C Currently changing all defined periods.
+            ICF=IDMAT(ICC,3)
+            DAT1=DATU(ICC,1)
+            DAT2=DATU(ICC,2)
+            write (6,*) 'Editing scheduled air flow ',ICF,DAT1,DAT2
+
+C Make specific header string for each change (to match urunvals)
+            lncng=lnblnk(LCNG(ICC))
+            lnloc=lnblnk(LLOC(ICL))
+            if(lncng.gt.18)lncng=18
+            uhphrase=' '
+            write(uhphrase,'(4a,i2.2,a)')LCNG(ICC)(1:lncng),':',
+     &        LLOC(ICL)(1:lnloc),':',IZ,','
+            luhphrase=lnblnk(uhphrase)
+            write(outs,'(2a)')'UCASAE04 Implementing ',
+     &        uhphrase(1:luhphrase)
+            call edisp(iuout,outs)
+
+C Percentage change. 
+C What data type to change? (see comments at start of routine).
+C Chance all instances of this type - will probably add data 
+C to specify individual periods later.
+            if (IDMAT(ICC,2).eq.1) then
+              write (outs,*) 'Zone:',IZONE,' infiltration'
+              call edisp(iuout,outs)
+              do 100 IX=1,IMP2
+                DO 4010 IDTY=1,NBDAYTYPE
+                  T=ACI(IDTY,IX)
+                  call UAEDIT(ACI(IDTY,IX),ICF,DAT1,DAT2,DIR,-1,0.0,0.0)
+                  write(outs,*)'Period ',CALENTAG(IDTY),IX,' From:',T,
+     &            ' to ',ACI(IDTY,IX)
+                  call edisp(iuout,outs)
+ 4010           CONTINUE
+ 100          continue
+            elseif (IDMAT(ICC,2).eq.2) then
+              write (outs,*) 'Zone:',IZONE,' ventilation'
+              call edisp(iuout,outs)
+              do 101 IX=1,IMP2
+                DO 4011 IDTY=1,NBDAYTYPE
+                  T=ACV(IDTY,IX)
+                  call UAEDIT(ACV(IDTY,IX),ICF,DAT1,DAT2,DIR,-1,0.0,0.0)
+                  write(outs,*)'Period ',CALENTAG(IDTY),IX,' From:',T,
+     &            ' to ',ACV(IDTY,IX)
+                  call edisp(iuout,outs)
+ 4011           CONTINUE
+ 101          continue
+            elseif (IDMAT(ICC,2).eq.3) then
+              write (6,*)'Illegal option, cannot change zone index'
+            elseif (IDMAT(ICC,2).eq.4) then
+              write (outs,*) 'Zone:',IZONE,' vent source temperature'
+              call edisp(iuout,outs)
+              do 104 IX=1,IMP2
+                DO 4012 IDTY=1,NBDAYTYPE
+                  T=TA(IDTY,IX)
+                  call UAEDIT(TA(IDTY,IX),ICF,DAT1,DAT2,DIR,-1,0.0,0.0)
+                  write(outs,*)'Period ',CALENTAG(IDTY),IX,' From:',T,
+     &            ' to ',TA(IDTY,IX)
+                  call edisp(iuout,outs)
+ 4012           CONTINUE
+ 104          continue
+            endif
+
+C Write zone operations file. If older than 21 upgrade.
+            call edisp(iuout,'Updating zone operation file...')
+            if(ip3ver(IZONE).lt.21) ip3ver(IZONE)=21
+            CALL EMKOPER(IUO,LPROJ(IZONE),IZONE,IER)
+
+          else
+
+C Edit casual gains.
+C Check that we have the right element(period).
+C Currently changing all defined periods.
+            write (6,*) 'Editing casual gains'
+            ICF=IDMAT(ICC,3)
+            DAT1=DATU(ICC,1)
+            DAT2=DATU(ICC,2)
+            IT=IDMAT(ICC,1)
+
+C Make specific header string for each change (to match urunvals)
+            lncng=lnblnk(LCNG(ICC))
+            lnloc=lnblnk(LLOC(ICL))
+            if(lncng.gt.18)lncng=18
+            uhphrase=' '
+            write(uhphrase,'(4a,i2.2,a)')LCNG(ICC)(1:lncng),':',
+     &        LLOC(ICL)(1:lnloc),':',IZ,','
+            luhphrase=lnblnk(uhphrase)
+            write(outs,'(2a)') 'Implementing ',uhphrase(1:luhphrase)
+            call edisp(iuout,outs)
+      
+C What data type to change? (see comments at start of routine).
+C Chance all instances of this type - will probably add data 
+C to specify incividual periods later.
+
+C The next section has the following format:
+C  Check casual gain parameter to edit (sensible, latent, convect %...
+C  Check if required casual gain type is defined for this period (occ, lights..
+C    note weekdays/ sat/ sun checked seperately.
+C
+            if (IDMAT(ICC,2).eq.1) then
+              write (outs,*) 'Zone:',IZONE,' type:',IT,' sensible'
+              call edisp(iuout,outs)
+              do IX=1,IMP3
+                do IDTY=1,NBDAYTYPE
+                  if (IDMAT(ICC,1).eq.ICGT(IDTY,IX)) then
+                    T1=CMGS(IDTY,IX)
+                    call UAEDIT(CMGS(IDTY,IX),ICF,DAT1,DAT2,DIR,
+     &                -1,0.0,0.0)
+                    write (outs,*)'Period ',CALENTAG(IDTY),IX,
+     &                ' From:',T1,' to ',CMGS(IDTY,IX)
+                    call edisp(iuout,outs)
+                  endif
+                enddo
+              enddo
+            elseif (IDMAT(ICC,2).eq.2) then
+              write (outs,*) 'Zone:',IZONE,' type:',IT,' latent'
+              call edisp(iuout,outs)
+              do IX=1,IMP3
+                do IDTY=1,NBDAYTYPE
+                  if (IDMAT(ICC,1).eq.ICGT(IDTY,IX)) then
+                    T1=CMGL(IDTY,IX)
+                    call UAEDIT(CMGL(IDTY,IX),ICF,DAT1,DAT2,DIR,
+     &                -1,0.0,0.0)
+                    write (outs,*)'Period ',CALENTAG(IDTY),IX,
+     &                ' From:',T1,' to ',CMGL(IDTY,IX)
+                    call edisp(iuout,outs)
+                  endif
+                enddo
+              enddo
+            elseif (IDMAT(ICC,2).eq.3) then
+              write (outs,*) 'Zone:',IZONE,' type:',IT,' rad fraction'
+              call edisp(iuout,outs)
+              do IX=1,IMP3
+                do IDTY=1,NBDAYTYPE
+                  if (IDMAT(ICC,1).eq.ICGT(IDTY,IX)) then
+                    T1=RADC(IDTY,IX)
+                    call UAEDIT(RADC(IDTY,IX),ICF,DAT1,DAT2,DIR,
+     &                0,0.0,1.0)
+                    write (outs,*)'Period ',CALENTAG(IDTY),IX,
+     &                ' From:',T1,' to ',RADC(IDTY,IX)
+                    CONC(IDTY,IX)=1.0-RADC(IDTY,IX)  ! adjust CONC
+                    call edisp(iuout,outs)
+                  endif
+                enddo
+              enddo
+            elseif (IDMAT(ICC,2).eq.4) then
+              write (outs,*)'Zone:',IZONE,' type:',IT,' conv fraction'
+              call edisp(iuout,outs)
+              do IX=1,IMP3
+                do IDTY=1,NBDAYTYPE
+                  if (IDMAT(ICC,1).eq.ICGT(IDTY,IX)) then
+                    T1=CONC(IDTY,IX)
+                    call UAEDIT(CONC(IDTY,IX),ICF,DAT1,DAT2,DIR,
+     &                0,0.0,1.0)
+                    write (outs,*)'Period ',CALENTAG(IDTY),IX,
+     &                ' From:',T1,' to ',CONC(IDTY,IX)
+                    call edisp(iuout,outs)
+                    RADC(IDTY,IX)=1.0-CONC(IDTY,IX)  ! adjust RADC
+                  endif
+                enddo
+              enddo
+            elseif (IDMAT(ICC,2).eq.5) then
+              write (outs,*) 'Zone:',IZONE,' type:',IT,' total Q'
+              call edisp(iuout,outs)
+              do IX=1,IMP3
+                do IDTY=1,NBDAYTYPE
+                  if (IDMAT(ICC,1).eq.ICGT(IDTY,IX)) then
+                    T1=CMGS(IDTY,IX)
+                    T2=CMGL(IDTY,IX)
+                    T3=T1+T2
+                    call UAEDIT(T3,ICF,DAT1,DAT2,DIR,-1,0.0,0.0)
+                    CMGS(IDTY,IX)=T3*(CMGS(IDTY,IX)/(T1+T2))
+                    CMGL(IDTY,IX)=T3*(CMGL(IDTY,IX)/(T1+T2))
+                    write (outs,*)'Period ',CALENTAG(IDTY),IX,
+     &                ' Sensible from:',T1,' to ',CMGS(IDTY,IX)
+                    call edisp(iuout,outs)
+                    write (outs,*)'Period ',CALENTAG(IDTY),IX,
+     &                ' Latent from:',T2,' to ',CMGL(IDTY,IX)
+                    call edisp(iuout,outs)
+                  endif
+                enddo
+              enddo
+            elseif (IDMAT(ICC,2).eq.6) then
+
+C Shift the start time of subsequent periods.
+              write (outs,*) 'Zone:',IZONE,' type:',IT,' start'
+              call edisp(iuout,outs)
+              do IX=1,IMP3
+                do IDTY=1,NBDAYTYPE
+                  if (IDMAT(ICC,1).eq.ICGT(IDTY,IX)) then
+                    if(IX.gt.1)then  ! no need to do it for initial period
+                      IT1=ICGS(IDTY,IX)
+                      if (DIR.gt.0.) then
+                        if(ICGS(IDTY,IX)+1.lt.ICGS(IDTY,IX+1))then
+                          ICGS(IDTY,IX)=ICGS(IDTY,IX)+1      ! if clear to shift later
+                          ICGF(IDTY,IX-1)=ICGS(IDTY,IX-1)+1  ! and shift prior fn
+                        endif
+                      else
+                        if(ICGS(IDTY,IX)-1.gt.ICGS(IDTY,IX-1))then
+                          ICGS(IDTY,IX)=ICGS(IDTY,IX)-1      ! if clear to shift earlier
+                          ICGF(IDTY,IX-1)=ICGS(IDTY,IX-1)-1  ! and shift prior fn
+                        endif
+                      endif
+                      write (outs,*)'Period ',CALENTAG(IDTY),IX,
+     &                  ' From:',IT1,' to ',ICGS(IDTY,IX)
+                      call edisp(iuout,outs)
+                    endif
+                  endif
+                enddo
+              enddo
+            elseif (IDMAT(ICC,2).eq.8) then
+              IT=IDMAT(ICC,1)
+              write(outs,*)'Zone:',IZONE,' type:',IT,' rad/conv split'
+              call edisp(iuout,outs)
+              do IX=1,IMP3
+                do IDTY=1,NBDAYTYPE
+                  if (IDMAT(ICC,1).eq.ICGT(IDTY,IX)) then
+                    T1=RADC(IDTY,IX)
+                    T2=CONC(IDTY,IX)
+                    T3=T1+T2
+                    call UAEDIT(CONC(IDTY,IX),ICF,DAT1,DAT2,DIR,
+     &                0,0.0,T3)
+                    RADC(IDTY,IX)=T3-CONC(IDTY,IX)
+                    write (outs,*)'Period ',CALENTAG(IDTY),IX,
+     &                ' Rad fraction from:',T1,' to ',RADC(IDTY,IX)
+                    call edisp(iuout,outs)
+                    write (outs,*)'Period ',CALENTAG(IDTY),IX,
+     &                ' Conv fraction from:',T2,' to ',CONC(IDTY,IX)
+                    call edisp(iuout,outs)
+                  endif
+                enddo
+              enddo
+            else
+              write (6,*)'Editing request unknown.'
+            endif
+
+C Write zone operations file.
+            call edisp(iuout,'Updating zone operation file...')
+            if(ip3ver(IZONE).lt.21) ip3ver(IZONE)=21
+            CALL EMKOPER(IUO,LPROJ(IZONE),IZONE,IER)
+          endif  ! of editing casual gains
+        endif    ! of matching zone
+ 10   continue
+
+      RETURN
+      END
+
+C Copy of block of code from esrubld/sensit.F
+C ******************** UAEDIT ********************
+C UAEDIT edits the given data item (VAL) depending on change flag (ICFLAG)
+C and given direction or magnitude (DIR).
+C ICHK: -1 check min val, +1 check max val, 0 check both vals
+      SUBROUTINE UAEDIT (VAL,ICFLAG,UPval,DOWNval,DIR,ichk,vmin,vmax)
+#include "building.h"
+
+      if (ICFLAG.eq.1) then
+
+C Percentage change. 
+        VAL=VAL*(((UPval/100.)*DIR)+1.0)
+      elseif (ICFLAG.eq.2) then
+
+C Absolute change. 
+        VAL=VAL+(UPval*DIR)
+      elseif (ICFLAG.eq.3) then
+
+C Explicit change. 
+        if (DIR.gt.0.) then
+          VAL=VAL+((UPval-VAL)*DIR/3.)
+        else
+          VAL=VAL-((DOWNval-VAL)*DIR/3.)
+        endif
+      endif
+      
+C Check limits.
+      if (ICHK.le.0) then
+        VAL=max(VAL,vmin)
+      endif
+      if (ICHK.ge.0) then
+        VAL=min(VAL,vmax)
+      endif
+      RETURN
+      END
+
+C Update model databases and zone geometry files to reflect
+C changes in thermophysical properties as done in UAE01.
+C UMATAE01 updates conductivity, density or specific heat values in 
+C model databases and zone files.
+C Naming convention:
+C IZONE, ISURF: focus zone and surface (the data files for this zone 
+C               have just been rescaned). 
+C IZ, IS: current zone and surface being checked (these are listed in 
+C               the common/ua2/ arrays).
+C      if (IDTYPU(IACTD(IACT,1)).eq.1) then 
+C        call UAE01(IZONE,IACT,DIR)  ! thermophysical properties
+      subroutine UMATAE01(IZONE,IACT,DIR)  ! thermophysical properties
+#include "building.h"
+#include "model.h"
+#include "geometry.h"
+C Common blocks UA2 UA3 UA4 within uncertainty.h
+#include "uncertainty.h"
+#include "esprdbfile.h"
+#include "material.h"
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: iuout,iuin
+      common/FILEP/IFIL
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
+
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+
+      integer nbpastmlc,pastmlc,nbpastmat,pastmat
+      COMMON/UA33/nbpastmlc,nbpastmat,pastmlc(10),pastmat(10)
+
+      CHARACTER T32*32,lltmp*144,lworking*144,outs*124
+
+      character uhphrase*42,fs*1
+      integer loop
+      integer iel    ! array of the position of the matched material
+
+C To remember materials and MLC that have been processed.
+      DIMENSION IEL(ME)
+      logical isadupmat,isadupmlc,unixok
+
+      isadupmat=.false.; isadupmlc=.false.  ! not a duplicate
+      
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Data stored in UA01 has the following meaning in this routine:
+C IDMAT(?,1): Materials array index.
+C IDMAT(?,2): Thermophysical property (con; den; sp ht).
+C IDMAT(?,3): Change type (%; +/-; explicit).
+      ICL=IACTD(IACT,2)
+      ICC=IACTD(IACT,1)
+
+C If the common block MLC has not yet been filled then read in the
+C composite construction database (which also checks the materials
+C database.
+      IF(.NOT.MLDBOK)THEN
+        CALL ERMLDB(0,iuout,IER)
+        IF(IER.eq.4)THEN
+          CALL ERMLDB2(0,iuout,IER)
+          if(IER.eq.0)then
+            MLDBOK=.TRUE.
+          endif
+        ELSEIF(IER.EQ.1.or.IER.eq.2.or.IER.eq.3)THEN
+          CALL USRMSG(' ',' Unable to display selections ','W')
+          IER=IER+1
+          RETURN
+        ELSE
+          MLDBOK=.TRUE.
+        ENDIF
+      ENDIF
+      if(IER.ne.0)then
+        call usrmsg('Problem scanning MLC db.','Returning.','W')
+        return
+      endif
+
+C Make specific header string for each change (to match urunvals)
+      lncng=lnblnk(LCNG(ICC))
+      lnloc=lnblnk(LLOC(ICL))
+      uhphrase=' '
+      write(uhphrase,'(3a)')LCNG(ICC)(1:lncng),':',LLOC(ICL)(1:lnloc)
+      luhphrase=lnblnk(uhphrase)
+      write(outs,'(2a)') 'UMATAE01 Implementing ',uhphrase(1:luhphrase)
+      call edisp(iuout,outs)
+
+C Loop through all zones listed in NZNOGU for the defined location ICL.
+      do 10 II=1,NZGU(ICL)
+       IZ=NZNOGU(ICL,II)
+       if (IZ.eq.IZONE) then
+
+C Refresh the zone geometry common blocks.
+C Identify uncertain material in the required surfaces.
+         call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
+         do 20 JJ=1,NSGU(ICL,II)
+           IS=NSNOG(ICL,II,JJ)
+           ioc=IZSTOCN(iz,is)
+
+C Check to see if material is used in current construction.
+C IDMAT is the material array, use matlegindex to find the
+C raw IPR within the materials database in order to pass
+C to chkprim (which returns the layers which are made of 
+C the required material (if any).
+           ip=matlegindex(IDMAT(ICC,1))
+           write(6,*) 'idmat matlegindex',IDMAT(ICC,1),ip
+           call CHKPRIM(IZ,IS,IP,NEL,IEL,IMLC)
+           if (NEL.gt.0) then
+             do 30 IEindex=1,NEL
+               IE=IEL(IEindex)
+
+C Trace.
+               write(6,*)'Matching layer:'
+               write(6,*)'Zone: ',IZ,' Surface: ',IS,' layer',IE
+               write(6,*)'in MLC ',IMLC,' ',mlcname(IMLC),LAYERS(IMLC)
+
+C Get the legacy material index and the next available slot.
+               ip=matlegindex(IPRMAT(IMLC,IE))
+               call getnextascislot(ip,inext)
+
+C Have we already dealt with this MLC?
+               if(nbpastmlc.eq.0)then
+                 continue
+               elseif(nbpastmlc.eq.1)then
+                 if(IMLC.eq.pastmlc(1))then
+                   isadupmlc=.true. ! Use the existing _cal version
+                 endif
+               else
+                 do loop=1,nbpastmlc
+                   if(IMLC.eq.pastmlc(loop))then
+                     isadupmlc=.true. ! Use the existing _cal version.
+                   endif
+                 enddo
+               endif
+               if(.NOT.isadupmlc)then
+
+C Make a copy of the MLC, name it with _cal and copy across
+C its attributes and update the relevant layer with new material.
+                 NMLC=NMLC+1
+                 mlcdbitems=NMLC
+                 nbpastmlc=nbpastmlc+1
+                 pastmlc(nbpastmlc)=IMLC
+                 write(6,*) 'making _cal of ',nbpastmlc,
+     &             pastmlc(nbpastmlc)
+                 lnml=lnblnk(mlcname(IMLC))
+                 write(mlcname(NMLC),'(2a)')mlcname(IMLC)(1:lnml),
+     &             '_cal'
+                 lnmlcname(NMLC)=lnblnk(mlcname(NMLC))
+                 lnml=lnblnk(mlcmenu(IMLC))
+                 write(mlcmenu(NMLC),'(2a)')mlcmenu(IMLC)(1:lnml),
+     &             ' cal'
+                 lnmlcmenu(NMLC)=lnblnk(mlcmenu(NMLC))
+                 mlctype(NMLC)=mlctype(IMLC)
+                 lnml=lnblnk(mlcdoc(IMLC))
+                 write(mlcdoc(NMLC),'(2a)') mlcdoc(IMLC)(1:lnml),
+     &             ' cal'
+                 mlcincat(NMLC)=mlcincat(IMLC)
+                 mlcoptical(NMLC)=mlcoptical(IMLC)
+                 matsymindex(NMLC)=0            ! reset to assume no reversed
+                 mlccatindex(NMLC)=mlccatindex(IMLC)  ! assume same class 
+                 LAYERS(NMLC)=LAYERS(IMLC)
+
+C Find its category and increment its counter/
+                 lncatn=lnblnk(mlcincat(NMLC))
+                 do loop2=1,mlccats
+                   if(mlcincat(NMLC)(1:lncatn).eq.
+     &                mlccatname(loop2)(1:lnmlccatname(loop2)))then
+                     mlccatitems(loop2)=mlccatitems(loop2)+1
+                     IC=loop2  ! reset the focus category to one we have copied
+C                     write(6,*) 'Another item for ',mlccatname(loop2),
+C     &                 ' ',mlccatitems(loop2),' focus now ',IC
+                   endif
+                 enddo
+
+                 DO ILL=1,LAYERS(NMLC)      ! copy layer attributes
+                   DTHK(NMLC,ILL)=DTHK(IMLC,ILL)
+                   if(ILL.eq.IE)then
+                     IPR(NMLC,ILL)=inext
+                     IPRMAT(NMLC,ILL)=matdbitems+1
+                   else
+                     IPR(NMLC,ILL)=IPR(IMLC,ILL)
+                     IPRMAT(NMLC,ILL)=IPRMAT(IMLC,ILL)
+                   endif
+                   ITMCFCDB(NMLC,ILL)=ITMCFCDB(IMLC,ILL)
+                   DRAIR(NMLC,ILL,1)=DRAIR(IMLC,ILL,1)
+                   DRAIR(NMLC,ILL,2)=DRAIR(IMLC,ILL,2)
+                   DRAIR(NMLC,ILL,3)=DRAIR(IMLC,ILL,3)
+                   LAYDESC(NMLC,ILL)=LAYDESC(IMLC,ILL)
+                 ENDDO  ! of ILL
+
+C Make up a new LAYDESC for use when writing out *layer.
+                 iorig=IPRMAT(IMLC,IE)  ! remember original array index
+                 lnam=lnblnk(matname(iorig))
+                 lfordoc = 68 - (lnam +8)    ! space left for doc
+                 write(LAYDESC(NMLC,IE),'(5a)') 
+     &             matname(iorig)(1:lnam),'_cal',' : ',
+     &             matdoc(iorig)(1:lfordoc),'_cal'
+
+C Save to MLC.
+                 call edisp(iuout,'Updating the MLC database...')
+                 CALL EMKAMLD2(iuout,IER) ! write it out
+                 
+               endif
+
+C Have we already dealt with this material?
+               if(nbpastmat.eq.0)then
+                 continue
+               elseif(nbpastmat.eq.1)then
+                 if(IPRMAT(IMLC,IE).eq.pastmat(1))then
+                   isadupmat=.true.  ! Use the existing _cal version.
+                 endif
+               else
+                 do loop2=1,nbpastmat
+                   if(IPRMAT(IMLC,IE).eq.pastmat(loop2))then
+                     isadupmat=.true.  ! Use the existing _cal version.
+                   endif
+                 enddo
+               endif
+
+               call getnextascislot(ip,inext)
+               write(6,'(f9.3,2i4,2a,i4)') 
+     &           DTHK(IMLC,IE),IPRMAT(IMLC,IE),ip,
+     &           matname(IPRMAT(IMLC,IE)),' next slot is ',inext
+
+C If there is room in the materials database make a copy.
+               if(.NOT.isadupmat.and.inext.le.600)then
+                 iorig=IPRMAT(IMLC,IE)  ! remember original array index
+                 ILNE=matdbitems+1
+                 lnm=lnblnk(matname(iorig))
+                 nbpastmat=nbpastmat+1  ! remember
+                 pastmat(nbpastmat)=iorig
+                 write(matname(ILNE),'(2a)') 
+     &             matname(iorig)(1:lnm),'_cal'
+                 write(t32,'(a)') matname(ILNE)
+                 CALL EASKS(t32,'Name of calib material','confirm:',
+     &             32,' ','material name',IER,nbhelp)
+                 write(matname(ILNE),'(a)') t32(1:lnblnk(t32))
+                 lnd=lnblnk(matdoc(iorig))
+                 write(matdoc(ILNE),'(2a)') 
+     &             matdoc(iorig)(1:lnd),' for calibration'
+                 matlegindex(ILNE)=inext
+                 mathash(inext)=ILNE
+                 matcatindex(ILNE)=matcatindex(iorig)
+                 matdbcon(ILNE)=matdbcon(iorig)
+                 matdbden(ILNE)=matdbden(iorig)
+                 matdbsht(ILNE)=matdbsht(iorig)
+                 matdboute(ILNE)=matdboute(iorig)
+                 matdbine(ILNE)=matdbine(iorig)
+                 matdbouta(ILNE)=matdbouta(iorig)
+                 matdbina(ILNE)=matdbina(iorig)
+                 matdbdrv(ILNE)=matdbdrv(iorig)
+                 matdbthick(ILNE)=matdbthick(iorig)
+                 matcatindex(ILNE)=matcatindex(iorig)  ! keep in same category
+                 matopaq(ILNE)=matopaq(iorig)
+                 matirtran(ILNE)=matirtran(iorig)
+                 matsoldrtrn(ILNE)=matsoldrtrn(iorig)
+                 matsoldrotrfl(ILNE)=matsoldrotrfl(iorig)
+                 matsoldrinrfl(ILNE)=matsoldrinrfl(iorig)
+                 matvistran(ILNE)=matvistran(iorig)
+                 matvisotrfl(ILNE)=matvisotrfl(iorig)
+                 matvisinrfl(ILNE)=matvisinrfl(iorig)
+                 matrender(ILNE)=matrender(iorig)
+
+                 matdbitems=matdbitems+1
+                 matcatitems(matcatindex(iorig))=
+     &             matcatitems(matcatindex(iorig))+1
+                 nbpastmat=nbpastmat+1
+                 pastmat(nbpastmat)=iorig  ! remember
+
+C Now depending on what needs to change update the relevant
+C material attribute.
+                 write(outs,*) 'from:'
+                 call edisp(iuout,outs)
+                 write(outs,'(3f9.3,4f5.2)')matdbcon(ILNE),
+     &             matdbden(ILNE),matdbsht(ILNE),matdbine(ILNE),
+     &             matdboute(ILNE),matdbina(ILNE),matdbouta(ILNE)
+                 call edisp(iuout,outs)
+                 if (IDMAT(ICC,2).eq.1) then
+                   call UAEDIT(matdbcon(ILNE),IDMAT(ICC,3),DATU(ICC,1),
+     &               DATU(ICC,2),DIR,-1,0.01,0.0)
+                 elseif (IDMAT(ICC,2).eq.2) then
+                   call UAEDIT(matdbden(ILNE),IDMAT(ICC,3),DATU(ICC,1),
+     &               DATU(ICC,2),DIR,0,0.01,9000.0)
+                 elseif (IDMAT(ICC,2).eq.3) then
+                   call UAEDIT(matdbsht(ILNE),IDMAT(ICC,3),DATU(ICC,1),
+     &               DATU(ICC,2),DIR,0,0.01,3000.0)
+                 elseif (IDMAT(ICC,2).eq.4) then
+                   call UAEDIT(matdboute(ILNE),IDMAT(ICC,3),DATU(ICC,1),
+     &               DATU(ICC,2),DIR,0,0.001,0.999)
+                   call UAEDIT(matdbine(ILNE),IDMAT(ICC,3),DATU(ICC,1),
+     &               DATU(ICC,2),DIR,0,0.001,0.999)
+                 elseif (IDMAT(ICC,2).eq.5) then
+                   call UAEDIT(matdbouta(ILNE),IDMAT(ICC,3),DATU(ICC,1),
+     &               DATU(ICC,2),DIR,0,0.001,0.999)
+                   call UAEDIT(matdbina(ILNE),IDMAT(ICC,3),DATU(ICC,1),
+     &               DATU(ICC,2),DIR,0,0.001,0.999)
+                 endif
+
+                 write(outs,*) 'to:'
+                 call edisp(iuout,outs)
+                 write(outs,'(3f9.3,4f5.2)')matdbcon(ILNE),
+     &             matdbden(ILNE),matdbsht(ILNE),matdbine(ILNE),
+     &             matdboute(ILNE),matdbina(ILNE),matdbouta(ILNE)
+                 call edisp(iuout,outs)
+
+C And update the materials database. Following code is
+C similar to that in edcondb.F
+                 call erpfree(ifmat,istat)  ! in case it is still open
+                 IAF=IFIL+1
+                 call erpfree(iaf,istat)  ! in case it is still open
+                 lltmp=' '
+                 if(ipathmat.eq.0.or.ipathmat.eq.1)then
+                   write(lltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+                   CALL mkascimat(IAF,lltmp,IER)
+                 elseif(ipathmat.eq.2)then
+                   lndbp=lnblnk(standarddbpath)
+                   write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &               LFMAT(1:lnblnk(LFMAT))
+                   CALL mkascimat(IAF,lworking,IER)
+                 endif
+               endif
+ 30          continue  ! of layers
+           endif
+
+C The surface should point to an alternative MLC which uses
+C the _cal material. And write out the zone geometry file.
+           write(SMLCN(IS),'(a)') mlcname(NMLC)
+           write(SSMLCN(ioc),'(a)') mlcname(NMLC)
+           call geowrite(IFIL+1,LGEOM(IZ),IZ,iuout,3,IER)
+
+ 20      continue  ! of associated surfaces
+       endif
+ 10   continue  ! of associated zones
+      RETURN
+      END
+
+
+C Variant of CHKPRIM in esrubld/sensit.F
+C ******************** CHKPRIM ********************
+C CHKPRIM scans the layers of the MLC for a specific surface
+C and returns if and where a specific material is used.
+      SUBROUTINE CHKPRIM(IZONE,ISURF,IPRIM,NEL,IEL,IMLC)
+#include "building.h"
+#include "geometry.h"
+#include "esprdbfile.h"
+#include "material.h"
+
+C Passed parameters:
+      integer izone  ! requested zone
+      integer isurf  ! surface in the zone
+      integer iprim  ! legacy material index
+      integer nel    ! number of matching layers
+      integer iel    ! array of the position of the matched material
+
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      DIMENSION IEL(ME)
+
+C Set number of matching layers to zero.
+      NEL=0
+C Find correct MLC. Check if the legacy material index matches
+C the passed value. C Find matching MLC.
+      ioc=IZSTOCN(izone,isurf)
+      call matchmlcdesc(SSMLCN(ioc),i)
+      IMLC=i
+      do 20 J=1,LAYERS(IMLC)
+        if (IPR(IMLC,J).eq.IPRIM) then
+          NEL=NEL+1   ! matches criteria
+          IEL(NEL)=J  ! layer it was found in
+        endif
+ 20   continue
+
+      RETURN
+      END
+
+C UCTLAT01 Identifies control data should be changed for calibration.
+      SUBROUTINE UCTLAT01(IACT,DIR)
+#include "building.h"
+C Common blocks UA3 UA4 within uncertainty.h
+#include "uncertainty.h"
+#include "control.h"
+
+      COMMON/FILEP/IFIL
+      COMMON/OUTIN/IUOUT,IUIN
+
+      COMMON/UA32/IMISCD(MNCNG,2)
+      COMMON/UATD/UACLIM(6,4),UACTL(7,6),UAMCSA(MNACT)
+      COMMON/UA2T/NTLOC(MNIL),NTG(MNIL,4)
+
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+
+      common/cctlnm/ctldoc,lctlf
+      CHARACTER lctlf*72,ctldoc*248
+
+      character uhphrase*42,outs*124
+      CHARACTER ITEM(7)*20
+      real ACNG
+      logical unixok,XST
+
+C Data stored in UA3 has the following meaning in this routine:
+C IDMAT(?,1) (ICF): Control function reference number.
+C IDMAT(?,2) (ICD): Control function day type.
+C IMISCD(?,1)(ICP): Control function period.
+C IMISCD(?,2): Uncertain parameter.
+C IDMAT(?,3): Change type (%; +/-; explicit).
+      ICC=IACTD(IACT,1)
+      ICL=IACTD(IACT,2)
+      ICF=IDMAT(ICC,1)
+      ICD=IDMAT(ICC,2)
+      ICP=IMISCD(ICC,1)
+      itopic= IMISCD(ICC,2)  ! which of the 7 topics
+
+C Make specific header string for each change (to match urunvals)
+      lncng=lnblnk(LCNG(ICC))
+      lnloc=lnblnk(LLOC(ICL))
+      uhphrase=' '
+      write(uhphrase,'(4a,i2.2,a,i2.2,a)')LCNG(ICC)(1:lncng),
+     &  ':',LLOC(ICL)(1:lnloc),':',ICF,':',ICP,','
+      luhphrase=lnblnk(uhphrase)
+      write(outs,'(2a)') 'UCTLAT01 Implement ',uhphrase(1:luhphrase)
+      call edisp(iuout,outs)
+
+      ITEM(1) ='Period start time'
+      ITEM(2) ='Maximum heating flux'
+      ITEM(3) ='Minimum heating flux'
+      ITEM(4) ='Maximum cooling flux'
+      ITEM(5) ='Minimum cooling flux'
+      ITEM(6) ='Heating set point'
+      ITEM(7) ='Cooling set point'
+
+      write (6,*) '   '
+      write (6,*) ITEM(itopic),itopic,' will be edited.'
+
+      write (6,*) ' IDMAT: ctl func & day type & change typ',
+     &  (IDMAT(ICC,IX),IX=1,3)
+      write (6,*) ' IMISCD: func period & parameter',
+     &  (IMISCD(ICC,IX),IX=1,2)
+      write (6,*) ' DATU: ',(DATU(ICC,IX),IX=1,2)
+
+C UACTL (?,1)=change type (%,+/-); (?,2)=magnitude; (?,3)=associated action;
+C UACTL (?,4)=time status (0 not active, 1 active)
+C UACTL (?,5)=counter for the uncertainty action being dealt with
+C UACTL (?,6)=value of DIR
+      UACTL(itopic,1)=float(IDMAT(ICC,3))
+      UACTL(itopic,5)=float(IACT)  ! which of the uncertainty tasks
+      if (IDMAT(ICC,3).eq.1) then
+        UACTL(itopic,2)=((DATU(ICC,1)/100.)*DIR)+1.0
+      elseif (IDMAT(ICC,3).eq.2) then
+        UACTL(itopic,2)=DATU(ICC,1)*DIR
+      else
+        UACTL(itopic,2)=0.
+      endif
+      UACTL(itopic,3)=IACT
+      UACTL(itopic,6)=0.  ! slot for DIR value during simulation
+      write (6,'(a,7f8.3)') ' UACTL: chg type ',(UACTL(IX,1),IX=1,7)
+      write (6,'(a,7f8.3)') ' UACTL: value    ',(UACTL(IX,2),IX=1,7)
+      write (6,'(a,7f8.3)') ' UACTL: ',(UACTL(IX,3),IX=1,7)
+      write (6,'(a,7f8.3)') ' UACTL: time stat',(UACTL(IX,4),IX=1,7)
+      write (6,'(a,7f8.3)') ' UACTL: iact     ',(UACTL(IX,5),IX=1,7)
+      write (6,'(a,7f8.3)') ' UACTL: DIR      ',(UACTL(IX,6),IX=1,7)
+
+C Rescan the zone control file.
+      ICTLF=IFIL+1
+      CALL ERPFREE(ICTLF,ISTAT)
+      call FINDFIL(LCTLF,XST)
+      if(XST)then
+        call edisp(iuout,'Reading existing control file.')
+        CALL EZCTLR(ICTLF,ITRC,IUOUT,IER)
+      else
+        call usrmsg('No zone control defined.',
+     &              'Returning.','W')
+        return
+      endif
+
+C For each control loop (II) each day type (IJ) and each control
+C period IK and control topic (I).
+      do II=1,ncf
+
+C Check if the correct control loop.
+        ICF=IDMAT(ICC,1)
+        ICD=IDMAT(ICC,2)
+        ICP=IMISCD(ICC,1)
+        if(II.eq.ICF)then
+          NN=nbcdt(ii)
+          if(nbcdt(ii).eq.0)NN=nbdaytype  ! zero indicates all calendar day types
+          do IJ=1,NN
+            if(IJ.eq.ICD)then       ! Check if the correct day type.
+              do IK=1,NBCDP(II,IJ)  ! for each period
+                if(IK.eq.ICP)then   ! if correct period
+
+C Next block is based on sentim.F UAT01a
+                  do 10 I=1,7
+
+C Check if control parameter is active.
+                    if (nint(UACTL(I,1)).eq.0) goto 10
+
+                    if (nint(UACTL(I,1)).gt.0) then   ! echo the before value
+                      if(I.eq.1)then
+                        write (36,*)ITEM(I)(1:lnblnk(ITEM(I))),
+     &                    tbcps(ICF,ICD,ICP)
+                      else
+                        write (36,*)ITEM(I)(1:lnblnk(ITEM(I))),
+     &                    bmiscd(ICF,ICD,ICP,I)
+                      endif
+                    endif
+
+C Uncertainty defined and in valid time period.
+                    if (nint(UACTL(I,1)).eq.1) then ! % change
+                      PCNG=UACTL(I,2)
+                      if (I.eq.1) then  ! the period
+                        tbcps(ICF,ICD,ICP)=tbcps(ICF,ICD,ICP)*PCNG
+                      else
+                        bmiscd(ICF,ICD,ICP,I)=bmiscd(ICF,ICD,ICP,I)*PCNG
+                      endif
+                    elseif (nint(UACTL(I,1)).eq.2) then  ! abs change
+                      ACNG=UACTL(I,2)
+                      if (I.eq.1) then  ! the period
+                        tbcps(ICF,ICD,ICP)=tbcps(ICF,ICD,ICP)+ACNG
+                      else
+                        bmiscd(ICF,ICD,ICP,I)=bmiscd(ICF,ICD,ICP,I)+ACNG
+                      endif
+                    endif
+                    if (nint(UACTL(I,1)).gt.0) then   ! echo the updated value
+                      if(I.eq.1)then
+                write (6,*)ITEM(I)(1:lnblnk(ITEM(I))),tbcps(ICF,ICD,ICP)
+                      else
+                write (6,*)ITEM(I)(1:lnblnk(ITEM(I))),
+     &                   bmiscd(ICF,ICD,ICP,I)
+                      endif
+                    endif
+ 10               continue ! of control attributes
+                endif
+              enddo    ! of each period
+            endif
+          enddo        ! of each day type
+        endif
+      enddo            ! of each control loop
+
+C Write out the control file.
+      call edisp(iuout,'Updating zone control file.')
+      CALL CTLWRT(ICTLF,IER)
+
+      return
+      end
+
+C ******************** UATFLG ********************
+C UATFLG determines if control data is within NTG start day/time and
+C NTG finish day/time.
+      SUBROUTINE UATFLG(IDAY,IHOUR,ILOC,IVALID)
+#include "building.h"
+#include "uncertainty.h"
+
+      COMMON/UA2T/NTLOC(MNIL),NTG(MNIL,4)
+
+      IVALID=0
+C For uncertainty location ILOC check if in valid period.
+C If iday is negative check time only.
+      if (IDAY.lt.0) then
+        if((IHOUR.gt.NTG(ILOC,2).and.IHOUR.lt.NTG(ILOC,4)))IVALID=1
+      elseif (IDAY.gt.NTG(ILOC,1).and.IDAY.lt.NTG(ILOC,3)) then
+        IVALID=1
+      elseif (IDAY.eq.NTG(ILOC,1).and.IDAY.lt.NTG(ILOC,3)) then
+        if (IHOUR.gt.NTG(ILOC,2).or.IHOUR.eq.-1) then
+          IVALID=1
+        endif
+      elseif (IDAY.gt.NTG(ILOC,1).and.IDAY.eq.NTG(ILOC,3)) then
+        if (IHOUR.lt.NTG(ILOC,4).or.IHOUR.eq.-1) then
+          IVALID=1
+        endif
+      elseif (IDAY.eq.NTG(ILOC,1).and.IDAY.eq.NTG(ILOC,3)) then
+        if ((IHOUR.gt.NTG(ILOC,2).and.IHOUR.lt.NTG(ILOC,4)).or.
+     &       IHOUR.eq.-1) then
+          IVALID=1
+        endif
+      endif
+
+C Return to editing routine.
+
+      RETURN
+      END

@@ -172,12 +172,16 @@ c
       If ( iMech .eq. 1 ) Call MECH_VENT_INIT ( )
 c ---
 
-C Are uncertainties defined?
+C Are uncertainties defined? If senrns returns with ier=2
+C then user has selected just to run the base case.
       if (LUALF(1:7).ne.'UNKNOWN') then
         IUALF=IFIL+1
         call readual(IUALF)
         call SENRNS(IER)
         if (IER.eq.1) return
+        if (IER.eq.2)then
+          continue  ! run only the base case
+        endif
       endif
       
 
@@ -2337,11 +2341,11 @@ C or mixed, based on time-step evaluation.
         WRITE(OUTS,'(A,F5.2)')
      &  '         max heat flux error (W): ',fUserPERFLX
         CALL EDISP(IUOUT,OUTS)          
-        
+
         WRITE(OUTS,'(A,E12.6)')
      &  '         max H2 flow error (kg/s): ',fUserH2iterTol
         CALL EDISP(IUOUT,OUTS)   
-        
+
       endif UserPltConfigSettings
       
 C Default solar treatment, solar ON.
@@ -2366,7 +2370,7 @@ C Commence simulation.
     6 call edisp(icout,' ')
       if (ISIM.gt.1) then
         write(outs,'(a,i4,a,i4,a)')' Simulation ',ISIM,' of ',NRSIM,
-     &                                           ' has now commenced.'
+     &    ' has now commenced.'
         call edisp(icout,outs)
       else
         if(endless)then

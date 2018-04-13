@@ -89,7 +89,7 @@ C Name of current application
       character cAppName*12      
 
       CHARACTER outs*124,ITEM*30
-      CHARACTER inf*144,actf*72
+      CHARACTER inf*144,actf*96
       character LCMDFL*144,L144*144
       character tfile*96
       character path*72
@@ -1511,3 +1511,4 @@ C Dummy routine (needed for call back from c).
       integer icomp,ier
       return
       end
+

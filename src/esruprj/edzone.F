@@ -1067,6 +1067,7 @@ C DELZONE systematicly removes a thermal zone.
 #include "model.h"
 #include "geometry.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "esprdbfile.h"
 #include "espriou.h"
 #include "CFC_common.h"
@@ -1096,14 +1097,14 @@ C espriou.h provides currentfile.
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      COMMON/MFLOW2/NDNAM(0:MNOD)
+      INTEGER :: iairn,icaas
 
       LOGICAL DOK,OK,XST,changed,OKC,OKM,modopr,browse
       logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER LAPROB*72
       CHARACTER ctldoc*248,LCTLF*72,outs*124
-      character ltmp*72,NDNAM*12
+      character ltmp*72
       character OUTSTR*124
 
 C For help messages
@@ -1152,21 +1153,29 @@ C should be scanned and converted into flow common blocks.
         CALL STRIPC(IUM,OUTSTR,99,ND,0,'1st line of file',IER)
         if(ier.eq.0)then
           write(currentfile,'(a)') LAPROB(1:lnblnk(LAPROB))
-          IF(ND.GE.4)THEN
-            REWIND(IUM,ERR=999)
-            CALL EMFREAD(IUM,IER)
-            CALL ERPFREE(IUM,ISTAT)
-          elseif((ND.eq.1.or.ND.eq.2).and.
-     &            OUTSTR(1:18).EQ.'* Graphical_network')then
+          if(OUTSTR(1:18).EQ.'*Graphical_network')then
 
-C Found a graphic network file, scan it and then convert it
+C Found a graphic network file, scan it (silently) and then convert it
 C into network flow common blocks.
+            IAIRN = 2
             CALL ERPFREE(IUM,ISTAT)
             call NETREAD(IUM,'R',IER)
             CALL NETTOFLW(ier)
+          elseif(OUTSTR(1:13).EQ.'*Flow_network')then
+
+C Found 3D flow network file.
+            IAIRN = 3
+            CALL ERPFREE(IUM,ISTAT)
+            CALL MFCDAT
+            CALL EMF3DREAD(IUM,'R',IER)
+          else
+
+C Found legacy text mass flow file.
+            REWIND(IUM,ERR=999)
+            CALL EMFREAD(IUM,IER)
+            CALL ERPFREE(IUM,ISTAT)
+            IAIRN = 1
           endif
-C          CALL EMFREAD(IUM,IER)
-C          CALL ERPFREE(IUM,ISTAT)
           if(ier.ne.0)then
             CALL USRMSG(' ','Problem in flow network!','F')
             OKM=.false.

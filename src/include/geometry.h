@@ -67,23 +67,15 @@ C   any other zone shapes).
       common/c20/nzsur(MCOM),nztv(MCOM),nbwalls(MCOM),zorigin(MCOM,3),
      &  zsize(MCOM,3)
 
-C Arrays of verious types which hold data in (zone,surface) size primarily
+C Arrays of various types which hold data in (zone,surface) size primarily
 C for use with META files.
       integer zboundarytype  ! equivalent to ICT/IC2/IE2 in common c3
       common/metac3/zboundarytype(MCOM,MS,3)
 
-      integer znbglz   ! nb of windows (META directive)
-      integer znbdoor  ! nb of doors (META directive)
-      real zhasglaze   ! percentage of glazing (default position) in each surface of
-                       ! the initial room shape and where zero is no glazing
-      real zhasdoor    ! width of door in each surface of the initial room shape
-                       ! where zero is no door
       integer znbmass  ! number of META paired mass rectangles in room
                        ! Note these pairs of surfaces are not included in the *surface list
       real zdatamass   ! origin, size, orientations of META mass objects (4 per zone).
-      common/metahas/znbglz(MCOM),zhasglaze(MCOM,MS),
-     &               znbdoor(MCOM),zhasdoor(MCOM,MS),
-     &               znbmass(MCOM),zdatamass(MCOM,4,7)
+      common/metahas/znbmass(MCOM),zdatamass(MCOM,4,7)
 
 
 C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics

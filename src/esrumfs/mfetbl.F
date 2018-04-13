@@ -29,6 +29,7 @@ C     NDONAM - name of node(s) corresponding to column contents
 
 #include "building.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
@@ -42,8 +43,6 @@ C ICLIM,LCLIM (for climate file)
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/DISPL/IDAYF,IDAYL,IFDAY,IFTIME
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
@@ -56,7 +55,7 @@ C ICLIM,LCLIM (for climate file)
       CHARACTER*23     ITEM(10)
       character PERST1*14,PERST2*44,PERST3*44
       character outs*124,OUTSTR*124,outs248*248
-      character WORD*20,NDNAM*12,NR*12,NT*12
+      character WORD*20,NR*12,NT*12
       logical OK,DOK,intg
       integer NITMS,INO ! max items and current menu item
 
@@ -169,7 +168,7 @@ C Node ok, inform user of it`s selection.
         NT=NDNAM(ITNOD)
 
 C Node ok, inform user of it`s selection.
-        write(outs,'(1X,A,A)') NDNAM(ITNOD),' is the test node.'
+        write(outs,'(1X,2A)') NDNAM(ITNOD),' is the test node.'
         call edisp(iuout,outs)
         call edisp(iuout,' Please select the flow path...')
 
@@ -177,7 +176,7 @@ C Node ok, inform user of it`s selection.
         if(IER.NE.0)goto 50
         if(IPCNN.eq.0)goto 10 
 
-        write(outs,'(1X,A,A,A)')NDNAM(IS),NDNAM(IE),' is the flow path.'
+        write(outs,'(1X,3A)')NDNAM(IS),NDNAM(IE),' is the flow path.'
         call edisp(iuout,outs)
       ELSEIF(INO.EQ.4)THEN
 

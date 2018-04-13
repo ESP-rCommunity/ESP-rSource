@@ -473,6 +473,21 @@ C no.| name      | day  | day  |steps/hr|option| Flag  |sim|
 
 C Read and display information on all result-sets.
         if (IMET.eq.2) NFA=nint(log10(real(NSIM-1))/log10(real(2)))
+
+C If there has been a monti-carlo or differential or factorial run
+C then the first simulation set is base case.
+        if (IMET.ne.0)then
+          IREC=2; TNAME='Base case'; I=1
+          write(RSNAME(1),'(a)') 'Base case'
+          READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)NST1,NST2
+          IREC=NST1
+          READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)ID1,IM1,ID2,
+     &                IM2,ISDS,ISDF,NTS,ISAVE,SCNAME,IDAVER,itcnst,
+     &                iSlr_half_hr_flg
+          write(outs,711)I,SCNAME,ID1,IM1,ID2,IM2,NTS,
+     &                ISAVE,IDAVER,itcnst,iSlr_half_hr_flg,TNAME
+          call edisp(iuout,outs)
+        endif
         DO 99 I=1,NSIM
           IREC=I+1
 
@@ -480,7 +495,11 @@ C Read result-set start address.
           TNAME=' '
           READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)NST1,NST2,TNAME
           if (izver.eq.0) TNAME=' Undefined '
-          write(RSNAME(I),'(a)') TNAME(1:40)
+          if (IMET.ne.0)then
+            write(RSNAME(I+1),'(a)') TNAME(1:40)
+          else
+            write(RSNAME(I),'(a)') TNAME(1:40)
+          endif
   
 C In the case of factorial uncertainty analysis decode result set name.
           if (IMET.eq.2) then
@@ -499,23 +518,45 @@ C Read simulation start and finish days and control name.
           READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)ID1,IM1,ID2,
      &                IM2,ISDS,ISDF,NTS,ISAVE,SCNAME,IDAVER,itcnst,
      &                iSlr_half_hr_flg
-          write(outs,711)I,SCNAME,ID1,IM1,ID2,IM2,NTS,
-     &                                      ISAVE,IDAVER,itcnst,
-     &                                      iSlr_half_hr_flg,TNAME
-          call edisp(iuout,outs)
+          if (IMET.ne.0)then
+            write(outs,711)I+1,SCNAME,ID1,IM1,ID2,IM2,NTS,
+     &                ISAVE,IDAVER,itcnst,iSlr_half_hr_flg,TNAME
+          else
+            write(outs,711)I,SCNAME,ID1,IM1,ID2,IM2,NTS,
+     &                ISAVE,IDAVER,itcnst,iSlr_half_hr_flg,TNAME
+          endif
+
+C To cope with the initial set being base case the 99 loop will
+C attempt to print an additional line. Trap this if a sensitivity
+C run is being read in.
+          if (IMET.ne.0)then
+            if(I.lt.NSIM) call edisp(iuout,outs)
+          else
+            call edisp(iuout,outs)
+          endif
   711     format(I3,1X,A,I3,',',I2,I4,',',I2,I8,I7,I8,I5,2X,I5,2X,A)
    99   CONTINUE
+C        write(6,*) 'A ',RSNAME
 
 C There is more than one result set therefore check to see if ISAVE is the 
 C same for all sets.
         NS=NSIM
         ITMP=IREC
+        if (IMET.ne.0)then
+          write(RSNAME(1),'(a)') 'Base case'
+        endif
         DO 10 I=1,NSIM
           IREC=I+1
           TNAME=' '
           READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)NST1,NST2,TNAME
           if (izver.eq.0) TNAME=' Undefined '
-          write(RSNAME(I),'(a40)') TNAME(1:40)
+
+C If sensitivity compensate for 'base case'
+          if (IMET.ne.0)then
+            write(RSNAME(I+1),'(a40)') TNAME(1:40)
+          else
+            write(RSNAME(I),'(a40)') TNAME(1:40)
+          endif
           IREC=NST1
           READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)ID1,IM1,ID2,IM2,
      &              ISDS,ISDF,NTS,ISAVE,SCNAME,IDAVER,itcnst,
@@ -523,6 +564,14 @@ C same for all sets.
           if(I.eq.1) ISVO=ISAVE
           if(ISAVE.ne.ISVO) NS=0  ! if different reset NS to zero
    10   CONTINUE
+
+C If sensitivity reset 1st label as 'base case'
+        if (IMET.ne.0)then
+          write(RSNAME(1),'(a)') 'Base case'
+        endif
+
+C Debug
+C        write(6,*) 'B ',RSNAME
         IREC=ITMP
         if(NS.ne.0) then
           helptopic='res_set_diff'
@@ -590,6 +639,12 @@ C Read details of this result-set.
       READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)NST1,NST2,TNAME
       if (izver.eq.0) TNAME=' Undefined '
       write(RSNAME(ISIM),'(a40)') TNAME(1:40)
+
+C If sensitivity reset 1st label as 'base case'
+      if (IMET.ne.0)then
+        write(RSNAME(1),'(a)') 'Base case'
+        if(ISIM.eq.1) TNAME = 'Base case'
+      endif
       ISTADD=NST2
       IREC=NST1
       READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)ID1,IM1,ID2,IM2,ISDS,
@@ -1634,6 +1689,9 @@ C Depending on location expand path to file.
       call FINDFIL(lworking,XST)
       if(XST)then
         CALL ERMLDB(0,IUOUT,IER)
+        IF(IER.eq.4)THEN
+          CALL ERMLDB2(0,iuout,IER)
+        endif
         IF(IER.eq.1)then
           write(outs,'(3a)') 
      &    ' Problems with materials used by Constructions db',

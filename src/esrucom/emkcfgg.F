@@ -38,6 +38,7 @@ C This version uses generic databases.
 #include "site.h"
 #include "geometry.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "tdf2.h"
 #include "uncertainty.h"
 #include "esprdbfile.h"
@@ -104,7 +105,6 @@ C Special materials file flag
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       INTEGER :: iairn,icaas
-      COMMON/MFLOW2/NDNAM(0:MNOD)
 
 C Non-linear thermophysical properties.
       COMMON/VTHP18/LNLTHP
@@ -276,7 +276,6 @@ C Generic databases from esprdbfile.h.
       CHARACTER CNTMFIL*72,CONTMNAM*12,CNTMDESC*124
 
 C An array of mass flow nodes for writing.
-      CHARACTER NDNAM*12
       character namen*12
       dimension namen(mcom)
 

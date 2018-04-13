@@ -65,7 +65,7 @@ C Name of current application
       CHARACTER ZITEM(10)*30 
       CHARACTER PZDESC*25,LTMP*72,cdesc*80
       character inf*144,L144*144,paction*16,pact*16
-      character lcmdfl*144,lltmp*144,ascif*72,pascif*72
+      character lcmdfl*144,lltmp*144,ascif*96,pascif*96
       character outs*124,outs248*248
       character path*72,fs*1
       character tab*1

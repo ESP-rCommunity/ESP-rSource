@@ -54,7 +54,7 @@ C     common/translate_id/xlate_id_tag
       character*68 dtdesc
       character*68  mfsdsc, tdtdsc, tmfsds
       character*30 adodsc, tadods
-      character*60 ltpcmp, tltpcm
+      character*60 ltpcmp, tltpcm   ! ?? duplicate name in MFLOW8
       character text*20, buffer*248, flstr*10
       character id_tag_str*16
 

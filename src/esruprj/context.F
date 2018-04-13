@@ -1122,6 +1122,7 @@ C temporal data to be associated with a model.
 #include "model.h"
 #include "geometry.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "tdf2.h"
 #include "control.h"
 #include "CFC_common.h"
@@ -1142,9 +1143,6 @@ C TDF related.
       integer iairn,icaas
       character LAPROB*72
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      character*12 ndnam
       CHARACTER PROMPT1*72, PROMPT2*72
 
       logical MODSIT,browse,OK,dok,unixok
@@ -2099,7 +2097,7 @@ C only for reporting in res.
           elseif(TTYPE(it)(1:8).eq.'NODPRESS')then
 
 C Exit if no flow network present or no nodes defined
-            if(iairn.ne.1)then
+            if(iairn.eq.0)then
               call usrmsg
      &        ('Define flow network before linking node pressures'
      &        ,' ','W')

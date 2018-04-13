@@ -37,6 +37,7 @@ C common blocks into the file and unit specified in COMMON/C21.
 #include "site.h"
 #include "geometry.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "tdf2.h"
 C UA1 in uncertainty.h
 #include "uncertainty.h"
@@ -114,7 +115,6 @@ C Special materials file flag
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       INTEGER :: iairn,icaas
-      COMMON/MFLOW2/NDNAM(0:MNOD)
 
 C Non-linear thermophysical properties.
       COMMON/VTHP18/LNLTHP
@@ -340,7 +340,6 @@ C Zone fluid.
       character descrst1*10,descrfn1*10        ! for 2nd season dates
       
 C An array of mass flow nodes for writing.
-      CHARACTER NDNAM*12
       character namen*12
       dimension namen(mcom)
 

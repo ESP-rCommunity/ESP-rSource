@@ -23,6 +23,7 @@ C an ascii file.
       SUBROUTINE CTLWRT(IUNIT,IER)
 #include "building.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "control.h"
       
       integer lnblnk  ! function definition
@@ -37,10 +38,6 @@ C an ascii file.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/fctl4/iasocc(MCF,mcmp),nfsup(MCF)
 
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/Vld20/Vldtng
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
@@ -49,7 +46,6 @@ C an ascii file.
 
       CHARACTER lctlf*72,ctldoc*248,daytype*12
       character outs*248,outsd*248
-      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12
       character DS*7,DS1*10,DE*7,DE1*10,SSTR*96,SSTR1*96,SSTR2*248
       logical Vldtng
 

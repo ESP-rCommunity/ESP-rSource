@@ -31,7 +31,8 @@ C ******************************** NETREAD *********************************
 C Read tag-data version of graphic network file.
 C MODE = `R` to read an existing file and MODE = `N` to read a new or unknown
 C file. MODE = `S` to read silently. INUNIT is the file unit to use
-C when reading the file.
+C when reading the file. If IER returned as 1 then probably a legacy
+C flow network file, if IER returned as 2 then a 3D flow network file.
       SUBROUTINE NETREAD(INUNIT,MODE,IER)
 
 #include "building.h"
@@ -181,6 +182,18 @@ C Read the file header and check for first-line tag.
         WRITE(OUTS,'(3A)') 
      &    ' Opened network graphics file: ',LFIL(1:LNBLNK(LFIL)),'.' 
         CALL USRMSG(OUTS,' ','-') 
+      ELSEIF(OUTSTR(1:13).EQ.'*Flow_network')THEN
+        vergnf=1.0
+        if(ND.gt.1)then
+          K=18
+          CALL EGETWR(OUTSTR,K,vergnf,0.,2.,'-','version',IER)
+        endif
+        CALL EDISP(IUOUT,' ')    
+        WRITE(OUTS,'(3A)') 
+     &    'Opened 3D flow network file: ',LFIL(1:LNBLNK(LFIL)),'.' 
+        CALL USRMSG(OUTS,' ','-') 
+        ier=2
+        return
       else
         WRITE(OUTS,'(3A)') 'File: ',LFIL(1:LNBLNK(LFIL)), 
      &    ' is not a network graphics file.'
@@ -488,7 +501,8 @@ C << consider depreciating the min and max >>
         endif
       elseif(WORD(1:6).eq.'*Where')then
 
-C Get the icon position.
+C Get the icon position. This could be used for the node or component
+C position in the 3D flow file.
         CALL EGETWR(OUTSTR,K,VAL,-10.0,999.,'W','gnf IcX cent',IER)
         XYZICON(I,1)=VAL
         CALL EGETWR(OUTSTR,K,VAL,-10.0,999.,'W','gnf IcY cent',IER)
@@ -758,11 +772,13 @@ C Check if read continues, if error return.
 
 C ******************************** NETTOFLW *********************************
 C Convert from graphic network file to network flow common blocks.
+C Include position of nodes and components.
       SUBROUTINE NETTOFLW(IER)
 
 #include "building.h"
 #include "gnetwk.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
       
       integer lnblnk  ! function definition
 
@@ -783,19 +799,6 @@ C Grid commons
       INTEGER inwktyp
       REAL vergnf
 
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
-
-      COMMON/MFLOW6/IVALCM(MCMV)
-      COMMON/MFLOW7/LVALCM(MCMV)
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLCLM/DRYB,QDIF,QDNR,IRVH,WDIR,WSPD,WRED
 
 C icontoflow() is a pointer from icon to flow node (positive) or flow
@@ -815,26 +818,29 @@ C Height difference attribute at an icon connection.
       dimension deltah(MNCNN)
 
       CHARACTER OUTS*124,OUTSTR*124
-      character LVALCM*60
       logical foundloc,icnused,icnisnode,close
 C     logical modify,ok
 
       DIMENSION NDID(MNOD)
-      CHARACTER NDID*12,CMNAM*12,NDNAM*12
-      CHARACTER LTPCMP*60,atrerr*72
+      CHARACTER NDID*12
+      CHARACTER atrerr*72
 
 C It is assumed that a graphical flow network file has already
 C been opened and read and the common blocks will now be scanned
 C for relevant information for network flow.
       if(INWKTYP.eq.2.and.NWKTYPSTR(INWKTYP)(1:4).eq.'Flow')then
-        NNOD=0
-        NCMP=0
-        NCNN=0
-        do 9 i=0,MNOD
-          NDNAM(i)=' '
+        NNOD=0; NCMP=0; NCNN=0
+        NDNAM(0)='    '
+        do 9 i=1,MNOD
+          NDNAM(i)=' '; NODASSOC(i,1)='-'; NODASSOC(i,2)='-'
+          NDFLD(i)=0; NDTYP(i)=0; ITND(i)=0; TNOD(i)=0.
+          HNOD(i,1)=0.0; HNOD(i,2)=0.0; HNOD(i,3)=0.0
   9     continue
         do 10 i=1,MCMP
-          CMNAM(i)=' '
+          CMNAM(i)=' '; CMPASSOC(i,1)='-'; CMPASSOC(i,2)='-'
+          ITPCMP(i)=0; ISDCMP(i)=0; ISDCNN(i)=0; NWPCMP(i)=0
+          HCMP(i,1,1)=0.0; HCMP(i,1,2)=0.0; HCMP(i,1,3)=0.0
+          HCMP(i,2,1)=0.0; HCMP(i,2,2)=0.0; HCMP(i,2,3)=0.0
  10     continue
       endif
 
@@ -880,6 +886,8 @@ C pressure (two). Cast string to integer for index of node type or component typ
             icontoflow(I)=NNOD  ! pointer for connection
             icnisnode(I)=.true.
             inodetoicon(NNOD)=i ! reverse pointer
+            HNOD(NNOD,1)=XYZICON(I,1); HNOD(NNOD,2)=XYZICON(I,2) ! node position
+            HNOD(NNOD,3)=XYZICON(I,3)
             write(atrerr,'(6a)') 'atributes=',ATRICN(I,1,1),
      &        ATRICN(I,2,1),ATRICN(I,3,1),ATRICN(I,4,1),ATRICN(I,5,1)
             if(NDTYP(NNOD).eq.0)then
@@ -923,6 +931,11 @@ C Find matching network flow component text descriptor and remember it.
             icontoflow(I)=NCMP*(-1)  ! pointer for connection
             icnisnode(I)=.false.
             icomptoicon(NCMP)=i      ! reverse pointer
+            HCMP(NCMP,1,1)=XYZICON(I,1); HCMP(NCMP,1,2)=XYZICON(I,2)  ! component position
+            HCMP(NCMP,1,3)=XYZICON(I,3)
+            HCMP(NCMP,2,1)=XYZICON(I,1); HCMP(NCMP,2,2)=XYZICON(I,2)
+            HCMP(NCMP,2,3)=XYZICON(I,3)
+	    
             if(ITPCMP(NCMP).eq.10)then
               ISDCMP(NCMP)=3
             elseif(ITPCMP(NCMP).eq.15)then
@@ -972,7 +985,6 @@ C Find matching network flow component text descriptor and remember it.
         endif
 
 C Now look for the first location attribute which is the height...
-C << sort out what to do with height of a component.
         foundloc=.false.
         do 61 ijj=1,NICONATR(I)
           if(ATRTAG(I,ijj,1)(1:8).eq.'location')then
@@ -984,10 +996,12 @@ C << sort out what to do with height of a component.
 
 C Assign icon Z value if different to hnod().
                   read(ATRICN(I,ijj,1),*,IOSTAT=IOS,ERR=1001)
-     &                 HNOD(NNOD)
-                  call eclose(HNOD(NNOD),XYZICON(I,3),0.01,close)
+     &                 HNOD(NNOD,3)
+                  call eclose(HNOD(NNOD,3),XYZICON(I,3),0.01,close)
                   if(.NOT.close)then
-                    XYZICON(I,3)=HNOD(NNOD)
+                    XYZICON(I,1)=HNOD(NNOD,1)
+                    XYZICON(I,2)=HNOD(NNOD,2)
+                    XYZICON(I,3)=HNOD(NNOD,3)
 C                    modify=.true.
                   endif
                 else
@@ -998,13 +1012,13 @@ C icon Z value
                   call eclose(HVAL,XYZICON(I,3),0.01,close)
                   if(.NOT.close)then
                     XYZICON(I,3)=HVAL
-C                    modify=.true.
+C                   modify=.true.
                   endif
                 endif
               elseif(ATRTAG(I,ijj,2)(1:4).eq.'intg')then
 C << ? >>
               elseif(ATRTAG(I,ijj,2)(1:4).eq.'text')then
-C << ? >>
+C << associated zone >>
               endif
             else
 

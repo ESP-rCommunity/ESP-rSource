@@ -334,7 +334,7 @@ C on the parameter act (3 char) ='ipv' or ='cfg'.
 #include "model.h"
 #include "espriou.h"
 #include "ipvdata.h"
-      
+
       integer lnblnk  ! function definition
 
       character file*72,word*20

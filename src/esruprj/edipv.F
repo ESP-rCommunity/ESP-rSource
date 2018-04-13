@@ -1690,6 +1690,7 @@ C IPV description via ipvdata.h.
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       LOGICAL MSTROK,MSTRZN
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
 
 C Simulation parameter sets.
       common/ACTDOM/CFDOK
@@ -1753,6 +1754,14 @@ C of the common variables.
         do 442 ijk=1,nipvassmt
           call EDAYR(ipvastjd(ijk),isstday(ijk),isstmon(ijk))
           call EDAYR(ipvafnjd(ijk),isfnday(ijk),isfnmon(ijk))
+          isstupex(ijk)=ITCNST
+          isbnstepex(ijk)=isbnstep
+          ispnstepex(ijk)=ispnstep
+          issaveex(ijk)=issave
+          isavghex(ijk)=0
+          iscfdactivate(ijk)=0 
+          isicfdys(ijk)=ipvastjd(ijk); isicfdyf(ijk)=ipvafnjd(ijk)
+          scftims(ijk)=1.0; scftimf(ijk)=23.0
   442   continue
       endif
 

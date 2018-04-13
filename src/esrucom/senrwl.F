@@ -193,6 +193,24 @@ C Read associated data.
             call EGETWR(OUTSTR,K,DATU(II,1),1.,8.,'W','high corr.',IER)
             call EGETWR(OUTSTR,K,DATU(II,2),1.,8.,'W','low corr.',IER)
           endif
+        elseif (IDTYPU(II).eq.6) then
+
+C Blind setpoints.
+          call STRIPC(IUALF,OUTSTR,2,ND,0,'Blind data.',IER)
+          if (IER.NE.0) return
+          K=0
+          call EGETWI(OUTSTR,K,IDMAT(II,1),0,4,'W','Blind.',IER)
+          call EGETWI(OUTSTR,K,IDMAT(II,2),1,8,'W','N/A',IER)
+
+C Read associated data.
+          call STRIPC(IUALF,OUTSTR,3,ND,0,'blind data.',IER)
+          if (IER.NE.0) return
+          K=0
+          call EGETWI(OUTSTR,K,IDMAT(II,3),1,3,'W',
+     &      'blind change type ref.',IER)
+          call EGETWR(OUTSTR,K,DATU(II,1),0.,100.,'W','change mag.',IER)
+          call EGETWR(OUTSTR,K,DATU(II,2),0.,100.,'W','change mag.',IER)
+
         elseif (IDTYPU(II).eq.101) then
 
 C Zone level assumptions.
@@ -288,23 +306,34 @@ C For each zone read the zone id number and then the number of surfaces
 C included in the definition.
           do 201 IJ=1,NZGU(II)
             call STRIPC(IUALF,OUTSTR,2,ND,
-     &                                  0,'zones no and surfaces.',IER)
+     &        0,'zones no and surfaces and tmc.',IER)
             if (IER.NE.0) return
             K=0
             call EGETWI(OUTSTR,K,NZNOGU(II,IJ),
      &        1,MCOM,'W','zones no.',IER)
             call EGETWI(OUTSTR,K,NSGU(II,IJ),
-     &        1,MCOM,'W','no of surfaces.',IER)
+     &        0,MS,'W','no of surfaces.',IER)
 
 C Read surface list.
             call STRIPC(IUALF,OUTSTR,NSGU(II,IJ),
      &        ND,0,'surface list.',IER)
             if (IER.NE.0) return
-            K=0
-            do 202 IK=1,NSGU(II,IJ)
-              call EGETWI(OUTSTR,K,NSNOG(II,IJ,IK),
-     &          1,MCOM,'W','surface no.',IER)
- 202        continue
+
+            if(NSGU(II,IJ).eq.0)then
+C If there were no surfaces there might be TMC.
+              K=0
+              call EGETWI(OUTSTR,K,IV1,1,MS,'W','no of tmc.',IER)
+              call EGETWI(OUTSTR,K,IV2,1,MS,'W','tmc. period',IER)
+              NTGU(II,IJ,1)=IV1
+              NTGU(II,IJ,2)=IV2
+C              write(6,*) 'READUAL ntgu',II,IJ,IV1,IV2
+            else
+              K=0
+              do 202 IK=1,NSGU(II,IJ)
+                call EGETWI(OUTSTR,K,IV3,1,MCOM,'W','surface no.',IER)
+                NSNOG(II,IJ,IK)=IV3
+ 202          continue
+            endif
  201      continue
         endif
  20   continue
@@ -445,6 +474,14 @@ C Layer thickness decode attributes including material name
      &      IDMAT(II,2),' # Heat transfer ref'
           datmsg=' Halcrow time invarient'
           datmsg2=' -'
+        elseif (IDTYPU(II).eq.6) then
+          write (outs,'(a)') ' # Change type: optical properties'
+          write (IUALF,'(i4,a)',IOSTAT=ISTAT,ERR=1003)IDTYPU(II),
+     &      outs(1:lnblnk(outs))
+          write (IUALF,'(2i4,a)',IOSTAT=ISTAT,ERR=1003)IDMAT(II,1),
+     &      IDMAT(II,2),' # setpoint '
+          datmsg=' blind setpoint'
+          datmsg2=' -'
         elseif (IDTYPU(II).eq.101) then
           write (outs,'(a)') ' # Change type: Zone volume or area'
           write (IUALF,'(i4,a)',IOSTAT=ISTAT,ERR=1003)IDTYPU(II),
@@ -479,8 +516,8 @@ C Layer thickness decode attributes including material name
         endif
 
 C << can we be more specific in comment? >>
-        write(6,*) 'datmsg is ',datmsg(1:lnblnk(datmsg))
-        write(6,*) 'datmsg2 is ',datmsg2(1:lnblnk(datmsg2))
+C        write(6,*) 'datmsg is ',datmsg(1:lnblnk(datmsg))
+C        write(6,*) 'datmsg2 is ',datmsg2(1:lnblnk(datmsg2))
 
         if (IDTYPU(II).eq.1001.or.IDTYPU(II).eq.2) then
           write (IUALF,50,IOSTAT=ISTAT,ERR=1003)IDMAT(II,3),
@@ -523,9 +560,14 @@ C Data for each zone.
           write (IUALF,'(2i4,a)',IOSTAT=ISTAT,ERR=1003)
      &      NZNOGU(II,IJ),NSGU(II,IJ),
      &      ' # Zone number Number of surfaces'
-          write (IUALF,70,IOSTAT=ISTAT,ERR=1003)
-     &      (NSNOG(II,IJ,IK),IK=1,NSGU(II,IJ))
-  70      FORMAT(25i3,' # Surfaces')
+          if(NSGU(II,IJ).gt.0)then
+            write (IUALF,70,IOSTAT=ISTAT,ERR=1003)
+     &        (NSNOG(II,IJ,IK),IK=1,NSGU(II,IJ))
+  70        FORMAT(25i3,' # Surfaces')
+          else
+            write (IUALF,'(2i4,a)',IOSTAT=ISTAT,ERR=1003)
+     &        NTGU(II,IJ,1),NTGU(II,IJ,2),' # TMC type & period'
+          endif
 C          write (IUALF,'(25i3,a)',IOSTAT=ISTAT,ERR=1003)
 C     &      (NSNOG(II,IJ,IK),IK=1,NSGU(II,IJ)),' # Surfaces'
  2100   continue
@@ -705,6 +747,9 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht
             elseif(IDTYPU(I).eq.5) then  ! if hc coefficients
               write(outs,'(a)')' Convection coefficients '
               call edisp (iuout,outs)
+            elseif(IDTYPU(I).eq.6) then  ! if optical properties
+              write(outs,'(a)')' Optical properties '
+              call edisp (iuout,outs)
             elseif(IDTYPU(I).eq.101) then  ! if geometry focus
               write(outs,'(a)')' Zone air volume '
               call edisp (iuout,outs)
@@ -745,10 +790,15 @@ C List locations.
             call edisp (iuout,'  ')
             write(outs,'(a,i4,a,a)')'Location :',I,'; ',LLOC(I)
             call edisp (iuout,outs)
-            call edisp (iuout,' Zone           | Surface list ')
+            call edisp (iuout,' Zone           | Surface or TMC list ')
             do 30 J=1,NZGU(I)
-              write (outs,'(1x,a,a,25i3)')ZNAME(NZNOGU(I,J)),':',
-     &          (NSNOG(I,J,K),K=1,NSGU(I,J))
+              if(NSGU(I,J).gt.0)then
+                write (outs,'(1x,a,a,25i3)')ZNAME(NZNOGU(I,J)),':',
+     &            (NSNOG(I,J,K),K=1,NSGU(I,J))
+              else
+                write (outs,'(1x,a,a,2i3,a)')ZNAME(NZNOGU(I,J)),':',
+     &            NTGU(I,J,1),NTGU(I,J,2),' tmc type & period'
+              endif
               call edisp (iuout,outs)
  30         continue
           endif

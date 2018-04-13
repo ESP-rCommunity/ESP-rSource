@@ -31,16 +31,14 @@ C ASKRNOD presents a list of mass flow nodes returning the index IS.
       SUBROUTINE ASKRNOD(head,MOD,IS,IER)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "epara.h"
     
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
       DIMENSION VERT(35),FTYPN(10)
 
       character*(*) head
-      CHARACTER VERT*72,KEY*1,MOD*1,NDNAM*12,NODTYP*12,
+      CHARACTER VERT*72,KEY*1,MOD*1,NODTYP*12,
      &FTYPN*6
       LOGICAL SELECT
       integer MVERT,IVERT  ! max items and current menu item
@@ -97,7 +95,7 @@ C Set up the node description string (12 chars)
           endif
           WRITE(VERT(M),
      &'(A1,1X,A12,2X,A6,3X,A12,5X,F5.1,3X,F9.1,1X,F9.1)')
-     &KEY,NDNAM(L),FTYPN(NDFLD(L)),NODTYP,HNOD(L),SUPNOD(L,1),
+     &KEY,NDNAM(L),FTYPN(NDFLD(L)),NODTYP,HNOD(L,3),SUPNOD(L,1),
      &SUPNOD(L,2)
         ENDIF
    10 CONTINUE
@@ -183,18 +181,14 @@ C ASKRCMP presents a list of mass flow components returning the index IS.
       SUBROUTINE ASKRCMP(head,MOD,IS,IER)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "epara.h"
     
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
 
       DIMENSION VERT(35)
       character*(*) head
       CHARACTER VERT*84,KEY*1,MOD*1
-      CHARACTER LTPCMP*60,CMNAM*12
       LOGICAL SELECT
       integer MVERT,IVERT ! max items and current menu item
 
@@ -317,17 +311,12 @@ C Starting and ending node numbers.
       SUBROUTINE ASKRCON(head,MOD,INODPS,INODNE,IC,IER)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "epara.h"
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       DIMENSION VERT(35)
 
       character*(*) head
       CHARACTER VERT*68,KEY*1,MOD*1
-      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12
       LOGICAL SELECT
       integer MVERT,IVERT ! max items and current menu item
 

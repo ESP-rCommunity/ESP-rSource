@@ -35,6 +35,7 @@ C CFDDTA - Reads the CFD configuration file.
       SUBROUTINE CFDDTA(itrc,itu,ICOMP,IBLD,IMFN,IER)
 #include "cfd.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "building.h"
 #include "geometry.h"
       
@@ -105,16 +106,6 @@ C     &              Zplawe(MNREG,MNZ),NREG(3,MNZ)
       COMMON/CONST/GREAT,small,GRAV
       common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
-      COMMON/MFLOW7/LVALCM(MCMV)
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/LINRFC1/URFCD(MNZ)
       COMMON/NSSWP/NSSWPU(MNZ),NSSWPV(MNZ),NSSWPW(MNZ),NSSWPP(MNZ),
      &             NSSWPT(MNZ),NSSWPK(MNZ),NSSWPE(MNZ)
@@ -157,7 +148,7 @@ C Flow visualization common blocks.
       Character*1 THSRC,RELFAC,OPNTYP
       Character*124 OUTSTR,WORD,WORD1,WORD2
       CHARACTER*72 TITLE,CFTRFL,HSID,LPHI,LCFD,Lflpar
-      CHARACTER LVALCM*60,LTPCMP*60,CMNAM*12,NDNAM*12,outs*124
+      CHARACTER outs*124
       CHARACTER*72 LVEC,LBIT
       character solveqn*80
       LOGICAL BUOYA,BOUSSA
@@ -800,7 +791,7 @@ C Define a new node to represent the dfs domain.
         NDNAM(NNOD)='cfd'
         NDFLD(NNOD)=1
         NDTYP(NNOD)=2
-        HNOD(NNOD)=0.0
+        HNOD(NNOD,1)=0.0; HNOD(NNOD,2)=0.0; HNOD(NNOD,3)=0.0
         ITND(NNOD)=0
         TNOD(NNOD)=0.0
 
@@ -1395,16 +1386,12 @@ C ********************* IGETCN *********************
 C IGETCN - Identify mass flow connection. (used for coupling purpose)
       FUNCTION IGETCN(OUTSTR,WORD,WORD1,WORD2,IER)
 #include "net_flow.h"
+#include "net_flow_data.h"
 
       common/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
 
       CHARACTER WORD*72,WORD1*72,WORD2*72,NODLE*12,NODRI*12,CMPNM*12
-      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,OUTSTR*124
+      CHARACTER OUTSTR*124
 
       NODLE=WORD(1:12)
       NODRI=WORD1(1:12)
@@ -1433,12 +1420,11 @@ C IGETND - Identify mass flow network node associated with a CFD node.
 C          (used for coupling purpose)
       FUNCTION IGETND(OUTSTR,WORD,IER)
 #include "net_flow.h"
+#include "net_flow_data.h"
 
       common/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
 
-      CHARACTER WORD*72,NODE*12,NDNAM*12,OUTSTR*124
+      CHARACTER WORD*72,NODE*12,OUTSTR*124
 
       NODE=WORD(1:12)
       DO 10 I=1,NNOD

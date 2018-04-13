@@ -1519,7 +1519,7 @@ C Check in graphics mode.
 C Debug.
       ZXMN(1)=0.0; ZYMN(1)=0.0; ZZMN(1)=0.0
       ZXMX(1)=XU(NI); ZYMX(1)=YV(NJ); ZZMX(1)=ZW(NK)
-      write(6,*) 'VSB3DF ',gact,ZXMN(1),ZXMX(1),ZYMN(1),
+      write(6,*) 'VSB3DF ',ZXMN(1),ZXMX(1),ZYMN(1),
      &  ZYMX(1),ZZMN(1),ZZMX(1)
 
 C Draw round solid boundaries and last character of label.
@@ -1824,21 +1824,16 @@ C To support stand-alone display via DFV.
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer iicol
-      integer iupdown,isym,ibx,iby,ixsl,iysl    ! passed to etplot
-      integer iid1,iid2,iid3,iid4
-      integer iigt,ileft,iright      ! passed to eswline
-      integer iigl,iigr,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iid2,iid4
+      integer iright      ! passed to eswline
+      integer iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iicol
-      integer*8 iupdown,isym,ibx,iby,ixsl,iysl    ! passed to etplot
-      integer*8 iid1,iid2,iid3,iid4
-      integer*8 iigt,ileft,iright      ! passed to eswline
-      integer*8 iigl,iigr,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iid2,iid4
+      integer*8 iright      ! passed to eswline
+      integer*8 iimenu
 #endif
-      integer iiright   !passed to wstxpt
       logical colok,cscaleok
       real tempmin,tempmax,trange,colmult,NOW,FRACH
       character souts*48

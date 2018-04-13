@@ -814,12 +814,10 @@ C *******  GCL05 Global Multi sensing Controller.
 #include "building.h"
 #include "control.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 c#include "plant.h"
       COMMON/GCLSOL/igf,IDTYPG,IPERG
       COMMON/PCLOP8/LASTOUT(MCF)
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
 c      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       COMMON/mfctl/ctlpos(MCNN)

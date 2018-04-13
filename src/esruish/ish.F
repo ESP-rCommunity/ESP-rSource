@@ -160,10 +160,10 @@ C Name of current application.
       character descrh*5,descrd*5,inf*144,lcmdfl*144
       character path*72,outstr*124
       character inz*16,inzone*16,zn*12,pact*16,paction*16
-      character ascif*72,pascif*72
+      character ascif*96,pascif*96
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
       character xfile*144,tg*1,delim*1,mode*4
-      character exportfile*72 ! for ascii shading file
+      character exportfile*96 ! for ascii shading file
 
       character cVnum*16      ! returned from ESPrVersionNum
       character pagestitle*42 ! for banner title via epages call
@@ -1461,7 +1461,7 @@ C Export or import ASCII (silent).
            lnshd=lnblnk(lshad(icomp))
            if(iw.eq.1)then
              write(exportfile,'(2a)') lshad(icomp)(1:lnshd),'a'
-             call easks(exportfile,' ','Export file name?',72,
+             call easks(exportfile,' ','Export file name?',96,
      &         'siexp.txt','shdins export',ier,nbhelp)
              write(outs,'(2a)') ' Creating ASCII file ',
      &         exportfile(1:lnblnk(exportfile))
@@ -1470,7 +1470,7 @@ C Export or import ASCII (silent).
              call pauses(1)
            elseif(iw.eq.2)then
              write(exportfile,'(2a)') lshad(icomp)(1:lnshd),'a'
-             call easks(exportfile,' ','Import file name?',72,
+             call easks(exportfile,' ','Import file name?',96,
      &         'siexp.txt','shdins import',ier,nbhelp)
              write(outs,'(3a)') ' Reading ASCII file ',
      &         exportfile(1:lnblnk(exportfile)),'...'
@@ -1674,7 +1674,7 @@ C  ifstat = 8  new file filled via import of ascii file
       integer iobstrtrace  ! set to non-zero if already written
       common/obstrc/iobstrtrace(mcom,mb)
 
-      character exportfile*72,paction*16,outs*124
+      character exportfile*96,paction*16,outs*124
 
       logical silent,xst
 
@@ -2065,3 +2065,4 @@ C In support of floating point exceptions.
       end
 #endif
 #endif
+

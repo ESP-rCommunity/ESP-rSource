@@ -40,14 +40,11 @@ C     VOL() - volume used for calculating change rate in case IDIM=3
       SUBROUTINE MFTABL(itrc,IFRES,ier)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
       COMMON/DISPL/IDAYF,IDAYL,IFDAY,IFTIME
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
       COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG
@@ -64,7 +61,7 @@ C     VOL() - volume used for calculating change rate in case IDIM=3
       DOUBLE PRECISION NDOFIN(MNOD),NDOFUT(MNOD)
 
       character WORD*20,outs*124,OUTSTR*124
-      character PERST1*14,PERST2*44,PERST3*44,NDNAM*12
+      character PERST1*14,PERST2*44,PERST3*44
       integer NITMS,INO ! max items and current menu item
 
 C For help messages
@@ -171,8 +168,8 @@ C Node ok, inform user of it`s selection.
           helptopic='zone_volume_evaluated'
           call gethelptext(helpinsub,helptopic,nbhelp)
           VOLUME=SUPNOD(INOD,2)
-          write(outs,'(A,A12,A,F8.2,A)')' The current volume of ',
-     &                 NDNAM(INOD),' is ',VOLUME,'m^3'
+          write(outs,'(3A,F8.2,A)')' The current volume of ',
+     &      NDNAM(INOD),' is ',VOLUME,'m^3'
           CALL EASKR(VOLUME,' ',
      &      ' Volume (m^3) in evaluating fluid change rates/hour? ',
      &      0.0,'F',0.,'-',1.,'volume per hour',IER,nbhelp)
@@ -354,6 +351,7 @@ C
 
 #include "building.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
@@ -367,12 +365,6 @@ C ICLIM,LCLIM (for climate file)
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/DISPL/IDAYF,IDAYL,IFDAY,IFTIME
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
       COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG
@@ -391,7 +383,6 @@ C 248 character buffer suppors ~15 columns of data.
       character PERST1*14,PERST2*44,PERST3*44,outs*124,OUTSTR*124
       character louts*248
       character NIS*12,NIE*12,WORD*20,FORMHD*29,FORMCL*29
-      CHARACTER NDNAM*12
       DIMENSION  COLCNT(MCOLT),ICOLIX(MCOLT,2)
       logical OK,dok
       integer NITMS,INO ! max items and current menu item
@@ -503,10 +494,10 @@ C Add one or more nodes to the table.
         NCOL=NCOL+1
         ICOLIX(NCOL,1)=1
         ICOLIX(NCOL,2)=INOD
-        write(COLHDS(NCOL),'(2X,A12)') NDNAM(INOD)
+        write(COLHDS(NCOL),'(2X,A)') NDNAM(INOD)
 
 C Node ok, inform user of it`s selection.
-        write(outs,'(1X,A,A)') NDNAM(INOD),' added to the display list.'
+        write(outs,'(1X,2A)') NDNAM(INOD),' added to the display list.'
         call edisp(iuout,outs)
 
 C Verify the node volume if volume flow set.
@@ -514,8 +505,8 @@ C Verify the node volume if volume flow set.
           helptopic='mfs_table_current_vol'
           call gethelptext(helpinsub,helptopic,nbhelp)
           VOLUME=SUPNOD(INOD,2)
-          write(outs,'(A,A12,A,F8.2,A)')' The current volume of ',
-     &                 NDNAM(INOD),' is ',VOLUME,'m^3'
+          write(outs,'(3A,F8.2,A)')' The current volume of ',
+     &      NDNAM(INOD),' is ',VOLUME,'m^3'
           CALL EASKR(VOLUME,' ',
      &     ' Volume (m^3) in evaluating fluid change rates/hour? ',
      &     0.0,'F',0.,'-',1.,'volume per hour',IER,nbhelp)
@@ -535,11 +526,11 @@ C Add one or more connections to the table
         ICOLIX(NCOL,1)=2
         ICOLIX(NCOL,2)=ICNN
 
-        write(COLHDS(NCOL),'(1X,A6,A1,A6)')
-     &        NDNAM(IS)(1:6),'-',NDNAM(IE)(1:6)
+        write(COLHDS(NCOL),'(1X,3A)')
+     &    NDNAM(IS)(1:6),'-',NDNAM(IE)(1:6)
 
-        write(outs,'(1X,A12,A12,A)') NDNAM(IS),NDNAM(IE),
-     &                           ' added to the display list.'
+        write(outs,'(1X,3A)') NDNAM(IS),NDNAM(IE),
+     &    ' added to the display list.'
         call edisp(iuout,outs)
         IF(IDIM.EQ.3) THEN
           NIS=NDNAM(IS)

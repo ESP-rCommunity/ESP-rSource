@@ -259,6 +259,31 @@ strip:
 	cd $(SRCdir)/esruvew; $(MAKE) strip
 	cd $(SRCdir)/esrustats; $(MAKE) strip
 
+bincopy:
+	cp esruaco/aco $(ESPBinDir)/aco
+	cp esrub2e/b2e $(ESPBinDir)/b2e
+	cp esrubps/bps $(ESPBinDir)/bps
+	cp esrudbm/dbm $(ESPBinDir)/dbm
+	cp esrudfs/dfs $(ESPBinDir)/dfs
+	cp esrudfs/dfv $(ESPBinDir)/dfv
+	cp esruc2e/c2e $(ESPBinDir)/c2e
+	cp esrucdb/cdb $(ESPBinDir)/cdb
+	cp esruclm/clm $(ESPBinDir)/clm
+	cp esrue2r/e2r $(ESPBinDir)/e2r
+	cp esrucnv/ecnv $(ESPBinDir)/ecnv
+	cp esrueco/eco $(ESPBinDir)/eco
+	cp esrugrd/grd $(ESPBinDir)/grd
+	cp esruish/ish $(ESPBinDir)/ish
+	cp esrumfs/mfs $(ESPBinDir)/mfs
+	cp esrumld/mld $(ESPBinDir)/mld
+	cp esrumrt/mrt $(ESPBinDir)/espvwf
+	cp esrunet/enet $(ESPBinDir)/enet
+	cp esrupdb/pdb $(ESPBinDir)/pdb
+	cp esruprj/prj $(ESPBinDir)/prj
+	cp esrures/res $(ESPBinDir)/res
+	cp esruvew/viewer $(ESPBinDir)/vewier
+	cp esrustats/stats $(ESPBinDir)/stats
+
 tars: clean
 	rm -f esp-r.tar esp-r.tar.gz esp-r_training.tar esp-r_training.tar.gz
 	tar cvf - esru* archive bitmaps lib cetc Install* Makefile* Readme* bin \

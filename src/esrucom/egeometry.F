@@ -37,7 +37,8 @@ C  ESCROT:  Rotate a zone by ANG degrees around point x1,y1.
 C  SURINFO: Display surface details and attributes in a tabular format.
 C  ZINFO:   Returns descriptive information zone geometry.
 C  ZGUPDATE: takes the geometry common G1 and updates G7 & PREC2
-C  SURLEHI: Determines 2D bounding box size of surface.
+C  SURLEHI: Determines 2D bounding box size of surface (G1 required).
+C  ZSURLEHI: Determines 2D bounding box size give a zone & surface.
 C  SUREDGEADJ: detects polygon edge associations (how many assoc. surfs etc.)
 C  SURREL: checks each surface I in a zone and relates it to
 C          another surface J in that zone.
@@ -1213,19 +1214,17 @@ C Unused index. Generate packed strings to write out on as many lines as reqd.
       ipos=1
       do while (itrunc.ne.0)
         call ailist(ipos,nzsur(icomp),ngld,MS,'C',lkouts,loutlen,itrunc)
-C        call ailist(ipos,nzsur(icomp),ngld,MS,'C',louts,loutlen,itrunc)
         write(ifilg,'(1x,a)',IOSTAT=ios,ERR=14) lkouts(1:loutlen)
         ipos=itrunc+1
       end do
 
-C Surfaces indentation. Call to arlist should generate long lines of
+C Surfaces indentation (depreciated). Call to arlist should generate long lines of
 C packed text. Code should be good for any number of surfaces.
       WRITE(IFILG,'(a)',IOSTAT=ios,ERR=13) '# surfaces indentation (m)'
       itrunc=1
       ipos=1
       do while (itrunc.ne.0)
-        call arlist(ipos,nsur,Y0S,MS,'C',lkouts,loutln,itrunc)
-C        call arlist(ipos,nsur,Y0S,MS,'C',louts,loutln,itrunc)
+        call arlist(ipos,nzsur(icomp),Y0S,MS,'C',lkouts,loutln,itrunc)
         write(ifilg,'(1x,a)',IOSTAT=ios,ERR=14) lkouts(1:loutln)
         ipos=itrunc+1
       end do
@@ -4871,6 +4870,7 @@ C Check for small volume.
 C*******************************************************************
 C SURLEHI Determines the overall length and height of a
 C surface (bounding box) and passes the vaules back as XYMAX and ZMAX.
+C This variant assumes current G1 common block.
 C Uses a temporary transform into 2D to get this data so
 C it work on surface of most orientations.
 
@@ -4895,9 +4895,13 @@ C surface of the plane. Make up XX,YY,ZZ to pass across to the
 C transform routine.
       N = NVER(IS)
       DO 150 J = 1,N
-        XX(J) = X(JVN(IS,J))
-        YY(J) = Y(JVN(IS,J))
-        ZZ(J) = Z(JVN(IS,J))
+        if(JVN(IS,J).gt.0)then
+          XX(J) = X(JVN(IS,J))
+          YY(J) = Y(JVN(IS,J))
+          ZZ(J) = Z(JVN(IS,J))
+        else
+          XX(J) = 0.0; YY(J) = 0.0; ZZ(J) = 0.0
+        endif
   150 CONTINUE
 
 C Find transformation matrices that normalise face.
@@ -4981,9 +4985,152 @@ C to XMAX and YMAX (upper right).
       ENDDO
 
 C Debug.
+C      write(6,*) 'SURLEHI ',is
 C      write(6,*) 'x and y ',XMIN,XMAX,YMIN,YMAX
 C      write(6,*) ZMAX,XYMAX
 C      write(6,*) 'llpos lrpos urpos ulpos',llpos,lrpos,urpos,ulpos
+C      write(6,'(a,i3,4f5.1,a,i3,4f5.1,a,4i4)')
+C     & 'lower left at ',llpos,shortest,
+C     &  XX(llpos),YY(llpos),ZZ(llpos),
+C     &  ' lr',lrpos,shortestlr,XX(lrpos),
+C     &  YY(lrpos),ZZ(lrpos),
+C     &  ' verts are ',JVN(IS,llpos),JVN(IS,lrpos),JVN(IS,urpos),
+C     &  JVN(IS,ulpos)
+C      write(6,'(a,i3,4f5.1,a,i3,4f5.1)')
+C     & 'upper left at ',ulpos,shortestul,
+C     &  XX(ulpos),YY(ulpos),ZZ(ulpos),
+C     &  ' ur',urpos,shortestur,XX(urpos),
+C     &  YY(urpos),ZZ(urpos)
+
+      return
+      END
+
+
+C*******************************************************************
+C ZSURLEHI Determines the overall length and height of a
+C surface (bounding box) and passes the vaules back as XYMAX and ZMAX.
+C This variant does not use G1 common block.
+C Uses a temporary transform into 2D to get this data.
+
+      SUBROUTINE ZSURLEHI(IZ,IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)
+#include "building.h"
+#include "geometry.h"
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
+
+      DIMENSION  XX(MV),YY(MV),ZZ(MV)
+      DIMENSION  VP(3),EP(3),EQN(4)
+      DIMENSION  TMAT(4,4),RMAT(4,4)
+
+      real XYMAX,ZMAX
+      real XMIN,YMIN,XMAX,YMAX
+      real shortest,shortestlr,shortestul,shortestur
+      integer llpos,lrpos,ulpos,urpos     ! closest to BB corners for parent
+
+C Set maximum values to zero.
+      XYMAX = 0.0; ZMAX = 0.0
+
+C Transform surface into into site coordinates in the
+C surface of the plane. Make up XX,YY,ZZ to pass across to the
+C transform routine.
+      icc=IZSTOCN(IZ,IS)
+      N = NZNVER(icc)
+      DO 150 J = 1,N
+        if(NZJVN(icc,J).gt.0)then
+          XX(J) = VCOORD(iz,NZJVN(icc,j),1)
+          YY(J) = VCOORD(iz,NZJVN(icc,j),2)
+          ZZ(J) = VCOORD(iz,NZJVN(icc,j),3)
+        else
+          XX(J) = 0.0; YY(J) = 0.0; ZZ(J) = 0.0
+        endif
+  150 CONTINUE
+
+C Find transformation matrices that normalise face.
+      call PLEQN(XX,YY,ZZ,N,VP,EQN,IERR)
+      IF (IERR .LT. 0) return
+      DO 250 J = 1,3
+        EP(J) = VP(J) + EQN(J)
+  250 CONTINUE
+      CALL  EYEMAT(EP,VP,1.0,TMAT,RMAT)
+
+C Transform all points in surface and find lower left corner
+C and the upper right corner.
+      XMIN=100.0; YMIN=100.0; ZMin=100.0
+      XMAX=0.0; YMAX=0.0
+      DO 300 I=1,N
+        CALL ORTTRN(XX(I),YY(I),ZZ(I),TMAT,X1,Y1,ZZZ,IERR)
+        IF(X1.LT.XMIN)XMIN=X1
+        IF(Y1.LT.YMIN)YMIN=Y1
+        IF(X1.GT.XMAX)XMAX=X1
+        IF(Y1.GT.YMAX)YMAX=Y1
+        IF(ZZZ.LT.ZMIN)ZMIN=ZZZ
+  300 CONTINUE
+
+C Determine the height difference between the vertices. If the height
+C difference is greater than the previous values then define as new
+C maximum.
+      ZVAL = ABS(YMAX - YMIN)
+      If (ZVAL.gt.ZMAX) ZMAX = ZVAL
+
+C Determine the distance between the vertices on the x plane. If the
+C distance is greater than the previous values then define as new
+C maximum.
+      XYVAL= ABS(XMAX - XMIN)
+      if (XYVAL.gt.XYMAX) XYMAX = XYVAL
+
+C Loop through the points again and figure out which one is closest
+C to XMIN and YMIN (lower left).
+      shortest=100.0; llpos=0
+      DO I=1,N
+        CALL ORTTRN(XX(I),YY(I),ZZ(I),TMAT,X1,Y1,ZZZ,IERR)
+        vdis= crowxyz(xmin,ymin,0.0,x1,y1,0.0)
+        if(vdis.lt.shortest)then
+          shortest=vdis
+          llpos=i
+        endif
+      ENDDO
+
+C Loop through the points again and figure out which one is closest
+C to XMAX and YMIN (lower right).
+      shortestlr=100.0; lrpos=0
+      DO I=1,N
+        CALL ORTTRN(XX(I),YY(I),ZZ(I),TMAT,X1,Y1,ZZZ,IERR)
+        vdis= crowxyz(xmax,ymin,0.0,x1,y1,0.0)
+        if(vdis.lt.shortestlr)then
+          shortestlr=vdis
+          lrpos=i
+        endif
+      ENDDO
+
+C Loop through the points again and figure out which one is closest
+C to XMIN and YMAX (upper left).
+      shortestul=100.0; ulpos=0
+      DO I=1,N
+        CALL ORTTRN(XX(I),YY(I),ZZ(I),TMAT,X1,Y1,ZZZ,IERR)
+        vdis= crowxyz(xmin,ymax,0.0,x1,y1,0.0)
+        if(vdis.lt.shortestul)then
+          shortestul=vdis
+          ulpos=i
+        endif
+      ENDDO
+
+C Loop through the points again and figure out which one is closest
+C to XMAX and YMAX (upper right).
+      shortestur=100.0; urpos=0
+      DO I=1,N
+        CALL ORTTRN(XX(I),YY(I),ZZ(I),TMAT,X1,Y1,ZZZ,IERR)
+        vdis= crowxyz(xmax,ymax,0.0,x1,y1,0.0)
+        if(vdis.lt.shortestur)then
+          shortestur=vdis
+          urpos=i
+        endif
+      ENDDO
+
+C Debug.
+C      write(6,'(a,3i4,a,6f7.2)') 'ZSURLEHI ',iz,is,icc,
+C     &  ' x & y &z',XMIN,XMAX,YMIN,YMAX,ZMAX,XYMAX
+C      write(6,'(a,4i4)') 'llpos lrpos urpos ulpos',
+C     &  llpos,lrpos,urpos,ulpos
 C      write(6,'(a,i3,4f5.1,a,i3,4f5.1,a,4i4)')
 C     & 'lower left at ',llpos,shortest,
 C     &  XX(llpos),YY(llpos),ZZ(llpos),
@@ -5888,10 +6035,10 @@ C Looser definition e.g. at a door or glazing with shared edge.
 
 C Do a bounding box test of both surfaces. If loop smaller then it
 C is probably a frame child. << TESTING >>
-                CALL SURLEHI(loop,XYMAXa,ZMAXa,llposa,lrposa,ulposa,
-     &            urposa)
-                CALL SURLEHI(loop2,XYMAXb,ZMAXb,llposb,lrposb,ulposb,
-     &            urposb)
+                CALL ZSURLEHI(icomp,loop,XYMAXa,ZMAXa,llposa,lrposa,
+     &            ulposa,urposa)
+                CALL ZSURLEHI(icomp,loop2,XYMAXb,ZMAXa,llposb,lrposb,
+     &            ulposb,urposb)
                 if(XYMAXa.lt.XYMAXb)then
                   write(outs,'(3a,2i3,2f7.3)') sname(icomp,loop),
      &              'frame child of ',sname(icomp,loop2),loop,loop2,

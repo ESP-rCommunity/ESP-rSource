@@ -39,7 +39,7 @@ OBJECTS = prj.o anlytc.o arrow.o ascii_mat.o basesimp.o \
 	  egbxml.o egrid.o egtgeom.o emeta.o emfnetw.o emkcfg.o enetmisc.o enetprj.o enetrewr.o \
 	  eroper.o esru_misc.o esystem.o exlgrad.o explor.o filelist.o folders.o \
 	  ground_temp_mains.o gtopol.o h3k_utils.o hcfmk.o hvacgui.o initalc.o insert.o item.o \
-	  maintn.o mcdbscn.o mfcdat.o mfelst.o mfnmsc.o mfprb1.o mfprb2.o mfrlst.o \
+	  maintn.o mcdbscn.o mfcdat.o mfelst.o mfnmsc.o mfprb1.o mfprb2.o mfprb3.o mfrlst.o \
 	  mksbem.o MultiYear_climate.o mvalid.o \
 	  net2pdf.o newnet.o nwkrewr.o plelevvc.o pltcfg.o pltnet.o predefinedwr.o prescoef.o \
 	  predef3dv.o prjdmds.o prjfmk.o prjqa.o psychro.o rcdblist.o read3dv.o readTrnsys.o \

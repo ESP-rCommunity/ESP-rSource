@@ -176,6 +176,7 @@ C LPREDEF (for predefined objects)
 C default file names for databases
 
       include "net_flow.h"
+      include "net_flow_data.h"
       include "tdf2.h"
       include "cfd.h"
 C UA1 from uncertainty.h
@@ -263,9 +264,6 @@ C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       INTEGER :: IAIRN,ICAAS
 
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      INTEGER :: NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/NWKSTR/NWKNAM,NWKDSC,NWKTYPSTR(MNWKTYP)
       CHARACTER NWKNAM*72,NWKDSC*72,NWKTYPSTR*12
 
@@ -580,7 +578,6 @@ C Simulation parameters
       character GTGEOM*72
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)
-      CHARACTER NDNAM*12
       character hvacfile*72,LBSIMP*72,LFClds*72
       character gshpfile*72
       character gcepfile*72
@@ -3309,7 +3306,7 @@ C Check if there is an fluid (1=text, 2=grphic) air flow network available: 0 = 
       CALL STRIPC(IUC,OUTSTR,0,ND,1,'flow network index',IER)
       IF(IER.NE.0)goto 1
  343  K=0
-      CALL EGETWI(OUTSTR,K,IAIRN,0,2,'F','IAIRN',IER)
+      CALL EGETWI(OUTSTR,K,IAIRN,0,3,'F','IAIRN',IER)
       IF(IER.NE.0) GOTO 1
 
 C If there is an fluid (=air) flow network available then:
@@ -3352,7 +3349,9 @@ C Fill valid component type arrays
         CALL MFCDAT
 
 C Read the file header and check for first-line tag. If 4 items
-C then an older file so rewind the file and then call emfread.
+C then an legacy file so rewind the file and then call emfread. If
+C OUTSTR is *Graphical_network call netread and if OUTSTR is
+C *Flow_network call EMF3DREAD.
         CALL STRIPC(IUF,OUTSTR,99,ND,0,'1st line of file',IER)
         if(IER.NE.0)then
           outs='Problem scanning flow network file...aborting cfg scan'
@@ -3366,13 +3365,7 @@ C then an older file so rewind the file and then call emfread.
             goto 6
           endif
         endif
-        IF(ND.GE.4)THEN
-          REWIND(IUF,ERR=999)
-          CALL EMFREAD(IUF,IER)
-          CALL ERPFREE(IUF,ISTAT)
-          IAIRN = 1
-        elseif((ND.eq.1.or.ND.eq.2).and.
-     &          OUTSTR(1:18).EQ.'*Graphical_network')then
+        if(OUTSTR(1:18).EQ.'*Graphical_network')then
 
 C Found a graphic network file, scan it (silently) and then convert it
 C into network flow common blocks.
@@ -3380,6 +3373,20 @@ C into network flow common blocks.
           CALL ERPFREE(IUF,ISTAT)
           call NETREAD(IUF,'S',IER)
           CALL NETTOFLW(ier)
+        elseif(OUTSTR(1:13).EQ.'*Flow_network')then
+
+C Found 3D flow network file.
+          IAIRN = 3
+          CALL ERPFREE(IUF,ISTAT)
+          CALL MFCDAT
+          CALL EMF3DREAD(IUF,'S',IER)
+        else
+
+C Found legacy text mass flow file.
+          REWIND(IUF,ERR=999)
+          CALL EMFREAD(IUF,IER)
+          CALL ERPFREE(IUF,ISTAT)
+          IAIRN = 1
         endif
         if(IER.NE.0)then
           outs='Problem scanning flow network file...aborting cfg scan'

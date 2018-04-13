@@ -3118,6 +3118,7 @@ C     CDATA: 1 Volume flow rate (m^3/s)
 #include "plant.h"
 #include "building.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3144,8 +3145,6 @@ C     CDATA: 1 Volume flow rate (m^3/s)
      &             ICONDX(MPCOM,MNODEC,MPCONC)
 
       COMMON/FFN/IFLWN,ICFFS(MPCON)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
 

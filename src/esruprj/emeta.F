@@ -121,6 +121,8 @@ C Debug
 
       call edisp(iuout,'  ')
       if(action(1:3).eq.'new')then
+        call edisp(iuout,'You will be asked a [YES RESTART] question.')
+        call edisp(iuout,'Click on the [CONTINUE] button instead!')
         write(menu,'(a)') modeltitle(1:lnblnk(modeltitle))
         call pregist('sn',root,mpath,menu,ier)
       elseif(action(1:6).eq.'within')then
@@ -822,193 +824,8 @@ C Use the 's' parameter to emkcfg to avoid asking for cnn file name.
       call zgupdate(0,ICOMP,ier)
       CALL EMKCFG('s',IER)
 
-C Next, if there are doors make standard calls to insert them into
-C the parent surface. To avoid clashes with any subsequent windows
-C place the door offset to the right (get bounding box via a call
-C to SURLEHI with some space between it and the right edge of the
-C parent surface.  Later add logic to better place the door..
-      if(znbdoor(icomp).gt.0)then
-        do 78 ids=1,NZSUR(ICOMP)
-          if(zhasdoor(icomp,ids).gt.0.0)then
-            call georead(IFIL+2,LGEOM(ICOMP),ICOMP,1,iuout,IER)
-            newsurf=nsur+1
-            isurf=ids
-            CALL SURLEHI(isurf,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)  ! get width of parent
-            XOCB=XYMAX-(zhasdoor(icomp,ids)+0.3)
-            ZOC=0.0
-            XW=zhasdoor(icomp,ids)
-            if(ZMAX.gt.2.3)then
-              ZH=2.1
-            else
-              ZH=ZMAX-0.3
-            endif
-            act='sd'
-            write(rsname,'(a)') sname(icomp,newsurf)
-            write(rsmlcn,'(a)') hasconstr(newsurf)
-
-C Loop thru all of the constructions to find the matching construction
-C and then see if it is opaque or transparent and copy out the relevant
-C section of the construction attributes.
-            imatch=0
-            do 56 ii=1,nmlc
-              lnssmlc=lnblnk(rsmlcn)
-              if(rsmlcn(1:lnssmlc).eq.
-     &           mlcname(ii)(1:lnmlcname(ii)))then
-                imatch=ii
-              endif
- 56         continue
-            if(imatch.eq.0) then
-              rsotf='UNKNOWN'
-              anunknownmlc=.true.   ! mark that one MLC is unknown
-            else
-              if(mlctype(imatch)(1:4).EQ.'OPAQ')then
-                rsotf='OPAQUE'
-              else
-                write(rsotf,'(A)') mlcoptical(imatch)(1:12)
-                willneedtmc=.true.
-              endif
-            endif
-            rsuse1='DOOR'
-            rsuse2='CLOSED'
-            write(rsparent,'(a)') sname(icomp,isurf)
-            call INSREC(0,iuout,ICOMP,isurf,act,XOCB,ZOCB,XW,ZH,
-     &        rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
-
-C Connection information needs to be updated.
-            ibcs=IZSTOCN(icomp,newsurf)
-            ICT(ibcs)=zboundarytype(icomp,newsurf,1)  ! use boundarytype
-            IC2(ibcs)=zboundarytype(icomp,newsurf,2)
-            IE2(ibcs)=zboundarytype(icomp,newsurf,3)
-
-C If there was a matching MLC set ssmlcindex.
-            if(imatch.ne.0)then
-              ssmlcindex(ibcs)=imatch  ! remember MLC index     
-            endif
-
-C Use zboundarytype to instanciate sother & ssother << to be done >>
-            IF(zboundarytype(icomp,newsurf,1).EQ.0)THEN
-              SOTHER(newsurf,1)='EXTERIOR'
-            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.1)THEN
-              SOTHER(newsurf,1)='SIMILAR'
-            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.2)THEN
-              SOTHER(newsurf,1)='CONSTANT'
-            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.3)THEN
-              SOTHER(newsurf,1)='ANOTHER'
-            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.4)THEN
-              SOTHER(newsurf,1)='GROUND'
-            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.5)THEN
-              SOTHER(newsurf,1)='ADIABATIC'
-            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.6)THEN
-              SOTHER(newsurf,1)='BASESIMP'
-            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.7)THEN
-              SOTHER(newsurf,1)='IDENT_CEN'
-            ELSE
-
-C Reset to represent UNKNOWN
-              SOTHER(newsurf,1)='UNKNOWN'
-            ENDIF
-            write(SOTHER(newsurf,2),'(i2.2)')
-     &        zboundarytype(icomp,newsurf,2)
-            write(SOTHER(newsurf,3),'(i3.3)')
-     &        zboundarytype(icomp,newsurf,3)
-            SSOTHER(ibcs,1)=SOTHER(newsurf,1)
-            SSOTHER(ibcs,2)=SOTHER(newsurf,2)
-            SSOTHER(ibcs,3)=SOTHER(newsurf,3)
-
-            call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
-          endif
-  78    continue
-      endif
-
-C Next, if there are windows make standard calls to insert them into
-C the parent surface as a percentage of area.
-      if(znbglz(icomp).gt.0)then
-        do 77 ids=1,NZSUR(ICOMP)
-          if(zhasglaze(icomp,ids).gt.0.0)then
-            call georead(IFIL+2,LGEOM(ICOMP),ICOMP,1,iuout,IER)
-            newsurf=nsur+1
-            isurf=ids
-            act='sp'
-            XOCB=zhasglaze(icomp,ids)
-            ZOC=0.0
-            XW=0.0
-            ZH=0.0
-            write(rsname,'(a)') sname(icomp,newsurf)
-            write(rsmlcn,'(a)') hasconstr(newsurf)
-
-C Loop thru all of the constructions to find the matching construction
-C and then see if it is opaque or transparent and copy out the relevant
-C section of the construction attributes.
-            imatch=0
-            lnssmlc=lnblnk(rsmlcn)
-            do 55 ii=1,nmlc
-              if(rsmlcn(1:lnssmlc).eq.
-     &           mlcname(ii)(1:lnmlcname(ii)))then
-                imatch=ii
-              endif
- 55         continue
-            if(imatch.eq.0) then
-              rsotf='UNKNOWN'
-              anunknownmlc=.true.   ! mark that one MLC is unknown
-            else
-              if(mlctype(imatch)(1:4).EQ.'OPAQ')then
-                rsotf='OPAQUE'
-              else
-                write(rsotf,'(A)') mlcoptical(imatch)(1:12)
-                willneedtmc=.true.
-              endif
-            endif
-            rsuse1='C-WINDOW'
-            rsuse2='CLOSED'
-            write(rsparent,'(a)') sname(icomp,isurf)
-            call INSREC(0,iuout,ICOMP,isurf,act,XOCB,ZOCB,XW,ZH,
-     &        rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
-
-C Connection information needs to be updated.
-            ibcs=IZSTOCN(icomp,newsurf)
-            ICT(ibcs)=zboundarytype(icomp,newsurf,1)  ! use boundarytype
-            IC2(ibcs)=zboundarytype(icomp,newsurf,2)
-            IE2(ibcs)=zboundarytype(icomp,newsurf,3)
-
-C If there was a matching MLC set ssmlcindex.
-            if(imatch.ne.0)then
-              ssmlcindex(ibcs)=imatch   ! remember MLC index     
-            endif
-
-C Use zboundarytype to instanciate sother & ssother << to be done >>
-            IF(zboundarytype(icomp,newsurf,1).EQ.0)THEN
-              SOTHER(newsurf,1)='EXTERIOR'
-            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.1)THEN
-              SOTHER(newsurf,1)='SIMILAR'
-            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.2)THEN
-              SOTHER(newsurf,1)='CONSTANT'
-            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.3)THEN
-              SOTHER(newsurf,1)='ANOTHER'
-            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.4)THEN
-              SOTHER(newsurf,1)='GROUND'
-            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.5)THEN
-              SOTHER(newsurf,1)='ADIABATIC'
-            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.6)THEN
-              SOTHER(newsurf,1)='BASESIMP'
-            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.7)THEN
-              SOTHER(newsurf,1)='IDENT_CEN'
-            ELSE
-
-C Reset to represent UNKNOWN
-              SOTHER(newsurf,1)='UNKNOWN'
-            ENDIF
-            write(SOTHER(newsurf,2),'(i2.2)')
-     &        zboundarytype(icomp,newsurf,2)
-            write(SOTHER(newsurf,3),'(i2.2)')
-     &        zboundarytype(icomp,newsurf,3)
-            SSOTHER(ibcs,1)=SOTHER(newsurf,1)
-            SSOTHER(ibcs,2)=SOTHER(newsurf,2)
-            SSOTHER(ibcs,3)=SOTHER(newsurf,3)
-
-            call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
-          endif
-  77    continue
-      endif
+C Depreciated znbdoor and zhasdoor.
+C Depreciated zhasglaze and znbglz.
 
 C Next, if there are mass pairs to add make standard calls to insert them.
       if(znbmass(icomp).gt.0)then
@@ -1118,7 +935,7 @@ C Fill common blocks for new zone based on information in the
 C pattern file.
 
 C Set to current zone operation file format.
-        ip3ver(icomp)=2
+        ip3ver(icomp)=21
         afact = use(2)
         iflow='ach-ach '
         vflow='ach-ach '
@@ -1224,6 +1041,10 @@ C XMLMETRICS are the metrics that could be included in the input.xml
 C in case the flag: <dump_all_data> is false
       common/XMLDATA/XMLMETRICS(200),inumXMLmetrics
       character XMLMETRICS*248
+
+C The model root and mpath passed to silentmodel call.
+      character metaroot*32,metampath*72
+      common/cadmeta/metaroot,metampath
 
 C iaplic(1) toggle for shading; iaplic(2) toggle for insolation.
 C   toggle for assessment where:
@@ -1344,12 +1165,11 @@ C For each of the possible ESP-r zones, clear values.
           zorigin(iz,1) = 0.0; zorigin(iz,2) = 0.0
           zorigin(iz,3) = 0.0
           zsize(iz,1) = 0.0; zsize(iz,2) = 0.0; zsize(iz,3) = 0.0
-          znbglz(iz) = 0; znbdoor(iz) = 0; znbmass(iz) = 0
+          znbmass(iz) = 0
           do 39 isu=1,MS
             zboundarytype(iz,isu,1)=0; zboundarytype(iz,isu,2)=0
             zboundarytype(iz,isu,3)=0
             sname(iz,isu)=' '
-            zhasglaze(iz,isu)=0.0; zhasdoor(iz,isu)=0.0
             isznver(iz,isu)=0
             do 54 ivu=1,MV
               iszjvn(iz,isu,ivu)=0
@@ -1471,10 +1291,14 @@ C to 1000 to see if there are zones to process.
 
 C An action line is like this:
 C *action,new,boxer,single,/tmp/boxer
+
+C << both root and mpath need to be used later for refocus >>
+
         CALL EGETW(OUTSTR,K,actions,'W','action string',IER)
         silentreturndirec=actions
         if(actions(1:3).eq.'new'.or.actions(1:6).eq.'within')then
           CALL EGETW(OUTSTR,K,root,'W','root name',IER)
+          CALL EGETW(OUTSTR,K,WORD,'W','distributed',IER)
           CALL EGETRM(OUTSTR,K,mpath,'W','model folder',IER)
 
 C Debug.
@@ -1798,17 +1622,8 @@ C Feedback. simact is passed to silentmodel.
         endif
         goto 43
       elseif(WORD(1:5).eq.'*door')then
-        CALL EGETWI(OUTSTR,K,nbd,0,MS,'W','no of doors',IER)
 
-C Scan for pairs of parent surface index and the door width.
-        znbdoor(nsz)=nbd
-        if(znbdoor(nsz).gt.0)then
-          do 47 igl=1,znbdoor(nsz)
-            CALL EGETWI(OUTSTR,K,iparen,1,MS,'W','parent surf',IER)
-            CALL EGETWR(OUTSTR,K,val,0.,0.,'-','width',IER)
-            zhasdoor(nsz,iparen)=val
-  47      continue
-        endif
+C znbdoor & zhasdoor are depreciated. Just jump to 43.
         goto 43
       elseif(WORD(1:9).eq.'*end_zone')then
         goto 43
@@ -1817,18 +1632,8 @@ C Scan for pairs of parent surface index and the door width.
 C Jump to process the collected data.
         goto 1000
       elseif(WORD(1:6).eq.'*glaze')then
-        CALL EGETWI(OUTSTR,K,nbg,0,MS,'W','no of glzaings',IER)
 
-C Scan for pairs of parent surface index and the percentage of the parent
-C surface area to have as glazing.
-        znbglz(nsz)=nbg
-        if(znbglz(nsz).gt.0)then
-          do 144 igl=1,znbglz(nsz)
-            CALL EGETWI(OUTSTR,K,iparen,1,MS,'W','parent surf',IER)
-            CALL EGETWR(OUTSTR,K,val,0.,0.,'-','percent',IER)
-            zhasglaze(nsz,iparen)=val
- 144      continue
-        endif
+C Depreciated. Continue to 43.
         goto 43
       elseif(WORD(1:19).eq.'*ground_refl_annual')then
         CALL EGETWR(OUTSTR,K,groundrefl,0.,1.,'W',
@@ -2418,6 +2223,8 @@ C *end mark was found.
 
 C Create new model. Note the onfiguration file will be in the
 C folder /tmp/box/cfg if mpath is /tmp/box.
+      write(metaroot,'(a)') root(1:lnblnk(root))
+      write(metampath,'(a)') mpath(1:lnblnk(mpath))
       call silentmodel(actions,root,mpath,weather,simact,ier)
 
 C Add in site information if tokens were included.

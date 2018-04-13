@@ -72,6 +72,7 @@ C     -set known pressure nodes.
 
 #include "building.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "plant.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -90,8 +91,6 @@ C     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
       COMMON/FFN/IFLWN,ICFFS(MPCON)
       COMMON/FFC/IMFRES
 
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
       COMMON/MFLW11/PSTACK(MCNN),HDP(MCNN),HDV(MCNN),HFL(MCNN)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
@@ -253,6 +252,7 @@ C STIME  - used to transfer the simulation time to mfs.
 
 #include "building.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "plant.h"
 #include "cfd.h"
 #include "roam.h"
@@ -284,12 +284,6 @@ C Flow network data.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/FFN/IFLWN,ICFFS(MPCON)
       COMMON/FFC/IMFRES
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLW11/PSTACK(MCNN),HDP(MCNN),HDV(MCNN),HFL(MCNN)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
@@ -445,7 +439,7 @@ C Calculate wind pressure and include stack
 C pressure (based on pressure at height 0 = 0.0).
           CD=FPRE(IWDR,INT(SUPNOD(INOD,1)))
           RO=DENSIT(1,DRYB)
-          PRES(INOD)=CD*.5*RO*WSPD*WSPD-9.81*RO*HNOD(INOD)
+          PRES(INOD)=CD*.5*RO*WSPD*WSPD-9.81*RO*HNOD(INOD,3)
         END IF
    30 CONTINUE
 
@@ -465,16 +459,16 @@ C oscillation of mass flow rates.
         IDNE=NODNE(ICNN)
         IF(IPSMOD.EQ.1) THEN
           IF(FLW1(ICNN).GE.0.0) THEN
-            PSTACK(ICNN)=9.81*(RHON(IDPS)*(HNOD(IDPS)-HNOD(IDNE))
+            PSTACK(ICNN)=9.81*(RHON(IDPS)*(HNOD(IDPS,3)-HNOD(IDNE,3))
      &                         +HGTNE(ICNN)*(RHON(IDNE)-RHON(IDPS)))
           ELSE
-            PSTACK(ICNN)=9.81*(RHON(IDNE)*(HNOD(IDPS)-HNOD(IDNE))
+            PSTACK(ICNN)=9.81*(RHON(IDNE)*(HNOD(IDPS,3)-HNOD(IDNE,3))
      &                         +HGTPS(ICNN)*(RHON(IDNE)-RHON(IDPS)))
           ENDIF
         ELSE IF(IPSMOD.EQ.2) THEN
           PSTACK(ICNN)=9.81*0.5*
-     &                ((RHON(IDPS)+RHON(IDNE))*(HNOD(IDPS)-HNOD(IDNE))
-     &               +(HGTNE(ICNN)+HGTPS(ICNN))*(RHON(IDNE)-RHON(IDPS)))
+     &      ((RHON(IDPS)+RHON(IDNE))*(HNOD(IDPS,3)-HNOD(IDNE,3))
+     &      +(HGTNE(ICNN)+HGTPS(ICNN))*(RHON(IDNE)-RHON(IDPS)))
         ELSE
           write(outs,'(A)') ' MFLWCA: unresolvable error!'
           call edisp(iuout,outs)

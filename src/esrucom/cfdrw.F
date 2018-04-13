@@ -2472,6 +2472,7 @@ C OPENNAM (char 12) name of the opening.
       subroutine CFMFSU(IV,ITRC,IND,ICN,OPENNAM)
 #include "cfd.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 
 C Passed parameters.
       integer iv,itrc,ind,icn
@@ -2481,22 +2482,14 @@ C Passed parameters.
       COMMON/ICFNOD/ICFD,ICP
       common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
       COMMON/MFCFD/NCNRMV,ICNRMV(MCFND,MNZ),NCNON,ICNON(2*MCFND,MNZ)
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),
-     &       SUPNOD(MNOD,MNDS)
-      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/ACT/ACTCNN(MCNN)
       COMMON/CFDMFS2/MFNEWN(MNVLS,MNZ),NFNDN,NCFDOPNO(MNVLS,MNZ),
      &               NFNPDN(MNZ)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
 
-      character*12 LCFND,LEXND,LCOMPNT,CMNAM,NDNAM
-      character LTPCMP*60,outs*124,CHECKER1*12,OPNO*10,ICFDSTR*10
+      character*12 LCFND,LEXND,LCOMPNT
+      character outs*124,CHECKER1*12,OPNO*10,ICFDSTR*10
       LOGICAL OK,ACTCNN
       double precision FLW1,FLW2,PRES,RESID,SAFLW
 
@@ -2560,7 +2553,9 @@ C opening
      &  //OPENNAM(1:(12-ILN-ICFDLN))
       NDFLD(NNOD)=1
       NDTYP(NNOD)=1
-      HNOD(NNOD)=HNOD(IND)
+      HNOD(NNOD,1)=HNOD(IND,1)
+      HNOD(NNOD,2)=HNOD(IND,2)
+      HNOD(NNOD,3)=HNOD(IND,3)
       ITND(NNOD)=IND
       TNOD(NNOD)=TNOD(IND)
       PRES(NNOD)=0.
@@ -2621,18 +2616,9 @@ C MFLISTemp - list common block contents for debugging only.
       SUBROUTINE MFLISTemp
 
 #include "net_flow.h"
+#include "net_flow_data.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLCLM/DRYB,QDIF,QDNR,IRVH,WDIR,WSPD,WRED
-      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12
       CHARACTER outs*124,fldtyp*6,nodtyp*20
 
 C Number of nodes, components and interconnections.
@@ -2664,11 +2650,11 @@ C Node data.
         endif
         IF(ITND(INOD).EQ.0) THEN
           WRITE(outs,1030)
-     &         NDNAM(INOD),fldtyp,nodtyp,HNOD(INOD),
+     &         NDNAM(INOD),fldtyp,nodtyp,HNOD(INOD,3),
      &         TNOD(INOD),SUPNOD(INOD,1),SUPNOD(INOD,2)
         ELSE
           WRITE(outs,10301)
-     &         NDNAM(INOD),fldtyp,nodtyp,HNOD(INOD),
+     &         NDNAM(INOD),fldtyp,nodtyp,HNOD(INOD,3),
      &         NDNAM(ITND(INOD)),SUPNOD(INOD,1),SUPNOD(INOD,2)
         END IF
         call edisp(iuout,outs)

@@ -1070,35 +1070,41 @@ C a large site, otherwise include GRDIS to bounds.
       ENDIF
 
 C All bodies checked so calculate model centre within bounding box.
-      call eclose(XMN,0.0,0.001,CLOSE)
-      if(XMN.LT.0..AND.XMX.GE.0.0)then
-        VIEWM(1)=XMN+((XMX+ABS(XMN))/2.0)
-      elseif(XMN.LT.0.0.AND.XMX.LE.0.)then
-        VIEWM(1)=XMN+((ABS(XMN)-ABS(XMX))/2.0)
-      elseif(XMN.GT.0.0.AND.XMX.GT.0.0)then
-        VIEWM(1)=XMX-((XMX-XMN)/2.0)
-      elseif(CLOSE.AND.XMX.GT.0.0)then
-        VIEWM(1)=XMX/2.0
-      endif
-      call eclose(YMN,0.0,0.001,CLOSE)
-      if(YMN.LT.0..AND.YMX.GE.0.0)then
-        VIEWM(2)=YMN+((YMX+ABS(YMN))/2.0)
-      elseif(YMN.LT.0.0.AND.YMX.LE.0.)then
-        VIEWM(2)=YMN+((ABS(YMN)-ABS(YMX))/2.0)
-      elseif(YMN.GT.0.0.AND.YMX.GT.0.0)then
-        VIEWM(2)=YMX-((YMX-YMN)/2.0)
-      elseif(CLOSE.AND.YMX.GT.0.0)then
-        VIEWM(2)=YMX/2.0
-      endif
-      call eclose(ZMN,0.0,0.001,CLOSE)
-      if(ZMN.LT.0.0.AND.ZMX.GE.0.0)then
-        VIEWM(3)=ZMN+((ZMX+ABS(ZMN))/2.0)
-      elseif(ZMN.LT.0.0.AND.ZMX.LE.0.0)then
-        VIEWM(3)=ZMN+((ABS(ZMN)-ABS(ZMX))/2.0)
-      elseif(ZMN.GT.0.0.AND.ZMX.GT.0.0)then
-        VIEWM(3)=ZMX-((ZMX-ZMN)/2.0)
-      elseif(CLOSE.AND.ZMX.GT.0.0)then
-        VIEWM(3)=ZMX/2.0
+C If we are deling with a static view ITBND=0 then do not
+C update VIEWM.
+      if(ITBND.eq.0)then
+        continue
+      else
+        call eclose(XMN,0.0,0.001,CLOSE)
+        if(XMN.LT.0..AND.XMX.GE.0.0)then
+          VIEWM(1)=XMN+((XMX+ABS(XMN))/2.0)
+        elseif(XMN.LT.0.0.AND.XMX.LE.0.)then
+          VIEWM(1)=XMN+((ABS(XMN)-ABS(XMX))/2.0)
+        elseif(XMN.GT.0.0.AND.XMX.GT.0.0)then
+          VIEWM(1)=XMX-((XMX-XMN)/2.0)
+        elseif(CLOSE.AND.XMX.GT.0.0)then
+          VIEWM(1)=XMX/2.0
+        endif
+        call eclose(YMN,0.0,0.001,CLOSE)
+        if(YMN.LT.0..AND.YMX.GE.0.0)then
+          VIEWM(2)=YMN+((YMX+ABS(YMN))/2.0)
+        elseif(YMN.LT.0.0.AND.YMX.LE.0.)then
+          VIEWM(2)=YMN+((ABS(YMN)-ABS(YMX))/2.0)
+        elseif(YMN.GT.0.0.AND.YMX.GT.0.0)then
+          VIEWM(2)=YMX-((YMX-YMN)/2.0)
+        elseif(CLOSE.AND.YMX.GT.0.0)then
+          VIEWM(2)=YMX/2.0
+        endif
+        call eclose(ZMN,0.0,0.001,CLOSE)
+        if(ZMN.LT.0.0.AND.ZMX.GE.0.0)then
+          VIEWM(3)=ZMN+((ZMX+ABS(ZMN))/2.0)
+        elseif(ZMN.LT.0.0.AND.ZMX.LE.0.0)then
+          VIEWM(3)=ZMN+((ABS(ZMN)-ABS(ZMX))/2.0)
+        elseif(ZMN.GT.0.0.AND.ZMX.GT.0.0)then
+          VIEWM(3)=ZMX-((ZMX-ZMN)/2.0)
+        elseif(CLOSE.AND.ZMX.GT.0.0)then
+          VIEWM(3)=ZMX/2.0
+        endif
       endif
 
       RETURN

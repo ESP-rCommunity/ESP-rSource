@@ -19,6 +19,7 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C This file contains the following routines:
+C   SENRNS Asks for the preferred SA technique & runs to do
 C   SENSA   The main uncertainty analysis controlling rtn.
 C   DSA     Changes data for a Differential Sensitivity Analysis.
 C   MCSA    Changes data for a Monte-Carlo Sensitivity Analysis.
@@ -27,6 +28,7 @@ C                       absorbtivity, dif res(not yet) - with error checking.
 C   UAE02   Edits data: thickness and whole MLC's.
 C   UAE04   Edits data: Casual gains.
 C   UAE05   Edits data: Convection correlations.
+C   UAE06   Edits data: Optical properties in zone TMC.
 C
 C   UAZ01   Edits calculated zone parameters/ assumptions relating to air 
 C
@@ -66,9 +68,9 @@ C Logical flag for uncertainty header has been printed.
       common/uhead/headerdone,itemunique(20),pastphrase(20),
      &  itemsinheader,nbpastitems,nbdatahits
 
-      character ITEM(3)*18,outs*124
+      character ITEM(4)*18,outs*124
 
-      DIMENSION IVAL(3)
+      DIMENSION IVAL(4)
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -87,12 +89,16 @@ C Is analysis method predefined?
         INPIC=1
       else
 
-C Ask for uncertainty analysis method first 
+C Ask for uncertainty analysis method first.
+
+C << can we offer an option for do-base-case-only ?? >>
+
         call edisp(iuout,' Available analysis techniques... ')
         ITEM(1) ='Differential'
         ITEM(2) ='Factorial  '
         ITEM(3) ='Monte-Carlo '
-        NITMS=3
+        ITEM(4) ='Run base case only'
+        NITMS=4
 
         INPIC=1
         CALL EPICKS(INPIC,IVAL,' ','Which analysis type:',
@@ -111,10 +117,16 @@ C If no type has been selected then return to main menu.
           NRSIM=1
           return
         endif
+        if(IVAL(1).eq.4)then  ! only do base case run
+          IER=2
+          NRSIM=1
+          return
+        endif
       endif
 
 C An uncertainty analysis technique has been chosen write to file 
-C and set number of simulations.
+C and set number of simulations. Note the first set is always the
+C base case.
       IUNIT=IFIL+2
       IREC=1
       IMET=IVAL(1)
@@ -122,7 +134,8 @@ C and set number of simulations.
       write(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver,IMET
 
 C Clear the header text buffer and counter of uncertainty items so that
-C it is only written once at the top of the fort.37 file.
+C it is only written once at the top of the fort.37 file. The following
+C block of code deals with up to 20 uncertainties.
       uheader='  '
       urunvals='  '
       headerdone=.false.; itemsinheader=0; nbpastitems=0
@@ -188,7 +201,7 @@ C Common blocks UA3 UA4 within uncertainty.h
 #include "uncertainty.h"
 
       COMMON/UA5/IMET,ISIM,NRSIM
-      COMMON/UATD/UACLIM(6,4),UACTL(7,5),UAMCSA(MNACT)
+      COMMON/UATD/UACLIM(6,4),UACTL(7,6),UAMCSA(MNACT)
       COMMON/UATD2/UAMISCTD(3)
       character message*96,phrase*12
 
@@ -199,10 +212,10 @@ C Reset climate change variables to zero - ONLY if first zone.
           UACLIM(I,3)=0.0; UACLIM(I,4)=0.0 
  10     continue
 
-C Reset control change variables to zero.
+C Reset control change variables to zero - ONLY if first zone.
         do 15 I=1,7
-          UACTL(I,1)=0.0; UACTL(I,2)=0.0
-          UACTL(I,3)=0.0; UACTL(I,4)=0.0; UACTL(I,5)=0.0
+          UACTL(I,1)=0.0; UACTL(I,2)=0.0; UACTL(I,3)=0.0
+          UACTL(I,4)=0.0; UACTL(I,5)=0.0; UACTL(I,6)=0.0
  15     continue
 
 C Reset misc vars to zero.
@@ -256,6 +269,8 @@ C Depending on change type call editing routine.
         call UAE04(IZONE,IACT,DIR)  ! casual gains or scheduled air
       elseif (IDTYPU(IACTD(IACT,1)).eq.5) then 
         call UAE05(IZONE,IACT,DIR)  ! hc coefficients
+      elseif (IDTYPU(IACTD(IACT,1)).eq.6) then 
+        call UAE06(IZONE,IACT,DIR)  ! optical control
       elseif (IDTYPU(IACTD(IACT,1)).eq.101) then 
         call UAZ01(IZONE,IACT,DIR)  ! zone air volume or SNA
       elseif (IDTYPU(IACTD(IACT,1)).eq.1001) then 
@@ -302,7 +317,7 @@ C Common blocks UA3 UA4 within uncertainty.h
       COMMON/C1/NCOMP,NCON
 
       COMMON/UA5/IMET,ISIM,NRSIM
-      COMMON/UATD/UACLIM(6,4),UACTL(7,5),UAMCSA(MNACT)
+      COMMON/UATD/UACLIM(6,4),UACTL(7,6),UAMCSA(MNACT)
       COMMON/UATD2/UAMISCTD(3)
 
       character USETNAME*96   ! the synopsis for each MC-run
@@ -325,21 +340,23 @@ C Logical flag for uncertainty header has been printed.
       character RSNAME*40,outs*124,message*96,phrase*12,uhphrase*42
       integer irec,iunit
       character urunvalsd*1000  ! to comma separate output
+      character ubasecase*1000,ubasecased*1000,baseval*4
 
-C Reset climate change variables to zero - ONLY if first zone.
+C Reset climate and control change variables to zero - ONLY if first zone.
       if (IZONE.eq.1) then
         do 5 I=1,6
           UACLIM(I,1)=0.0; UACLIM(I,2)=0.0; UACLIM(I,3)=0.0
           UACLIM(I,4)=0.0
  5      continue
 
-C Reset control change variables to zero.
-C UACTL (?,1)=change type (%,+/-); (?,2)=magnitude; (?,2)=associated action;
+C Reset control change variables to zero - ONLY if first zone.
+C UACTL (?,1)=change type (%,+/-); (?,2)=magnitude; (?,3)=associated action;
 C UACTL (?,4)=time status (0 not active, 1 active)
 C UACTL (?,5)=counter for the uncertainty action being dealt with
+C UACTL (?,6)=value of DIR
         do 15 I=1,7
-          UACTL(I,1)=0.0; UACTL(I,2)=0.0
-          UACTL(I,3)=0.0; UACTL(I,4)=0.0; UACTL(I,5)=0.0 
+          UACTL(I,1)=0.0; UACTL(I,2)=0.0; UACTL(I,3)=0.0
+          UACTL(I,4)=0.0; UACTL(I,5)=0.0; UACTL(I,6)=0.0
  15     continue
 
 C Reset misc vars to zero.
@@ -397,35 +414,40 @@ C Depending on change type call editing routine.
         elseif (IDTYPU(IACTD(IACT,1)).eq.2) then 
           call UAE02(IZONE,IACT,DIR)  ! layer thickness
         elseif (IDTYPU(IACTD(IACT,1)).eq.3) then 
-          call UAT03(IACT,DIR)        ! weather data
+
+C Weather applies to the whole model so only call this for the
+C first zone ????
+          call UAT03(IACT,DIR)        ! weather data ???
         elseif (IDTYPU(IACTD(IACT,1)).eq.4) then 
           call UAE04(IZONE,IACT,DIR)  ! casual gains or scheduled air
         elseif (IDTYPU(IACTD(IACT,1)).eq.5) then 
           call UAE05(IZONE,IACT,DIR)  ! hc coefficients
+        elseif (IDTYPU(IACTD(IACT,1)).eq.6) then 
+          call UAE06(IZONE,IACT,DIR)  ! optical control
         elseif (IDTYPU(IACTD(IACT,1)).eq.101) then 
           call UAZ01(IZONE,IACT,DIR)  ! zone air volume or SNA
-        elseif (IDTYPU(IACTD(IACT,1)).eq.1001) then 
-          call UAT01(IACT,DIR)  ! control data
+        elseif (IDTYPU(IACTD(IACT,1)).eq.1001) then
+
+C Control applies to the whole model so only call this for the
+C first zone. 
+          if (IZONE.eq.1) call UAT01(IACT,DIR)  ! control data
         elseif (IDTYPU(IACTD(IACT,1)).eq.1002) then 
          write (36,*) 'WARNING UNDEFINED UNCERTAINTY'
 
 C Debug.
-c         write(6,*) 'WARNING UNDEFINED UNCERTAINTY'
-
+c          write(6,*) 'WARNING UNDEFINED UNCERTAINTY'
 C          call UAT02(IACT,DIR)
         elseif (IDTYPU(IACTD(IACT,1)).eq.1004) then 
          write (36,*) 'WARNING UNDEFINED UNCERTAINTY'
 
 C Debug.
-C         write(6,*) 'WARNING UNDEFINED UNCERTAINTY'
-
+C          write(6,*) 'WARNING UNDEFINED UNCERTAINTY'
 C          call UAT04(IACT,DIR)
         elseif (IDTYPU(IACTD(IACT,1)).eq.1005) then 
          write (36,*) 'WARNING UNDEFINED UNCERTAINTY'
 
 C Debug.
-C         write(6,*) 'WARNING UNDEFINED UNCERTAINTY'
-
+C          write(6,*) 'WARNING UNDEFINED UNCERTAINTY'
 C          call UAT05(IACT,DIR)
         endif
  10   continue
@@ -433,29 +455,63 @@ C          call UAT05(IACT,DIR)
 
 C After the NIACT loop the header should be filled so write it out
 C if we are at the last zone in the model.
-C Bother uheader and urnubals will be blank for the case of weather
+C Both uheader and urnubals will be blank for the case of weather
 C data as information is written each day rather than once at the
-C start of the run.
-      if(.NOT.uncertheadprinted)then
-        if(IZONE.eq.NCOMP)then
+C start of the run. For control uncertainty the writing to
+C fort.37 will be happening in UAT01a.
 
-C Remove the trailing comma from the header line.
-          lnhead=lnblnk(uheader)
-          write(36,'(2a)') 'writing: ',uheader(1:lnhead-1)
-          write(37,'(a)') uheader(1:lnhead-1)
-          uncertheadprinted=.true.
+C << when weather done add it to if logic >>.
+      if(.NOT.uncertheadprinted)then
+        if(IDTYPU(IACTD(IACT,1)).eq.1001) then 
+          continue  ! control data is written in UAT01a
+        elseif(IDTYPU(IACTD(IACT,1)).eq.1.or.
+     &         IDTYPU(IACTD(IACT,1)).eq.2.or.
+     &         IDTYPU(IACTD(IACT,1)).eq.4)then
+
+C We have a zone-dependent uncertainty so deal with the
+C base values here.
+          if(IZONE.eq.NCOMP)then
+
+C Remove the trailing comma from the header line and write the
+C header to the fort.37 file. We then need to write a line of
+C zeros to represent the base case.
+            lnhead=lnblnk(uheader)
+            write(36,'(2a)') 'writing: ',uheader(1:lnhead-1)
+            write(37,'(a)') uheader(1:lnhead-1)
+            uncertheadprinted=.true.
+
+C Write out one line of zeros to represent the base case.
+            ubasecase='  '; ubasecased='  '; baseval='0.00'
+            lbase=4; lstbase=1; lfnbase=1
+
+C Debug.
+C            write(6,*) 'itemunique ',itemunique
+            do loop=1,itemsinheader
+              lfnbase=lstbase+lbase
+              if(lfnbase.lt.1000)then
+                write(ubasecase(lstbase:lfnbase),'(a)')baseval(1:lbase)
+                lstbase=lfnbase+2
+              endif
+            enddo
+            call SDELIM(ubasecase,ubasecased,'C',IW)
+            lnbase=lnblnk(ubasecased)
+            write(37,'(a)') ubasecased(1:lnbase-1)
+          endif
         endif
       endif
 
-C Add comma separations to the data.
-
-C Are we ready to write urunvalsd?
-      if(IZONE.eq.NCOMP)then
-        urunvalsd='  '
-        call SDELIM(urunvals,urunvalsd,'C',IW)
-        write(37,'(a)') urunvalsd(1:lnblnk(urunvalsd))
-        urunvals='  '  ! clear string buffer prior to next run
-        urunvalsd='  '
+C If zone dependent are we ready to write urunvalsd?
+      if(IDTYPU(IACTD(IACT,1)).eq.1.or.
+     &   IDTYPU(IACTD(IACT,1)).eq.2.or.
+     &   IDTYPU(IACTD(IACT,1)).eq.4.or.
+     &   IDTYPU(IACTD(IACT,1)).eq.6)then
+        if(IZONE.eq.NCOMP)then
+          urunvalsd='  '
+          call SDELIM(urunvals,urunvalsd,'C',IW)
+          write(37,'(a)') urunvalsd(1:lnblnk(urunvalsd))
+          urunvals='  '  ! clear string buffer prior to next run
+          urunvalsd='  '
+        endif
       endif
 
 C See what the current position of IREC is and update RSNAME to the
@@ -463,21 +519,21 @@ C synopsis of changes recorded above.
       IUNIT=IFIL+2
       IREC=1
       read (IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver,IMET
-      WRITE(6,*) 'checking ',NSIM,nzrl,izver,IMET
+C      WRITE(6,*) 'checking ',NSIM,nzrl,izver,IMET
 
-C << work out how to include message(1:40) for the first assessment
-C << of a multi-set simulation.
-
-C Remember the synopsis for this run.
-C TODO consider only writing header for NSIM .le. 1 ??
-      write(USETNAME(NSIM),'(a)') message(1:lnblnk(message))
-      if(NSIM.gt.1)then  ! leave base case RSNAME as is.
+C Remember the synopsis for this run. The first RSNAME will be 
+C the base case so the 2nd simulation set should take the message
+C string related to the 1st uncertainty
+      if(ISIM.eq.1)then  ! leave base case RSNAME as is.
+        write(USETNAME(1),'(a)') 'Base case'
+      elseif(ISIM.gt.1)then  ! update RSNAME.
+        write(USETNAME(ISIM),'(a)') message(1:lnblnk(message))
         IREC=NSIM+1  ! slightly different from MZLS2
         read(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NST,IRECPL,RSNAME
-        WRITE(6,*) 'previous ',NST,IRECPL,RSNAME
+        WRITE(6,*) 'previous ',NST,IRECPL,' ',RSNAME(1:lnblnk(RSNAME))
         write(RSNAME,'(a)') message(1:40)
         write(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NST,IRECPL,RSNAME
-        WRITE(6,*) 'updated ',NST,IRECPL,RSNAME
+        WRITE(6,*) 'updated ',NST,IRECPL,' ',RSNAME(1:lnblnk(RSNAME))
       endif
 
       RETURN
@@ -496,7 +552,7 @@ C Common blocks UA3 UA4 within uncertainty.h
 #include "uncertainty.h"
 
       COMMON/UA5/IMET,ISIM,NRSIM
-      COMMON/UATD/UACLIM(6,4),UACTL(7,5),UAMCSA(MNACT)
+      COMMON/UATD/UACLIM(6,4),UACTL(7,6),UAMCSA(MNACT)
       COMMON/UAFCT/IADIR(MNFA),NFA
       character message*96,phrase*12
 
@@ -509,8 +565,8 @@ C Reset climate change variables to zero - ONLY if first zone.
 
 C Reset control change variables to zero.
         do 15 I=1,7
-          UACTL(I,1)=0.0; UACTL(I,2)=0.0
-          UACTL(I,3)=0.0; UACTL(I,4)=0.0; UACTL(I,5)=0.0
+          UACTL(I,1)=0.0; UACTL(I,2)=0.0; UACTL(I,3)=0.0
+          UACTL(I,4)=0.0; UACTL(I,5)=0.0; UACTL(I,6)=0.0
  15     continue
       endif
 
@@ -561,6 +617,8 @@ C Depending on change type call editing routine.
           call UAE04(IZONE,IACT,DIR)  ! casual gains or scheduled air
         elseif (IDTYPU(IACTD(IACT,1)).eq.5) then 
           call UAE05(IZONE,IACT,DIR)  ! hc coefficients
+        elseif (IDTYPU(IACTD(IACT,1)).eq.6) then 
+          call UAE06(IZONE,IACT,DIR)  ! optical control
         elseif (IDTYPU(IACTD(IACT,1)).eq.101) then 
           call UAZ01(IZONE,IACT,DIR)  ! zone air volume or SNA
         elseif (IDTYPU(IACTD(IACT,1)).eq.1001) then 
@@ -666,7 +724,7 @@ C Trace.
                write(36,'(3f9.3,4f5.2)')CON(IS,IE),DEN(IS,IE),
      &           SHT(IS,IE),EMISI(IS), EMISE(IS),ABSI(IS),ABSE(IS)
 
-C Make specific header string for each change (to match urunvals)
+C Make specific header string for each change (to match urunvals).
                lncng=lnblnk(LCNG(ICC))
                lnloc=lnblnk(LLOC(ICL))
                if(lncng.gt.18)lncng=18
@@ -739,11 +797,9 @@ C Edit data.
                if (IDMAT(ICC,2).eq.1) then
                  call UAEDIT(CON(IS,IE),IDMAT(ICC,3),DATU(ICC,1),
      &                       DATU(ICC,2),DIR,-1,0.01,0.0)
-                 call relstr(CON(IS,IE),strval,lna,ier)
                elseif (IDMAT(ICC,2).eq.2) then
                  call UAEDIT(DEN(IS,IE),IDMAT(ICC,3),DATU(ICC,1),
      &                       DATU(ICC,2),DIR,0,0.01,9000.0)
-                 call relstr(DEN(IS,IE),strval,lna,ier)
                elseif (IDMAT(ICC,2).eq.3) then
                  call UAEDIT(SHT(IS,IE),IDMAT(ICC,3),DATU(ICC,1),
      &                       DATU(ICC,2),DIR,0,0.01,3000.0)
@@ -753,13 +809,11 @@ C Edit data.
      &                       DATU(ICC,2),DIR,0,0.001,0.999)
                  call UAEDIT(EMISI(IS),IDMAT(ICC,3),DATU(ICC,1),
      &                       DATU(ICC,2),DIR,0,0.001,0.999)
-                 call relstr(EMISE(IS),strval,lna,ier)
                elseif (IDMAT(ICC,2).eq.5) then
                  call UAEDIT(ABSE(IS),IDMAT(ICC,3),DATU(ICC,1),
      &                       DATU(ICC,2),DIR,0,0.001,0.999)
                  call UAEDIT(ABSE(IS),IDMAT(ICC,3),DATU(ICC,1),
      &                       DATU(ICC,2),DIR,0,0.001,0.999)
-                 call relstr(ABSE(IS),strval,lna,ier)
                endif
 
                write(36,*) 'to:'
@@ -773,7 +827,7 @@ C               write(36,*) 'UAE01 setting nbdatahits',nbdatahits
 C Add to urunvals if previously marked as unique.
                if(itemunique(nbdatahits))then
 
-C << Test of writing out DIR to fort.37. Comment out next line if it does not work.
+C Write DIR to fort.37.
                  call relstr(DIR,strval,lna,ier)
                  lstrval=lnblnk(strval)
                  lfnur=lstur+lstrval
@@ -1052,7 +1106,6 @@ C Percentage change. Ensure it does not go below 1mm.
                THRMLI(IZ,IS,IE,4)=THRMLI(IZ,IS,IE,4)*
      &           (((DATU(ICC,1)/100.)*DIR)+1.0)
                if(THRMLI(IZ,IS,IE,4).lt.0.001)THRMLI(IZ,IS,IE,4)=0.001
-               call relstr(THRMLI(IZ,IS,IE,4),strval,lna,ier)
              elseif (IDMAT(ICC,3).eq.2) then
 
 C Absolute change. Ensure it does not go below 1mm. 
@@ -1061,7 +1114,6 @@ C Absolute change. Ensure it does not go below 1mm.
                THRMLI(IZ,IS,IE,4)=THRMLI(IZ,IS,IE,4)+
      &                            (DATU(ICC,1)*DIR)
                if(THRMLI(IZ,IS,IE,4).lt.0.001)THRMLI(IZ,IS,IE,4)=0.001
-               call relstr(THRMLI(IZ,IS,IE,4),strval,lna,ier)
              elseif (IDMAT(ICC,3).eq.3) then
 
 C Explicit change. Ensure it does not go below 1mm.
@@ -1075,7 +1127,6 @@ C Explicit change. Ensure it does not go below 1mm.
      &            (DATU(ICC,2)-THRMLI(IZ,IS,IE,4))*DIR
                 if(THRMLI(IZ,IS,IE,4).lt.0.001)THRMLI(IZ,IS,IE,4)=0.001
               endif
-              call relstr(THRMLI(IZ,IS,IE,4),strval,lna,ier)
              endif
              write (36,'(a)') 'to:'
              write (36,'(a,f9.4)') 'THRMLI: ',THRMLI(IZ,IS,IE,4)
@@ -1087,7 +1138,7 @@ C             write(36,*) 'UAE02 setting nbdatahits',nbdatahits
 C Add to urunvals if previously marked as unique.
              if(itemunique(nbdatahits))then
 
-C << Test of writing out DIR to fort.37. Comment out next line if it does not work.
+C Write DIR to fort.37.
                call relstr(DIR,strval,lna,ier)
                lstrval=lnblnk(strval)
                lfnur=lstur+lstrval
@@ -1138,7 +1189,7 @@ C Note the next few lines are not indented wrt the 'if' statement above.
 
 C Percentage change. Ensure it does not go below 1mm. 
                  THRMLI(IZONE,ISURF,IE,4)=THRMLI(IZONE,ISURF,IE,4)*
-     &                                   (((DATU(ICC,1)/100.)*DIR)+1.0)
+     &             (((DATU(ICC,1)/100.)*DIR)+1.0)
                  if(THRMLI(IZONE,ISURF,IE,4).lt.0.001)then
                    THRMLI(IZONE,ISURF,IE,4)=0.001
                  endif
@@ -1146,7 +1197,7 @@ C Percentage change. Ensure it does not go below 1mm.
 
 C Absolute change. Ensure it does not go below 1mm. 
                  THRMLI(IZONE,ISURF,IE,4)=THRMLI(IZONE,ISURF,IE,4)+
-     &                                   (DATU(ICC,1)*DIR)
+     &             (DATU(ICC,1)*DIR)
                  if(THRMLI(IZONE,ISURF,IE,4).lt.0.001)then
                    THRMLI(IZONE,ISURF,IE,4)=0.001
                  endif
@@ -1302,7 +1353,7 @@ C otherwise search pastphrase(s) for match.
               write(36,*) 'unique item',nbpastitems,uhroot(1:luhroot)
             elseif(itemsinheader.eq.1)then
               lnpast=lnblnk(pastphrase(1))
-              if(uhroot(1:luhroot).eq.pastphrase(1)(1:lupast))then
+              if(uhroot(1:luhroot).eq.pastphrase(1)(1:lnpast))then
                 itemunique(itemsinheader+1)=.FALSE.
               else
                 itemunique(itemsinheader+1)=.TRUE.
@@ -1355,7 +1406,6 @@ C to specify individual periods later.
                   call UAEDIT(ACI(IDTY,IX),ICF,DAT1,DAT2,DIR,-1,0.0,0.0)
                   write(36,*)'Period ',CALENTAG(IDTY),IX,' From:',T,
      &            ' to ',ACI(IDTY,IX)
-                call relstr(ACI(IDTY,IX),strval,lna,ier)
  4010           CONTINUE
  100          continue
             elseif (IDMAT(ICC,2).eq.2) then
@@ -1366,7 +1416,6 @@ C to specify individual periods later.
                   call UAEDIT(ACV(IDTY,IX),ICF,DAT1,DAT2,DIR,-1,0.0,0.0)
                   write(36,*)'Period ',CALENTAG(IDTY),IX,' From:',T,
      &            ' to ',ACV(IDTY,IX)
-                call relstr(ACV(IDTY,IX),strval,lna,ier)
  4011           CONTINUE
  101          continue
             elseif (IDMAT(ICC,2).eq.3) then
@@ -1379,7 +1428,6 @@ C to specify individual periods later.
                   call UAEDIT(TA(IDTY,IX),ICF,DAT1,DAT2,DIR,-1,0.0,0.0)
                   write(36,*)'Period ',CALENTAG(IDTY),IX,' From:',T,
      &            ' to ',TA(IDTY,IX)
-                call relstr(TA(IDTY,IX),strval,lna,ier)
  4012           CONTINUE
  104          continue
             endif
@@ -1391,7 +1439,7 @@ C             write(36,*) 'UAE04 setting nbdatahits',nbdatahits
 C Add to urunvals if previously marked as unique.
             if(itemunique(nbdatahits))then
 
-C << Test of writing out DIR to fort.37. Comment out next line if it does not work.
+C Write DIR to fort.37.
               call relstr(DIR,strval,lna,ier)
               lstrval=lnblnk(strval)
               lfnur=lstur+lstrval
@@ -1621,7 +1669,7 @@ C            write(36,*) 'UAE04 setting nbdatahits',nbdatahits
 C Add to urunvals if previously marked as unique.
             if(itemunique(nbdatahits))then
 
-C << Test of writing out DIR to fort.37. Comment out next line if it does not work.
+C Write DIR to fort.37.
               call relstr(DIR,strval,lna,ier)
               lstrval=lnblnk(strval)
               lfnur=lstur+lstrval
@@ -1709,6 +1757,179 @@ C Loop through all zones listed in NZNOGU for the defined location ICL.
       write (36,*) ' New correlations: '
       write (36,*) '  ',(ICORI(IZONE,JS),JS=1,NSUR)
       write (36,*) '   '
+
+      RETURN
+      END
+
+C ******************** UAE06 ********************
+C UAE06 edits setpoint of blind control.
+
+      SUBROUTINE UAE06(IZONE,IACT,DIR)
+#include "building.h"
+C #include "geometry.h"
+C Common blocks UA2 UA3 UA4 within uncertainty.h
+#include "uncertainty.h"
+
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
+      COMMON/TMCB3/NBCTT(MCOM,MBP,MTMC),BACTPT(MCOM,MBP,MTMC)
+
+      character USETNAME*96   ! the synopsis for each MC-run
+      character uheader*1000  ! header including name of each uncertainty changed
+      character urunvals*1000 ! attribute changed-to value of each uncertainty change for the run.
+      COMMON/USETN/USETNAME(MNRS),uheader,urunvals
+
+      logical headerdone
+      logical itemunique  ! should we include in fort.37
+      logical isunique    ! for test against past
+      integer itemsinheader,nbpastitems,nbdatahits
+      character pastphrase*42
+      common/uhead/headerdone,itemunique(20),pastphrase(20),
+     &  itemsinheader,nbpastitems,nbdatahits
+
+
+      integer lstur, lfnur
+      character strval*12,uhphrase*42,uhroot*42
+
+C Data stored in UA06 has the following meaning in this routine:
+C IDMAT(?,1): =1 signals setpoint to change
+C IDMAT(?,2): =0 not yet used
+C IDMAT(?,3): Change type (%; +/-; explicit).
+C Define variables for current location and change.
+      if(urunvals(1:2).eq.'  ')then
+        lstur=1; lfnur=1  ! reset counters for urunvals buffer
+      else
+        lstur=lnblnk(urunvals)+2; lfnur=lnblnk(urunvals)+2  ! to append to urunvals buffer
+      endif
+      strval=' '        ! clear string buffer for the value changed
+      ICL=IACTD(IACT,2)
+      ICC=IACTD(IACT,1)
+      DAT1=DATU(ICC,1)
+      DAT2=DATU(ICC,2)
+      ICF=IDMAT(ICC,3)
+
+C If initial append to uheader.
+      if(uheader(1:2).eq.'  ')then
+        lstuh=1; lfnuh=1  ! reset counters for uheader buffer
+      else
+        lstuh=lnblnk(uheader)+2; lfnuh=lnblnk(uheader)+2  ! to append to uheader buffer
+      endif
+
+C Loop through all zones listed in NZNOGU for the defined location ICL.
+      do 10 II=1,NZGU(ICL)
+        IZ=NZNOGU(ICL,II)
+        if (IZ.eq.IZONE) then
+
+          write (36,*) 'Entering subroutine UAE06'
+          write (36,*) 'Focus zone: ',IZONE,' DIR:',DIR,' ACT:',
+     &      IACT,' NTGU:',NTGU(ICL,II,1),NTGU(ICL,II,2)
+
+C Make specific header string for each change (to match urunvals).
+          lncng=lnblnk(LCNG(ICC))
+          lnloc=lnblnk(LLOC(ICL))
+          if(lncng.gt.18)lncng=18
+          uhphrase=' '
+          write(uhphrase,'(4a,i2.2,a,i3.3,a)')LCNG(ICC)(1:lncng),
+     &      ':',LLOC(ICL)(1:lnloc),':',IZ,':',NTGU(ICL,II,1),','
+          luhphrase=lnblnk(uhphrase)
+          write(36,'(a)') uhphrase(1:luhphrase)
+
+C Remember the root name of the phrase so that subsequent duplicates can
+C be ignored in the fort.37 file. If the initial item the increment counters
+C otherwise search pastphrase(s) for match.
+          uhroot=' '
+          write(uhroot,'(4a)')LCNG(ICC)(1:lncng),
+     &      ':',LLOC(ICL)(1:lnloc),','
+          luhroot=lnblnk(uhroot)
+          write(36,'(a)') uhroot(1:luhroot)
+          if(itemsinheader.eq.0)then
+            nbpastitems=nbpastitems+1
+            write(pastphrase(nbpastitems),'(a)') uhroot(1:luhroot)
+            itemunique(1)=.TRUE.
+            write(36,*) 'unique item',nbpastitems,uhroot(1:luhroot)
+          elseif(itemsinheader.eq.1)then
+            lnpast=lnblnk(pastphrase(1))
+            if(uhroot(1:luhroot).eq.pastphrase(1)(1:lnpast))then
+              itemunique(itemsinheader+1)=.FALSE.
+            else
+              itemunique(itemsinheader+1)=.TRUE.
+              nbpastitems=nbpastitems+1
+              write(pastphrase(nbpastitems),'(a)') uhroot(1:luhroot)
+              write(36,*)'unique item',nbpastitems,uhroot(1:luhroot)
+            endif
+          else
+
+C If we ever get a match unset isunique.
+            isunique=.true.
+            do loop=1,nbpastitems
+              lnpast=lnblnk(pastphrase(loop))
+              if(uhroot(1:luhroot).eq.
+     &           pastphrase(loop)(1:lnpast))then
+                isunique=.false.
+              endif
+            enddo
+            if(isunique)then
+              itemunique(itemsinheader+1)=.TRUE.
+              nbpastitems=nbpastitems+1
+              write(pastphrase(nbpastitems),'(a)')uhroot(1:luhroot)
+              write(36,*)'unique item',nbpastitems,
+     &          uhroot(1:luhroot)
+            endif
+          endif
+
+C If unique then include it in the header.
+          write(36,*) 'itemunique array ',itemunique
+          if(itemunique(itemsinheader+1))then
+            lfnuh=lstuh+luhroot
+            if(lfnuh.lt.1000)then
+              write(uheader(lstuh:lfnuh),'(a)') uhroot(1:luhroot)
+              lstuh=lfnuh
+              if(.NOT.headerdone)itemsinheader=itemsinheader+1
+            endif
+          else
+            if(.NOT.headerdone)itemsinheader=itemsinheader+1
+          endif
+      
+          strval=' '        ! clear string buffer for the value changed
+
+          write (36,'(a,i3,a,2i3,a,f7.1)') 
+     &      'NZNOGU(ICL,II):',NZNOGU(ICL,II),
+     &      ' NTGU:',NTGU(ICL,II,1),NTGU(ICL,II,2),' BACTPT:',
+     &       BACTPT(IZ,NTGU(ICL,II,2),NTGU(ICL,II,1))
+
+          T1=BACTPT(IZ,NTGU(ICL,II,2),NTGU(ICL,II,1))
+          T2=BACTPT(IZ,NTGU(ICL,II,2),NTGU(ICL,II,1))
+          call UAEDIT(T2,ICF,DAT1,DAT2,DIR,-1,0.0,0.0)
+          BACTPT(IZ,NTGU(ICL,II,2),NTGU(ICL,II,1))=T2
+
+C Increment counter of data so as to check against itemunique array.
+          nbdatahits=nbdatahits+1
+          write(36,*) 'UAE06 setting nbdatahits',nbdatahits,T1,'->',T2
+
+C Add to urunvals if previously marked as unique.
+          if(itemunique(nbdatahits))then
+
+C Write DIR to fort.37.
+            call relstr(DIR,strval,lna,ier)
+            lstrval=lnblnk(strval)
+            lfnur=lstur+lstrval
+            if(lfnur.lt.1000)then
+              write(urunvals(lstur:lfnur),'(a)') strval(1:lstrval)
+              lstur=lfnur+2
+            endif
+          endif  ! itemunique
+        endif    ! the zone is correct
+ 10   continue
+      write (36,*) '   '
+
+C If this was the last uncertainty i.e. if IACT=NIACT
+C and we have done all the zones then the header is done.
+      if(IACT.eq.NIACT)then
+        if(IZONE.eq.NCOMP)then
+          write(36,*) 'set header buffer done in UAE06 ',itemsinheader
+          headerdone=.true.
+        endif
+      endif
 
       RETURN
       END
@@ -1862,7 +2083,6 @@ C Check for out of range values.
                 write (36,*) 'Zone volume less than 0.0, setting to 1.0'
               endif
               write (36,*)'to:                     ',VOL(IZ)
-              call relstr(VOL(IZ),strval,lna,ier)
             endif
           elseif (IDMAT(ICC,1).eq.2) then
             write (36,*) 'Editing surface area...'
@@ -1947,7 +2167,6 @@ C If unique then include it in the header.
                 if(SNA(IZ,IS).lt.0.01) SNA(IZ,IS)=0.01
               endif
               write (36,'(a,f9.4,2i3)') 'To Area: ',SNA(IZ,IS),IZ,IS
-              call relstr(SNA(IZ,IS),strval,lna,ier)
             enddo
             write (36,*) 'sna= ',(SNA(IZ,JS),JS=1,nconst(IZ))
 
@@ -1964,7 +2183,7 @@ C            write(36,*) 'UAZ01 setting nbdatahits',nbdatahits
 C Add to urunvals if previously marked as unique.
             if(itemunique(nbdatahits))then
 
-C << Test of writing out DIR to fort.37. Comment out next line if it does not work.
+C Write DIR to fort.37.
               call relstr(DIR,strval,lna,ier)
               lstrval=lnblnk(strval)
               lfnur=lstur+lstrval

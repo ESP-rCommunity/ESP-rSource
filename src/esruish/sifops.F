@@ -65,7 +65,7 @@ C with the db at simulation time.
       character*12 sourcename(MS)   ! name of insolation source
       dimension month(12),iavdec(12)
       character month*3
-      character outs*124,louts*248,hold*74,expfil*72
+      character outs*124,louts*248,hold*74,expfil*96
       character outl*248,outld*248,outstr*124,loutstr*248
       character out1k*1000,out1kd*1000,lkoutstr*1000
       character message*64
@@ -346,7 +346,7 @@ C *** Export to ascii file requested.
          helptopic='shading_export_options'
          call gethelptext(helpinsub,helptopic,nbhelp)
          expfil='siexp.txt'
-         call easks(expfil,' ','Export file name?',72,'siexp.txt',
+         call easks(expfil,' ','Export file name?',96,'siexp.txt',
      &     'shdins export',ier,nbhelp)
          call efopseq(iuj,expfil,3,ier)
          if(ier.lt.0)then
@@ -471,7 +471,7 @@ C value lastrec which is equivalent to irecx.
          call gethelptext(helpinsub,helptopic,nbhelp)
          write(expfil,'(2a)') 
      &     lshad(icomp)(1:lnblnk(lshad(icomp))),'a'
-   17    call easks(expfil,' ','Import file name?',72,'siimp.txt',
+   17    call easks(expfil,' ','Import file name?',96,'siimp.txt',
      &     'shdins import',ier,nbhelp)
          call efopseq(iuj,expfil,1,ier)
          if(ier.ne.0)goto 1002
@@ -569,7 +569,7 @@ C the * month tag then we have only insolation.
          else
             if(mnth.gt.12) goto 18  ! have reached past december
             call usrmsg('Data in file is not for the specified month!',
-     &                               expfil,'W')
+     &        expfil,'W')
             call erpfree(iuj,istat)
             goto 17
          endif
@@ -961,7 +961,7 @@ C written for silent operation. If the format changes in sifops then
 C sifexp should also be updated.
 C Passed parameters:
 C  icomp (integer) is the current zone index
-C  exportfile (72 char) is the ascii file to generate (typically
+C  exportfile (96 char) is the ascii file to generate (typically
 C    this would be a name derived from the zone shading file).
 C  ier (integer) is zero if no problems, -3 if empty.
       subroutine sifexp(icomp,exportfile,ier)
@@ -984,7 +984,7 @@ C  ier (integer) is zero if no problems, -3 if empty.
       character sn*12
       character*12 sourcename(MS)   ! name of insolation source
       character*3 month(12)
-      character outs*124,exportfile*72
+      character outs*124,exportfile*96
       character outl*248,outld*248
       character out1k*1000,out1kd*1000,lkoutstr*1000
       integer isourcecount  ! to help with sourcename list
@@ -1156,7 +1156,7 @@ C written for silent operation. If the format changes in sifops then
 C sifexp should also be updated.
 C Passed parameters:
 C  icomp (integer) is the current zone index
-C  exportfile (72 char) is the ascii file to import (typically
+C  exportfile (96 char) is the ascii file to import (typically
 C    this would be a name derived from the zone shading file).
 C  ier (integer) is zero if no problems, -3 if empty,
 C     -2 not found, -1 wrong type of file, -4 wrong zone.
@@ -1180,7 +1180,7 @@ C     -2 not found, -1 wrong type of file, -4 wrong zone.
       common/mtfile/ltrns,multic,mons,monf
 
       character*3 month(12)
-      character outs*124,louts*248,exportfile*72
+      character outs*124,louts*248,exportfile*96
       character outstr*124,loutstr*248
       character message*64
       integer nboftmc       ! number of insolation sources returned from findtmc

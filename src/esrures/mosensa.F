@@ -327,9 +327,12 @@ C don't do this if printing to file.
                 louts2k='#Time '
                 K=7; K4=7   ! initial value for buffers
               else
-                louts  ='Time '
-                louts1k='Time '
-                louts2k='Time '
+C                louts  ='Time '
+C                louts1k='Time '
+C                louts2k='Time '
+                louts  ='Time, '  ! for sensitivity reporting a , after Time
+                louts1k='Time, '
+                louts2k='Time, '
                 K=6; K4=6   ! case of ILFLAG=2
               endif
             endif
@@ -400,13 +403,13 @@ C            write(6,*) ' '
             if (IDAY.eq.IODS)then
               if(ixopen.eq.1)then
 
-C If lnb2 > lnb then write out louts2k.
+C If lnb2 > lnb then write out louts2k. Do not write trailing ,
                 lnb=lnblnk(louts1k)   ! write directly to file
                 lnb2=lnblnk(louts2k)   ! write directly to file
                 if(lnb2.gt.lnb)then
-                  write(itru,'(A)',iostat=ios,err=1)louts2k(1:lnb2)
+                  write(itru,'(A)',iostat=ios,err=1)louts2k(1:lnb2-1)
                 else
-                  write(itru,'(A)',iostat=ios,err=1)louts1k(1:lnb)
+                  write(itru,'(A)',iostat=ios,err=1)louts1k(1:lnb-1)
                 endif
               else
                 if(NC.le.12)then
@@ -667,22 +670,9 @@ C Writing to screen so use shorter file buffer.
                 call eddisp248(itru,louts,124)
               endif
             endif
-
-C            if(NC.le.12)then
-C             write (outs,'(f6.2,12(1x,f8.4))')TIME,(VAL2(II,J),II=1,NC)
-C             call edisp(itru,outs)
-C            elseif(NC.gt.12.and.NC.le.26)then
-C             write (louts,'(f6.2,26(1x,f8.4))')TIME,(VAL2(II,J),II=1,NC)
-C             call edisp248(itru,louts,120)
-C            elseif(NC.gt.26.and.NC.le.100)then
-C             write (louts1k,'(f6.2,100(1x,f8.4))')TIME,
-C     &         (VAL2(II,J),II=1,NC)
-C             call edisp248(itru,louts1k,140)
-C            endif
- 521      continue
-          call edisp(itru,'  ')
-        endif
- 10   continue
+ 521      continue  ! of the timestep in the day
+        endif       ! of the IFMT tabular
+ 10   continue      ! of the iday loop
 
 C Only proceed if IFMT=1
       if (IFMT.ne.1) goto 1

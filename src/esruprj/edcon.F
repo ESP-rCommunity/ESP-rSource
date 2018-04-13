@@ -1292,12 +1292,14 @@ C equivalent MLC in the array. If name is UNKN then ask user to select.
 C << The logic for dealing with TRAN/OPAQ needs to be updated! >>
         NAIRG(IS)=0
         IF(SSMLCN(ioc)(1:4).EQ.'UNKN')THEN
-  245     WRITE(outs,'(3A)')' Composition of ',SSNAME(ioc),
-     &                         ' is unknown.'
+  245     WRITE(outs,'(3A)')' Composition of ',
+     &      SSNAME(ioc)(1:lnblnk(SSNAME(ioc))),
+     &      ' is unknown. Please select one...'
+          call edisp(iuout,outs)
           if(mlcver.eq.0)then
             CALL EPKMLC(ISEL,outs,'Please select one...',IER)
           else
-            call edisp(iuout,'Please select one...')
+            call edisp(iuout,outs)
             CALL EDMLDB2(modmlc,'-',ISEL,IER)
           endif
           IF(ISEL.GT.0)THEN

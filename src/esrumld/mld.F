@@ -412,4 +412,15 @@ C Should be the same logic as in esru_x.c.
       return
       end
 
+C ************************* EMF3DREAD 
+C EMF3DREAD reads a 3D mass flow network description file.
+C Reads allow comments and most input data checks are performed.
+C It assumes that the file is already open.
+      SUBROUTINE EMF3DREAD(IFPRB,MODE,IER)
+      integer IFPRB
+      character MODE*1
+      integer ier
+
+      return
+      end
 

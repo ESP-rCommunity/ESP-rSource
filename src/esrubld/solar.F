@@ -458,7 +458,7 @@ C values, skip if iterating (and past first iteration).
       q2cfc(2)=0.0
       q2wall(2)=0.0
       q2rem(2)=0.0
-      NC=NCONST(ICOMP)
+      NC=NCONST(ICOMP)  ! number of surfaces in zone
       DO 10 I=1,NC
 
 C Internal opaque surface absorption
@@ -699,9 +699,13 @@ C Window blind/shutter in place on this TMC. Test if it is active.
 C NP is no. of control periods for this TMC type.
             NP=NBCTMC(ICOMP,ITMC)
             DO 5 K=1,NP
-              IT1=IBCST(ICOMP,K,ITMC)
-              IT2=IBCFT(ICOMP,K,ITMC)
+              IT1=IBCST(ICOMP,K,ITMC)  ! period start
+              IT2=IBCFT(ICOMP,K,ITMC)  ! period end
               IF(IHRF.GT.IT1.AND.IHRF.LE.IT2) THEN
+
+C << If uncertain about activation point find the value
+C << for this set. Logic needs to be worked out.
+
                 IF(BACTPT(ICOMP,K,ITMC).LT.-98.0) THEN
 
 C No activation level.
@@ -917,6 +921,10 @@ C POO/POO2 contains shading factor on corresponding opaque surface.
                     IBOFOT(ICOMP,I)=1
                     NBPONT(ICOMP,I)=K
                   ENDIF
+C Debug.
+C                  write(6,'(a,3i4,f5.2,i3,a,f6.1)') 'blind control ',
+C     &              icomp,i,IBOFOT(ICOMP,I),
+C     &              ECRAT(ICOMP,I),NBPONT(ICOMP,I),' rad',RAD
                 ENDIF
 
 C <FMI>
@@ -953,9 +961,10 @@ C so call bcl99 to update thermophysical props of controlled windows.
         if(ITMC.GT.0)then
 
 C Debug.
-C        write(6,'(a,7i4)') 'Blind state: ',ICOMP,I,IBOFOT(ICOMP,I),
-C     &    NBPONT(ICOMP,I),ITMC,ITPREP(ICOMP,ITMC),
-C     &    IBCMT(ICOMP,ITMC)
+C        write(6,'(a,7i4)') 
+C     &    'Blind state: icomp i ibofot nbpont itmc itprep ibcmt',
+C     &    ICOMP,I,IBOFOT(ICOMP,I),NBPONT(ICOMP,I),ITMC,
+C     &    ITPREP(ICOMP,ITMC),IBCMT(ICOMP,ITMC)
 
           if(ITPREP(ICOMP,ITMC).gt.0)then
             if(IBCMT(ICOMP,ITMC).EQ.1) then
@@ -4612,8 +4621,8 @@ C This is done by setting the flag IBCMDT=1 or 0
         if(ITMC.gt.0)then
           IBCMT(ICOMP,ITMC)=ISON
 C Debug.
-C          write(6,*) 'OCL01 icomp,i,itmc,ison,IDTYPO,IPERO'
-C          write(6,*) icomp,i,itmc,ison,IDTYPO,IPERO
+C          write(6,'(a,6i4)') 'OCL01 icomp,i,itmc,ison,IDTYPO,IPERO',
+C     &      icomp,i,itmc,ison,IDTYPO,IPERO
         endif
  1    continue
     

@@ -102,19 +102,12 @@ C     RESRMX - maximum relative residual (relative to SAFLW for NDWREL)
 
 #include "building.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "tdf2.h"
       common/trc/itrc
       COMMON/MFTRA/IMFTU
-      COMMON/MFLOW2/NDNAM(0:MNOD)
 
       COMMON/ACT/ACTCNN(MCNN)
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLW11/PSTACK(MCNN),HDP(MCNN),HDV(MCNN),HFL(MCNN)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
@@ -142,7 +135,7 @@ C     RESRMX - maximum relative residual (relative to SAFLW for NDWREL)
       DOUBLE PRECISION PJMTX(MNOD,MNOD),PRC(MNOD),RELAX(MNOD),RHS(MNOD)
       DOUBLE PRECISION RESR,RESAMX,RESRMX,RESID_temp
       character outs*124,outw*248
-      CHARACTER NDNAM*12,CONTMNAM*12
+      CHARACTER CONTMNAM*12
       LOGICAL ACTCNN,close
       character LAPROB*72
       integer ncomp,ncon
@@ -628,14 +621,9 @@ C     FEXP = SUPCMP(ICMP,3) - flow exponent b (-)
       SUBROUTINE MF010C(ICNN,DELP,DERIV)
 
 #include "net_flow.h"
-
+#include "net_flow_data.h"
 
       COMMON/mfctl/ctlpos(MCNN)
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
 
@@ -692,12 +680,8 @@ C     FEXP = SUPCMP(ICMP,3) - number of devices
       SUBROUTINE MF011C(ICNN,DELP,DERIV)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
 
@@ -800,13 +784,9 @@ C
       SUBROUTINE MF012C(ICNN,DELP,DERIV)
 cc      implicit none
 #include "net_flow.h"
+#include "net_flow_data.h"
 
       COMMON/mfctl/ctlpos(MCNN)
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
 
@@ -884,12 +864,9 @@ C     FEXP = SUPCMP(ICMP,3) - flow exponent b (-)
       SUBROUTINE MF015C(ICNN,DELP,DERIV)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 
       COMMON/mfctl/ctlpos(MCNN)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
 
@@ -935,13 +912,9 @@ C     FEXP = SUPCMP(ICMP,3) - flow exponent b (-)
       SUBROUTINE MF017C(ICNN,DELP,DERIV)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 
       COMMON/mfctl/ctlpos(MCNN)
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
 
@@ -991,12 +964,8 @@ C     COFB = SUPCMP(ICMP,3) - flow coefficient b (Pa/(m^3/s)^2)
       SUBROUTINE MF020C(ICNN,DELP,DERIV)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
       COMMON/mfctl/ctlpos(MCNN)
@@ -1068,11 +1037,8 @@ C     COFB = SUPCMP(ICMP,3) - flow coefficient b (Pa/(kg/s)^2)
       SUBROUTINE MF025C(ICNN,DELP,DERIV)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
       COMMON/mfctl/ctlpos(MCNN)
@@ -1144,12 +1110,8 @@ C control ratio returned in ctlpos.
       SUBROUTINE MF030C(ICNN,DERIV)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
       COMMON/mfctl/ctlpos(MCNN)
@@ -1184,11 +1146,8 @@ C control ratio returned in ctlpos.
       SUBROUTINE MF035C(ICNN,DERIV)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
       COMMON/mfctl/ctlpos(MCNN)
@@ -1218,12 +1177,8 @@ C control ratio returned in ctlpos.
       SUBROUTINE MF040C(ICNN,DELP,DERIV)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
       COMMON/mfctl/ctlpos(MCNN)
@@ -1273,13 +1228,8 @@ C     ORAD = SUPCMP(ICMP,3) - radius of opening   (m)
       SUBROUTINE MF050C(ICNN,DELP,DERIV)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
       COMMON/SHOUT/ICOUT
-      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
       COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG
@@ -1341,12 +1291,8 @@ C control ratio returned in ctlpos.
       SUBROUTINE MF110C(ICNN,DELP,DERIV)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
       COMMON/mfctl/ctlpos(MCNN)
@@ -1395,12 +1341,8 @@ C     FCOF = f{SUPCMP(ICMP,3)} - crack length (m)
       SUBROUTINE MF120C(ICNN,DELP,DERIV)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
       COMMON/mfctl/ctlpos(MCNN)
@@ -1461,13 +1403,8 @@ C     TNEG                  - absolute temperature -ve side (K)
       SUBROUTINE MF130C(ICNN,DELP,DERIV)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 
-      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
       COMMON/mfctl/ctlpos(MCNN)
@@ -1587,13 +1524,8 @@ C     VEL                   - velocity (m/s)
       SUBROUTINE MF210C(ICNN,DELP,DERIV)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
       COMMON/SHOUT/ICOUT
-      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
       COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG
@@ -1724,13 +1656,9 @@ C     RHO                   - fluid density (kg/m^3)
       SUBROUTINE MF211C(ICNN,DELP,DERIV)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 
       PARAMETER (SMALL=1.0E-15)
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
 
@@ -1861,13 +1789,8 @@ C     QPAQC          - ratio of Qp' over Qc (-)
       SUBROUTINE MF220C(ICNN,DELP,DERIV)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
       COMMON/SHOUT/ICOUT
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
       COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG
@@ -1959,13 +1882,8 @@ C     QPAQC          - ratio of Qp' over Qc (-)
       SUBROUTINE MF230C(ICNN,DELP,DERIV)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
       COMMON/SHOUT/ICOUT
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
       COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG
@@ -2056,13 +1974,8 @@ C     QPA1QC,QPA2QC  - ratio of Qp',Qp' over Qc (-)
       SUBROUTINE MF240C(ICNN,DELP,DERIV)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
       COMMON/SHOUT/ICOUT
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
       COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG
@@ -2169,13 +2082,8 @@ C     QPA1QC,QPA2QC  - ratio of Qp',Qp" over Qc (-)
       SUBROUTINE MF250C(ICNN,DELP,DERIV)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
       COMMON/SHOUT/ICOUT
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
       COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG
@@ -2285,13 +2193,9 @@ C     RHO                   - fluid density (kg/m^3)
       SUBROUTINE MF310C(ICNN,DELP,DERIV)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
       COMMON/SHOUT/ICOUT
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
       COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG
@@ -2486,13 +2390,9 @@ C     HH100           - relative valve position H/H100 (-)
       SUBROUTINE MF410C(ICNN,DELP,DERIV)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
       COMMON/mfctl/ctlpos(MCNN)
@@ -2578,12 +2478,8 @@ C
       SUBROUTINE MF420C(ICNN,DELP,DERIV)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
       COMMON/mfctl/ctlpos(MCNN)
@@ -2649,12 +2545,8 @@ C
       SUBROUTINE MF460C(ICNN,DELP,DERIV)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
       COMMON/mfctl/ctlpos(MCNN)
@@ -2930,17 +2822,9 @@ C (the same trace file as used for other issues).
       SUBROUTINE MFOUTP(IFRES)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 
       common/c6/indcfg
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLW11/PSTACK(MCNN),HDP(MCNN),HDV(MCNN),HFL(MCNN)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
@@ -2961,7 +2845,6 @@ C Once per hour storage of results, averaged over that hour.
 
       DOUBLE PRECISION FLW1,FLW2,HDP,HDV,HFL,PRES,PSTACK,RESID,SAFLW
       DOUBLE PRECISION sFLW1,sFLW2,sPRES,sPSTACK,sRESID,sSAFLW
-      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12
 
 C Once per hour results storage. Determine whether storage at this
 C time step is needed; ie only during last plant time step in
@@ -3011,7 +2894,7 @@ C mass flow residual and node coupled sum of absolute mass flow rates
         WRITE(IFRES,1010)
         WRITE(IFRES,1011)
      &     (NDNAM(INOD),NDFLD(INOD),NDTYP(INOD),TNOD(INOD),
-     &      HNOD(INOD),PRES(INOD),RESID(INOD),SAFLW(INOD),
+     &      HNOD(INOD,3),PRES(INOD),RESID(INOD),SAFLW(INOD),
      &      INOD=1,NNOD)
       else
         do 100 INOD=1,NNOD
@@ -3024,7 +2907,7 @@ C mass flow residual and node coupled sum of absolute mass flow rates
           WRITE(IFRES,1010)
           WRITE(IFRES,1011)
      &     (NDNAM(INOD),NDFLD(INOD),NDTYP(INOD),sTNOD(INOD)/irdcm,
-     &     HNOD(INOD),sPRES(INOD)/irdcm,sRESID(INOD)/irdcm,
+     &     HNOD(INOD,3),sPRES(INOD)/irdcm,sRESID(INOD)/irdcm,
      &     sSAFLW(INOD)/irdcm,INOD=1,NNOD)
           do 102 INOD=1,NNOD
             sTNOD(INOD)=0.
@@ -3094,22 +2977,14 @@ C MFOUTP writes header for fluid flow simulation binary results file.
 
       SUBROUTINE MFOUTPH(IFRES)
 #include "net_flow.h"
+#include "net_flow_data.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLRES2/IMFREC
       COMMON/MFLRESV/FLRESVER
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
 
-      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,outs*124,CONTMNAM*12
+      CHARACTER outs*124,CONTMNAM*12
 
       ISTAT=0
 
@@ -3130,7 +3005,7 @@ C Name, fluid, type, height, temp of other node, def temp, sup data 1 & 2.
       do 10 INOD=1,NNOD
         IMFREC=IMFREC+1
         write (IFRES,REC=IMFREC,IOSTAT=ISTAT,ERR=1000)
-     &       NDNAM(INOD),NDFLD(INOD),NDTYP(INOD),HNOD(INOD),
+     &       NDNAM(INOD),NDFLD(INOD),NDTYP(INOD),HNOD(INOD,3),
      &       ITND(INOD),TNOD(INOD),SUPNOD(INOD,1),SUPNOD(INOD,2)
  10   continue
 
@@ -3177,12 +3052,11 @@ C MFOUTP writes fluid flow simulation results to binary results file.
 
 #include "building.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 
       common/c6/indcfg
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
       COMMON/MFLW11/PSTACK(MCNN),HDP(MCNN),HDV(MCNN),HFL(MCNN)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)

@@ -795,6 +795,10 @@ C Indicator of possible focus zone.
 C External cad package.
       common/cad3rd/cadlbl,cadexe,cadfmt
 
+C The model root and mpath passed to silentmodel call.
+      character metaroot*32,metampath*72
+      common/cadmeta/metaroot,metampath
+
       LOGICAL OK,DOK,concat,browse,confirm,ckpath,unixok
       logical itisanexemplar  ! passed to newprb to ensure correct browse mode.
 
@@ -807,6 +811,8 @@ C External cad package.
       character fs*1
       character thecfgis*72 ! cfg file only
       character cfgpath*144  ! full path to cfg folder for refocus
+      character theprimedirective*8
+      logical XST
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -832,9 +838,9 @@ C Tell the user to create a model configuration file.
       CALL PHELPD('CAD warning',nbhelp,'-',0,0,IER)
 
 C Ask user which format of CAD file will be scanned in.
-      CALL EASKABCD(' ',
-     &  'Options:','parse DXF (version 12-14)','parse gbXML',
-     &  'invoke CAD tool','cancel',IRT,nbhelp)
+      CALL EASKATOG(' ','Options:',
+     &  'parse DXF (version 12-14)','parse gbXML','invoke CAD tool',
+     &  'parse ESP-r META','cancel',' ',' ',IRT,nbhelp)
       if(irt.eq.1)then
         cadfmt='DXF '
       elseif(irt.eq.2)then
@@ -850,6 +856,65 @@ C Ask user which format of CAD file will be scanned in.
         endif
         return
       elseif(irt.eq.4)then
+
+C Attempt to scan ESP-r META file.
+        LFIL='  '
+  29    CALL EASKS(LFIL,'ESP-r META file to import ?',
+     &    ' ',72,' ','META file',IER,nbhelp)
+
+C Read the first couple of lines of the import file to see if it
+C is a DXF file.
+        if(LFIL(1:2).ne.'  '.and.LFIL(1:4).ne.'UNKN')then
+          INQUIRE (FILE=LFIL,EXIST=XST)
+          if(.NOT.XST)then
+            write(outs,'(a,a)')'Could not find: ',LFIL(1:lnblnk(LFIL))
+            dok=.false.
+            call askok(outs,'Try again?',OK,dok,nbhelp)
+            if(OK)then
+              goto 29
+            else
+              return
+            endif
+          endif
+          call clrprb  ! clear the model common blocks prior to scan
+          write(longtfile,'(a)') LFIL(1:lnblnk(LFIL))
+          IUNIT=IFIL+1
+          modeltitle='UNKNOWN'
+
+C If iverb passed as non-zero then change directive.
+          call silentread(iunit,longtfile,'-',theprimedirective,ier)
+          call edisp(iuout,theprimedirective)
+          call edisp(iuout,modeltitle)
+          call edisp248(iuout,modeldocblock,80)
+
+C Figure out where the new model cfg is going to be placed.
+C          call usrdir(pwdinitial)
+          write(6,*) 'the pwd command is ',
+     &      pwdinitial(1:lnblnk(pwdinitial))
+          thecfgis='  '
+          write(thecfgis,'(2a)') metaroot(1:lnblnk(metaroot)),'.cfg'
+          cfgpath='  '
+          write(cfgpath,'(5a)') pwdinitial(1:lnblnk(pwdinitial)),fs,
+     &      metampath(1:lnblnk(metampath)),fs,'cfg'
+          call edisp(iuout,'  ')
+          call edisp(iuout,'The model cfg folder is:')
+          call edisp(iuout,cfgpath)
+          call edisp(iuout,'The cfg file is is:')
+          call edisp(iuout,thecfgis)
+          call edisp(iuout,'It is now OK to [YES RESTART].')
+
+C Suggest to user to refocus prj within the model cfg folder at
+C this specific cfg file.
+          call refocus(cfgpath,thecfgis,iret)
+          if(iret.eq.0)then
+            continue
+          elseif(iret.eq.-2)then
+            call edisp(iuout,
+     &      'Features using Radiance calls may not work as expected.')
+          endif
+          return
+        endif
+      elseif(irt.eq.5)then
         return
       endif
 
@@ -2474,7 +2539,7 @@ C The following write statements do not detect the file location
  920  continue
 
 C Flow network.
-      if(IAIRN.EQ.1)then
+      if(IAIRN.GE.1)then
         write(LF,'(a)') LAPROB
         lc=lnblnk(netpth)
         if(netpth(1:lc).eq.LF(1:lc))then

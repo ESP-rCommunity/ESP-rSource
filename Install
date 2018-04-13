@@ -34,7 +34,7 @@ TargetName=`echo $2 |  sed 's/\.a$//g'`
 printf "\r                                                                            "
 printf "\r   - Creating binary climate databases [${TargetName}] ..."
 rm -f $1
-$CLM -mode text -file $1 -act asci2bin silent $2  >/dev/null 2>/dev/null
+$CLM -mode text -file $1 -act ascii2bin silent $2  >/dev/null 2>/dev/null
 
 }
 
@@ -84,6 +84,7 @@ xml_support=prompt         # support for XML output
 SQLite_support="no"        # support for SQLite output
 FMI_support="prompt"       # support for FMI
 debugging="no"             # include debugging symbols
+debian_copy="no"           # no=standard make install yes=make bincopy
 EXE=""                     # executable file extension (i.e. .exe on cygwin and Windows)
 FFLAGS="-I../include "     # initial fortran compiler flags
 CFLAGS="-I../include "     # initial C compiler flags
@@ -173,6 +174,7 @@ if [ $# -ne 0 ]; then
         --debug)        debugging=yes; clean=no;   shift;;
         -d) shift;      DESTdir=$1; input="yes";   shift;;
         --force)        preserve_espr_dir="no";    shift;;
+        --debian)       debian_copy="yes";         shift;;
         --no_training | --no-training)
                         install_training="no";     shift;;
         --no_dbs | --no-dbs )
@@ -2530,16 +2532,16 @@ if [ "$install_training" = "yes" ]; then
      #       Maybe someday...
 
      cd ${MODdir}/training/cg_ctl/daylit_coef/cfg
-     $CLM -mode text -file dec94_clm -act asci2bin silent dec94_clm.a >/dev/null
+     $CLM -mode text -file dec94_clm -act ascii2bin silent dec94_clm.a >/dev/null
      cd ${MODdir}/training/Temporal_Clm
-     $CLM -mode text -file 15265.climate -act asci2bin 15265.climate.a >/dev/null
+     $CLM -mode text -file 15265.climate -act ascii2bin 15265.climate.a >/dev/null
      cd ${MODdir}
      echo " Done."
      echo -n "   - Updating climate databases in validation models..."
      cd ${MODdir}/validation/CEN/13791/databases
-     $CLM -mode text -file Cond.clm -act asci2bin silent Cond.clm.a >/dev/null
-     $CLM -mode text -file WM_A.clm -act asci2bin silent WM_A.clm.a >/dev/null
-     $CLM -mode text -file WM_B.clm -act asci2bin silent WM_B.clm.a >/dev/null
+     $CLM -mode text -file Cond.clm -act ascii2bin silent Cond.clm.a >/dev/null
+     $CLM -mode text -file WM_A.clm -act ascii2bin silent WM_A.clm.a >/dev/null
+     $CLM -mode text -file WM_B.clm -act ascii2bin silent WM_B.clm.a >/dev/null
      cd ${MODdir}
      echo " Done."
      echo -n "   - Copying training and validation models..."
@@ -2702,7 +2704,11 @@ if [ "$debugging" = "no" ]; then
   make ESPdir=${ESPdir} EXE=${EXE} COSIMDir=${COSIMdir} strip  >/dev/null 2>&1
 fi
 echo "Placing executables in ESPBinDir=${ESPBinDir}"
-make ESPBinDir=${ESPBinDir} EXE=${EXE} COSIMDir=${COSIMdir} InstBins ${targets}  >/dev/null 2>&1
+if [ "$debian_copy" = "no" ]; then
+  make ESPBinDir=${ESPBinDir} EXE=${EXE} COSIMDir=${COSIMdir} InstBins ${targets}  >/dev/null 2>&1
+elif [ "$debian_copy" = "yes" ]; then
+  make ESPBinDir=${ESPBinDir} EXE=${EXE} COSIMDir=${COSIMdir} bincopy
+fi
 if [ "$clean" = "yes" ]; then
   make EXE=${EXE} clean  >/dev/null 2>&1
 fi

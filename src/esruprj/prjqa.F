@@ -48,6 +48,7 @@ C << of reporing if from command line.
 C geometry.h provides commons G0/G2/G7/prec2/precz/c20.
 #include "geometry.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "control.h"
 #include "tdf2.h"
 #include "esprdbfile.h"
@@ -117,7 +118,6 @@ C LPNF (72 char) plant network file name.
       common/cctlnm/ctldoc,lctlf
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       INTEGER :: iairn,icaas
-      COMMON/MFLOW2/NDNAM(0:MNOD)
 
 C ISPMXIST is the existance flag for special materials
       common/spmfxst/ispmxist,spflnam
@@ -227,7 +227,7 @@ C Remember if each zone is fully attributed.
       character outs*124,outs248*496
       character dstmp*24,mlc_name*32
       CHARACTER LAPROB*72,LPNF*72
-      CHARACTER NDNAM*12,TOPTIC*12,msg*28,doit*248
+      CHARACTER TOPTIC*12,msg*28,doit*248
       character t16a*16,t16b*16,t16c*16,t16d*16
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       character figlbl*20,figexe*48

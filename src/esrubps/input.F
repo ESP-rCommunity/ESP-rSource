@@ -86,7 +86,7 @@ C           - contain the zone and multilayered construction numbers
 C             at which each connectionterminates (if corresponding ict=3)
 C           - contain pointers to ground temps (if corresponding ict=4)
 
-C iairn   - building fluid (1=text. 2=graphic) flow simulation index (0 = off)
+C iairn   - building fluid (1=text. 2=graphic 3=3D) flow simulation index (0 = off)
 C icaas   - fluid (= air) flow network node associated with each
 C           building zone. NB fluid flow network and building zones
 C           need not be matched

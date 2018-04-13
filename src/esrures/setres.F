@@ -38,7 +38,7 @@ C SETUP provides the menus and control logic for the res preference menu.
 
       DIMENSION SETUPM(10)
       CHARACTER PERST1*14,PERST2*44,PERST3*44
-      CHARACTER SETUPM*50,pifltog*4,lpifl*72,ltmp*72
+      CHARACTER SETUPM*50,pifltog*4,lpifl*96,ltmp*96
       integer NITMS,ISETUP ! max items and current menu item
 
 C For help messages
@@ -122,7 +122,7 @@ C allow decimal day representation if day format is DOY.
           ltmp=' '
           ltmp=lpifl
            call easks(ltmp,'File to hold sequence of selections:',
-     &      ' ',72,'/tmp/res.rdf','file for selections',IER,nbhelp)
+     &      ' ',96,'/tmp/res.rdf','file for selections',IER,nbhelp)
           lpifl=ltmp
           pifltog='ON  '
         endif

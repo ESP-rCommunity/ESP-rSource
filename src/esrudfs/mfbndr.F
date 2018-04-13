@@ -54,6 +54,7 @@ C ********************* MFBNDR *********************
       SUBROUTINE MFBNDR(INTL)
 #include "building.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "cfd.h"
 
       COMMON/ICFNOD/ICFD,ICP
@@ -70,12 +71,6 @@ C ********************* MFBNDR *********************
      &          VOLArea(MNVLS,MNZ),VOLPres(MNVLS,MNZ),
      &          VOLPol(MCTM,MNVLS,MNZ)
 
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLW11/PSTACK(MCNN),HDP(MCNN),HDV(MCNN),HFL(MCNN)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
@@ -93,8 +88,6 @@ C ********************* MFBNDR *********************
       DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW,PSTACK,HDP,HDV,HFL,
      *                 FLWNET
       LOGICAL ACTCNN,FOUND,FIRST,areaSSO
-      CHARACTER*12 NDNAM,CMNAM
-      CHARACTER LTPCMP*60
       CHARACTER LAPROB*72
       integer TMPNODN
 
@@ -148,16 +141,16 @@ C flow direction.
         IDNE=NODNE(ICNN)
         IF(IPSMOD.EQ.1) THEN
           IF(FLW1(ICNN).GE.0.0) THEN
-            PSTACK(ICNN)=9.81*(RHON(IDPS)*(HNOD(IDPS)-HNOD(IDNE))
+            PSTACK(ICNN)=9.81*(RHON(IDPS)*(HNOD(IDPS,3)-HNOD(IDNE,3))
      &                         +HGTNE(ICNN)*(RHON(IDNE)-RHON(IDPS)))
           ELSE
-            PSTACK(ICNN)=9.81*(RHON(IDNE)*(HNOD(IDPS)-HNOD(IDNE))
+            PSTACK(ICNN)=9.81*(RHON(IDNE)*(HNOD(IDPS,3)-HNOD(IDNE,3))
      &                         +HGTPS(ICNN)*(RHON(IDNE)-RHON(IDPS)))
           ENDIF
         ELSE IF(IPSMOD.EQ.2) THEN
           PSTACK(ICNN)=9.81*0.5*
-     &                ((RHON(IDPS)+RHON(IDNE))*(HNOD(IDPS)-HNOD(IDNE))
-     &               +(HGTNE(ICNN)+HGTPS(ICNN))*(RHON(IDNE)-RHON(IDPS)))
+     &      ((RHON(IDPS)+RHON(IDNE))*(HNOD(IDPS,3)-HNOD(IDNE,3))
+     &      +(HGTNE(ICNN)+HGTPS(ICNN))*(RHON(IDNE)-RHON(IDPS)))
         ELSE
           STOP ' MFLWCA: unresolvable error !'
         END IF
@@ -337,6 +330,7 @@ C cfd-mfs iterations are done.
       SUBROUTINE MFSCORR(ICORROK)
 #include "building.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "cfd.h"
       COMMON/ICFNOD/ICFD,ICP
       common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
@@ -360,11 +354,6 @@ C cfd-mfs iterations are done.
       common/blksso/NBLK(MNZ),INBLK(MNVLS,MNZ),NSSO(MNZ),
      &          INSSO(MNVLS,MNZ)
 
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLW11/PSTACK(MCNN),HDP(MCNN),HDV(MCNN),HFL(MCNN)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
@@ -384,7 +373,7 @@ C Commons for trace.
       DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW,FLW1OLD(MCNN)
       DOUBLE PRECISION FLW2OLD(MCNN),PSTACK,HDP,HDV,HFL
       LOGICAL ACTCNN,OK,LINVOL
-      CHARACTER*12 VOLNAME,NDNAM
+      CHARACTER*12 VOLNAME
       REAL PRSROLD(MNOD)
 
 C Adjust pressure tol from 0.001 to 0.1.
@@ -488,16 +477,16 @@ C flow direction.
         IDNE=NODNE(ICNN)
         IF(IPSMOD.EQ.1) THEN
           IF(FLW1(ICNN).GE.0.0) THEN
-            PSTACK(ICNN)=9.81*(RHON(IDPS)*(HNOD(IDPS)-HNOD(IDNE))
+            PSTACK(ICNN)=9.81*(RHON(IDPS)*(HNOD(IDPS,3)-HNOD(IDNE,3))
      &                         +HGTNE(ICNN)*(RHON(IDNE)-RHON(IDPS)))
           ELSE
-            PSTACK(ICNN)=9.81*(RHON(IDNE)*(HNOD(IDPS)-HNOD(IDNE))
+            PSTACK(ICNN)=9.81*(RHON(IDNE)*(HNOD(IDPS,3)-HNOD(IDNE,3))
      &                         +HGTPS(ICNN)*(RHON(IDNE)-RHON(IDPS)))
           ENDIF
         ELSE IF(IPSMOD.EQ.2) THEN
           PSTACK(ICNN)=9.81*0.5*
-     &                ((RHON(IDPS)+RHON(IDNE))*(HNOD(IDPS)-HNOD(IDNE))
-     &               +(HGTNE(ICNN)+HGTPS(ICNN))*(RHON(IDNE)-RHON(IDPS)))
+     &      ((RHON(IDPS)+RHON(IDNE))*(HNOD(IDPS,3)-HNOD(IDNE,3))
+     &      +(HGTNE(ICNN)+HGTPS(ICNN))*(RHON(IDNE)-RHON(IDPS)))
         ELSE
           STOP ' MFSCORR: unresolvable error !'
         END IF

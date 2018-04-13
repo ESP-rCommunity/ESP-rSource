@@ -63,6 +63,7 @@ C which create the scratch or ascii version.
 #include "model.h"
 #include "geometry.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "tdf2.h"
 C Related to TDF ITEMS file.
 #include "control.h"      
@@ -80,10 +81,6 @@ C Need to loop for number of surfaces for bidirectional and vertical solar radia
 
       COMMON/TDFOPEN/OPTDF
       LOGICAL OPTDF,XST
-
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      character*12 ndnam
 
       CHARACTER tfile*72,LTMPFL*72
       character FOCUS*8,msgl2*48,fs*1,act*1,outs*124
@@ -1215,14 +1212,14 @@ C item to 0.
       if(WORD(1:7).eq.'*tdaid1')then
         CALL EGETRM(OUTSTR,K,tdaide(1),'W','tdaide',IER)
         IF(IER.NE.0)then
-	  errmsg='reading token after tdaid1'
+          errmsg='reading token after tdaid1'
           goto 1
         endif
         goto 34
       elseif(WORD(1:7).eq.'*tdaid2')then
         CALL EGETRM(OUTSTR,K,tdaide(2),'W','tdaide',IER)
         IF(IER.NE.0)then
-	  errmsg='reading token after tdaid2'
+          errmsg='reading token after tdaid2'
           goto 1
         endif
         goto 34
@@ -1234,35 +1231,35 @@ C item to 0.
         if(WORD(1:4).eq.'*tag')then
           CALL EGETRM(OUTSTR,K,TAG(I),'W','*tag',IER)
           IF(IER.NE.0)then
-	    errmsg='reading token after *tag'
+            errmsg='reading token after *tag'
             goto 1
           endif
           goto 44
         elseif(WORD(1:5).eq.'*type')then
           CALL EGETRM(OUTSTR,K,TTYPE(I),'W','*type',IER)
           IF(IER.NE.0)then
-	    errmsg='reading token after *type'
+            errmsg='reading token after *type'
             goto 1
           endif
           goto 44
         elseif(WORD(1:5).eq.'*form')then
           CALL EGETWR(OUTSTR,K,xdum,0.0,0.0,'-','*form',IER)
           IF(IER.NE.0)then
-	    errmsg='reading token after *form'
+            errmsg='reading token after *form'
             goto 1
           endif
           goto 44
         elseif(WORD(1:5).eq.'*menu')then
           CALL EGETRM(OUTSTR,K,TMENU(I),'W','*menu',IER)
           IF(IER.NE.0)then
-	    errmsg='reading token after *menu'
+            errmsg='reading token after *menu'
             goto 1
           endif
           goto 44
         elseif(WORD(1:5).eq.'*aide')then
           CALL EGETRM(OUTSTR,K,TAIDE(I),'W','*aide',IER)
           IF(IER.NE.0)then
-	    errmsg='reading token after *aide'
+            errmsg='reading token after *aide'
             goto 1
           endif
           goto 44

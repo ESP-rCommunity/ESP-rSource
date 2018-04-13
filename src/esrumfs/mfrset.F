@@ -29,13 +29,8 @@ C   shows simulation progress.
       SUBROUTINE MFRSET(IFCLM,LAST)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
-      COMMON/MFLOW5/RHON(MNOD)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLW11/PSTACK(MCNN),HDP(MCNN),HDV(MCNN),HFL(MCNN)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
@@ -97,7 +92,7 @@ C        Calculate wind pressure and
 C        include stack pressure (based on P(height 0)=0 )
          CD=FPRE(IWDR,NINT(SUPNOD(INOD,1)))
          RO=DENSIT(1,DRYB)
-         PRES(INOD)=CD*.5*RO*WSPD*WSPD-9.81*RO*HNOD(INOD)
+         PRES(INOD)=CD*.5*RO*WSPD*WSPD-9.81*RO*HNOD(INOD,3)
       END IF
    22 CONTINUE
 C
@@ -114,16 +109,16 @@ C     if IPSMOD=2 average value of 'connected fluid densities'
       IDNE=NODNE(ICNN)
       IF(IPSMOD.EQ.1) THEN
          IF(FLW1(ICNN).GE.0.0) THEN
-            PSTACK(ICNN)=9.81*(RHON(IDPS)*(HNOD(IDPS)-HNOD(IDNE))
+            PSTACK(ICNN)=9.81*(RHON(IDPS)*(HNOD(IDPS,3)-HNOD(IDNE,3))
      &                         +HGTNE(ICNN)*(RHON(IDNE)-RHON(IDPS)))
          ELSE
-            PSTACK(ICNN)=9.81*(RHON(IDNE)*(HNOD(IDPS)-HNOD(IDNE))
+            PSTACK(ICNN)=9.81*(RHON(IDNE)*(HNOD(IDPS,3)-HNOD(IDNE,3))
      &                         +HGTPS(ICNN)*(RHON(IDNE)-RHON(IDPS)))
          END IF
       ELSE IF(IPSMOD.EQ.2) THEN
          PSTACK(ICNN)=9.81*0.5*
-     &                ((RHON(IDPS)+RHON(IDNE))*(HNOD(IDPS)-HNOD(IDNE))
-     &               +(HGTNE(ICNN)+HGTPS(ICNN))*(RHON(IDNE)-RHON(IDPS)))
+     &     ((RHON(IDPS)+RHON(IDNE))*(HNOD(IDPS,3)-HNOD(IDNE,3))
+     &     +(HGTNE(ICNN)+HGTPS(ICNN))*(RHON(IDNE)-RHON(IDPS)))
       ELSE
          STOP ' MFRSET: unresolvable error !'
       END IF

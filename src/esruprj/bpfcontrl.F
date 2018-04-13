@@ -4141,6 +4141,7 @@ C Edit flow control function II.
       SUBROUTINE EFCNTRL(II,IV,IER)
 #include "building.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "epara.h"
 #include "control.h"      
       integer lnblnk  ! function definition
@@ -4148,12 +4149,10 @@ C Edit flow control function II.
       COMMON/OUTIN/IUOUT,IUIN
 
       common/sctl/tcps,ictyp,iclaw,cm(misc)
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
 
       DIMENSION ICPK(MCNN),INPK(MNOD)
       CHARACTER*84 VERT(36)
-      CHARACTER outs*124,SSTR*96,TMP*96,KEY*1,NDNAM*12
+      CHARACTER outs*124,SSTR*96,TMP*96,KEY*1
       character outsa*84,outsb*84,outsc*84,hold*42,LTMP*248
       character prmpt1*72,prmpt2*72
 
@@ -5704,6 +5703,7 @@ C flow connections.It is assumed that the user will make one selection only.
 #include "building.h"
 #include "geometry.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "plant.h"
 #include "epara.h"
 #include "control.h"
@@ -5715,13 +5715,6 @@ C flow connections.It is assumed that the user will make one selection only.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/fctl4/iasocc(MCF,MCMP),nfsup(MCF)
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
        common /pcdat/ nnodes(mpcom), isv(mpcom,mnodec), 
      &               ndcon(mpcom,mnodec)
       LOGICAL SELECT
@@ -5729,7 +5722,7 @@ C flow connections.It is assumed that the user will make one selection only.
 
       DIMENSION VERT(35)
       CHARACTER VERT*40,KEY*1,prompt2*36
-      character outs*124,LTPCMP*60,CMNAM*12,NDNAM*12
+      character outs*124
       integer ian1T,ian2T,ian3T,ilayt  ! local variable for editing.
       logical vb_xst ! local variable to check if slat type blind exists in CFC
       logical shd_xst ! local variable to check if shading alyer exists in CFC

@@ -72,7 +72,7 @@ C       by calling eddisp (as opposed to edisp).
       character xfile*144,tg*1,delim*1,outs*124
       character outfile*72
       character TSLABEL*32,TLLABEL*64,TGLABEL*20
-      character pifltog*4,lpifl*72,OUTSTR*124,lname*24,ldisc*64,key*8
+      character pifltog*4,lpifl*96,OUTSTR*124,lname*24,ldisc*64,key*8
 
       logical recal,newzn
       integer iflen  ! length of file
@@ -518,7 +518,7 @@ C current menu (moget) selections.
       common/exporttg/xfile,tg,delim
 
       character xfile*144,tg*1,delim*1
-      character lpifl*72,pifltog*4,lname*24,ldisc*64
+      character lpifl*96,pifltog*4,lname*24,ldisc*64
 
       logical XST
 

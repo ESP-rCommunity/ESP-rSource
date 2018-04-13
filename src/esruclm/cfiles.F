@@ -68,7 +68,7 @@ C silent is a logical toggle, if .true. then do not interact with user.
       dimension ICLM(24,6)
 
       CHARACTER CLMLOC*30
-      CHARACTER LASCI*72,outs*124,OUTSTR*124
+      CHARACTER LASCI*96,outs*124,OUTSTR*124
       integer IREAD  ! set to 1 if day demarcation lines
 
 C For help messages
@@ -272,7 +272,7 @@ C read in.
 
       CHARACTER CLMLOC*30
       CHARACTER DFILE*96
-      CHARACTER LASCI*72,outs*124,OUTSTR*124,msgl2*48
+      CHARACTER LASCI*96,outs*124,OUTSTR*124,msgl2*48
       CHARACTER IMPT*42
       DIMENSION IMPT(24),IMSTC(7),ITUNITS(7)
       character word*32  ! for skipped column data
@@ -818,7 +818,7 @@ C if the radiation flag set was set to GH in the binary weather file.
       COMMON/CLMDT1/CLMLOC
       DIMENSION ICLM(24,6)
 
-      CHARACTER LASCI*72,outs*124,CLMLOC*30,outsd*124
+      CHARACTER LASCI*96,outs*124,CLMLOC*30,outsd*124
       character act*1,tab*1,msg*19
 
       tab = CHAR(9)
@@ -1049,7 +1049,7 @@ C files may have first line STN_ID if this is found skip and try next.
 #include "esprdbfile.h"
 
 C Parameters
-      character LASCI*72 ! file name to import
+      character LASCI*96 ! file name to import
       integer IUNIT      ! unit number of the file (assumed already opened)
       character ACT*3    ! old pre 2006 files, new current files.
 
@@ -1916,7 +1916,7 @@ C Comment lines.
       dimension ICLMEPW(12,31,24,6)
 
       CHARACTER CLMLOC*30,WORD*24,uncert*50
-      CHARACTER LASCI*72,outs*124,OUTSTR*248
+      CHARACTER LASCI*96,outs*124,OUTSTR*248
       character dcline*248
 
 C Initial guess on string sizes.

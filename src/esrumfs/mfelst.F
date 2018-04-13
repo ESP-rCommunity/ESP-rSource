@@ -28,17 +28,20 @@ C ASKNOD presents a list of mass flow nodes returning the index IS.
 C If MOD = 'M' then include option to add an item then the appropriate
 C          interaction is begun.
       SUBROUTINE ASKNOD(head,MOD,IS,IER)
-
+#include "building.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "epara.h"
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
+
+C Parameters
+      character*(*) head
+      character MOD*1
+      integer IS  ! index to return
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      CHARACTER LAPROB*72      
       DIMENSION VERT(35),FTYPN(10)
 
-      character*(*) head
-      CHARACTER VERT*60,KEY*1,MOD*1,NDNAM*12,NODTYP*12,
-     &FTYPN*6
+      CHARACTER VERT*62,KEY*1,NODTYP*12,FTYPN*6
       LOGICAL SELECT
       integer MVERT,IVERT,IDVERT ! max items and current menu item
 
@@ -71,11 +74,17 @@ C Set up fluid types (6 characters): up to 10 can be supported
 C etc ...
 
 C Loop through the items until the page to be displayed. M is the 
-C current menu line index. Build up text strings for the menu. 
+C current menu line index. Build up text strings for the menu.
   3   M=MHEAD
-      WRITE(VERT(1),7777)
-7777  FORMAT('  Name        |Fluid |    Type    |',
-     &'Height |  Data1 |   Data2')
+      if(IAIRN.lt.3)then
+        WRITE(VERT(1),'(2a)')
+     &    '  Name        |Fluid |    Type    |',
+     &    'Height |  Data1 |   Data2'
+      else
+        WRITE(VERT(1),'(2a)')
+     &    '  Name        |Fluid |   Type    |',
+     &    'Position      |Data1|Data2'
+      endif
       DO 10 L=1,ILEN                                    
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
           M=M+1
@@ -91,10 +100,15 @@ C Set up the node description string (12 chars)
           elseif(NDTYP(L).eq.3)then
             nodtyp='bound wind P'
           endif
-          WRITE(VERT(M),
-     &'(A1,1X,A12,1X,A6,1X,A12,F7.2,F9.1,F10.1)')
-     &KEY,NDNAM(L),FTYPN(NDFLD(L)),NODTYP,HNOD(L),SUPNOD(L,1),
-     &SUPNOD(L,2)
+          if(IAIRN.lt.3)then
+            WRITE(VERT(M),'(A,1X,A,1X,A,1X,A,F7.2,F9.1,F10.1)')
+     &      KEY,NDNAM(L),FTYPN(NDFLD(L)),NODTYP,HNOD(L,3),SUPNOD(L,1),
+     &      SUPNOD(L,2)
+          else
+            WRITE(VERT(M),'(A,1X,A,1X,A,1X,A,3F5.1,F5.1,F6.1)')
+     &      KEY,NDNAM(L),FTYPN(NDFLD(L)),NODTYP,HNOD(L,1),HNOD(L,2),
+     &      HNOD(L,3),SUPNOD(L,1),SUPNOD(L,2)
+          endif
         ENDIF
    10 CONTINUE
 
@@ -150,11 +164,11 @@ C Allow a node to be added deleted or copied.
           IF(IOPT.EQ.1)THEN
             IF(NNOD+1.LE.MNOD)THEN
               CALL MFNDES('A',99)
-              ILEN=NNOD
+              ILEN=NNOD; MHEAD=1; MCTL=4 ! reset after return
               IPACT=CREATE
               CALL EKPAGE(IPACT)
               IS=-1
-              GOTO 3
+              GOTO 92  ! instead of 3?
             ELSE
               call usrmsg(' ',' Node list full!','W') 
               IS=0
@@ -167,10 +181,10 @@ C Allow a node to be added deleted or copied.
             ID=IFOC
             call usrmsg(' ',' ','-')
             CALL MFNDES('D',ID)
-            ILEN=NNOD
+            ILEN=NNOD; MHEAD=1; MCTL=4 ! reset after return
             IPACT=CREATE
             CALL EKPAGE(IPACT)
-            GOTO 3
+            GOTO 92
           ELSEIF(IOPT.EQ.3)THEN
             call usrmsg('Copy which node ? ',' ','-') 
             CALL EMENU(HEAD,VERT,MVERT,IDVERT)
@@ -178,10 +192,10 @@ C Allow a node to be added deleted or copied.
             ID=IFOC
             call usrmsg(' ',' ','-')
             CALL MFNDES('C',ID)
-            ILEN=NNOD
+            ILEN=NNOD; MHEAD=1; MCTL=4 ! reset after return
             IPACT=CREATE
             CALL EKPAGE(IPACT)
-            GOTO 3
+            GOTO 92
           ELSE
             GOTO 3
           ENDIF
@@ -203,10 +217,10 @@ C If there are enough items allow paging control via EKPAGE.
         IF(MOD.EQ.'M'.OR.MOD.EQ.'m')THEN
 C Edit this node. 
           CALL MFNDES('E',IS)
-          ILEN=NNOD
+          ILEN=NNOD; MHEAD=1; MCTL=4 ! reset after return
           IPACT=CREATE
           CALL EKPAGE(IPACT)
-          GOTO 3
+          GOTO 92
         ELSE
 
 C If not in edit mode then return selected node (IS) to the calling routine.       
@@ -226,18 +240,21 @@ C ASKCMP presents a list of mass flow components returning the index IS.
 C If MOD = 'M' then include option to add an item then the appropriate
 C interaction is begun.
       SUBROUTINE ASKCMP(head,MOD,IS,IER)
-
+#include "building.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "epara.h"
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
+
+C Parameters passed.
+      character*(*) head
+      character MOD*1
+      integer IS  ! index to return
+
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      CHARACTER LAPROB*72      
 
       DIMENSION VERT(35)
-      character*(*) head
-      CHARACTER VERT*75,KEY*1,MOD*1
-      CHARACTER LTPCMP*60,CMNAM*12
+      CHARACTER VERT*75,KEY*1
       LOGICAL SELECT
       integer MVERT,IVERT ! max items and current menu item
 
@@ -267,13 +284,23 @@ C Initial menu entry setup.
 C Loop through the items until the page to be displayed. M is the 
 C current menu line index. Build up text strings for the menu. 
    3  M=MHEAD
-      VERT(1)='  Name       |Type| Description ...'
+      if(IAIRN.lt.3)then
+        VERT(1)='  Name       |Type| Description ...'
+      else
+        VERT(1)='  Name       |Type| Position    Description ...'
+      endif
       DO 10 L=1,ILEN
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
           M=M+1
           CALL EMKEY(L,KEY,IER)
-          WRITE(VERT(M),'(A1,1X,A12,I4,2X,A55)')KEY,CMNAM(L),
-     &ITPCMP(L),LTPCMP(L)(1:55)
+          if(IAIRN.lt.3)then
+            WRITE(VERT(M),'(A,1X,A,I4,2X,A)')KEY,CMNAM(L),
+     &        ITPCMP(L),LTPCMP(L)(1:55)
+          else
+            WRITE(VERT(M),'(A,1X,A,I4,3F6.1,1x,A)')KEY,CMNAM(L),
+     &        ITPCMP(L),HCMP(L,1,1),HCMP(L,1,2),HCMP(L,1,3),
+     &        LTPCMP(L)(1:36)
+          endif
         ENDIF
    10 CONTINUE
 
@@ -425,18 +452,13 @@ C          interaction is begun.
       SUBROUTINE ASKCON(head,MOD,INODPS,INODNE,IC,IER)
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "epara.h"
     
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       DIMENSION VERT(35)
 
       character*(*) head
       CHARACTER VERT*58,KEY*1,MOD*1
-      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12
       LOGICAL SELECT
 
 C For help messages

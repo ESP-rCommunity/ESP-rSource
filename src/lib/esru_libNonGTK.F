@@ -3934,6 +3934,8 @@ C then it represents the zone which is currently being edited.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
       common/rpath/path
       common/appw/iappw,iappx,iappy
       integer menuchw,igl,igr,igt,igb,igw,igwh
@@ -3961,10 +3963,12 @@ C ITPPSW current view - perspective/plan/south/west
       LOGICAL OPTKOK,CLOSE,OK,dok,found,concat,redraw
       DIMENSION ITEMS(23),IVALS(MCOM),FALT(9),IVAL(9)
       CHARACTER ITEMS*32,H*72,LFIL*72,outs*124
+      DIMENSION STMP(MS)
+      character STMP*46
       CHARACTER FALT*37
       CHARACTER path*72
       character doit*248,tmode*8,longtfile*144, hold*24,act*1
-      CHARACTER head*19
+      CHARACTER head*19,msg*96,defcog*24,msg2*32
       logical modmlc  ! for selecting MLC
 
       integer IW  ! for radio buttons
@@ -4039,6 +4043,10 @@ C Hilight surface based on OPQ/TRAN or construction.
         ITEMS(7) ='f highlight >> partial attribute'
       ENDIF
 
+C << ?? what about a focus on surface option ?? >>
+C << if static bounds then we probably want to not
+C << recalculate the viewed point from the COG of
+C << the model
       IF(ITBND.EQ.0)THEN
         ITEMS(8) ='g view bounds >> static         '
       ELSEIF(ITBND.EQ.1)THEN
@@ -4177,19 +4185,115 @@ C width of the control menu.
       ELSEIF(IVERT.EQ.2)THEN
 
 C Present viewpoint coords for editing then parse data from HOLD.
+        call eclose(XMN,0.0,0.001,CLOSE)
+        if(XMN.LT.0..AND.XMX.GE.0.0)then
+          COGXM=XMN+((XMX+ABS(XMN))/2.0)
+        elseif(XMN.LT.0.0.AND.XMX.LE.0.)then
+          COGXM=XMN+((ABS(XMN)-ABS(XMX))/2.0)
+        elseif(XMN.GT.0.0.AND.XMX.GT.0.0)then
+          COGXM=XMX-((XMX-XMN)/2.0)
+        elseif(CLOSE.AND.XMX.GT.0.0)then
+          COGXM=XMX/2.0
+        endif
+        call eclose(YMN,0.0,0.001,CLOSE)
+        if(YMN.LT.0..AND.YMX.GE.0.0)then
+          COGYM=YMN+((YMX+ABS(YMN))/2.0)
+        elseif(YMN.LT.0.0.AND.YMX.LE.0.)then
+          COGYM=YMN+((ABS(YMN)-ABS(YMX))/2.0)
+        elseif(YMN.GT.0.0.AND.YMX.GT.0.0)then
+          COGYM=YMX-((YMX-YMN)/2.0)
+        elseif(CLOSE.AND.YMX.GT.0.0)then
+          COGYM=YMX/2.0
+        endif
+        call eclose(ZMN,0.0,0.001,CLOSE)
+        if(ZMN.LT.0.0.AND.ZMX.GE.0.0)then
+          COGZM=ZMN+((ZMX+ABS(ZMN))/2.0)
+        elseif(ZMN.LT.0.0.AND.ZMX.LE.0.0)then
+          COGZM=ZMN+((ABS(ZMN)-ABS(ZMX))/2.0)
+        elseif(ZMN.GT.0.0.AND.ZMX.GT.0.0)then
+          COGZM=ZMX-((ZMX-ZMN)/2.0)
+        elseif(CLOSE.AND.ZMX.GT.0.0)then
+          COGZM=ZMX/2.0
+        endif
+        write(msg,'(a,3f7.2)') 'Model COG is ',COGXM,COGYM,COGZM
+        write(defcog,'(3f7.2)') COGXM,COGYM,COGZM
+        call edisp(iuout,msg)
+
+C Offer default as COG of model or current zone or current
+C surface or at least display what these values are
         H(1)='The view point is a point within the site coordinate'
         H(2)='system. The default is the centre of gravity of the'
         H(3)='model.'
   42    WRITE(HOLD,'(1x,3f7.1)')VIEWM(1),VIEWM(2),VIEWM(3)
-        CALL EASKS(HOLD,' ','View point X Y Z?',
-     &           24,' 2. 2. 1. ','viewpoint coord',IER,3)
-        K=0
-        CALL EGETWR(HOLD,K,VIEWM(1),-999.,999.,'W','X cord',IER)
-        CALL EGETWR(HOLD,K,VIEWM(2),-999.,999.,'W','Y cord',IER)
-        CALL EGETWR(HOLD,K,VIEWM(3),0.,999.,'W','view Z cord',IER)
+        CALL EASKS2CMD(HOLD,'View point X Y Z?',' ',
+     &    'zone COG','surface COG',iclkok,24,defcog,
+     &    'viewpoint coord',IER,3)
+        if(iclkok.eq.0)then
+          K=0
+          CALL EGETWR(HOLD,K,VIEWM(1),-999.,999.,'W','X cord',IER)
+          CALL EGETWR(HOLD,K,VIEWM(2),-999.,999.,'W','Y cord',IER)
+          CALL EGETWR(HOLD,K,VIEWM(3),0.,999.,'W','view Z cord',IER)
+        elseif(iclkok.eq.1)then
+
+C Select one of the current zones.
+          H(1)='Pick one zone for view focus.'
+          INPIC=1
+          CALL EPICKS(INPIC,IVALS,' ','Which zone to focus on:',
+     &      12,NCOMP,zname,'zone list',IER,1)
+          write(msg,'(a,3f7.2)') 'Zone COG is ',ZCOG(IVALS(1),1),
+     &      ZCOG(IVALS(1),2),ZCOG(IVALS(1),3)
+          call edisp(iuout,msg)
+          VIEWM(1)=ZCOG(IVALS(1),1)  ! set view to zone COG
+          VIEWM(2)=ZCOG(IVALS(1),2)
+          VIEWM(3)=ZCOG(IVALS(1),3)
+        elseif(iclkok.eq.2)then
+
+C Select one of the current zones and then a surface.
+          H(1)='Pick one zone for view focus.'
+          INPIC=1
+          CALL EPICKS(INPIC,IVALS,' ','Which zone to focus on:',
+     &      12,NCOMP,zname,'zone list',IER,1)
+          izone=IVALS(1)
+          DO 11 I=1,NZSUR(IZONE)
+           ioc=IZSTOCN(izone,i)
+           lnl=lnblnk(SSMLCN(ioc))
+           if(lnl.gt.16) lnl=16  ! truncate MLC name in list
+           write(STMP(I),'(5a)') SSNAME(ioc),'|',SSMLCN(ioc)(1:lnl),'|',
+     &       SSOTHER(ioc,1)(1:16)
+   11     CONTINUE
+          INPIC=1
+          write(msg2,'(a)') ' name & type & exposure'
+          CALL EPICKS(INPIC,IVALS,' ','Surfaces for focus',
+     &      33,NZSUR(IZONE),STMP,msg2,IER,nbhelp)
+          isur=IVALS(1)
+          ioc=IZSTOCN(izone,isur)
+          write(msg,'(a,3f7.2)') 'Surface COG is ',SSURCOG(ioc,1),
+     &      SSURCOG(ioc,2),SSURCOG(ioc,3)
+          call edisp(iuout,msg)
+          VIEWM(1)=SSURCOG(ioc,1)  ! set view to surface COG
+          VIEWM(2)=SSURCOG(ioc,2)
+          VIEWM(3)=SSURCOG(ioc,3)
+        endif
         if(ier.ne.0)goto 42
         MODLEN=.TRUE.
         MODIFYVIEW=.TRUE.
+
+C << offer option of focus on a specific surface COG >>
+C << what about a common which holds the current focus surface ?? >>
+
+C        H(1)='The view point is a point within the site coordinate'
+C        H(2)='system. The default is the centre of gravity of the'
+C        H(3)='model.'
+C  42    WRITE(HOLD,'(1x,3f7.1)')VIEWM(1),VIEWM(2),VIEWM(3)
+C        CALL EASKS(HOLD,' ','View point X Y Z?',
+C     &           24,' 2. 2. 1. ','viewpoint coord',IER,3)
+C        K=0
+C        CALL EGETWR(HOLD,K,VIEWM(1),-999.,999.,'W','X cord',IER)
+C        CALL EGETWR(HOLD,K,VIEWM(2),-999.,999.,'W','Y cord',IER)
+C        CALL EGETWR(HOLD,K,VIEWM(3),0.,999.,'W','view Z cord',IER)
+C        if(ier.ne.0)goto 42
+C        MODLEN=.TRUE.
+C        MODIFYVIEW=.TRUE.
       ELSEIF(IVERT.EQ.3)THEN
         H(1)='The angle of view is between 1 and 89 degrees.'
         CALL EASKR(ANG,' ','Angle of view?',

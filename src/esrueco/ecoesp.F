@@ -1963,7 +1963,7 @@ C If material based, nb layers = 1
 C IF project based, up-date the surface area of current zone
           IF (ICalType.EQ.1) THEN
             Area = SNA(ICurSurf)
-            call surfprm(nznog(IZ),ICurSurf,dupedges,Perimeter)
+            call zsurfprm(nznog(IZ),ICurSurf,dupedges,Perimeter)
           ENDIF
 
 C***********************
@@ -3074,7 +3074,7 @@ C If material based, nb layers = 1
 C IF project loaded up-date the area to current surface area
             IF (ICalType.EQ.1) THEN
               Area = SNA(ICurSurf)
-              call surfprm(nznog(IZ),ICurSurf,dupedges,Perimeter)
+              call zsurfprm(nznog(IZ),ICurSurf,dupedges,Perimeter)
             ENDIF
 
 C Re-Initialisation
@@ -3864,66 +3864,55 @@ C Next Stage
       END
 
 
-
-
-C ******* surfprm
-C Surfprm returns the number of edges and total length of
-C the perimiter of the polygon. Assumes that the surface is
-C in the current zones common blocks.
-      subroutine surfprm(izone,isurf,dupedges,perim)
+C ******* zsurfprm
+C Zsurfprm returns the number of edges and total length of
+C the perimiter of the polygon with global commons.
+      subroutine zsurfprm(izone,isurf,dupedges,perim)
 #include "building.h"
 #include "geometry.h"
-
-      COMMON/OUTIN/IUOUT,IUIN
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      DIMENSION x1(3),x2(3)
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
       logical dupedges
 
       perim=0.0
       dupedges=.false.
       if(izone.ne.0.and.izone.le.NCOMP)then
+        icc=IZSTOCN(izone,isurf)
         if(isurf.le.NZSUR(izone).and.isurf.ne.0)then
 
 C First confirm whether there are any duplicate references to vertices
 c (indicates a polygon with a hole in it).
-          do 40 m=1,NVER(isurf)
-            do 41 n=1,NVER(isurf)
+          do 40 m=1,NZNVER(icc)
+            do 41 n=1,NZNVER(icc)
               IF(m.EQ.n)goto 41
-              J1=JVN(isurf,n)
-              J2=JVN(isurf,m)
+              J1=NZJVN(icc,n)
+              J2=NZJVN(icc,m)
               IF(J1.EQ.J2)dupedges=.true.
   41        continue
   40      continue
 
 C Step through the vertices of each edge in turn and find distance.
-          list=NVER(isurf)-1
+          list=NZNVER(icc)-1
           do 42 i=1,list
-            j=JVN(isurf,i)
-            k=JVN(isurf,i+1)
-            x1(1)=X(j)
-            x1(2)=Y(j)
-            x1(3)=Z(j)
-            x2(1)=X(k)
-            x2(2)=Y(k)
-            x2(3)=Z(k)
-            vdos=0.0
-            vdis= crow(x1,x2)
+            j=NZJVN(icc,i)
+            k=NZJVN(icc,i+1)
+            vdis=0.0
+            vdis= crowxyz(VCOORD(izone,j,1),VCOORD(izone,j,2),
+     &        VCOORD(izone,j,3),VCOORD(izone,k,1),
+     &        VCOORD(izone,k,2),VCOORD(izone,k,3))
             perim=perim+vdis
   42      continue
 
 C Link back to start vertex
-          j=JVN(isurf,NVER(isurf))
-          k=JVN(isurf,1)
-          x1(1)=X(j)
-          x1(2)=Y(j)
-          x1(3)=Z(j)
-          x2(1)=X(k)
-          x2(2)=Y(k)
-          x2(3)=Z(k)
-          vdos=0.0
-          vdis= crow(x1,x2)
+          j=NZJVN(icc,NZNVER(icc))
+          k=NZJVN(icc,1)
+          vdis=0.0
+          vdis= crowxyz(VCOORD(izone,j,1),VCOORD(izone,j,2),
+     &      VCOORD(izone,j,3),VCOORD(izone,k,1),
+     &      VCOORD(izone,k,2),VCOORD(izone,k,3))
           perim=perim+vdis
         endif
       endif

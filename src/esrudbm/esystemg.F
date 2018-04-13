@@ -143,6 +143,7 @@ C LPREDEF (for predefined objects)
 C default file names for databases
 
 #include "net_flow.h"
+#include "net_flow_data.h"
 #include "tdf2.h"
 #include "cfd.h"
 #include "uncertainty.h"
@@ -207,9 +208,6 @@ C IZSTOCN - for each zone:surface a pointer to connection index.
       INTEGER :: iairn,icaas
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-      INTEGER :: NNOD,NCMP,NCNN
-      COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/NWKSTR/NWKNAM,NWKDSC,NWKTYPSTR(MNWKTYP)
       CHARACTER NWKNAM*72,NWKDSC*72,NWKTYPSTR*12
 
@@ -481,7 +479,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character GTGEOM*72,GTNAME*15
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)
-      CHARACTER NDNAM*12
       character spfdescr*30
       character hvacfile*72,LBSIMP*72,LFClds*72
       character gshpfile*72
