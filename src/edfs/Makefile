@@ -5,13 +5,11 @@ else
 	SWTCH= -D
 endif
 SRCdir = `pwd`/..
-BLDdir = $(SRCdir)/esrubld
-COMdir = $(SRCdir)/esrucom
-PRJdir = $(SRCdir)/esruprj
+BLDdir = $(SRCdir)/ebld
+COMdir = $(SRCdir)/common
+PRJdir = $(SRCdir)/eprj
 CETCdir = $(SRCdir)/cetc
-BLDdir = $(SRCdir)/esrubld
 PROG = dfs$(EXE)
-PROGV = dfv$(EXE)
 default: $(PROG)
 
 .SUFFIXES: .o .F
@@ -30,21 +28,11 @@ OBJECTS = dfs.o arrow.o ascii_mat.o bndarybl.o bndaryl.o bndaryt.o \
 	lisolv.o locmage.o mitzero.o plot.o psychro.o \
 	read3dv.o sort.o visgrd.o visual.o visvec.o wvapour.o 
 
-DFV_OBJECTS = cfdv.o arrow.o c2fdum.o cfdat.o cfdrw.o cfgrid.o cgd.o \
-	e3dviews.o plot.o visgrd.o visual.o visvec.o 
-
-DFV_MODULE_OBJECTS = startup.o 
-
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod start_up.mod \
      parse_command_line.mod h3kmodule.mod
 
-DFV_MODULES = start_up.mod parse_command_line.mod 
-
 $(PROG): $(MODULE_OBJECTS) $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS)
-
-theCFV:	$(DFV_MODULE_OBJECTS) $(DFV_OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROGV) $(FFLAGS) $(DFV_MODULE_OBJECTS) $(DFV_OBJECTS) $(ULIBS)
 
 aim2_module.F:
 	rm -f aim2_module.F

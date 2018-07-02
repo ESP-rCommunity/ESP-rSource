@@ -5,13 +5,13 @@ else
 	SWTCH= -D
 endif
 SRCdir = `pwd`/..
-BLDdir = $(SRCdir)/esrubld
-CDBdir = $(SRCdir)/esrucdb
-COMdir = $(SRCdir)/esrucom
-DFSdir = $(SRCdir)/esrudfs
-MFSdir = $(SRCdir)/esrumfs
-PRJdir = $(SRCdir)/esruprj
-BLDdir = $(SRCdir)/esrubld
+BLDdir = $(SRCdir)/ebld
+CDBdir = $(SRCdir)/ecdb
+COMdir = $(SRCdir)/common
+DFSdir = $(SRCdir)/edfs
+MFSdir = $(SRCdir)/emfs
+PRJdir = $(SRCdir)/eprj
+BLDdir = $(SRCdir)/ebld
 CETCdir = $(SRCdir)/cetc
 PROG = res$(EXE)
 REPdir = $(SRCdir)/cetc/h3kreports
@@ -31,7 +31,7 @@ OBJECTS = res.o arrow.o ascii_mat.o c2fdum.o castyp.o cfdat.o cfgrid.o cfutil.o 
 	  edatabase.o egeometry.o emfnetw.o enerbs.o enerbz.o enetmisc.o \
 	  enetrdisp.o enetres.o enetrewr.o eroper.o esru_misc.o esystem.o \
 	  filelist.o fabcon.o fabtmp.o fanger.o frqdis.o iaq.o initalc.o \
-	  item.o ipvrep.o librec.o mfcdat.o mfget.o mfoutp.o mfres.o mfutil.o \
+	  item.o ipvrep.o librec.o mfcdat.o mfget.o mfoutp.o mfres.o mfres3d.o mfutil.o \
 	  mocfd.o moclim.o moget.o moplnt.o mosensa.o nwkrewr.o plot3d.o \
 	  pltcfg.o psychart.o psychro.o readTrnsys.o recover.o replsim.o resdef.o \
 	  resutil.o rlibget.o rwipv.o rwsbem.o setres.o sort.o spmatl.o spmisc.o \

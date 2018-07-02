@@ -5,8 +5,8 @@ else
 	SWTCH= -D
 endif
 SRCdir = `pwd`/..
-COMdir = $(SRCdir)/esrucom
-BPSdir = $(SRCdir)/esrubps
+COMdir = $(SRCdir)/common
+BPSdir = $(SRCdir)/ebps
 PROG = mfs$(EXE)
 default: $(PROG)
 

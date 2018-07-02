@@ -117,8 +117,8 @@ C Saved state of the visualisation
       CHARACTER*72 LVEC,LBIT,t72,vecfil
       character*72 DECMPDBFL,DICONDBFL
 
-      character cVnum*16      ! returned from ESPrVersionNum
-      character pagestitle*42 ! for banner title via epages call
+      character cVnum*32      ! returned from ESPrVersionNum
+      character pagestitle*62 ! for banner title via epages call
 
       LOGICAL INCALU,INCALV,INCALW,INCALK,INCALD,INCALT
       LOGICAL IZEROT,IZanKE,IMITZ
@@ -414,8 +414,9 @@ C plot grid.
         CALL INICNT
         CALL GRID(ier)
         call VGRID3D('---','xyz',iz)
-        call VSB3D(0,iz)
-        call VAO3D(0,iz)
+        call VSB3D(0)
+        call VAO3D(0)
+        call VSBL3D(0)
       ELSE
         INPOK=.FALSE.
       ENDIF
@@ -454,16 +455,17 @@ C Plot grid
           call VGRID3D('---','xyg',iz)
         endif
         if (ISHSB.eq.1) then
-          call VSB3D(0,IZ)
+          call VSB3D(0)
         endif
         if (ISHAO.eq.1) then
           do 765 iaop=1,NOPEN(IZ)
-            call VAO3D(iaop,iz)
+            call VAO3D(iaop)
   765     continue
 c Comment the above 3 lines and un-comment the line below
 c to remove bold lines around openings
-c        call VAO3D(0,iz))        
+c        call VAO3D(0))        
         endif
+        CALL VSBL3D(0)
       
         WRITE(etext,'(2A)')'Model: ',
      &    TITLE(IZ)(1:lnblnk(TITLE(IZ)))
@@ -882,8 +884,8 @@ C plot grid.
 c          CALL INICNT
 c          CALL GRID(ier)
 c          call VGRID3D('---','xyz',iz)
-c          call VSB3D(0,iz)
-c          call VAO3D(0,iz)
+c          call VSB3D(0)
+c          call VAO3D(0)
 c          IF(MMOD.EQ.8)THEN
 c          WRITE(etext,'(2A)')'Model: ',
 c     &        TITLE(IZ)(1:lnblnk(TITLE(IZ)))

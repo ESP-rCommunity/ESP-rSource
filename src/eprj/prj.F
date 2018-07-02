@@ -76,6 +76,10 @@ C IEEE callback (Solaris)
       integer childterminal  ! picks up mmod from starting of prj
       common/childt/childterminal
       common/OUTIN/IUOUT,IUIN
+
+C Markdown flag.
+      logical markdown
+      common/markdownflag/markdown
       integer ifs,itfs,imfs
       common/GFONT/IFS,ITFS,IMFS
       common/FILEP/IFIL
@@ -208,8 +212,8 @@ C Returned parameters from silentread or silentxmlread.
       logical silent  ! for dependency checking on transform or rotate
       logical QUIET   ! to force silent rebuild of zone constructions
 
-      character cVnum*16      ! returned from ESPrVersionNum
-      character pagestitle*42 ! for banner title via epages call
+      character cVnum*32      ! returned from ESPrVersionNum
+      character pagestitle*62 ! for banner title via epages call
       character subpath*84
       character sfile*144
       character odir*84
@@ -291,6 +295,7 @@ C config file, zone focus and actions arguments).
       scftims(1)=0.0; scftimf(1)=23.9
       NSIGFIG=3
       childterminal=MODL  ! remember so that child processes can run the same
+      markdown=.false.    ! reporting in plain text rather than markdown
 
 C Initial assumptions about common data files (prior to configuration file scan
 C that the default common data files will be defined explicitly).
@@ -801,6 +806,9 @@ C Perform either the transform or rotation or generate QA report.
             elseif(inact(1:6).eq.'rotate')then
               call globalrotate(d1,d2,d3,inpic,ivals,silent,itru,ier)
             elseif(inact(1:2).eq.'QA')then
+
+C Assume markdown is false (for now).
+              markdown=.false.
               call prjqa(inpic,ivals,silent,ier)
             elseif(inact(1:15).eq.'update_zone_con')then
               QUIET=.TRUE.
@@ -2629,12 +2637,14 @@ C Ask further attributes of CFD assessments.
           isicfdyf(isset)=icfday
           modparms=.true.
 
-  50      write(outs,'(a)')'For the first day CFD is active specify'
+ 50       scftims(isset)=1.0
+          scftimf(isset)=24.99
+          write(outs,'(a)')'For the first day CFD is active specify'
           CALL EASKR(scftims(isset),outs,'starting time ',
-     &      rtmp,'F',23.99,'F',rtmp,'Decimal fraction',IER,nbhelp)
+     &      1.0,'F',24.99,'F',1.0,'Decimal fraction',IER,nbhelp)
           write(outs,'(a)')'For the last day CFD is active specify'
           CALL EASKR(scftimf(isset),outs,'finishing time ',
-     &      0.0,'F',23.99,'F',23.99,'Decimal fraction',IER,nbhelp)
+     &      1.0,'F',24.99,'F',24.99,'Decimal fraction',IER,nbhelp)
           if (scftimf(isset).lt.scftims(isset)) then
             call edisp(iuout,' Start/Finish hours out of order.')
             goto 50

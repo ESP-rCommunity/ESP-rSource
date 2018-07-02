@@ -6,8 +6,8 @@ else
 endif
 SRCdir = `pwd`/..
 LIBdir = $(SRCdir)/lib
-COMdir = $(SRCdir)/esrucom
-PRJdir = $(SRCdir)/esruprj
+COMdir = $(SRCdir)/common
+PRJdir = $(SRCdir)/eprj
 PROG = stats$(EXE)
 default: $(PROG)
 

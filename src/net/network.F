@@ -230,8 +230,8 @@ C WORDSS array of string tokens from each NWICHNIS.
       character dgtagatr*12,dgmenuatr*32,dgatrib*12
       character ddgtagatr*12,ddgmenuatr*32,ddgatrib*12
 
-      character cVnum*16      ! returned from ESPrVersionNum
-      character pagestitle*42 ! for banner title via epages call
+      character cVnum*32      ! returned from ESPrVersionNum
+      character pagestitle*62 ! for banner title via epages call
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer NITEMS,INO ! max items and current menu item
@@ -1415,7 +1415,8 @@ C Draw on the network description.
 C Redraw the icons with the current scaling, limits and layer values
       IF(NNICN.GT.0)THEN
         DO 30 ICN=1,NNICN   
-          CALL NETWIDW(ICN)
+          CALL NETWIDW3D(ICN)
+C          CALL NETWIDW(ICN)
  30     CONTINUE
       ENDIF
 
@@ -2685,6 +2686,386 @@ C If we have a match proceed otherwise return.
       RETURN
       END
 
+
+C ****************************** NETWIDW3D ******************************
+C This routine handles the drawing of icons on the display via esymbol. 
+C << Checks the type of component or node and then uses esymbol to draw them.
+C << Try this first with internal unknown nodes >>
+
+      SUBROUTINE NETWIDW3D(ICN)
+
+# include "gnetwk.h"
+
+C Grid commons
+      COMMON/NWKTYP/INWKTYP,vergnf
+      integer INWKTYP
+      real vergnf
+      COMMON/NWKVEW/SCALF,VIEWCEN(3),VIEWLIM(6),IVIEW
+
+      integer menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/VIEWPX/MENUCHW,IGL,IGR,IGT,IGB,IGW,IGWH
+
+C Icon commons are in gnetwk.h
+      COMMON/NWKSEL/ISEL(MICN),CSEL(MNCNN)
+      LOGICAL ISEL,CSEL
+      integer ifs,itfs,imfs
+      COMMON/GFONT/IFS,ITFS,IMFS
+
+C connection points property array
+C      COMMON/CNP/CPP(3,MNCNN),ICPP(MICN,4,3),III
+
+C connection points parameter array
+C      COMMON/CPPA/ENV(5),PARA(MNCNN,13),CPARA(MICN,4,13),
+C     &  SUB_MATRIX_A(MICN,MNCNN,MNCNN),SUB_MATRIX_B(MICN,MNCNN),
+C     &  MATRIX_A(MNCNN,MNCNN),MATRIX_B(MNCNN),ICOUNTER,IDONE
+
+      CHARACTER LABL*12,LBLINT*4
+
+C      CHARACTER CPP*30,ICPP*30
+C      REAL ENV,PARA,CPARA,SUB_MATRIX_A,SUB_MATRIX_B
+C      REAL MATRIX_A,MATRIX_B
+
+      LOGICAL INBOUND,CLOSE
+      LOGICAL CLOSECT,CLOSEKT,CLOSEBT,CLOSEWT,CLOSEFT
+      LOGICAL CLOSE10,CLOSE11,CLOSE12,CLOSE15,CLOSE17
+      LOGICAL CLOSE20,CLOSE25,CLOSE30,CLOSE35,CLOSE40,CLOSE50
+      LOGICAL CLOSE110,CLOSE120,CLOSE130,CLOSE210,CLOSE211
+      LOGICAL CLOSE220,CLOSE230,CLOSE240,CLOSE250
+      LOGICAL CLOSE310,CLOSE410,CLOSE420,CLOSE460
+      real OFFLA  ! offset below icon for label in m.
+
+#ifdef OSI
+      integer iupdown,isym    ! passed to etplot
+      integer iix1,iiy1,iix2,iiy2  ! passed to edline
+      integer iixlc,isize
+      integer iix,iiy,iixl,iiyl,iixr,iiyu
+      integer iicol
+      integer iiw4
+#else
+      integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iix1,iiy1,iix2,iiy2 ! passed to edline
+      integer*8 iixlc,isize
+      integer*8 iix,iiy,iixl,iiyl,iixr,iiyu
+      integer*8 iicol
+      integer*8 iiw4
+#endif
+
+C If flow network (INWKTYP = 2) and the component is internal unknown
+C pressure (ATRICN(icn,1,1) is zero) and the fluid type is air
+C (ATRICN(icn,2,1) = 1) then import summary atrributes. Use read
+C to convert string array ATRICN to number for checking.
+      CLOSECT=.false.; CLOSEKT=.false.;CLOSEBT=.false.;CLOSEWT=.false.
+      CLOSEFT=.false.; CLOSE10=.false.;CLOSE11=.false.;CLOSE12=.false.
+      CLOSE15=.false.; CLOSE17=.false.;CLOSE20=.false.;CLOSE25=.false.
+      CLOSE30=.false.; CLOSE35=.false.;CLOSE40=.false.;CLOSE50=.false.
+      CLOSE110=.false.; CLOSE120=.false.;CLOSE130=.false.
+      CLOSE210=.false.; CLOSE211=.false.;CLOSE220=.false.
+      CLOSE230=.false.; CLOSE240=.false.;CLOSE250=.false.
+      CLOSE310=.false.; CLOSE410=.false.;CLOSE420=.false.
+      CLOSE460=.false.
+      OFFLA=0.4
+
+C Debug.
+C      write(6,*) 'external data search for ',exttag,ifocus
+C      write(6,*) 'data 1:',ATRICN(icn,1,1),ATRICN(icn,2,1),
+C     &  ATRICN(icn,3,1),ATRICN(icn,4,1),ATRICN(icn,5,1)
+
+      read(ATRICN(icn,1,1),*,iostat=ios,ERR=99) VALCT  ! flow node or component type
+      read(ATRICN(icn,2,1),*,iostat=ios,ERR=99) VALFT  ! fluid type
+      read(ATRICN(icn,4,1),*,iostat=ios,ERR=99) VALV   ! typically its volume
+      CALL ECLOSE(VALCT,0.00,0.01,CLOSECT)  ! internal unknown
+      CALL ECLOSE(VALCT,1.00,0.01,CLOSEKT)  ! internal known
+      CALL ECLOSE(VALCT,2.00,0.01,CLOSEBT)  ! boundary known
+      CALL ECLOSE(VALCT,3.00,0.01,CLOSEWT)  ! wind pressure
+      CALL ECLOSE(VALCT,10.00,0.01,CLOSE10) ! MF10
+      CALL ECLOSE(VALCT,11.00,0.01,CLOSE11) ! MF11
+      CALL ECLOSE(VALCT,12.00,0.01,CLOSE12) ! MF12
+      CALL ECLOSE(VALCT,15.00,0.01,CLOSE15) ! MF15
+      CALL ECLOSE(VALCT,17.00,0.01,CLOSE17) ! MF17
+      CALL ECLOSE(VALCT,20.00,0.01,CLOSE20) ! MF20
+      CALL ECLOSE(VALCT,25.00,0.01,CLOSE25) ! MF25
+      CALL ECLOSE(VALCT,30.00,0.01,CLOSE30) ! MF30
+      CALL ECLOSE(VALCT,35.00,0.01,CLOSE35) ! MF35
+      CALL ECLOSE(VALCT,40.00,0.01,CLOSE40) ! MF40
+      CALL ECLOSE(VALCT,50.00,0.01,CLOSE50) ! MF50
+      CALL ECLOSE(VALCT,110.00,0.01,CLOSE110) ! MF110
+      CALL ECLOSE(VALCT,120.00,0.01,CLOSE120) ! MF120
+      CALL ECLOSE(VALCT,130.00,0.01,CLOSE130) ! MF130
+      CALL ECLOSE(VALCT,210.00,0.01,CLOSE210) ! MF210
+      CALL ECLOSE(VALCT,211.00,0.01,CLOSE211) ! MF211
+      CALL ECLOSE(VALCT,220.00,0.01,CLOSE220) ! MF220
+      CALL ECLOSE(VALCT,230.00,0.01,CLOSE230) ! MF230
+      CALL ECLOSE(VALCT,240.00,0.01,CLOSE240) ! MF240
+      CALL ECLOSE(VALCT,250.00,0.01,CLOSE250) ! MF250
+      CALL ECLOSE(VALCT,310.00,0.01,CLOSE310) ! MF310
+      CALL ECLOSE(VALCT,410.00,0.01,CLOSE410) ! MF410
+      CALL ECLOSE(VALCT,420.00,0.01,CLOSE420) ! MF420
+      CALL ECLOSE(VALCT,460.00,0.01,CLOSE460) ! MF460
+      CALL ECLOSE(VALFT,1.00,0.01,CLOSEFT)  ! 1 is air
+
+C Depending on which are true, draw the relevent symbol.
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      X=XYZICON(ICN,1); Y=XYZICON(ICN,2)
+      X=XYZICON(ICN,1); Y=XYZICON(ICN,2)
+
+      INBOUND=.TRUE.
+
+C Get view limits and check if the component should be plotted in this view. 
+      IF(IVIEW.EQ.1)THEN
+        X=XYZICON(ICN,1); Y=XYZICON(ICN,2)
+
+C << do not check for Z differences in current version of net >>
+C        CALL ECLOSE(XYZICON(ICN,3),VIEWCEN(3),0.01,CLOSE) 
+C        IF(.NOT.CLOSE) RETURN
+      ELSEIF(IVIEW.EQ.2)THEN
+        X=XYZICON(ICN,1); Y=XYZICON(ICN,3)
+        CALL ECLOSE(XYZICON(ICN,2),VIEWCEN(2),0.01,CLOSE) 
+        IF(.NOT.CLOSE) RETURN
+      ELSE
+        X=XYZICON(ICN,2); Y=XYZICON(ICN,3)
+        CALL ECLOSE(XYZICON(ICN,1),VIEWCEN(1),0.01,CLOSE) 
+        IF(.NOT.CLOSE) RETURN
+      ENDIF
+
+C Get pixel position of the point and plot the icon and its label.
+      CALL U2PIXEL(X,Y,iix,iiy)
+      iixl=iix-6; iiyl=iiy+6; iixr=iix+6; iiyu=iiy-6
+
+C Check the component is on the graphics screen
+      if(IIXL.GT.IGL.AND.IIXR.LT.IGR.AND.IIYU.GT.IGT.AND.
+     &   IIYL.LT.IGB)THEN
+        continue
+      else
+        return
+      endif
+      
+C Set the icon color.
+      iicol=IVEICN(ICN,I,3)
+      if(IVEICN(ICN,I,4).eq.0)then
+        call winscl('i',iicol)
+      elseif(IVEICN(ICN,I,4).eq.1)then
+        call winscl('g',iicol)
+      elseif(IVEICN(ICN,I,4).eq.2)then
+        call winscl('z',iicol)
+      endif
+      if(INWKTYP.eq.2.and.CLOSECT.and.CLOSEFT)then
+
+C If flow network (INWKTYP = 2) and internal unknown pressure then.
+        CALL ecirc(iix,iiy+8,4,1)
+
+      elseif(INWKTYP.eq.2.and.CLOSEKT.and.CLOSEFT)then
+
+C If flow network (INWKTYP = 2) and internal fixed air pressure...
+        CALL ecirc(iix,iiy,5,0)
+        CALL ecirc(iix,iiy,3,1)
+
+      elseif(INWKTYP.eq.2.and.CLOSEWT.and.CLOSEFT)then
+
+C If flow network (INWKTYP = 2) and the component is wind pressure...
+        CALL ecirc(iix,iiy,5,0)
+        CALL ecirc(iix,iiy,3,0)
+
+      elseif(INWKTYP.eq.2.and.CLOSEBT.and.CLOSEFT)then
+
+C If flow network (INWKTYP = 2) and the component is fixed boundary...
+        CALL ecirc(iix,iiy,5,0)
+        CALL ecirc(iix,iiy,4,0)
+        CALL ecirc(iix,iiy,3,0)
+
+      elseif(INWKTYP.eq.2.and.CLOSE10)then
+        call esymbol(iix,iiy,38,1) ! box symbol
+      elseif(INWKTYP.eq.2.and.CLOSE11)then
+        call esymbol(iix,iiy,38,1) ! box symbol
+      elseif(INWKTYP.eq.2.and.CLOSE12)then
+        call esymbol(iix,iiy,38,1) ! box symbol
+      elseif(INWKTYP.eq.2.and.CLOSE15)then
+        call esymbol(iix,iiy,38,1) ! box symbol
+      elseif(INWKTYP.eq.2.and.CLOSE17)then
+        call esymbol(iix,iiy,38,1) ! box symbol
+      elseif(INWKTYP.eq.2.and.CLOSE20)then
+        call esymbol(iix,iiy,38,1) ! box symbol
+      elseif(INWKTYP.eq.2.and.CLOSE25)then
+        call esymbol(iix,iiy,38,1) ! box symbol
+      elseif(INWKTYP.eq.2.and.CLOSE30)then
+        call esymbol(iix,iiy,38,1) ! box symbol
+      elseif(INWKTYP.eq.2.and.CLOSE35)then
+        call esymbol(iix,iiy,38,1) ! box symbol
+      elseif(INWKTYP.eq.2.and.CLOSE40)then
+        call esymbol(iix,iiy,36,1) ! orifice symbol
+      elseif(INWKTYP.eq.2.and.CLOSE50)then
+        call esymbol(iix,iiy,37,1) ! conduit symbol
+      elseif(INWKTYP.eq.2.and.CLOSE110)then
+        call esymbol(iix,iiy,36,1) ! orifice symbol
+      elseif(INWKTYP.eq.2.and.CLOSE120)then
+        call esymbol(iix,iiy,34,1) ! crack symbol
+      elseif(INWKTYP.eq.2.and.CLOSE130)then
+        call esymbol(iix,iiy+5,35,1) ! bidir symbol
+      elseif(INWKTYP.eq.2.and.CLOSE210)then
+        call esymbol(iix,iiy,37,1) ! conduit symbol
+      elseif(INWKTYP.eq.2.and.CLOSE211)then
+        call esymbol(iix,iiy,38,1) ! box symbol
+      elseif(INWKTYP.eq.2.and.CLOSE220)then
+        call esymbol(iix,iiy,37,1) ! conduit symbol
+      elseif(INWKTYP.eq.2.and.CLOSE230)then
+        call esymbol(iix,iiy,37,1) ! conduit symbol
+      elseif(INWKTYP.eq.2.and.CLOSE240)then
+        call esymbol(iix,iiy,37,1) ! conduit symbol
+      elseif(INWKTYP.eq.2.and.CLOSE250)then
+        call esymbol(iix,iiy,37,1) ! conduit symbol
+      elseif(INWKTYP.eq.2.and.CLOSE310)then
+        call esymbol(iix,iiy,38,1) ! box symbol
+      elseif(INWKTYP.eq.2.and.CLOSE410)then
+        call esymbol(iix,iiy,38,1) ! box symbol
+      elseif(INWKTYP.eq.2.and.CLOSE420)then
+        call esymbol(iix,iiy,38,1) ! box symbol
+      elseif(INWKTYP.eq.2.and.CLOSE460)then
+        call esymbol(iix,iiy,38,1) ! box symbol
+      else
+
+C Something else.
+        call esymbol(iix,iiy,38,1) ! box symbol
+      endif
+
+C Reset the color.
+      iicol=0
+      call winscl('-',iicol)
+      call forceflush()
+
+C Comment out as experiment.
+C Do any internal labels in smallest font in the specified colour.
+C      DO 12 I=1,NIVL(ICN)
+C        IS=IVLBL(ICN,I,1)
+C        call u2pixel(VCICON(ICN,IS,1),VCICON(ICN,IS,2),iix1,iiy1)
+C        iicol=IVLBL(ICN,I,2)
+C        icol=IVLBL(ICN,I,2)
+C        isize=0
+C        if(iglib.eq.1)then
+C          IF(IFS.GT.0)CALL winfnt(0)
+C        elseif(iglib.eq.2)then
+C          IF(IFS.ne.4)CALL winfnt(4)
+C        endif
+C        line=1; icx=1  ! in case GTK set font context
+C        call findviewtext(icx,line,isize,ix,iy)
+C        write(LBLINT,'(a)') NWICNLBL(ICN,I) 
+C        if(IVLBL(ICN,I,3).eq.0)then
+C          call winscl('i',iicol)
+C          call textatxy(iix1,iiy1,LBLINT,'i',icol)
+C        elseif(IVLBL(ICN,I,3).eq.1)then
+C          call winscl('g',iicol)
+C          call textatxy(iix1,iiy1,LBLINT,'g',icol)
+C        elseif(IVLBL(ICN,I,3).eq.2)then
+C          call winscl('z',iicol)
+C          call textatxy(iix1,iiy1,LBLINT,'z',icol)
+C        endif
+C        iicol=0
+C        call winscl('-',iicol)
+C        if(iglib.eq.1)then
+C          IF(IFS.GT.0)CALL winfnt(IFS)
+C        elseif(iglib.eq.2)then
+C          CALL winfnt(IFS)
+C        endif
+C        call forceflush()
+C  12  CONTINUE
+          
+C Write on the label and recreate LABL after textpixwidth call.
+      WRITE(LABL,'(A12)') NWICNM(ICN)
+
+C Also check that the label is within the view limits, write
+C it in black and use a smaller font if the scale is less than 1.
+      CALL U2PIXEL(X,Y-OFFLA,iixl,iiyl)
+      if(iglib.eq.1)then
+        if(SCALF.lt.1.0.and.IFS.GT.0)CALL winfnt(0)
+      elseif(iglib.eq.2)then
+        if(SCALF.lt.1.0)CALL winfnt(4)
+      endif
+      call textpixwidth(LABL,ipixw)
+      iixlc = iixl - (ipixw/2)
+      WRITE(LABL,'(A12)') NWICNM(ICN)
+      if(iglib.eq.1)then
+        if(SCALF.lt.1.0.and.IFS.GT.0)CALL winfnt(IFS)
+      elseif(iglib.eq.2)then
+        if(SCALF.lt.1.0)CALL winfnt(4)
+      endif
+      IF(IIXLC.GT.IGL.AND.IIXR.LT.IGR.AND.IIYU.GT.IGT.AND.
+     &   IIYL.LT.IGB)THEN
+        isize=0
+        if(iglib.eq.1)then
+          if(SCALF.lt.1.0.and.IFS.GT.0)CALL winfnt(0)
+        elseif(iglib.eq.2)then
+          IF(IFS.ne.4)CALL winfnt(4)
+        endif
+        line=1; icx=1  ! in case GTK set font context
+        call findviewtext(icx,line,isize,ix,iy)
+        call textatxy(iixlc,iiyl,LABL,'i',6)
+        iicol=0
+        call winscl('-',iicol)
+        if(iglib.eq.1)then
+          if(SCALF.lt.1.0.and.IFS.GT.0)CALL winfnt(IFS)
+        elseif(iglib.eq.2)then
+          if(SCALF.lt.1.0)CALL winfnt(4)
+        endif
+      ENDIF
+
+C Draw on the connection points for the component (applies to all components)
+      DO 100 I=1,NCONP(ICN)
+
+C Move to first position.
+C Set the drawing colour depending on the attachment type.
+        iicol=ICNCT(ICN,I)
+        call winscl('z',iicol)
+
+        if(INWKTYP.eq.6)then
+
+C If domain is primitive part draw a circle and setup ICPP array.
+          CALL U2PIXEL(CONCP(ICN,I,1),CONCP(ICN,I,2),IIX,IIY)
+          CALL ECIRC(IIX,IIY,2,1)
+          IF(ICN.EQ.1)THEN
+            KKK=I
+          ELSE
+            KKK=0
+            DO 119,JJJ=1,ICN-1
+              KKK=KKK+NCONP(JJJ)
+  119       CONTINUE
+            KKK=KKK+I
+          ENDIF
+C            ICPP(ICN,I,1)=CPP(1,KKK)
+C            ICPP(ICN,I,2)=CPP(2,KKK)
+C            ICPP(ICN,I,3)=CPP(3,KKK)
+
+C Debug.     WRITE(6,*),CPP(1,III),III
+
+        else
+
+C Otherwise draw a square. << patch to make square invisable >>
+C            iupdown=0
+C            isym=0
+C            CALL ETPLOT(CONCP(ICN,I,1)-XYSIZCP/2.,
+C     &                CONCP(ICN,I,2)-XYSIZCP/2.,iupdown,isym)
+C            iupdown=1
+C            CALL ETPLOT(CONCP(ICN,I,1)+XYSIZCP/2.,
+C     &                CONCP(ICN,I,2)-XYSIZCP/2.,iupdown,isym)
+C            CALL ETPLOT(CONCP(ICN,I,1)+XYSIZCP/2.,
+C     &                CONCP(ICN,I,2)+XYSIZCP/2.,iupdown,isym)
+C            CALL ETPLOT(CONCP(ICN,I,1)-XYSIZCP/2.,
+C     &                CONCP(ICN,I,2)+XYSIZCP/2.,iupdown,isym)
+C            CALL ETPLOT(CONCP(ICN,I,1)-XYSIZCP/2.,
+C     &                CONCP(ICN,I,2)+XYSIZCP/2.,iupdown,isym)
+C            CALL ETPLOT(CONCP(ICN,I,1)-XYSIZCP/2.,
+C     &                CONCP(ICN,I,2)-XYSIZCP/2.,iupdown,isym)
+        endif
+
+C Reset the line colour to standard.
+        iicol=0
+        call winscl('-',iicol)
+        call forceflush()
+100   CONTINUE
+
+      RETURN
+
+  99  call edisp(iuout,'error composing attribute for editing.')
+      return
+      END
+
 C ****************************** NETWIDW ******************************
 C This routine handles the drawing of icons on the display. 
 
@@ -2927,7 +3308,7 @@ C Write on the label and recreate LABL after textpixwidth call.
 
 C Also check that the label is within the view limits, write
 C it in black and use a smaller font if the scale is less than 1.
-        CALL U2PIXEL(X,Y-OFFLAB,iixl,iiyl)
+        CALL U2PIXEL(X,Y-OFFLA,iixl,iiyl)
         if(iglib.eq.1)then
           if(SCALF.lt.1.0.and.IFS.GT.0)CALL winfnt(0)
         elseif(iglib.eq.2)then

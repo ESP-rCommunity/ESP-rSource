@@ -5,8 +5,8 @@ else
 	SWTCH= -D
 endif
 SRCdir = `pwd`/..
-COMdir = $(SRCdir)/esrucom
-MFSdir = $(SRCdir)/esrumfs
+COMdir = $(SRCdir)/common
+MFSdir = $(SRCdir)/emfs
 LIBdir = $(SRCdir)/lib
 CETCdir = $(SRCdir)/cetc
 PROG = enet$(EXE)

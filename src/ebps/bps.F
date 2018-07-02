@@ -296,8 +296,10 @@ C Project journal on/off, unit number, cmd, file name.
       COMMON/CHANNL/NOCHAN
 
 C Simulator parameters.
-      COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      COMMON/SPFL/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      LOGICAL spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
       common/SPFLN/spsname
       character spsname*30
 
@@ -359,8 +361,8 @@ C      logical gopher  ! not references
       character journcmd*20,jfile*72,uname*24,cjfile*72,OUTSTR*124
       character dllsubr*12,dllmesg*124
       character t16*16,outs248*248
-      character cVnum*16      ! returned from ESPrVersionNum
-      character pagestitle*42 ! for banner title via epages call
+      character cVnum*32      ! returned from ESPrVersionNum
+      character pagestitle*62 ! for banner title via epages call
 
 C Flags for multi-year simulation menus
       logical bOptOut, bDone, bMY_clm_err, bExists, bCreate
@@ -453,7 +455,7 @@ C      gopher = .false.
 
 C CFD results library: IRECPC=current record; ICFDSV=results version
       IRECPC=0
-      ICFDSV=2
+      ICFDSV=3
 
 C Flag indicating that CFD `small opening' areas have not yet been calculated.
       areaSSO = .FALSE.

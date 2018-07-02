@@ -5,14 +5,14 @@ else
 	SWTCH= -D
 endif
 SRCdir = `pwd`/..
-BLDdir = $(SRCdir)/esrubld
-COMdir = $(SRCdir)/esrucom
-CDBdir = $(SRCdir)/esrucdb
-DFSdir = $(SRCdir)/esrudfs
-MFSdir = $(SRCdir)/esrumfs
-PDFdir = $(SRCdir)/esrupdf
-VLDdir = $(SRCdir)/esruvld
-PLTdir = $(SRCdir)/esruplt
+BLDdir = $(SRCdir)/ebld
+COMdir = $(SRCdir)/common
+CDBdir = $(SRCdir)/ecdb
+DFSdir = $(SRCdir)/edfs
+MFSdir = $(SRCdir)/emfs
+PDFdir = $(SRCdir)/epdf
+VLDdir = $(SRCdir)/evld
+PLTdir = $(SRCdir)/eplt
 CETCdir = $(SRCdir)/cetc
 INCLdir = $(SRCdir)/include
 PROG = prj$(EXE)

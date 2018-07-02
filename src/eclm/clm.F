@@ -96,8 +96,8 @@ C Name of current application
       character journcmd*20,jfile*72,uname*24,cjfile*72
       character blank*2   ! string for edisp of blank line
 
-      character cVnum*16      ! returned from ESPrVersionNum
-      character pagestitle*42 ! for banner title via epages call
+      character cVnum*32      ! returned from ESPrVersionNum
+      character pagestitle*62 ! for banner title via epages call
 
       LOGICAL OK,DOK,unixok,there,silent
 

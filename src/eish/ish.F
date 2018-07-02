@@ -165,8 +165,8 @@ C Name of current application.
       character xfile*144,tg*1,delim*1,mode*4
       character exportfile*96 ! for ascii shading file
 
-      character cVnum*16      ! returned from ESPrVersionNum
-      character pagestitle*42 ! for banner title via epages call
+      character cVnum*32      ! returned from ESPrVersionNum
+      character pagestitle*62 ! for banner title via epages call
 
       logical silent,unixok,there,context,existing
       logical xst,freshshading

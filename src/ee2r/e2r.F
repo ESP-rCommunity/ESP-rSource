@@ -100,8 +100,8 @@ C Name of current application
       character brw*4   ! to signal whether browsing model
       character smode*1 ! simscene mode 'i' interactive '-' silent
 
-      character cVnum*16      ! returned from ESPrVersionNum
-      character pagestitle*42 ! for banner title via epages call
+      character cVnum*32      ! returned from ESPrVersionNum
+      character pagestitle*62 ! for banner title via epages call
 
       DIMENSION ITEM(24)
       DIMENSION IVALV(20),VALT(20),IPVALV(20)  ! for selecting view from list

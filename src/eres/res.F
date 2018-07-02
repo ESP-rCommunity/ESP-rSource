@@ -96,7 +96,10 @@ C Simulation period and save option.
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
 C Simulator parameters and performance information requested data.
-      COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      COMMON/SPFL/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      LOGICAL     spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
       common/SPFLN/spsname
       common/ract/paction
       common/recov01/pifltog,lpifl
@@ -130,9 +133,14 @@ C Significant figure reporting limit (NSIGFIG).
       COMMON/pres/iunitp  ! file unit for plant
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      LOGICAL     CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       
 C Name of current application
       common/APPNAME/cAppName
+
+      logical libheading ! have we printed report heading (library name etc).
+      logical headingcontext ! has set or period changed so heading needs reprint
+      common/libhead/libheading,headingcontext
 
 C IEEE callback (Solaris)
 #ifdef SUN
@@ -154,9 +162,6 @@ C IEEE callback (Solaris)
       
       character cAppName*12      
       
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
-
-      LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical     unixok,there
 
       CHARACTER ITEM(19)*23
@@ -173,8 +178,8 @@ C IEEE callback (Solaris)
       character firstbit*72,secondbit*72
       character longtmp*144
 
-      character cVnum*16      ! returned from ESPrVersionNum
-      character pagestitle*42 ! for banner title via epages call
+      character cVnum*32      ! returned from ESPrVersionNum
+      character pagestitle*62 ! for banner title via epages call
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer NITMS,INO ! max items and current menu item
@@ -210,6 +215,7 @@ C     NSIGFIG=3
       iunitp=IFIL+10
       matver=0.0   ! initial assumption of binary materials database
       ireportunit=0 ! assume normal units for tabular listings
+      libheading=.false.; headingcontext=.false. ! no heading yet printed
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -622,7 +628,7 @@ C Setup for menu text.
       ITEM(9)   ='e Plant results       '
       ITEM(10)  ='f Indoor env. quality '
       ITEM(11)  ='g Electrical results  '
-      ITEM(12)  ='h CFD                 '
+      ITEM(12)  ='h CFD visualisation   '
       ITEM(13)  ='i Sensitivity         '
       ITEM(14)  ='j IPV                 '
       ITEM(15)  ='  ------------------- '
@@ -713,7 +719,7 @@ C an image focus of FRES then show them now.
         call tstamp('>','RES: exit electrical reporting')
       ELSEIF(INO.EQ.12)THEN
         call tstamp('>','RES: enter CFD reporting')
-        call MOCFD
+        call MOCFD('M')
         call tstamp('>','RES: exit CFD reporting')
       ELSEIF(INO.EQ.13)THEN
         call tstamp('>','RES: enter sensitivity reporting')

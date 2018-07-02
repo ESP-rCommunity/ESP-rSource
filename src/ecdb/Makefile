@@ -6,19 +6,16 @@ else
 endif
 SRCdir = `pwd`/..
 COMdir = $(SRCdir)/common
-PROG = clm$(EXE)
+PROG = cdb$(EXE)
 default: $(PROG)
 
 .SUFFIXES: .o .F
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-MODULE_OBJECTS = startup.o
+OBJECTS = cdb.o c2fdum.o CDBExplore.o CDBCommon.o
 
-OBJECTS = clm.o c2fdum.o cfiles.o cfrqdis.o chead.o clmgrf.o clmint.o \
-          clmpsychart.o clmmmm.o clmper.o clmseq.o clmsyn.o \
-	  clmxmn.o clpred.o commonclm.o ctlexp.o dossupport.o psychro.o rcdblist.o \
-	  rrite.o
+MODULE_OBJECTS = startup.o
 
 MODULES = start_up.mod parse_command_line.mod
 
@@ -28,21 +25,6 @@ $(PROG): $(MODULE_OBJECTS) $(OBJECTS)
 c2fdum.F:
 	rm -f c2fdum.F
 	ln -s $(COMdir)/c2fdum.F .
-commonclm.F:
-	rm -f commonclm.F
-	ln -s $(COMdir)/commonclm.F .
-ctlexp.F:
-	rm -f ctlexp.F
-	ln -s $(COMdir)/ctlexp.F .
-dossupport.F:
-	rm -f dossupport.F
-	ln -s $(COMdir)/dossupport.F .
-psychro.F:
-	rm -f psychro.F
-	ln -s $(COMdir)/psychro.F .
-rcdblist.F:
-	rm -f rcdblist.F
-	ln -s $(COMdir)/rcdblist.F .
 startup.F:
 	rm -f startup.F
 	ln -s $(COMdir)/startup.F .
@@ -55,7 +37,7 @@ install:
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
-	c2fdum.F commonclm.F ctlexp.F dossupport.F psychro.F rcdblist.F startup.F
+	c2fdum.F startup.F 
 
 distclean: clean
 

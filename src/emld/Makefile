@@ -5,7 +5,7 @@ else
 	SWTCH= -D
 endif
 SRCdir = `pwd`/..
-COMdir = $(SRCdir)/esrucom
+COMdir = $(SRCdir)/common
 PROG = mld$(EXE)
 default: $(PROG)
 

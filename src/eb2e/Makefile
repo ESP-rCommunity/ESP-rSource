@@ -5,12 +5,12 @@ else
 	SWTCH= -D
 endif
 SRCdir = `pwd`/..
-BLDdir = $(SRCdir)/esrubld
-CDBdir = $(SRCdir)/esrucdb
-COMdir = $(SRCdir)/esrucom
-MFSdir = $(SRCdir)/esrumfs
-PRJdir = $(SRCdir)/esruprj
-BLDdir = $(SRCdir)/esrubld
+BLDdir = $(SRCdir)/ebld
+CDBdir = $(SRCdir)/ecdb
+COMdir = $(SRCdir)/common
+MFSdir = $(SRCdir)/emfs
+PRJdir = $(SRCdir)/eprj
+BLDdir = $(SRCdir)/ebld
 CETCdir = $(SRCdir)/cetc
 PROG = b2e$(EXE)
 default: $(PROG)

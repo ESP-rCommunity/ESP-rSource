@@ -136,8 +136,8 @@ C Name of current application
       CHARACTER tg*1,delim*1,xfile*144,dstmp*24,LabFreq*4
       CHARACTER PubType*12,FurType*12,FurCat*4,CovSurf*12
 
-      character cVnum*16      ! returned from ESPrVersionNum
-      character pagestitle*42 ! for banner title via epages call
+      character cVnum*32      ! returned from ESPrVersionNum
+      character pagestitle*62 ! for banner title via epages call
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
@@ -971,6 +971,5 @@ C Dummy subroutine needed to compile (called from library code).
       integer icomp,ier
       return
       end
-      
 
 

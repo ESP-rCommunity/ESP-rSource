@@ -68,8 +68,8 @@ C Name of current application
       character path*72
       character species*64, grow*1, head*29,fs*1
 
-      character cVnum*16      ! returned from ESPrVersionNum
-      character pagestitle*42 ! for banner title via epages call
+      character cVnum*32      ! returned from ESPrVersionNum
+      character pagestitle*62 ! for banner title via epages call
 
       logical unixok
 

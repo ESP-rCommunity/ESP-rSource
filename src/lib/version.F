@@ -95,7 +95,7 @@ C Deterimine of summary or details
         bBuild_Info = .true.
       elseif ( cType(1:7) == "summary" ) then
         bBuild_Info = .false. 
-      elseif ( cType(1:7) == "silent" ) then
+      elseif ( cType(1:6) == "silent" ) then
         continue
       else
 C cType is set programmically,
@@ -276,7 +276,7 @@ C Return out ESP-r versioning information.
       implicit none
       
 C PASSED VARIABLES 
-      character cVnum*16             ! Phrase with release number
+      character cVnum*32             ! Phrase with release number
 
 C LOCAL VARIABLES
 C declare variables describing version and build information

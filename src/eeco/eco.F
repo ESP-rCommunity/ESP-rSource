@@ -166,8 +166,8 @@ C      CHARACTER tab*1
       CHARACTER*12 CompoNam,LayerNam,MatNameco
       CHARACTER*72 MatDesc,MatCat,LayerDes
 
-      character cVnum*16      ! returned from ESPrVersionNum
-      character pagestitle*42 ! for banner title via epages call
+      character cVnum*32      ! returned from ESPrVersionNum
+      character pagestitle*62 ! for banner title via epages call
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
