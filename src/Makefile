@@ -2,7 +2,7 @@
 # (see README file before installing).
 SRCdir=`pwd`
 
-PROGRAMS = aco bps c2e cdb clm dfs e2r ecnv eco enet grd harmonizer ish mfs \
+PROGRAMS = aco bps c2e cdb clm dfs dfv e2r ecnv eco enet grd harmonizer ish mfs \
 	   mld mrt pdb prj res vew stats
 
 allX11: libX11 $(PROGRAMS)
@@ -274,5 +274,5 @@ bincopy:
 	cp epdb/pdb $(ESPBinDir)/pdb
 	cp eprj/prj $(ESPBinDir)/prj
 	cp eres/res $(ESPBinDir)/res
-	cp evew/viewer $(ESPBinDir)/vewier
-	cp stats/stats $(ESPBinDir)/stats
+	cp evew/viewer $(ESPBinDir)/viewer
+	cp estats/stats $(ESPBinDir)/stats

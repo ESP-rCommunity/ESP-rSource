@@ -34,7 +34,7 @@ SQLite_support="no"        # Support for SQLite output.
 FMI_support="prompt"       # Support for FMI connectivity.
 debugging="no"             # Support for debugging symbols.
 EXE=""                     # Executable file extension.
-debian_copy="no"           # no=standard make install yes=make bincopy
+debian_copy="yes"           # no=standard make install yes=make bincopy
 opt="-O1"                  # optimization to be applied
 FFLAGS="-I../include "     # Fortran compiler flags.
 CFLAGS="-I../include "     # C compiler flags.
