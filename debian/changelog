@@ -1,3 +1,12 @@
+espr (12.7.1634-1) wheezy; urgency=low
+
+  * Updated to reflect April 2018 distribution of ESP-r at 1634.
+  * Introduce 3D flow network.
+  * Extended calibration facilities.
+  * Import of gbXML included.
+
+ -- Jon Hand <jon@esru.strath.ac.uk>  Fri 13 Apr 13:28:25 BST 2018
+ 
 espr (12.6.1054-1) wheezy; urgency=low
 
   * Updated to reflect 2017 distribution of ESP-r at 1054.

@@ -2,350 +2,109 @@
 
                          ESP-r
 
-   A multi-domain building performance simulation program
+   An integrated building performance simulation program
 
-Contents
---------
 
-   1. Acknowledgments
-   2. License
-   3. Obtaining ESP-r
-   4. System requirements
-   5. Optional features
-   6. Installation
-   7. Post-installation configuration
-   8. Documentation
-   9. Validation
-  10. Release testing 
-  11. Support
-
-===========================================================
 1. ACKNOWLEDGMENTS
 
-ESP-r is developed and distributed by the Energy Systems Research Unit
-(ESRU) of the University of Strathclyde and Natural Resources Canada
-(NRCan), in collaboration with researchers and practitioners around
-the world.
+ESP-r is developed by an international consortium as listed
+at http://www.esru.strath.ac.uk/ and distributed by the
+Energy Systems Research Unit at the University of Strathclyde.
+Enquiries about the system should be sent to esru@strath.ac.uk.
 
+System development and application is supported by a community
+mailing list. To subscribe, please register at
+http://lists.strath.ac.uk/mailman/listinfo/esp-r.
 
-Send inquiries to:
-
-   Energy Systems Research Unit (ESRU)
-   University of Strathclyde,
-   James Weir Building
-   75 Montrose Street
-   Glasgow UK
-   G1 1XJ
-
-   http://www.esru.strath.ac.uk/
-   esru@strath.ac.uk
-
-ESP-r is also supported through a community mailing list.  To subscribe
-to the list, visit:
-
-   http://lists.strath.ac.uk/mailman/listinfo/esp-r
-
-===========================================================
 2. LICENSE
 
-ESP-r is free software.  You can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation, either version two of the License, or (at your
-option) any later version.
+ESP-r is free software made available in the hope that it will
+be useful but WITHOUT ANY WARRANTY; without even the implied
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
 
-ESP-r is distributed in the hope that it will be useful but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
-for more details.
+It can be redistributed under the terms of the GNU General Public
+License as published by the Free Software Foundation (version 2
+or later) and available as part of the ESP-r distribution.
 
-You should have received a copy of the GNU General Public License along
-with ESP-r. If not, write to the Free Software Foundation, Inc., 59
-Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-
-
-===========================================================
 3. OBTAINING ESP-r.
 
-ESP-r is distributed via version-controlled source code. The
-GPL license encourages you to contribute any changes you made
-back into the community.
+The source code and pre-compiled binaries (Linux platform)
+are available as downloads from the applications page at
+http//www.esru.strath.ac.uk.
 
-
-Version-controlled source code
-------------------------------
-The ESP-r source code is stored on a publicly-accessible repositories
-at <https://github.com/ESP-rCommunity. Although you can compile ESP-r
-with only the ESP-rSource.git to get full functionality you have
-to checkout all four repositories and create a new folder structure 
-to hold the combined distribution. Assuming the folder for downloads is
-ESPrgit and the combined distribution will be in ESPr_Master give
-the following commands:
-
- mkdir ESPrgit
- cd ESPrgit
- git clone --recursive https://github.com/ESP-rCommunity/ESP-rSource.git
- git clone --recursive https://github.com/ESP-rCommunity/ESP-rDatabases.git
- git clone --recursive https://github.com/ESP-rCommunity/ESP-rModels.git
- git clone --recursive https://github.com/ESP-rCommunity/ESP-rDoc.git
-
-Now use a utility called rsync to merge the repositories into ESPr_Master:
-
- mkdir ESP-rMaster
- rsync -av ESP-rSource/ ESP-rMaster/
- rsync -av ESP-rDatabases/ ESPrMaster/data/
- rsync -av ESP-rDoc/ ESPrMaster/doc/
- rsync -av ESP-rModels/ ESPrMaster/models/
-
-You can learn more about accessing the ESP-r repository here:
-
-   http://www.esru.strath.ac.uk/Programs/ESP-r_central.htm
-
-You will also need a folder for the compiled ESP-r. Lets assume 
-this is /opt/esru (create it if it does not exist) On Windows
-this would be C:/ESRU. 
-
-In the top folder of ESPrMaster is an Install script. For Linux, OSX and
-Cywin a typical set of commands to build ESP-r
-is:
- ./Install -d /opt/esru --gcc4 --debug
-
-or for a MSYS2 development environment on Windows:
- ./Install -d C:/ESRU --gcc4 --debug
-
-Answer yes to installing the databases and example models.
-more information about setting up computers and development
-tool chains are found in the doc/manual/OS folders.
-
-
-===========================================================
+Prior to an installation from source code, you should ensure
+that a writable directory /opt/esp-r exists (possibly by creating
+a link named /opt/esp-r pointing to a directory esp-r elsewhere.
+ 
 4. SYSTEM REQUIREMENTS
 
-ESP-r has been installed Linux, Cygwin, MSYS2 and MAC
-OS X systems, using a variety of compiler and graphics library
-combinations.
+ESP-r has been successfully installed on Linux, Cygwin, MSYS2
+and MAC OS X systems using different compiler and graphics
+library combinations. The native (and preferred ) environment
+is Linux.
 
-While ESP-r has been built on all of the supported platforms and
-configurations, it is most routinely used on Linux.  Installation on
-common Linux distributions (including Ubuntu, Redhat/Fedora and
-Gentoo) using the gcc 4/5/6 (gcc g++ gfortran) series of compiler 
-suites has proven robust, and you can use it with confidence on 
-these systems.  OSX is similar to Linux in the build process (see
-the notes in the doc/manual/OS/Apple folder). ESP-r can also be 
-build on Windows via Cygwin or MSYS2 (see the doc/manual/OS/Cygwin
-or doc/manual/OS/Native_windows).
-
-Some facilities of ESP-r use the Radiance lighting simulation
-suite to carry out tasks. Radiance can be downloaded from
-<radsite.lbl.gov/radiance/>. The release of July 2014 4.2
-as rad4R2all.tar.gz works with ESP-r.
-
-
-Architectures
--------------
-ESP-r is presently supported on 32 and 64 bit systems.
-
- -----------------------------------------------------------
-                      Linux   Cygwin  MSYS2    OS X
- ...........................................................
- 32-bit                  S       S       S       -
- 64-bit                  S       S       S       S
- -----------------------------------------------------------
- S = Stable
- X = Not supported
- - = Not applicable
-
-Compilers
----------
-Compilation of ESP-r is presently supported with
-the following compiler sets:
-  - GCC 4.9 - 6.0 (gcc, g++ and gfortran)
-
-Graphics libraries
-------------------
-Traditionally, ESP-r incorporated an X11-based graphical interface and
-could also be built as a text-only shell application. Work is presently
-underway to modernize the ESP-r interface using the GTK interface,
-and GTK versions of ESP-r can be installed on all platforms provided
-the GTK libraries are available.
-
- -----------------------------------------------------------
-                      Linux   Cygwin  MSYS2  OS X
- ...........................................................
- X11                    S       S      -       S
- GTK                    S       S      S       S
- no graphics            S       S      S       S
- -----------------------------------------------------------
- S = Stable
- X = Not supported
- - = Not applicable
-
-===========================================================
 5. OPTIONAL FEATURES
 
-XML & CSV output
-----------------
-By default, the ESP-r simulation engine (bps) writes out binary results
-libraries that must be post-processed using a separate tool (res). bps
-can also optionally export the results directly into ASCII XML and
-comma-separated-value formats, provided the GNU libxml2 library is
-available on the system.
+By default, the ESP-r simulation engine (bps) creates a binary results
+database that is post-processed using a separate tool (res). Bps
+can optionally export results in XML and CSV formats provided
+that the GNU libxml2 library is available. If the GNU libxslt library
+is also available, bps can be configured to translate XML results
+to any user-specified ASCII format.
 
-If the GNU libxslt library is also available, bps can be configured to
-translate the XML result file into any user- specified ASCII format.
-
-
-===========================================================
 6. INSTALLATION
 
-Installation of ESP-r is managed through the 'Install'
-script, which is located in the top level directory. ESP-r
-can be installed into any user-writable directory.
+Installation of ESP-r from source code is managed by an
+'Install' script, which is located in the top level directory
+of the download. A distribution can be installed into any
+user-writable directory as defined above. Thereafter, follow
+the instructions in the 'readme' file.
 
-The Install script provides interactive prompts to guide
-you through the ESP-r installation, and also understands
-a number of command line arguments. For more information,
-run:
+The Install script will guide you through the installation
+and can be controlled via command line arguments. For more
+information run:
 
-  $ ./Install --help
+  $ sudo ./Install --help
 
+A complete installation based on the embedded defaults will
+result from:
 
-Local installations
--------------------
+  $ sudo ./Install
 
-  1. Run the command:
+while the following command will change the default installation
+directory and compiler family:
 
-          $ ./Install -d <path/to/esp-r> --gcc4
+  $ sudo ./Install -d <installation path> --gcc4
 
-     Where <path/to/esp-r> describes the desired
-     installation directory. For instance,
-     './Install -d ~/my_esp-r' will install ESP-r
-     in a directory called my_esp-r, in the user's
-     home folder.
-
-After installing ESP-r, be sure to update your PATH
-environment variable as described below.
-
-===========================================================
 7. POST INSTALLATION CONFIGURATION
 
 On most Linux and Cygwin systems, the only post-installation
-configuration required is updating the path environment
-variable to include the location of ESP-r binaries. 
+configuration is to update the PATH environment variable
+to include the location of the installed ESP-r binaries.
 
-
-Updating your PATH
-------------------
-You'll need to update your PATH environment variable to
-include the location of your ESP-r binaries. The steps
-required to configure your path depend on the shell in
-use on your system. Enter the command:
-
-  $ echo $SHELL
-
-Configuration of the PATH environment variable using the
-bash and csh shells are described below. Information on
-setting environment variables for other shell types (e.g.,
-sh, zsh, ksh) is available on the Internet.
-
-  BASH:
-
-      Append the following line to your .bashrc file in
-      your home directory (or in the system's .bashrc file)
-
-      export PATH="<path/to/esp-r>/esp-r/bin/:$PATH"
-
-      (Where <path/to/esp-r> describes the location
-      in which you installed ESP-r)
-
-  CSH:
-
-      Append the following line to your .cshrc file in
-      your home directory (or in the system's .cshrc file):
-
-      set path = ( <path/to/esp-r>/esp-r/bin/ $path )
-
-      (Where <path/to/esp-r> describes the location
-      in which you installed ESP-r)
-
-
-Setting EFONTS environment variable
------------------------------------
-On most Linux and Cygwin systems, acceptable fonts are
-located automatically at runtime. However, if you find
-ESP-r crashes after invocation, you may need to set the
-EFONTS environment variable. Include the following lines
-in your .bashrc /.cshrc file
+Should ESP-r crash because of missing fonts, you should
+install the required fonts or try setting the EFONTS
+environment variable as follows.
 
    setenv EFONT_0 6x12
    setenv EFONT_1 6x13
    setenv EFONT_2 8x13
    setenv EFONT_3 9x15
 
-Default settings
-----------------
-The file <path/to/esp-r>/esp-r/default defines the default
-settings for example problems, climate, control, etc. These
-can be changed if the default settings offered in the
-standard distribution are not appropriate for your site.
-
-
-===========================================================
 8. DOCUMENTATION
 
-An extensive collection of books, academic theses,
-peer-reviewed papers, reports and manuals describing the
-theoretical basis and application of ESP-r are available.
-A complete list of ESP-r documentation can be found on the
-ESRU website:
+Publications describing the theory and operation of ESP-r are
+available on the publications page of the above web site, while
+other resources (such as coding standards and learning materials)
+are available from the downloads page.
 
-   http://www.esru.strath.ac.uk/publications.htm
-
-Theoretical basis
------------------
-  
-  - "Energy Simulation in Building Design" by Joe Clark
-    (Butterworth Heinemann 2001) provides a broad
-    description of ESP-r methodologies.
-
-Application of ESP-r
---------------------
-
-  - "Strategies for Deploying Virtual Representations of the Built 
-    Environment"  describes the application of
-    ESP-r in building simulation:
-       
-       www.esru.strath.ac.uk/Documents/ESP-r_cookbook_june_2015.pdf
-
-  - "Data model summary ESP-r Version 9 Series" describes
-    the  format of ESP-r's input files:
-
-       www.esru.strath.ac.uk/Documents/ESP-r_data_doc.pdf
-
-Developing with ESP-r
----------------------
-
-  - "Structure of the ESP-r Source Code Archive"
-    outlines the branch structure in use on ESP-r
-    central, and procedures for merging code:
-
-       www.esru.strath.ac.uk/Documents/good_practice.pdf
-
-===========================================================
 9. VALIDATION
 
-ESP-r has been extensively validated both through comparison
-to other simulation programs, and comparison to experimental
-data. An overview of ESP-r validation studies is available
-at the following URL:
+ESP-r has participated in a large number of validation projects
+and includes the ability (activated via the 'validation' option
+in prj) to automatically perform the IEA BESTEST/ASHRAE 140
+and CEN validation tests.
 
-    http://www.esru.strath.ac.uk/Documents/validation.pdf
-
-In addition, ESP-r includes an option to automatically
-perform the IEA BESTEST/ASHRAE 140 and CEN validation tests,
-and report these results. You can exercise these tests
-by clicking on the 'validation' option in prj.
-
-===========================================================
 10. QUALITY ASSURANCE AND RELEASE TESTING
 
 Development of ESP-r continues, and its predictions are
@@ -354,15 +113,8 @@ facilities improved. To guarantee the reliability of ESP-r
 results, a quality assurance procedure is performed prior
 to each release. 
 
-http://espr.trac.cvsdude.com/esp-r/wiki/PreReleaseTesting11.11
-
-===========================================================
 11. SUPPORT
 
 The quickest route to a remedy for an ESP-r installation or
-modelling problem is to ask for help on the ESP-r mailing
-list. To subscribe to the list, visit:
-
-  http://lists.strath.ac.uk/mailman/listinfo/esp-r
-
-Good Luck!
+application problem is to ask for help on the ESP-r mailing
+list as described above.

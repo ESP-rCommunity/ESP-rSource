@@ -1,158 +1,77 @@
 #!/bin/bash
-#
-# For use on Raspberry Pi/sun/linux/cygwin/mingw/OS X/Windows platforms.
-#
-# This script handles installation of ESP-r executables,
-# databases, training and reference materials.
-#
-# This script is a work in progress, and is undergoing
-# continual improvement.
+#${DESTdir}/esp-r
+# This script coordinates the installation of ESP-r executables,
+# databases, training and support materials. It can be used on
+# linux, cygwin, mingw, OS X and Windows platforms.
 
-#=====================================================================
-clim_convert()  # converts climate dbs from iwec.a to binary formats
-#=====================================================================
-# Arg_1 = target file
-# Arg_2 = source file
-{
-
-
-# short=`echo $1 | sed 's/^.*\///g'`
-# city=$short
-# country=$short
-# country=`echo $short | sed 's/_.*$//g;'`
-# city=`echo $short | sed 's/_iwec//g;'`
-# city=`echo $city | sed 's/.iwec//g;'`
-# city=`echo $city | sed 's/_cwec//g;'`
-# city=`echo $city | sed 's/.cwec//g;'`
-# city=`echo $city | sed 's/^.*_//g;'`
-
-# printf "\r   - Creating binary climate databases [$city ($country)]..."
-
-# sed-less version
-
-TargetName=`echo $2 |  sed 's/\.a$//g'`
-printf "\r                                                                            "
-printf "\r   - Creating binary climate databases [${TargetName}] ..."
-rm -f $1
-$CLM -mode text -file $1 -act ascii2bin silent $2  >/dev/null 2>/dev/null
-
-}
-
-
-#=====================================================================
-pdb_convert()  # converts plant dbs from iwec.a to binary formats
-#=====================================================================
-{
-SourceName=$1
-TargetName=$2
-TargetFolder=$3
-printf "\r                                                                            "
-printf "\r   - Creating binary plant databases [${TargetName}]..."
-
-# Debug
-# echo "$PDB -mode text -file $TargetName -act asci2bin ${SourceName}"
-$PDB -mode text -file $TargetName -act asci2bin ${SourceName}
-mv $TargetName $TargetFolder
-
-}
-#=====================================================================
-# Main script
-#=====================================================================
-
-echo " "
-echo "          ESP-r installation script."
-echo " "
-echo " Please consult the README file before commencing "
-echo " installation.  This script will rebuild the ESP-r"
-echo " modules on your system.  You can abort this process"
-echo " at any time by pressing <control> c."
-echo " "
-echo " Some ESP-r facilities make use of Radiance to cal-"
-echo " culate lighting levels. Versions 3R9-4R2 have been"
-echo " tested."
-echo " "
-
-
-# Set default settings.
-mode="interactive"         # Interactive/silent installation
-                           # (silent mode isn't yet supported)
+# Source and target directories.
 HOMEdir=`pwd`
-SRCdir="${HOMEdir}/src"               # Source Directory
-DESTdir=/usr/esru          # Target Directory
-COSIMdir=" "			   # Harmonizer install directory
-xml_support=prompt         # support for XML output
-SQLite_support="no"        # support for SQLite output
-FMI_support="prompt"       # support for FMI
-debugging="no"             # include debugging symbols
-debian_copy="no"           # no=standard make install yes=make bincopy
-EXE=""                     # executable file extension (i.e. .exe on cygwin and Windows)
-FFLAGS="-I../include "     # initial fortran compiler flags
-CFLAGS="-I../include "     # initial C compiler flags
-LD_FLAGS=" "               # initial link-loader flags
-platform="auto-detect"     # default platform
-install_dbs="yes"          # Install dbs files
-install_training="yes"     #         training files
-install_exes="prompt"      #         executables
-delete_temp_files="yes"    # Delete temporary files.
-preserve_espr_dir="yes"    # save existing ESP-r directory by default
-gnu_version="gcc4"         # flag indicating which version of gcc is in use
-make_msg_file=".make_msg"  # Dump make messages?
-compiler_version="none"    # append string to compilers?
-opt="-O1"                  # optimization to be applied
-xLibs="X11"                # Default x-library
-enable_cosim="no"          # Co-simulation with TRNSYS
-extendedDebug="no"         # Enable agressive debugging / warnings /FPE?
-use_intel="no"             # Use intel compilers?
-skip_ish_calcs="no"        # Skip update of exemplar shading files?
-reuse_ish_calcs="yes"      # if yes speedup creation of exemplar shading files?
-clean="yes"                # Clean object files?
-unversioned="no"           # Check svn for versioning info?
-
-#-----------------------------------------------------------
-# Directories for new module config
-#-----------------------------------------------------------
-
+DESTdir=/opt/esp-r
 DATdir="${HOMEdir}/data"
-CLMdir="${DBSdir}/climate"
-DBSdir="${DBSdir}/databases"
+DOCdir="${HOMEdir}/doc"
+SCRIPTdir="${HOMEdir}/src/bin"
 MODdir="${HOMEdir}/models"
 TRAdir="${MODdir}/training"
 VALdir="${MODdir}/validation"
-DOCdir="${HOMEdir}/doc"
-SCRIPTdir="${HOMEdir}/src/bin"
 
+echo " "
+echo "             ESP-r installation script."
+echo " "
+echo " This script will make the ESP-r system based on the source"
+echo " files found in this directory (${HOMEdir}) and install the"
+echo " result in directory ${DESTdir}."
+echo " "
+echo " If you are new to this procedure, you are strongly advised"
+echo " to consult the 'readme' file before proceeding." 
+echo " "
 
+# Compilation settings.
+mode="interactive"         # Provide feedback during installation. 
+SRCdir="${HOMEdir}/src"    # Source code directory.
+COSIMdir=" "		   # Harmonizer install directory.
+xml_support="no"           # Support for XML output.
+SQLite_support="no"        # Support for SQLite output.
+FMI_support="prompt"       # Support for FMI connectivity.
+debugging="no"             # Support for debugging symbols.
+EXE=""                     # Executable file extension.
+debian_copy="no"           # no=standard make install yes=make bincopy
+opt="-O1"                  # optimization to be applied
+FFLAGS="-I../include "     # Fortran compiler flags.
+CFLAGS="-I../include "     # C compiler flags.
+LD_FLAGS=" "               # Link-loader flags.
+platform="auto-detect"     # Installation platform.
+install_dbs="yes"          # Install databases.
+install_training="yes"     # Install training models.
+install_exes="prompt"      # Install executables.
+delete_temp_files="yes"    # Delete temporary files.
+preserve_espr_dir="yes"    # Preserve installation directory.
+gnu_version="gcc4"         # Required gcc version.
+make_msg_file=".make_msg"  # Dump messages from 'make' to file.
+compiler_version="none"    # Compiler version.
+xLibs="X11"                # Required x-library.
+enable_cosim="no"          # TRNSYS co-simulation. 
+extendedDebug="no"         # Extended debugging.
+use_intel="no"             # Use Intel compilers.
+skip_ish_calcs="no"        # Binary shading file creation.
+reuse_ish_calcs="yes"      # Map ascii shading files to binary.
+clean="yes"                # Clean object files after compilation.
+unversioned="no"           # Check for versioning info.
 
-#-----------------------------------------------------------
-# List of targets understood by bps
-#-----------------------------------------------------------
+# ESP-r executables (bld & plt not included by default because their
+# functionality is encapsulated in bps).
+programs="aco b2e bps dfs dfv cdb c2e clm e2r ecnv eco enet grd ish mfs mld mrt pdb prj res stats vew"
+programs=" ${programs} "   # Leading/ trailing space added for regexp matching.
+targets=" "		   # Will be overwitten later.
 
-# Buildable targets:
-programs="aco b2e bps dbm dfs dfv cdb c2e clm e2r ecnv eco enet grd ish mfs mld mrt pdb prj res stats vew"
-# (bld plt are not currently built)
-
-# Add leading and trailing spaces for regexp matching
-programs=" ${programs} "
-
-# default targets: empty for now
-targets=" "
-
-#-----------------------------------------------------------
-# Detect architecture. In the case of OSX 10.6 or 10.7 force it to x86_64
-# otherwise let uname -m do it.
-#-----------------------------------------------------------
-architecture=`uname -s`      # computer type e.g. Linux Darwin SunOS
+# Detect computer architecture.
+architecture=`uname -s`	   # Kernel name.
 if [ "$architecture" = "Darwin" ]; then
   machine="x86_64"
 else
-  machine=`uname -m`           # CPU  e.g. i386 x86_64  sun4u
+  machine=`uname -m`	   # Hardware name.
 fi
 
-#-----------------------------------------------------------
-# Is Stat available? assume stat will be in /bin or /usr/bin,
-# since which might also not be available.
-#-----------------------------------------------------------
-
+			   # Check if 'stat' is available.
 if [ -x /usr/bin/stat ]; then
    stat_avail="yes"
 elif [ -x /bin/stat ]; then
@@ -161,7 +80,7 @@ else
    stat_avail="no"
 fi
 
-# Command line options.
+# Process Install command line options.
 help=0
 input="no"
 if [ $# -ne 0 ]; then
@@ -177,18 +96,21 @@ if [ $# -ne 0 ]; then
         --debian)       debian_copy="yes";         shift;;
         --no_training | --no-training)
                         install_training="no";     shift;;
-        --no_dbs | --no-dbs )
+        --no_dbs | --no-dbs)
                         install_dbs="no";          shift;;
-        --no_exes | --no-exes )
+        --no_exes | --no-exes)
                         install_exes="no";         shift;;
-        --extra-debug | --extra_debug )
+        --extra-debug | --extra_debug)
                         debugging="yes"; clean=no;
                         extendedDebugging="yes";   shift;;
         --silent)       mode="silent";             shift;;
         --xml)          xml_support=yes;           shift;;
         --SQLite)       SQLite_support="yes";      shift;;
         --FMI)          FMI_support="yes";         shift;;
-        --co-sim) shift; COSIMdir=$1; input="yes";  enable_cosim="yes";  shift;;
+        --co-sim)       shift;
+                        COSIMdir=$1;
+                        input="yes";
+                        enable_cosim="yes";        shift;;
         --gcc4)         gnu_version="gcc4";        shift;;
         --opt0)         opt="-O0";        shift;;
         --opt1)         opt="-O1";        shift;;
@@ -198,23 +120,23 @@ if [ $# -ne 0 ]; then
         --X11)          xLibs="X11";               shift;;
         --GTK)          xLibs="GTK";               shift;;
         --noX)          xLibs="noX";               shift;;
-        --compiler_version |--compiler-version)
+        --compiler_version | --compiler-version)
                         shift;
                         input="yes";
                         compiler_version=$1;       shift;;
         -v | --verbose) make_msg_file="";          shift;;
-        --reuse_ish_calcs) reuse_ish_calcs="yes";    shift;;
-        --unversioned)    unversioned="yes";       shift;;
-        --quick_rebuild) clean="no";               shift;;
+        --reuse_ish_calcs) reuse_ish_calcs="yes";  shift;;
+        --unversioned)     unversioned="yes";      shift;;
+        --quick_rebuild)   clean="no";             shift;;
         --skip_ish_calcs | --skip-ish-calcs )
                         skip_ish_calcs="yes";      shift;;
-        --quick_rebuild |  --quick-rebuild )
+        --quick_rebuild | --quick-rebuild )
                         clean="no";                shift;;
         --no-svn-query | --no_svn_query)
-                        unversioned="yes";       shift;;
+                        unversioned="yes";         shift;;
         clean)          targets="${targets} clean" shift;;
         *)
-              # check if target is "buildable",
+              # Check if target is buildable.
               match="no"
               position=`expr match " $programs " ".* ${i} .*"`
               if  [ "${position}" != 0 ]; then
@@ -223,8 +145,8 @@ if [ $# -ne 0 ]; then
               else
                  # Trap unsupported arguments.
                  echo " "
-                 echo " Error: argument $i is not supported. "
-                 echo " Run ./Install --help for more information."
+                 echo " Error: argument $i is not supported."
+                 echo " Run ./Install --help."
                  echo " "
                  exit
               fi
@@ -234,11 +156,11 @@ if [ $# -ne 0 ]; then
    done
 fi
 
-# If Targets is empty, build all programs by default.
+# If Targets is empty, build all programs.
 if [ "${targets}" = " " ]; then
   targets="${programs}"
 else
-  # Add a trailing space for regexp search
+  # Add a trailing space for regexp search.
   targets="${targets} "
 fi
 
@@ -246,78 +168,68 @@ if [ "$enable_cosim" == "yes" ]; then
   targets="harmonizer harmonizerdll bpsdll"
 fi
 
-
-#-----------------------------------------------------------
-# Header.
-#-----------------------------------------------------------
+# Install script help.
 if [ $help -eq 1 ]; then
   echo " "
-  echo " USAGE: Install [OPTIONS] [NAME]"
+  echo " Usage: Install [OPTIONS] [NAME]"
   echo " "
-  echo " This installation script can be used to install"
-  echo " ESP-r on your system. To install ESP-r using the "
-  echo " standard defaults and interactive dialogues, run "
-  echo " the script without any arguements, eg:"
+  echo " This script will install all or parts of ESP-r"
+  echo " on your computer. A complete installation is"
+  echo " typically achieved by executing the script with"
+  echo " no arguments:"
   echo " "
-  echo "   $ ./Install "
+  echo "   $ ./Install"
   echo " "
-  echo " You can also specify alternate configurations "
-  echo " using the script's options. For instance, to "
-  echo " install ESP-r in your home directory, use the"
-  echo " command:"
+  echo " Alternatively, command line arguments can be used"
+  echo " to control specific aspects: some examples follow."
   echo " "
-  echo "   $ ./Install -d ~/esru"
+  echo " To install ESP-r in a directory other than the"
+  echo " default (/opt/esp-r):"
   echo " "
-  echo " For MSWindows environment using the following "
-  echo " command ensures databases are also copied"
+  echo "   $ ./Install -d <directory>"
   echo " "
-  echo "   $ ./Install -d c:/Esru "
+  echo " To build specific executables (bps, prj etc.):"
   echo " "
-  echo " It is also possible to build esp-r executables "
-  echo " individually, by specifying the name(s) of the "
-  echo " desired program(s), eg:"
+  echo "   $ ./Install <program list> "
   echo " "
-  echo "   $ ./Install bps "
+  echo " To build and install in a specific location:"
   echo " "
-  echo " or to install a module in a specific location"
+  echo "   $ ./Install -d <directory> <program list>"
   echo " "
-  echo "   $ ./Install -d ~/esru bps "
+  echo " To invoke the script in silent mode:"
   echo " "
-  echo " The installation script also supports silent "
-  echo " (non-interactive) usage, using the '--silent' "
-  echo " command line argument. Any of the command-line "
-  echo " arguments specified below can be used in "
-  echo " combination with the '--silent' option."
+  echo  "  $ ./Install --silent"
   echo " "
-  echo " ARGUMENTS: "
+  echo " Command line arguments:"
   echo " "
-  echo "    <NAME> to install one or more named modules (e.g."
-  echo "           'Install clm' for the module clm)"
+  echo "    <NAME>"
+  echo "           Install one or more named programs"
+  echo "           (e.g.'./Install clm')"
   echo " "
-  echo "    --compiler-version <STRING>: Append <STRING> to the default"
-  echo "        compiler binaries. For instance, to invoke the compiler"
-  echo "        binaries gcc-4.5, g++-4.5, and gfortran-4.5, specify "
-  echo "        '--compiler_version -4.5'."
+  echo "    --compiler-version <STRING>"
+  echo "           Append STRING to the default compiler"
+  echo "           (e.g. '--compiler_version -4.3')"
   echo " "
-  echo "    -d <PATH>,  --destination <PATH>: Install ESP-r in"
-  echo "        <PATH>/esp-r directory. The default path is:"
-  echo "        ${DESTdir}."
+  echo "    -d <PATH>, --destination <PATH>"
+  echo "           Install ESP-r components in directory PATH"
+  echo "           (default is ${DESTdir})."
   echo " "
-  echo "    --debug: Include debugging symbols in ESP-r binaries:"
-  echo "        (the default is no debugging symbols). This option also"
-  echo "        preserves the object files, allowing ESP-r to be"
-  echo "        quickly rebuilt during development."
+  echo "    --debug"
+  echo "           Include debugging symbols in ESP-r binaries"
+  echo "           (preserves object files allowing an executable"
+  echo "           to be rapidly rebuilt during development)."
   echo " "
-  echo "    --extra-debug: Enable extended debugging options. Adds"
-  echo "        pedantic range checking, floating-point exception "
-  echo "        handling and stack dump capabilities to ESP-r binaries."
-  echo "        This option is only supported by the intel and gcc4"
-  echo "        compilers."
+  echo "    --extra-debug"
+  echo "           Adds pedantic range checking, floating-point"
+  echo "           exceptionhandling and stack dump capabilities"
+  echo "           (supported only by Intel and gcc4 compilers)."
   echo " "
-  echo "    --force: Overwrite a corrupted installation. "
+  echo "    --force"
+  echo "           Overwrite a corrupted installation."
   echo " "
-  echo "    --gcc4: Use the GCC4 compilers (gcc, g++ and gFortran)."
-  echo "         (this option is enabled by default)."
+  echo "    --gcc4"
+  echo "           Use the gcc4 compilers (gcc, g++ and gFortran)."
+  echo "           (the default)."
   echo " "
   echo "    --opt0: no compiler optimization"
   echo "    --opt1: -O1 compiler optimization ~x1.5 speed"
@@ -326,128 +238,111 @@ if [ $help -eq 1 ]; then
   echo " "
   echo "    -h, --help:  Display this help message."
   echo " "
-  echo "    --intel: Use the intel compiler suite (icc,ifort,icpc)."
+  echo "    --intel"
+  echo "           Use the Intel compiler suite (icc,ifort,icpc)."
   echo " "
-  echo "    --no-dbs: Skip installation of database files."
+  echo "    --no-dbs"
+  echo "           Skip installation of database."
   echo " "
-  echo "    --no-exes: Do not copy executable files into the"
-  echo "        installation directory."
+  echo "    --no-exes"
+  echo "           Do not copy executable files to the"
+  echo "           installation directory."
   echo " "
-  echo "    --no-training: Skip installation of training models."
+  echo "    --no-training"
+  echo "           Skip installation of training models."
   echo " "
-  echo "    --no-svn-query: Do not query svn for versioning"
-  echo "        information. If specified, ESP-r binaries will not"
-  echo "        report the svn source they are built from. This "
-  echo "        option may speed-up the installation procedure when"
-  echo "        the svn repository temporarly unavailable."
+  echo "    --no-svn-query"
+  echo "           Do not query svn for versioning information"
+  echo "           (useful if the svn repository is unavailable)."
   echo " "
-  echo "    --skip-ish-calcs: Skip recalculation of shading files "
-  echo "        associated with training and validation exemplars."
-  echo "        This option significantly shortens the time required"
-  echo "        to install training and validation files, but shading"
-  echo "        files must be updated manually."
+  echo "    --skip-ish-calcs"
+  echo "           Skip recalculation of shading files associated"
+  echo "           with training and validation models."
   echo " "
-  echo "    --reuse_ish_calcs: Converts existing ascii shading files "
-  echo "        associated with training and validation exemplars, otherwise"
-  echo "        recalculate shading and insolation. This shortens the time"
-  echo "        required to install training and validation files."
+  echo "    --reuse_ish_calcs"
+  echo "           Convert existing ascii shading files associated"
+  echo "           with training and validation models."
   echo " "
-  echo "    --silent: Invoke the silent (non-interactive) installation"
-  echo "        mode. Default options will be selected, unless "
-  echo "        alternatives are specified in command-line parameters."
+  echo "    --silent"
+  echo "           Invoke a silent installation using default"
+  echo "           options (perhaps replaced by command-line "
+  echo "           alternatives)."
   echo " "
-  echo "    --X11, --GTK, --noX:"
-  echo "        Build ESP-r using the specified graphics library (that",
-  echo "        is: X11, GTK or noX for a console-only application)."
+  echo "    --X11, --GTK, --noX"
+  echo "           Use the specified graphics library."
   echo " "
-  echo "    --xml: Compile bps with support for direct export of results"
-  echo "        in xml and csv formats. Requires the GNU libxml2 and"
-  echo "        libstdc++ libraries."
+  echo "    --xml"
+  echo "           Compile bps with support for results exporting"
+  echo "           in xml and csv formats (requires the GNU libxml2"
+  echo "           and libstdc++ libraries)."
   echo " "
-  echo "    --SQLite: Compile bps with support for SQLite export of results"
-  echo "        in an SQLite database. Requires the libsqlite3.so library."
-  echo "        **EXPERIMENTAL**"
+  echo "    --SQLite"
+  echo "           Compile bps with support for results exporting"
+  echo "           to a SQLite database (requires the libsqlite3.so"
+  echo "           library - a work in progress)."
   echo " "
-  echo "    --FMI: Force prj and bps to try to compile with Functional Mockup"
-  echo "        Interface (FMI) functionality. This argument prevents checks"
-  echo "        for FMILibrary resources in standard locations; it is left to"
-  echo "        the user to ensure that headers/libraries are available on "
-  echo "        the compiler/linker paths. See FMI developers guide "
-  echo "        doc/manual/FMI/Developers.txt for more details."
+  echo "    --FMI"
+  echo "           Add Functional Mockup Interface functionality"
+  echo "           to prj and bps (the required header files and"
+  echo "           libraries must be are available - see the FMI"
+  echo "           developers guide in doc/manual/FMI/Developers)."
   echo " "
-  echo "    --co-sim <PATH>: Compile Harmonizer.exe, Harmonizer.dll and bps.dll"
-  echo "        for co-simulation with TRNSYS. Harmonizer.exe and Harmonizer.dll"
-  echo "        will be installed in <PATH> directory, and bps.dll will be" 
-  echo "        installed in the same directory as the rest of ESP-r."
-  echo "        Only works under MinGW."
+  echo "    --co-sim <PATH>"
+  echo "           Compile Harmonizer.exe, Harmonizer.dll and bps.dll"
+  echo "           for ESP-r/ TRNSYS co-simulation and install the"
+  echo "           executable in PATH (works only under MinGW)."
   echo " "
-  echo "    -v, --verbose: Print compilation messages to screen."
+  echo "    -v, --verbose"
+  echo "           Print compilation messages to screen."
   echo " "
   echo " Notes:"
   echo " "
-  echo " 1. The latest ESP-r release (12.7) no longer compiles with GCC3 / g77"
-  echo "    which are now regarded as obsolete. Use GCC4 or GCC5 / gFortran compilers"
-  echo "    instead. The current reference version is GCC 5.4.0"
+  echo " 1. From ESP-r Version 12.3 on it is not possible to compile"
+  echo "    with gcc3/ g77, which are obsolete. Use gcc4/ gFortran."
   echo " "
-  echo " 2. There are two versions of ESP-r - the standard full distribution"
-  echo "    based on the X11 graphic libraries and a beta version which uses the"
-  echo "    GTK graphic libraries (but which lacks a few facilities)."
+  echo " 2. There are two flavours of ESP-r: the full distribution"
+  echo "    based on X11 graphic libraries and version based on"
+  echo "    GTK graphic libraries that lacks some features."
   echo " "
   exit
 fi
 
-
-# check that xml support is available
+# xml support.
 if [ "$xml_support" = "yes" ] || [ "$xml_support" = "prompt" ]; then
-   # check for libxml2 headers on system
    if [ ! -d /usr/include/libxml2 ] && [ ! -d /usr/local/include/libxml2 ]; then
-      # Libraries not found. Disable XML support
       xml_support="no"
       xml_libs_found="no"
-      # If runnning silently, warn user.
       if [ "$mode" = "silent" ]; then
          echo " "
-         echo " Warning: Library libxml2 could not be found"
-         echo " in /usr/include or /usr/local/include "
-         echo " "
-         echo " XML support disabled."
+         echo " Warning: libxml2 Library not found in /usr/include"
+         echo " or /usr/local/include - xml output support disabled."
       fi
    else
-    # Add XML include files to include paths
     xml_libs_found="yes"
     LIBXML2_INCLUDE="-I/usr/include -I/usr/include/libxml2 -I/usr/local/include/libxml2 -I/usr/include/libxslt -I/local/include/libxslt"
     echo " "
-    echo " XML output support enabled."
-    # xml support may optionally include support for xslt & exslt. Check
-    # that libraries are available
-    #
-    # This code has only been tested with GNU ld.
-    #
+    echo " xml output support enabled."
+    # xml support may optionally include support for xslt & exslt
+    # (following code tested only with GNU ld).
     ld_output=`ld -lxslt`
     case $ld_output in
       "") xsl_libs_available="yes";;
       *)  xsl_libs_available="no";;
     esac
-
    fi
 fi
 
-# check that SQLite support is available
+# SQLite support.
 if [ "$SQLite_support" = "yes" ]; then
-   # check for libsqlite3.so library on system
    ld_output=`ld -lsqlite3`
    case $ld_output in 
      "" ) SQLite_libs_found="yes";
           if [ "$xml_support" = "no" ]; then
-             # XML not installed, Disable SQLite support
              SQLite_support="no"
-             # If running silently, warn user.
              if [ "$mode" = "silent" ]; then
                 echo " "
-                echo " Warning: SQLite requires the XML option"
-                echo " to be enabled"
-                echo " "
-                echo " SQLite support disabled."
+                echo " Warning: SQLite requires the xml option which"
+                echo " has not been enabled. SQLite support disabled."
              fi
           else
             LIBSQLITE3_INCLUDE="-I/usr/lib -lsqlite3"
@@ -457,31 +352,24 @@ if [ "$SQLite_support" = "yes" ]; then
           SQLite_support="no"; 
           if [ "$mode" = "silent" ]; then
              echo " ";
-             echo " Warning: Library libsqlite3 could not be found";
-             echo " in /usr/lib ";
-             echo " ";
-             echo " SQLite support disabled.";
+             echo " Warning: Library libsqlite3 not found in";
+             echo " /usr/lib. SQLite support disabled.";
           fi
           ;;
    esac
 fi
 
-# Check that FMI support is available.
+# FMI support.
 if [ "$FMI_support" = "prompt" ]; then
-  found=true
-# Check for library. 
+  found=true 
   if [ ! -f "/usr/lib/libfmilib_shared.so" ]; then
     found=false
-# If runnning silently, warn user.
     if [ "$mode" = "silent" ]; then
       echo " "
-      echo " Warning: FMIL library libfmilib_shared.so could not be found"
-      echo " in /usr/lib"
-      echo " "
-      echo " FMI support disabled."
+      echo " Warning: FMI library libfmilib_shared.so not"
+      echo " found in /usr/lib. FMI support disabled."
     fi
   fi
-# Check for headers.
   if [ ! -d "/usr/include/FMI" ] && 
      [ ! -d "/usr/include/FMI1" ] &&
      [ ! -d "/usr/include/FMI2" ] &&
@@ -489,13 +377,10 @@ if [ "$FMI_support" = "prompt" ]; then
      [ ! -f "/usr/include/fmilib.h" ] &&
      [ ! -f "/usr/include/fmilib_config.h" ]; then
     found=false
-# If runnning silently, warn user.
     if [ "$mode" = "silent" ]; then
       echo " "
-      echo " Warning: FMIL header(s) could not be found"
-      echo " in /usr/include"
-      echo " "
-      echo " FMI support disabled."
+      echo " Warning: FMI header files not found in"
+      echo " in /usr/include. FMI support disabled."
     fi
   fi
   if $found; then
@@ -504,19 +389,12 @@ if [ "$FMI_support" = "prompt" ]; then
     FMI_libs_found="no"
   fi
 elif [ "$FMI_support" = "yes" ]; then
-# If FMI_support is yes, do not check for FMIL resources, assume they
-# are present somewhere on the linker/compiler paths.
+  # Assume FMI library resources are within linker/ compiler paths.
   FMI_libs_found="assume"
 fi
 
-#--------------------------------------------------------------------
-# Error trap command-line options
-#--------------------------------------------------------------------
-
-#check that platform can be successfully detected.
+# Determine computer architecture.
 if [ "$platform" = "auto-detect" ]; then
-   # auto-dectectable architectures - add more as additional platforms
-   # become available.
    if [ "$architecture" != "Linux" ] &&
       [ "$architecture" != "CYGWIN_NT-5.1" ] &&
       [ "$architecture" != "CYGWIN_NT-5.0" ] &&
@@ -534,58 +412,39 @@ if [ "$platform" = "auto-detect" ]; then
       [ "$architecture" != "Darwin" ] &&
       [ "$architecture" != "SunOS" ]; then
       platform="prompt";
-      # Auto-detection of platform is not supported
-      # If in silent mode, inform user and quit.
       if [ "$mode" = "silent" ]; then
          echo " "
-         echo " ERROR: could not interpret machine architecture (${architecture})"
-         echo " Specify using the --platform switch, or run script in interactive"
-         echo " mode."
-         echo " "
+         echo " Error: could not determine computer architecture"
+         echo " ${architecture}. Specify using the --platform switch"
+         echo " or run script in interactive mode."
          exit
        fi
-
    fi
 fi
 
-
-#----------------------------------------------------------------------
-#  Prompt user for basic options if script is running interactively
-#
-#  - We could add more options here, and perhaps provide novice/expert
-#    modes...
-#----------------------------------------------------------------------
-
+# Prompt user for basic options if script is running interactively.
 if [ "$mode" = "interactive" ]; then
    echo " "
    echo " Please answer the following questions. Default answers"
-   echo " are in []. To accept the default, press return. "
-
-
-   # Check if platform auto-dectection is enabled, and confirm with user
+   echo " are in []; press return to accept."
    if [ "${platform}" = "auto-detect" ]; then
       YN=none;
       echo " "
-      echo " Your computer identifies itself as ${architecture} "
-      echo " and processor as ${machine}. "
-      echo " Is this information correct (y/n)? [y]"
-
+      echo " Your computer identifies itself as ${architecture}"
+      echo " with ${machine} processor. "
+      echo " Is this correct (y/n)? [y]"
       while [ "$YN" != "y" ] && [ "$YN" != "n" ] && [ "$YN" != "" ]
       do
          if [ "$YN" != "none" ]; then
-            echo ""
-            echo "Please answer yes or no  (y/n) [y]."
+            echo " "
+            echo "Please answer 'y' or 'n' [y]."
          fi
          read YN
       done
-
       if [ "$YN" = "n" ]; then
-         # user must be prompted for platform
-         platform="prompt"
+         platform="prompt"  # Ask user.
       fi
    fi
-
-   #Platform auto-detection disabled, or user wants to overide
    if [ "${platform}" = "prompt" ]; then
       A=none;
       while [ $A != "1" ] &&
@@ -596,18 +455,17 @@ if [ "$mode" = "interactive" ]; then
             [ $A != "6" ]
       do
          if [ $A != "none" ]; then
-            echo ""
-            echo " Please choose a type from the list (1-5)."
-            echo ""
+            echo " "
+            echo " Please choose an option from the list."
          fi
-         echo " Computer type: "
-         echo "  (1) Sun / solaris"
+         echo " "
+         echo " Computer type:"
+         echo "  (1) Solaris"
          echo "  (2) Linux"
          echo "  (3) Cygwin"
-         echo "  (4) MinGW (native Windows)"
+         echo "  (4) MinGW"
          echo "  (5) MacOS X (10.4 or later)"
          read A
-
          # Use the 'known_host' keyword to permit compilation
          # on frequently used, nonstandard hosts.
          if [ "$A" = "known_host" ]; then
@@ -618,11 +476,10 @@ if [ "$mode" = "interactive" ]; then
             1) custom_host="nrn7"
                A=1
                mode="silent";;
-            *) echo "Error: Unknown host"
+            *) echo "Error: unknown host."
                exit;;
           esac
          fi
-
       done
       case "$A" in
          1) platform=sun;;
@@ -633,13 +490,7 @@ if [ "$mode" = "interactive" ]; then
       esac
    fi
 fi
-
-#-----------------------------------------------------------
-# If auto-detection is active, interpret architecture
-#-----------------------------------------------------------
 if [ "$platform" = "auto-detect" ]; then
-   # Add more architectures here as they become available.
-   # Note: $architecture has been error-trapped above.
    case $architecture in
       Linux)                           platform="linux";;
       CYGWIN_NT-5.2  | CYGWIN_NT-5.1  | CYGWIN_NT-5.0  | CYGWIN_NT-6.0 | CYGWIN_NT-6.1 | CYGWIN_NT-6.1-WOW64 | CYGWIN_NT-10.0 ) platform="cygwin";;
@@ -649,16 +500,12 @@ if [ "$platform" = "auto-detect" ]; then
    esac
 fi
 
-#-----------------------------------------------------------
-#  Architcture is now known. If architecture is sun, prompt
-#  for compiler. Otherwise, use GNU set.
-#-----------------------------------------------------------
+# If architecture is sun, prompt for compiler; otherwise use the GNU set.
 if [ "$mode" = "interactive" ]; then
   if [ "$platform" = "sun" ] || [ "$platform" = "linux" ]; then
     compiler="prompt"
   fi
 fi
-
 if [ "$compiler" != "prompt" ]; then
   if [ "$use_intel" = "yes" ]; then
     compiler="intel"
@@ -666,25 +513,23 @@ if [ "$compiler" != "prompt" ]; then
     compiler="GNU"
   fi
 fi
-
 if [ "$compiler" = "prompt" ] && [ "$mode" = "interactive" ]; then
   A=none;
   echo ""
-  echo " ESP-r can be built with the Sun Fortran 90, GNU or "
-  echo " intel compilers."
+  echo " ESP-r can be built with Sun Fortran 90, GNU or"
+  echo " Intel compilers."
   while [ $A != "1" ] &&
         [ $A != "2" ] &&
         [ $A != "3" ]
   do
      if [ $A != "none" ]; then
-        echo ""
-        echo " Please choose a compiler from the list [2]."
-        echo ""
+        echo " "
+        echo " Please select a compiler [2]."
      fi
-     echo " Compiler: "
-     echo "  (1) Sun fortran 90 (cc and f90)"
-     echo "  (2) GNU fortran (gcc 4.X and gfortran)"
-     echo "  (3) Intel fortran (icc, icpc and ifort)"
+     echo " Select a compiler:"
+     echo "  (1) Sun 90 (cc and f90)"
+     echo "  (2) GNU (gcc 4.X and gfortran)"
+     echo "  (3) Intel (icc, icpc and ifort)"
      read A
      if [ "$A" = "" ]; then
        A="2"
@@ -700,43 +545,34 @@ else
   echo " The $compiler compiler set will be used."
 fi
 
-#-----------------------------------------------------------
-# Prompt user for inclusion of H3Kreports (XML output)
-# on supported platforms (presently linux/cygwin/mingw!)
-#-----------------------------------------------------------
+# Prompt user for inclusion of H3K reports (in xml output)
+# on supported platforms (presently linux, cygwin and mingw).
 if [ "$mode" = "interactive" ]; then
-
    if [ "$platform" = "linux" ]  ||
       [ "$platform" = "cygwin" ] ||
       [ "$platform" = "mingw" ]  ||
       [ "$platform" = "mac" ]  ||
       [ "$platform" = "sun" ] ; then
-      # XML available on platform
       if [ "${xml_libs_found}" = "no" ]; then
-
-         #LIBXML2 libraries not available.
          echo " "
-         echo " The libxml2 library does not appear to be installed"
-         echo " on this system. The library could not be found in"
-         echo " /usr/include or /usr/local/include. Support for XML"
-         echo " output will be disabled, but the rest of the ESP-r"
-         echo " installation will proceed normally. "
+         echo " Error: libxml2 library not found in /usr/include"
+         echo " or /usr/local/include. Support for xml output will be"
+         echo " disabled but the rest of the ESP-r installation will"
+         echo " proceed normally."
       else
-         # Libraries were found. Prompt user for inclusion.
          B="none"
          while [ "$B" != "y" ] && [ "$B" != "n" ] && [ "$B" != "Y" ] && [ "$B" != "N" ]
          do
             if [ "$B" != "none" ]; then
                echo ""
-               echo "Please answer yes or no (y/n)."
+               echo "Please answer 'y' or 'n'."
             fi
             echo " "
-            echo " Install with XML output support? This may "
+            echo " Install with xml output support for bps? This may"
             case "${xml_support}" in
-              yes) echo " significantly increase simulation run-time. (y/n) [y]";;
-              *)   echo " significantly increase simulation run-time. (y/n) [n]";;
+              yes) echo " significantly increase simulation run-time (y/n). [y]";;
+              *)   echo " significantly increase simulation run-time (y/n). [n]";;
             esac
-
             read B
             if [ "$B" = "" ]; then
               case "${xml_support}" in
@@ -746,31 +582,26 @@ if [ "$mode" = "interactive" ]; then
             fi
          done
          if [ "$B" = "y" ]; then
-            # Enable xml
             xml_support="yes"
-            echo " XML output enabled for bps"
+            echo " xml output enabled for bps."
 
-            # if xml install true prompt for SQLite support.
-            # SQLite is not available if XML reporting is not installed
+            # SQLite not available if xml reporting is not installed.
             if [ "${SQLite_libs_found}" = "no" ]; then
-               # LIBSQLite libraries not available.
                echo " "
-               echo " The libsqlite3 library does not appear to be installed"
-               echo " on this system. The library could not be found in"
-               echo " /usr/lib. Support for experimental SQLite output will "
-               echo " be disabled, but the rest of the ESP-r installation will "
-               echo " proceed normally. "
+               echo " The libsqlite3 library could not be found in"
+               echo " /usr/lib. Support for SQLite output will be"
+               echo " disabled but the rest of the ESP-r installation"
+               echo " will proceed normally. "
             else
-               # Libraries were found. Prompt user for inclusion.
                B="none"
                while [ "$B" != "y" ] && [ "$B" != "n" ] && [ "$B" != "Y" ] && [ "$B" != "N" ]
                do
                   if [ "$B" != "none" ]; then
-                     echo ""
-                     echo "Please answer yes or no (y/n)."
+                     echo " "
+                     echo "Please answer 'y' or 'n'."
                   fi
                   echo " "
-                  echo " Install with experimental SQLite output support? (y/n) [n] "
+                  echo " Install with experimental SQLite output support (y/n)? [n]"
                   read B
                   if [ "$B" = "" ]; then
                     B="n"
@@ -779,82 +610,59 @@ if [ "$mode" = "interactive" ]; then
                if [ "$B" = "y" ]; then
                   # Enable xml
                   SQLite_support="yes"
-                  echo " SQLite output enabled for bps"
+                  echo " SQLite output enabled in bps."
                else
-                  # Disable SQLite
                   SQLite_support="no"
-                  echo " SQLite output excluded from bps"
+                  echo " SQLite output disabled in bps."
                fi
-               echo " "
             fi
          else
-            # Disable XML
             xml_support="no"
-            echo " XML output excluded from bps"
+            echo " XML output disabled in bps."
          fi
       fi
    else
-      # XML not available on platform.
-      echo " "
-      echo " XML output support. is presently not available "
-      echo " on ${platform}. XML support disabled."
+      echo " xml output support is not available on ${platform}"
+      echo " and is therefore disabled in bps."
       xml_support="no"
    fi
 else
-  # Silent mode: Disable XML by default
   if [ "$xml_support" = "prompt" ]; then
     xml_support="no"
   fi
 fi
 
-#----------------------------------------------------------------------
-# Prompt user for FMI support
-#----------------------------------------------------------------------
-
+# FMI support.
 if [ "$mode" = "interactive" ]; then
-
   if [ "${FMI_libs_found}" = "no" ]; then
-
-    #FMI libraries not available.
     echo " "
-    echo " FMILibrary resources could not be found"
-    echo " on this system. Please follow instructions in"
-    echo " manual/FMI/Users.txt to install FMILibrary."
-    echo " FMI will be disabled, but the rest of the ESP-r"
-    echo " installation will proceed normally. "
+    echo " FMI library resources could not be located. Please"
+    echo " follow instructions in manual/FMI/Users.txt. FMI"
+    echo " will be disabled but the rest of the ESP-r"
+    echo " installation will proceed normally."
     echo
     FMI_support="no"
   elif [ "${FMI_libs_found}" = "yes" ]; then
-
-    # Supported platforms/architectures:
     if ! [ "$platform" = "linux" ] && 
        ! [ "$machine" = "x86_64" ] &&
        ! [ "$machine" = "i386" ] &&
        ! [ "$machine" = "i686" ]; then
-      echo 
-      echo " *** WARNING *** "
-      echo
-      echo " FMI is presently not supported on "
-      echo " $platform $machine. You can enable"
-      echo " the functionality, but please be aware"
-      echo " that this may not work as expected."
-      echo " We recommend that only advanced users"
+      echo " "
+      echo " FMI is not supported on $platform $machine."
+      echo " It is recommended that only advanced users"
       echo " proceed with FMI enabled."
       echo 
     fi
-
-    # Libraries were found. 
     if [ "$FMI_support" = "prompt" ]; then
-    # Prompt user for inclusion.
       B="none"
       while [ "$B" != "y" ] && [ "$B" != "n" ] && [ "$B" != "Y" ] && [ "$B" != "N" ]
       do
         if [ "$B" != "none" ]; then
-          echo ""
-          echo "Please answer yes or no (y/n)."
+          echo " "
+          echo "Please answer 'y' or 'n'."
         fi
         echo " "
-        echo " Install with FMI support (y/n) [n]? "
+        echo " Install with FMI support (y/n)? [n]"
         read B
         if [ "$B" = "" ]; then
           case "${FMI_support}" in
@@ -864,75 +672,56 @@ if [ "$mode" = "interactive" ]; then
         fi
       done
       if [ "$B" = "y" ]; then
-        # Enable FMI
         FMI_support="yes"
-        echo " FMI enabled"
+        echo " "
+        echo " FMI enabled."
       else
-        # Disable FMI
         FMI_support="no"
-        echo " FMI disabled"
+        echo " "
+        echo " FMI disabled."
       fi
-      echo " "
     fi
   elif [ "${FMI_libs_found}" = "assume" ]; then
     echo
-    echo " FMILibrary headers and library will be assumed"
-    echo " to be present somewhere on the compiler/linker"
-    echo " paths. No checks will be made for these resources"
-    echo " before attempting to compile with FMI support"
-    echo " enabled."
-    echo
+    echo " FMI headers and library are assumed to be"
+    echo " within the compiler/linker paths. No checks"
+    echo " will be made for these resources before"
+    echo " compiling with FMI support enabled."
   fi
 else
-  # Silent mode: Disable FMI by default
   if [ "$FMI_support" = "prompt" ]; then
     FMI_support="no"
   fi
 fi
 
-#----------------------------------------------------------------------
-# Prompt for graphics libraries
-#----------------------------------------------------------------------
-
+# Graphics libraries
 if [ "$mode" = "interactive" ]; then
-
-  # Which modes are actually available, given our platform/compiler
-  # combination?
   GTK_prompt="1"
   X11_prompt="2"
   noX_prompt="3"
   default="$X11_prompt"
-
-  # Iif [ "$compiler" = "sunF90" ];  then
-  # I  # Is GTK really incompatable with f90 on sun?
-  # I  GTK_prompt="-"
-  # Ifi
-
   if [ "$platform" = "mingw" ]; then
-    # MinGW by definition excludes X11.
-    X11_prompt="-"
+    X11_prompt="-"   # MinGW excludes X11.
     default="$noX_prompt"
   fi
-
   A=none;
   while [ "$A" != "$GTK_prompt" ] &&
         [ "$A" != "$X11_prompt" ] &&
         [ "$A" != "$noX_prompt" ]
   do
      if [ "$A" != "none" ]; then
-        echo ""
-        echo " Please choose a graphics library from the list."
-        echo ""
+        echo " "
+        echo " Please choose a graphics library."
      fi
      echo " Graphics library: [$default] "
      if [ "$GTK_prompt" != "-" ]; then
-        echo "  (1) GTK graphics library";
+        echo "  (1) GTK";
      fi
      if [ "$X11_prompt" != "-" ]; then
-        echo "  (2) X11 graphics library";
+        echo "  (2) X11";
      fi
      if [ "$noX_prompt" != "-" ]; then
-        echo "  (3) no graphics library (text-only application)";
+        echo "  (3) None (text-only)";
      fi
      read A
      if [ "$A" = "-" ]; then
@@ -948,8 +737,7 @@ if [ "$mode" = "interactive" ]; then
      "$noX_prompt") xLibs=noX;;
   esac
 else
-  # Assume X11 is available on all systems, except mingw
-  # Xll is defaulted to
+  # Assume X11 is available on all systems except mingw.
   if [ "$platform" = "mingw" ]; then
     xLibs=noX
     echo " "
@@ -959,21 +747,14 @@ else
     echo " The $xLibs libraries will be used."
   fi
 fi
-
-#---------------------------------------------------------
-# Prepend approprate grapics library to target list
-#----------------------------------------------------------
-
+# Prepend grapics library to target list.
 case $xLibs in
   X11) targets=" libX11 $targets";;
   GTK) targets=" libGTK $targets";;
   noX) targets=" libnoX $targets";;
 esac
 
-#----------------------------------------------------------------------
-# Prompt for small medium large header files
-#----------------------------------------------------------------------
-
+# Debugging symbols required?
 if [ "$mode" = "interactive" ]; then
 
   # Which modes are actually available, given our platform/compiler
@@ -1017,18 +798,21 @@ if [ "$mode" = "interactive" ]; then
        cp ${SRCdir}/include/cfd_small.h ${SRCdir}/include/cfd.h
        cp ${SRCdir}/include/control_small.h ${SRCdir}/include/control.h
        cp ${SRCdir}/include/net_flow_small.h ${SRCdir}/include/net_flow.h
+       cp ${SRCdir}/include/tdf2_small.h ${SRCdir}/include/tdf2.h
        ;;
      "$medium_prompt") 
        cp ${SRCdir}/include/building_medium.h ${SRCdir}/include/building.h
        cp ${SRCdir}/include/cfd_medium.h ${SRCdir}/include/cfd.h
        cp ${SRCdir}/include/control_medium.h ${SRCdir}/include/control.h
        cp ${SRCdir}/include/net_flow_medium.h ${SRCdir}/include/net_flow.h
+       cp ${SRCdir}/include/tdf2_medium.h ${SRCdir}/include/tdf2.h
        ;;
      "$large_prompt") 
        cp ${SRCdir}/include/building_large.h ${SRCdir}/include/building.h
        cp ${SRCdir}/include/cfd_large.h ${SRCdir}/include/cfd.h
        cp ${SRCdir}/include/control_large.h ${SRCdir}/include/control.h
        cp ${SRCdir}/include/net_flow_large.h ${SRCdir}/include/net_flow.h
+       cp ${SRCdir}/include/tdf2_large.h ${SRCdir}/include/tdf2.h
        ;;
   esac
   complexity="$A"
@@ -1037,6 +821,7 @@ else
   cp ${SRCdir}/include/cfd_large.h ${SRCdir}/include/cfd.h
   cp ${SRCdir}/include/control_large.h ${SRCdir}/include/control.h
   cp ${SRCdir}/include/net_flow_large.h ${SRCdir}/include/net_flow.h
+  cp ${SRCdir}/include/tdf2_large.h ${SRCdir}/include/tdf2.h
 fi
 
 #---------------------------------------------------------
@@ -1051,20 +836,16 @@ if [ "$mode" = "interactive" ]; then
   do
     if [ "$B" != "none" ]; then
         echo ""
-        echo " Please answer yes or no (y/n)."
+        echo " Please answer 'y' or 'n'"
     else
       echo " "
-      echo " ESP-r can optionally retain debugging symbols and "
-      echo " object files for use with a debugging program such"
-      echo " as GDB."
-      echo " "
+      echo " The installaion can retain debugging symbols and object"
+      echo " files for use with a debugging program such as gdb."
     fi
-
     case "${debugging}" in
-      yes) echo " Retain debugging symbols? (y/n) [y]";;
-      *)   echo " Retain debugging symbols? (y/n) [n]";;
+      yes) echo " Retain debugging symbols (y/n)? [y]";;
+      *)   echo " Retain debugging symbols (y/n)? [n]";;
     esac
-
     read B
     if [ "$B" = "" ]; then
       case "${debugging}" in
@@ -1079,20 +860,18 @@ if [ "$mode" = "interactive" ]; then
     debugging="no"
   fi
 
-
-  # System databases
+  # Installation of databases required?
   B="none"
   while [ "$B" != "y" ] && [ "$B" != "n" ] && [ "$B" != "Y" ] && [ "$B" != "N" ]
   do
     if [ "$B" != "none" ]; then
-        echo ""
-        echo "Please answer yes or no (y/n)."
+        echo " "
+        echo "Please answer 'y' or 'n'."
     fi
       case "${install_dbs}" in
-      yes) echo " Install ESP-r database files (needed if installing training models) ? (y/n) [y]";;
-      *)   echo " Install ESP-r database files (needed if installing training models) ? (y/n) [n]";;
+      yes) echo " Install databases (y/n)? [y]";;
+      *)   echo " Install databases (y/n)? [n]";;
     esac
-
     read B
     if [ "$B" = "" ]; then
       case "${install_dbs}" in
@@ -1107,19 +886,18 @@ if [ "$mode" = "interactive" ]; then
     install_dbs="no"
   fi
 
-  # Training files
+  # Install training models?
   B="none"
   while [ "$B" != "y" ] && [ "$B" != "n" ] && [ "$B" != "Y" ] && [ "$B" != "N" ]
   do
     if [ "$B" != "none" ]; then
         echo ""
-        echo "Please answer yes or no (y/n)."
+        echo "Please answer 'y' or 'n'."
     fi
       case "${install_training}" in
-      yes) echo " Install training files? (y/n) [y]";;
-      *)   echo " Install training files? (y/n) [n]";;
+      yes) echo " Install training models (y/n)? [y]";;
+      *)   echo " Install training models (y/n)? [n]";;
     esac
-
     read B
     if [ "$B" = "" ]; then
       case "${install_training}" in
@@ -1133,29 +911,18 @@ if [ "$mode" = "interactive" ]; then
   else
     install_training="no"
   fi
-
 fi
 
-#---------------------------------------------------------
-# Assign universal flags and variables.
-#---------------------------------------------------------
-#Enbable debug mode
 if [ "$debugging" = "yes" ]; then
     debug_flag="-g"
 else
     debug_flag=" "
 fi
 
-#---------------------------------------------------------
-# Assign architecture-specific flags
-#---------------------------------------------------------
-
-#ESP-r related header files
+# Header files.
 LOCAL_INCLUDES="-I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports"
 
-
-#---------- MCTYPE ---------------------------------
-# Create short strings for architecture types
+# Architecture types.
 case $platform in
    sun)      MCTYPE=sun ;;
    linux)    MCTYPE=lin ;;
@@ -1166,30 +933,22 @@ case $platform in
    nrn7)     MCTYPE=sun;;
 esac
 
-
-#---------------- XINSTALLDIR ----------------------
-# Default location of x libraries
-
+# Location of x libraries.
 case $xLibs in
   GTK) XINSTALLDIR="`pkg-config gtk+-2.0 --cflags --libs`";;
   X11) X11_found="no"
        case $platform in
          sun)
             XDEFDIR="/usr/openwin"
-            # Check if the libraries are in /usr/openwin
             if [ -d /usr/openwin/lib/X11 ]; then
                X11_found="yes"
                XINSTALLDIR="/usr/openwin"
             fi
             ;;
          *)
-            # linux/mac/cygwin/arm: we'll need to search for
-            # the X11 libraries in a number of possible
-            # locations:
-
+            # linux/mac/cygwin/arm: search for the X11 libraries.
             XDEFDIR="/usr/X11R6 or /usr"
-
-            # Try /usr/X11R6 - legacy location on monolithic X locations
+            # Try /usr/X11R6
             case $machine in
               x86_64)
                 case $platform in
@@ -1239,7 +998,7 @@ case $xLibs in
                 fi;;
             esac
 
-            # Try /usr --- location on new linux distros with 'modular X'
+            # Try /usr
             if [ -d /usr/lib/X11 ] && [ "$X11_found" = "no" ]; then
               X11_found="yes"
               XINSTALLDIR="/usr"
@@ -1248,28 +1007,23 @@ case $xLibs in
               X11_found="yes"
               XINSTALLDIR="/usr/lib64"
             fi
-
          ;;
        esac
-
-       # if X11 still hasn't been found, ask user where it's
-       # installed.
-
+       # If X11 not found, ask user for location.
        if [ "$X11_found" = "no" ] && [ "$mode" = "interactive" ]; then
-         echo " The X11 libraries could not be found in the defualt"
-         echo " location ($XDEFDIR)."
-
+         echo " "
+         echo " The X11 libraries could not be found in ($XDEFDIR)."
          try_agian="y"
          while [ "$try_agian" == "y" ] || [ "$try_agian" == "Y" ]
          do
            echo " Do you wish to search for the X11 libraries at"
-           echo " an alternate location?"
+           echo " an alternative location?"
            read try_again
            if [ "$try_agian" = "" ]; then
              try_again="y"
            fi
            if [ "$try_again" = "y" ] || [ "$try_agian" = "Y" ]; then
-             echo " Location of X11 installation? "
+             echo " Location of X11 installation?"
              read XINSTALLDIR
              if [ -d $XINSTALLDIR/lib/X11 ]; then
                echo " X11 was found at $XINSTALLDIR."
@@ -1278,23 +1032,17 @@ case $xLibs in
              else
                echo " X11 could not be found at $XINSTALLDIR!"
              fi
-
            fi
-
          done
        fi
-
-       # If X11 still hasn't been found, issue error and quit.
+       # If X11 not found, issue an error and quit.
        if [ "$X11_found" = "no" ]; then
          echo " "
-         echo " ERROR:"
-         echo " Could not find the X-window libraries!"
+         echo " Error: could not find the X11 libraries - exiting."
          echo " "
          exit
        fi
-
-       # Now check if the appropriate include files are installed
-       # on the system.
+       # Check if the required include files are installed.
        if [ -r $XINSTALLDIR/include/X11/X.h ]; then
          X11INCLUDEDIR=$XINSTALLDIR/include
        else
@@ -1302,16 +1050,11 @@ case $xLibs in
            X11INCLUDEDIR=/usr/include
          else
            echo " "
-           echo " ERROR:"
-           echo " The X-window libraries were found at $XINSTALLDIR,"
-           echo " but the X11 header files (e.g. X.h) could not be"
-           echo " found at $XINSTALLDIR/include/X11."
-           echo " "
-           echo " This may indicate that you're missing the X11 header"
-           echo " files necessary to compile the X11 version of ESP-r."
-           echo " Check to see if you've installed the X11 development"
-           echo " package (usually called xfree86-devel, xorg-X11-devel,"
-           echo " or libX11-devel.)"
+           echo " Error: the X11 libraries were found at $XINSTALLDIR but"
+           echo " the corresponding header files (e.g. X.h) could not be"
+           echo " located at $XINSTALLDIR/include/X11. Please check to if"
+           echo " the X11 development package is installed (usually called"
+           echo " xfree86-devel, xorg-X11-devel or libX11-devel.)"
            exit
          fi
        fi
@@ -1319,10 +1062,7 @@ case $xLibs in
   noX) XINSTALLDIR="";;
 esac
 
-
-
-#--------------- CC, CPL, FC -----------------------
-# Assign compilers
+# Assign compilers.
 case $compiler in
    sunF90)   CC=cc;  CPL=CC;  FC=f90  ;;
    GNU) case $gnu_version in
@@ -1330,14 +1070,13 @@ case $compiler in
         esac;;
    intel)    CC=icc;  CPL=icpc;  FC=ifort ;;
 esac
-
 if [ "$compiler_version" != "none" ]; then
   CC="$CC$compiler_version"
   CPL="$CPL$compiler_version"
   FC="$FC$compiler_version"
 fi
 
-#--------------- OPTIONS for extended debugging -----------
+# Extended debugging.
 ExtendedDebugFlags=""
 if [ "$extendedDebugging" == "yes" ]; then
   case $compiler in
@@ -1349,18 +1088,14 @@ if [ "$extendedDebugging" == "yes" ]; then
   esac
 fi
 
-#--------------- WWLINK -----------------------
-# Assign wwlink variable --- is this used anymore?
+# Assign wwlink variable.
 case $compiler in
    sunF90)   WWLINK="shared_solaris" ;;
    GNU)      WWLINK="unshared"       ;;
 esac
 
-
-#--------------- FFLAGS -----------------------
-# Write out platform specific ifdef variables.
-# These will be inserted into FFLAGS, below.
-# for OSX 10.6 and x86_64 force -m64 otherwise -m32
+# FFLAGS: Establish platform specific ifdef variables for inserted into
+# Fortran compiler flags (for OSX 10.6 and x86_64 force -m64 otherwise -m32).
 case $platform in
    sun) case $machine in
           sun4u)   fDefType="-DSUN -DOSI";;
@@ -1404,10 +1139,9 @@ if [ "$opt" = "-O3" ]; then
   fDefType="$fDefType -O3"
 fi
 
-# Assign fortran compilation flags alter mcmodel depending on size
-# so that common blocks can be handled in memory
+# Assign Fortran compilation flags.
 case $compiler in
-   # Note '-C' flag causes some grief on older sun F90 compilers (~v5.0)
+   # Note '-C' flag causes grief on older sun F90 compilers.
    sunF90) FFLAGS="$LOCAL_INCLUDES $fDefType -DF90 $debug_flag $ExtendedDebugFlags -C " ;;
    GNU)    FFLAGS="$LOCAL_INCLUDES $fDefType $debug_flag $ExtendedDebugFlags -fno-automatic";
 # mcmodel=medium (needed for larger data structures) is only available on 64-bit machines.
@@ -1432,43 +1166,40 @@ if [ "$enable_cosim" == "yes" ] && [ "$platform" == "mingw" ]; then
    FFLAGS="$FFLAGS -fcray-pointer -mrtd"
 fi
 
-#-------------- CFLAGS ---------------------
-# set up paths to c/c++ include files --- append X11 include
-# path for X11 builds
+# CFLAGS: set up paths to c/c++ include files and append X11 include path.
 case $xLibs in
   X11)  cINCLUDES="$LOCAL_INCLUDES -I$X11INCLUDEDIR";;
   *)    cINCLUDES="$LOCAL_INCLUDES";;
 esac
 
-# Append XML include paths, if needed
+# Append XML include paths if needed.
 case $xml_support in
   yes)  cINCLUDES="$cINCLUDES $LIBXML2_INCLUDE";;
   no)   cINCLUDES="$cINCLUDES";;
 esac
 
-# Append SQLite include path, if needed
+# Append SQLite include path if needed.
 case $SQLite_support in
   yes)  cINCLUDES="$cINCLUDES $LIBSQLITE3_INCLUDE";;
   no)   cINCLUDES="$cINCLUDES";;
 esac
 
-# assign c/c++ IDFEF flags. These will be inserted into CFLAGS, below.
+# Assign c/c++ IDFEF flags.
 cDefType="$fDefType"
 
 # Set xsl ifdef flag depending on whether xslt libraries are available
-# and XML support is active,
-
+# and XML support is active.
 if [ "$xml_support" = "yes" ] && [ "$xsl_libs_available" = "yes" ]; then
   cDefType="$cDefType -DXSL"
 fi
 
-# Set SQLite ifedf flag depending on whether sqlite libraries are available
-# and XML support is active,
+# Set SQLite ifdef flag depending on whether sqlite libraries are available
+# and XML support is active.
 if [ "$xml_support" = "yes" ] && [ "$SQLite_support" = "yes" ]; then
   cDefType="$cDefType -DSQLITE"
 fi
 
-# set up c compilation flags
+# Set c compilation flags.
 case $compiler in
    sunF90)  CFLAGS="$cINCLUDES $cDefType $debug_flag $ExtendedDebugFlags";;
    GNU)     CFLAGS="$cINCLUDES $cDefType $debug_flag $ExtendedDebugFlags";;
@@ -1476,14 +1207,11 @@ case $compiler in
 esac
 
 # Add '-mms-bitfields' and '-mwindows' on Mingw+GTK
-
 if [ "$platform" = "mingw" ] && [ "$xLibs" = "GTK" ]; then
    CFLAGS="$CFLAGS -mwindows -mms-bitfields"
 fi
 
-
-#------------- ULIBS -------------------------
-# Assign library paths/flags
+# ULIBS: Assign library paths.
 case $platform in
    sun)      ULIBS="-L${SRCdir}/lib ";;
    linux)    ULIBS="-L${SRCdir}/lib ";;
@@ -1492,11 +1220,11 @@ case $platform in
    mingw)    ULIBS="-L${SRCdir}/lib -L/usr/local/lib -L/local/lib -L/usr/lib";;
 esac
 
-# Append versioning information library
+# Append versioning information library.
 ULIBS="$ULIBS -lversion"
 
-# Append X11 library paths to ULIBS as required
-# For OSX 10.6 and x86_64 look in lib rather than lib64
+# Append X11 library paths to ULIBS (for OSX 10.6 and x86_64 look
+# in lib rather than lib64.
 case $xLibs in
   X11) case $machine in
          sun4u) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
@@ -1515,67 +1243,53 @@ case $xLibs in
   noX) ULIBS="$ULIBS -lnoxesru";;
 esac
 
-
-# Append XML output libararies to ULIBS as required (libxml2 and libstdc++)
+# Append XML output libraries (libxml2 and libstdc++) to ULIBS if required. 
 case $xml_support in
   yes)
-       # Link xml libraries, along with stdc++.
        case $compiler in
          sunF90)  ULIBS="$ULIBS -lXML -lCstd";;
          GNU)     ULIBS="$ULIBS -lXML -lstdc++";;
          intel)   ULIBS="$ULIBS -lXML -lstdc++";;
        esac;
-
-       # If libxslt is available, link it too
        case $xsl_libs_available in
          "yes") ULIBS="$ULIBS -lxslt";;
          "no")  ULIBS="$ULIBS ";;
          esac;
 
-       # Add link to libxml2. This must follow
-       # -lxslt on cygwin/mingw.
+       # Link to libxml2 must follow -lxslt for cygwin/mingw.
        ULIBS="$ULIBS -lxml2";
 
-       # Append ws2_32 library on mingw and Crun to Sun
        case $platform in
             mingw)    ULIBS="$ULIBS -lws2_32";;
             sun)    ULIBS="$ULIBS -lCrun";;
             *)        ULIBS="$ULIBS";;
        esac;
-       # Flag xml for inclusion in bps
        targets="enableXML $targets";;
   no)  ULIBS="$ULIBS -lXML ";
-       # Flag xml for exclusion in bps
        targets="disableXML $targets";;
 esac
 
-# Append SQLite database library to ULIBS as required (libsqlite3)
+# Append SQLite database library (libsqlite3) to ULIBS if required.
 case $SQLite_support in
   yes)
-       # Link SQLite library,along with stdc++.
        case $compiler in
          sunF90)  ULIBS="$ULIBS -L/usr/local/lib -lSQLite -lsqlite3 -lCstd";;
          GNU)     ULIBS="$ULIBS -L/usr/local/lib -lSQLite -lsqlite3 -lstdc++";;
          intel)   ULIBS="$ULIBS -L/usr/local/lib -lSQLite -lsqlite3 -lstdc++";;
        esac;
-
-       # Append ws2_32 library on mingw and Crun to Sun
        case $platform in
             mingw)    ULIBS="$ULIBS -lws2_32";;
             sun)    ULIBS="$ULIBS -lCrun";;
             *)        ULIBS="$ULIBS";;
        esac;
-       # Flag SQLite for inclusion in bps
        targets="enableSQLite $targets";;
   no)  ULIBS="$ULIBS -lSQLite ";
-       # Flag SQLite for exclusion in bps
        targets="disableSQLite $targets";;
 esac
 
-# Append FMI library as required.
+# Append FMI library if required (currently only tested with GNU compilers).
 case $FMI_support in
   yes)
-    # Currently only tested with GNU compilers.
     case $compiler in
       sunF90)  ULIBS="$ULIBS -Wl,--no-as-needed -lCstd -lfmilib_shared";;
       GNU)     ULIBS="$ULIBS -Wl,--no-as-needed -lstdc++ -lfmilib_shared ";;
@@ -1586,12 +1300,8 @@ case $FMI_support in
     FMIarg="disableFMI";;
 esac
 
-    
-
-#-------------- LDFLAGS ------------------------
-# Directives for the link-loader (ld). The reduce-memory-overheads
-# speeds up linking greatly if machine memory is limited and has
-# little impact otherwise.
+# LDFLAGS: Directives for the link-loader (ld). The reduce-memory-overheads
+# speeds up linking if machine memory is limited with little impact otherwise.
 case $platform in
    mingw)    LD_FLAGS="-DMINGW -Wl,--reduce-memory-overheads";;
    mac)      LD_FLAGS="";;
@@ -1606,47 +1316,32 @@ esac
        LD_FLAGS="-DMINGW -shared";
     fi
 
-#-------------- EXE ------------------------
-# Set exe file extention
+# EXE: Set exe file extention.
 case $platform in
    sun)      EXE="";;
    linux)    EXE="";;
    cygwin)   EXE=".exe";;
    mac)      EXE="";;
    mingw)    EXE=".exe";;
-#Custom housts follow
    nrn7)     EXE="" ;;
 esac
 if [ "$enable_cosim" == "yes" ] && [ "$platform" == "mingw" ]; then
    EXE=".dll"
 fi
 
-
-#===========================================
-##### End Computer Architecture
-#####
-##### Create esp-r directory tree
-#===========================================
-
-#---------------------------------------------------------
-# Check if installation directories exist, and create
-# if necessary
-#---------------------------------------------------------
+# Create ESP-r installation directory tree.
 create_espr_dir="no"
 # Does top-level installation directory exist?
 if [ ! -d $DESTdir ]; then
-  # NO! Is script running interactively, or has user specified a 'force?'
+  # No! Is script running interactively or has user specified a 'force?'
   if [ $mode = "interactive" ] && [ "$preserve_espr_dir" == "yes" ] ; then
-    # Does user want to create it?
     echo " "
-    echo " The esp-r installation directory does not exist. "
-    echo " (${DESTdir})"
+    echo " Installation directory ${DESTdir} does not exist."
     A=none
     while [ "$A" != "y" ] && [ "$A" != "n" ]
     do
       echo " "
-      echo " Do you wish to create this directory? (y/n) [y]"
-      echo " "
+      echo " Do you wish to create it (y/n)? [y]"
       read A
       if [ "$A" = "" ]; then
         A="y"
@@ -1662,73 +1357,54 @@ if [ ! -d $DESTdir ]; then
     create_espr_dir="yes"
     preserve_espr_dir="no"
   fi
-
   if [ "$create_espr_dir" = "yes" ]; then
-
     # Attempt to create directory
     mkdir ${DESTdir}
-    # Was directory successfully created?
     if [ ! -d ${DESTdir} ]; then
-      # No! User may not have write permissions on installation dir.
-      # warn, and exit.
+      # User may not have write permissions, warn and exit.
       echo " "
-      echo " Installation error: Destination directory (${DESTdir})"
-      echo " could not be created. Installation aborted."
-      echo " "
+      echo " Destination directory ${DESTdir} could not be created"
+      echo " Installation aborted."
       exit
     fi
-    # This flag will be used later when the script checks
-    # if the directory tree is correct.
-
   else
-  # User doesn't want to create directory, but it doesn't exist.
-  # Issue warning and quit.
+    # User does not want to create directory and it does not exist.
     echo " "
-    echo " Installation error: Destination directory (${DESTdir})"
-    echo " does not exist. Installation aborted"
-    echo " "
+    echo " Destination directory ${DESTdir} does not exist."
+    echo " Installation aborted"
     exit
   fi
 fi
 
-# Determine if master path is writable.
+# Confirm installation directory is writable.
 if [ ! -w $DESTdir ] || [ ! -d $DESTdir ]; then
-  # Warn user and quit.
   echo " "
-  echo " Installation error: Cannot write to installation directory:"
-  echo " $DESTdir"
+  echo " Cannot write to installation directory $DESTdir."
   echo " Installation aborted."
-  echo " "
   exit
 fi
+
+# Co-simulation directory.
 if [ "$enable_cosim" == "yes" ]; then
-	#---------------------------------------------------------
-	# Check if Harmonizer installation directory has been specified
-	# if not set it to esp-r installation directory
-	#---------------------------------------------------------
+	# If co-simulation installation directory not specified
+	# set it to the ESP-r installation directory.
 	if [ $COSIMdir == " " ]; then
-	    ${COSIMdir} = ${DESTdir}/esp-r/bin 
-	    echo " co-sim dir = (${DESTdir})"
+	    ${COSIMdir} = ${DESTdir}/bin 
+	    echo " Co-simulation directory is ${DESTdir}."
 	fi
-	#---------------------------------------------------------
-	# Check if Harmonizer installation directories exist, and create
-	# if necessary
-	#---------------------------------------------------------
+	# Check if co-simulation installation directories exists and
+        # create it if necessary.
 	create_harmonizer_dir="no"
-	# Does top-level installation directory exist?
 	if [ ! -d $COSIMdir ]; then
-	  # NO! Is script running interactively, or has user specified a 'force?'
 	  if [ $mode = "interactive" ] ; then
-	    # Does user want to create it?
 	    echo " "
-	    echo " The Harmonizer installation directory does not exist. "
-	    echo " (${COSIMdir})"
+	    echo " The co-simulation installation directory,"
+            echo " ${COSIMdir}, does not exist."
 	    A=none
 	    while [ "$A" != "y" ] && [ "$A" != "n" ]
 	    do
 	      echo " "
-	      echo " Do you wish to create this directory? (y/n) [y]"
-	      echo " "
+	      echo " Do you wish to create it (y/n)? [y]"
 	      read A
 	      if [ "$A" = "" ]; then
 	        A="y"
@@ -1744,63 +1420,41 @@ if [ "$enable_cosim" == "yes" ]; then
 	    create_espr_dir="yes"
 	    preserve_espr_dir="no"
 	  fi
-	
 	  if [ "$create_harmonizer_dir" = "yes" ]; then
-	
-	    # Attempt to create directory
+            # Create directory
 	    mkdir ${COSIMdir}
-	    # Was directory successfully created?
 	    if [ ! -d ${COSIMdir} ]; then
-	      # No! User may not have write permissions on installation dir.
-	      # warn, and exit.
+	      # User may not have write permission.
 	      echo " "
-	      echo " Installation error: Destination directory (${COSIMdir})"
-	      echo " could not be created. Installation aborted."
-	      echo " "
+	      echo " Destination directory, ${COSIMdir}, could not"
+	      echo " be created. Installation aborted."
 	      exit
 	    fi
-	    # This flag will be used later when the script checks
-	    # if the directory tree is correct.
-	
 	  else
-	  # User doesn't want to create directory, but it doesn't exist.
-	  # Issue warning and quit.
+	    # User does not want to create directory and it does not exist.
 	    echo " "
-	    echo " Installation error: Destination directory (${COSIMdir})"
-	    echo " does not exist. Installation aborted"
-	    echo " "
+	    echo " Destination directory, ${COSIMdir}, does not"
+	    echo " exist. Installation aborted."
 	    exit
 	  fi
 	fi
-	
-	# Determine if master path is writable.
 	if [ ! -w $COSIMdir ] || [ ! -d $COSIMdir ]; then
-	  # Warn user and quit.
 	  echo " "
-	  echo " Installation error: Cannot write to installation directory:"
-	  echo " $COSIMdir"
-	  echo " Installation aborted."
-	  echo " "
+	  echo " Cannot write to co-simulation installation directory,"
+	  echo " ${COSIMdir}. Installation aborted."
 	  exit
 	fi
 fi
 
-#-----------------------------------------------------------
-# Now check if ESP-r directory tree exists. Note: If we
-# created the master directory (above), there's no need to prompt
-# the user since the directory will obviously be empty. Check
-# value of DirCreated variable.
-#-----------------------------------------------------------
-# Strip trailing space from DESTdir
+# Check if ESP-r installation directory tree exists.
+# Strip trailing space from DESTdir.
 DESTdir=`echo "$DESTdir" | sed "s/\/$//"`
 
-ESPdir=${DESTdir}/esp-r
-ESPbin=${DESTdir}/esp-r/bin
-ESPBinDir=${DESTdir}/esp-r/bin
+ESPdir=${DESTdir}
+ESPbin=${DESTdir}/bin
+ESPBinDir=${DESTdir}/bin
 corrupted_tree="no"
 if [ "$create_espr_dir" = "no" ]; then
-
-
   if [ ! -d $ESPdir ]                   ||
      [ ! -d $ESPdir/bin ]               ||
      [ ! -d $ESPdir/climate ]           ||
@@ -1810,15 +1464,14 @@ if [ "$create_espr_dir" = "no" ]; then
      [ ! -d $ESPdir/manual ]            ||
      [ ! -d $ESPdir/xsl ]; then
 
-    # ESP-r directory tree does not exist, or has been corrupted.
-
+     # ESP-r directory tree does not exist, or has been corrupted.
      corrupted_tree="yes"
 
      if [ "$create_espr_dir" = "no" ]; then
       echo " "
-      echo " The ESP-r directory tree does not exist at ${DESTdir},"
-      echo " or may have been corrupted. The following directories are"
-      echo " required: "
+      echo " The ESP-r installation directory tree does not exist at"
+      echo " ${DESTdir} or may have been corrupted. The following directories"
+      echo " are required."
       echo "    $ESPdir"
       echo "    $ESPdir/bin "
       echo "    $ESPdir/climate "
@@ -1830,16 +1483,11 @@ if [ "$create_espr_dir" = "no" ]; then
     fi
 
     if [ "$mode" = "interactive" ] && [ "$preserve_espr_dir" = "yes" ] ; then
-
-      # IF we've created the destination directory, there's
-      # no need to warn the user.
-
       A=none
       while [ "$A" != "y" ] && [ "$A" != "n" ]
       do
         echo " "
-        echo " Do you wish to create the ESP-r directory tree at"
-        echo " this location? (y/n) [y]"
+        echo " Do you wish to create this directory tree (y/n)? [y]"
         read A
         if [ "$A" = "" ]; then
           A="y"
@@ -1854,25 +1502,20 @@ if [ "$create_espr_dir" = "no" ]; then
   fi
 fi
 
-#--------------------------------------------------------------
-#  Now build directory tree, if necessary.
-#--------------------------------------------------------------
+# Now create installation directory tree if necessary.
 if [ "$corrupted_tree" = "yes" ] || [ "$create_espr_dir" = "yes" ]; then
   if [ "$preserve_espr_dir" = "yes" ]; then
     echo " "
-    echo " Installation error: Will not not overwrite ESP-r "
-    echo " directory structure at ${DESTdir}. Installation"
-    echo " aborted."
-    echo " "
+    echo " Installation error: cannot overwrite ESP-r installation"
+    echo " directory tree at ${DESTdir}. Installation aborted."
     if [ "$mode" = "silent" ]; then
+      echo " "
       echo " Use the '--force' option to overwrite the directory"
       echo " structure. Run 'Install --help' for more information."
-      echo " "
       exit
     fi
   fi
-
-  rm -fr $ESPdir
+#  rm -rf $ESPdir/*
   mkdir $ESPdir
   mkdir $ESPdir/bin
   mkdir $ESPdir/climate
@@ -1881,167 +1524,116 @@ if [ "$corrupted_tree" = "yes" ] || [ "$create_espr_dir" = "yes" ]; then
   mkdir $ESPdir/lib
   mkdir $ESPdir/manual
   mkdir $ESPdir/xsl
-
 fi
 
-#--------------------------------------------------------------
-# End ESP-r directory management
-#--------------------------------------------------------------
-
-#--------------------------------------------------------------
-#
-#--------------------------------------------------------------
-
-####### create an installdir.h file so startup.F knows where to look
+# Create an installdir.h file so startup.F knows where to look.
   echo "c this is where esp-r is installed" > ${SRCdir}/include/espinstalldir.h
   echo "       character instpath*60" >> ${SRCdir}/include/espinstalldir.h
   echo "       instpath = " >> ${SRCdir}/include/espinstalldir.h
   echo "     & '${ESPdir}'" >> ${SRCdir}/include/espinstalldir.h
 
-
-##### Initiate make:
+# Initiate make.
 if [ "${make_msg_file}" = "" ]; then
   echo " "
   echo " Intended shell command:"
   echo " make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir=${DESTdir} ESPdir=${ESPdir} ESPBinDir=${ESPBinDir} WWLINK=${WWLINK} EXE="${EXE}" XINSTALLDIR=${XINSTALLDIR} CFLAGS=${CFLAGS} FFLAGS=${FFLAGS} LD_FLAGS=${LD_FLAGS} ULIBS=${ULIBS} xml_status=${xml_status} $targets"
   echo " "
-  echo " where the $xlibs libraries are in ${XINSTALLDIR}"
+  echo " where the $xlibs libraries are in ${XINSTALLDIR}."
 fi
 
 if [ "$mode" = "interactive" ]; then
   A=x
   while [ "$A" != y ] && [ "$A" != n ] && [ "$A" != "" ]
   do
-    echo " "
-    echo " Proceed with installation of esp-r modules (y/n) [y]?"
+    echo " Proceed with installation (y/n)? [y]"
     read A
   done
-
   if [ "$A" = "n" ]; then
     echo " "
-    echo " Aborting ESP-r installation. "
-    echo " "
+    echo " Aborting ESP-r installation."
     exit
   fi
 fi
-
-
-
 echo " "
-echo " Installing ESP-r system. This may take some time."
-echo " Moving to ${SRCdir}..."
+echo " Installing ESP-r system from source code in ${SRCdir}."
 cd ${SRCdir}
-#--------------------------------------------------------------
-# Get build info for versioning purposes.
-#--------------------------------------------------------------
-
-
-
-
- echo -n "    - gathering version information ("
+echo -n "    - gathering version information ("
  
- # Find out if this is svn or git.  
-
+# Find out if this is svn or git.  
 NotAnSvnWorkingCopy=`svn info 2>&1 | grep "is not a working copy"`
 NotAGitRepo=`git status 2>&1 | grep "fatal: Not a git repository"`
  
 #echo "> SVN query > ${NotAnSvnWorkingCopy} <" 
 #echo "> GIT query > ${NotAGitRepo} <"
  
- 
 if [ "${NotAnSvnWorkingCopy}" != "" ] && 
    [ "${NotAGitRepo}"         != "" ] ; then 
-   
    VersioningScheme="none" 
-
 else
-
   if [ "${NotAnSvnWorkingCopy}" == "" ]; then 
-  
     VersioningScheme="svn"
-    
   else 
-   
     VersioningScheme="git"
-  
   fi 
-
 fi    
  
 echo -n "${VersioningScheme})..."
  
- 
- # Ensure that build information is always recompiled into
- # every binary - touch common file version.F, and delete
- # library/object files.
- touch ${SRCdir}/lib/version.F >/dev/null 2>&1
- #rm ${SRCdir}/lib/libversion.a  ${SRCdir}/lib/version.o >/dev/null 2>&1
+# Ensure that build information is always recompiled into
+# every binary - touch common file version.F.
+touch ${SRCdir}/lib/version.F >/dev/null 2>&1
 
- # Get time of build
- time=`date`
+# Get time of build
+time=`date`
 
- # Get system information. (host not used at present)
- architecture=`uname -m`
- system=`uname -s`
- os_flavour=`uname -r`
- host=`uname -n`
+# Get system information.
+architecture=`uname -m`
+system=`uname -s`
+os_flavour=`uname -r`
+host=`uname -n`
 
-
- # Digest version information in Version text file
- release=`cat ${HOMEdir}/Version | grep "ESP-r release " | sed "s/ESP-r release //g"`
-
- ## Check 
- 
-
- if [ "${VersioningScheme}" == "svn" ]; then 
- 
+# Copy version information to Version text file.
+release=`cat ${HOMEdir}/Version | grep "ESP-r Release " | sed "s/ESP-r Release //g"`
+echo "The ESP-r version is ${release}"
+if [ "${VersioningScheme}" == "svn" ]; then 
     versioned_repository="yes"
     revision_number=`svn info 2>&1 | grep "Revision:"`
     echo "Revision: ${revision_number}" 
-    
- fi # END SVN block 
+fi # End SVN block.
+if [ "${VersioningScheme}" == "git" ]; then
+    versioned_repository="yes"
+    echo " "
+fi 
 
-   
- if [ "${VersioningScheme}" == "git" ]; then
-   
-      # Add code here.
-      versioned_repository="yes"
-      echo " "
-   
- fi 
-
-#--------------------------------------------------------------
-# Now write out build information into automatically generated
-# header file.
-#--------------------------------------------------------------
+# Write build information to header file.
   echo "C      build_info.h"                                              >  ${SRCdir}/include/build_info.h
   echo "C      "                                                          >> ${SRCdir}/include/build_info.h
   echo "C      This file contains versioning and build information"       >> ${SRCdir}/include/build_info.h
   echo "C      for the ESP-r system. It is generated automatically"       >> ${SRCdir}/include/build_info.h
-  echo "C      by the Install script each time ESP-r is recompiled---"    >> ${SRCdir}/include/build_info.h
-  echo "C      any changes should be made in the Install scipt, and "     >> ${SRCdir}/include/build_info.h
+  echo "C      by the Install script each time ESP-r is recompiled."      >> ${SRCdir}/include/build_info.h
+  echo "C      Changes should be made in the Install scipt and not"       >> ${SRCdir}/include/build_info.h
   echo "C      not in this file"                                          >> ${SRCdir}/include/build_info.h
   echo "C      "                                                          >> ${SRCdir}/include/build_info.h
-  echo "C      The following fortran variable assignments are "           >> ${SRCdir}/include/build_info.h
-  echo "C      digested by procedure ESPrVersion() in esrucom/Startup.F"  >> ${SRCdir}/include/build_info.h
+  echo "C      The following Fortran variable assignments are used"       >> ${SRCdir}/include/build_info.h
+  echo "C      by ESPrVersion() in common/Startup.F"                      >> ${SRCdir}/include/build_info.h
   echo "       "                                                          >> ${SRCdir}/include/build_info.h
   echo "       logical  bRelease,bVersioned,bModified"                    >> ${SRCdir}/include/build_info.h
   echo "       character cBuilder*32       ! User who compiled system"    >> ${SRCdir}/include/build_info.h
-  echo "       character cArchitecture*32  ! Machine archictecture"       >> ${SRCdir}/include/build_info.h
+  echo "       character cArchitecture*32  ! Machine architecture"        >> ${SRCdir}/include/build_info.h
   echo "       character cOperSystem*32    ! Operating system"            >> ${SRCdir}/include/build_info.h
-  echo "       character cOSversion*32     ! OS flavour/version"          >> ${SRCdir}/include/build_info.h
+  echo "       character cOSversion*32     ! Operating system version"    >> ${SRCdir}/include/build_info.h
   echo "       character cHost*256         ! Host name"                   >> ${SRCdir}/include/build_info.h
-  echo "       character cRelease_Num*8    ! Release version"             >> ${SRCdir}/include/build_info.h
+  echo "       character cRelease_Num*24   ! Release version"             >> ${SRCdir}/include/build_info.h
   echo "       character cSource*32        ! Repository version"          >> ${SRCdir}/include/build_info.h
   echo "       character cBranch*48        ! Branch name"                 >> ${SRCdir}/include/build_info.h
   echo "       character cRevision*32      ! Revision number"             >> ${SRCdir}/include/build_info.h
-  echo "       character cState*32         ! Flag for repository state."  >> ${SRCdir}/include/build_info.h
-  echo "       character cCC*32            ! Flags for compilers."        >> ${SRCdir}/include/build_info.h
-  echo "       character cFC*32            ! fortran"                     >> ${SRCdir}/include/build_info.h
-  echo "       character cCPL*32           ! C++"                         >> ${SRCdir}/include/build_info.h
-  echo "       character cXML_support*32   ! Compile-time options"        >> ${SRCdir}/include/build_info.h
-  echo "       character cSQLite_support*32! Compile-time options"        >> ${SRCdir}/include/build_info.h
-  echo "       character cXlibrary*32      ! where which"                 >> ${SRCdir}/include/build_info.h
+  echo "       character cState*32         ! Flag for repository state"   >> ${SRCdir}/include/build_info.h
+  echo "       character cCC*32            ! Flags for C compiler"        >> ${SRCdir}/include/build_info.h
+  echo "       character cFC*32            ! Flags for Fortran compiler"  >> ${SRCdir}/include/build_info.h
+  echo "       character cCPL*32           ! Flags for C++ compiler"      >> ${SRCdir}/include/build_info.h
+  echo "       character cXML_support*32   ! XML compile-time options"    >> ${SRCdir}/include/build_info.h
+  echo "       character cSQLite_support*32! SQLite compile-time options" >> ${SRCdir}/include/build_info.h
+  echo "       character cXlibrary*32      ! X11 library location"        >> ${SRCdir}/include/build_info.h
   echo "       "                                                          >> ${SRCdir}/include/build_info.h
   echo "       cBuilder          = \"${USER}\" "                          >> ${SRCdir}/include/build_info.h
   echo "       cHost             = \"${host}\""                           >> ${SRCdir}/include/build_info.h
@@ -2049,9 +1641,8 @@ echo -n "${VersioningScheme})..."
   echo "       cOperSystem       = \"${system}\""                         >> ${SRCdir}/include/build_info.h
   echo "       cOSversion        = \"${os_flavour}\""                     >> ${SRCdir}/include/build_info.h
 
-  # Set flag indicating if this is a 'release' build
-  # A release MUST be built from a versioned copy
-  # of TRUNK in a Vanilla state.
+  # Set flag indicating if this is a 'release' build, which must be
+  # built from a versioned copy of TRUNK in a Vanilla state.
   if [ "$versioned_repository" = "yes" ] &&
      [ "$source" = "Trunk"             ] &&
      [ "$state"  = "Vanilla"           ];  then
@@ -2059,30 +1650,26 @@ echo -n "${VersioningScheme})..."
   else
     echo "       bRelease          = .FALSE."                             >> ${SRCdir}/include/build_info.h
   fi
-
   echo "       cRelease_num      = \"${release}\""                        >> ${SRCdir}/include/build_info.h
-
   if [ "${versioned_repository}" = "yes" ]; then
     echo "       bVersioned        = .TRUE. "                             >> ${SRCdir}/include/build_info.h
   else
     echo "       bVersioned        = .FALSE. "                            >> ${SRCdir}/include/build_info.h
   fi
-
   if [ "$state" = "Vanilla" ]; then
     echo "       bModified         = .FALSE."                             >> ${SRCdir}/include/build_info.h
   else
     echo "       bModified         = .TRUE."                              >> ${SRCdir}/include/build_info.h
   fi
-
   echo "C      URL commented out, as it likely exceeds g77's  "           >> ${SRCdir}/include/build_info.h
   echo "C      72 character-per-line limit."                              >> ${SRCdir}/include/build_info.h
 
   echo "C      cURL              = \"${URL}\""                            >> ${SRCdir}/include/build_info.h
-  echo "       cSource           = \"$source\""                          >> ${SRCdir}/include/build_info.h
+  echo "       cSource           = \"$source\""                           >> ${SRCdir}/include/build_info.h
   echo "       cBranch           = \"$branch_name\" "                     >> ${SRCdir}/include/build_info.h
   echo "       cRevision         = \"$revision_number\""                  >> ${SRCdir}/include/build_info.h
   echo "       cState            = \"${state}\""                          >> ${SRCdir}/include/build_info.h
-  # Add compilers, x-libraries & xml/xsl status
+  # Add compilers,  X11 libraries & xml/xsl status.
   echo "       cCC               = \"$CC\""                               >> ${SRCdir}/include/build_info.h
   echo "       cFC               = \"$FC\""                               >> ${SRCdir}/include/build_info.h
   echo "       cCPL              = \"$CPL\""                              >> ${SRCdir}/include/build_info.h
@@ -2097,76 +1684,56 @@ echo -n "${VersioningScheme})..."
     echo "       cSQLite_support   = \"unsupported\""                     >> ${SRCdir}/include/build_info.h
   fi
   echo "       cXlibrary         = \"$xLibs\" "                           >> ${SRCdir}/include/build_info.h
-
  
-#--------------------------------------------------------------
-# Now write a gnome desktop file so an icon can be used to start prj
-# other variants may be required for other display managers
-#--------------------------------------------------------------
+# Write a gnome desktop file so that an icon can be used to start prj.
   echo "       "                                                          >> ${HOME}/esp-r.desktop
   echo "[Desktop Entry]"                                                  >> ${HOME}/esp-r.desktop
   echo "Version=1.0"                                                      >> ${HOME}/esp-r.desktop
   echo "Type=Application"                                                 >> ${HOME}/esp-r.desktop
   echo "Terminal=false"                                                   >> ${HOME}/esp-r.desktop
   echo "Icon=${ESPdir}/esplogosmall.png"                                  >> ${HOME}/esp-r.desktop
-  echo "Name=esp-r"                                                       >> ${HOME}/esp-r.desktop
+  echo "Name=ESP-r"                                                       >> ${HOME}/esp-r.desktop
   echo "Exec=prj"                                                         >> ${HOME}/esp-r.desktop
-  echo "Comment=For use with Ubuntu 10.4"                                 >> ${HOME}/esp-r.desktop
-  echo "GenericName=Starts ESP-r Project Manager"                         >> ${HOME}/esp-r.desktop
-
-# Copy the png icon into the ESP-r distribution
+  echo "Comment=For use with Ubuntu"                                      >> ${HOME}/esp-r.desktop
+  echo "GenericName=Starts the ESP-r Project Manager"                     >> ${HOME}/esp-r.desktop
+# Copy the png icon to the ESP-r distribution.
   cp ${SRCdir}/bitmaps/esplogosmall.png ${ESPdir}
-
-# For linux computers only
+# For Linux only.
 case $platform in
    linux)    chmod a+x ${HOME}/esp-r.desktop
              mv ${HOME}/esp-r.desktop ${HOME}/Desktop/esp-r.desktop
      ;;
 esac
 
-#---------------------------------------------------------------------
-# Begin build
-#---------------------------------------------------------------------
+# Begin build.
 targets_shift="${targets} end_of_exes"
-# Build each executable, 1 by 1.
 while [ "${targets_shift}" != "end_of_exes" ]
 do
-   # The following chunk of code is an ugly, but sh-compatable
-   # string-based shift register.
-
-   # strip any leading spaces
+   # Strip any leading spaces.
    targets_shift=`echo $targets_shift | sed 's/^ *//g'`
-
-   # Extract leading execuitable from targets_shift
+   # Extract leading executable name from targets_shift.
    target=`echo $targets_shift | sed 's/ .*$//g'`
-
-   # Now remove exe from targets_shift
-
+   # Remove executable name from targets_shift.
    targets_shift=`echo $targets_shift | sed 's/^[^ ]* //g'`
-
-   # Let user know what's going on
    echo -n "    - building ${target}... "
-
-   # Empty 'make_msg_file' if it's defined
+   # Empty 'make_msg_file' if defined.
   if [ "$make_msg_file" != "" ]; then
     echo "Compilation of $target on `date`"> $make_msg_file
   fi
-
-   # Delete existing binary
+   # Delete existing executable.
    case $target in
      libX11) result="${SRCdir}/lib/libxesru.a"    ;;
      libGTK) result="${SRCdir}/lib/libgtkesru.a"  ;;
      libnoX) result="${SRCdir}/lib/libnoxesru.a"  ;;
      enableXML | disableXML ) result="${SRCdir}/lib/libXML.a"  ;;
      enableSQLite | disableSQLite ) result="${SRCdir}/lib/libSQLite.a"  ;;
-     ecnv)   result="${SRCdir}/esrucnv/ecnv${EXE}"      ;;
-     vew)    result="${SRCdir}/esruvew/viewer${EXE}"      ;;
-     enet)    result="${SRCdir}/esrunet/enet${EXE}"      ;;
-     dfv)    result="${SRCdir}/esrudfs/dfv${EXE}"      ;;
-     bpsdll) result="${SRCdir}/esrubps/bps.dll"   ;;
+     ecnv)   result="${SRCdir}/cnv/ecnv${EXE}"      ;;
+     enet)    result="${SRCdir}/net/enet${EXE}"      ;;
+     vew)    result="${SRCdir}/evew/viewer${EXE}"      ;;
+     bpsdll) result="${SRCdir}/bps/bps.dll"   ;;
      harmonizer) result="${SRCdir}/harmonizer/harmonizer.exe"   ;;
      harmonizerdll) result="${SRCdir}/harmonizer/harmonizer.dll"   ;;
-     *)      result="${SRCdir}/esru${target}/$target${EXE}"   ;;
+     *)      result="${SRCdir}/e${target}/$target${EXE}"   ;;
    esac
 
    if [ -r $result ]; then
@@ -2178,13 +1745,11 @@ do
        #rm $result
      fi
    fi
-   
-   # harmonizer.exe doesn't fit the pattern for the normal make proceedure...
+   # harmonizer.exe does not fit the pattern for the normal make proceedure..
    if [ "$result" == "${SRCdir}/harmonizer/harmonizer.exe" ]; then
 		gfortran ${SRCdir}/harmonizer/win32_interface.f95 ${SRCdir}/harmonizer/launch_dll.f95 -fcray-pointer -o ${SRCdir}/harmonizer/harmonizer.exe
 	else
-   # execute make with redirection, if make_msg_file specified. Otherwise
-   # display messages in buffer.
+   # Execute make with redirection if make_msg_file specified. Otherwise display messages in buffer.
    if [ "${make_msg_file}" != "" ]; then
       echo " Make command:"             >>$make_msg_file
       echo " -------------"             >>$make_msg_file
@@ -2195,19 +1760,16 @@ do
       make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir="${DESTdir}" ESPdir="${ESPdir}" WWLINK="${WWLINK}" EXE="${EXE}" XINSTALLDIR="${XINSTALLDIR}" CFLAGS="${CFLAGS}" FFLAGS="${FFLAGS}" LD_FLAGS="${LD_FLAGS}" ULIBS="${ULIBS}" xml_status="${xml_status}" SQLite_status="${SQLite_status}" FMIarg="${FMIarg}" -f Makefile  ${target} >>$make_msg_file 2>&1
    else
       echo ""
-
       make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir="${DESTdir}" ESPdir="${ESPdir}" WWLINK="${WWLINK}" EXE="${EXE}" XINSTALLDIR="${XINSTALLDIR}" CFLAGS="${CFLAGS}" FFLAGS="${FFLAGS}" LD_FLAGS="${LD_FLAGS}" ULIBS="${ULIBS}" xml_status="${xml_status}" SQLite_status="${SQLite_status}" FMIarg="${FMIarg}" -f Makefile  ${target}
    fi
    fi
-   # was target built successfully?
+   # Was target built successfully?
    if [  ! -r $result ]; then
-      #ignore if a clean command was invoked.
+      # Ignore if a clean command was invoked.
       if [ "$target" != "clean" ]; then
-        # file has not changed --- installation failed.
-        # Warn user and quit.
         echo " "
-        echo " ERROR: could not build executable ${target}! "
-        echo " ERROR: result $result! "
+        echo " Error: could not build executable ${target}!"
+        echo " Error: result ${result}."
 
         # If redirection in use, dump messages.
         if [ "${make_msg_file}" != "" ]; then
@@ -2218,13 +1780,11 @@ do
            rm -f ${make_msg_file}
         fi
 
-        echo " Install: Fatal error. "
+        echo " "
         echo " Executable ${target} could not be built!"
         echo " Installation aborted."
-        echo " "
         exit
       fi
-
    else
      echo "Done."
    fi
@@ -2234,72 +1794,53 @@ do
    fi
 done
 
-#### End Initiate make
-
-##### Install training, manual & support files.
-# Set executables to be the just compiled versions (default to users default
-#  if any not found).
+# Set executables to be the just compiled versions
+# (default to user's default if any not found).
 BPS=bps
 CLM=clm
 ISH=ish
 PRJ=prj
 PDB=pdb
-if [ -f esrubps/bps ] ; then
-  BPS=${SRCdir}/esrubps/bps
+if [ -f bps/bps ] ; then
+  BPS=${SRCdir}/bps/bps
 fi
-if [ -f esruclm/clm ] ; then
-  CLM=${SRCdir}/esruclm/clm
+if [ -f clm/clm ] ; then
+  CLM=${SRCdir}/eclm/clm
 fi
-if [ -f esruish/ish ] ; then
-  ISH=${SRCdir}/esruish/ish
+if [ -f ish/ish ] ; then
+  ISH=${SRCdir}/ish/ish
 fi
-if [ -f esruprj/prj ] ; then
-  PRJ=${SRCdir}/esruprj/prj
+if [ -f prj/prj ] ; then
+  PRJ=${SRCdir}/prj/prj
 fi
-if [ -f esrupdb/pdb ] ; then
-  PDB=${SRCdir}/esrupdb/pdb
+if [ -f pdb/pdb ] ; then
+  PDB=${SRCdir}/pdb/pdb
 fi
-echo " "
-echo " Installing esprc and default (configuration files) into ${ESPdir}..."
-echo " "
 
-#-----------------------------
-# Write out default ESP-r file
-#-----------------------------
+echo -n "   - Installing help files..."
+cp -r ${SRCdir}/tutorial/*.help ${ESPdir}/lib
 
-  echo -n "   - Installing help files..."
-  cp -r ${SRCdir}/tutorial/*.help ${ESPdir}/lib
-
-# Header tag for default file
+# ESP-r default file.
 echo "*ESP-r Defaults" > ${ESPdir}/default
-
-# Installation path?
 echo "*ipth ${ESPdir}" >> ${ESPdir}/default
-
-# Default names for model files (why do they point to explicit paths
-# in the training directory, and what about all the files that aren't
-# included in this list/
-echo "*cfg ${ESPdir}/training/basic/cfg/bld_basic.cfg" >> ${ESPdir}/default
-echo "*ctl ${ESPdir}/training/basic/ctl/bld_basic.ctl" >> ${ESPdir}/default
-echo "*mfn ${ESPdir}/training/basic/nets/bld_basic_af1.afn" >> ${ESPdir}/default
-echo "*dfd ${ESPdir}/training/cfd/template.dfd" >> ${ESPdir}/default
+# Default training model.
+echo "*cfg ${ESPdir}/training/basic/cfg/bld_basic.cfg"        >> ${ESPdir}/default
+echo "*ctl ${ESPdir}/training/basic/ctl/bld_basic.ctl"        >> ${ESPdir}/default
+echo "*mfn ${ESPdir}/training/basic/nets/bld_basic_af1.afn"   >> ${ESPdir}/default
+echo "*dfd ${ESPdir}/training/cfd/template.dfd"               >> ${ESPdir}/default
 echo "*pnf ${ESPdir}/training/plant/vent_simple/cfg/vent.cfg" >> ${ESPdir}/default
-
-
-# Will we install databases?
+# Install databases?
 case "${install_dbs}" in
-  yes) # Use current installation folder for default databses
+  yes)
        DBInstDir="${ESPdir}"
        LinkDB="yes"
       ;;
-  no) # Check if databases were previously installed in this folder
+  no)
       if [ -r ${ESPdir}/databases/pressc.db1 ]; then
-        # They were previously installed. Link to installation folder
         DBInstDir="${ESPdir}"; LinkDB="yes"
       else
-        # They were not installed. Perhaps they're available in usr/esru?
-        if [ -r /usr/esru/esp-r/databases/pressc.db1 ]; then
-          DBInstDir="/usr/esru/esp-r"; LinkDB="yes"
+        if [ -r ${ESPdir}/databases/pressc.db1 ]; then
+          DBInstDir="${ESPdir}"; LinkDB="yes"
         else
           LinkDB="no"
         fi
@@ -2308,303 +1849,236 @@ case "${install_dbs}" in
 esac
 
 if [ "${LinkDB}" = "yes" ]; then
-
-  # Are these default names for results files, or pointers
-  # to example database files?
-  echo "*res ${ESPdir}/databases/test.res" >> ${ESPdir}/default
-  echo "*mfr ${ESPdir}/databases/test.mfr" >> ${ESPdir}/default
-
-  # Default database file locations?
-  echo "*clm ${DBInstDir}/climate/clm67" >> ${ESPdir}/default
-  echo "*prs ${DBInstDir}/databases/pressc.db1" >> ${ESPdir}/default
-  echo "*prm ${DBInstDir}/databases/material.db4.a" >> ${ESPdir}/default
-  echo "*mlc ${DBInstDir}/databases/multicon.db5" >> ${ESPdir}/default
-  echo "*opt ${DBInstDir}/databases/optics.db2" >> ${ESPdir}/default
-  echo "*evn ${DBInstDir}/databases/profiles.db2.a" >> ${ESPdir}/default
-  echo "*pdb ${DBInstDir}/databases/plantc.db1" >> ${ESPdir}/default
-  echo "*ecdb ${DBInstDir}/databases/elcomp.db1" >> ${ESPdir}/default
-  echo "*mcdb ${DBInstDir}/databases/mscomp.db1" >> ${ESPdir}/default
-  echo "*icdb ${DBInstDir}/databases/icons.db1" >> ${ESPdir}/default
-  echo "*mldb ${DBInstDir}/databases/mould.db1" >> ${ESPdir}/default
-  echo "*sbem ${DBInstDir}/databases/SBEM.db1" >> ${ESPdir}/default
-  echo "*cfcdb ${DBInstDir}/databases/CFClayers.db2.a" >> ${ESPdir}/default
-
+  # Default results.
+  echo "*res ${ESPdir}/databases/test.res"              >> ${ESPdir}/default
+  echo "*mfr ${ESPdir}/databases/test.mfr"              >> ${ESPdir}/default
+  # Default databases.
+  echo "*clm ${DBInstDir}/climate/clm67"                >> ${ESPdir}/default
+  echo "*prs ${DBInstDir}/databases/pressc.db1"         >> ${ESPdir}/default
+  echo "*prm ${DBInstDir}/databases/material.db4.a"     >> ${ESPdir}/default
+  echo "*mlc ${DBInstDir}/databases/multicon.db5"       >> ${ESPdir}/default
+  echo "*opt ${DBInstDir}/databases/optics.db2"         >> ${ESPdir}/default
+  echo "*evn ${DBInstDir}/databases/profiles.db2.a"     >> ${ESPdir}/default
+  echo "*pdb ${DBInstDir}/databases/plantc.db1"         >> ${ESPdir}/default
+  echo "*ecdb ${DBInstDir}/databases/elcomp.db1"        >> ${ESPdir}/default
+  echo "*mcdb ${DBInstDir}/databases/mscomp.db1"        >> ${ESPdir}/default
+  echo "*icdb ${DBInstDir}/databases/icons.db1"         >> ${ESPdir}/default
+  echo "*mldb ${DBInstDir}/databases/mould.db1"         >> ${ESPdir}/default
+  echo "*sbem ${DBInstDir}/databases/SBEM.db1"          >> ${ESPdir}/default
+  echo "*cfcdb ${DBInstDir}/databases/CFClayers.db2.a"  >> ${ESPdir}/default
 fi
+echo "*end"                                             >> ${ESPdir}/default
 
-# End of default file.
-echo "*end" >> ${ESPdir}/default
-
-#-----------------------------------
-# Write out ESP-r configuration file
-#-----------------------------------
-
-echo "*ESPRC" > ${ESPdir}/esprc
-
-echo "*gprn,rectangular dump,import" >> ${ESPdir}/esprc
-echo "*tprn,Text dump,/tmp/tx_dump" >> ${ESPdir}/esprc
-echo "*gxwd,screen dump,import -window root" >> ${ESPdir}/esprc
-echo "*cad,CAD package,xzip,ZIP" >> ${ESPdir}/esprc
-# Image viewer program is platform specific:
+# Create esprc file.
+echo "*ESPRC"                                            > ${ESPdir}/esprc
+echo "*gprn,rectangular dump,import"                    >> ${ESPdir}/esprc
+echo "*tprn,Text dump,/tmp/tx_dump"                     >> ${ESPdir}/esprc
+echo "*gxwd,screen dump,import -window root"            >> ${ESPdir}/esprc
+echo "*cad,CAD package,xzip,ZIP"                        >> ${ESPdir}/esprc
 case "${MCTYPE}" in
-  mingw) # Use IE as image viewer (does this work?)
-         echo "*image_display,TIF,iexplore.exe" >> ${ESPdir}/esprc
-         echo "*image_display,XBMP,iexplore.exe" >> ${ESPdir}/esprc
-         echo "*image_display,GIF,iexplore.exe" >> ${ESPdir}/esprc
-         echo "*image_display,XWD,iexplore.exe" >> ${ESPdir}/esprc
+  mingw)
+         echo "*image_display,TIF,iexplore.exe"         >> ${ESPdir}/esprc
+         echo "*image_display,XBMP,iexplore.exe"        >> ${ESPdir}/esprc
+         echo "*image_display,GIF,iexplore.exe"         >> ${ESPdir}/esprc
+         echo "*image_display,XWD,iexplore.exe"         >> ${ESPdir}/esprc
     ;;
-  osx) # Use preview as image viewer
-         echo "*image_display,TIF,open" >> ${ESPdir}/esprc
-         echo "*image_display,XBMP,open" >> ${ESPdir}/esprc
-         echo "*image_display,GIF,open" >> ${ESPdir}/esprc
-         echo "*image_display,XWD,open" >> ${ESPdir}/esprc
+  osx)
+         echo "*image_display,TIF,open"                 >> ${ESPdir}/esprc
+         echo "*image_display,XBMP,open"                >> ${ESPdir}/esprc
+         echo "*image_display,GIF,open"                 >> ${ESPdir}/esprc
+         echo "*image_display,XWD,open"                 >> ${ESPdir}/esprc
     ;;
-  *)     # Use display as image editor (and what if it's not available?)
-         echo "*image_display,TIF,display" >> ${ESPdir}/esprc
-         echo "*image_display,XBMP,display" >> ${ESPdir}/esprc
-         echo "*image_display,GIF,display" >> ${ESPdir}/esprc
-         echo "*image_display,XWD,display" >> ${ESPdir}/esprc
+  *)
+         echo "*image_display,TIF,display"              >> ${ESPdir}/esprc
+         echo "*image_display,XBMP,display"             >> ${ESPdir}/esprc
+         echo "*image_display,GIF,display"              >> ${ESPdir}/esprc
+         echo "*image_display,XWD,display"              >> ${ESPdir}/esprc
     ;;
 esac
-echo "*journal,OFF" >> ${ESPdir}/esprc
-# Text editor is platform specific:
+echo "*journal,OFF"                                     >> ${ESPdir}/esprc
 case "${MCTYPE}" in
-  mingw) # Use Wordpad
-         echo "*editor,editor,wordpad.exe" >> ${ESPdir}/esprc
+  mingw)
+         echo "*editor,editor,wordpad.exe"              >> ${ESPdir}/esprc
     ;;
-  *)     # Use nedit --- but what if it's not available?
-         # We could use the value of the EDITOR environment
-         # variable, but it might point to a command-line
-         # editor such as vi/nano that wouldn't initialize
-         # correctly outside a terminal.
-         echo "*editor,editor,nedit" >> ${ESPdir}/esprc
+  *)
+         echo "*editor,editor,nedit"                    >> ${ESPdir}/esprc
     ;;
 esac
-echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
-
-# Pointer to exemplar files. Will we install exemplar and validation
-# standards?
+echo "*report_gen,Reporting tool,xfs"                   >> ${ESPdir}/esprc
 
 case "${install_training}" in
-  yes) # Use current installation folder for default databses
+  yes)
        TVInstDir="${ESPdir}"
        LinkTV="yes"
       ;;
-  no) # Check if training/ were previously installed in this folder
+  no)
       if [ -r ${ESPdir}/training/exemplars  ] &&
          [ -r ${ESPdir}/validation/stds_list ]; then
-        # They were previously installed. Link to installation folder
         TVInstDir="${ESPdir}"; LinkTV="yes"
       else
-        # They were not installed. Perhaps they're available in usr/esru?
-        if [ -r /usr/esru/esp-r/training/exemplars  ] &&
-           [ -r /usr/esru/esp-r/validation/stds_list ]; then
-          TVInstDir="/usr/esru/esp-r"; LinkTV="yes"
+        if [ -r ${ESPdir}/training/exemplars  ] &&
+           [ -r ${ESPdir}/validation/stds_list ]; then
+          TVInstDir="${ESPdir}"; LinkTV="yes"
         else
           LinkTV="no"
         fi
       fi
       ;;
 esac
-
 if [ "${LinkTV}" = "yes" ]; then
-  echo "*exemplars,Exemplars,${TVInstDir}/training/exemplars" >> ${ESPdir}/esprc
+  echo "*exemplars,Exemplars,${TVInstDir}/training/exemplars"                    >> ${ESPdir}/esprc
   echo "*validation_stds,Validation standards,${TVInstDir}/validation/stds_list" >> ${ESPdir}/esprc
 fi
 
-# Pointer to defaults file.
-echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
-
-# Pointer to climate list. Depends on whether databases were installed/found.
+echo "*db_defaults,Defaults,${ESPdir}/default"                                   >> ${ESPdir}/esprc
 if [ "${LinkDB}" = "yes" ]; then
-  echo "*db_climates,climatelist,${DBInstDir}/climate/climatelist" >> ${ESPdir}/esprc
+  echo "*db_climates,climatelist,${DBInstDir}/climate/climatelist"               >> ${ESPdir}/esprc
 fi
-# End of file.
-echo "*end" >> ${ESPdir}/esprc
+echo "*end"                                                                      >> ${ESPdir}/esprc
 
 echo " Done."
 
-##### Install databases
-
+# Install databases.
 if [ "$install_dbs" = "yes" ]; then
-
-echo " "
-echo " Installing standard databases. This may take some time."
-
-  # remove existing binary databases
+  echo " "
+  echo " Installing standard databases."
   echo -n "   - Removing existing databases..."
-  rm -f ${DESTdir}/esp-r/databases/*
-  rm -f ${DESTdir}/esp-r/climate/clm67
-  rm -f ${DESTdir}/esp-r/databases/test.res
+  rm -f ${DESTdir}/databases/*
+  rm -f ${DESTdir}/climate/clm67
+  rm -f ${DESTdir}/databases/test.res
   echo " Done."
   echo -n "   - Copying materials databases..."
   echo -n "  (${DATdir} - ${DESTdir}/esp-r/databases/ ) "
-  cp ${DATdir}/databases/ccht_constr.db1 ${DESTdir}/esp-r/databases/ccht_constr.db1
-  cp ${DATdir}/databases/ccht-optics.db1 ${DESTdir}/esp-r/databases/ccht-optics.db1
-  cp ${DATdir}/databases/ccht_na_constr.db1 ${DESTdir}/esp-r/databases/ccht_na_constr.db1
-  cp ${DATdir}/databases/ccht_material.ascii ${DESTdir}/esp-r/databases/ccht_material.ascii
-  cp ${DATdir}/databases/cellular.materialdb ${DESTdir}/esp-r/databases/cellular.materialdb
-  cp ${DATdir}/databases/north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb.a
-  cp ${DATdir}/databases/north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb
-  cp ${DATdir}/databases/north_american.constrdb ${DESTdir}/esp-r/databases/north_american.constrdb
-  cp ${DATdir}/databases/material.db3.a ${DESTdir}/esp-r/databases/material.db3.a
-  cp ${DATdir}/databases/material.db4.a ${DESTdir}/esp-r/databases/material.db4.a
-  cp ${DATdir}/databases/CFClayers.db1.a ${DESTdir}/esp-r/databases/CFClayers.db1.a
-  cp ${DATdir}/databases/CFClayers.db2.a ${DESTdir}/esp-r/databases/CFClayers.db2.a
-
-  cp ${DATdir}/databases/SBEM.db1 ${DESTdir}/esp-r/databases/SBEM.db1
-  cp ${DATdir}/databases/UK_notional.constrdb ${DESTdir}/esp-r/databases/UK_notional.constrdb
-  cp ${DATdir}/databases/profiles.db2.a ${DESTdir}/esp-r/databases/profiles.db2.a
-  cp ${DATdir}/databases/icons.db1 ${DESTdir}/esp-r/databases/icons.db1
-  cp ${DATdir}/databases/flow_icons.db6 ${DESTdir}/esp-r/databases/flow_icons.db6
-  cp ${DATdir}/databases/predefined.db1 ${DESTdir}/esp-r/databases/predefined.db1
+  cp ${DATdir}/databases/ccht_constr.db1 ${DESTdir}/databases/ccht_constr.db1
+  cp ${DATdir}/databases/ccht-optics.db1 ${DESTdir}/databases/ccht-optics.db1
+  cp ${DATdir}/databases/ccht_na_constr.db1 ${DESTdir}/databases/ccht_na_constr.db1
+  cp ${DATdir}/databases/ccht_material.ascii ${DESTdir}/databases/ccht_material.ascii
+  cp ${DATdir}/databases/cellular.materialdb ${DESTdir}/databases/cellular.materialdb
+  cp ${DATdir}/databases/north_american.materialdb.a ${DESTdir}/databases/north_american.materialdb.a
+  cp ${DATdir}/databases/north_american.materialdb.a ${DESTdir}/databases/north_american.materialdb
+  cp ${DATdir}/databases/north_american.constrdb ${DESTdir}/databases/north_american.constrdb
+  cp ${DATdir}/databases/material.db3.a ${DESTdir}/databases/material.db3.a
+  cp ${DATdir}/databases/material.db4.a ${DESTdir}/databases/material.db4.a
+  cp ${DATdir}/databases/CFClayers.db1.a ${DESTdir}/databases/CFClayers.db1.a
+  cp ${DATdir}/databases/CFClayers.db2.a ${DESTdir}/databases/CFClayers.db2.a
+  cp ${DATdir}/databases/SBEM.db1 ${DESTdir}/databases/SBEM.db1
+  cp ${DATdir}/databases/UK_notional.constrdb ${DESTdir}/databases/UK_notional.constrdb
+  cp ${DATdir}/databases/profiles.db2.a ${DESTdir}/databases/profiles.db2.a
+  cp ${DATdir}/databases/icons.db1 ${DESTdir}/databases/icons.db1
+  cp ${DATdir}/databases/flow_icons.db6 ${DESTdir}/databases/flow_icons.db6
+  cp ${DATdir}/databases/predefined.db1 ${DESTdir}/databases/predefined.db1
   echo " Done."
-
    cd ${DATdir}/databases
-
    echo -n "   - Creating binary plant components databases..."
 
-   # pdb convert: [ source file ] [ dest. file ] [ dest folder ]
-   pdb_convert plantc.db1.a plantc.db1 ${DESTdir}/esp-r/databases
-   pdb_convert plantc.db2.a plantc.db2 ${DESTdir}/esp-r/databases
-   pdb_convert plantc.tt.a  plantc.tt  ${DESTdir}/esp-r/databases
+# Define a function to convert the plant database file format from ascii to binary.
+pdb_convert()
+{
+SourceName=$1
+TargetName=$2
+TargetFolder=$3
+printf "\r                                                                            "
+printf "\r   - Creating binary plant databases [${TargetName}]..."
+$PDB -mode text -file $TargetName -act asci2bin ${SourceName}
+mv $TargetName $TargetFolder
+}
+   pdb_convert plantc.db1.a plantc.db1 ${DESTdir}/databases
+   pdb_convert plantc.db2.a plantc.db2 ${DESTdir}/databases
+   pdb_convert plantc.tt.a  plantc.tt  ${DESTdir}/databases
    echo " Done."
 
-   echo -n "   - Creating binary climate databases "
+   echo -n "   - Creating binary weather databases "
    cd ${DATdir}/climate
-   cp climatelist ${DESTdir}/esp-r/climate
-   sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${DATdir}/climate/climatelist > ${ESPdir}/climate/climatelist
-   cp README ${DESTdir}/esp-r/climate/Readme
-   cp README_IWEC ${DESTdir}/esp-r/climate/Readme_iwec
+   cp climatelist ${DESTdir}/climate
+   sed -e 's|${ESPdir}|'"${ESPdir}"'|' ${DATdir}/climate/climatelist > ${ESPdir}/climate/climatelist
+   cp README ${DESTdir}/climate/Readme
+   cp README_IWEC ${DESTdir}/climate/Readme_iwec
 
+# Define a function to convert the climate database format from ascii to binary.
+clim_convert()
+{
+TargetName=`echo $2 |  sed 's/\.a$//g'`
+printf "\r                                                                            "
+printf "\r   - Creating binary weather databases [${TargetName}] ..."
+rm -f $1
+$CLM -mode text -file $1 -act asci2bin silent $2  >/dev/null 2>/dev/null
+}
 
-   #Find all ascii files (we use the convention of .a)
-   for file in *.a
-   do
-     #Assign ascii file to variable.
-     CLIM_a=${file}
-     #Create binary file name by cutting off the .a suffix.
-     CLIM_b=`echo $file |  sed 's/\.a$//g'`
-     #Convert.
-     clim_convert ${DATdir}/climate/${CLIM_b} ${CLIM_a}
-     mv ${DATdir}/climate/${CLIM_b} ${DESTdir}/esp-r/climate/
-   done
-   echo " Done."
-
-   cd ${DATdir}/databases
-   echo -n "   - Copying ASCII databases..."
-   cp components.db1 multicon.db3 multicon.db4 multicon.db5 north_american.constrdb optics.db2 optics.db3 ccht-optics.db1 mould.db1 pressc.db1 mscomp.db1 mscomp.db2 *.desc ${DESTdir}/esp-r/databases
-   echo " Done."
-
+for file in *.a
+  do
+    CLIM_a=${file}
+    CLIM_b=`echo $file |  sed 's/\.a$//g'`
+    clim_convert ${DATdir}/climate/${CLIM_b} ${CLIM_a}
+    mv ${DATdir}/climate/${CLIM_b} ${DESTdir}/climate/
+  done
+  echo " Done."
+  cd ${DATdir}/databases
+  echo -n "   - Copying ASCII databases..."
+  cp components.db1 multicon.db3 multicon.db4 multicon.db5 north_american.constrdb optics.db2 optics.db3 ccht-optics.db1 mould.db1 pressc.db1 mscomp.db1 mscomp.db2 *.desc ${DESTdir}/databases
+  echo " Done."
 fi
 
-##### End Install databases
-
-#---------------------------------------
-# Write out training files.
-#---------------------------------------
-
+# Training and validation models.
 if [ "$install_training" = "yes" ]; then
-     echo " "
-     echo " Installing training and validation models. This may take some time."
-     echo -n "   - Installing standard bitmaps into ${ESPdir}/lib..."
-     cp ${SRCdir}/bitmaps/*.xbm ${ESPdir}/lib
-     echo " Done."
-
-     echo -n "   - Removing previous training and validation models..."
-     rm -rf ${ESPdir}/training ${ESPdir}/validation
-     echo " Done."
-
-     echo -n "   - Updating materials and climate databases in training models..."
-
-     # Note: We're dumping the output to /dev/null, which will suppress
-     #       error messsages that would otherwise warn the user if a
-     #       database failed to install. But this section of the
-     #       installation script is otherwise so verbose, it's extremely
-     #       unlikely a user (or developer) would ever notice such a
-     #       message.
-     #
-     #       In the future, we could wrap the database conversion commands
-     #       in a low-level script that would silently invoke prj/clm/pdb/ish,
-     #       check if the target binary database was actually created, and
-     #       verify its intregity. The script could then stop when an error
-     #       was encountered, and provide meaningful output to the user.
-     #
-     #       Maybe someday...
-
-     cd ${MODdir}/training/cg_ctl/daylit_coef/cfg
-     $CLM -mode text -file dec94_clm -act ascii2bin silent dec94_clm.a >/dev/null
-     cd ${MODdir}/training/Temporal_Clm
-     $CLM -mode text -file 15265.climate -act ascii2bin 15265.climate.a >/dev/null
-     cd ${MODdir}
-     echo " Done."
-     echo -n "   - Updating climate databases in validation models..."
-     cd ${MODdir}/validation/CEN/13791/databases
-     $CLM -mode text -file Cond.clm -act ascii2bin silent Cond.clm.a >/dev/null
-     $CLM -mode text -file WM_A.clm -act ascii2bin silent WM_A.clm.a >/dev/null
-     $CLM -mode text -file WM_B.clm -act ascii2bin silent WM_B.clm.a >/dev/null
-     cd ${MODdir}
-     echo " Done."
-     echo -n "   - Copying training and validation models..."
-     cp -r ${MODdir}/training ${ESPdir}/training
-     sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${MODdir}/training/exemplars > ${ESPdir}/training/exemplars
-     cp -r ${MODdir}/validation ${ESPdir}/validation
-     sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${MODdir}/validation/stds_list > ${ESPdir}/validation/stds_list
-     echo " Done."
-     echo -n "   - Removing versioning information from training and validation files..."
-     find  ${ESPdir}/training -name "\.svn" | xargs rm -fr
-     find  ${ESPdir}/training -name "\.git" | xargs rm -fr
-     find  ${ESPdir}/validation -name "\.svn" | xargs rm -fr
-     find  ${ESPdir}/validation -name "\.git" | xargs rm -fr
-     echo " Done."
-     echo -n "   - Removing binary database from training models ..."
-     cd ${MODdir}/
-     rm -f training/cg_ctl/daylit_coef/cfg/dec94_clm
-     rm -f validation/CEN/13791/databases/WM_A.clm
-     rm -f validation/CEN/13791/databases/WM_B.clm
-     rm -f validation/CEN/13791/databases/Cond.clm
-     echo " Done."
-  # Update directory names in training models to reflect DESTdir
-  #
-  # Scan training and validation folders for configuration files.
-  #
+  echo " "
+  echo " Installing training and validation models."
+  echo -n "   - Installing standard bitmaps into ${ESPdir}/lib..."
+  cp ${SRCdir}/bitmaps/*.xbm ${ESPdir}/lib
+  echo " Done."
+  echo -n "   - Removing previous training and validation models..."
+  rm -rf ${ESPdir}/training ${ESPdir}/validation
+  echo " Done."
+  echo -n "   - Updating materials and weather databases in training models..."
+  cd ${MODdir}/training/cg_ctl/daylit_coef/cfg
+  $CLM -mode text -file dec94_clm -act asci2bin silent dec94_clm.a >/dev/null
+  cd ${MODdir}/training/Temporal_Clm
+  $CLM -mode text -file 15265.climate -act asci2bin 15265.climate.a >/dev/null
+  cd ${MODdir}
+  echo " Done."
+  echo -n "   - Updating weather databases in validation models..."
+  cd ${MODdir}/validation/CEN/13791/databases
+  $CLM -mode text -file Cond.clm -act asci2bin silent Cond.clm.a >/dev/null
+  $CLM -mode text -file WM_A.clm -act asci2bin silent WM_A.clm.a >/dev/null
+  $CLM -mode text -file WM_B.clm -act asci2bin silent WM_B.clm.a >/dev/null
+  cd ${MODdir}
+  echo " Done."
+  echo -n "   - Installing training and validation models..."
+  cp -r ${MODdir}/training ${ESPdir}/training
+  sed -e 's|${ESPdir}|'"${ESPdir}"'|' ${MODdir}/training/exemplars > ${ESPdir}/training/exemplars
+  cp -r ${MODdir}/validation ${ESPdir}/validation
+  sed -e 's|${ESPdir}|'"${ESPdir}"'|' ${MODdir}/validation/stds_list > ${ESPdir}/validation/stds_list
+  echo " Done."
+  echo -n "   - Removing versioning information from training and validation models..."
+  find  ${ESPdir}/training -name "\.svn" | xargs rm -fr
+  find  ${ESPdir}/training -name "\.git" | xargs rm -fr
+  find  ${ESPdir}/validation -name "\.svn" | xargs rm -fr
+  find  ${ESPdir}/validation -name "\.git" | xargs rm -fr
+  echo " Done."
+  echo -n "   - Removing binary weather database from training models..."
+  cd ${MODdir}/
+  rm -f training/cg_ctl/daylit_coef/cfg/dec94_clm
+  rm -f validation/CEN/13791/databases/WM_A.clm
+  rm -f validation/CEN/13791/databases/WM_B.clm
+  rm -f validation/CEN/13791/databases/Cond.clm
+  echo " Done."
   cd ${MODdir}/
   echo "   - Updating model shading and database records..."
   cfgnames=(`find ./training ./validation -name "*.cfg" -print`)
-  # Count cfg files
   cfgcount=`find ./training ./validation -name "*.cfg" -print | wc -l`
-  #
-  # For each cfg file check for shading dbs
-  #
   cfgnum=0
   for file in "${cfgnames[@]}"; do
     cfgnum=$((${cfgnum} + 1))
     printf "      -> model ${cfgnum}/${cfgcount} (${file})"
-  # echo FILE: $file
-
-  #
-  # Create a list of zone ref numbers and isi files in this cfg file
-  #
-
     if [ "${skip_ish_calcs}" = "no" ]; then
       isi=(`egrep '(\*isi\ |\*zon\ )' $file | cut -d# -f1`)
-      # Count zones with shading
       ish_tag_count=(`egrep '(\*isi\ )' $file | cut -d# -f1 | wc -l `)
       hits=${#isi[@]}
-
       i=0
-      #
-      # Get the zone number and check if there is a isi file associated
-      # with this zone.  The format of the isi variable is
-      # "*zon  1  *zon  2  *isi  ../zones/xx.shd" and so on where hits
-      # is the number of words in the list isi.
-      #
       ish_processed_count=0
       while [ $((i)) -lt $((hits-2)) ]; do
       if [ ${isi[$((i))]} == "*zon" ]; then
-
         if [ ${isi[$((i+2))]} == "*isi" ]; then
           ish_processed_count=$((${ish_processed_count}+1))
-
           if [ "${reuse_ish_calcs}" = "no" ]; then
             printf "\r      -> model ${cfgnum}/${cfgcount} (${file}); zone ${ish_processed_count}/${ish_tag_count}"
             $ISH -mode text -file ${file:2} -zone ${isi[$((i+1))]} -act update_silent > /dev/null
@@ -2622,8 +2096,8 @@ if [ "$install_training" = "yes" ]; then
       done
     fi
     printf "\n"
-  #
-  # Now update the paths in models to reflect install dir.
+
+  # Update model paths to reflect install directory.
   #
   # Note: This approach will not work for models with plant
   #       networks. ESP-r saves the plant database path in
@@ -2631,20 +2105,13 @@ if [ "$install_training" = "yes" ]; then
   #       .pln file. prj uses the record in the .cfg file,
   #       while bps references the record in the .pln file.
   #       Thus training models containing plant networks will
-  #       bre browsable, but will not run.
-  #
-  #       This code should either be updated to edit the .pln
-  #       file as well, or (preferably) bps should be updated
-  #       to reference the plant database record in the cfg
-  #       file.
-  #
-  sed -e 's|/usr/esru|'"${DESTdir}"'|' ${file} > ${ESPdir}/${file:2}
-
+  #       be browsable but will not run.
+  sed -e 's|${ESPdir}|'"${DESTdir}"'|' ${file} > ${ESPdir}/${file:2}
   done
   echo "     Done."
 
-  # Sample result set.
-  echo -n "   - Creating example binary results database..."
+  # Create a sample result set.
+  echo -n "   - Creating example results database..."
   rm -f ${ESPdir}/databases/test.res
   $BPS -mode text >/dev/null 2>&1 <<zzz
 a
@@ -2664,16 +2131,13 @@ y
 -
 -
 zzz
-     echo " Done."
-     cd ${SRCdir}
-
-
+  echo " Done."
+  cd ${SRCdir}
   echo -n "   - Installing manual files..."
   rm -rf ${ESPdir}/manual
   mkdir ${ESPdir}/manual
   cp -r ${DOCdir}/manual/* ${ESPdir}/manual
   echo " Done."
-
   echo -n "   - Installing common scripts..."
   rm -rf ${ESPdir}/scripts
   mkdir ${ESPdir}/scripts
@@ -2686,20 +2150,17 @@ zzz
   echo " Done."
 fi
 
-##### End Install training, manual files.
-##### If xml support requested install the XSLT files.
+# If xml support requested install the XSLT files.
 if [ "$xml_support" = "yes" ]; then
 echo " "
-echo -n " Installing xslt files ..."
-cp ${SRCdir}/cetc/h3kreports/xsl/*.xsl ${DESTdir}/esp-r/xsl
+echo -n "   - Installing xslt files..."
+cp ${SRCdir}/cetc/h3kreports/xsl/*.xsl ${DESTdir}/xsl
 echo " Done."
 
 fi
-
-##### Install and  Clean up
 cd ${SRCdir}
 echo " "
-echo -n " Installing executables... " 
+echo -n "   - Installing executables... " 
 if [ "$debugging" = "no" ]; then
   make ESPdir=${ESPdir} EXE=${EXE} COSIMDir=${COSIMdir} strip  >/dev/null 2>&1
 fi
@@ -2712,8 +2173,7 @@ fi
 if [ "$clean" = "yes" ]; then
   make EXE=${EXE} clean  >/dev/null 2>&1
 fi
-echo "Done."
-
+echo " Done."
 
 # Makeup an appropriate esp-r script.
 if [ ${MCTYPE} = sun ]; then
@@ -2764,12 +2224,9 @@ fi
 echo " "
 echo " Installation complete.  Please consult file ${SRCdir}/env/README."
 echo " "
-echo " NOTE: Be sure that you have updated your PATH environment"
-echo "       to include directives for the location of the ESP-r"
-echo "       executables. You should ensure that: "
-echo "       "${ESPdir}"/bin"
-echo "       is included in the definition."
-echo " "
+echo " Ensure that you update your PATH environment to include directives"
+echo " for the location of the ESP-r executables (${ESPdir}/bin) and any"
+echo " other support tools used by ESP-r."
 
 exit
 

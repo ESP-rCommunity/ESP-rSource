@@ -16,9 +16,9 @@ export xml_support=no
 export SQLite_support=no
 #for make
 export MCTYPE=lin 
-export MCC=gcc-4.9
-export MCPL=g++-4.9 
-export MFC=gfortran-4.9
+export MCC=gcc-5
+export MCPL=g++-5 
+export MFC=gfortran-5
 export WWLINK=unshared 
 export EXE=
 export xml_status=
@@ -37,7 +37,7 @@ endif
 #export COSIMDir=
 #targets for make
 OPTIONS=disableSQLite enableXML  libX11
-PROGRAMS = aco b2e bps dbm dfs cdb c2e clm e2r ecnv eco enet grd ish mfs mld mrt pdb prj res stats vew 
+PROGRAMS = aco b2e bps dbm dfs dfv cdb c2e clm e2r ecnv eco enet grd ish mfs mld mrt pdb prj res stats vew 
 #path for installation package
 
 

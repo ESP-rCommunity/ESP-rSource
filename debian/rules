@@ -64,7 +64,7 @@ install:
 	dh_testdir
 	dh_prep
 	dh_installdirs
-	cd src; $(MAKE) InstBins
+	cd src; $(MAKE) bincopy
 	./debian/install-espr.sh
 	./debian/install-doc.sh
 	./debian/install-database.sh

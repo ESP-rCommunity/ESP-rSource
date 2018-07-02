@@ -5,20 +5,22 @@ changelog. Here are some of the steps needed to get to
 this point:
 
 Find the revision number from svn.
-do a mkdir espr_12.6.XXXX
-rsync --exclude .svn --exclude .git -av multicon5 espr_12.6.XXXX
-tar cf espr_12.6.XXXX.tar espr_12.6.XXXX
-gzip -9 espr_12.6.XXXX.tar
-mkdir to_build_12.6
-cp espr_12.6.XXXX.tar.gz to_build_12.6
-cd to_build_12.6
-tar xfz espr_12.6.XXXX.tar.gz
-ln -s espr_12.6.XXXX.tar.gz espr_12.6.XXXX.orig.tar.gz
-cd espr_12.6.XXXX
-mkdir debian
+do a mkdir espr_12.7.XXXX
+rsync --exclude .svn --exclude .git -av multicon5 espr_12.7.XXXX
+tar cf espr_12.7.XXXX.tar espr_12.7.XXXX
+gzip -9 espr_12.7.XXXX.tar
+mkdir to_build_12.7
+cp espr_12.7.XXXX.tar.gz to_build_12.7
+cd to_build_12.7
+tar xfz espr_12.7.XXXX.tar.gz
+ln -s espr_12.7.XXXX.tar.gz espr_12.7.XXXX.orig.tar.gz
+cd espr_12.7.XXXX
+if not already done setup debian folder
+ mkdir debian
  put the svn debian files into this folder
-
-debuild
-cd debian
-nedit changelog
-nedit control
+ cd debian
+ nedit changelog
+ nedit control
+ cd ../
+then run debuild
+when it finishes there should be 3 deb files in the folder above.
