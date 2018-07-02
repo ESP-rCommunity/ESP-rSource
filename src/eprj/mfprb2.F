@@ -90,7 +90,7 @@ C Synopsis of flow component.
 C If in graphic mode and IAIRN=3 then highlight the component.
       if(IAIRN.eq.3)then
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('g')  ! draw in grey first
           call pausems(100)
           VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
@@ -159,7 +159,7 @@ C their Delta Z.
 
 C Refresh the network overly.
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('r')
         endif
       endif
@@ -211,7 +211,7 @@ C Show short description of flow component.
 C If in graphic mode and IAIRN=3 then highlight the component.
       if(IAIRN.eq.3)then
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('g')  ! draw in grey first
           call pausems(100)
           VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
@@ -272,7 +272,7 @@ C their Delta Z.
 
 C Refresh the network overly.
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('r')
         endif
       endif
@@ -326,7 +326,7 @@ C Synopsis of flow component.
 C If in graphic mode and IAIRN=3 then highlight the component.
       if(IAIRN.eq.3)then
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('g')  ! draw in grey first
           call pausems(100)
           VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
@@ -403,7 +403,7 @@ C their Delta Z.
 
 C Refresh the network overly.
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('r')
         endif
       endif
@@ -457,7 +457,7 @@ C Synopsis of flow component.
 C If in graphic mode and IAIRN=3 then highlight the component.
       if(IAIRN.eq.3)then
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('g')  ! draw in grey first
           call pausems(100)
           VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
@@ -526,7 +526,7 @@ C their Delta Z.
 
 C Refresh the network overly.
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('r')
         endif
       endif
@@ -580,7 +580,7 @@ C Synopsis of flow component.
 C If in graphic mode and IAIRN=3 then highlight the component.
       if(IAIRN.eq.3)then
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('g')  ! draw in grey first
           call pausems(100)
           VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
@@ -650,7 +650,7 @@ C their Delta Z.
 
 C Refresh the network overly.
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('r')
         endif
       endif
@@ -704,7 +704,7 @@ C Synopsis of flow component.
 C If in graphic mode and IAIRN=3 then highlight the component.
       if(IAIRN.eq.3)then
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('g')  ! draw in grey first
           call pausems(100)
           VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
@@ -774,7 +774,7 @@ C their Delta Z.
 
 C Refresh the network overly.
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('r')
         endif
       endif
@@ -827,7 +827,7 @@ C Synopsis of flow component.
 C If in graphic mode and IAIRN=3 then highlight the component.
       if(IAIRN.eq.3)then
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('g')  ! draw in grey first
           call pausems(100)
           VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
@@ -897,7 +897,7 @@ C their Delta Z.
 
 C Refresh the network overly.
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('r')
         endif
       endif
@@ -951,7 +951,7 @@ C Synopsis of flow component.
 C If in graphic mode and IAIRN=3 then highlight the component.
       if(IAIRN.eq.3)then
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('g')  ! draw in grey first
           call pausems(100)
           VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
@@ -1085,7 +1085,7 @@ C their Delta Z.
 
 C Refresh the network overly.
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('r')
         endif
       endif
@@ -1138,7 +1138,7 @@ C Synopsis of flow component.
 C If in graphic mode and IAIRN=3 then highlight the component.
       if(IAIRN.eq.3)then
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('g')  ! draw in grey first
           call pausems(100)
           VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
@@ -1204,7 +1204,7 @@ C their Delta Z.
 
 C Refresh the network overly.
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('r')
         endif
       endif
@@ -1257,7 +1257,7 @@ C Synopsis of flow component.
 C If in graphic mode and IAIRN=3 then highlight the component.
       if(IAIRN.eq.3)then
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('g')  ! draw in grey first
           call pausems(100)
           VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
@@ -1326,7 +1326,7 @@ C their Delta Z.
 
 C Refresh the network overly.
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('r')
         endif
       endif
@@ -1380,7 +1380,7 @@ C Synopsis of flow component.
 C If in graphic mode and IAIRN=3 then highlight the component.
       if(IAIRN.eq.3)then
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('g')  ! draw in grey first
           call pausems(100)
           VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
@@ -1449,7 +1449,7 @@ C their Delta Z.
 
 C Refresh the network overly.
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('r')
         endif
       endif
@@ -1502,7 +1502,7 @@ C Synopsis of flow component.
 C If in graphic mode and IAIRN=3 then highlight the component.
       if(IAIRN.eq.3)then
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('g')  ! draw in grey first
           call pausems(100)
           VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
@@ -1561,7 +1561,7 @@ C their Delta Z.
 
 C Refresh the network overly.
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('r')
         endif
       endif
@@ -1611,7 +1611,7 @@ C Synopsis of flow component.
 C If in graphic mode and IAIRN=3 then highlight the component.
       if(IAIRN.eq.3)then
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('g')  ! draw in grey first
           call pausems(100)
           VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
@@ -1671,7 +1671,7 @@ C their Delta Z.
 
 C Refresh the network overly.
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('r')
         endif
 
@@ -1740,7 +1740,7 @@ C Synopsis of flow component.
 C If in graphic mode and IAIRN=3 then highlight the component.
       if(IAIRN.eq.3)then
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('g')  ! draw in grey first
           call pausems(100)
           VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
@@ -1807,7 +1807,7 @@ C their Delta Z.
 
 C Refresh the network overly.
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('r')
         endif
       endif
@@ -1870,7 +1870,7 @@ C Synopsis of flow component.
 C If in graphic mode and IAIRN=3 then highlight the component.
       if(IAIRN.eq.3)then
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('g')  ! draw in grey first
           call pausems(100)
           VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
@@ -1969,7 +1969,7 @@ C their Delta Z.
 
 C Refresh the network overly.
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('r')
         endif
       endif
@@ -2048,7 +2048,7 @@ C Show short description of flow component.
 C If in graphic mode and IAIRN=3 then highlight the component.
       if(IAIRN.eq.3)then
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('g')  ! draw in grey first
           call pausems(100)
           VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)
@@ -2123,7 +2123,7 @@ C their Delta Z.
 
 C Refresh the network overly.
         if(MMOD.eq.8)then
-          call win3dclr
+          call startbuffer
           call MFWFDRAW('r')
         endif
       endif

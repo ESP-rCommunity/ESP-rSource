@@ -174,7 +174,7 @@ C Calculate geometrical quantities.
       CALL GRID(IER)
 
 C Save domain geometry data to results library.
-      if (icfcal(ICFD).eq.1) call cfdlibdom(ICOMP)
+      if (icfcal(ICFD).eq.1.and..not.gophrun) call cfdlibdom(ICOMP)
 
 C Set up boundary conditions which are independent of the airflow.
       CALL INDBND
@@ -370,8 +370,8 @@ C To support writing ASCII file.
       COMMON/CFSEUP/CFTIMS,CFTIMF,ICFDYS,ICFDYF,ICFAUX(MCOM),ICFVIEW,
      &  ICFVIEWMINT,ICFVIEWMAXT
       common/CFDSV/IRECPC,ICFDSV,IEQSV(5+MCTM)
-      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX,URFC(MCTM)
+      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),
+     &               NCTM(MNZ),JHUMINDX(MNZ),URFC(MCTM)
       LOGICAL CALPOL,CALLMA
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
       COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),
@@ -488,13 +488,13 @@ C dfv that displays a 3D rendering of the current solution.
           call efopseq(38,cfd3dascii,4,ier)
           write(38,'(a)') 'cfd3dascii'
           write(38,'(a,16i4)') 'head_1:',MCEL1D,ICFDSV,ICFD,NCOMP,
-     &      (IEQSV(J),J=1,5+NCTM)
+     &      (IEQSV(J),J=1,5+NCTM(ICFD))
           write(38,'(a,120i4)') 'head_2:',(abs(ICFAUX(I)),I=1,NCOMP)
           write(38,'(a,2i4,2f9.5)')'head_3:',ICFDYS,ICFDYF,CFTIMS,CFTIMF
-          write(38,'(a,i4)') 'head_4:',NCTM
+          write(38,'(a,i4)') 'head_4:',NCTM(ICFD)
           write(6,'(a,i3,a,F7.4)') 'head_5: day ',IDYP,' at ',BTIMEF
           write(38,'(a,i3,a,F7.4)') 'head_5: day ',IDYP,' at ',BTIMEF
-          DO ICTM=1,NCTM
+          DO ICTM=1,NCTM(ICFD)
             write(38,'(2a)') 'POL: ',POLNAM(ICTM,ICFD)
           ENDDO
           write(38,'(a,i3)') 'zone:',ICOMP
@@ -521,7 +521,7 @@ C dfv that displays a 3D rendering of the current solution.
               if (IEQSV(5).eq.1) then
                 write(38,'(a,120f9.5)') 'AGEf:',(AGEf(I,J,K),I=2,NI)
               endif
-              DO ICTM=1,NCTM
+              DO ICTM=1,NCTM(ICFD)
                 if (IEQSV(5+ICTM).eq.1) then
                   write(38,'(a,120f9.5)') 'POL:',
      &              (POLCONCf(ICTM,I,J,K),I=2,NI)
@@ -543,7 +543,6 @@ C -range <min> <max>
             call runit(doit,'-')
           endif
         endif
-
       ENDIF
 
       RETURN
@@ -575,8 +574,8 @@ C espriou.h provides currentfile.
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/cfdsmper/ICDYS,ICDYF,CFTS,CFTF
       COMMON/cfdhsh/NCFDSZ,NRCFDOM(MNZ)
-      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX,URFC(MCTM)
+      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),
+     &               NCTM(MNZ),JHUMINDX(MNZ),URFC(MCTM)
       common/CFDSV/IRECPC,ICFDSV,IEQSV(5+MCTM)
       real CFTIMS,CFTIMF    ! start and finish times for CFD assessment
       integer ICFDYS,ICFDYF ! julian day-of-year at start and end of CFD
@@ -651,12 +650,12 @@ C Set unit number and initial values of ISIMDAY & SIMTIMEF.
         return
       elseif(WORD(1:7).eq.'head_1:')then
 
-C Read head_1: MCEL1D,ICFDSV,(IEQSV(J),J=1,5+NCTM)
+C Read head_1: MCEL1D,ICFDSV,(IEQSV(J),J=1,5+NCTM(ICFD))
         CALL EGETWI(LOUTSTR,K,MCEL1D,0,0,'-','MCEL1D',IER)
         CALL EGETWI(LOUTSTR,K,ICFDSV,0,0,'-','ICFDSV',IER)
         CALL EGETWI(LOUTSTR,K,ICFD,0,0,'-','ICFD',IER)
         CALL EGETWI(LOUTSTR,K,NCOMP,0,0,'-','NCOMP',IER)
-        DO J=1,5+NCTM
+        DO J=1,5+NCTM(ICFD)
           CALL EGETWI(LOUTSTR,K,IEQSV(J),0,0,'-','IEQSV',IER)
         ENDDO
       elseif(WORD(1:7).eq.'head_2:')then
@@ -676,8 +675,8 @@ C Read head_3: ICFDYS,ICFDYF,CFTIMS,CFTIMF
 
       elseif(WORD(1:7).eq.'head_4:')then
 
-C Read head_4: NCTM
-        CALL EGETWI(LOUTSTR,K,NCTM,0,0,'-','NCTM',IER)
+C Read head_4: NCTM(ICFD)
+        CALL EGETWI(LOUTSTR,K,NCTM(ICFD),0,0,'-','NCTM(ICFD)',IER)
 
       elseif(WORD(1:7).eq.'head_5:')then
 
@@ -807,8 +806,8 @@ C cfdlibhead - write header information to cfd results library.
       common/EQTION/CALLU(MNZ),CALLV(MNZ),CALLW(MNZ),CALLT(MNZ),
      &             CALLC(MNZ),KEMDL(MNZ),BUOY(MNZ),BOUSSI(MNZ),
      &             ZEROT(MNZ),ZandKE(MNZ),MITzero(MNZ)
-      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX,URFC(MCTM)
+      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),
+     &               NCTM(MNZ),JHUMINDX(MNZ),URFC(MCTM)
 
       common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
 
@@ -819,6 +818,23 @@ C cfdlibhead - write header information to cfd results library.
       LOGICAL CALLMA,CALPOL
 
       integer, dimension(MCOM) :: domarr
+
+C Depending on CFD results version, execute appropriate code.
+C Version 1 has only momentum and temperature (deprecated).
+C Version 2 adds local mean age of air and contaminants (deprecated).
+C Version 3 reorganises the header structure to fully enable multiple
+C CFD domains, and potentially reduces library size.
+      if (ICFDSV.eq.1.or.ICFDSV.eq.2) then
+        goto 102
+      elseif (ICFDSV.eq.3) then
+        goto 103
+      else
+        call edisp(iuout,
+     &    ' CFDLIBHEAD: unrecognised CFD results version.')
+        goto 999
+      endif
+
+C *** VERSIONS 1 & 2 ***      
 
 C Save record width as first data item and save level.
 C Save level 1 - velocity and temperature information saved.
@@ -831,7 +847,8 @@ C  IEQSV(4)=Temperature
 C  IEQSV(5)=Local mean age of air
 C  IEQSV(5+MCTM)=contaminant concentration
 C Indicate which equations are active=>results to save.
-      do 10 I=1,7
+
+ 102  do 10 I=1,7
         IEQSV(I)=0
  10   continue
       if (CALLU(ICFD)) IEQSV(1)=1
@@ -839,26 +856,20 @@ C Indicate which equations are active=>results to save.
       if (CALLW(ICFD)) IEQSV(3)=1
       if (CALLT(ICFD)) IEQSV(4)=1
       if (CALLMA(ICFD)) IEQSV(5)=1
-      DO 111 ICTM=1,NCTM
+      DO 111 ICTM=1,NCTM(ICFD)
         IF(CALPOL(ICTM,ICFD)) IEQSV(5+ICTM)=1
  111  CONTINUE
       IREC=1
       WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000) MCEL1D,ICFDSV,
-     &                                             (IEQSV(J),J=1,5+NCTM)
+     &                                      (IEQSV(J),J=1,5+NCTM(ICFD))
 
 C Debug.
-C      WRITE(6,*) ICFLIB,IREC,':',MCEL1D,ICFDSV,(IEQSV(J),J=1,5+NCTM)
+C      WRITE(6,*) ICFLIB,IREC,':',MCEL1D,ICFDSV,(IEQSV(J),J=1,5+NCTM(ICFD))
 
-C Which zone(s) is CFD active in (domain number).
-      do I=1,NCOMP
-        domarr(I)=0
-        do J=1,NCONF
-          if (I.eq.icfdnd(J)) domarr(I)=J
-        enddo
-      enddo
+C Which zone(s) is CFD active in.
       IREC=IREC+1
       WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)
-     &                                (domarr(I),I=1,NCOMP)
+     &                                (abs(ICFAUX(I)),I=1,NCOMP)
 
 C Debug.
 C      WRITE(6,*) ICFLIB,IREC,':',(abs(ICFAUX(I)),I=1,NCOMP)
@@ -873,12 +884,12 @@ C      WRITE(6,*) ICFLIB,IREC,':',ICFDYS,ICFDYF,CFTIMS,CFTIMF
 
 C Write number of contaminants and names
       IREC=IREC+1
-      WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCTM
+      WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCTM(ICFD)
 
 C Debug.
-C      WRITE(6,*) ICFLIB,IREC,':',NCTM
+C      WRITE(6,*) ICFLIB,IREC,':',NCTM(ICFD)
 
-      DO 333 ICTM=1,NCTM
+      DO 333 ICTM=1,NCTM(ICFD)
         IREC=IREC+1
         WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)POLNAM(ICTM,ICFD)
 
@@ -886,22 +897,55 @@ C Debug.
 C        WRITE(6,*)POLNAM(ICTM,ICFD)
 
  333  CONTINUE
+
+      goto 998
+
+C *** VERSION 3 ***
+
+C We no longer store the equations saved on the first line of the
+C header, for two reasons:
+C 1. It depends on the number of contaminants, which makes the read
+C order of the library weird.
+C 2. It might be different for each domain.
+C Record 1: record width, save level
+ 103  IREC=1
+      WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)MCEL1D,ICFDSV
+
+C Record 2: array of domain numbers for each zone
+      IREC=IREC+1
+      do I=1,NCOMP
+        domarr(I)=0
+        do J=1,NCONF
+          if (I.eq.icfdnd(J)) domarr(I)=J
+        enddo
+      enddo
+      WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)
+     &                                (domarr(I),I=1,NCOMP)
+
+C Record 3: CFD simulation period (start day, finish day, start
+C               time, finish time)
+      IREC=IREC+1
+      WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000) ICFDYS,ICFDYF,
+     &  CFTIMS,CFTIMF
+
+      goto 998
+
+C *** ADD FURTHER CFD RESULT LIBRARY VERSIONS HERE ***      
   
 C Remember current CFD res lib record number.
-      IRECPC=IREC
-      return
+ 998  IRECPC=IREC
+      goto 999
 
 C Error writing data.
  1000 write(outs,'(A,I5,A)')' CFDLIBHEAD: error at record',IREC,'.'
       call edisp(iuout,outs)
-      return
+ 999  return
       end
 
 
 C ********************* cfdlibdom *********************
 C cfdlibdom - write domain information to cfd results library for each 
 C CFD domain.
-C This routine will work for multiple CFD domains in a problem.
 
       subroutine cfdlibdom(ICOMP)
 #include "cfd.h"
@@ -909,20 +953,45 @@ C This routine will work for multiple CFD domains in a problem.
       common/outin/iuout,iuin
       COMMON/ICFCHN/ICFMON(MNZ),ICFTMP,ICFLIB
       common/CFDSV/IRECPC,ICFDSV,IEQSV(5+MCTM)
-      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX,URFC(MCTM)
+      common/EQTION/CALLU(MNZ),CALLV(MNZ),CALLW(MNZ),CALLT(MNZ),
+     &             CALLC(MNZ),KEMDL(MNZ),BUOY(MNZ),BOUSSI(MNZ),
+     &             ZEROT(MNZ),ZandKE(MNZ),MITzero(MNZ)
+      LOGICAL CALLU,CALLV,CALLW,CALLT,CALLC,KEMDL,BUOY,BOUSSI
+      LOGICAL ZEROT,ZandKE,MITzero
+      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),
+     &               NCTM(MNZ),JHUMINDX(MNZ),URFC(MCTM)
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
       COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
      1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
      2            DZHP(ntcelz),DZPL(ntcelz),
      3            SEW(ntcelx),SNS(ntcely),SHL(ntcelz),
      4            XU(ntcelx),YV(ntcely),ZW(ntcelz)
+      COMMON/ICFNOD/ICFD,ICP
+      common/GRDVRTS/iorg(MNZ),ixend(MNZ),iyend(MNZ),izend(MNZ),
+     &  izende(MNZ)
 
       CHARACTER outs*124, POLNAM*12
       LOGICAL CALPOL,CALLMA
 
+C Depending on CFD results version, execute appropriate code.
+C Version 1 has only momentum and temperature (deprecated).
+C Version 2 adds local mean age of air and contaminants (deprecated).
+C Version 3 reorganises the header structure to fully enable multiple
+C CFD domains, and potentially reduces library size.
+      if (ICFDSV.eq.1.or.ICFDSV.eq.2) then
+        goto 102
+      elseif (ICFDSV.eq.3) then
+        goto 103
+      else
+        call edisp(iuout,
+     &    ' CFDLIBDOM: unrecognised CFD results version.')
+        goto 999
+      endif
+
+C *** VERSION 1 & 2 ***
+
 C Calculate record number to write to.
-      IREC=5+NCTM+(4*(ICOMP-1))
+ 102  IREC=5+NCTM(ICFD)+(4*(ICOMP-1))
 
 C Debug.
 C      write(6,*) 'saving to IREC ',IREC,' for zone ',ICOMP
@@ -935,7 +1004,7 @@ C IMULT is the number of metrics being saved (1 per record).
         IMULT=4
       else
         IMULT=0
-        do 10 I=1,5+NCTM
+        do 10 I=1,5+NCTM(ICFD)
           IMULT=IMULT+IEQSV(I)
  10     continue
       endif
@@ -966,7 +1035,101 @@ C      WRITE(6,*) ICFLIB,IREC,':',(YV(I),I=1,NJ)
 C Debug.
 C      WRITE(6,*) ICFLIB,IREC,':',(ZW(I),I=1,NK)
 
-      return
+      GOTO 999
+
+C *** VERSION 3 ***
+
+C Calculate record number to write to.
+ 103  IREC=3+(8*(ICFD-1))
+
+C Write number of contaminants.
+      IREC=IREC+1
+      WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCTM(ICFD)
+
+C Write names of contaminants.
+C If there are no contaminants, just write an "x".
+C NOTE: It is theoretically possible for this to exceed the record width
+C of the library, though this would require an extremely specialised use
+C of the CFD with many contaminants. The risk is considered so minimal
+C as to be neglible for the time being.
+      IREC=IREC+1
+      if (NCTM(ICFD).gt.0) then
+        WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)
+     &    (POLNAM(I,ICFD),I=1,NCTM(ICFD))
+      else
+        WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)'x'
+      endif
+        
+C Write equations saved.
+      IMULT=0
+      if (CALLU(ICFD)) then
+        IEQSV(1)=1
+        IMULT=IMULT+1
+      else
+        IEQSV(1)=0
+      endif        
+      if (CALLV(ICFD)) then
+        IEQSV(2)=1
+        IMULT=IMULT+1
+      else
+        IEQSV(2)=0
+      endif       
+      if (CALLW(ICFD)) then
+        IEQSV(3)=1
+        IMULT=IMULT+1
+      else
+        IEQSV(3)=0
+      endif       
+      if (CALLT(ICFD)) then
+        IEQSV(4)=1
+        IMULT=IMULT+1
+      else
+        IEQSV(4)=0
+      endif       
+      if (CALLMA(ICFD)) then
+        IEQSV(5)=1
+        IMULT=IMULT+1
+      else
+        IEQSV(5)=0
+      endif       
+      do ICTM=1,NCTM(ICFD)
+        if(CALPOL(ICTM,ICFD)) then
+          IEQSV(5+ICTM)=1
+          IMULT=IMULT+1
+        else
+          IEQSV(5+ICTM)=0
+        endif       
+      enddo
+      IREC=IREC+1
+      WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)
+     &  (IEQSV(I),I=1,5+NCTM(ICFD))
+
+C Write domain size.
+      IDRSZE=NJM1*NKM1*IMULT
+      IREC=IREC+1
+      WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000) IDRSZE,NIM2,NJM2,NKM2
+
+C Debug.
+      WRITE(6,*) ICFLIB,IREC,':',IDRSZE,NIM2,NJM2,NKM2
+
+C Write grid sizing information.
+      IREC=IREC+1
+      WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000) (XU(I),I=1,NI)
+
+      IREC=IREC+1
+      WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000) (YV(I),I=1,NJ)
+
+      IREC=IREC+1
+      WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000) (ZW(I),I=1,NK)
+
+C Write grid origin vertices.
+      IREC=IREC+1
+      WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)IORG(ICFD),
+     &  ixend(ICFD),iyend(ICFD),izend(ICFD)
+
+      GOTO 999
+
+ 999  return
 
 C Error writing data.
  1000 write(outs,'(A,I5,A)')' CFDLIBDOM: error at record',IREC,'.'
@@ -985,8 +1148,14 @@ C cfdlib - write data to cfd results library.
       common/outin/iuout,iuin
       COMMON/ICFCHN/ICFMON(MNZ),ICFTMP,ICFLIB
       common/CFDSV/IRECPC,ICFDSV,IEQSV(5+MCTM)
-      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX,URFC(MCTM)
+      COMMON/ICFNOD/ICFD,ICP
+      common/EQTION/CALLU(MNZ),CALLV(MNZ),CALLW(MNZ),CALLT(MNZ),
+     &             CALLC(MNZ),KEMDL(MNZ),BUOY(MNZ),BOUSSI(MNZ),
+     &             ZEROT(MNZ),ZandKE(MNZ),MITzero(MNZ)
+      LOGICAL CALLU,CALLV,CALLW,CALLT,CALLC,KEMDL,BUOY,BOUSSI
+      LOGICAL ZEROT,ZandKE,MITzero
+      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),
+     &               NCTM(MNZ),JHUMINDX(MNZ),URFC(MCTM)
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
       COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),
      1            Wf(ntcelx,ntcely,ntcelz),
@@ -997,27 +1166,37 @@ C cfdlib - write data to cfd results library.
       COMMON/LOCAGE/AGEf(ntcelx,ntcely,ntcelz) 
       COMMON/CFDPOL/POLCONCp(MCTM,ntcelx,ntcely,ntcelz),
      1              POLCONCf(MCTM,ntcelx,ntcely,ntcelz)
+      common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
 
       CHARACTER outs*124, POLNAM*12
       LOGICAL CALPOL,CALLMA
 
 C Set current record (IRECPC).
 C If the first CFD domain then IRECPC will be a header record number.  If 
-C this is the case then set to the first recore past the header, otherwise 
+C this is the case then set to the first record past the header, otherwise 
 C use the saves record.
-      IST=5+NCTM+(4*(MCOM-1))
+      if (ICFDSV.eq.1.or.ICFDSV.eq.2) then
+        IST=5+NCTM(ICFD)+(4*(MCOM-1))
+      elseif (ICFDSV.eq.3) then
+        IST=4+(8*NCONF)
+      else
+        call edisp(iuout,
+     &    ' CFDLIB: unrecognised CFD results version.')
+        goto 999
+      endif
       if (IRECPC.lt.IST) IRECPC=IST
       IREC=IRECPC
 
+
 C Debug.
-C      write(6,*) 'IRECPCstart ',IRECPC
+c      write(6,*) 'IRECPCstart ',IRECPC
 
 C Loop through all control volumes.
       do 10 K=2,NK
         do 101 J=2,NJ
 
 C Write data to library. Adjust trace to file unit 6 if ntcelz>48
-          if (IEQSV(1).eq.1) then
+          if (CALLU(ICFD)) then
             IREC=IREC+1
             WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)
      &                                             (Uf(I,J,K),I=2,NI)
@@ -1027,7 +1206,7 @@ C            write(6,'(i3,48f9.5)') IREC,(Uf(I,J,K),I=2,NI)
 
           endif
 
-          if (IEQSV(2).eq.1) then
+          if (CALLV(ICFD)) then
             IREC=IREC+1
             WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)
      &                                             (Vf(I,J,K),I=2,NI)
@@ -1037,7 +1216,7 @@ C          write(6,'(i3,48f9.5)') IREC,(Vf(I,J,K),I=2,NI)
 
           endif
 
-          if (IEQSV(3).eq.1) then
+          if (CALLW(ICFD)) then
             IREC=IREC+1
             WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)
      &                                             (Wf(I,J,K),I=2,NI)
@@ -1047,7 +1226,7 @@ C          write(6,'(i3,48f9.5)') IREC,(Wf(I,J,K),I=2,NI)
 
           endif
 
-          if (IEQSV(4).eq.1) then
+          if (CALLT(ICFD)) then
             IREC=IREC+1
             WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)
      &                                             (Tf(I,J,K),I=2,NI)
@@ -1057,7 +1236,7 @@ C          write(6,'(i3,48f9.5)') IREC,(Tf(I,J,K),I=2,NI)
 
           endif
                 
-          if (IEQSV(5).eq.1) then
+          if (CALLMA(ICFD)) then
             IREC=IREC+1
             WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)
      &                                             (AGEf(I,J,K),I=2,NI)
@@ -1067,8 +1246,8 @@ C          write(6,'(i3,48f9.5)') IREC,(AGEf(I,J,K),I=2,NI)
 
           endif
                 
-          DO 121 ICTM=1,NCTM
-            if (IEQSV(5+ICTM).eq.1) then
+          DO 121 ICTM=1,NCTM(ICFD)
+            if (CALPOL(ICTM,ICFD)) then
               IREC=IREC+1
               WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)
      &                                     (POLCONCf(ICTM,I,J,K),I=2,NI)
@@ -1087,7 +1266,7 @@ C Remember current CFD res lib record number.
 C Debug.
 C      write(6,*) 'IRECPCend ',IRECPC
 
-      return
+ 999  return
 
 C Error writing data.
  1000 write(outs,'(A,I5,A)')' CFDLIB: error at record',IREC,'.'

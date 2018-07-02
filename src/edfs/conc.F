@@ -93,8 +93,8 @@ C
       COMMON/TEMPf/Tf(ntcelx,ntcely,ntcelz),GAMH(ntcelx,ntcely,ntcelz),
      1             RESORT,NSWPT,URFT,FSDTT,PRANDL,PFUN
 
-      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX,URFC(MCTM)
+      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),
+     &               NCTM(MNZ),JHUMINDX(MNZ),URFC(MCTM)
       COMMON/CFDPOL/POLCONCp(MCTM,ntcelx,ntcely,ntcelz),
      1              POLCONCf(MCTM,ntcelx,ntcely,ntcelz)
       common/KEYVOLN/VOLNAME(MNVLS,MNZ),VCsurf(MNVLS,MNZ)
@@ -223,7 +223,7 @@ C If this is not found, use the original connection.
                   ELSE
                     INOD=NODPS(ICNN)
                   ENDIF
-                  IROWNO=NCTM*(INOD-1)+ICTM
+                  IROWNO=NCTM(ICFD)*(INOD-1)+ICTM
                   SRCSTR(IV,ICFD)=CNCAJAM(IROWNO)*FLRATE
                 ENDIF
  701          CONTINUE
@@ -571,8 +571,8 @@ C always of the zero-gradient type.
      &              SIFH(ntcelz),SIFL(ntcelz)
       COMMON/INCALC/INCALU,INCALV,INCALW,INCALK,INCALD,INCALT,
      1              IZEROT,IZanKE,IMITZ
-      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX,URFC(MCTM)
+      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),
+     &               NCTM(MNZ),JHUMINDX(MNZ),URFC(MCTM)
       COMMON/CFDPOL/POLCONCp(MCTM,ntcelx,ntcely,ntcelz),
      1              POLCONCf(MCTM,ntcelx,ntcely,ntcelz)
 
@@ -634,7 +634,7 @@ C <<the location of the cv - which wall and indexes>>
               IF(IWOPEN(L,ICFD).EQ.1)THEN
 
 C Opening in west.
-                IF(ICTM.EQ.JHUMINDX)THEN
+                IF(ICTM.EQ.JHUMINDX(ICFD))THEN
 
 C first test the temperature and prescribe a relative humidity of 50% 
                   TSAT=Tf(1,J,K)
@@ -654,7 +654,7 @@ C opening. To change this we need to read the value from the dfd-file>>
                 GW=(SIFE(1)*DENf(1,J,K)+SIFW(2)*DENf(2,J,K))*Uf(2,J,K)
                 CW=GW*AreaEWP(J,K)
                 AW(2,J,K)=AMAX1(CW,0.0)
-                IF(ICTM.EQ.JHUMINDX)THEN
+                IF(ICTM.EQ.JHUMINDX(ICFD))THEN
                   SU(2,J,K)=SU(2,J,K)+AW(2,J,K)*POLCONCf(ICTM,I-1,J,K)
                   SP(2,J,K)=SP(2,J,K)-AW(2,J,K)
                   AW(2,J,K)=0.0
@@ -662,7 +662,7 @@ C opening. To change this we need to read the value from the dfd-file>>
               ELSEIF(IWOPEN(L,ICFD).EQ.2)THEN
 
 C Opening in east.
-                IF(ICTM.EQ.JHUMINDX)THEN
+                IF(ICTM.EQ.JHUMINDX(ICFD))THEN
 
 C first test the temperature and prescribe a relative humidity of 50% 
                   TSAT=Tf(I+1,J,K)
@@ -683,7 +683,7 @@ C opening. To change this we need to read the value from the dfd-file>>
      &              SIFW(NIM1+1)*DENf(NIM1+1,J,K))*Uf(NIM1+1,J,K)
                 CE=GE*AreaEWP(J,K)
                 AE(NIM1,J,K)=AMAX1(-CE,0.0)
-                IF(ICTM.EQ.JHUMINDX)THEN
+                IF(ICTM.EQ.JHUMINDX(ICFD))THEN
                   SU(NIM1,J,K)=SU(NIM1,J,K)+AE(NIM1,J,K)*
      &                         POLCONCf(ICTM,I+1,J,K)
                   SP(NIM1,J,K)=SP(NIM1,J,K)-AE(NIM1,J,K)
@@ -692,7 +692,7 @@ C opening. To change this we need to read the value from the dfd-file>>
               ELSEIF(IWOPEN(L,ICFD).EQ.3)THEN
 
 C Opening in south.
-                IF(ICTM.EQ.JHUMINDX)THEN
+                IF(ICTM.EQ.JHUMINDX(ICFD))THEN
 
 C first test the temperature and prescribe a relative humidity of 50% 
                   TSAT=Tf(I,1,K)
@@ -712,7 +712,7 @@ C opening. To change this we need to read the value from the dfd-file>>
                 GS=(SIFN(1)*DENf(I,1,K)+SIFS(2)*DENf(I,2,K))*Vf(I,2,K)
                 CS=GS*AreaNSP(I,K)
                 AS(I,2,K)=AMAX1(CS,0.0)
-                IF(ICTM.EQ.JHUMINDX)THEN
+                IF(ICTM.EQ.JHUMINDX(ICFD))THEN
                   SU(I,2,K)=SU(I,2,K)+AS(I,2,K)*POLCONCf(ICTM,I,J-1,K)
                   SP(I,2,K)=SP(I,2,K)-AS(I,2,K)
                   AS(I,2,K)=0.0
@@ -720,7 +720,7 @@ C opening. To change this we need to read the value from the dfd-file>>
               ELSEIF(IWOPEN(L,ICFD).EQ.4)THEN
 
 C Opening in north.
-                IF(ICTM.EQ.JHUMINDX)THEN
+                IF(ICTM.EQ.JHUMINDX(ICFD))THEN
 
 C first test the temperature and prescribe a relative humidity of 50% 
                   TSAT=Tf(I,J+1,K)
@@ -741,7 +741,7 @@ C opening. To change this we need to read the value from the dfd-file>>
      &          SIFS(NJM1+1)*DENf(I,NJM1+1,K))*Vf(I,NJM1+1,K)
                 CN=GN*AreaNSP(I,K)
                 AN(I,NJM1,K)=AMAX1(-CN,0.0)
-                IF(ICTM.EQ.JHUMINDX)THEN
+                IF(ICTM.EQ.JHUMINDX(ICFD))THEN
                   SU(I,NJM1,K)=SU(I,NJM1,K)+AN(I,NJM1,K)
      &                         *POLCONCf(ICTM,I,J+1,K)
                   SP(I,NJM1,K)=SP(I,NJM1,K)-AN(I,NJM1,K)
@@ -750,7 +750,7 @@ C opening. To change this we need to read the value from the dfd-file>>
               ELSEIF(IWOPEN(L,ICFD).EQ.5)THEN
 
 C Opening in low.
-                IF(ICTM.EQ.JHUMINDX)THEN
+                IF(ICTM.EQ.JHUMINDX(ICFD))THEN
 
 C first test the temperature and prescribe a relative humidity of 50% 
                   TSAT=Tf(I,J,1)
@@ -770,7 +770,7 @@ C opening. To change this we need to read the value from the dfd-file>>
                 GL=(SIFH(1)*DENf(I,J,1)+SIFL(2)*DENf(I,J,2))*Wf(I,J,2)
                 CL=GL*AreaHLP(I,J)
                 AL(I,J,2)=AMAX1(CL,0.0)
-                IF(ICTM.EQ.JHUMINDX)THEN
+                IF(ICTM.EQ.JHUMINDX(ICFD))THEN
                   SU(I,J,2)=SU(I,J,2)+AL(I,J,2)*POLCONCf(ICTM,I,J,K-1)
                   SP(I,J,2)=SP(I,J,2)-AL(I,J,2)
                   AL(I,J,2)=0.0
@@ -778,7 +778,7 @@ C opening. To change this we need to read the value from the dfd-file>>
               ELSEIF(IWOPEN(L,ICFD).EQ.6)THEN
 
 C Opening in high.
-                IF(ICTM.EQ.JHUMINDX)THEN
+                IF(ICTM.EQ.JHUMINDX(ICFD))THEN
 
 C first test the temperature and prescribe a relative humidity of 50% 
                   TSAT=Tf(I,J,K+1)
@@ -799,7 +799,7 @@ C opening. To change this we need to read the value from the dfd-file>>
      &          SIFL(NKM1+1)*DENf(I,J,NKM1+1))*Wf(I,J,NKM1+1)
                 CH=GH*AreaHLP(I,J)
                 AH(I,J,NKM1)=AMAX1(-CH,0.0)
-                IF(ICTM.EQ.JHUMINDX)THEN
+                IF(ICTM.EQ.JHUMINDX(ICFD))THEN
                   SU(I,J,NKM1)=SU(I,J,NKM1)+AH(I,J,NKM1)
      &                         *POLCONCf(ICTM,I,J,K+1)
                   SP(I,J,NKM1)=SP(I,J,NKM1)-AH(I,J,NKM1)
@@ -961,7 +961,7 @@ C West wall.
 C Sink of concentration - needed for modelling droplets or dust 
 C The sink is distributed either to SU or SP to avoide 
 C negative concentrations during the iterative process 
-        IF(ICTM.NE.JHUMINDX)THEN
+        IF(ICTM.NE.JHUMINDX(ICFD))THEN
         HSINK1=BCOEF1*POLCONCf(ICTM,I,J,K)*AreaEWP(J,K)
         SU(I,J,K)=SU(I,J,K)+AMAX1(0.0,HSINK1)
         SP(I,J,K)=SP(I,J,K)+AMIN1(0.0,HSINK1)/
@@ -978,7 +978,7 @@ C East wall.
               AE(I,J,K)=0.0 
               POLCONCf(ICTM,I+1,J,K)=POLCONCf(ICTM,I,J,K)
 C see comments west wall
-        IF(ICTM.NE.JHUMINDX)THEN
+        IF(ICTM.NE.JHUMINDX(ICFD))THEN
         HSINK1=BCOEF1*POLCONCf(ICTM,I,J,K)*AreaEWP(J,K)
         SU(I,J,K)=SU(I,J,K)+AMAX1(0.0,HSINK1)
         SP(I,J,K)=SP(I,J,K)+AMIN1(0.0,HSINK1)/
@@ -995,7 +995,7 @@ C South wall.
               AS(I,J,K)=0.0 
               POLCONCf(ICTM,I,J-1,K)=POLCONCf(ICTM,I,J,K)
 C see comments west wall
-        IF(ICTM.NE.JHUMINDX)THEN
+        IF(ICTM.NE.JHUMINDX(ICFD))THEN
         HSINK1=BCOEF1*POLCONCf(ICTM,I,J,K)*AreaNSP(I,K)
         SU(I,J,K)=SU(I,J,K)+AMAX1(0.0,HSINK1)
         SP(I,J,K)=SP(I,J,K)+AMIN1(0.0,HSINK1)/
@@ -1012,7 +1012,7 @@ C North wall.
               AN(I,J,K)=0.0 
               POLCONCf(ICTM,I,J+1,K)=POLCONCf(ICTM,I,J,K)
 C see comments west wall
-        IF(ICTM.NE.JHUMINDX)THEN
+        IF(ICTM.NE.JHUMINDX(ICFD))THEN
         HSINK1=BCOEF1*POLCONCf(ICTM,I,J,K)*AreaNSP(I,K)
         SU(I,J,K)=SU(I,J,K)+AMAX1(0.0,HSINK1)
         SP(I,J,K)=SP(I,J,K)+AMIN1(0.0,HSINK1)/
@@ -1029,7 +1029,7 @@ C Low wall.
               AL(I,J,K)=0.0 
               POLCONCf(ICTM,I,J,K-1)=POLCONCf(ICTM,I,J,K)
 C see comments west wall 
-        IF(ICTM.NE.JHUMINDX)THEN
+        IF(ICTM.NE.JHUMINDX(ICFD))THEN
         HSINK1=ACOEF1*POLCONCf(ICTM,I,J,K)*AreaHLP(I,J)
         SU(I,J,K)=SU(I,J,K)+AMAX1(0.0,HSINK1)
         SP(I,J,K)=SP(I,J,K)+AMIN1(0.0,HSINK1)/
@@ -1046,7 +1046,7 @@ C High wall.
               AH(I,J,K)=0.0 
               POLCONCf(ICTM,I,J,K+1)=POLCONCf(ICTM,I,J,K)
 C see comments west wall 
-        IF(ICTM.NE.JHUMINDX)THEN
+        IF(ICTM.NE.JHUMINDX(ICFD))THEN
         HSINK1=ACOEF1*POLCONCf(ICTM,I,J,K)*AreaHLP(I,J)
         SU(I,J,K)=SU(I,J,K)+AMAX1(0.0,HSINK1)
         SP(I,J,K)=SP(I,J,K)+AMIN1(0.0,HSINK1)/

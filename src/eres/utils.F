@@ -559,6 +559,69 @@ C Calculate decimal time of day.
       RETURN
       END
 
+C ******************** STIMENA ********************
+C STIMENA takes an integer timestep and returns a string DESCR
+C which takes the form '12h28'. STIMENA takes into account NTS in its
+C calculations, but not IDAVER.
+C Used for results which are never time step averaged.
+
+      SUBROUTINE STIMENA(ITIME,DESCR)
+      COMMON/AVRAGE/IDAVER
+      COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
+      COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
+      CHARACTER*5 DESCR
+
+C Calculate decimal time of day.
+      call DATIMENA(ITIME,TIME)
+
+C Split time into hours and minutes.
+      MINH=INT(TIME)
+      MIN=INT((TIME-AINT(TIME))*60.+0.5)
+      WRITE(DESCR,'(i2.2,a1,i2.2)')INT(TIME),'h',MIN
+      RETURN
+      END
+
+C ******************** SJTIMENA ********************
+C SJTIMENA takes an integer timestep and returns a string DESCR
+C which takes the form '12:28:30'. SJTIMENA takes into account NTS in
+C its calculations, but not IDAVER.
+C Used for results which are never time step averaged.
+
+      SUBROUTINE SJTIMENA(ITIME,DESCR)
+      COMMON/AVRAGE/IDAVER
+      COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
+      COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
+      CHARACTER*8 DESCR
+
+C Calculate decimal time of day.
+      call DATIMENA(ITIME,TIME)
+
+C Split time into hours and minutes.
+      MINH=INT(TIME)
+      MIN=INT((TIME-AINT(TIME))*60.+0.5)
+      WRITE(DESCR,'(i2.2,a1,i2.2,a)')INT(TIME),':',MIN,':30'
+      RETURN
+      END
+
+C ******************** DATIMENA ********************
+C DATIMENA takes an integer timestep and returns a decimal hour of day.
+C DATIMENA takes into account NTS in its calculations, but not IDAVER.
+C Used for results which are never time step averaged.
+
+      SUBROUTINE DATIMENA(ITIME,TIME)
+      COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
+      COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
+
+C Calculate decimal time of day.
+      if (IAV.eq.1) then
+        TIME=(float(ITIME)+(float(NOUT-1)/2.0))/float(NTS)
+      elseif (IAV.eq.0) then
+        TIME=float(ITIME)/float(NTS)
+      endif
+
+      RETURN
+      END
+
 C ******************** DASYSTIME ********************
 C DASYSTIME takes an integer plant timestep and returns a decimal hour of day.
 C It takes into account IDAVER and NPTS & NTS in its calculations.
@@ -601,7 +664,7 @@ C Not a domain combination that we can work with.
 
 C ******************** ZNLIST ********************
 C ZNLIST takes the current selected zones and builds a descriptive
-C string to be used in headers. 
+C string (96 char) to be used in headers. 
 C Currently only deals with up to 28 zones.
       SUBROUTINE ZNLIST(zdescr,length,ierr)
 #include "building.h"
@@ -610,7 +673,7 @@ C Get common block precz/lnprecz from geometry.h
 #include "geometry.h"
 
       COMMON/ZONPIK/NZ,NZNO(MCOM)
-      CHARACTER zdescr*80,outs*244,outsd*80
+      CHARACTER zdescr*96,outs*244,outsd*96
       logical unixok
 
       length=0
@@ -618,26 +681,24 @@ C Get common block precz/lnprecz from geometry.h
         lna=lnzname(NZNO(i))
         length=length+lna+1
   42  continue
-      if(length.lt.72)then
+      if(length.lt.96)then
         WRITE(outs,5,iostat=ios,err=1)(zname(NZNO(I)),I=1,NZ)
-    5   FORMAT(' Zones: ',20(a12,' '))
+    5   FORMAT(' Zones: ',20(a,' '))
         call sdelim(outs,outsd,'S',IW)
         zdescr=outsd
         return
       else
         if(NZ.eq.1)then
          WRITE(ZDESCR,'(A,I3,A,A)')' Zone (',NZNO(1),') ',zname(NZNO(1))
-        elseif(NZ.gt.1.and.NZ.LE.20)THEN
+        elseif(NZ.gt.1.and.NZ.LE.22)THEN
          WRITE(ZDESCR,6)(NZNO(I),I=1,NZ)
-    6    FORMAT(' Zones: ',20(I3,','))
-        ELSEIF(NZ.GT.20.AND.NZ.LE.24)THEN
+    6    FORMAT(' Zones: ',22(I3,','))
+        ELSEIF(NZ.GT.22.AND.NZ.LE.28)THEN
          WRITE(ZDESCR,7)(NZNO(I),I=1,9),(NZNO(J),J=10,NZ)
-    7    FORMAT(' Zones: ',9(I1,','),15(I3,','))
-        ELSEIF(NZ.GT.24.AND.NZ.LE.28)THEN
-         WRITE(ZDESCR,8)(NZNO(I),I=1,9),(NZNO(J),J=10,NZ)
-    8    FORMAT(' Zn: ',9(I1,','),20(I3,','))
+    7    FORMAT(' Zn: ',9(I1,','),20(I3,','))
         ELSEIF(NZ.GT.28)THEN
          WRITE(ZDESCR,8)(NZNO(I),I=1,9),(NZNO(J),J=10,28)
+    8    FORMAT(' Zn: ',9(I1,','),20(I3,','))
         ENDIF
         return
       endif
@@ -654,8 +715,8 @@ C I/O error trap.
 
 C ******************** COLZNLIST ********************
 C COLZNLIST takes the current selected zones and draws text with
-C a different colour for each name. 
-
+C a different colour for each name. If space available use the
+C zone names on one or two lines, otherwise use numbers.
       SUBROUTINE COLZNLIST(line,isize,ierr)
 #include "building.h"
 #include "geometry.h"
@@ -680,10 +741,10 @@ C zone index that fit within 72 characters.
       do 42 i=1,NZ
         lna=lnzname(NZNO(i))
         length=length+lna+1
-        if(length.lt.72)isecond=i
+        if(length.lt.106)isecond=i
   42  continue
 
-      if(length.lt.72)then
+      if(length.lt.106)then
 
 C Full name of zone can be written. Find position of "Zones"
 C Set ix to last character position before looping through zones.
@@ -709,7 +770,7 @@ C Then get index of colour for this zone, then plot text in that colour.
         call winscl('-',iicol)
         call forceflush()
         return
-      elseif(length.lt.140)then
+      elseif(length.lt.200)then
 
 C Try writing full name of zone on two lines. Find position of "Zones"
 C Set ix to last character position before looping through zones.
@@ -756,8 +817,9 @@ C Then get index of colour for this zone, then plot text in that colour.
         return
       else
 
-C There are more than 140 characters so write numbers instead.
-        if(NZ.ge.1.and.NZ.LE.28)THEN
+C There are more than 200 characters so write numbers instead.
+C Normal size res graphics window can hold ~30 on each line.
+        if(NZ.ge.1.and.NZ.LE.30)THEN
           word='Zones:'
           iiline=line; iicx=2; iisize=isize
           call findviewtext(iicx,iiline,iisize,iix,iiy)
@@ -768,7 +830,7 @@ C There are more than 140 characters so write numbers instead.
           do i=1,NZ
             iiline=line; iicx=icx; iisize=isize
             call findviewtext(iicx,iiline,iisize,iix,iiy)
-            lna=2
+            lna=3   ! lna=2
             write(word,'(i3.3)',iostat=ios,err=1) NZNO(I)
             call textatxy(iix,iiy,word,'z',NZNO(i))
             icx=icx+lna+1
@@ -777,7 +839,7 @@ C There are more than 140 characters so write numbers instead.
           call winscl('-',iicol)
           call forceflush()
           return
-        ELSEIF(NZ.GT.28)THEN
+        ELSEIF(NZ.GT.30)THEN
 
 C Write out digits on two lines.
           word='Zones:'
@@ -787,10 +849,10 @@ C Write out digits on two lines.
           call winscl('-',iicol)
           call wstxpt(iix,iiy,word)
           icx=9
-          do i=1,28
+          do i=1,30
             iiline=line; iicx=icx; iisize=isize
             call findviewtext(iicx,iiline,iisize,iix,iiy)
-            lna=2
+            lna=3  ! lna=2
             write(word,'(i3.3)',iostat=ios,err=1) NZNO(I)
             call textatxy(iix,iiy,word,'z',NZNO(i))
             icx=icx+lna+1
@@ -801,11 +863,11 @@ C Write out digits on two lines.
 
           icx=2
           NZL=NZ
-          if(NZ.gt.56)NZL=56
-          do i=29,NZL
+          if(NZ.gt.60)NZL=60  ! currently limited to 60
+          do i=31,NZL
             iiline=line+1; iicx=icx; iisize=isize
             call findviewtext(iicx,iiline,iisize,iix,iiy)
-            lna=2
+            lna=3  ! lna=2
             write(word,'(i3.3)',iostat=ios,err=1) NZNO(I)
             call textatxy(iix,iiy,word,'z',NZNO(i))
             icx=icx+lna+1
@@ -1301,13 +1363,15 @@ C (point in time for snapshot analysis). Returns IMO (month), IDO (day
 C of month), IJDAY (day of year for output), TIME (real representation),
 C IT (timestep). IFDAY is a toggle provided in setres.f to control
 C the display and input of periods - 0 = julian day, 1 or 2 = day of
-C month.
+C month. Default time initially displayed are taken from input values of
+C IMO, IDO and TIME.
+
       SUBROUTINE ASKRTIM(IFDAY,IMO,IDO,IJDAY,TIME,IT,IER)
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
-      character HOLD*24
+      character HOLD*24,HOLD2*24
       DIMENSION ID(12)
 
 C For help messages
@@ -1323,26 +1387,27 @@ C For help messages
       call gethelptext(helpinsub,helptopic,nbhelp)
       IF(IFDAY.EQ.0)THEN
         CALL EDAY(IDO,IMO,IJDAY)
-        write(HOLD,'(I6,a)') IJDAY,'  7.0  '
+        write(HOLD,'(I6,2x,F5.2)') IJDAY,TIME
       else
-        write(HOLD,'(I6,I4,a)') IDO,IMO,'  7.0  '
+        write(HOLD,'(I6,I4,2x,F5.2)') IDO,IMO,TIME
       endif
+      HOLD2=HOLD
 
   281 IF(IFDAY.EQ.0)THEN
         CALL EASKS(HOLD,' ',' Day-of-year & time: ',
-     &     24,' 1  7.0 ','doy and time',IER,nbhelp)
+     &     24,HOLD2,'doy and time',IER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,IJDAY,1,365,'F','day of year',IER)
-        CALL EGETWR(HOLD,K,TIME,0.0,24.0,'F','time',IER)
+        CALL EGETWR(HOLD,K,TIME,0.0,24.99,'F','time',IER)
         if(IER.ne.0)goto 281
         CALL EDAYR(IJDAY,IDO,IMO)
       ELSE
  283    CALL EASKS(HOLD,' ',' Day-of-month, month & time: ',
-     &     24,' 1  1  7.0 ','doy, month time',IER,nbhelp)
+     &     24,HOLD2,'doy, month time',IER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,IDO,1,31,'F','day of month',IER)
         CALL EGETWI(HOLD,K,IMO,1,12,'F','month',IER)
-        CALL EGETWR(HOLD,K,TIME,0.0,24.0,'F','time',IER)
+        CALL EGETWR(HOLD,K,TIME,0.0,24.99,'F','time',IER)
         if(IER.ne.0)goto 283
         CALL EDAY(IDO,IMO,IJDAY)
       ENDIF
@@ -1558,14 +1623,16 @@ C ixunit is the file unit number for the export file.
 C Simulator parameters.
 C autook if .true. then assume that the user does not need to confirm
 C   the file name.
-      COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      COMMON/SPFL/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      LOGICAL     spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
 
       character*(*) msg,xfile
       character path*72,outs*124,tg*1,outs248*248
       character ttext*42  ! for the 3rd party title dialog
       character LCMDFL*144
       character longtfile*144,longtfiledos*144
-      LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical concat,remote,unixok
       integer lenxfile
 

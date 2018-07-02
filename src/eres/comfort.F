@@ -43,6 +43,8 @@ C if act = 'E' return days PMV (effective temperature) in GVAL.
 #include "geometry.h"
 #include "schedule.h"
 #include "cfd.h"
+#include "net_flow.h"
+#include "net_flow_data.h"
 C #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -88,13 +90,11 @@ C For help messages
       integer nbhelp     ! number of help lines found
 
       COMMON/FILEP/IFIL
+      COMMON/ICFNOD/ICFD,ICP
       character LMRT*72
       real XC,YC,ZC
       integer IIX,IIY,IIZ
       common/CFDSV/IRECPC,ICFDSV,IEQSV(5+MCTM)
-      common/rpath/path
-
-      character path*72,LCMDFL*144,ltmpc*144,LTMP*72,lpath*72
       integer igraphiclib  ! external definition
       logical XST
 
@@ -112,6 +112,12 @@ C For help messages
       integer IZLST(MCUB),ISLST(MCUB),NSEL
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       CHARACTER LCFD*72
+      COMMON/cfddoms/NCDOM,ICFDZ(MNZ)
+
+C Directives for GOCFDGET (more efficient than RDCFDAT).
+      COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,8)
+      COMMON/MFGET/FLOWVALS(MFRS),MFRECVR(MCNN+2+MCONTM)
+      COMMON/MFPK2/NMFLST,IMFLIST(MFCNLST,MFCNEL+1)
 
       real PI,R,SA,CA,DX,DY
 
@@ -281,10 +287,10 @@ C Help text for menu.
       call gethelptext(helpinsub,helptopic,nbhelp)
 
       if(mmod.eq.8)then
-	INO=-1
+        INO=-1
         CALL EMENU('Comfort assessment',ITEMS,NITMS,INO)
       else
-	INO=-2
+        INO=-2
         CALL EMENU('Comfort',ITEMS,NITMS,INO)
       endif
 
@@ -498,19 +504,17 @@ C temperature from the grid point closest to the MRT sensor location.
 c        write(6,*)'IFCFD(IZONE)',IFCFD(IZONE)
         if (IFCFD(IZONE).gt.0) then
 
-          call OPCFD(ok,IER)
+          call OPCFD('c',ok,IER)
           if (.not.ok.or.IER.ne.0) goto 924
       
 C Read header data and set common block data.
-          lpath=path
-          call fdroot(LCMDFL,path,LTMP)
           call RCFDLIBH(IZONE,IER)
-          path=lpath
 
-C TODO - currently, read CFD file to get axis vertices to initialise
-C CFD - building domain transformation matrices. In future, consider
-C adding this to the CFD library.
-          CALL RCFDVRTS(IZONE,IER)
+C If old CFD results version, read CFD file to get axis vertices to
+C initialise CFD - building domain transformation matrices.
+          if (ICFDSV.eq.1.or.ICFDSV.eq.2) then
+            CALL RCFDVRTS(IZONE,IER)
+          endif
           CALL INIT_CFDTRANS(IER)
           if (IER.ne.0) then
             call edisp(iuout,' Problem reading CFD axis vertices')
@@ -529,9 +533,9 @@ C Find CFD point closest to MRT sensor.
             if (IER.ne.0) then
               call edisp(iuout,' Problem finding CFD point')
             else
-              IXCEL(IZONE)=IIX
-              IYCEL(IZONE)=IIY
-              IZCEL(IZONE)=IIZ
+              IXCEL(IZONE)=IIX-1
+              IYCEL(IZONE)=IIY-1
+              IZCEL(IZONE)=IIZ-1
               ok=.true.
             endif
           endif      
@@ -567,22 +571,35 @@ C Get the current MRT in the zone.
 c          write(6,*)' using MRT'
 
           if (ok) then
+
 C Check if there are CFD results available for this time step.
             CALL GETIFRM(IDAY,JTS,IFRAME,IER)
+
+C Set up directives for GOCFDGET - retrieve velocity and temperature.
+            CALL MOFLOWSU ! clear commons
+            IMFGETNO(1,1)=18
+            IMFGETNO(1,3)=ICFD
+            IMFGETNO(1,4)=1
+            IMFGETNO(1,1)=19
+            IMFGETNO(1,3)=ICFD
+            IMFGETNO(1,4)=1
+            IMFLIST(1,1)=IXCEL(IZONE)
+            IMFLIST(1,2)=IYCEL(IZONE)
+            IMFLIST(1,3)=IZCEL(IZONE)
+            CALL GOCFDGET(IFRAME,0,0,0,IER)
             if (IER.ne.0) IER=0; goto 185
 
-            CALL RDCFDAT(IFRAME)
-
 C Get CFD air temperature at point closest to MRT sensor.
-            TAIR=Tf(IXCEL(IZONE),IYCEL(IZONE),IZCEL(IZONE))
+            WWVEL=FLOWVALS(1)
+            TAIR=FLOWVALS(2)
 C Get CFD air velocity at point closest to MRT sensor.
-            Uftmp=0.5*(Uf(IXCEL(IZONE),IYCEL(IZONE),IZCEL(IZONE))+
-     &                 Uf(IXCEL(IZONE)+1,IYCEL(IZONE),IZCEL(IZONE)))
-            Vftmp=0.5*(Vf(IXCEL(IZONE),IYCEL(IZONE),IZCEL(IZONE))+
-     &                 Vf(IXCEL(IZONE),IYCEL(IZONE)+1,IZCEL(IZONE)))
-            Wftmp=0.5*(Wf(IXCEL(IZONE),IYCEL(IZONE),IZCEL(IZONE))+
-     &                 Wf(IXCEL(IZONE),IYCEL(IZONE),IZCEL(IZONE)+1))
-            WWVEL=SQRT(Uftmp*Uftmp+Vftmp*Vftmp+Wftmp*Wftmp)
+c            Uftmp=0.5*(Uf(IXCEL(IZONE),IYCEL(IZONE),IZCEL(IZONE))+
+c     &                 Uf(IXCEL(IZONE)+1,IYCEL(IZONE),IZCEL(IZONE)))
+c            Vftmp=0.5*(Vf(IXCEL(IZONE),IYCEL(IZONE),IZCEL(IZONE))+
+c     &                 Vf(IXCEL(IZONE),IYCEL(IZONE)+1,IZCEL(IZONE)))
+c            Wftmp=0.5*(Wf(IXCEL(IZONE),IYCEL(IZONE),IZCEL(IZONE))+
+c     &                 Wf(IXCEL(IZONE),IYCEL(IZONE),IZCEL(IZONE)+1))
+c            WWVEL=SQRT(Uftmp*Uftmp+Vftmp*Vftmp+Wftmp*Wftmp)
 c            write(6,*)'using CFD temp. and air vel.'
           endif
         endif
@@ -1020,6 +1037,8 @@ C Uses similar conventions to DISCOMF above.
      3            TEf(ntcelx,ntcely,ntcelz),EDf(ntcelx,ntcely,ntcelz)
       COMMON/TEMPf/Tf(ntcelx,ntcely,ntcelz),GAMH(ntcelx,ntcely,ntcelz),
      1             RESORT,NSWPT,URFT,FSDTT,PRANDL,PFUN
+      common/CFDSV/IRECPC,ICFDSV,IEQSV(5+MCTM)
+      COMMON/cfddoms/NCDOM,ICFDZ(MNZ)
 
       real PI,R,SA,CA,DX,DY,HI(3),XC,YC,ZC
       integer IHI(3)
@@ -1030,10 +1049,11 @@ C Read CFD header data and set common block data.
       call RCFDLIBH(IZONE,IER)
       path=lpath
 
-C TODO - currently, read CFD file to get axis vertices to initialise
-C CFD - building domain transformation matrices. In future, consider
-C adding this to the CFD library.
-      CALL RCFDVRTS(IZONE,IER)
+C If old CFD results version, read CFD file to get axis vertices to
+C initialise CFD - building domain transformation matrices.
+      if (ICFDSV.eq.1.or.ICFDSV.eq.2) then
+        CALL RCFDVRTS(IZONE,IER)
+      endif
       CALL INIT_CFDTRANS(IER)
 
 C Equation is for draught at the neck, so use a point in the centre of
@@ -1086,6 +1106,8 @@ c      Tenergy=TEf(IHI(1),IHI(2),IHI(3))
 c      Tu=sqrt((2.0/3.0)*Tenergy)/(Cvel+1.0e-30)*100.0
 c What is this???                ^^^^^^^^^^^^^^^
 c      Tu=sqrt((2.0/3.0)*Tenergy)*100.0
+C For the time being, use value of Tu specified in standard if Tenergy
+C is not available.
       Tu=40.0
       if (Tu.lt.10.0.or.Tu.gt.60.0) then
         iflag=-1
@@ -1157,8 +1179,6 @@ C Check the comfort range for summer and winther.
 
 C ****** RCFDVRTS
 C RCFDVRTS reads a dfd file and assigns common variables:
-C ICFD - domain number
-C ICP - zone number
 C iorg - origin vertex
 C ixend - x axis end vertex
 C iyend - y axis end vertex
@@ -1173,15 +1193,12 @@ C izend - z axis end vertex
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)      
       CHARACTER LCFD*72
 
-      common/GRDVRTS/iorg,ixend,iyend,izend,izende
-      COMMON/cfddoms/NCDOM,ICDOM,ICFDZ(MNZ)
+      common/GRDVRTS/iorg(MNZ),ixend(MNZ),iyend(MNZ),izend(MNZ),
+     &  izende(MNZ)
+      COMMON/cfddoms/NCDOM,ICFDZ(MNZ)
       COMMON/ICFNOD/ICFD,ICP
 
       CHARACTER OUTSTR*124,WORD*20
-
-C Set ICFD (domain number) and ICP (zone number)
-      ICFD=ICDOM
-      ICP=ICFDZ(ICFD)
       
       IUNIT=IFIL+1
       CALL ERPFREE(IUNIT,IER)
@@ -1201,17 +1218,17 @@ C Set ICFD (domain number) and ICP (zone number)
         CALL EGETW(OUTSTR,K,WORD,'W','DFD line 1st word',IER)
         if (WORD(1:5).eq.'*vrts') then
           CALL EGETWI(OUTSTR,K,itmp,0,0,'-','origin vert',IER)
-          iorg=itmp
-c          write(6,*)'iorg',iorg
+          IORG(ICFD)=itmp
+c          write(6,*)'IORG(ICFD)',IORG(ICFD)
           CALL EGETWI(OUTSTR,K,itmp,0,0,'-','x end vert',IER)
-          ixend=itmp
-c          write(6,*)'ixend',ixend
+          ixend(ICFD)=itmp
+c          write(6,*)'ixend(ICFD)',ixend(ICFD)
           CALL EGETWI(OUTSTR,K,itmp,0,0,'-','y end vert',IER)
-          iyend=itmp
-c          write(6,*)'iyend',iyend
+          iyend(ICFD)=itmp
+c          write(6,*)'iyend(ICFD)',iyend(ICFD)
           CALL EGETWI(OUTSTR,K,itmp,0,0,'-','z end vert',IER)
-          izend=itmp
-c          write(6,*)'izend',izend
+          izend(ICFD)=itmp
+c          write(6,*)'izend(ICFD)',izend(ICFD)
           exit
         endif
       enddo
@@ -1320,20 +1337,20 @@ C GVAL.
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
       COMMON/TEMPf/Tf(ntcelx,ntcely,ntcelz),GAMH(ntcelx,ntcely,ntcelz),
      1             RESORT,NSWPT,URFT,FSDTT,PRANDL,PFUN
+      common/CFDSV/IRECPC,ICFDSV,IEQSV(5+MCTM)
+      COMMON/cfddoms/NCDOM,ICFDZ(MNZ)
 
       real PI,R,SA,CA,DX,DY,HI(3),LO(3),XC,YC,ZC
       integer IHI(3),ILO(3)
 
 C Read CFD header data and set common block data.
-      lpath=path
-      call fdroot(LCMDFL,path,LTMP)
       call RCFDLIBH(IZONE,IER)
-      path=lpath
 
-C TODO - currently, read CFD file to get axis vertices to initialise
-C CFD - building domain transformation matrices. In future, consider
-C adding this to the CFD library.
-      CALL RCFDVRTS(IZONE,IER)
+C If old CFD results version, read CFD file to get axis vertices to
+C initialise CFD - building domain transformation matrices.
+      if (ICFDSV.eq.1.or.ICFDSV.eq.2) then
+        CALL RCFDVRTS(IZONE,IER)
+      endif
       CALL INIT_CFDTRANS(IER)
 
 C Get coordinates in the center of top and bottom faces of MRT sensor.

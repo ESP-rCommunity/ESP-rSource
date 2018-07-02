@@ -1421,10 +1421,13 @@ C Try to open as ascii file first. If that fails try as a binary file.
           CALL STRIPC(IUTDF,outstr,99,ND,1,'header',IER)
           if(OUTSTR(1:9).eq.'ASCIITDF3')THEN
             ITDFLG=3
+            CALL ERPFREE(IUTDF,ISTAT)
           elseif(OUTSTR(1:9).eq.'ASCIITDF2')THEN
             ITDFLG=2
+            CALL ERPFREE(IUTDF,ISTAT)
           elseif(OUTSTR(1:12).eq.'TDFdatabase2')THEN
             ITDFLG=1
+            CALL ERPFREE(IUTDF,ISTAT)
           else
 
 C Might have reached this point because it was a binary file.

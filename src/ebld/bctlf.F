@@ -53,8 +53,10 @@ C is read from the system control strategy file.
 
       COMMON/UA5/IMET,ISIM,NRSIM
 
-      COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      COMMON/SPFL/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      LOGICAL     spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
 
       character LCTLF*72,DFILE*72,LTMP*72,LBND*72,DBND*72
       character DPBND*72

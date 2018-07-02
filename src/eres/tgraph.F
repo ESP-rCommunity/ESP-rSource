@@ -36,10 +36,19 @@ C user's manual.
 
       SUBROUTINE MOGRAF
 #include "building.h"
+#include "model.h"
+#include "geometry.h"
+#include "prj3dv.h"
+      COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      integer menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      integer ncomp,ncon
+      common/C1/NCOMP,NCON
 
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG 
@@ -48,6 +57,15 @@ C user's manual.
       CHARACTER*23 ITEM(13)
       character outs*124,LAPROB*72
       integer NITMS,INO ! max items and current menu item 
+#ifdef OSI
+      integer igwid,igheight  ! for use with axiscale
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+#endif
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -149,6 +167,66 @@ C Network flow graphic output. Find and open the network flow description.
           goto 2
         endif
         IRY=IYEAR
+
+C If iairn=3 we could display the flow network in 3D at this point.
+        if(iairn.eq.3)then
+
+C Initialise coordinates for eye point, view point and angle of view.
+          EYEM(1)=-100.; EYEM(2)=-100.; EYEM(3)=100.
+          VIEWM(1)=10.; VIEWM(2)=10.; VIEWM(3)=10.
+          ANG=40.
+
+C General image option flags.
+          ITDSP=0; ITBND=1; ITEPT=0
+          ITZNM=0; ITSNM=1; ITVNO=1
+          ITORG=0; ITSNR=1; ITOBS=0
+          ITGRD=0; GRDIS=0.0
+          ITPPSW=0
+
+C Clear current viewing box and re-establish image bounds.
+          CALL startbuffer
+
+C Setup and pass in parameters to win3d.
+          iiw1=4; iiw2=4; iiw3=3; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
+          igwid=igw; igheight=igwh
+
+C Get bounds for image.
+          nzg=NCOMP
+          do 29 iz=1,nzg
+            nznog(iz)=iz
+  29      continue
+          call bndobj(0,IER)
+
+          HANG=ANG/2.0; HITH=1.0; YON=1300.0
+          CALL LENS(IER)
+
+C Determine scaling ratios for the drawing and axis.
+C Determine the 2D coords of the site extremes.
+          CALL SITE2D(SXMX,SXMN,SYMX,SYMN,ier)
+C          write(6,*) SXMX,SXMN,SYMX,SYMN
+          CALL axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
+     &      Xadd,Yadd)
+C          write(6,*) SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,Xadd,Yadd
+          call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
+
+C Read 3D flow network, report contents and draw the network.
+          IUM=IFIL+6
+          CALL ERPFREE(IUM,ISTAT)
+          CALL MFCDAT
+          CALL EMF3DREAD(IUM,'S',IER)
+          call edisp(iuout,' ')
+          CALL MFLIST(iuout)
+          call MFWFDRAW('r')  ! Draw flow network.
+          CALL ERPFREE(IUM,ISTAT)
+          call pauses(1)
+        endif
+
+C Set standard menu type and then present the selection facaility.
         MENUTYPE=3
         call MFOUTP('-')
       ELSEIF(INO.EQ.12)THEN
@@ -180,7 +258,7 @@ C act='p' iget parameters already set.
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
+      COMMON/GRAF1/YMAX(6),YMIN(6),YAXSET(6),ADDLIN,horaxisdiv
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
@@ -207,7 +285,7 @@ C act='p' iget parameters already set.
       dimension Yold(MZS), TIMEold(MZS)
       dimension YSC(5), Yadd(5), igx(5), ilr(5)
       character prompt*124
-      character ALABEL(5)*12,t20*20,act*1
+      character ALABEL(6)*12,t20*20,act*1
       character graftitle*64,grlbl*24,t24*24
 
       integer YAXSET,ADDLIN,horaxisdiv
@@ -750,7 +828,7 @@ C to graphical result display.
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
 
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
+      COMMON/GRAF1/YMAX(6),YMIN(6),YAXSET(6),ADDLIN,horaxisdiv
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
@@ -763,7 +841,7 @@ C To extend logic to maximize plotting area.
 
       CHARACTER ETEXT*124, RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      CHARACTER PDESCR*60,SDESCR*44,outsd*80,outsd1*81
+      CHARACTER PDESCR*60,SDESCR*44,outsd*96,outsd1*124
       character graftitle*64,grlbl*24,t64*64
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext

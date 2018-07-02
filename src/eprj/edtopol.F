@@ -444,11 +444,12 @@ C Flip logic for back-to-back within zone.
         if(M8SKP)then
           M8SKP=.false.
         else
-          dok=.true.
+          dok=.false.
           helptopic='boundary_back_to_back'
           call gethelptext(helpinsub,helptopic,nbhelp)
-          call askok('Do you want to confirm back-to-back surfaces',
-     &               'within the room (see help)',OK,dok,nbhelp)
+          call askok(
+     &     'Are you sure you want to skip confirmation of back-to-back',
+     &      'surfaces within room (see help)?',OK,dok,nbhelp)
           if(OK)M8SKP=.true.
         endif
 

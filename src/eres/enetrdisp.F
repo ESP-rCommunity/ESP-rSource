@@ -45,7 +45,7 @@ C
 C View parameters
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/MENUCHW,IGL,IGR,IGT,IGB,IGW,IGWH
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
+      COMMON/GRAF1/YMAX(6),YMIN(6),YAXSET(6),ADDLIN,horaxisdiv
       COMMON/NETPLOT/XSTRT,XFIN,ILINST(MERAWD),AXSC(5)
 
 C Array of recovered data

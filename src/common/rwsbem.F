@@ -1388,8 +1388,8 @@ C Published by Department of Communities and Local Government, UK
         WRITE(IUF,'(A)')'# cool generator efficiency, index and name '
         IF(ICGEF(ICMSYS).NE.0)THEN
           lnb=lnblnk(SYSNAME(ICGEF(ICMSYS)+29))
-          WRITE(IUF,'(1X,F6.3,1X,I4,1X,A)',IOSTAT=IOS,ERR=3)CGEF(ICMSYS)
-     &    ,ICGEF(ICMSYS),SYSNAME(ICGEF(ICMSYS)+29)(1:lnb)
+          WRITE(IUF,'(1X,F6.3,1X,I4,1X,A)',IOSTAT=IOS,ERR=3)
+     &      CGEF(ICMSYS),ICGEF(ICMSYS),SYSNAME(ICGEF(ICMSYS)+29)(1:lnb)
         ELSE
           WRITE(IUF,'(1X,F6.3,1X,A)',IOSTAT=IOS,ERR=3)CGEF(ICMSYS),
      &    ' # No cool generator specified'

@@ -38,12 +38,34 @@ C MENUTYPE 8: Hours below query point
 C MENUTYPE 9: Psychrometric chart
 
       SUBROUTINE MOSTYLE
+#include "building.h"
+#include "model.h"
+#include "prj3dv.h"
+#include "net_flow.h"
+      COMMON/FILEP/IFIL
+      COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      integer ncomp,ncon
+      common/C1/NCOMP,NCON
+      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/getmenu/menutype,igetind(65),igetflux(65)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
-      CHARACTER ITEM(15)*21
+      CHARACTER ITEM(16)*22
+      character LAPROB*72
       integer NITMS,INO ! max items and current menu item
+#ifdef OSI
+      integer igwid,igheight  ! for use with axiscale
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+#endif
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -53,23 +75,28 @@ C For help messages
       helpinsub='MOSTYLE'  ! set for subroutine
 
 C Create menu.
-      ITEM(1) ='   Graphs:           '
-      ITEM(2) ='a Time series plot   '
-      ITEM(3) ='p Psychrometric chart'
-      ITEM(4) ='  ------------------ '
-      ITEM(5) ='   Statistics:       '
-      ITEM(6) ='b Summary statistics '
-      ITEM(7) ='c Hours > query point'
-      ITEM(8) ='d Hours < query point'
-      ITEM(9) ='e Frequency histogram'
-      ITEM(10) ='  ------------------ '
-      ITEM(11)='   Tabular lists:    '
-      ITEM(12)='f Performance metrics'
-      ITEM(13)='  ------------------ '
-      ITEM(14)='? Help               '
-      ITEM(15)='- Exit               '
+      ITEM(1) ='   Graphs:            '
+      ITEM(2) ='a Time series plot    '
+      ITEM(3) ='p Psychrometric chart '
+      if(iairn.eq.3)then
+        ITEM(4) ='3 3D flow network     '
+      else
+        ITEM(4) ='  3D flow network     '
+      endif
+      ITEM(5) ='  ------------------  '
+      ITEM(6) ='   Statistics:        '
+      ITEM(7) ='b Summary statistics  '
+      ITEM(8) ='c Hours > query point '
+      ITEM(9) ='d Hours < query point '
+      ITEM(10)='e Frequency histogram '
+      ITEM(11)='  ------------------  '
+      ITEM(12)='   Tabular lists:     '
+      ITEM(13)='f Performance metrics '
+      ITEM(14)='  ------------------  '
+      ITEM(15)='? Help                '
+      ITEM(16)='- Exit                '
 
-      NITMS=15
+      NITMS=16
       if(MMOD.eq.8)then
         INO=-1
       else
@@ -87,15 +114,75 @@ C Set MENUTYPE depending on choice made.
         MENUTYPE=3
       elseif (INO.eq.3) then
         MENUTYPE=9
-      elseif (INO.eq.6) then
-        MENUTYPE=5
+      elseif (INO.eq.4) then
+
+C Switch to 3D view. Might need to refresh scaling.
+        if(iairn.eq.3)then
+          MENUTYPE=15
+
+C Initialise coordinates for eye point, view point and angle of view.
+          EYEM(1)=-100.; EYEM(2)=-100.; EYEM(3)=100.
+          VIEWM(1)=10.; VIEWM(2)=10.; VIEWM(3)=10.
+          ANG=40.
+
+C General image option flags.
+          ITDSP=0; ITBND=1; ITEPT=0
+          ITZNM=0; ITSNM=1; ITVNO=1
+          ITORG=0; ITSNR=1; ITOBS=0
+          ITGRD=0; GRDIS=0.0
+          ITPPSW=0
+
+C Clear current viewing box and re-establish image bounds.
+          CALL startbuffer
+
+C Setup and pass in parameters to win3d.
+          iiw1=4; iiw2=4; iiw3=3; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
+          igwid=igw; igheight=igwh
+
+C Get bounds for image.
+          nzg=NCOMP
+          do 29 iz=1,nzg
+            nznog(iz)=iz
+  29      continue
+          call bndobj(0,IER)
+
+          HANG=ANG/2.0; HITH=1.0; YON=1300.0
+          CALL LENS(IER)
+
+C Determine scaling ratios for the drawing and axis.
+C Determine the 2D coords of the site extremes.
+          CALL SITE2D(SXMX,SXMN,SYMX,SYMN,ier)
+          write(6,*) SXMX,SXMN,SYMX,SYMN
+          CALL axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
+     &      Xadd,Yadd)
+          write(6,*) SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,Xadd,Yadd
+          call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
+
+C Read 3D flow network, report contents and draw the network.
+          IUM=IFIL+6
+          CALL ERPFREE(IUM,ISTAT)
+          CALL MFCDAT
+          CALL EMF3DREAD(IUM,'S',IER)
+          call edisp(iuout,' ')
+          CALL MFLIST(iuout)
+          call MFWFDRAW('r')  ! Draw flow network.
+          CALL ERPFREE(IUM,ISTAT)
+          call pauses(1)
+        endif
       elseif (INO.eq.7) then
-        MENUTYPE=7
+        MENUTYPE=5
       elseif (INO.eq.8) then
-        MENUTYPE=8
+        MENUTYPE=7
       elseif (INO.eq.9) then
+        MENUTYPE=8
+      elseif (INO.eq.10) then
         MENUTYPE=2
-      elseif (INO.eq.12) then
+      elseif (INO.eq.13) then
         MENUTYPE=4
       elseif (INO.eq.(NITMS-1)) then
         helptopic='res_style_selection_menu'
@@ -118,16 +205,16 @@ C    1=std building information.
 C    2=mass flow network.
 C    3=plant systems
       SUBROUTINE AXISINT(IGRTP,ALABEL)
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
+      COMMON/GRAF1/YMAX(6),YMIN(6),YAXSET(6),ADDLIN,horaxisdiv
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
 
       integer YAXSET,ADDLIN,horaxisdiv
 
-      character ALABEL(5)*12
+      character ALABEL(6)*12
 
 C Reset axis scaling.
-      do 4 I=1,5
-        if (YAXSET(I).lt.2.or.YAXSET(I).EQ.5) then
+      do 4 I=1,6
+        if (YAXSET(I).lt.2.or.YAXSET(I).eq.5) then
           YMAX(I)=-1.E+10
           YMIN(I)=1.E+10
         endif
@@ -158,12 +245,14 @@ C Mass flow labels.
           ALABEL(3)='Flow rate'
           ALABEL(4)='Misc.'
           ALABEL(5)='Conc: g/kg'
+          ALABEL(6)='Vel: m/s'
         elseif (IROC.eq.1) then
           ALABEL(1)='T: DegC/hr'
           ALABEL(2)='P: Pa/hr'
           ALABEL(3)='Flw rate/hr'
           ALABEL(4)='Misc./hr'
           ALABEL(5)='Conc e-3/hr'
+          ALABEL(6)='V: m/s/hr'
         endif
       elseif (IGRTP.eq.3) then
         ALABEL(1)='Temp: DegC'
@@ -183,8 +272,8 @@ C AXISPOS - set positions of axes for all graph drawing routines.
 
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
-      COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
+      COMMON/GRAF1/YMAX(6),YMIN(6),YAXSET(6),ADDLIN,horaxisdiv
+      COMMON/GRAF2/YSC(6),Yadd(6),TSC,Xadd,IGX(6),ILR(6),DT
 
       integer YAXSET,ADDLIN,horaxisdiv
 
@@ -200,21 +289,23 @@ C Set default positions.
       igx(3)=igr+80
       igx(4)=2*(igl+igr)/3
       igx(5)=(igl+igr)/3
+      igx(6)=igl
       ILR(1)=0
       ILR(2)=1
       ILR(3)=1
       ILR(4)=1
       ILR(5)=1
+      ILR(6)=0
 
 C Optimise axis positions.
       NAX=0
-      do 10 I=1,5
+      do 10 I=1,6
         if (YAXSET(I).gt.0) NAX=NAX+1
  10   continue
 
 C Position each axis in turn.
       IAXOK=0
-      do 20 I=1,5
+      do 20 I=1,6
         if (YAXSET(I).gt.0) then
           IAXOK=IAXOK+1
           if (IAXOK.eq.1) then
@@ -258,11 +349,11 @@ C AXISDRW - draw and label axes.
       COMMON/PPERS/IPSD1,IPSM1,IPSD2,IPSM2,IPSDS,IPSDF,NPTS,ipsav
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
-      COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
+      COMMON/GRAF1/YMAX(6),YMIN(6),YAXSET(6),ADDLIN,horaxisdiv
+      COMMON/GRAF2/YSC(6),Yadd(6),TSC,Xadd,IGX(6),ILR(6),DT
       real TST,TFI,TSCR  ! for hourly version
 
-      character ALABEL(5)*12,act*1
+      character ALABEL(6)*12,act*1
 
       integer YAXSET,ADDLIN,horaxisdiv
 #ifdef OSI
@@ -282,7 +373,7 @@ C Debug.
 C      write(6,*) 'AXISDRW',(YAXSET(I),I=1,5)
 
 C Draw each axis in turn.
-      do 10 I=1,5
+      do 10 I=1,6
         if (YAXSET(I).gt.0) then
 
 C This axis is required. Scale max and min values outwards.

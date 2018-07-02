@@ -79,6 +79,10 @@ C Parameters passed into subroutine:
       INTEGER :: ifil
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: iuout,iuin
+
+C Markdown flag.
+      logical markdown
+      common/markdownflag/markdown
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
@@ -224,7 +228,7 @@ C Remember if each zone is fully attributed.
       character ZN*12,SN*12
       character aok*17,CTLDOC*248,LCTLF*72
       character xfile*144,tg*1,delim*1,head*21
-      character outs*124,outs248*496
+      character outs*124,outs248*496,outs2*148
       character dstmp*24,mlc_name*32
       CHARACTER LAPROB*72,LPNF*72
       CHARACTER TOPTIC*12,msg*28,doit*248
@@ -280,7 +284,8 @@ C in the current model. A -1 means not applicable
       character lltmp*144,lguess*144,lldef*144  ! for working with EASKXORGTKF
       character lpath*72,fname*72 ! for use with fdroot
       character llclmdb*144
-      integer llt,lndbp,jj
+      character boundmsg*72
+      integer llt,lndbp,jj,lnsn
 
       logical newgeo  ! to use for testing if new/old geometry file.
       logical nameok  ! to use for testing if duplicate names in zone
@@ -378,11 +383,20 @@ C Create model QA report in the doc folder if possible. Use similar
 C pattern to management of lmodellog.
         lr=lnblnk(cfgroot)
         if(docpth(1:2).eq.'  '.or.docpth(1:2).eq.'./')then
-          write(lmodelqa,'(2a)') cfgroot(1:lr),'.contents'
+          if(markdown)then
+            write(lmodelqa,'(2a)') cfgroot(1:lr),'.md'
+          else
+            write(lmodelqa,'(2a)') cfgroot(1:lr),'.contents'
+          endif
         elseif(docpth(1:3).eq.'../')then
-          write(lmodelqa,'(4a)') docpth(1:lnblnk(docpth)),fs,
-     &      cfgroot(1:lr),'.contents'
-        else
+          if(markdown)then
+            write(lmodelqa,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &        cfgroot(1:lr),'.md'
+          else
+            write(lmodelqa,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &        cfgroot(1:lr),'.contents'
+          endif
+       else
           write(lmodelqa,'(4a)') docpth(1:lnblnk(docpth)),fs,
      &      cfgroot(1:lr),'.contents'
         endif
@@ -1069,7 +1083,11 @@ C If vi then spawn a new window to do the editing in.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         lltmp='  '
         lguess='  '
-        lldef='model.contents'
+        if(markdown)then
+          lldef='model.md'
+        else
+          lldef='model.contents'
+        endif
         if(iglib.eq.2)then
           call addpath(lmodelqa,longtfile,concat)  ! expand path for GTK browser
           write(lguess,'(a)') longtfile(1:lnblnk(longtfile))
@@ -1112,7 +1130,11 @@ C Not one of the standard choices.
 C Generate the QA report.
   55  call tstamp('>','PRJ: zone summary')
       call dstamp(dstmp)
-      call edisp(itu,'Synopsis')
+      if(markdown)then
+        call edisp(itu,'# Synopsis')
+      else
+        call edisp(itu,'Synopsis')
+      endif
       call edisp(itu,' ')
       write(outs248,'(8A)') 'Synopsis of the model ',
      &  modeltitle(1:lnblnk(modeltitle)),' defined in ',
@@ -1179,7 +1201,7 @@ C         Write monthly values ...
           ipos=1
           do while (itrunc.ne.0)
             call ailist(ipos,12,dayswithsnow,12,'S',outs248,
-     &                                                  loutln,itrunc)
+     &        loutln,itrunc)
             call edisp248(itu,outs248,100)
             ipos=itrunc+1
           end do
@@ -1193,7 +1215,7 @@ C         Write monthly values
           ipos=1
           do while (itrunc.ne.0)
             call arlist2(ipos,12,groundreflmonth,12,'S',outs248,
-     &                                                  loutln,itrunc)
+     &        loutln,itrunc)
             call edisp248(itu,outs248,110)
             ipos=itrunc+1
           end do
@@ -1221,17 +1243,44 @@ C Re-read sbem db and then the descriptive file.
               call edisp(itu,'  ')          
               call lstncm('e',itu)
             endif
-            call edisp(itu,' ')
-            write(outs,'(2a)')'Simulationist name: ',certifname 
-            call edisp(itu,outs)     
-            write(outs,'(2a)')'Simulationist telephone: ',certTel 
-            call edisp(itu,outs)     
-            write(outs,'(2a)')'Simulationist address: ',certaddress   
-            call edisp(itu,outs)   
-            write(outs,'(2a)')'Simulationist city: ',certcity  
-            call edisp(itu,outs)    
-            write(outs,'(2a)')'Simulationist postcode: ',certPC  
-            call edisp(itu,outs)
+
+C Check if any of the address fields are known.
+            if(certifname(1:15).eq.'not yet defined'.and.
+     &         certTel(1:15).eq.'not yet defined'.and.
+     &         certaddress(1:15).eq.'not yet defined')then
+              continue  ! nothing to write
+            else
+              if(markdown)then
+                call edisp(itu,
+     &          '------------------------   ---------------')
+                write(outs,'(2a)')'Simulationist name         ',
+     &            certifname 
+                call edisp(itu,outs)     
+                write(outs,'(2a)')'Simulationist telephone    ',certTel 
+                call edisp(itu,outs)     
+                write(outs,'(2a)')'Simulationist address      ',
+     &            certaddress   
+                call edisp(itu,outs)   
+                write(outs,'(2a)')'Simulationist city         ',certcity  
+                call edisp(itu,outs)    
+                write(outs,'(2a)')'Simulationist postcode     ',certPC  
+                call edisp(itu,outs)
+                call edisp(itu,
+     &          '------------------------   ---------------')
+              else
+                call edisp(itu,' ')
+                write(outs,'(2a)')'Simulationist name: ',certifname 
+                call edisp(itu,outs)     
+                write(outs,'(2a)')'Simulationist telephone: ',certTel 
+                call edisp(itu,outs)     
+                write(outs,'(2a)')'Simulationist address: ',certaddress   
+                call edisp(itu,outs)   
+                write(outs,'(2a)')'Simulationist city: ',certcity  
+                call edisp(itu,outs)    
+                write(outs,'(2a)')'Simulationist postcode: ',certPC  
+                call edisp(itu,outs)
+              endif
+            endif
             call edisp(itu,'  ')          
             if(LASBEM(1:4).eq.'UNKN')then
               continue
@@ -1250,33 +1299,39 @@ C Re-read sbem db and then the descriptive file.
           else
             write(outs,'(2a)')'Project name: ',pjname(1:lnblnk(pjname))
             call edisp(itu,outs)
-            write(outs,'(2a)')'Building address: ',baddress
-            call edisp(itu,outs)
-            write(outs,'(2a)')'Building city: ',bcity(1:lnblnk(bcity)) 
-            call edisp(itu,outs)
-            write(outs,'(2a)')'Building Postcode: ',buildingPC  
-            call edisp(itu,outs)    
-            write(outs,'(2a)')'Building owner name: ',ownername
-            call edisp(itu,outs)   
-            write(outs,'(2a)')'Building owner telephone: ',ownertel
-            call edisp(itu,outs)   
-            write(outs,'(2a)')'Building owner address: ',owneraddr 
-            call edisp(itu,outs) 
-            write(outs,'(2a)')'Building owner city: ',ownercity 
-            call edisp(itu,outs) 
-            write(outs,'(2a)')'Building owner Postcode: ',ownerPC
-            call edisp(itu,outs)     
-            call edisp(itu,' ')
-            write(outs,'(2a)')'Simulationist name: ',certifname 
-            call edisp(itu,outs)     
-            write(outs,'(2a)')'Simulationist telephone: ',certTel 
-            call edisp(itu,outs)     
-            write(outs,'(2a)')'Simulationist address: ',certaddress   
-            call edisp(itu,outs)   
-            write(outs,'(2a)')'Simulationist city: ',certcity  
-            call edisp(itu,outs)    
-            write(outs,'(2a)')'Simulationist postcode: ',certPC  
-            call edisp(itu,outs)
+            if(baddress(1:15).eq.'not yet defined'.and.
+     &         bcity(1:15).eq.'not yet defined'.and.
+     &         buildingPC(1:15).eq.'not yet defined')then
+              continue  ! nothing to write
+            else
+              write(outs,'(2a)')'Building address: ',baddress
+              call edisp(itu,outs)
+              write(outs,'(2a)')'Building city: ',bcity(1:lnblnk(bcity)) 
+              call edisp(itu,outs)
+              write(outs,'(2a)')'Building Postcode: ',buildingPC  
+              call edisp(itu,outs)    
+              write(outs,'(2a)')'Building owner name: ',ownername
+              call edisp(itu,outs)   
+              write(outs,'(2a)')'Building owner telephone: ',ownertel
+              call edisp(itu,outs)   
+              write(outs,'(2a)')'Building owner address: ',owneraddr 
+              call edisp(itu,outs) 
+              write(outs,'(2a)')'Building owner city: ',ownercity 
+              call edisp(itu,outs) 
+              write(outs,'(2a)')'Building owner Postcode: ',ownerPC
+              call edisp(itu,outs)     
+              call edisp(itu,' ')
+              write(outs,'(2a)')'Simulationist name: ',certifname 
+              call edisp(itu,outs)     
+              write(outs,'(2a)')'Simulationist telephone: ',certTel 
+              call edisp(itu,outs)     
+              write(outs,'(2a)')'Simulationist address: ',certaddress   
+              call edisp(itu,outs)   
+              write(outs,'(2a)')'Simulationist city: ',certcity  
+              call edisp(itu,outs)    
+              write(outs,'(2a)')'Simulationist postcode: ',certPC  
+              call edisp(itu,outs)
+            endif
           endif          
         endif
 
@@ -1298,26 +1353,55 @@ C Setup string buffer with distribution weather folder name.
 
 C Tell about climate taking note of timing of solar data.
         if(iSlr_half_hr_flg.eq.0)then
-          WRITE(outs248,'(5A)')'The climate is: ',
-     &      CLMLOC(1:lnblnk(CLMLOC)),' and is held in: ',
-     &      LCLIM(1:lnblnk(LCLIM)),
+          if(markdown)then
+            WRITE(outs248,'(5A)')'The climate is: ',
+     &        CLMLOC(1:lnblnk(CLMLOC)),' and is held in: ',
+     &          LCLIM(1:lnblnk(LCLIM)),
+     &      ' with hour centred solar data.  '
+            call edisp248(itu,outs248,120)
+          else
+            WRITE(outs248,'(5A)')'The climate is: ',
+     &        CLMLOC(1:lnblnk(CLMLOC)),' and is held in: ',
+     &          LCLIM(1:lnblnk(LCLIM)),
      &      ' with hour centred solar data.'
+            call edisp248(itu,outs248,80)
+          endif
         else
-          WRITE(outs248,'(5A)')'The climate is: ',
-     &      CLMLOC(1:lnblnk(CLMLOC)),' and is held in: ',
-     &      LCLIM(1:lnblnk(LCLIM)),
-     &      ' with half hour centred solar data.'
+          if(markdown)then
+            WRITE(outs248,'(5A)')'The climate is: ',
+     &        CLMLOC(1:lnblnk(CLMLOC)),' and is held in: ',
+     &        LCLIM(1:lnblnk(LCLIM)),
+     &        ' with half hour centred solar data.  '
+            call edisp248(itu,outs248,80)
+          else
+            WRITE(outs248,'(5A)')'The climate is: ',
+     &        CLMLOC(1:lnblnk(CLMLOC)),' and is held in: ',
+     &        LCLIM(1:lnblnk(LCLIM)),
+     &        ' with half hour centred solar data.'
+            call edisp248(itu,outs248,80)
+          endif
         endif
-        call edisp248(itu,outs248,80)
 
         if(ipathclim.eq.0.or.ipathclim.eq.1)then
-          WRITE(outs248,'(2A)')' annual weather         : ',
+          if(markdown)then
+            WRITE(outs2,'(3A)')'annual weather ',
+     &        LCLIM(1:lnblnk(LCLIM)),'  '
+            call edispxtr(itu,outs2)          
+          else
+            WRITE(outs248,'(2A)')' annual weather         : ',
      &      LCLIM(1:lnblnk(LCLIM))
-          call edisp248(itu,outs248,100)
+            call edisp248(itu,outs248,100)
+          endif
         elseif(ipathclim.eq.2)then
-          WRITE(outs248,'(2A)')' standard annual weather: ',
-     &      LCLIM(1:lnblnk(LCLIM))
-          call edisp248(itu,outs248,100)
+          if(markdown)then
+            WRITE(outs2,'(3A)')'Standard annual weather ',
+     &        LCLIM(1:lnblnk(LCLIM)),'  '
+            call edispxtr(itu,outs2)          
+          else
+            WRITE(outs248,'(2A)')' standard annual weather: ',
+     &        LCLIM(1:lnblnk(LCLIM))
+            call edisp248(itu,outs248,100)
+          endif
         endif
 
 C List out the estimated ground temperatures based on the
@@ -1329,9 +1413,15 @@ C First get ground temperatures at depth ZD.
           itrunc=1
           ipos=1
           do while (itrunc.ne.0)
-            call arlist(ipos,12,eGrdTp,12,'S',outs248,loutln,itrunc)
-            call edisp(itu,'Calculated ground temp at 0.5m depth')
-            call edisp248(itu,outs248,90)
+            call arlist(ipos,12,eGrdTp,12,'S',outs2,loutln,itrunc)
+            if(markdown)then
+              call edispxtr(itu,
+     &          'Calculated ground temp at 0.5m depth  ')
+              call edisp2tr(itu,outs2)
+            else
+              call edisp(itu,'Calculated ground temp at 0.5m depth')
+              call edisp(itu,outs2)
+            endif   
             ipos=itrunc+1
           end do
           ZD=1.0
@@ -1339,9 +1429,15 @@ C First get ground temperatures at depth ZD.
           itrunc=1
           ipos=1
           do while (itrunc.ne.0)
-            call arlist(ipos,12,eGrdTp,12,'S',outs248,loutln,itrunc)
-            call edisp(itu,'Calculated ground temp at 1.0m depth')
-            call edisp248(itu,outs248,90)
+            call arlist(ipos,12,eGrdTp,12,'S',outs2,loutln,itrunc)
+            if(markdown)then
+              call edispxtr(itu,
+     &          'Calculated ground temp at 1.0m depth  ')
+              call edisp2tr(itu,outs2)
+            else
+              call edisp(itu,'Calculated ground temp at 1.0m depth')
+              call edisp(itu,outs2)
+            endif
             ipos=itrunc+1
           end do
           ZD=2.0
@@ -1349,9 +1445,15 @@ C First get ground temperatures at depth ZD.
           itrunc=1
           ipos=1
           do while (itrunc.ne.0)
-            call arlist(ipos,12,eGrdTp,12,'S',outs248,loutln,itrunc)
-            call edisp(itu,'Calculated ground temp at 2.0m depth')
-            call edisp248(itu,outs248,90)
+            call arlist(ipos,12,eGrdTp,12,'S',outs2,loutln,itrunc)
+            if(markdown)then
+              call edispxtr(itu,
+     &          'Calculated ground temp at 2.0m depth  ')
+              call edisp2tr(itu,outs2)
+            else
+              call edisp(itu,'Calculated ground temp at 2.0m depth')
+              call edisp(itu,outs2)
+            endif
             ipos=itrunc+1
           end do
           ZD=4.0
@@ -1359,9 +1461,15 @@ C First get ground temperatures at depth ZD.
           itrunc=1
           ipos=1
           do while (itrunc.ne.0)
-            call arlist(ipos,12,eGrdTp,12,'S',outs248,loutln,itrunc)
-            call edisp(itu,'Calculated ground temp at 4.0m depth')
-            call edisp248(itu,outs248,90)
+            call arlist(ipos,12,eGrdTp,12,'S',outs2,loutln,itrunc)
+            if(markdown)then
+              call edispxtr(itu,
+     &          'Calculated ground temp at 4.0m depth  ')
+              call edisp2tr(itu,outs2)
+            else
+              call edisp(itu,'Calculated ground temp at 4.0m depth')
+              call edisp(itu,outs2)
+            endif
             ipos=itrunc+1
           end do
           call edisp(itu,' ')
@@ -1378,8 +1486,12 @@ C << to be done >>
         if(NGRDP.gt.0.and.siteinfo.ge.1)then
           call edisp(itu,' ')  
           write(outs,'(a,i2,a)')'There are currently ',NGRDP,
-     &      ' user defined ground temperature profiles.'      
-          call edisp(itu,outs)
+     &      ' user defined ground temperature profiles.' 
+          if(markdown)then
+            call edisp2tr(itu,outs)
+          else     
+            call edisp(itu,outs)
+          endif     
         endif
       endif
 
@@ -1387,7 +1499,11 @@ C Jump back point if err=1000 called when reading climate.
  1001 if(siteinfo.eq.2)then
         if(NGRDP.gt.0)then
           do 22 igrdp=1,NGRDP    
-            CALL EDISP(itu,'Ground temperatures Jan-Dec:')
+            if(markdown)then
+              call edispxtr(itu,'Ground temperatures Jan-Dec  ')
+            else
+              call edisp(itu,'Ground temperatures Jan-Dec:')
+            endif
             WRITE(OUTS,'(12F6.1)')(UGRDTP(J,IGRDP),J=1,12)
             call edisp(itu,outs)
  22       continue
@@ -1419,34 +1535,75 @@ C If there is an AIM-2 descritption scan the file and then report.
         endif
 
         if(ipconv.eq.1)then
-          call edisp(itu,
+          if(markdown)then
+            call edisp(itu,
+     &': Primary energy conversions (demand kWhr to primary kWhr)')
+            call edisp(itu,' ')
+            call edisp(itu,'------------    -----')
+            WRITE(outs,'(A,F6.3)') 'heating        ',pcnvht
+            call edisp(itu,outs)
+            WRITE(outs,'(A,F6.3)') 'cooling        ',pcnvcl
+            call edisp(itu,outs)
+            WRITE(outs,'(A,F6.3)') 'lighting       ',pcnvlt
+            call edisp(itu,outs)
+            WRITE(outs,'(A,F6.3)') 'fans&pumps     ',pcnvfn
+            call edisp(itu,outs)
+            WRITE(outs,'(A,F6.3)') 'small powr     ',pcnvsp
+            call edisp(itu,outs)
+            WRITE(outs,'(A,F6.3)') 'hot water      ',pcnvhw
+            call edisp(itu,outs)
+            call edisp(itu,'------------    -----')
+          else
+            call edisp(itu,
      &'Primary energy conversions (demand kWhr to primary kWhr) are:')
-          WRITE(outs,'(A,F6.3)') ' heating   :',pcnvht
-          call edisp(itu,outs)
-          WRITE(outs,'(A,F6.3)') ' cooling   :',pcnvcl
-          call edisp(itu,outs)
-          WRITE(outs,'(A,F6.3)') ' lighting  :',pcnvlt
-          call edisp(itu,outs)
-          WRITE(outs,'(A,F6.3)') ' fans&pumps:',pcnvfn
-          call edisp(itu,outs)
-          WRITE(outs,'(A,F6.3)') ' small powr:',pcnvsp
-          call edisp(itu,outs)
-          WRITE(outs,'(A,F6.3)') ' hot water :',pcnvhw
-          call edisp(itu,outs)
+            WRITE(outs,'(A,F6.3)') ' heating   :',pcnvht
+            call edisp(itu,outs)
+            WRITE(outs,'(A,F6.3)') ' cooling   :',pcnvcl
+            call edisp(itu,outs)
+            WRITE(outs,'(A,F6.3)') ' lighting  :',pcnvlt
+            call edisp(itu,outs)
+            WRITE(outs,'(A,F6.3)') ' fans&pumps:',pcnvfn
+            call edisp(itu,outs)
+            WRITE(outs,'(A,F6.3)') ' small powr:',pcnvsp
+            call edisp(itu,outs)
+            WRITE(outs,'(A,F6.3)') ' hot water :',pcnvhw
+            call edisp(itu,outs)
+          endif
           call edisp(itu,' ')
-          call edisp(itu,' Emissions (g/kWh) co2  nox  sox  ')
-          WRITE(outs,'(A,3F7.2)')' heating : ',phtco2,phtnox,phtsox
-          call edisp(itu,outs)
-          WRITE(outs,'(A,3F7.2)')' cooling : ',pclco2,pclnox,pclsox
-          call edisp(itu,outs)
-          WRITE(outs,'(A,3F7.2)')' lighting: ',pltco2,pltnox,pltsox
-          call edisp(itu,outs)
-          WRITE(outs,'(A,3F7.2)')' fan_pump: ',pfnco2,pfnnox,pfnsox
-          call edisp(itu,outs)
-          WRITE(outs,'(A,3F7.2)')' small pr: ',pspco2,pspnox,pspsox
-          call edisp(itu,outs)
-          WRITE(outs,'(A,3F7.2)')' hot water:',phwco2,phwnox,phwsox
-          call edisp(itu,outs)
+          if(markdown)then
+            call edisp(itu,' ')
+            call edisp(itu,': Emissions (g/kWh)')
+            call edisp(itu,' ')
+            call edisp(itu,'Source       co2      nox    sox')
+            call edisp(itu,'-----------  -------  -----  ------')
+            WRITE(outs,'(A,3F7.2)')'heating     ',phtco2,phtnox,phtsox
+            call edisp(itu,outs)
+            WRITE(outs,'(A,3F7.2)')'cooling     ',pclco2,pclnox,pclsox
+            call edisp(itu,outs)
+            WRITE(outs,'(A,3F7.2)')'lighting    ',pltco2,pltnox,pltsox
+            call edisp(itu,outs)
+            WRITE(outs,'(A,3F7.2)')'fan_pump    ',pfnco2,pfnnox,pfnsox
+            call edisp(itu,outs)
+            WRITE(outs,'(A,3F7.2)')'small pr    ',pspco2,pspnox,pspsox
+            call edisp(itu,outs)
+            WRITE(outs,'(A,3F7.2)')'hot water   ',phwco2,phwnox,phwsox
+            call edisp(itu,outs)
+            call edisp(itu,'-----------  -------  -----  ------')
+          else
+            call edisp(itu,' Emissions (g/kWh) co2  nox  sox  ')
+            WRITE(outs,'(A,3F7.2)')' heating : ',phtco2,phtnox,phtsox
+            call edisp(itu,outs)
+            WRITE(outs,'(A,3F7.2)')' cooling : ',pclco2,pclnox,pclsox
+            call edisp(itu,outs)
+            WRITE(outs,'(A,3F7.2)')' lighting: ',pltco2,pltnox,pltsox
+            call edisp(itu,outs)
+            WRITE(outs,'(A,3F7.2)')' fan_pump: ',pfnco2,pfnnox,pfnsox
+            call edisp(itu,outs)
+            WRITE(outs,'(A,3F7.2)')' small pr: ',pspco2,pspnox,pspsox
+            call edisp(itu,outs)
+            WRITE(outs,'(A,3F7.2)')' hot water:',phwco2,phwnox,phwsox
+            call edisp(itu,outs)
+          endif
         endif
       endif
 
@@ -1490,6 +1647,8 @@ C if verbose print periods, seasons and ratios as well.
             endif
           else
             ipvaction='ipv'
+
+C << update for markdown >>
             call ripvdat(IFCFG,lipvdatf,ipvaction,ieripv)  ! this returns a value for ieripv
             call edisp(itu,' ')
           endif
@@ -1503,14 +1662,38 @@ C Check if embedded within configuration file.
           endif
         endif
         if(ieripv.eq.0)then
-          call edisp(itu,
-     &      'An Integrated Performance View has been defined:')
+          if(markdown)then
+            call edisp(itu,'  ')
+            call edisp2tr(itu,
+     &        '## Integrated Performance View  ')
+            call edisp2tr(itu,
+     &        'An Integrated Performance View has been defined  ')
+          else
+            call edisp(itu,
+     &        'An Integrated Performance View has been defined:')
+          endif
           if(contextinfo.eq.1)then
-            WRITE(outs,'(2A)')'Title   : ',ipvtitl(1:lnblnk(ipvtitl))
-            call edisp(itu,outs)
-            WRITE(outs,'(2A)')'Version : ',ipvvers(1:lnblnk(ipvvers))
-            call edisp(itu,outs)
-            call edisp(itu,'Synopsis:')
+            if(markdown)then
+              WRITE(outs,'(3A)')'Title ',ipvtitl(1:lnblnk(ipvtitl)),
+     &          '  '
+              call edisp2tr(itu,outs)
+            else
+              WRITE(outs,'(2A)')'Title   : ',ipvtitl(1:lnblnk(ipvtitl))
+              call edisp(itu,outs)
+            endif
+            if(markdown)then
+              WRITE(outs,'(3A)')'Version ',ipvvers(1:lnblnk(ipvvers)),
+     &          '  '
+              call edisp2tr(itu,outs)
+            else
+              WRITE(outs,'(2A)')'Version : ',ipvvers(1:lnblnk(ipvvers))
+              call edisp(itu,outs)
+            endif
+            if(markdown)then
+              call edisp2tr(itu,'Synopsis  ')
+            else
+              call edisp(itu,'Synopsis:')
+            endif
             call edisp248(itu,ipvsynop,80)
           elseif(contextinfo.eq.2)then
 
@@ -1553,8 +1736,16 @@ C Set Default season definitions.
             endif
           endif
         else
-          call edisp(itu,
-     &     'An Integrated Performance View is incomplete or missing.')
+          if(markdown)then
+            call edisp(itu,' ')
+            call edispxtr(itu,
+     &        '## Integrated Performance View  ')
+            call edispxtr(itu,
+     &     'An Integrated Performance View is incomplete or missing.  ')
+          else
+            call edisp(itu,
+     &       'An Integrated Performance View is incomplete or missing.')
+          endif
         endif
 
 C If temporal data associated with the model report it.
@@ -1576,10 +1767,10 @@ C If temporal data associated with the model report it.
           if(ITEMSTD.gt.0)then
             call edisp(itu,' ')
             call edisp(itu,' Temporal entities currently used...')
-            call edisp(itu,'  ________________________________')
-            call edisp(itu,'  |temporal    |generic |associated')
+            call edisp(itu,'  ________________________________________')
+            call edisp(itu,'  |temporal    |generic     |associated   ')
             call edisp(itu,
-     &           '  |entity name |type    |with   zone &     surface ')
+     &        '  |entity name |type        |with   zone &     surface ')
             do 28, l=1,ITEMSTD
               WRITE(outs,29)l,DBTAG(L),DBTASK(L),DBZN(L),DBSN(L)
    29         FORMAT(i2,1X,A12,1X,A8,5X,A16,A16)
@@ -1590,98 +1781,201 @@ C If temporal data associated with the model report it.
         endif
       endif
 
-C Databases associated with the model. First print the file names.
-      if(databaseinfo.gt.0)then
+C Databases associated with the model. First print the file names
+C what ever the value of databaseinfo.
+      if(databaseinfo.ge.0)then
         call edisp(itu,' ')
-        call edisp(itu,'Databases associated with the model: ')
+        if(markdown)then
+          call edisp(itu,'## Databases')
+          call edisp(itu,': Databases associated with the model')
+          call edisp(itu,' ')
+          call edisp(itu,
+     &      '-------------------------  --------------------')
+        else
+          call edisp(itu,'Databases associated with the model: ')
+        endif
         if(ipathapres.eq.0.or.ipathapres.eq.1)then
-          WRITE(outs248,'(2A)')' pressure distributions : ',
-     &      LAPRES(1:lnblnk(LAPRES))
+          if(markdown)then
+            WRITE(outs248,'(2A)')'pressure distributions    ',
+     &        LAPRES(1:lnblnk(LAPRES))
+          else
+            WRITE(outs248,'(2A)')' pressure distributions : ',
+     &        LAPRES(1:lnblnk(LAPRES))
+          endif
           call edisp248(itu,outs248,100)
         elseif(ipathapres.eq.2)then
-          WRITE(outs248,'(2A)')' standard pressure distr: ',
-     &      LAPRES(1:lnblnk(LAPRES))
+          if(markdown)then
+            WRITE(outs248,'(2A)')'standard pressure distr    ',
+     &        LAPRES(1:lnblnk(LAPRES))
+          else
+            WRITE(outs248,'(2A)')' standard pressure distr: ',
+     &        LAPRES(1:lnblnk(LAPRES))
+          endif
           call edisp248(itu,outs248,100)
         endif
 
         if(ipathmat.eq.0.or.ipathmat.eq.1)then
-          WRITE(outs248,'(2A)')' materials              : ',
-     &      LFMAT(1:lnblnk(LFMAT))
+          if(markdown)then
+            WRITE(outs248,'(2A)')'materials                 ',
+     &        LFMAT(1:lnblnk(LFMAT))
+          else
+            WRITE(outs248,'(2A)')' materials              : ',
+     &        LFMAT(1:lnblnk(LFMAT))
+          endif
           call edisp248(itu,outs248,100)
         elseif(ipathmat.eq.2)then
-          WRITE(outs248,'(2A)')' standard materials     : ',
-     &      LFMAT(1:lnblnk(LFMAT))
+          if(markdown)then
+            WRITE(outs248,'(2A)')'standard materials         ',
+     &        LFMAT(1:lnblnk(LFMAT))
+          else
+            WRITE(outs248,'(2A)')' standard materials     : ',
+     &        LFMAT(1:lnblnk(LFMAT))
+          endif
           call edisp248(itu,outs248,100)
         endif
 
         if(ipathmul.eq.0.or.ipathmul.eq.1)then
-          WRITE(outs248,'(2A)')' constructions          : ',
-     &      LFMUL(1:lnblnk(LFMUL))
+          if(markdown)then
+            WRITE(outs248,'(2A)')'constructions             ',
+     &        LFMUL(1:lnblnk(LFMUL))
+          else
+            WRITE(outs248,'(2A)')' constructions          : ',
+     &        LFMUL(1:lnblnk(LFMUL))
+          endif
           call edisp248(itu,outs248,100)
         elseif(ipathmul.eq.2)then
-          WRITE(outs248,'(2A)')' standard constructions : ',
-     &      LFMUL(1:lnblnk(LFMUL))
+          if(markdown)then
+            WRITE(outs248,'(2A)')'standard constructions     ',
+     &        LFMUL(1:lnblnk(LFMUL))
+          else
+            WRITE(outs248,'(2A)')' standard constructions : ',
+     &        LFMUL(1:lnblnk(LFMUL))
+          endif
           call edisp248(itu,outs248,100)
         endif
 
         if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
-          WRITE(outs248,'(2A)')' plant components       : ',
-     &      LPCDB(1:lnblnk(LPCDB))
+          if(markdown)then
+            WRITE(outs248,'(2A)')'plant components          ',
+     &        LPCDB(1:lnblnk(LPCDB))
+          else
+            WRITE(outs248,'(2A)')' plant components       : ',
+     &        LPCDB(1:lnblnk(LPCDB))
+          endif
           call edisp248(itu,outs248,100)
         elseif(ipathpcdb.eq.2)then
-          WRITE(outs248,'(2A)')' standard plant comp    : ',
-     &      LPCDB(1:lnblnk(LPCDB))
-          call edisp248(itu,outs248,100)
+          if(markdown)then
+            WRITE(outs248,'(2A)')'standard plant comp        ',
+     &        LPCDB(1:lnblnk(LPCDB))
+          else
+             WRITE(outs248,'(2A)')' standard plant comp    : ',
+     &        LPCDB(1:lnblnk(LPCDB))
+          endif
+         call edisp248(itu,outs248,100)
         endif
 
         if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
-          WRITE(outs248,'(2A)')' event profiles         : ',
-     &      LPRFDB(1:lnblnk(LPRFDB))
+          if(markdown)then
+            WRITE(outs248,'(2A)')'event profiles            ',
+     &        LPRFDB(1:lnblnk(LPRFDB))
+          else
+            WRITE(outs248,'(2A)')' event profiles         : ',
+     &        LPRFDB(1:lnblnk(LPRFDB))
+          endif
           call edisp248(itu,outs248,100)
         elseif(ipathprodb.eq.2)then
-          WRITE(outs248,'(2A)')' standard event profiles: ',
-     &      LPRFDB(1:lnblnk(LPRFDB))
+          if(markdown)then
+            WRITE(outs248,'(2A)')'standard event profiles    ',
+     &        LPRFDB(1:lnblnk(LPRFDB))
+          else
+            WRITE(outs248,'(2A)')' standard event profiles: ',
+     &        LPRFDB(1:lnblnk(LPRFDB))
+          endif
           call edisp248(itu,outs248,100)
         endif
 
         if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
-          WRITE(outs248,'(2A)')' optical properties     : ',
-     &      LOPTDB(1:lnblnk(LOPTDB))
+          if(markdown)then
+            WRITE(outs248,'(2A)')'optical properties        ',
+     &        LOPTDB(1:lnblnk(LOPTDB))
+          else
+            WRITE(outs248,'(2A)')' optical properties     : ',
+     &        LOPTDB(1:lnblnk(LOPTDB))
+          endif
           call edisp248(itu,outs248,100)   
         elseif(ipathoptdb.eq.2)then
-          WRITE(outs248,'(2A)')' standard optical prop  : ',
-     &      LOPTDB(1:lnblnk(LOPTDB))
+          if(markdown)then
+            WRITE(outs248,'(2A)')'standard optical prop      ',
+     &        LOPTDB(1:lnblnk(LOPTDB))
+          else
+            WRITE(outs248,'(2A)')' standard optical prop  : ',
+     &        LOPTDB(1:lnblnk(LOPTDB))
+          endif
           call edisp248(itu,outs248,100)
         endif
 
         if(ipathsbem.eq.0.or.ipathsbem.eq.1)then
-          WRITE(outs248,'(2a)')' UK NCM data            : ',
-     &      LSBEM(1:lnblnk(LSBEM))
+          if(markdown)then
+            WRITE(outs248,'(2a)')'UK NCM data               ',
+     &        LSBEM(1:lnblnk(LSBEM))
+          else
+            WRITE(outs248,'(2a)')' UK NCM data            : ',
+     &        LSBEM(1:lnblnk(LSBEM))
+          endif
           call edisp248(itu,outs248,100)   
         elseif(ipathsbem.eq.2)then
-          WRITE(outs248,'(2a)')' standard UK NCM data   : ',
-     &      LSBEM(1:lnblnk(LSBEM))
+          if(markdown)then
+            WRITE(outs248,'(2a)')'standard UK NCM data       ',
+     &        LSBEM(1:lnblnk(LSBEM))
+          else
+            WRITE(outs248,'(2a)')' standard UK NCM data   : ',
+     &        LSBEM(1:lnblnk(LSBEM))
+          endif
           call edisp248(itu,outs248,100)   
         endif
 
         if(ipathpredef.eq.0.or.ipathpredef.eq.1)then
-          WRITE(outs248,'(2a)')' predefined objects     : ',
-     &      LPREDEF(1:lnblnk(LPREDEF))
+          if(markdown)then
+            WRITE(outs248,'(2a)')'predefined objects        ',
+     &        LPREDEF(1:lnblnk(LPREDEF))
+          else
+            WRITE(outs248,'(2a)')' predefined objects     : ',
+     &        LPREDEF(1:lnblnk(LPREDEF))
+          endif
           call edisp248(itu,outs248,100)   
         elseif(ipathpredef.eq.2)then
-          WRITE(outs248,'(2a)')' standard predefined obj: ',
-     &      LPREDEF(1:lnblnk(LPREDEF))
+          if(markdown)then
+            WRITE(outs248,'(2a)')'standard predefined obj    ',
+     &        LPREDEF(1:lnblnk(LPREDEF))
+          else
+            WRITE(outs248,'(2a)')' standard predefined obj: ',
+     &        LPREDEF(1:lnblnk(LPREDEF))
+          endif
           call edisp248(itu,outs248,100)   
         endif
 
         if(ipathmould.eq.0.or.ipathmould.eq.1)then
-          WRITE(outs248,'(2A)')' mould isopleths        : ',
-     &      lfmould(1:lnblnk(lfmould))
+          if(markdown)then
+            WRITE(outs248,'(2A)')'mould isopleths           ',
+     &        lfmould(1:lnblnk(lfmould))
+          else
+            WRITE(outs248,'(2A)')' mould isopleths        : ',
+     &        lfmould(1:lnblnk(lfmould))
+          endif
           call edisp248(itu,outs248,100)
         elseif(ipathmould.eq.2)then
-          WRITE(outs248,'(2A)')' standard mould isopleth: ',
-     &      lfmould(1:lnblnk(lfmould))
+          if(markdown)then
+            WRITE(outs248,'(2A)')'standard mould isopleth    ',
+     &        lfmould(1:lnblnk(lfmould))
+          else
+            WRITE(outs248,'(2A)')' standard mould isopleth: ',
+     &        lfmould(1:lnblnk(lfmould))
+          endif
           call edisp248(itu,outs248,100)
+        endif
+        if(markdown)then
+          call edisp(itu,
+     &      '-------------------------  --------------------')
         endif
       endif
 
@@ -1757,24 +2051,38 @@ C Control in the model
 C List description of control and then the various zone descriptions.
 C List control data.
         call edisp(itu,' ')
-        WRITE(outs,240)
-        call edisp(itu,outs)
         ICTLF=IUF
         CALL ERPFREE(ICTLF,ISTAT)
         call FINDFIL(LCTLF,XST)
         CALL EZCTLR(ICTLF,0,IUOUT,IER)
-        if(fileinfo.eq.1)then
+        if(markdown)then
+          call edisp(itu,'## Controls')
           call edisp(itu,' ')
+        else
+          WRITE(outs,240)
+          call edisp(itu,outs)
+          call edisp(itu,' ')
+        endif
+        if(fileinfo.eq.1)then
           write(outs,'(3A)') 'Ideal control is defined in: ',
      &      LCTLF(1:lnblnk(LCTLF)),' as follows:'
           call edisp(itu,outs)
         else
-         call edisp(itu,' ')
-         call edisp(itu,'The model includes ideal controls as follows:')
+          if(markdown)then
+            call edisp2tr(itu,
+     &        'The model includes the following ideal controls  ')
+          else
+            call edisp(itu,
+     &        'The model includes ideal controls as follows:')
+          endif
         endif
-        WRITE(outs,'(a)')'Control description: '
-        call edisp(itu,outs)
-        call edisp248(itu,ctldoc,80)
+        if(markdown)then
+          call edisp2tr(itu,'Control description  ')
+          call edisp248(itu,ctldoc,120)
+        else
+          call edisp(itu,'Control description: ')
+          call edisp248(itu,ctldoc,80)
+        endif
 
         if(NCF.gt.0)then
 
@@ -1784,11 +2092,21 @@ C that have been referenced and if very verbose (3) list all controls.
           call edisp(itu,' ')
           WRITE(outs,'(a,I2,a)')'Zones control includes ',
      &      NCF,' functions.'
-          call edisp(itu,outs)
+          if(markdown)then
+            call edisp2tr(itu,outs)
+          else
+            call edisp(itu,outs)
+          endif
           call edisp248(itu,znctldoc,80)
           if(controlinfo.eq.2)then
-            call edisp(itu,
+            if(markdown)then
+              call edispxtr(itu,' ')
+              call edispxtr(itu,
+     &        'Details of control loops referenced in the model  ')
+            else
+              call edisp(itu,
      &        'Details of control loops referenced in the model:')
+            endif
             do ii=1,NCF
               foundit=.false.
               do jj=1,ncomp
@@ -1799,8 +2117,13 @@ C that have been referenced and if very verbose (3) list all controls.
             call LSTCNTL(itu,0,0)
           endif
           if(controlinfo.eq.3)then
-            call edisp(itu,
-     &        'Details of all defined control loops:')
+            if(markdown)then
+              call edispxtr(itu,
+     &          'Details of all defined control loops  ')
+            else
+              call edisp(itu,
+     &          'Details of all defined control loops:')
+            endif
             do ii=1,NCF
               call LSTCNTL(itu,0,ii)
             enddo
@@ -1864,10 +2187,14 @@ C that have been referenced and if very verbose (3) list all controls.
 C If there is a flow network, rescan and list its contents.
       if(netinfo.gt.0)then
         if(IAIRN.ge.1)then
-          WRITE(outs,240)
-          call edisp(itu,outs)
-          call edisp(itu,' ')
-          call edisp(itu,'The model includes an air flow network.')
+          if(markdown)then
+            call edisp(itu,' ')
+          else
+            WRITE(outs,240)
+            call edisp(itu,outs)
+            call edisp(itu,' ')
+            call edisp(itu,'The model includes an air flow network.')
+          endif
           if(netinfo.eq.2)then
             call mflist(itu)
           endif
@@ -1925,13 +2252,30 @@ C Jump if no zones.
       if(inpic.eq.0) goto 57
 
       call edisp(itu,' ')
-      WRITE(outs,240)
-      call edisp(itu,outs)
-      call edisp(itu,' ')
-      outs='ID Zone         Volume|          Surface          '
-      call edisp(itu,outs)
-      outs='   Name         m^3   | No. Opaque  Transp  ~Floor'
-      call edisp(itu,outs)
+      if(markdown)then
+        call edisp(itu,'## Zones')
+        call edisp(itu,' ')
+        call edisp(itu,': Zone summary')
+        call edisp(itu,' ')
+        write(outs,'(3a)') 
+     &  'ID  Zone name     Volume (m^3^)  Surfaces   ',
+     &  'Opaque (m^2^)    Transparent (m^2^)   Floor (m^2^) ',
+     &  '   Description'
+        call edisp(itu,outs)
+        write(outs2,'(3a)')
+     &  '--  ------------  -------------  --------   ',
+     &  '--------------   ------------------   -------------',
+     &  '   -------------------------------------------' 
+        call edisp(itu,outs2)
+      else
+        WRITE(outs,240)
+        call edisp(itu,outs)
+        call edisp(itu,' ')
+        outs='ID Zone         Volume|          Surface          '
+        call edisp(itu,outs)
+        outs='   Name         m^3   | No. Opaque  Transp  ~Floor'
+        call edisp(itu,outs)
+      endif
       TVOL=0.
       TFLA=0.
       TOPQ=0.
@@ -1947,7 +2291,7 @@ C Jump if no zones.
             icc=izstocn(ivals(iz),i)
             if(SSOTHER(icc,1)(1:4).eq.'UNKN')attribok(IVALS(IZ))=.false.
 
-C At this point CFC and CFC2 are not counted as transparent.
+C At this point CFC and CFC2 are not counted
             if(SSMLCN(icc)(1:4).eq.'UNKN')attribok(IVALS(IZ))=.false.
             if(SSOTF(icc)(1:4).NE.'OPAQ') then
               TRN=TRN+SSNA(icc)
@@ -1957,25 +2301,51 @@ C At this point CFC and CFC2 are not counted as transparent.
    41     CONTINUE
           if(attribok(IVALS(IZ)))then
             aok=' attributed  '
-            write(outs,'(i2,1x,a,f7.1,i4,3f8.1,2x,a)') IVALS(IZ),
-     &      zname(IVALS(IZ)),VOL(IVALS(IZ)),NZSUR(ivals(iz)),OPQ,TRN,
-     &      ZBASEA(IVALS(IZ)),
-     &      zdesc(IVALS(IZ))(1:lnzdesc(IVALS(IZ)))
+            if(markdown)then
+              write(outs248,
+     &          '(i2,2x,a,f8.1,i13,11x,f8.1,13x,f8.1,8x,f9.1,5x,a)') 
+     &          IVALS(IZ),
+     &          zname(IVALS(IZ)),VOL(IVALS(IZ)),NZSUR(ivals(iz)),
+     &          OPQ,TRN,ZBASEA(IVALS(IZ)),
+     &          zdesc(IVALS(IZ))(1:lnzdesc(IVALS(IZ)))
+              call edisp(itu,outs248)
+C              call edisp248(itu,outs248,140)
+            else
+              write(outs,'(i2,1x,a,f7.1,i4,3f8.1,2x,a)') IVALS(IZ),
+     &          zname(IVALS(IZ)),VOL(IVALS(IZ)),NZSUR(ivals(iz)),
+     &          OPQ,TRN,ZBASEA(IVALS(IZ)),
+     &          zdesc(IVALS(IZ))(1:lnzdesc(IVALS(IZ)))
+              call edisp(itu,outs)
+            endif
           else
             aok=' part-attributed '
-            write(outs,'(i2,1x,a,f7.1,i4,3f8.1,a)') IVALS(IZ),
-     &      zname(IVALS(IZ)),VOL(ivals(iz)),NZSUR(ivals(iz)),OPQ,TRN,
-     &      ZBASEA(IVALS(IZ)),aok
+            if(markdown)then
+              write(outs248,
+     &          '(i2,2x,a,f8.1,i11,11x,f8.1,13x,f8.1,12x,f8.1,a)')
+     &          IVALS(IZ),
+     &          zname(IVALS(IZ)),VOL(ivals(iz)),NZSUR(ivals(iz)),
+     &          OPQ,TRN,ZBASEA(IVALS(IZ)),aok
+              call edisp248(itu,outs248,140)
+            else
+              write(outs,'(i2,1x,a,f7.1,i4,3f8.1,a)') IVALS(IZ),
+     &          zname(IVALS(IZ)),VOL(ivals(iz)),NZSUR(ivals(iz)),
+     &          OPQ,TRN,ZBASEA(IVALS(IZ)),aok
+              call edisp(itu,outs)
+            endif
           endif
-          call edisp(itu,outs)
           TVOL=TVOL+VOL(IVALS(IZ))
           TFLA=TFLA+ZBASEA(IVALS(IZ))
           TOPQ=TOPQ+OPQ
           TTRN=TTRN+TRN
         endif
   97  continue
-      write(outs,'(a,f9.0,i5,3f8.0)') '   all      ',TVOL,NCON,
-     &   TOPQ,TTRN,TFLA
+      if(markdown)then
+        write(outs,'(a,f9.0,i14,11x,f8.1,13x,f8.1,14x,f8.1,6x,a)')
+     &    ' -  all       ',TVOL,NCON,TOPQ,TTRN,TFLA,'       -'
+      else
+        write(outs,'(a,f9.0,i5,3f8.0)') '   all      ',TVOL,NCON,
+     &    TOPQ,TTRN,TFLA
+      endif
       call edisp(itu,outs)
 
 C For each selected zone produce reports.
@@ -2005,10 +2375,17 @@ C Jump if no zones or no zone info requested.
         LTMP=LGEOM(IZZ)
         call georead(IUF,LTMP,IZZ,1,itu,IER)
 
-        call edisp(itu,'  ')
-        WRITE(outs,240)
+        if(markdown)then
+          call edisp(itu,'  ')
+          write(outs,'(a,i2,2a)') '### Zone',iz,': ',
+     &      zname(iz)(1:lnblnk(zname(iz)))
+          call edisp(itu,outs)
+        else
+          call edisp(itu,'  ')
+          WRITE(outs,240)
+          if(iz.gt.1)call edisp(itu,outs)
+        endif
  240    format(1x,60('_'))
-        if(iz.gt.1)call edisp(itu,outs)
 
         call ZINFOREP(itu,IZZ)  ! not dependant on georead.
 
@@ -2062,14 +2439,31 @@ C If there is external glazing or skylights then report.
             call rel16str(vexposed(IZZ),t16b,lnb,ier)
             call rel16str(areawall(IZZ),t16c,lnc,ier)
             if(vexposed(IZZ).gt.0.1)then
-              write(outs,'(5a)')' There is ',
+              if(markdown)then
+                write(outs,'(5a)')'There is ',
+     &          t16a(1:lna),' m^2^ of exposed surface area, ',
+     &          t16b(1:lnb),' m^2^ of which is vertical. '
+              else
+                write(outs,'(5a)')' There is ',
      &          t16a(1:lna),'m2 of exposed surface area, ',
      &          t16b(1:lnb),'m2 of which is vertical.'
+              endif
             else
-              write(outs,'(3a)')' There is ',
+              if(markdown)then
+                write(outs,'(3a)')'There is ',
+     &          t16a(1:lna),' m^2^ of exposed surface area. '
+              else
+                write(outs,'(3a)')' There is ',
      &          t16a(1:lna),'m2 of exposed surface area.'
+              endif
             endif
-            if(attribok(IVALS(IZ)))call edisp(itu,outs)
+            if(attribok(IVALS(IZ)))then
+              if(markdown)then
+                call edisp2tr(itu,outs)
+              else
+                call edisp(itu,outs)
+              endif
+            endif
           endif
           if(areawall(IZZ).gt.0.1)then
             if(ZBASEA(IZZ).gt.0.01)then
@@ -2079,10 +2473,22 @@ C If there is external glazing or skylights then report.
             endif
             call rel16str(wallper(IZZ),t16a,lna,ier)
             call rel16str(uavwall(IZZ),t16b,lnb,ier)
-            write(outs,'(5a,F5.3,2a)')' Facade opaque is ',t16c(1:lnc),
+            if(markdown)then
+              write(outs,'(5a,F5.3,2a)')'Facade opaque is ',t16c(1:lnc),
+     &        ' m^2^ & ',t16a(1:lna),' % of floor area & average U of ',
+     &        uavwall(IZZ)/areawall(IZZ),' & UA of ',t16b(1:lnb)
+            else
+             write(outs,'(5a,F5.3,2a)')' Facade opaque is ',t16c(1:lnc),
      &        'm2 & ',t16a(1:lna),' % of floor area & average U of ',
      &        uavwall(IZZ)/areawall(IZZ),' & UA of ',t16b(1:lnb)
-            if(attribok(IVALS(IZ)))call edisp(itu,outs)
+            endif
+            if(attribok(IVALS(IZ)))then
+              if(markdown)then
+                call edisp2tr(itu,outs)
+              else
+                call edisp(itu,outs)
+              endif
+            endif
           endif
           if(areaslproof(IZZ).gt.0.1)then
             if(ZBASEA(IZZ).gt.0.01)then
@@ -2092,11 +2498,24 @@ C If there is external glazing or skylights then report.
             endif
             call rel16str(slproofper(IZZ),t16a,lna,ier)
             call rel16str(uavslproof(IZZ),t16b,lnb,ier)
-            write(outs,'(3a,F5.3,2a)')' Sloped roof is ',
+            if(markdown)then
+              write(outs,'(3a,F5.3,2a)')'Sloped roof is ',
      &        t16a(1:lna),' % of floor area & average U of ',
      &        uavslproof(IZZ)/areaslproof(IZZ),' & UA of ',
      &        t16b(1:lnb)
-            if(attribok(IVALS(IZ)))call edisp(itu,outs)
+            else
+              write(outs,'(3a,F5.3,2a)')' Sloped roof is ',
+     &        t16a(1:lna),' % of floor area & average U of ',
+     &        uavslproof(IZZ)/areaslproof(IZZ),' & UA of ',
+     &        t16b(1:lnb)
+            endif
+            if(attribok(IVALS(IZ)))then
+              if(markdown)then
+                call edisp2tr(itu,outs)
+              else
+                call edisp(itu,outs)
+              endif
+            endif
           endif
           if(areafltroof(IZZ).gt.0.1)then
             if(ZBASEA(IZZ).gt.0.01)then
@@ -2106,11 +2525,17 @@ C If there is external glazing or skylights then report.
             endif
             call rel16str(flatroofper(IZZ),t16a,lna,ier)
             call rel16str(uavfltroof(IZZ),t16b,lnb,ier)
-            write(outs,'(3a,F5.3,2a)')' Flat roof is ',
+            write(outs,'(3a,F5.3,2a)')'Flat roof is ',
      &        t16a(1:lna),' % of floor area & average U of ',
      &        uavfltroof(IZZ)/areafltroof(IZZ),' & UA of ',
      &        t16b(1:lnb)
-            if(attribok(IVALS(IZ)))call edisp(itu,outs)
+            if(attribok(IVALS(IZ)))then
+              if(markdown)then
+                call edisp2tr(itu,outs)
+              else
+                call edisp(itu,outs)
+              endif
+            endif
           endif
           if(areatran(IZZ).gt.0.1)then
             if(ZBASEA(IZZ).gt.0.01)then
@@ -2123,12 +2548,26 @@ C If there is external glazing or skylights then report.
             call rel16str(vtranper,t16b,lnb,ier)
             call rel16str(uavgtran(IZZ),t16c,lnc,ier)
             call rel16str(areatran(IZZ),t16d,lnd,ier)
-            write(outs,'(7a,F5.3,2a)')
+            if(markdown)then
+              write(outs,'(7a,F5.3,2a)')
+     &        'Facade glazing is ',t16d(1:lnd),' m^2^ & ',t16a(1:lna),
+     &        ' % of floor & ',t16b(1:lnb),
+     &        ' % facade with average U of ',
+     &        uavgtran(IZZ)/areatran(IZZ),' & UA of ',t16c(1:lnc)
+            else
+              write(outs,'(7a,F5.3,2a)')
      &        ' Facade glazing is ',t16d(1:lnd),'m2 & ',t16a(1:lna),
      &        ' % of floor & ',t16b(1:lnb),
      &        ' % facade with average U of ',
      &        uavgtran(IZZ)/areatran(IZZ),' & UA of ',t16c(1:lnc)
-            if(attribok(IVALS(IZ)))call edisp(itu,outs)
+            endif
+            if(attribok(IVALS(IZ)))then
+              if(markdown)then
+                call edisp2tr(itu,outs)
+              else
+                call edisp(itu,outs)
+              endif
+            endif
           endif
           if(areaskylt(IZZ).gt.0.1)then
             if(ZBASEA(IZZ).gt.0.01)then
@@ -2138,18 +2577,51 @@ C If there is external glazing or skylights then report.
             endif
             call rel16str(skyper(IZZ),t16a,lna,ier)
             call rel16str(uavgsky(IZZ),t16b,lnb,ier)
-            write(outs,'(3a,F5.3,2a)')' Skylights are ',
+            write(outs,'(3a,F5.3,2a)')'Skylights are ',
      &        t16a(1:lna),' % of floor area & average U of ',
      &        uavgsky(IZZ)/areaskylt(IZZ),' & UA of ',t16b(1:lnb)
-            if(attribok(IVALS(IZ)))call edisp(itu,outs)
+            if(attribok(IVALS(IZ)))then
+              if(markdown)then
+                call edisp2tr(itu,outs)
+              else
+                call edisp(itu,outs)
+              endif
+            endif
           endif
           if(areainttran(IZZ).gt.0.1.or.areaintopaq(IZZ).gt.0.1)then
             call rel16str(areainttran(IZZ),t16a,lna,ier)
             call rel16str(areaintopaq(IZZ),t16b,lnb,ier)
-            write(outs,'(5a)')' Opaque partitions:ceiling:floor ',
-     &        t16b(1:lnb),'m2 & trasparent partitions:ceiling:floor ',
-     &        t16a(1:lna),'m2.'
-            if(attribok(IVALS(IZ)))call edisp(itu,outs)
+            if(markdown)then
+              if(areainttran(IZZ).gt.0.1.and.
+     &           areaintopaq(IZZ).gt.0.1)then
+                write(outs,'(5a)')'Opaque partitions:ceiling:floor ',
+     &            t16b(1:lnb),
+     &            ' m^2^ & trasparent partitions:ceiling:floor ',
+     &            t16a(1:lna),' m^2^. '
+              elseif(areainttran(IZZ).lt.0.1.and.
+     &               areaintopaq(IZZ).gt.0.1)then
+                write(outs,'(3a)')'Opaque partitions:ceiling:floor ',
+     &            t16b(1:lnb),' m^2^. '
+              endif
+            else
+              if(areainttran(IZZ).gt.0.1.and.
+     &           areaintopaq(IZZ).gt.0.1)then
+               write(outs,'(5a)')' Opaque partitions:ceiling:floor ',
+     &         t16b(1:lnb),'m2 & trasparent partitions:ceiling:floor ',
+     &         t16a(1:lna),'m2. '
+              elseif(areainttran(IZZ).lt.0.1.and.
+     &               areaintopaq(IZZ).gt.0.1)then
+               write(outs,'(3a)')' Opaque partitions:ceiling:floor ',
+     &         t16b(1:lnb),'m2.'
+              endif
+            endif
+            if(attribok(IVALS(IZ)))then
+              if(markdown)then
+                call edisp2tr(itu,outs)
+              else
+                call edisp(itu,outs)
+              endif
+            endif
           endif
           if(areaground(IZZ).gt.0.1)then
             if(ZBASEA(IZZ).gt.0.01)then
@@ -2160,11 +2632,17 @@ C If there is external glazing or skylights then report.
             call rel16str(grper,t16a,lna,ier)
             plen=bridgelen(IZZ,2)+bridgelen(IZZ,10)  ! tb length std and metal facade
             call rel16str(plen,t16b,lnb,ier)
-            write(outs,'(3a,F5.3,2a)')' Ground contact is ',
+            write(outs,'(3a,F5.3,2a)')'Ground contact is ',
      &        t16a(1:lna),' % of floor area & average U of ',
      &        uavground(IZZ)/areaground(IZZ),' & perimeter ',
      &        t16b(1:lnb)
-            if(attribok(IVALS(IZ)))call edisp(itu,outs)
+            if(attribok(IVALS(IZ)))then
+              if(markdown)then
+                call edisp2tr(itu,outs)
+              else
+                call edisp(itu,outs)
+              endif
+            endif
           endif
         endif
 
@@ -2509,24 +2987,58 @@ C Check for mismatch in surface attributes and boundary conditions.
         bndrysxc=.true.
         DO 1243 IS=1,NZSUR(IVALS(IZ))
           icc=IZSTOCN(IVALS(IZ),is)
-          if(ICT(icc).eq.0.and.SSOTHER(icc,1)(1:5).ne.'EXTER')
-     &       bndrysxc=.false.
-          if(ICT(icc).eq.1.and.SSOTHER(icc,1)(1:5).ne.'SIMIL')
-     &       bndrysxc=.false.
-          if(ICT(icc).eq.2.and.SSOTHER(icc,1)(1:5).ne.'CONST')
-     &       bndrysxc=.false.
-          if(ICT(icc).eq.3.and.SSOTHER(icc,1)(1:5).eq.'CONST')
-     &       bndrysxc=.false.
-          if(ICT(icc).eq.3.and.SSOTHER(icc,1)(1:5).eq.'SIMIL')
-     &       bndrysxc=.false.
-          if(ICT(icc).eq.3.and.SSOTHER(icc,1)(1:5).eq.'EXTER')
-     &       bndrysxc=.false.
-          if(ICT(icc).eq.3.and.SSOTHER(icc,1)(1:5).eq.'GROUN')
-     &       bndrysxc=.false.
-          if(ICT(icc).eq.4.and.SSOTHER(icc,1)(1:5).ne.'GROUN')
-     &       bndrysxc=.false.
-          if(ICT(icc).eq.5.and.SSOTHER(icc,1)(1:5).ne.'ADIAB')
-     &       bndrysxc=.false.
+          write(SN,'(a12)')SSNAME(icc)
+          lnsn=lnblnk(SN)
+          if(ICT(icc).eq.0.and.SSOTHER(icc,1)(1:5).ne.'EXTER')then
+            bndrysxc=.false.
+            write(boundmsg,'(2a)') 'Expecting EXTER for ',SN(1:lnsn)
+            call edisp(itu,boundmsg)
+          endif
+          if(ICT(icc).eq.1.and.SSOTHER(icc,1)(1:5).ne.'SIMIL')then
+            bndrysxc=.false.
+            write(boundmsg,'(2a)') 'Expecting SIMILAR for ',SN(1:lnsn)
+            call edisp(itu,boundmsg)
+          endif
+          if(ICT(icc).eq.2.and.SSOTHER(icc,1)(1:5).ne.'CONST')then
+            bndrysxc=.false.
+            write(boundmsg,'(2a)') 'Expecting CONST for ',SN(1:lnsn)
+            call edisp(itu,boundmsg)
+          endif
+          if(ICT(icc).eq.3.and.SSOTHER(icc,1)(1:5).eq.'CONST')then
+            bndrysxc=.false.
+            write(boundmsg,'(2a)') 'Expecting OTHER for ',SN(1:lnsn)
+            call edisp(itu,boundmsg)
+          endif
+          if(ICT(icc).eq.3.and.SSOTHER(icc,1)(1:5).eq.'SIMIL')then
+            bndrysxc=.false.
+            write(boundmsg,'(3a)') 'Expecting OTHER for ',SN(1:lnsn),
+     &        ' got SIMIL.'
+            call edisp(itu,boundmsg)
+          endif
+          if(ICT(icc).eq.3.and.SSOTHER(icc,1)(1:5).eq.'EXTER')then
+            bndrysxc=.false.
+            write(boundmsg,'(3a)') 'Expecting OTHER for ',SN(1:lnsn),
+     &        ' got EXTER.'
+            call edisp(itu,boundmsg)
+          endif
+          if(ICT(icc).eq.3.and.SSOTHER(icc,1)(1:5).eq.'GROUN')then
+            bndrysxc=.false.
+            write(boundmsg,'(3a)') 'Expecting OTHER for ',SN(1:lnsn),
+     &        ' got GROUND.'
+            call edisp(itu,boundmsg)
+          endif
+          if(ICT(icc).eq.4.and.SSOTHER(icc,1)(1:5).ne.'GROUN')then
+            bndrysxc=.false.
+            write(boundmsg,'(3a)') 'Expecting GROUND for ',SN(1:lnsn),
+     &        ' got something else.'
+            call edisp(itu,boundmsg)
+          endif
+          if(ICT(icc).eq.5.and.SSOTHER(icc,1)(1:5).ne.'ADIAB')then
+            bndrysxc=.false.
+            write(boundmsg,'(3a)') 'Expecting ADIAB for ',SN(1:lnsn),
+     &        ' got something else.'
+            call edisp(itu,boundmsg)
+          endif
 
 C While looping check that constructions of partitions are matching.
           if(ICT(icc).eq.3)then
@@ -2631,13 +3143,24 @@ C if the zones are fully attributed.
           if(.NOT.attribok(IVALS(IJK))) allattribok=.false.
         enddo  ! of ijk
         if(.NOT.allattribok)then
-          call edisp(itu,'  ')
+          if(markdown)then
+            call edisp(itu,'## Areas')
+            call edisp(itu,'  ')
+          else
+            call edisp(itu,'  ')
+          endif
           call edisp(itu,'Project AU reporting not included because')
           call edisp(itu,'some zones are not fully attributed.')
         else
-          call edisp(itu,'  ')
-          WRITE(outs,240)
-          call edisp(itu,outs)
+          if(markdown)then
+            call edisp(itu,'  ')
+            call edisp(itu,'## Areas')
+            call edisp(itu,'  ')
+          else
+            call edisp(itu,'  ')
+            WRITE(outs,240)
+            call edisp(itu,outs)
+          endif
           call edisp(itu,'  ')
           call rel16str(xfloor,t16a,lna,ier)
           call rel16str(xareawall,t16b,lnb,ier)
@@ -2755,10 +3278,17 @@ C MLC database reporting. If toggle set to 'verbose' only list out those
 C constructions which have been referenced in the model. If toggle is
 C set to 'verbose all' then include all of them.
    57 if(databaseinfo.ge.1)then
-        call edisp(itu,' ')
-        WRITE(outs,240)
-        call edisp(itu,outs)
-        call edisp(itu,' Multi-layer constructions used:')
+        if(markdown)then
+          call edisp(itu,' ')
+          call edisp2tr(itu,'## Constructions  ')
+          call edisp2tr(itu,
+     &    ' Multi-layer constructions referenced in the model.  ')
+        else
+          call edisp(itu,' ')
+          WRITE(outs,240)
+          call edisp(itu,outs)
+          call edisp(itu,' Multi-layer constructions used:')
+        endif
 C Debug.
 C        write(6,*) 'nmlc is ',nmlc,databaseinfo
         do imlc=1,nmlc
@@ -2769,17 +3299,33 @@ C        write(6,*) 'nmlc is ',nmlc,databaseinfo
             if(databaseinfo.eq.2)then
               iitrc=2
               call etmldb(iitrc,itu,imlc,imerr)
+            elseif(databaseinfo.eq.1)then
+              iitrc=1
+              call etmldb(iitrc,itu,imlc,imerr)
             endif
-            write(outs,'(3a,F9.2)') ' Total area of ',
+            if(markdown)then
+              call edisp(itu,' ')
+              write(outs,'(3a,F9.2,a)') 'Total area of ',
+     &        mlc_name(1:lnblnk(mlc_name)),' is ',tareamlc,'  '
+              call edisp2tr(itu,outs)
+            else
+              write(outs,'(3a,F9.2)') ' Total area of ',
      &        mlc_name(1:lnblnk(mlc_name)),' is ',tareamlc
-            call edisp(itu,outs)
+              call edisp(itu,outs)
+            endif
           else
-            if(databaseinfo.eq.3)then
+            if(databaseinfo.eq.3)then  ! list all MLC in the db.
               iitrc=2
               call etmldb(iitrc,itu,imlc,imerr)
-              write(outs,'(3a)') ' Total area of ',
+              if(markdown)then
+                write(outs,'(3a)') 'Total area of ',
      &          mlc_name(1:lnblnk(mlc_name)),' is zero (not referenced)'
-              call edisp(itu,outs)
+                call edisp2tr(itu,outs)
+              else
+                write(outs,'(3a)') ' Total area of ',
+     &          mlc_name(1:lnblnk(mlc_name)),' is zero (not referenced)'
+                call edisp(itu,outs)
+              endif
             endif
           endif
         enddo  ! of imlc

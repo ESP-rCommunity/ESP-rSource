@@ -1372,6 +1372,7 @@ C TDF related.
       character ltpath*72,filen*72
       character weather_extr*96
       character obs_extr*96,sim_extr*96
+      character calibro_local*96
       integer matarrayindex ! the indes within matdatarray
       character NAM*72,MATNAM*32
       integer ier,itis      ! non-zero if a problem
@@ -1394,6 +1395,10 @@ C TDF related.
       character NNAME*144
       character buffer*96,first*42,second*42,CH*1
       character jtag*42,phrase*96
+      character tarlist*1000 ! list of csv files to tar
+      character doit1k*1024  ! command to invoke
+      integer lntarlist      ! length of csv file list
+      integer lncurobs,lncursim  ! length of current csv files
       logical docnn,XST,QUIET
 
 C dd is character array for selecting simulation parameter sets.
@@ -1482,7 +1487,10 @@ C List out the current temporal items.
       call edisp(iuout,' ')
 
 C Now test if it is an observed type. Clear local arrays.
-      nbiobservitem=0
+      nbiobservitem=0; lntarlist=25; k=25; ke=25
+
+C Include the two fixed file names in the tarlist.
+      tarlist='bc.csv calibro_input.csv '
       do loop=1,20
         iobservitem(loop)=0
         obsdatfilename(loop)='  '
@@ -1498,6 +1506,8 @@ C Loop through all items in temporal file and make note of those
 C which are related to observations. The key strokes in the res
 C selections is based on type: 
 C a) zone dbT b) surface T c) zone RH d)zone heat e) zone cooling
+C Capture a list of all of the csv files that will need to be
+C collected to pass to calibro.
       do loop=1,ITEMSTD
         if(DBTASK(loop)(1:8).eq.'DBTZNOBS')then
           anymeasured=.true.
@@ -1507,8 +1517,18 @@ C a) zone dbT b) surface T c) zone RH d)zone heat e) zone cooling
           iobservitem(nbiobservitem)=loop  ! which ITEMSTD
           write(obsdatfilename(nbiobservitem),'(2a)') 
      &      DBZN(loop)(1:lnblnk(DBZN(loop))),'_DBTZNOBS_obs.csv'
+          lncurobs=lnblnk(obsdatfilename(nbiobservitem))
+          ke=k+lncurobs
+          write(tarlist(k:ke),'(2a)') ' ',
+     &      obsdatfilename(nbiobservitem)(1:lncurobs)
+          k=k+lncurobs+1
           write(simdatfilename(nbiobservitem),'(2a)') 
      &      DBZN(loop)(1:lnblnk(DBZN(loop))),'_DBTZNOBS_sim.csv'
+          lncursim=lnblnk(simdatfilename(nbiobservitem))
+          ke=k+lncursim
+          write(tarlist(k:ke),'(2a)') ' ',
+     &      simdatfilename(nbiobservitem)(1:lncursim)
+          k=k+lncursim+1
           write(obsdatscript(nbiobservitem),'(2a)') 
      &      DBZN(loop)(1:lnblnk(DBZN(loop))),'_DBTZNOBS_obs.csh'
           write(simdatscript(nbiobservitem),'(2a)') 
@@ -1520,6 +1540,8 @@ C a) zone dbT b) surface T c) zone RH d)zone heat e) zone cooling
               iobsdatzone(loop) = loopo  ! remember which one
             endif
           enddo
+          write(6,*) k,ke,lncurobs,lncursim,' ',
+     &      tarlist(1:lnblnk(tarlist))
         elseif(DBTASK(loop)(1:7).eq.'SURTOBS')then
           anymeasured=.true.
           call edisp(iuout,
@@ -1528,8 +1550,18 @@ C a) zone dbT b) surface T c) zone RH d)zone heat e) zone cooling
           iobservitem(nbiobservitem)=loop  ! which ITEMSTD
           write(obsdatfilename(nbiobservitem),'(2a)') 
      &      DBZN(loop)(1:lnblnk(DBZN(loop))),'_SURTOBS_obs.csv'
+          lncurobs=lnblnk(obsdatfilename(nbiobservitem))
+          ke=k+lncurobs
+          write(tarlist(k:ke),'(2a)') ' ',
+     &      obsdatfilename(nbiobservitem)(1:lncurobs)
+          k=k+lncurobs+1
           write(simdatfilename(nbiobservitem),'(2a)') 
      &      DBZN(loop)(1:lnblnk(DBZN(loop))),'_SURTOBS_sim.csv'
+          lncursim=lnblnk(simdatfilename(nbiobservitem))
+          ke=k+lncursim
+          write(tarlist(k:ke),'(2a)') ' ',
+     &      simdatfilename(nbiobservitem)(1:lncursim)
+          k=k+lncursim+1
           write(obsdatscript(nbiobservitem),'(2a)') 
      &      DBZN(loop)(1:lnblnk(DBZN(loop))),'_SURTOBS_obs.csh'
           write(simdatscript(nbiobservitem),'(2a)') 
@@ -1541,6 +1573,8 @@ C a) zone dbT b) surface T c) zone RH d)zone heat e) zone cooling
               iobsdatzone(loop) = loopo  ! remember which one
             endif
           enddo
+          write(6,*) k,ke,lncurobs,lncursim,' ',
+     &      tarlist(1:lnblnk(tarlist))
         elseif(DBTASK(loop)(1:7).eq.'ZNRHOBS')then
           anymeasured=.true.
           call edisp(iuout,'Calibration to zone RH possible.')
@@ -1548,8 +1582,18 @@ C a) zone dbT b) surface T c) zone RH d)zone heat e) zone cooling
           iobservitem(nbiobservitem)=loop  ! which ITEMSTD
           write(obsdatfilename(nbiobservitem),'(2a)') 
      &      DBZN(loop)(1:lnblnk(DBZN(loop))),'_ZNRHOBS_obs.csv'
+          lncurobs=lnblnk(obsdatfilename(nbiobservitem))
+          ke=k+lncurobs
+          write(tarlist(k:ke),'(2a)') ' ',
+     &      obsdatfilename(nbiobservitem)(1:lncurobs)
+          k=k+lncurobs+1
           write(simdatfilename(nbiobservitem),'(2a)') 
      &      DBZN(loop)(1:lnblnk(DBZN(loop))),'_ZNRHOBS_sim.csv'
+          lncursim=lnblnk(simdatfilename(nbiobservitem))
+          ke=k+lncursim
+          write(tarlist(k:ke),'(2a)') ' ',
+     &      simdatfilename(nbiobservitem)(1:lncursim)
+          k=k+lncursim+1
           write(obsdatscript(nbiobservitem),'(2a)') 
      &      DBZN(loop)(1:lnblnk(DBZN(loop))),'_ZNRHOBS_obs.csh'
           write(simdatscript(nbiobservitem),'(2a)') 
@@ -1561,6 +1605,8 @@ C a) zone dbT b) surface T c) zone RH d)zone heat e) zone cooling
               iobsdatzone(loop) = loopo  ! remember which one
             endif
           enddo
+          write(6,*) k,ke,lncurobs,lncursim,' ',
+     &      tarlist(1:lnblnk(tarlist))
         elseif(DBTASK(loop)(1:7).eq.'ZNHTOBS')then
           anymeasured=.true.
           call edisp(iuout,'Calibration to zone heating possible.')
@@ -1568,8 +1614,18 @@ C a) zone dbT b) surface T c) zone RH d)zone heat e) zone cooling
           iobservitem(nbiobservitem)=loop  ! which ITEMSTD
           write(obsdatfilename(nbiobservitem),'(2a)') 
      &      DBZN(loop)(1:lnblnk(DBZN(loop))),'_ZNHTOBS_obs.csv'
+          lncurobs=lnblnk(obsdatfilename(nbiobservitem))
+          ke=k+lncurobs
+          write(tarlist(k:ke),'(2a)') ' ',
+     &      obsdatfilename(nbiobservitem)(1:lncurobs)
+          k=k+lncurobs+1
           write(simdatfilename(nbiobservitem),'(2a)') 
      &      DBZN(loop)(1:lnblnk(DBZN(loop))),'_ZNHTOBS_sim.csv'
+          lncursim=lnblnk(simdatfilename(nbiobservitem))
+          ke=k+lncursim
+          write(tarlist(k:ke),'(2a)') ' ',
+     &      simdatfilename(nbiobservitem)(1:lncursim)
+          k=k+lncursim+1
           write(obsdatscript(nbiobservitem),'(2a)') 
      &      DBZN(loop)(1:lnblnk(DBZN(loop))),'_ZNHTOBS_obs.csh'
           write(simdatscript(nbiobservitem),'(2a)') 
@@ -1581,6 +1637,8 @@ C a) zone dbT b) surface T c) zone RH d)zone heat e) zone cooling
               iobsdatzone(loop) = loopo  ! remember which one
             endif
           enddo
+          write(6,*) k,ke,lncurobs,lncursim,' ',
+     &      tarlist(1:lnblnk(tarlist))
         elseif(DBTASK(loop)(1:7).eq.'ZNCLOBS')then
           anymeasured=.true.
           call edisp(iuout,'Calibration to zone cooling possible.')
@@ -1588,8 +1646,18 @@ C a) zone dbT b) surface T c) zone RH d)zone heat e) zone cooling
           iobservitem(nbiobservitem)=loop  ! which ITEMSTD
           write(obsdatfilename(nbiobservitem),'(2a)') 
      &      DBZN(loop)(1:lnblnk(DBZN(loop))),'_ZNCLOBS_obs.csv'
+          lncurobs=lnblnk(obsdatfilename(nbiobservitem))
+          ke=k+lncurobs
+          write(tarlist(k:ke),'(2a)') ' ',
+     &      obsdatfilename(nbiobservitem)(1:lncurobs)
+          k=k+lncurobs+1
           write(simdatfilename(nbiobservitem),'(2a)') 
      &      DBZN(loop)(1:lnblnk(DBZN(loop))),'_ZNCLOBS_sim.csv'
+          lncursim=lnblnk(simdatfilename(nbiobservitem))
+          ke=k+lncursim
+          write(tarlist(k:ke),'(2a)') ' ',
+     &      simdatfilename(nbiobservitem)(1:lncursim)
+          k=k+lncursim+1
           write(obsdatscript(nbiobservitem),'(2a)') 
      &      DBZN(loop)(1:lnblnk(DBZN(loop))),'_ZNCLOBS_obs.csh'
           write(simdatscript(nbiobservitem),'(2a)') 
@@ -1601,6 +1669,8 @@ C a) zone dbT b) surface T c) zone RH d)zone heat e) zone cooling
               iobsdatzone(loop) = loopo  ! remember which one
             endif
           enddo
+          write(6,*) k,ke,lncurobs,lncursim,' ',
+     &      tarlist(1:lnblnk(tarlist))
         endif
       enddo
 
@@ -2332,7 +2402,125 @@ C and or forward slashes.
 
 C And repeat for the next observation.
       enddo
-      
+
+C When all are finished copy the fort.37 file to calibro_input.csv
+      write(doit,'(a)') 'cp fort.37 calibro_input.csv'
+      call edisp(iuout,'Copy -> calibro_input.csv')
+      call runit(doit,tmode)
+      call pausems(1000)
+
+C Make up the tar command.
+      write(doit1k,'(4a)') 'tar cf ',cfgroot(1:lnblnk(cfgroot)),
+     &  '.tar ',tarlist(1:lnblnk(tarlist))
+      call edisp(iuout,'Creating tar file')
+      write(6,*) doit1k(1:lnblnk(tarlist))
+      call runit(doit1k,tmode)
+      call pausems(1000)
+
+C Checking tar contents.
+      write(doit,'(3a)') 'tar tvf ',cfgroot(1:lnblnk(cfgroot)),
+     &  '.tar '
+      call edisp(iuout,'Contents of tar file...')
+      call runit(doit,tmode)
+      call pausems(1000)
+
+C Attempt to compress the tar file.
+      write(doit,'(3a)') 'gzip ',cfgroot(1:lnblnk(cfgroot)),
+     &  '.tar '
+      call edisp(iuout,'Compressing tar file.')
+      call runit(doit,tmode)
+      call pausems(1000)
+
+C << TODO create scripts that can run either calibrino or invoke the
+C << Aizaz script with the just created tar.gz file.
+      call edisp(iuout,
+     &  'The extracted csv files as well as a tar.gz file with these')
+      call edisp(iuout,
+     &  'are now available. If you have a local calibrino tool or')
+      call edisp(iuout,
+     &  'the calibrateme.bash script you can proceed.')
+      CALL EASKABC(
+     &  'The csv files and tar.gz file are available. Options:',
+     &  ' ','invoke local calibrino','invoke remote calibro',
+     &  'cancel',isauto,nbhelp)
+      if(isauto.eq.1)then
+
+C Create command line for invoking calibrino and also setup a script
+C file in case user wants to run it again.
+        write(calibro_local,'(a)') 'calibro_local.csh'
+        write(currentfile,'(a)') 
+     &    calibro_local(1:lnblnk(calibro_local))
+        IUNIT=IFIL+1
+        CALL EFOPSEQ(IUNIT,calibro_local,3,IER)
+        write(iunit,'(a)')'#!/bin/csh'
+
+        tarlist='  '
+        write (tarlist,'(3a)') 'calibrino -c ',
+     &    cfgroot(1:lnblnk(cfgroot)),
+     &    ' -b bc.csv -i calibro_input.csv -o '
+        lntarlist=lnblnk(tarlist)+2
+        k=lntarlist; ke=lntarlist
+        write(6,*) lntarlist,' ',tarlist
+
+C Loop through all the observed.
+        do loop=1,ITEMSTD
+          lncurobs=lnblnk(obsdatfilename(loop))
+          ke=k+lncurobs
+          write(tarlist(k:ke),'(2a)') 
+     &      obsdatfilename(loop)(1:lncurobs),','
+          k=k+lncurobs+1
+        enddo
+        k=k-1  ! get rid of trailing comma
+        ke=k+4
+        write(tarlist(k:ke),'(a)') ' -s '
+        write(6,*) tarlist(1:lnblnk(tarlist))
+        k=ke
+        do loop=1,ITEMSTD
+          lncursim=lnblnk(simdatfilename(loop))
+          ke=k+lncursim
+          write(tarlist(k:ke),'(2a)') 
+     &      simdatfilename(loop)(1:lncursim),','
+          k=k+lncursim+1
+C          write(6,*) tarlist(1:lnblnk(tarlist))
+        enddo
+        k=k-1  ! get rid of trailing comma
+        ke=k+11
+        write(tarlist(k:ke),'(a)') ' --fmt json'
+        write(6,*)tarlist(1:lnblnk(tarlist))
+        write(doit1k,'(a)')tarlist(1:lnblnk(tarlist)) 
+
+C Add the calibrino command syntax to the calibro_local.csh and make it executable.
+        write(iunit,'(a)') tarlist(1:lnblnk(tarlist))
+        CALL ERPFREE(IUNIT,ISTAT)  ! close calibro_local.csh
+        tmode='text'
+        if(unixok)then
+          write(doit,'(a)')'chmod a+x ./calibro_local.csh'
+          call runit(doit,tmode)
+        else
+          write(doit,'(a)')'chmod a+x calibro_local.csh'
+          call runit(doit,tmode)
+        endif
+        call edisp(iuout,
+     &    'Generating calibro_local.csh which you can invoke manually')
+        call edisp(iuout,'if you wish to repeat the calibration.')
+
+        call pausems(1000)
+        call edisp(iuout,'Executing calibrino command.')
+        call runit(doit1k,tmode)
+        call pausems(1000)
+
+      elseif(isauto.eq.2)then
+
+C Create command line for invoking calibrateme.bash
+        write(doit,'(3a)') 'calibrateme.bash ',
+     &    cfgroot(1:lnblnk(cfgroot)),'.tar.gz '
+        call edisp(iuout,'Invoking calibrateme')
+        call runit(doit,tmode)
+        call edisp(iuout,'Look out for the script to return.')
+      elseif(isauto.eq.3)then
+        continue
+      endif
+
       call edisp(iuout,
      &  'If you have a json file defining the changes needed')
   43  call edisp(iuout,

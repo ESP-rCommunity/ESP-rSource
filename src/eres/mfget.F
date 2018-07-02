@@ -68,7 +68,7 @@ C MOFLOWSU clears commons/ sets default values.
       COMMON/LNMFLABEL/LNSMFLABEL(MFRS),LNGMFLABEL(MFRS),
      &                 LNGLMFLABEL(MFRS)
 
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
+      COMMON/GRAF1/YMAX(6),YMIN(6),YAXSET(6),ADDLIN,horaxisdiv
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
 
 
@@ -76,7 +76,7 @@ C MOFLOWSU clears commons/ sets default values.
 
 C Reset axis max and min values to 1.0 and 0.0 resp.
 C YAXSET: Axis max min set =1 automatically scalled, 2= user set.
-      do 8 I=1,5
+      do 8 I=1,6
         YMAX(I)=1.0
         YMIN(I)=0.0
         YAXSET(I)=0
@@ -113,7 +113,7 @@ C ************************ MFMENU ************************
 C MFMENU The choices are put into the array IMFGETNO in the
 C columns listed above.
 
-      SUBROUTINE MFMENU
+      SUBROUTINE MFMENU(idone)
 #include "building.h"
 #include "geometry.h"
 #include "schedule.h"
@@ -152,7 +152,7 @@ C iocpzone is the zone to get occupancy pattern from for use by
 C air flow reporting.
       common/mfocup/iocpzone
 
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
+      COMMON/GRAF1/YMAX(6),YMIN(6),YAXSET(6),ADDLIN,horaxisdiv
 
       COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
       common/exporttg/xfile,tg,delim
@@ -160,6 +160,8 @@ C air flow reporting.
 
       common/recver/izver,ipver,iever
       common/timfltr/iwkdst,iwkdfn,isatst,isatfn,isunst,isunfn
+      integer net3ddelay  ! delay between timesteps in 3D network
+      common/delay3d/net3ddelay
 
       DIMENSION IVALS(MCOM),zn(MCOM)
       CHARACTER ITEM(35)*23, MTITLE*22, values*20
@@ -206,6 +208,7 @@ C  CTLST - contaminant list
       CRLST=.FALSE.
       CTLST=.FALSE.
       IDH=1   ! assume no horizontal separator
+      net3ddelay=2  ! assume 1 sec delay
 
 C MNGET is the maximum number of metrics allowed to be chosen from the menu.
       if (MENUTYPE.eq.1) then
@@ -231,6 +234,9 @@ C MNGET is the maximum number of metrics allowed to be chosen from the menu.
       elseif (MENUTYPE.eq.8) then
         MTITLE='Hrs below query point'
         MNGET=1
+      elseif (MENUTYPE.eq.15) then
+        MTITLE='3D plot'
+        MNGET=MFRS-1
       else
         MNGET=1
         MTITLE='  '
@@ -255,22 +261,46 @@ C Setup menu items.
        ITEM(3)='4 output >> hours over'
       elseif(MENUTYPE.eq.8)then
        ITEM(3)='4 output >> hrs below '
+      elseif(MENUTYPE.eq.15)then
+       ITEM(3)='4 output >> 3D flow   '
       endif
       ITEM(4) ='  ------------------  '
-      ITEM(5) ='a  ambient temperature'
-      ITEM(6) ='b  wind speed         '
-      ITEM(7) ='c  wind direction     '
-      ITEM(8) ='d  ambient RH         '
-      ITEM(9) ='e  press @ node       '
-      ITEM(10)='f  press diff @ conn  '
-      ITEM(11)='g  stack pres @ conn  '
-      ITEM(12)='h  node temperature   '
+
+C Some topics do not make sense drawn on 3D network.
+      if(MENUTYPE.eq.15)then
+        ITEM(5) ='   ambient temperature'
+        ITEM(6) ='   wind speed         '
+        ITEM(7) ='   wind direction     '
+        ITEM(8) ='   ambient RH         '
+        ITEM(9) ='   press @ node       '
+        ITEM(10)='f  press diff @ conn  '
+        ITEM(11)='g  stack pres @ conn  '
+        ITEM(12)='   node temperature   '
+      else
+        ITEM(5) ='a  ambient temperature'
+        ITEM(6) ='b  wind speed         '
+        ITEM(7) ='c  wind direction     '
+        ITEM(8) ='d  ambient RH         '
+        ITEM(9) ='e  press @ node       '
+        ITEM(10)='f  press diff @ conn  '
+        ITEM(11)='g  stack pres @ conn  '
+        ITEM(12)='h  node temperature   '
+      endif
       ITEM(13)='i  mass flow rate     '
       ITEM(14)='j  volume flow rate   '
-      ITEM(15)='k  air changes        '
+      if(MENUTYPE.eq.15)then
+        ITEM(15)='   air changes        '
+      else
+        ITEM(15)='k  air changes        '
+      endif
       ITEM(16)='l  velocity @ conn    '
-      ITEM(17)='m  contaminant @ node '
-      ITEM(18)='n  watts assoc w/ flow'
+      if(MENUTYPE.eq.15)then
+        ITEM(17)='   contaminant @ node '
+        ITEM(18)='   watts assoc w/ flow'
+      else
+        ITEM(17)='m  contaminant @ node '
+        ITEM(18)='n  watts assoc w/ flow'
+      endif
       ITEM(19)='  ------------------  '
       if(NMFGET.eq.0)then
         ITEM(20)='                      '
@@ -344,10 +374,24 @@ C If plot give graph command and labels command, otherwise list command.
         endif
         ITEM(27)  ='! list data        '
         nl=2
+      elseif(MENUTYPE.eq.15) then
+
+C If plot give graph command and labels command, otherwise list command.
+        if(net3ddelay.eq.1)then
+          ITEM(26)='@ delay >> 2 sec   '
+        elseif(net3ddelay.eq.2)then
+          ITEM(26)='@ delay >> 1 sec   '
+        elseif(net3ddelay.eq.3)then
+          ITEM(26)='@ delay >> 0.5 sec '
+        elseif(net3ddelay.eq.4)then
+          ITEM(26)='@ delay >> 0.25 sec'
+        endif
+        ITEM(27)  ='! draw 3D graph    '
+        nl=2
       else
         nl=0
       endif
-      ITEM(26+nl) = '? help            '
+      ITEM(26+nl) ='? help             '
       ITEM(27+nl) ='- exit             '
 
       NITMS=27+nl
@@ -417,15 +461,15 @@ C Wind speed: IMFGET = 10
         IMFGETNO(NMFGET,2)=10
         IMFGETNO(NMFGET,5)=-203
         IMFGETNO(NMFGET,6)=6
-        IMFGETNO(NMFGET,7)=4
+        IMFGETNO(NMFGET,7)=6
         IMFGETNO(NMFGET,8)=0
         GMFLABEL(NMFGET)='Wind speed'; LNGMFLABEL(NMFGET)=10
         GLMFLABEL(NMFGET)='Wind speed'; LNGLMFLABEL(NMFGET)=10
         if(IROC.eq.0)then
-          SMFLABEL(NMFGET)='Wind speed (m/sec)'
+          SMFLABEL(NMFGET)='Wind speed (m/s)'
           LNSMFLABEL(NMFGET)=18
         elseif(IROC.eq.1)then
-          SMFLABEL(NMFGET)='Wind speed change (m/sec/hr)'
+          SMFLABEL(NMFGET)='Wind speed change (m/s/hr)'
           LNSMFLABEL(NMFGET)=28
         endif
 
@@ -671,7 +715,7 @@ C Velocity: IMFGET = 6.
         IMFGETNO(NMFGET,1)=6
         IMFGETNO(NMFGET,5)=1
         IMFGETNO(NMFGET,6)=6
-        IMFGETNO(NMFGET,7)=4
+        IMFGETNO(NMFGET,7)=6
         IMFGETNO(NMFGET,8)=0
         SUFFIX=' m/s'
         if(IROC.eq.0)then
@@ -777,6 +821,8 @@ C        endif
 C Clear all selections (time series plot).
         if(MENUTYPE.eq.3) then
           call MOFLOWSU
+        elseif(MENUTYPE.eq.15) then
+          call MOFLOWSU
         else
 
 C Occupancy filter (all types bar time series plot).
@@ -880,24 +926,27 @@ C the occupany pattern from.
 C Set axis limits for the current plot.
           helptopic='res_flow_axis_range'
           call gethelptext(helpinsub,helptopic,nbhelp)
-          do 555 Iaxis=1,5
+          do 555 Iaxis=1,6
             if (YAXSET(Iaxis).gt.0) then
  501          write (values,'(8(f9.2,1x))') YMIN(Iaxis),YMAX(Iaxis)
               if (Iaxis.eq.1) then
                 call EASKS(values,'  ','Min &max for temperature axis?',
      &            20,' -10 30 ','temp axis',IER,nbhelp)
               elseif (Iaxis.eq.2) then
-                call EASKS(values,'  ','Min & max for loads axis?',
-     &            20,' -100 100 ','temp axis',IER,nbhelp)
+                call EASKS(values,'  ','Min & max for pressure axis?',
+     &            20,' -100 100 ','pres axis',IER,nbhelp)
               elseif (Iaxis.eq.3) then
-                call EASKS(values,'  ','Min & max for intensity axis?',
-     &            20,' 0 1000 ','temp axis',IER,nbhelp)
+                call EASKS(values,'  ','Min & max for flow rate axis?',
+     &            20,' 0 1000 ','flow axis',IER,nbhelp)
               elseif (Iaxis.eq.4) then
                 call EASKS(values,'  ','Min & max for misc axis?',
-     &            20,' 0 100 ','temp axis',IER,nbhelp)
+     &            20,' 0 100 ','misc axis',IER,nbhelp)
               elseif (Iaxis.eq.5) then
                 call EASKS(values,'  ','Min&max for concntration axis?',
      &            20,' 0 0.25 ','conc axis',IER,nbhelp)
+              elseif (Iaxis.eq.6) then
+                call EASKS(values,'  ','Min & max for velocity axis?',
+     &            20,' 0 0.5 ','vel axis',IER,nbhelp)
               endif
               K=0
               CALL EGETWR(values,K,YN,0.,0.,'-','Y min',IER)
@@ -1072,6 +1121,14 @@ C Toggle tabular listing label format.
      &      'column labels on one line & no # header lines in files')
           endif
           goto 1   ! jump back to the menu
+        elseif(MENUTYPE.eq.15) then
+
+C Set delay timer between timesteps.
+          IWS=2
+          CALL EASKABCD('Plotting speed:',' ',
+     &      'slower (2s/step)','normal (1s/step)',
+     &      'fast (500ms/step)','250ms/step',IWS,nbhelp)
+           net3ddelay=IWS
         else
           call edisp(iuout,'selected item 26?? ')
         endif
@@ -1109,7 +1166,7 @@ C At this point we just fall past the end of the INO equals statements.
         goto 1
       elseif(INO.EQ.NITMS)then
         call usrmsg('  ','  ','-')
-        MENUTYPE=-1
+        idone=1
         return
       else
 

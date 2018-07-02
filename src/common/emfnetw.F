@@ -1494,13 +1494,23 @@ C MFLIST Fluid flow file: list common block contents.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+ 
+C Markdown flag.
+      logical markdown
+      common/markdownflag/markdown
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       CHARACTER LAPROB*72
       CHARACTER outs*124,fldtyp*6,nodtyp*20,dat1*4,dat2*4,tmnam*12
       logical written
 
       CALL EDISP(itru,' ')
-      CALL EDISP(itru,' Flow network description. ')
+      if(markdown)then
+        CALL EDISP(itru,'## Flow network description  ')
+        CALL EDISP(itru,'The model includes a mass flow network. ')
+        CALL EDISP2tr(itru,'The details are shown below.  ')
+      else
+        CALL EDISP(itru,' Flow network description. ')
+      endif
       CALL EDISP(itru,' ')
 
 C Number of nodes, components and interconnections.
@@ -1511,9 +1521,23 @@ C Number of nodes, components and interconnections.
 
 C Node data.
       IF(NNOD.gt.0) then
-        WRITE(outs,'(A,A)')'   # Node       Fluid   Node Type      ',
+        if(markdown)then
+          call edisp(itru,' ')
+          call edisp(itru,': Network summary')
+          call edisp(itru,' ')
+          WRITE(outs,'(2A)')
+     &'   # Node        Fluid   Node Type            X       Y       ',
+     &'Z       Temperature Data_1  Data_2'
+          CALL EDISP(itru,outs)
+          WRITE(outs,'(2A)')
+     &' --- ----------- -----  -------------------   ------  ------  ',
+     &'------  ----------- ------  ------ ---- -------'
+          CALL EDISP(itru,outs)
+        else
+          WRITE(outs,'(A,A)')'   # Node       Fluid   Node Type      ',
      &'        X Y Z Position      Temperature    Data_1        Data_2'
-        CALL EDISP(itru,outs)
+          CALL EDISP(itru,outs)
+        endif
 
         DO 30 INOD=1,NNOD
           if(NDFLD(INOD).eq.1)then
@@ -1577,14 +1601,22 @@ C Component data.
             WRITE(outs,'(1x,a,i5,i3,i3,1x,a)')CMNAM(ICMP),
      &        ITPCMP(ICMP),ISDCMP(ICMP),ISDCNN(ICMP),LTPCMP(ICMP)
           endif
-          CALL EDISP(itru,outs)
+          if(markdown)then
+            CALL EDISP2tr(ITRU,OUTS)
+          else
+            CALL EDISP(ITRU,OUTS)
+          endif
           if(IAIRN.eq.3)then
             lnczn=lnblnk(CMPASSOC(ICMP,1))
             lncsn=lnblnk(CMPASSOC(ICMP,2))
             write(outs,'(4a)') ' Associated with ',
      &        CMPASSOC(ICMP,1)(1:lnczn),':',
      &        CMPASSOC(ICMP,2)(1:lncsn)
-              CALL EDISP(itru,outs)
+            if(markdown)then
+              CALL EDISP2tr(ITRU,OUTS)
+            else
+              CALL EDISP(ITRU,OUTS)
+            endif
           endif
 
 C Provide a heading string for each different component type.
@@ -1752,11 +1784,24 @@ C If not already written out.
 C Connections data
       IF(NCNN.gt.0) then
         CALL EDISP(itru,' ')
-        WRITE(outs,'(2a)') 
-     &  '    # +Node         dHght   -Node         dHght',
-     &  '   Component       Z @+    Z @-'
-        CALL EDISP(itru,outs)
-
+        if(markdown)then
+          call edisp(itru,' ')
+          call edisp(itru,': Connection summary')
+          call edisp(itru,' ')
+          WRITE(outs,'(2A)')
+     &    '   # +Node         dHght   -Node         dHght   ',
+     &    'Component       Z @+    Z @-'
+          CALL EDISP(itru,outs)
+          WRITE(outs,'(2A)')
+     &    ' --- ------------ -------  -----------  -------  ',
+     &    '------------   ------  ------'
+          CALL EDISP(itru,outs)
+        else
+          WRITE(outs,'(2a)') 
+     &    '    # +Node         dHght   -Node         dHght',
+     &    '   Component       Z @+    Z @-'
+          CALL EDISP(itru,outs)
+        endif
         DO 70 ICNN=1,NCNN
           zplus=HNOD(NODPS(ICNN),3)+HGTPS(ICNN)
           zminus=HNOD(NODNE(ICNN),3)+HGTNE(ICNN)
@@ -1773,17 +1818,30 @@ C<< Plant and air flow node mapping to be added
         IHEAD2=0
         DO 234 IC=1,NCOMP
           IF(IHEAD1.NE.1)THEN
-            CALL EDISP(ITRU,'thermal zone to air flow node mapping:')
-            CALL EDISP(ITRU,'thermal zone -> air flow node')
+            if(markdown)then
+              call edisp(itru,' ')
+              CALL EDISP2tr(ITRU,'thermal zone -> air flow node  ')
+            else
+              CALL EDISP(ITRU,'thermal zone to air flow node mapping:')
+              CALL EDISP(ITRU,'thermal zone -> air flow node')
+            endif
             IHEAD1=1
           ENDIF
           IF(ICAAS(IC).NE.0)THEN
-            WRITE(OUTS,'(A12,A4,A12)')ZNAME(IC),' -> ',NDNAM(ICAAS(IC))
-            CALL EDISP(ITRU,OUTS)
+            WRITE(OUTS,'(3A)')ZNAME(IC),' -> ',NDNAM(ICAAS(IC))
+            if(markdown)then
+              CALL EDISP2tr(ITRU,OUTS)
+            else
+              CALL EDISP(ITRU,OUTS)
+            endif
           ELSE
-            WRITE(OUTS,'(A12,A4,A16)')ZNAME(IC),' -> ',
+            WRITE(OUTS,'(3A)')ZNAME(IC),' -> ',
      &        'node not defined'
-            CALL EDISP(ITRU,OUTS)
+            if(markdown)then
+              CALL EDISP2tr(ITRU,OUTS)
+            else
+              CALL EDISP(ITRU,OUTS)
+            endif
           ENDIF
  234    CONTINUE
       endif

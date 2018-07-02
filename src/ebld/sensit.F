@@ -331,6 +331,7 @@ C Logical flag for uncertainty header has been printed.
 
       logical headerdone
       logical itemunique  ! should we include in fort.37
+      logical iszonebased ! at least one of uncertainties is zone based
       integer itemsinheader,nbpastitems,nbdatahits
       character pastphrase*42
       common/uhead/headerdone,itemunique(20),pastphrase(20),
@@ -382,6 +383,7 @@ C strings for a synopsis of this run (up to a ~dozen actions).
         nbdatahits=0
       endif
 
+      iszonebased=.false.
       do 10 IACT=1,NIACT
 
 C DIR is the direction of the alteration: +ive =up or high, -ive = down or low.
@@ -411,8 +413,10 @@ C Synopsis of specific changes to identify the run.
 C Depending on change type call editing routine.
         if (IDTYPU(IACTD(IACT,1)).eq.1) then 
           call UAE01(IZONE,IACT,DIR)  ! thermophysical properties
+          iszonebased=.true.
         elseif (IDTYPU(IACTD(IACT,1)).eq.2) then 
           call UAE02(IZONE,IACT,DIR)  ! layer thickness
+          iszonebased=.true.
         elseif (IDTYPU(IACTD(IACT,1)).eq.3) then 
 
 C Weather applies to the whole model so only call this for the
@@ -420,12 +424,16 @@ C first zone ????
           call UAT03(IACT,DIR)        ! weather data ???
         elseif (IDTYPU(IACTD(IACT,1)).eq.4) then 
           call UAE04(IZONE,IACT,DIR)  ! casual gains or scheduled air
+          iszonebased=.true.
         elseif (IDTYPU(IACTD(IACT,1)).eq.5) then 
           call UAE05(IZONE,IACT,DIR)  ! hc coefficients
+          iszonebased=.true.
         elseif (IDTYPU(IACTD(IACT,1)).eq.6) then 
           call UAE06(IZONE,IACT,DIR)  ! optical control
+          iszonebased=.true.
         elseif (IDTYPU(IACTD(IACT,1)).eq.101) then 
           call UAZ01(IZONE,IACT,DIR)  ! zone air volume or SNA
+          iszonebased=.true.
         elseif (IDTYPU(IACTD(IACT,1)).eq.1001) then
 
 C Control applies to the whole model so only call this for the
@@ -450,7 +458,7 @@ C Debug.
 C          write(6,*) 'WARNING UNDEFINED UNCERTAINTY'
 C          call UAT05(IACT,DIR)
         endif
- 10   continue
+ 10   continue  ! of IACT
       write(36,*) 'synopsis ',message(1:lnblnk(message))
 
 C After the NIACT loop the header should be filled so write it out
@@ -460,13 +468,14 @@ C data as information is written each day rather than once at the
 C start of the run. For control uncertainty the writing to
 C fort.37 will be happening in UAT01a.
 
-C << when weather done add it to if logic >>.
       if(.NOT.uncertheadprinted)then
-        if(IDTYPU(IACTD(IACT,1)).eq.1001) then 
-          continue  ! control data is written in UAT01a
-        elseif(IDTYPU(IACTD(IACT,1)).eq.1.or.
-     &         IDTYPU(IACTD(IACT,1)).eq.2.or.
-     &         IDTYPU(IACTD(IACT,1)).eq.4)then
+
+C Loop through the list of uncertainties and if zone based and
+C also the last zone then write header.
+        if(iszonebased)then
+
+C << when weather done add it to if logic >>.
+          write(36,*) 'state of uncertheadprinted ',uncertheadprinted
 
 C We have a zone-dependent uncertainty so deal with the
 C base values here.
@@ -485,7 +494,7 @@ C Write out one line of zeros to represent the base case.
             lbase=4; lstbase=1; lfnbase=1
 
 C Debug.
-C            write(6,*) 'itemunique ',itemunique
+            write(6,*) 'itemunique ',itemunique
             do loop=1,itemsinheader
               lfnbase=lstbase+lbase
               if(lfnbase.lt.1000)then
@@ -499,12 +508,9 @@ C            write(6,*) 'itemunique ',itemunique
           endif
         endif
       endif
-
+      
 C If zone dependent are we ready to write urunvalsd?
-      if(IDTYPU(IACTD(IACT,1)).eq.1.or.
-     &   IDTYPU(IACTD(IACT,1)).eq.2.or.
-     &   IDTYPU(IACTD(IACT,1)).eq.4.or.
-     &   IDTYPU(IACTD(IACT,1)).eq.6)then
+      if(iszonebased)then
         if(IZONE.eq.NCOMP)then
           urunvalsd='  '
           call SDELIM(urunvals,urunvalsd,'C',IW)
@@ -1433,8 +1439,8 @@ C to specify individual periods later.
             endif
 
 C Increment counter of data so as to check against itemunique array.
-             nbdatahits=nbdatahits+1
-C             write(36,*) 'UAE04 setting nbdatahits',nbdatahits
+            nbdatahits=nbdatahits+1
+            write(36,*) 'UAE04 setting nbdatahits',nbdatahits
 
 C Add to urunvals if previously marked as unique.
             if(itemunique(nbdatahits))then

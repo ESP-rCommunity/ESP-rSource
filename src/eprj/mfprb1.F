@@ -1399,7 +1399,7 @@ C For help messages
           if(IAIRN.eq.3.and.MMOD.eq.8)then
 
 C Highlight the component being edited.
-            call win3dclr
+            call startbuffer
             call MFWFDRAW('g')  ! draw all in grey first
             call pausems(100)
             VALHX=HCMP(ICMP,1,1); VALHY=HCMP(ICMP,1,2)

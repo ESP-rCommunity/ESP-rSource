@@ -47,6 +47,7 @@ C MENUTYPE 11: Zone casual gains distribution
 C MENUTYPE 12: Surface energy balance
 C MENUTYPE 13: Monthly miscel gains and losses
 C MENUTYPE 14: Surface condensation
+C MENUTYPE 15: 3D flow network
 
 C IGETNO contains all the information needed for specifying which data to recover
 C IGETNO(*,1): The IGET number - metric identifier
@@ -206,7 +207,7 @@ C Set default values for IGETNO array and associated plotting/ labeling arrays.
       integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
       COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
 
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
+      COMMON/GRAF1/YMAX(6),YMIN(6),YAXSET(6),ADDLIN,horaxisdiv
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
 
       integer YAXSET,ADDLIN,horaxisdiv
@@ -428,6 +429,7 @@ C above.
 #include "schedule.h"
 #include "net_flow.h"
 #include "tdf2.h"
+#include "cfd.h"
       
       integer lnblnk  ! function definition
 
@@ -460,7 +462,7 @@ C Optional title for graph and up to 10 other labels and their positions.
       integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
       COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
 
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
+      COMMON/GRAF1/YMAX(6),YMIN(6),YAXSET(6),ADDLIN,horaxisdiv
 
 C ilflag = 0 tabular labels on multi-lines, ilflag = 1 on one line
 C          ilflag = 2 do not include # header lines in file.
@@ -516,7 +518,9 @@ C Note: 60 is the maximum number of items associated with an anchor point.
       integer*8 iid1,iid2,iik,iixx,iiyy
 #endif
 
-      logical dmdsok,xst
+      logical dmdsok,xst,is_open
+
+      common/CFDSV/IRECPC,ICFDSV,IEQSV(5+MCTM)
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -661,6 +665,9 @@ C IGETNO(NGET,4)=1 denote verbose and 0 to be summary.
         IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
         IGETNO(NGET,8)=4;  IGETNO(NGET,9)=20
         SLABEL(NGET)='Surface condensation'; LNSLABEL(NGET)=20
+      elseif (MENUTYPE.eq.15) then
+        MTITLE='3D flow plot'
+        MNGET=MZS-1
       else
         MNGET=1
         MTITLE='  '
@@ -861,6 +868,8 @@ C Instanciate the help text for this menu.
       elseif (MENUTYPE.eq.13) then
         nbofhelp=nbhelp
       elseif (MENUTYPE.eq.14) then
+        nbofhelp=nbhelp
+      elseif (MENUTYPE.eq.15) then
         nbofhelp=nbhelp
       endif
 
@@ -3251,13 +3260,13 @@ C and node logic below.
       elseif(INO.EQ.18)then
 
 C Network flow.
-        call mfoutp('-')
+        call MFOUTP('-')
         goto 1
 
       elseif(INO.EQ.19)then
 
-C CFD flow.
-        call edisp(iuout,'Not yet available here.')
+C Pick CFD variables.
+        call MOCFD('V')
         goto 1
 
       elseif(INO.EQ.20)then
@@ -4054,7 +4063,6 @@ C specific information.
                 if (SLIST.and.NLIST) then
                   IGETNO(NGET,3)=ISFSEL(IG)
                   IGETNO(NGET,4)=INODE
-C                elseif (.not.(MRTLIST.and.IGETNO(NGET,1).eq.23)) then
                 else
                   IGETNO(NGET,4)=IGETNO((NGET-1),4)
                 endif
@@ -5138,7 +5146,7 @@ C IGET = 47 Renewables/advanced materials secondary output.
       elseif(IGETNO(KGET,1).eq.50)then
 
 C IGETNO(KGET,1) = 50 Local PD: delta T head/ feet.
-        call OPCFD(ok,ier)
+        call OPCFD('c',ok,ier)
         call VERTdT(IDAY,IGETNO(KGET,2),IGETNO(KGET,3),ier)
         if (.not.ok.or.ier.ne.0) then
           ok=.false.
@@ -5218,7 +5226,7 @@ C          write(6,*) '42 ',IGETNO(KGET,2),GVAL(J2),PD
       elseif(IGETNO(KGET,1).eq.54)then
 
 C IGETNO(KGET,1) = 54 Local PD: draught
-        call OPCFD(ok,ier)
+        call OPCFD('c',ok,ier)
         if (.not.ok.or.ier.ne.0) then
           ok=.false.
           ier=0

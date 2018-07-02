@@ -458,7 +458,7 @@ C  imgtyp = 5 : ParaView data file.
      &              IRESvw(MCOM,6),VLSCvw(MCOM,6),VTSCvw(MCOM,6),
      &              HLSCvw(MCOM,6),HTSCvw(MCOM,6),IFRQvw(MCOM,6)
 
-      character LBITrt*12,outs*124,TLBIT*16
+      character LBITrt*12,outs*124,TLBIT*16,TLBIT2*16
       character name*12,t12*12,LBIT*72,LVEC*72
       logical dok,GENVEW
 
@@ -471,8 +471,27 @@ C For help messages
 
 C Any views.
       if (Nview(ICOMP).eq.0) then
-        call edisp(iuout,' No images to create!')
-        return
+        if (imgtyp.eq.3) then
+
+C If there are no views defined and user asked for a 3D visualisation,
+C set default data.
+          ISUR=1
+          ilayer=1
+          imgqua=2
+          vLscal=1.0
+          tscal=1.0
+          hLscal=1.0
+          hWscal=1.0
+
+C Create image.
+C          write(6,*) 'ICOMP,IM,ISUR,ilayer,name,frame',
+C     &      ICOMP,IM,ISUR,ilayer,name,IFRAME
+          call FTV(ICOMP,IM,ISUR,ilayer,name,IFRAME)
+
+        else          
+          call edisp(iuout,' No images to create!')
+          return
+        endif
       endif
 
 C For each view generate image.
@@ -485,7 +504,7 @@ C For each view generate image.
      &        LBITrt(ICOMP,IM)(1:lnblnk(LBITrt(ICOMP,IM))),' (',IM,') ?'
           dok=.true.
           call ASKOK('  ',outs,GENVEW,dok,nbhelp)
-        elseif (imgtyp.eq.3.and.Nview(ICOMP).gt.1) then
+        elseif (imgtyp.eq.3 .and. Nview(ICOMP).gt.1) then
           write (outs,'(a,f5.2,a,a,a,i1,a)') 
      &      'Use vector length scale factor (',
      &       VLSCvw(ICOMP,IM),') from view ',
@@ -552,8 +571,8 @@ C imgtyp  Output image type.
       common/flvnam/LBITrt(MCOM,6)
       common/flvimg/imgtyp,IMOPTS
       common/flvcol/ISOPT(6),IBGOPT(6),SCmin,SCmax
-      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX,URFC(MCTM)
+      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),
+     &               NCTM(MNZ),JHUMINDX(MNZ),URFC(MCTM)
       LOGICAL CALPOL,CALLMA
       character name*12,BITITL*5,LBITrt*12,outs*124,t24*24
       CHARACTER POLNAM*12,ITEM(MCTM+2)*18
@@ -632,24 +651,7 @@ C Write title for pixmap scale.
      &        IBR,nbhelp)
 
 C Ask which contaminant to plot
-            IF(ISCALAR.eq.3)THEN
-              IF(NCTM.LE.0)GOTO 332
-              DO 333 ICTM=1,NCTM
-                WRITE(ITEM(ICTM),'(A,1X,A)')
-     &               CHAR(96+ICTM),POLNAM(ICTM,ICFD)
- 333          CONTINUE
-              ITEM(NCTM+1)='--------------    '
-              ITEM(NCTM+2)='- exit            '
-              NITMS=NCTM+2
-              INO=-1
-
-C Help text for the menu.
- 331          helptopic='contaminant_select_list'
-              call gethelptext(helpinsub,helptopic,nbhelp)
-              CALL EMENU('Choose Contaminant',ITEM,NITMS,INO)
-              IF(INO.EQ.NITMS)RETURN
-              IF(INO.GT.NITMS.OR.INO.LT.1.OR.INO.EQ.(NCTM+1))GOTO 331
-            ENDIF
+            IF(ISCALAR.eq.3) CALL ASKCFDCTM(INO)
 
 C Remember selections (used by res for animations).
  332        ISOPT(IM)=ISCALAR
@@ -701,7 +703,7 @@ C Create a X-bitmap file.
       elseif (imgtyp.eq.3) then 
 
 C Create a screen3d image << use IFRAME >>
-        call MAKS3d(IFRAME)
+        call MAKS3D(IFRAME)
       endif
 
       return
@@ -1333,5 +1335,49 @@ C Check for neg value of j.
       ired= int(r*255. + 0.5)
       igrn= int(g*255. + 0.5)
       iblu= int(b*255. + 0.5)
+      RETURN
+      END
+
+
+
+C **************** ASKCFDCTM
+C ASKCFDCTM asks the user to select a CFD contaminant.
+
+      SUBROUTINE ASKCFDCTM(ICTM)
+
+#include "building.h"
+#include "cfd.h"
+
+      COMMON/ICFNOD/ICFD,ICP
+      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),
+     &               NCTM(MNZ),JHUMINDX(MNZ),URFC(MCTM)
+      LOGICAL CALPOL,CALLMA
+      CHARACTER POLNAM*12,ITEM(MCTM)*12
+      integer ISCALAR  ! for radio button
+c      integer NITMS,INO  ! max items and current menu item
+      integer IVALZ(MCTM)
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ASKCFDCTM'  ! set for subroutine
+
+      ICTM=0
+
+      IF(NCTM(ICFD).LE.0)return
+      DO 333 ICTM=1,NCTM(ICFD)
+        WRITE(ITEM(ICTM),'(A,1X,A)')POLNAM(ICTM,ICFD)
+ 333  CONTINUE
+
+C Help text for the menu.
+      helptopic='contaminant_select_list'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      INPICK=1
+      CALL EPICKS(INPICK,IVALZ,'Choose Contaminant',' ',12,NCTM(ICFD),
+     &  ITEM,'CFD contam',IER,nbhelp)
+
+      ICTM=IVALZ(1)
       RETURN
       END

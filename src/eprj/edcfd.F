@@ -270,13 +270,13 @@ C Display domain
             call VGRID3D(zngeo,'xyg',izone)
           endif
           if (ISHSB.eq.1) then
-            call VSB3D(0,izone)
+            call VSB3D(0)
           endif
           if (ISHAO.eq.1) then
-            call VAO3D(0,izone)        
+            call VAO3D(0)        
           endif
           if (ISHBLK.eq.1) then
-            call VSBL3D(0,izone)  ! for testing of blockages
+            call VSBL3D(0)  ! for testing of blockages
           endif
 
         endif
@@ -395,7 +395,8 @@ C (the east (4,*) is for curvilinear gridding).
      &  NCELZE(MNREG,MNZ),XREG(MNREG,MNZ),YREG(MNREG,MNZ),
      &  ZREG(MNREG,MNZ),ZREGE(MNREG,MNZ),Xplaw(MNREG,MNZ),
      &  Yplaw(MNREG,MNZ),Zplaw(MNREG,MNZ),Zplawe(MNREG,MNZ),NREG(4,MNZ)
-      common/GRDVRTS/iorg,ixend,iyend,izend,izende
+      common/GRDVRTS/iorg(MNZ),ixend(MNZ),iyend(MNZ),izend(MNZ),
+     &  izende(MNZ)
 
       common/GRIDEFN/origin,xgrid,ygrid,zgrid,zegrid,ortho
       COMMON/ICFNOD/ICFD,ICP
@@ -463,7 +464,7 @@ C Ensure that G1 common blocks are correctly assigned.
       call georead(IFIL+1,LGEOM(izone),izone,1,IUOUT,IER)
 
 C Check if we have vertex at ends of axis data.
-      if (iorg.eq.0) then
+      if (IORG(ICFD).eq.0) then
 
         call usrmsg('You will have to define the CFD axis relationship',
      &              'to the zone geometry via vertex numbers.','W')
@@ -515,14 +516,14 @@ C Ask user for zone vertex indices of the origin of cfd domain
 C followed by vertex at end of X axis, vertex at end of Y axis
 C and the vertex for the upper Z axis point (usually above the
 C Y axis end point).
-        iorgt=iorg
+        iorgt=IORG(ICFD)
         CALL EASKI(iorgt,' Specify vertex at origin of CFD domain. ',
      &    ' Which `v`? ',1,'F',NTV,'F',1,'orig vertex',IERI,nbhelp)
         if(ieri.eq.-3) then
           origin=.false.
           return
         endif
-        ixendt=ixend
+        ixendt=ixend(ICFD)
         CALL EASKI(ixendt,' Specify vertex at end of X axis. ',
      &    ' Which `v`? ',1,'F',NTV,'F',1,'x-axis vertex',IERI,nbhelp)
         if(ieri.eq.-3) then
@@ -530,7 +531,7 @@ C Y axis end point).
           return
         endif
 
-        iyendt=iyend
+        iyendt=iyend(ICFD)
         CALL EASKI(iyendt,' Specify vertex at end of Y axis. ',
      &    ' Which `v`? ',1,'F',NTV,'F',1,'y-axis vertex',IERI,nbhelp)
         if(ieri.eq.-3) then
@@ -538,7 +539,7 @@ C Y axis end point).
           return
         endif
 
-        izendt=izend
+        izendt=izend(ICFD)
         CALL EASKI(izendt,' Specify vertex at end of Z axis. ',
      &    ' Which `v`? ',1,'F',NTV,'F',1,'z-axis vertex',IERI,nbhelp)
         if(ieri.eq.-3) then
@@ -547,8 +548,8 @@ C Y axis end point).
         endif
 
 C No cancels so instanciate variables.
-        iorg=iorgt
-        ixend=ixendt; iyend=iyendt; izend=izendt
+        IORG(ICFD)=iorgt
+        ixend(ICFD)=ixendt; iyend(ICFD)=iyendt; izend(ICFD)=izendt
       endif
 
 C Make sure axes are orthogonal, as dfs only supports Cartesian coordinates.
@@ -556,8 +557,9 @@ C First ensure that G1 common blocks are correctly assigned.
       call georead(IFIL+1,LGEOM(izone),izone,1,IUOUT,IER)
 
 C Check X and Y.
-      call ang3vtx(X(ixend),Y(ixend),Z(ixend),X(iorg),Y(iorg),
-     &                       Z(iorg),X(iyend),Y(iyend),Z(iyend),ang3)
+      call ang3vtx(X(ixend(ICFD)),Y(ixend(ICFD)),Z(ixend(ICFD)),
+     &  X(IORG(ICFD)),Y(IORG(ICFD)),Z(IORG(ICFD)),X(iyend(ICFD)),
+     &  Y(iyend(ICFD)),Z(iyend(ICFD)),ang3)
       call eclose(ang3,90.00,0.1,close)
       if(.NOT.close) then
         call usrmsg(
@@ -567,8 +569,9 @@ C Check X and Y.
       endif
 
 C Check X and Z.
-      call ang3vtx(X(ixend),Y(ixend),Z(ixend),X(iorg),Y(iorg),
-     &                       Z(iorg),X(izend),Y(izend),Z(izend),ang3)
+      call ang3vtx(X(ixend(ICFD)),Y(ixend(ICFD)),Z(ixend(ICFD)),
+     &  X(IORG(ICFD)),Y(IORG(ICFD)),Z(IORG(ICFD)),X(izend(ICFD)),
+     &  Y(izend(ICFD)),Z(izend(ICFD)),ang3)
       call eclose(ang3,90.00,0.1,close)
       if(.NOT.close) then
         call usrmsg(
@@ -578,8 +581,9 @@ C Check X and Z.
       endif
 
 C Check Y and Z.
-      call ang3vtx(X(iyend),Y(iyend),Z(iyend),X(iorg),Y(iorg),
-     &                       Z(iorg),X(izend),Y(izend),Z(izend),ang3)
+      call ang3vtx(X(iyend(ICFD)),Y(iyend(ICFD)),Z(iyend(ICFD)),
+     &  X(IORG(ICFD)),Y(IORG(ICFD)),Z(IORG(ICFD)),X(izend(ICFD)),
+     &  Y(izend(ICFD)),Z(izend(ICFD)),ang3)
       call eclose(ang3,90.00,0.1,close)
       if(.NOT.close) then
         call usrmsg(
@@ -589,16 +593,20 @@ C Check Y and Z.
       endif
 
 C Determine length of each axis.
-      xdis=crowxyz(X(iorg),Y(iorg),Z(iorg),X(ixend),Y(ixend),Z(ixend))
-      ydis=crowxyz(X(iorg),Y(iorg),Z(iorg),X(iyend),Y(iyend),Z(iyend))
-      zdis=crowxyz(X(iorg),Y(iorg),Z(iorg),X(izend),Y(izend),Z(izend))
+      xdis=crowxyz(X(IORG(ICFD)),Y(IORG(ICFD)),Z(IORG(ICFD)),
+     &  X(ixend(ICFD)),Y(ixend(ICFD)),Z(ixend(ICFD)))
+      ydis=crowxyz(X(IORG(ICFD)),Y(IORG(ICFD)),Z(IORG(ICFD)),
+     &  X(iyend(ICFD)),Y(iyend(ICFD)),Z(iyend(ICFD)))
+      zdis=crowxyz(X(IORG(ICFD)),Y(IORG(ICFD)),Z(IORG(ICFD)),
+     &  X(izend(ICFD)),Y(izend(ICFD)),Z(izend(ICFD)))
 
 C Non orthogonal.
       if (.NOT.ortho) then
 
 C Check Y and Ze.
-        call ang3vtx(X(iyend),Y(iyend),Z(iyend),X(iorg),Y(iorg),
-     &               Z(iorg),X(izende),Y(izende),Z(izende),ang3)
+        call ang3vtx(X(iyend(ICFD)),Y(iyend(ICFD)),Z(iyend(ICFD)),
+     &    X(IORG(ICFD)),Y(IORG(ICFD)),Z(IORG(ICFD)),X(izende(ICFD)),
+     &    Y(izende(ICFD)),Z(izende(ICFD)),ang3)
         call eclose(ang3,90.00,0.1,close)
         if(.NOT.close) then
           call usrmsg('Y & Ze axes are not orthogonal. ',
@@ -625,11 +633,12 @@ C Create menu text.
       ITEM(1) ='a Define origin and axes.'
       ITEM(2) ='  Vertex ids:'
       if (ortho) then
-        write (ITEM(3),'(4(a,i2))') ' O=',iorg,': Vx=',ixend,', Vy=',
-     &                                    iyend,', Vz=',izend
+        write (ITEM(3),'(4(a,i2))') ' O=',IORG(ICFD),': Vx=',
+     &    ixend(ICFD),', Vy=',iyend(ICFD),', Vz=',izend(ICFD)
       else
-        write (ITEM(3),'(5(a,i2))') ' O=',iorg,': Vx=',ixend,', Vy=',
-     &                             iyend,', Vz=',izend,' Vze=',izende
+        write (ITEM(3),'(5(a,i2))') ' O=',IORG(ICFD),': Vx=',
+     &    ixend(ICFD),', Vy=',iyend(ICFD),', Vz=',izend(ICFD),' Vze=',
+     &    izende(ICFD)
       endif
       ITEM(4) =' ------------------------------ '
       ITEM(5) ='b Estimate regions from geometry'
@@ -681,13 +690,13 @@ C Display domain
           call VGRID3D(zngeo,'xyg',izone)
         endif
         if (ISHSB.eq.1) then
-          call VSB3D(0,izone)
+          call VSB3D(0)
         endif
         if (ISHAO.eq.1) then
-          call VAO3D(0,izone)        
+          call VAO3D(0)        
         endif
         if (ISHBLK.eq.1) then
-          call VSBL3D(0,izone)  ! for testing of blockages
+          call VSBL3D(0)  ! for testing of blockages
         endif
       
         WRITE(ETEXT,'(2A)')'Domain: ',
@@ -748,7 +757,7 @@ C Specify origin and axes of CFD domain.
         call edisp248(iuout,outs248,100)
         write(outs248,'(a,32F7.3)') 'z axis',(Y(j),j=1,indisp)
         call edisp248(iuout,outs248,100)
-        iorgt=iorg
+        iorgt=IORG(ICFD)
         CALL EASKI(iorgt,' Specify vertex at origin of CFD domain. ',
      &    ' Which `v`? ',1,'F',NTV,'F',1,'orig vertex',IERI,nbhelp)
         if(ieri.eq.-3) then
@@ -756,7 +765,7 @@ C Specify origin and axes of CFD domain.
           return
         endif
 
-        ixendt=ixend
+        ixendt=ixend(ICFD)
         CALL EASKI(ixendt,' Specify vertex at end of X axis. ',
      &    ' Which `v`? ',1,'F',NTV,'F',1,'x-axis vertex',IERI,nbhelp)
         if(ieri.eq.-3) then
@@ -764,7 +773,7 @@ C Specify origin and axes of CFD domain.
           return
         endif
 
-        iyendt=iyend
+        iyendt=iyend(ICFD)
         CALL EASKI(iyendt,' Specify vertex at end of Y axis. ',
      &    ' Which `v`? ',1,'F',NTV,'F',1,'y-axis vertex',IERI,nbhelp)
         if(ieri.eq.-3) then
@@ -772,7 +781,7 @@ C Specify origin and axes of CFD domain.
           return
         endif
 
-        izendt=izend
+        izendt=izend(ICFD)
         CALL EASKI(izendt,' Specify vertex at end of Z axis. ',
      &    ' Which `v`? ',1,'F',NTV,'F',1,'z-axis vertex',IERI,nbhelp)
         if(ieri.eq.-3) then
@@ -781,13 +790,14 @@ C Specify origin and axes of CFD domain.
         endif
 
 C No cancels so instanciate variables.
-        iorg=iorgt
-        ixend=ixendt; iyend=iyendt; izend=izendt
+        IORG(ICFD)=iorgt
+        ixend(ICFD)=ixendt; iyend(ICFD)=iyendt; izend(ICFD)=izendt
 
 C Make sure axes are orthogonal, as dfs only supports Cartesian coordinates.
 C Check X and Y.
-        call ang3vtx(X(ixend),Y(ixend),Z(ixend),X(iorg),Y(iorg),
-     &               Z(iorg),X(iyend),Y(iyend),Z(iyend),ang3)
+        call ang3vtx(X(ixend(ICFD)),Y(ixend(ICFD)),Z(ixend(ICFD)),
+     &    X(IORG(ICFD)),Y(IORG(ICFD)),Z(IORG(ICFD)),X(iyend(ICFD)),
+     &    Y(iyend(ICFD)),Z(iyend(ICFD)),ang3)
         call eclose(ang3,90.00,0.1,close)
         if(.NOT.close) then
           call edisp(iuout,' X & Y axes are not orthogonal. Respecify.')
@@ -795,8 +805,9 @@ C Check X and Y.
         endif
 
 C Check X and Z.
-        call ang3vtx(X(ixend),Y(ixend),Z(ixend),X(iorg),Y(iorg),
-     &               Z(iorg),X(izend),Y(izend),Z(izend),ang3)
+        call ang3vtx(X(ixend(ICFD)),Y(ixend(ICFD)),Z(ixend(ICFD)),
+     &    X(IORG(ICFD)),Y(IORG(ICFD)),Z(IORG(ICFD)),X(izend(ICFD)),
+     &    Y(izend(ICFD)),Z(izend(ICFD)),ang3)
         call eclose(ang3,90.00,0.1,close)
         if(.NOT.close) then
           call edisp(iuout,' X & Z axes are not orthogonal. Respecify.')
@@ -804,8 +815,9 @@ C Check X and Z.
         endif
 
 C Check Y and Z.
-        call ang3vtx(X(iyend),Y(iyend),Z(iyend),X(iorg),Y(iorg),
-     &               Z(iorg),X(izend),Y(izend),Z(izend),ang3)
+        call ang3vtx(X(iyend(ICFD)),Y(iyend(ICFD)),Z(iyend(ICFD)),
+     &    X(IORG(ICFD)),Y(IORG(ICFD)),Z(IORG(ICFD)),X(izend(ICFD)),
+     &    Y(izend(ICFD)),Z(izend(ICFD)),ang3)
         call eclose(ang3,90.00,0.1,close)
         if(.NOT.close) then
           call edisp(iuout,' Y & Z axes are not orthogonal. Respecify.')
@@ -813,9 +825,12 @@ C Check Y and Z.
         endif
 
 C Determine length of each axis.
-        xdis=crowxyz(X(iorg),Y(iorg),Z(iorg),X(ixend),Y(ixend),Z(ixend))
-        ydis=crowxyz(X(iorg),Y(iorg),Z(iorg),X(iyend),Y(iyend),Z(iyend))
-        zdis=crowxyz(X(iorg),Y(iorg),Z(iorg),X(izend),Y(izend),Z(izend))
+        xdis=crowxyz(X(IORG(ICFD)),Y(IORG(ICFD)),Z(IORG(ICFD)),
+     &    X(ixend(ICFD)),Y(ixend(ICFD)),Z(ixend(ICFD)))
+        ydis=crowxyz(X(IORG(ICFD)),Y(IORG(ICFD)),Z(IORG(ICFD)),
+     &    X(iyend(ICFD)),Y(iyend(ICFD)),Z(iyend(ICFD)))
+        zdis=crowxyz(X(IORG(ICFD)),Y(IORG(ICFD)),Z(IORG(ICFD)),
+     &    X(izend(ICFD)),Y(izend(ICFD)),Z(izend(ICFD)))
 
 C Set flag to indicate that origin has been defined.
         origin=.true.
@@ -1117,7 +1132,7 @@ C Additional Z axis must be gridded.
               zegrid=.FALSE.
               return
             endif
-            izendet=izende
+            izendet=izende(ICFD)
             CALL EASKI(izendet,'Specify vertex at end of east Z axis.',
      &        'Which `v`? ',1,'F',NTV,'F',1,'ez axis vertex',
      &        IERI,nbhelp)
@@ -1127,10 +1142,10 @@ C Additional Z axis must be gridded.
             endif
 
 C User did not cancel so instanciate values.
-            izende=izendet
+            izende(ICFD)=izendet
 
-            zedis=crowxyz(X(ieorg),Y(ieorg),Z(ieorg),X(izende),
-     &              Y(izende),Z(izende))
+            zedis=crowxyz(X(ieorg),Y(ieorg),Z(ieorg),X(izende(ICFD)),
+     &              Y(izende(ICFD)),Z(izende(ICFD)))
 
 C Need to ask for vertices which represent the
 C top and bottom boundaries of the curvilinear x-section.
@@ -1216,8 +1231,8 @@ C Equations solved.
       common/EQTION/CALLU(MNZ),CALLV(MNZ),CALLW(MNZ),CALLT(MNZ),
      &             CALLC(MNZ),KEMDL(MNZ),BUOY(MNZ),BOUSSI(MNZ),
      &             ZEROT(MNZ),ZandKE(MNZ),MITzero(MNZ)
-      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX,URFC(MCTM)
+      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),
+     &               NCTM(MNZ),JHUMINDX(MNZ),URFC(MCTM)
 
 C Solution methods.
       common/METHDS/ITURB(MNZ),IBUOY(MNZ)
@@ -1289,7 +1304,7 @@ C Now create menu.
       elseif (IBUOY(ICFD).eq.2) then
         ITEM(4)= 'c Buoyancy >> Boussinesq approx'
       endif
-      DO 121 ICTM=1,NCTM
+      DO 121 ICTM=1,NCTM(ICFD)
         IF(CALPOL(ICTM,ICFD))THEN
           WRITE(ITEM(4+ICTM),'(A,1X,A,1X,A,1X)')CHAR(99+ICTM),
      &         POLNAM(ICTM,ICFD),'>> solved'
@@ -1299,19 +1314,19 @@ C Now create menu.
         ENDIF
  121  CONTINUE
       if (.NOT.CALLMA(ICFD)) then
-        WRITE(ITEM(5+NCTM),'(2A)')CHAR(100+NCTM),
+        WRITE(ITEM(5+NCTM(ICFD)),'(2A)')CHAR(100+NCTM(ICFD)),
      &       ' Mean age of air >> not solved'
       else
-        WRITE(ITEM(5+NCTM),'(2A)')CHAR(100+NCTM),
+        WRITE(ITEM(5+NCTM(ICFD)),'(2A)')CHAR(100+NCTM(ICFD)),
      &       ' Mean age of air >> solved'
       endif
-      ITEM(6+NCTM)= ' ------------------------------------- '
-      ITEM(7+NCTM)= '# Edit solution parameters'
-      ITEM(8+NCTM)= '* Reset to defaults'
-      ITEM(9+NCTM)= ' ------------------------------------- '
-      ITEM(10+NCTM)='? Help'
-      ITEM(11+NCTM)='- exit this menu'
-      NITMS=11+NCTM
+      ITEM(6+NCTM(ICFD))= ' ------------------------------------- '
+      ITEM(7+NCTM(ICFD))= '# Edit solution parameters'
+      ITEM(8+NCTM(ICFD))= '* Reset to defaults'
+      ITEM(9+NCTM(ICFD))= ' ------------------------------------- '
+      ITEM(10+NCTM(ICFD))='? Help'
+      ITEM(11+NCTM(ICFD))='- exit this menu'
+      NITMS=11+NCTM(ICFD)
 
 C Help text for this menu.
       helptopic='cfd_equations_to_solve'
@@ -1339,7 +1354,7 @@ C Toggle through turbulence methods.
 C Toggle buoyancy.
         IBUOY(ICFD)=IBUOY(ICFD)+1
         if (IBUOY(ICFD).gt.2) IBUOY(ICFD)=0
-      elseif(INO.GT.4.AND.INO.LE.(4+NCTM))then
+      elseif(INO.GT.4.AND.INO.LE.(4+NCTM(ICFD)))then
 
 C Contaminants
         IF(CALPOL(INO-4,ICFD))THEN
@@ -1347,7 +1362,7 @@ C Contaminants
         ELSE
           CALPOL(INO-4,ICFD)=.TRUE.
         ENDIF
-      elseif(INO.EQ.5+NCTM)then
+      elseif(INO.EQ.5+NCTM(ICFD))then
 
 C Mean age of air.
         if (CALLMA(ICFD)) then
@@ -1355,14 +1370,14 @@ C Mean age of air.
         else
           CALLMA(ICFD)=.true.
         endif
-      elseif(INO.EQ.8+NCTM)then
+      elseif(INO.EQ.8+NCTM(ICFD))then
 
 C Reset defaults.
         dok=.false.
         call askok('Resetting solution parameters to default values.',
      &             'Are you sure? (see help)',OK,dok,nbhelp)
         if (OK) call CFDDEFLT
-      elseif(INO.eq.7+NCTM)then
+      elseif(INO.eq.7+NCTM(ICFD))then
 
 C Edit solution parameters.
         call CFDEDAT        
@@ -1394,8 +1409,8 @@ C Equations solved.
       common/EQTION/CALLU(MNZ),CALLV(MNZ),CALLW(MNZ),CALLT(MNZ),
      &             CALLC(MNZ),KEMDL(MNZ),BUOY(MNZ),BOUSSI(MNZ),
      &             ZEROT(MNZ),ZandKE(MNZ),MITzero(MNZ)
-      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX,URFC(MCTM)
+      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),
+     &               NCTM(MNZ),JHUMINDX(MNZ),URFC(MCTM)
 
 C Solution methods.
       common/METHDS/ITURB(MNZ),IBUOY(MNZ)
@@ -1770,7 +1785,7 @@ C Monitoring cell.
       elseif (INO.eq.NITMS-2) then
 
 C Check that contaminants have been defined.
-        if (NCTM.gt.0) then
+        if (NCTM(ICFD).gt.0) then
 
 C Go to contaminant equation setup menu.
           CALL CFDEDATC
@@ -1806,8 +1821,8 @@ C      common/OUTIN/IUOUT,IUIN
       COMMON/ICFNOD/ICFD,ICP
 
 C Equations solved.
-      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX,URFC(MCTM)
+      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),
+     &               NCTM(MNZ),JHUMINDX(MNZ),URFC(MCTM)
 
 C Under-relaxation factors.
       COMMON/LINRFC/URFCU(MNZ),URFCV(MNZ),URFCW(MNZ),URFCP(MNZ),
@@ -1817,7 +1832,8 @@ C Under-relaxation factors.
      &              URFCT2(MNZ),URFCK2(MNZ),URFCE2(MNZ),URFCVS2(MNZ),
      &              URFCC2(MNZ,MCTM)
 
-      character ITEM(3+3*NCTM)*40,POLNAM*12,tstr*13,tstr1*30,tstr2*30
+      character ITEM(3+3*NCTM(ICFD))*40,POLNAM*12,tstr*13,tstr1*30,
+     &  tstr2*30
 
       LOGICAL CALPOL,CALLMA
       integer NITMS,INO ! max items and current menu item
@@ -1829,7 +1845,7 @@ C For help messages
 
       helpinsub='CFDEDATC'  ! set for subroutine
 
-      NITMS=3+3*NCTM
+      NITMS=3+3*NCTM(ICFD)
 C Debug
 C      write(6,*)'NITMS: ',NITMS
 
@@ -1840,7 +1856,7 @@ C First clear menu.
       enddo
 
 C Now create menu.
-      do ICTM=1,NCTM
+      do ICTM=1,NCTM(ICFD)
         IND=(ICTM-1)*3+1
 C Debug
 C        write(6,*)'IND: ',IND
@@ -2097,13 +2113,13 @@ C Display domain.
           call VGRID3D(zngeo,'xyg',izone)
         endif
         if (ISHSB.eq.1) then
-          call VSB3D(0,izone)
+          call VSB3D(0)
         endif
         if (ISHAO.eq.1) then
-          call VAO3D(0,izone)        
+          call VAO3D(0)        
         endif
         if (ISHBLK.eq.1) then
-          call VSBL3D(0,izone)  ! for testing of blockages
+          call VSBL3D(0)  ! for testing of blockages
         endif    
         WRITE(ETEXT,'(2A)')'Domain: ',
      &    TITLE(izone)(1:lnblnk(TITLE(izone)))
@@ -2261,6 +2277,9 @@ C Delete a boundary condition. First, ask which one.
             INVOL=NVOL(ICFD)
             call EPICKS(INDEL,IDEL,' ',' ',12,INVOL,NAMES,
      &        'Key volume name',IER,nbhelp)
+
+C Depending on type, decrement counters.
+            if (IVTYPE(IAIN,ICFD).eq.30) NBLK(ICFD)=NBLK(ICFD)-1
      
 C Move all definitions greater than selected volume up one slot.
             do 333 I=IDEL(1),NVOL(ICFD)
@@ -2302,6 +2321,7 @@ C Move all definitions greater than selected volume up one slot.
  333        continue
           NVOL(ICFD)=NVOL(ICFD)-1
           endif
+          CALL NEW2OLD
         endif
 
       elseif (INO.eq.(NITMS-4)) then
@@ -2319,64 +2339,9 @@ C Edit volume identified by KEYIND.
 
 C Existing volume, edit according to type.
         if (IVTYPE(IAIN,ICFD).ge.1.AND.IVTYPE(IAIN,ICFD).le.6) then
-
-          IF(MMOD.EQ.8)THEN
-C Display domain, but override values in CFDVIS; always
-C display solid and air flow boundary conditions, highlighting
-C the chosen one, and never display zone geometry.
-            write(zngeo,'(a)')'---'
-            if(abs(IFACES).eq.1)then
-              call VGRID3D(zngeo,'xyz',izone)
-            elseif(abs(IFACES).eq.2)then
-              call VGRID3D(zngeo,'xzg',izone)
-            elseif(abs(IFACES).eq.3)then
-              call VGRID3D(zngeo,'yzg',izone)
-            elseif(abs(IFACES).eq.4)then
-              call VGRID3D(zngeo,'xyg',izone)
-            endif
-C Find index in new commons of boundary specified by index IAIN in old commons
-            do 195 I=1,NSB(ICFD)
-              if (IAIN.eq.IVOLNSB(I,ICFD)) then
-                call VSB3D(I,izone)
-              endif
-  195       continue
-            call VAO3D(0,izone)
-            WRITE(ETEXT,'(2A)')'Domain: ',
-     &        TITLE(izone)(1:lnblnk(TITLE(izone)))
-            iside=1; isize=1; ifont=1
-            call viewtext(ETEXT,iside,isize,ifont)
-          ENDIF
           call EDSLDB(IZONE,IAIN,IER)
         elseif (IVTYPE(IAIN,ICFD).ge.10.AND.IVTYPE(IAIN,ICFD).le.13)
      &                                                             then
-          IF(MMOD.EQ.8)THEN
-C Display domain, but override values in CFDVIS; always
-C display solid and air flow boundary conditions, highlighting
-C the chosen one, and never display zone geometry
-            write(zngeo,'(a)')'---'
-            if(abs(IFACES).eq.1)then
-              call VGRID3D(zngeo,'xyz',izone)
-            elseif(abs(IFACES).eq.2)then
-              call VGRID3D(zngeo,'xzg',izone)
-            elseif(abs(IFACES).eq.3)then
-              call VGRID3D(zngeo,'yzg',izone)
-            elseif(abs(IFACES).eq.4)then
-              call VGRID3D(zngeo,'xyg',izone)
-            endif
-            call VSB3D(0,izone)
-C Find index in new commons of opening specified by index IAIN in old commons
-            do 638 I=1,NOPEN(ICFD)
-              if (IAIN.eq.IVOLN(I,ICFD)) then
-                call VAO3D(I,izone)
-              endif
-  638       continue   
-            WRITE(ETEXT,'(2A)')'Domain: ',
-     &        TITLE(izone)(1:lnblnk(TITLE(izone)))
-            iside=1
-            isize=1
-            ifont=1
-            call viewtext(ETEXT,iside,isize,ifont)
-          ENDIF
           call EDAIRO(IAIN,IER)
         elseif (IVTYPE(IAIN,ICFD).eq.20) then
           call EDSRC(IAIN,IER)
@@ -2398,6 +2363,7 @@ C#include "building.h"
 #include "cfd.h"
 
       COMMON/ICFNOD/ICFD,ICP
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       common/cfdconf/ICFBLD(MNZ),ICFMFS(MNZ)
       common/KEYVOLS/NVOL(MNZ),IVOLF(MNVLS,MNZ),IVCELLS(MNVLS,MNZ,2),
@@ -2408,12 +2374,31 @@ C#include "building.h"
      &          VOLCO2(MNVLS,MNZ),VOLVel(MNVLS,MNZ),VOLDir(MNVLS,MNZ,2),
      &          VOLArea(MNVLS,MNZ),VOLPres(MNVLS,MNZ),
      &          VOLPol(MCTM,MNVLS,MNZ)
+      common/param2/TITLE(MNZ),CFTRFL(MNZ),LPHI(MNZ)
+      CHARACTER*72 TITLE,CFTRFL,LPHI
+
+      COMMON/NDMAP/NOPEN(MNZ),MFNODE(MCFND,MNZ),IOPENi(MCFND,MNZ),
+     &             IOPENf(MCFND,MNZ),JOPENi(MCFND,MNZ),
+     &             JOPENf(MCFND,MNZ),KOPENi(MCFND,MNZ),
+     &             KOPENf(MCFND,MNZ),FIXM(MCFND,MNZ),
+     &             FIXT(MCFND,MNZ),FIXC(MCFND,MNZ),
+     &             FIXK(MCFND,MNZ),FIXE(MCFND,MNZ),
+     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),
+     &             ICNACT(MCFND,MNZ),IVOLN(MCFND,MNZ)
+      COMMON/CFDVIS/ISHSB,ISHAO,IFACES,ISHBLK
 
       character ITMSS(13)*50
       character face*6,ltmp*17,t12*12,d12*12
       character VOLNAME*12, VCsurf*12,t20*20
       integer IWO  ! for radio button
       integer NITMS,INO ! max items and current menu item
+      character zngeo*3,etext*82
+
+#ifdef OSI
+      integer iside,isize,ifont
+#else
+      integer*8 iside,isize,ifont
+#endif
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -2513,6 +2498,35 @@ C Create a menu showing definitions for different conflation schemes.
       ITMSS(13)='- exit'
       NITMS=13
 
+      IF(MMOD.EQ.8)THEN
+C Display domain, but override values in CFDVIS; always
+C display solid and air flow boundary conditions, highlighting
+C the chosen one, and never display zone geometry
+        write(zngeo,'(a)')'---'
+        if(abs(IFACES).eq.1)then
+          call VGRID3D(zngeo,'xyz',ICP)
+        elseif(abs(IFACES).eq.2)then
+          call VGRID3D(zngeo,'xzg',ICP)
+        elseif(abs(IFACES).eq.3)then
+          call VGRID3D(zngeo,'yzg',ICP)
+        elseif(abs(IFACES).eq.4)then
+          call VGRID3D(zngeo,'xyg',ICP)
+        endif
+        call VSB3D(0)
+C Find index in old commons of opening specified by index IAO in new commons
+        do 638 I=1,NOPEN(ICFD)
+          if (IAO.eq.IVOLN(I,ICFD)) then
+            call VAO3D(I)
+          endif
+638       continue   
+        WRITE(ETEXT,'(2A)')'Domain: ',
+     &    TITLE(ICP)(1:lnblnk(TITLE(ICP)))
+        iside=1
+        isize=1
+        ifont=1
+        call viewtext(ETEXT,iside,isize,ifont)
+      ENDIF
+
 C Help text for this menu.
       helptopic='cfd_air_boundary'
       call gethelptext(helpinsub,helptopic,nbhelp)
@@ -2520,6 +2534,7 @@ C Help text for this menu.
 C Display menu.
       INO=-1
       CALL EMENU('Air flow opening edit',ITMSS,NITMS,INO)
+
       if (INO.eq.1) then
         t12=VOLNAME(IAO,ICFD)
         d12='  '
@@ -2700,6 +2715,13 @@ C #include "prj3dv.h"
       COMMON/CFDVIS/ISHSB,ISHAO,IFACES,ISHBLK
       common/param2/TITLE(MNZ),CFTRFL(MNZ),LPHI(MNZ)
 
+      COMMON/Sbdary/NSB(MNZ),ISBi(MNSBZ,MNZ),ISBf(MNSBZ,MNZ),
+     &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
+     &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
+     &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
+     &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
+
       character ITMSS(13)*40
       character face*6,ltmp*16,t12*12,d12*12,outs*124
       character VOLNAME*12, VCsurf*12
@@ -2861,48 +2883,36 @@ C        write(ITMSS(9),'(a,i4)')'f Handshaking: ',IVConfl(ISB,ICFD)
       ITMSS(13)='- exit'
       NITMS=13
 
-C Help text for this menu.
-      helptopic='cfd_solid_boundary_edit'
-      call gethelptext(helpinsub,helptopic,nbhelp)
-
-C If in graphic model show the current grid.
       IF(MMOD.EQ.8)THEN
-
-C Recalculate gridding in case this has changed.
-        CALL INICNT
-        CALL GRID(ier)
-        call NEW2OLD
-
-C Display domain
-        if (IFACES.lt.0) then
-          write(zngeo,'(a)')'zn '
-        else
-          write(zngeo,'(a)')'---'
-        endif
+C Display domain, but override values in CFDVIS; always
+C display solid and air flow boundary conditions, highlighting
+C the chosen one, and never display zone geometry.
+        write(zngeo,'(a)')'---'
         if(abs(IFACES).eq.1)then
-          call VGRID3D(zngeo,'xyz',izone)
+          call VGRID3D(zngeo,'xyz',ICP)
         elseif(abs(IFACES).eq.2)then
-          call VGRID3D(zngeo,'xzg',izone)
+          call VGRID3D(zngeo,'xzg',ICP)
         elseif(abs(IFACES).eq.3)then
-          call VGRID3D(zngeo,'yzg',izone)
+          call VGRID3D(zngeo,'yzg',ICP)
         elseif(abs(IFACES).eq.4)then
-          call VGRID3D(zngeo,'xyg',izone)
+          call VGRID3D(zngeo,'xyg',ICP)
         endif
-        if (ISHSB.eq.1) then
-          call VSB3D(0,izone)
-        endif
-        if (ISHAO.eq.1) then
-          call VAO3D(0,izone)        
-        endif
-        if (ISHBLK.eq.1) then
-          call VSBL3D(0,izone)  ! for testing of blockages
-        endif
-      
+C Find index in old commons of boundary specified by index ISB in new commons
+        do 195 I=1,NSB(ICFD)
+          if (ISB.eq.IVOLNSB(I,ICFD)) then
+            call VSB3D(I)
+          endif
+195       continue
+        call VAO3D(0)
         WRITE(ETEXT,'(2A)')'Domain: ',
-     &    TITLE(izone)(1:lnblnk(TITLE(izone)))
+     &    TITLE(ICP)(1:lnblnk(TITLE(ICP)))
         iside=1; isize=1; ifont=1
         call viewtext(ETEXT,iside,isize,ifont)
       ENDIF
+
+C Help text for this menu.
+      helptopic='cfd_solid_boundary_edit'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display menu.
       INO=-1
@@ -3004,8 +3014,8 @@ C IER=0 indicates no error.
      &          VOLArea(MNVLS,MNZ),VOLPres(MNVLS,MNZ),
      &          VOLPol(MCTM,MNVLS,MNZ)
       common/KEYCASGN/IDcasgn(MNVLS,MNZ),Fcasgn(MNVLS,MNZ)
-      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX,URFC(MCTM)
+      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),
+     &               NCTM(MNZ),JHUMINDX(MNZ),URFC(MCTM)
       COMMON/SCHMTT/SCHMT(MCTM),GFM(MCTM),VCRIT(MCTM),TBOIL(MCTM),
      &       TCRIT(MCTM),ISCHMT(MCTM)
       COMMON/CTDFAF/ICTDFAF,SRCE(MNVLS,MCTM,MNZ),ICCSRC
@@ -3046,7 +3056,7 @@ C For help messages
 
 C Initialise SRCE 
       IF(ICTDFAF.NE.1)THEN
-        DO 420 ICTM=1,NCTM
+        DO 420 ICTM=1,NCTM(ICFD)
           DO 520 II=1,NVOL(ICFD)
             SRCE(II,ICTM,ICFD)=' '
  520      CONTINUE
@@ -3115,11 +3125,11 @@ C Create a menu showing definitions for different sources.
       write (ITMSS(10),'(a)')    '  Contaminant | source strength '
       WRITE (ITMSS(11),'(A)')    '     name     | (kg/s) or name  '
       IF(ICTDFAF.EQ.1)THEN
-        DO 141 ICTM=1,NCTM
+        DO 141 ICTM=1,NCTM(ICFD)
           CALPOL(ICTM,ICFD)=.TRUE.
           WORD1=SRCE(ISB,ICTM,ICFD)
           IF(WORD1(:1).EQ.' ')WORD1='none'
-          IF(JHUMINDX.NE.ICTM)THEN
+          IF(JHUMINDX(ICFD).NE.ICTM)THEN
             WRITE(ITMSS(11+ICTM),'(A,2X,A,1X,A)')CHAR(103+ICTM),
      &      POLNAM(ICTM,ICFD),WORD1
           ELSE
@@ -3128,9 +3138,9 @@ C Create a menu showing definitions for different sources.
           ENDIF
  141    CONTINUE   
       ELSE
-        DO 131 ICTM=1,NCTM
+        DO 131 ICTM=1,NCTM(ICFD)
           CALPOL(ICTM,ICFD)=.TRUE.
-          IF(JHUMINDX.NE.ICTM)THEN
+          IF(JHUMINDX(ICFD).NE.ICTM)THEN
             WRITE(ITMSS(11+ICTM),'(A,1X,A,1X,F12.10)')CHAR(103+ICTM),
      &      POLNAM(ICTM,ICFD),VOLPOL(ICTM,ISB,ICFD)
           ELSE
@@ -3139,11 +3149,11 @@ C Create a menu showing definitions for different sources.
           ENDIF
  131    CONTINUE   
       ENDIF
-      ITMSS(12+NCTM) =' -----------------------------'
-      ITMSS(13+NCTM) = '+ Add/Delete Contaminant'
-      ITMSS(14+NCTM)='? Help'
-      ITMSS(15+NCTM)='- exit'
-      NITMS=15+NCTM
+      ITMSS(12+NCTM(ICFD)) =' -----------------------------'
+      ITMSS(13+NCTM(ICFD)) = '+ Add/Delete Contaminant'
+      ITMSS(14+NCTM(ICFD))='? Help'
+      ITMSS(15+NCTM(ICFD))='- exit'
+      NITMS=15+NCTM(ICFD)
 
 C Help text for this menu.
   7   helptopic='cfd_source_boundary_edit'
@@ -3173,13 +3183,13 @@ C Display domain
           call VGRID3D(zngeo,'xyg',izone)
         endif
         if (ISHSB.eq.1) then
-          call VSB3D(0,izone)
+          call VSB3D(0)
         endif
         if (ISHAO.eq.1) then
-          call VAO3D(0,izone)        
+          call VAO3D(0)        
         endif
         if (ISHBLK.eq.1) then
-          call VSBL3D(0,izone)  ! for testing of blockages
+          call VSBL3D(0)  ! for testing of blockages
         endif
       
         WRITE(ETEXT,'(2A)')'Domain: ',
@@ -3233,7 +3243,7 @@ C Take contaminant definitions from contaminant flow network
             CALL PHELPD(' ',nbhelp,'-',0,0,IER)
           ENDIF
           ICTDFAF=1
-          NCTM=NCONTM
+          NCTM(ICFD)=NCONTM
           IF(ICCSRC.NE.1)THEN
             ICCSRC=1
 
@@ -3256,7 +3266,7 @@ C boundary conditions and define the source strength to be from
                 VOLHEAT(NUMVOL,ICFD)=0.0
                 IDCASGN(NUMVOL,ICFD)=0
                 FCASGN(NUMVOL,ICFD)=0.0
-                DO 3058 ICTM=1,NCTM
+                DO 3058 ICTM=1,NCTM(ICFD)
                   VOLPOL(ICTM,NUMVOL,ICFD)=0.0
                   CALL INTSTR(ICTM,CNAM,ILEN,IER)
                   IF(ILEN.EQ.1)THEN
@@ -3293,37 +3303,37 @@ C boundary conditions and define the source strength to be from
 C Ask which contaminant (or none) is moisture 
           ITMSS1(1) = ' name:  '
           ITMSS1(2) ='         '
-          DO 2122 ICTM=1,NCTM
+          DO 2122 ICTM=1,NCTM(ICFD)
             WRITE(ITMSS1(2+ICTM),'(2A,A12)')CHAR(96+ICTM),' ',
      &      CONTMNAM(ICTM)
  2122     CONTINUE
-          ITMSS1(NCTM+3) ='# none of the above'
-          ITMSS1(NCTM+4) =' ------------------------'
-          ITMSS1(NCTM+5) ='? help                   '
-          ITMSS1(NCTM+6) ='- exit                   '
-          NITMSS1=NCTM+6
+          ITMSS1(NCTM(ICFD)+3) ='# none of the above'
+          ITMSS1(NCTM(ICFD)+4) =' ------------------------'
+          ITMSS1(NCTM(ICFD)+5) ='? help                   '
+          ITMSS1(NCTM(ICFD)+6) ='- exit                   '
+          NITMSS1=NCTM(ICFD)+6
  2121     IIO=-1
 
 C Help text for this menu.
           CALL EMENU('Moisture is ... ',ITMSS1,NITMSS1,IIO)
-          IF(IIO.EQ.NCTM+6)THEN
-            IF(JHUMINDX.EQ.0)THEN
+          IF(IIO.EQ.NCTM(ICFD)+6)THEN
+            IF(JHUMINDX(ICFD).EQ.0)THEN
               call edisp(iuout,'None of the contaminants is moisture')
               GOTO 2121
             ENDIF
-          ELSEIF(IIO.EQ.NCTM+5)THEN
+          ELSEIF(IIO.EQ.NCTM(ICFD)+5)THEN
             call edisp(iuout,'Choose a moisture contaminant.')
             GOTO 2121
-          ELSEIF(IIO.EQ.NCTM+3)THEN
-            JHUMINDX=0
-          ELSEIF(IIO.GT.2.AND.IIO.LE.NCTM+2)THEN
-            JHUMINDX=IIO-2
+          ELSEIF(IIO.EQ.NCTM(ICFD)+3)THEN
+            JHUMINDX(ICFD)=0
+          ELSEIF(IIO.GT.2.AND.IIO.LE.NCTM(ICFD)+2)THEN
+            JHUMINDX(ICFD)=IIO-2
           ELSE
             GOTO 2121
           ENDIF
 
 C Take contaminant name from contaminant network
-          DO 789 ICTM=1,NCTM
+          DO 789 ICTM=1,NCTM(ICFD)
             POLNAM(ICTM,ICFD)=CONTMNAM(ICTM)
 
 C Ask for information to calculate Schmidt number
@@ -3354,7 +3364,7 @@ C Ask for information to calculate Schmidt number
               SCHMT(ICTM)=VAL
             ELSEIF(ISCHM.EQ.3)THEN
               ISCHMT(ICTM)=0; SCHMT(ICTM)=1.0
-              IF(JHUMINDX.EQ.ICTM)SCHMT(ICTM)=0.59
+              IF(JHUMINDX(ICFD).EQ.ICTM)SCHMT(ICTM)=0.59
             ENDIF
  789      CONTINUE
           helptopic='cfd_contam_sinks'
@@ -3363,7 +3373,7 @@ C Ask for information to calculate Schmidt number
           CALL ASKOK('Link contaminant network source/sink with this',
      &      'CFD source type boundary condition now ?',OK,dok,nbhelp)
           IF(OK)THEN
-            DO 3040 ICTM=1,NCTM
+            DO 3040 ICTM=1,NCTM(ICFD)
               IX=2
               ITMSS2(1)= ' Source / sink name:'
               DO 3050 ISPMNO=1,NSPMNO
@@ -3452,7 +3462,7 @@ C operations file here with some regard for standalone running of dfs
         call EASKR(VAL,'What fraction of casual gain is generated? ',
      &  ' ',0.,'W',1.,'W',1.,'casgn fraction',IER,nbhelp)
         if (IER.eq.0) FCasgn(ISB,ICFD)=VAL
-      elseif (INO.eq.13+NCTM) then
+      elseif (INO.eq.13+NCTM(ICFD)) then
         helptopic='cfd_contam_sinks'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC('Add/Delete contaminant source',' ','add',
@@ -3475,14 +3485,14 @@ C inform them and do not allow it.
             d12='Contaminant'
             call EASKS(SRCNAM,'Contaminant name? ','  ',12,d12,
      &      'cntmnt name',IER,nbhelp)
-            NCTM=NCTM+1; ICTM=NCTM
-            POLNAM(NCTM,ICFD)=SRCNAM
+            NCTM(ICFD)=NCTM(ICFD)+1; ICTM=NCTM(ICFD)
+            POLNAM(NCTM(ICFD),ICFD)=SRCNAM
             call EASKR(VAL,'What is source strength (kg/s) ',
      &      ' ',0.,'W',10.,'W',1.,'src strenght',IER,nbhelp)
-            VOLPOL(NCTM,ISB,ICFD)=VAL
-            CALPOL(NCTM,ICFD)=.TRUE.
+            VOLPOL(NCTM(ICFD),ISB,ICFD)=VAL
+            CALPOL(NCTM(ICFD),ICFD)=.TRUE.
             CALL ASKOK(' ','Is this contaminant water',OK,dok,0)
-            IF(OK)JHUMINDX=ICTM
+            IF(OK)JHUMINDX(ICFD)=ICTM
 
 C Ask for information to calculate Schmidt number
             helptopic='cfd_contam_schmidt_no'
@@ -3508,7 +3518,7 @@ C Ask for information to calculate Schmidt number
               SCHMT(ICTM)=VAL
             ELSEIF(ISCHM.EQ.3)THEN
               ISCHMT(ICTM)=0; SCHMT(ICTM)=1.0
-              IF(JHUMINDX.EQ.ICTM)SCHMT(ICTM)=0.59
+              IF(JHUMINDX(ICFD).EQ.ICTM)SCHMT(ICTM)=0.59
             ENDIF
           ENDIF
 
@@ -3520,14 +3530,14 @@ C Delete Contaminant
             CALL PHELPD('Not allowed',nbhelp,'-',0,0,IER)
           ELSE
             WRITE(ITUM(1),'(a)')' Contaminant name: '
-            DO 132 ICTM=1,NCTM
+            DO 132 ICTM=1,NCTM(ICFD)
               WRITE(ITUM(1+ICTM),'(3A)')
      &        CHAR(96+ICTM),' ',POLNAM(ICTM,ICFD)
  132        CONTINUE
-            NITUM=1+NCTM
+            NITUM=1+NCTM(ICFD)
             INUO=-1
             CALL EMENU('Choose contaminant to delete',ITUM,NITUM,INUO)
-            DO 133 ICTM=INUO-1,NCTM-1
+            DO 133 ICTM=INUO-1,NCTM(ICFD)-1
               POLNAM(ICTM,ICFD)=POLNAM(ICTM+1,ICFD)
               CALPOL(ICTM,ICFD)=CALPOL(ICTM+1,ICFD)
               SCHMT(ICTM)=SCHMT(ICTM+1)
@@ -3538,10 +3548,10 @@ C Delete Contaminant
               TCRIT(ICTM)=TCRIT(ICTM+1)
 
 C Reset humidity / water index if applicable
-              IF(JHUMINDX.EQ.INUO)THEN
-                JHUMINDX=0
-              ELSEIF(JHUMINDX.GT.INUO)THEN
-                JHUMINDX=JHUMINDX-1
+              IF(JHUMINDX(ICFD).EQ.INUO)THEN
+                JHUMINDX(ICFD)=0
+              ELSEIF(JHUMINDX(ICFD).GT.INUO)THEN
+                JHUMINDX(ICFD)=JHUMINDX(ICFD)-1
               ENDIF
 
 C Delete this contaminant from all key volumes
@@ -3549,18 +3559,18 @@ C Delete this contaminant from all key volumes
                 VOLPOL(ICTM,I,ICFD)=VOLPOL(ICTM+1,I,ICFD)
  135          CONTINUE
  133        CONTINUE
-            POLNAM(NCTM,ICFD)=' '
-            CALPOL(NCTM,ICFD)=.FALSE.
+            POLNAM(NCTM(ICFD),ICFD)=' '
+            CALPOL(NCTM(ICFD),ICFD)=.FALSE.
             DO 134 I=1,NVOL(ICFD)
-              IF(IVTYPE(I,ICFD).EQ.20)VOLPOL(NCTM,I,ICFD)=0.
+              IF(IVTYPE(I,ICFD).EQ.20)VOLPOL(NCTM(ICFD),I,ICFD)=0.
  134        CONTINUE
-            NCTM=NCTM-1
+            NCTM(ICFD)=NCTM(ICFD)-1
           ENDIF
         ENDIF
         IF(ICTDFAF.NE.1)GOTO 144
 
 C Edit contaminants 
-      elseif (INO.gt.11.and.INO.lt.12+NCTM) then
+      elseif (INO.gt.11.and.INO.lt.12+NCTM(ICFD)) then
         ICTM=INO-11
         IF(ICTDFAF.EQ.1)THEN
           helptopic='cfd_link_contam_sink'
@@ -3583,9 +3593,9 @@ C Edit contaminants
         CALL ASKOK(' ','Is this contaminant water(humidity)',
      &    OK,dok,nbhelp)
         IF(OK)THEN
-          JHUMINDX=ICTM
+          JHUMINDX(ICFD)=ICTM
         ELSE
-          IF(JHUMINDX.EQ.ICTM)JHUMINDX=0
+          IF(JHUMINDX(ICFD).EQ.ICTM)JHUMINDX(ICFD)=0
         ENDIF
 
 C Ask for information to calculate Schmidt number
@@ -3612,7 +3622,7 @@ C Ask for information to calculate Schmidt number
           SCHMT(ICTM)=VAL
         ELSEIF(ISCHM.EQ.3)THEN
           ISCHMT(ICTM)=0; SCHMT(ICTM)=1.0
-          IF(JHUMINDX.EQ.ICTM)SCHMT(ICTM)=0.59
+          IF(JHUMINDX(ICFD).EQ.ICTM)SCHMT(ICTM)=0.59
         ENDIF
 
 C Now get source sink information from contaminants network
@@ -3702,6 +3712,7 @@ C IER=0 indicates no error.
 #include "cfd.h"
 
       COMMON/ICFNOD/ICFD,ICP
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       common/KEYVOLS/NVOL(MNZ),IVOLF(MNVLS,MNZ),IVCELLS(MNVLS,MNZ,2),
      &               JVCELLS(MNVLS,MNZ,2),KVCELLS(MNVLS,MNZ,2)
@@ -3716,13 +3727,26 @@ C IER=0 indicates no error.
      2            DZHP(ntcelz),DZPL(ntcelz),
      3            SEW(ntcelx),SNS(ntcely),SHL(ntcelz),
      4            XU(ntcelx),YV(ntcely),ZW(ntcelz)
+      common/param2/TITLE(MNZ),CFTRFL(MNZ),LPHI(MNZ)
+      CHARACTER*72 TITLE,CFTRFL,LPHI
+
+      common/blksso/NBLK(MNZ),INBLK(MNVLS,MNZ),NSSO(MNZ),
+     &          INSSO(MNVLS,MNZ)
+      COMMON/CFDVIS/ISHSB,ISHAO,IFACES,ISHBLK
  
       character ITMSS(14)*50,FACE*6
       character ltmp*16,t12*12,d12*12,t20*20
       character VOLNAME*12, VCsurf*12
+      character zngeo*3,etext*82
 
       logical ERROR
       integer NITMS,INO ! max items and current menu item
+
+#ifdef OSI
+      integer iside,isize,ifont
+#else
+      integer*8 iside,isize,ifont
+#endif
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -3811,6 +3835,33 @@ C Debug echo the coordinates of the blockage.
       ITMSS(13)='? Help'
       ITMSS(14)='- exit'
       NITMS=14
+
+      IF(MMOD.EQ.8)THEN
+C Display domain, but override values in CFDVIS; always
+C display solid and air flow boundary conditions, highlighting
+C the chosen one, and never display zone geometry.
+        write(zngeo,'(a)')'---'
+        if(abs(IFACES).eq.1)then
+          call VGRID3D(zngeo,'xyz',ICP)
+        elseif(abs(IFACES).eq.2)then
+          call VGRID3D(zngeo,'xzg',ICP)
+        elseif(abs(IFACES).eq.3)then
+          call VGRID3D(zngeo,'yzg',ICP)
+        elseif(abs(IFACES).eq.4)then
+          call VGRID3D(zngeo,'xyg',ICP)
+        endif
+        call VSB3D(0)
+        call VAO3D(0)
+        do 639 I=1,NBLK(ICFD)
+          if (ISB.eq.INBLK(I,ICFD)) then
+            call VSBL3D(I)
+          endif
+639     continue   
+        WRITE(ETEXT,'(2A)')'Domain: ',
+     &    TITLE(ICP)(1:lnblnk(TITLE(ICP)))
+        iside=1; isize=1; ifont=1
+        call viewtext(ETEXT,iside,isize,ifont)
+      ENDIF
 
 C Help text for this menu.
       helptopic='cfd_blockage_menu'

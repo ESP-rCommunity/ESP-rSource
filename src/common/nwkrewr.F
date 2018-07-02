@@ -173,6 +173,10 @@ C Read the file header and check for first-line tag.
       CALL STRIPC(INUNIT,OUTSTR,99,ND,0,'1st line of gnf',IER)
       IF(IER.NE.0) CONT=.FALSE. 
       IF(OUTSTR(1:18).EQ.'*Graphical_network')THEN
+
+C if vergnf is 1.2 then vector commands for icons are included.
+C << proposed 1.3 without vector commands but with 3D information
+C << for attachements.
         vergnf=0.0
         if(ND.gt.1)then
           K=18
@@ -935,7 +939,7 @@ C Find matching network flow component text descriptor and remember it.
             HCMP(NCMP,1,3)=XYZICON(I,3)
             HCMP(NCMP,2,1)=XYZICON(I,1); HCMP(NCMP,2,2)=XYZICON(I,2)
             HCMP(NCMP,2,3)=XYZICON(I,3)
-	    
+    
             if(ITPCMP(NCMP).eq.10)then
               ISDCMP(NCMP)=3
             elseif(ITPCMP(NCMP).eq.15)then

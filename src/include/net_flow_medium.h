@@ -29,7 +29,7 @@ C Record width of binary results file (should be larger of MNOD or MCMS + 6)
       PARAMETER (NMRL=70)
 C Results analysis:
 C Max number of connection lists and number of connections allowed.
-      PARAMETER (MFCNLST=10)
+      PARAMETER (MFCNLST=20)
       PARAMETER (MFCNEL=5)
 C Max items to display
       PARAMETER (MFRS=20)

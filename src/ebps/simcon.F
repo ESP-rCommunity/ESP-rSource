@@ -105,8 +105,10 @@ c Mechanical ventilation system activator
       Common /mechvdef/ iMech, LMech
 
 C Simulator parameter.
-      COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      COMMON/SPFL/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      LOGICAL spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
 
 C Toggle for extreme silent running (endless) mode.
       logical endless,issilient
@@ -422,13 +424,15 @@ C Tolerance for iteration of hydrogen flow matrix
      &               ibplot,irecpb(MDPH),mbstv
       common /montrv/mnpc,mcomp(mpcom),mcnod(mpcom),mstate,monitr,
      &               ymin,ymax
-      COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      COMMON/SPFL/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      LOGICAL     spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
 
-      LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL VTSOL,SAVE4,SAVE4OK,dok
 
       COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
@@ -531,14 +535,11 @@ C Couple zone/plant & mass flow calculation trace output channels.
 C Assign user-specified library.
       CALL MZLIBF
 
-C Set period if not already done. However if there is a CFD domain
-C in the model then we need to ask about when to include it (as this
-C information is not yet included in the simulation parameter set). 
-      IF ( .not. perok )then
+C Set periods if not already done.
+      IF ( .not. perok ) THEN
         CALL MZSPER
-      ELSE
-        call askaboutcfd
       ENDIF
+      call askaboutcfd
       
 C Display menu of alternatives.
       if(.not.saveok)ISAVE=2
@@ -1656,13 +1657,15 @@ C Active domain common.
 C Once per hour storage of results, averaged over that hour.
       common/rdcgen/irdact
 
-      COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      COMMON/SPFL/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      LOGICAL spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
       character outs*124
 
-      LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical hri,defok,OK
 
 C For help messages
@@ -1769,12 +1772,6 @@ C Calculate the length of the time increment in seconds.
         endif
       endif
 
-C CFD simulation period and attributes because no
-C simulation parameter set was used.
-      if (CFDOK) then
-        call askaboutcfd
-      endif
-
 C Set, once per hour storage of results, averaged over that hour.
       if(ntstep.gt.1.or.(indcfg.ne.1.and.ntstep*ntstpp.gt.1)) then
         if (.not.autook) then
@@ -1826,6 +1823,7 @@ C been filled in.
       
 C Active domain common.
       common/ACTDOM/CFDOK
+      logical CFDOK
 
 C CFD commons.
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
@@ -1839,9 +1837,15 @@ C CFD commons.
       COMMON/CFSEUP/CFTIMS,CFTIMF,ICFDYS,ICFDYF,ICFAUX(MCOM),ICFVIEW,
      &  ICFVIEWMINT,ICFVIEWMAXT
       common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
+
+C cfdperok - has period been defined by preset.
+      COMMON/SPFL/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      LOGICAL     spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+
       character outs*124
       logical OK,dok
-      logical CFDOK
       integer preRF_DorU
 
 C For help messages
@@ -1855,12 +1859,18 @@ C For help messages
 
 C CFD simulation period.
       if (CFDOK) then
-        dok=.false.
-        CALL ASKOK('Do you want to activate the CFD model during the',
+
+C If period has been defined by preset, skip user interaction, and just
+C do the initialisation.
+
+        if (.not.cfdperok) then
+          dok=.false.
+          CALL ASKOK('Do you want to activate the CFD model during the',
      &             'simulation?',OK,dok,nbhelp)
-        IF (.not.OK) then
-          CFDOK=.false.
-          RETURN
+          IF (.not.OK) then
+            CFDOK=.false.
+            RETURN
+          endif
         endif
 
 C Disable CFD calculations during the startup period.
@@ -1868,22 +1878,26 @@ C Disable CFD calculations during the startup period.
           IFCFD(IC)=-IFCFD(IC)
         enddo
 
-        dok=.false.
-        CALL ASKOK('Do you want to display CFD predictions as',
+C Currently this information is not included in cfg file
+C so must ask.
+C        if (.not.cfdperok) then
+          dok=.false.
+          CALL ASKOK('Do you want to display CFD predictions as',
      &             'the simulation progresses?',OK,dok,nbhelp)
-        IF(OK)then
-          ICFVIEW=1  ! call dfv module when convergence reached
-          if(ICFVIEWMAXT.eq.0) ICFVIEWMINT=10; ICFVIEWMAXT=30
-          CALL EASKI(ICFVIEWMINT,' ',
-     &    'CFD Temperature display minimum (integer C)?',
-     &    0,'F',100,'-',1,'CFD minimum display T',IER,nbhelp)
-          CALL EASKI(ICFVIEWMAXT,' ',
-     &    'CFD Temperature display maximum (integer C)?',
-     &    0,'F',100,'-',1,'CFD max display T',IER,nbhelp)
-        ELSE
-          ICFVIEW=0
-          if(ICFVIEWMAXT.eq.0) ICFVIEWMINT=10; ICFVIEWMAXT=30
-        ENDIF
+          IF(OK)then
+            ICFVIEW=1  ! call dfv module when convergence reached
+            if(ICFVIEWMAXT.eq.0) ICFVIEWMINT=10; ICFVIEWMAXT=30
+            CALL EASKI(ICFVIEWMINT,' ',
+     &        'CFD Temperature display minimum (integer C)?',
+     &        0,'F',100,'-',1,'CFD minimum display T',IER,nbhelp)
+            CALL EASKI(ICFVIEWMAXT,' ',
+     &        'CFD Temperature display maximum (integer C)?',
+     &        0,'F',100,'-',1,'CFD max display T',IER,nbhelp)
+          ELSE
+            ICFVIEW=0
+            if(ICFVIEWMAXT.eq.0) ICFVIEWMINT=10; ICFVIEWMAXT=30
+          ENDIF
+C        endif
 
 C Period has been defined get start & end days, but since isds and isdf
 C would have been defined in a separate call to MZPER make sure these
@@ -1894,7 +1908,7 @@ C values have been set if ICFDYS & ICFDYF are still zero.
           ICFDYS=ISDS
           ICFDYF=ISDF
           CFTIMS=1.00
-          CFTIMF=23.99
+          CFTIMF=24.99
         endif
 
 C Debug.
@@ -1902,42 +1916,36 @@ C        write(6,*) 'askaboutcfd ',isd1,ism1,isds,isd2,ism2,isdf
 C        write(6,*) 'CFD stuff',CFDOK,ICFDYS,ICFDYF,
 C     &    CFTIMS,CFTIMF
 
-C Include sps attributes will alread been used to
-C inform the values of ICFDYS ICFDYF.
-        IFDAY=1
-  40    call EASKPER('Period when CFD is active:',
-     &    ICFDYS,ICFDYF,IFDAY,IER)
-        if (ICFDYF.lt.ICFDYS) then
-          call edisp(iuout,' Start/Finish days out of order.')
-          goto 40
-        endif
-        if (ICFDYS.lt.ISDS) then
-          call edisp(iuout,'Start day is before simulation start day.')
-          goto 40
-        endif
-        if (ICFDYF.gt.ISDF) then
-          call edisp(iuout,
-     &      'Finish day is after simulation finish day.')
-          goto 40
-        endif
-
-        if (ICFDYS.eq.ISDS) then
-          rtmp=1.0
-        else
-          rtmp=0.0
-        endif
+        if (.not.cfdperok) then
+          IFDAY=1
+  40      call EASKPER('Period when CFD is active:',
+     &      ICFDYS,ICFDYF,IFDAY,IER)
+          if (ICFDYF.lt.ICFDYS) then
+            call edisp(iuout,' Start/Finish days out of order.')
+            goto 40
+          endif
+          if (ICFDYS.lt.ISDS) then
+            call edisp(iuout,
+     &        'Start day is before simulation start day.')
+            goto 40
+          endif
+          if (ICFDYF.gt.ISDF) then
+            call edisp(iuout,
+     &        'Finish day is after simulation finish day.')
+            goto 40
+          endif
 
 C Ask about start and stop times.
-  50    write(outs,'(a)')'For the first day CFD is active specify'
-        CALL EASKR(CFTIMS,outs,'starting hour ',
-     &    rtmp,'F',23.99,'F',rtmp,'Decimal fraction',IER,nbhelp)
-        if (CFTIMS.gt.24.0) CFTIMS=CFTIMS-24.0
-        write(outs,'(a)')'For the last day CFD is active specify'
-        CALL EASKR(CFTIMF,outs,'finishing hour ',
-     &    0.0,'F',23.99,'F',23.99,'Decimal fraction',IER,nbhelp)
-        if ((ICFDYF.eq.ICFDYS).and.(CFTIMF.lt.CFTIMS)) then
-          call edisp(iuout,' Start/Finish hours out of order.')
-          goto 50
+  50      write(outs,'(a)')'For the first day CFD is active specify'
+          CALL EASKR(CFTIMS,outs,'starting hour ',
+     &      1.0,'F',24.99,'F',1.0,'Decimal fraction',IER,nbhelp)
+          write(outs,'(a)')'For the last day CFD is active specify'
+          CALL EASKR(CFTIMF,outs,'finishing hour ',
+     &      1.0,'F',24.99,'F',24.99,'Decimal fraction',IER,nbhelp)
+          if ((ICFDYF.eq.ICFDYS).and.(CFTIMF.lt.CFTIMS)) then
+            call edisp(iuout,' Start/Finish hours out of order.')
+            goto 50
+          endif
         endif
 
         DO 30 IC=1,NCOMP
@@ -2020,8 +2028,10 @@ C Uncertainty.
       INTEGER :: imet,isim,nrsim
 
 C Simulator parameters.
-      COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      COMMON/SPFL/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      LOGICAL     spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
 
 C Toggle for extreme silent running (endless) mode.
       logical endless,issilient

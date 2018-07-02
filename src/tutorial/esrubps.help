@@ -623,14 +623,6 @@
           call askok(' Hourly results integration: ',' ',hri,defok,11)
 *subroutine askaboutcfd
 *item askaboutcfd cfd_setup_dialogs
-'Several options relate to CFD solutions:'
-'  '
-'Including CFD in the startup period may cause delay'
-'with only a limited affect on predictions. '
-'  '
-'Including CFD in the startup period as well as during'
-'the whole simulation will be SLOW! '
-'  '
 'If you choose to include CFD you can specify the period'
 'when CFD solutions will be active. This is useful if your'
 'focus is to investigate flows during a specific period.'
@@ -641,12 +633,6 @@
 '  00:00 (start of day) | 1.0       '
 '  23:59 (end of day)   | 24.99     '
 '  12:45                | 13.75     '
-' '
-'If the ACC is active, you can specifiy whether to use default or'
-'user-specified relaxation factors in the preliminary simulations.'
-'Defaults should be sufficient for most simulations, however if'
-'you are experiencing convergence problems with the preliminary'
-'simulations try using the user-specified relaxation factors instead.'
 *enditem
         CALL ASKOK(' Do you want activate the CFD model during the',
         CALL ASKOK(' Do you want activate the CFD model during the',

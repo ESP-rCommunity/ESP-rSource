@@ -113,7 +113,7 @@ C Hc coefficients
       LOGICAL DOK,OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
       DIMENSION IVALS(MS),ITEMS(31),ITEMSS(MS),IVALSS(MS),jvn1(MV)
-      DIMENSION SALT(10),trnalt(19),IVLST(MTV)
+      DIMENSION SALT(10),trnalt(21),IVLST(MTV)
       CHARACTER HEAD*32,SALT*33,hold*36
       CHARACTER DESCRC*25
       CHARACTER D14*14,T14*14,D12*12,T12*12,LTMP*72,GFILE*72
@@ -134,6 +134,7 @@ C Hc coefficients
       logical forceupgrade  ! if any other zone is version 1.1
       logical silent  ! to signal interactive dependency resolution
       logical modmlc  ! for selecting a MLC from V1 db
+      logical FOUND
 
       real exposed,vexposed,areatran,areawall  ! local values for QA
       real areaslproof,areafltroof,areaskylt
@@ -319,7 +320,7 @@ C If version 1.1 then set lastlist to IZBASELIST()
 C Check if SVFC and SSVFC needs to be updated.
       call updatesvfc(icomp,modgeo)
 
-C Loop through each surface and detect base information. 
+C Loop through each surface detecting base and surface area information. 
       DO 41 I=1,NSUR
         ioc=IZSTOCN(icomp,i)
         if(ioc.lt.1) goto 41  ! is model corrupt skip surf
@@ -328,54 +329,43 @@ C Debug
 C        write(6,*) 'ssmlcindex ',ioc,ssmlcindex(ioc)
         if(SOTHER(I,1)(1:4).eq.'UNKN')attribok=.false.
         if(SMLCN(I)(1:4).eq.'UNKN')attribok=.false.
-        if(SVFC(I).eq.'FLOR')then
-          if(SUSE(i,1)(1:5).eq.'FURNI')then
-            continue  ! ignore horizontal surfaces marked as furniture.
+
+C If the user has edited the floor area (one), or selected it via a
+C sub-set of applicable surfaces (two) then don't both bother detecting
+C base information.
+C Otherwise, get area by adding up ibases list, adding any `FLOR` and
+C non-`FURNI` surfaces.
+        if(IUZBASEA(icomp).eq.1)then
+          continue
+        elseif(IUZBASEA(icomp).eq.2)then
+          continue
+        else
+          FOUND=.false.
+          DO J=1,lastlist
+            if (I.eq.IBASES(ICOMP,J)) then              
+              FOUND=.true.
+              EXIT
+            endif
+          ENDDO
+          if (FOUND) then            
+            ZBASEA(ICOMP)=ZBASEA(ICOMP)+SSNA(ioc)
           else
-
-C If the user has edited the floor area cellular_hi_res.rcf(one) then continue or 
-C selected it via a sub-set of applicable surfaces (two), otherwise
-C get area by adding up ibases list, otherwise search for `flor` surfaces.
-            if(IUZBASEA(icomp).eq.1)then
-              continue
-            elseif(IUZBASEA(icomp).eq.2)then
-              continue
-            else
-
-C Check each of the surfaces in the ibases list. If surface `flor` and
-C not FURNI is not included in the list add it.
-              if(i.eq.ibases(icomp,1).or.i.eq.ibases(icomp,2).or.
-     &           i.eq.ibases(icomp,3).or.i.eq.ibases(icomp,4).or.
-     &           i.eq.ibases(icomp,5).or.I.eq.ibases(icomp,6).or.
-     &           i.eq.ibases(icomp,7).or.I.eq.ibases(icomp,8).or.
-     &           i.eq.ibases(icomp,9).or.I.eq.ibases(icomp,10))then
+            if(SVFC(I).eq.'FLOR'.and..not.SUSE(i,1)(1:5).eq.'FURNI')then
+              lastlist=lastlist+1
+              if(lastlist.le.MBL)then
+                IBASES(ICOMP,lastlist)=I
                 ZBASEA(ICOMP)=ZBASEA(ICOMP)+SSNA(ioc)
               else
-                lastlist=lastlist+1
-                if(lastlist.le.10)then
-                  IBASES(ICOMP,lastlist)=I
-                  ZBASEA(ICOMP)=ZBASEA(ICOMP)+SSNA(ioc)
-                endif
+                write(outs,'(a,I2,a)')
+     &   'Warning: number of floor surfaces detected exceeds maximum (',
+     &            MBL,')'
+                call edisp(iuout,outs)
               endif
             endif
           endif
-        else
-
-C Check to see if a non `FLOR` surface has been included in ibases.
-          if(IUZBASEA(icomp).eq.1)then
-            continue
-          elseif(IUZBASEA(icomp).eq.2)then
-            continue
-          else
-            if(i.eq.ibases(icomp,1).or.i.eq.ibases(icomp,2).or.
-     &         i.eq.ibases(icomp,3).or.i.eq.ibases(icomp,4).or.
-     &         i.eq.ibases(icomp,5).or.I.eq.ibases(icomp,6).or.
-     &         i.eq.ibases(icomp,7).or.I.eq.ibases(icomp,8).or.
-     &         i.eq.ibases(icomp,9).or.I.eq.ibases(icomp,10))then
-              ZBASEA(ICOMP)=ZBASEA(ICOMP)+SSNA(ioc)
-            endif
-          endif
         endif
+
+C Detect surface area information.
         if(SOTF(I)(1:4).NE.'OPAQ'.AND.SOTF(I)(1:3).NE.'CFC')then
           TRN=TRN+SSNA(ioc)
         elseif(SOTF(I)(1:4).EQ.'CFC ')then
@@ -395,8 +385,9 @@ C and inform user if it has changed.
 
 C Debug.
           call SIGFIG(ZBASEA(ICOMP),NSIGFIG,RNO,SIGSTR,LSTR)
-          write(outs,'(3a)') 
-     &'Base/floor area is now',SIGSTR(1:LSTR),'m^2. Check menu option c'
+          write(outs,'(4a)') 
+     &      'Base/floor area is now',SIGSTR(1:LSTR),'m^2. ',
+     &      'Menu option c to define manually.'
           call edisp(iuout,outs)
         endif
       endif
@@ -793,18 +784,21 @@ C in IBASES or IZBASELIST. If all slots are 0 then floor area is user defined.
         call gethelptext(helpinsub,helptopic,nbhelp)
         call eclose(gversion(icomp),1.1,0.01,newgeo)
         if(newgeo)then
-          INPICK=10
+          INPICK=MBL
         else
           INPICK=6
         endif
         ij=0
         DO 20 I=1,NSUR
           ITEMSS(I)=' '
-          if(I.eq.IBASES(ICOMP,1).or.I.eq.IBASES(ICOMP,2).or.
-     &       I.eq.IBASES(ICOMP,3).or.I.eq.IBASES(ICOMP,4).or.
-     &       I.eq.IBASES(ICOMP,5).or.I.eq.IBASES(ICOMP,6).or.
-     &       I.eq.IBASES(ICOMP,7).or.I.eq.IBASES(ICOMP,8).or.
-     &       I.eq.IBASES(ICOMP,9).or.I.eq.IBASES(ICOMP,10))then
+          DO J=1,IZBASELIST(ICOMP)
+            FOUND=.false.
+            if (I.eq.IBASES(ICOMP,J)) then
+              FOUND=.true.
+              EXIT
+            endif
+          enddo
+          if (FOUND) then
             WRITE(ITEMSS(I),'(A,1x,A,1x,A,A)')SNAME(ICOMP,I),
      &        SMLCN(I)(1:12),SVFC(I)(1:4),'*'
           else
@@ -819,21 +813,22 @@ C and then either do manual editing or update ibases with surfaces
 C the user selected.
         if(IUZBASEA(icomp).eq.0)then
           write(outs,'(a,f9.3,a)') 
-     &      'Surfaces automatically associated with base (currently ',
-     &      ZBASEA(ICOMP),'m^2)'
+     &     'Surfaces automatically associated with base (current area ',
+     &      ZBASEA(ICOMP),' m^2)'
         elseif(IUZBASEA(icomp).eq.1)then
           write(outs,'(a,f9.3,a)') 
-     &      'Surfaces associated with base (currently user edited ',
-     &      ZBASEA(ICOMP),'m^2)'
+     &   'No surfaces associated with base (current user defined area ',
+     &      ZBASEA(ICOMP),' m^2)'
         elseif(IUZBASEA(icomp).eq.2)then
           write(outs,'(a,f9.3,a)') 
-     &      'Surfaces associated with base (current user list ',
-     &      ZBASEA(ICOMP),'m^2)'
+     &      'Surfaces associated with base (current area ',
+     &      ZBASEA(ICOMP),' m^2)'
         endif
+        if (INPICK.gt.NSUR) INPICK=NSUR
         CALL EPICKS(INPICK,IVALS,outs,
-     &    'Select none for manual edit.',32,NSUR,ITEMSS,
+     &    'Select none for manual area edit.',32,NSUR,ITEMSS,
      &    'Surface Name/Construction/Orient.',IER,nbhelp)
-        do 221 i=1,10
+        do 221 i=1,MBL
           IBASES(ICOMP,i)=0
  221    continue
         if(inpick.eq.0)then
@@ -1482,9 +1477,11 @@ C Zone rotations and transforms.
         write(trnalt(14),'(a)')'k X axis negative direction'
         write(trnalt(15),'(a)')' ...... Scale ......       '
         write(trnalt(16),'(a)')'l scaling factor for X Y Z '
-        write(trnalt(17),'(a)')' __________________________'
-        write(trnalt(18),'(a)')'? help                     '
-        write(trnalt(19),'(a)')'- exit this menu           '
+        write(trnalt(17),'(a)')' ...... Invert ......      '
+        write(trnalt(18),'(a)')'m invert surface edge order'
+        write(trnalt(19),'(a)')' __________________________'
+        write(trnalt(20),'(a)')'? help                     '
+        write(trnalt(21),'(a)')'- exit this menu           '
 
 C Help for rotation/transform/mirror options
         helptopic='geometry_rotation_menu'
@@ -1493,15 +1490,44 @@ C Help for rotation/transform/mirror options
         WRITE(HEAD,'(2a)')'Transforms for Zone ',zname(ICOMP)
 
 C Menu for zone rotations and transforms.
-        NITMS=19
+        NITMS=21
         CALL EMENU(HEAD,trnalt,NITMS,INOR)
-        if(INOR.EQ.19)then
+        if(INOR.EQ.21)then
           goto 3
-        elseif(INOR.EQ.18)then
+        elseif(INOR.EQ.20)then
 
 C Produce help text for the menu.
           CALL PHELPD('rotation section',nbhelp,'-',0,0,IER)
           goto 77
+        elseif(INOR.EQ.18)then
+
+C Invert edge ordering of all surfaces in the zone. First warn
+C user and allow exit.
+C Reverse the ordering, redraw image and return.
+          DOK=.false.
+          CALL ASKOK('Invert the edge ordering of all surfaces in',
+     &      'the zone (flip the surface normal)?',OK,DOK,nbhelp)
+          if(OK)then
+            do ins=1,NSUR
+              do iyy = 1,NVER(ins)
+                jvn1(iyy)=JVN(ins,iyy)
+              enddo
+              JVN(ins,1)=jvn1(2)
+              JVN(ins,2)=jvn1(1)
+              do iyy = 3,NVER(ins)
+                izz=NVER(ins)+3-iyy
+                JVN(ins,iyy)=jvn1(izz)
+              enddo
+            enddo ! of ins
+            iZBFLG(ICOMP)=0   ! ??	    
+            call zgupdate(1,icomp,ier)  ! ??
+            call geowrite(IFIL+1,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+            MODIFYVIEW=.TRUE.
+            CALL INLNST(1)
+            nzg=1; nznog(1)=ICOMP; izgfoc=ICOMP
+            CALL ADJVIEW(IER)
+            goto 77
+          endif
         elseif(INOR.EQ.2.or.INOR.eq.3.or.INOR.eq.4.or.INOR.eq.5)then
 
 C Remember what the user requested in prior rotateit structure and
@@ -3408,7 +3434,7 @@ C Display a selection of surfaces available in the zone. If surface
 C faces another zone, get the other surface connection index.
       IS=ISS; icoth=0; ii=0
       lnu1=0; lnu2=0 ! lengths for SUSE
-      ioc=IZSTOCN(icomp,is)
+      ioc=IZSTOCN(icomp,iss)
       if(ICT(ioc).eq.3)then
         showother=.true.
         icoth=IZSTOCN(IC2(ioc),IE2(ioc))
@@ -5006,7 +5032,7 @@ C can update other zone (as it done with SSMLCN).
         if(newgeo)then
           guesstype='any_type'
           iz=icomp; isur=is; icon=ic
-	      TOUSE1=SSUSE(ic,1)  ! record prior to edit
+          TOUSE1=SSUSE(ic,1)  ! record prior to edit
           TOUSE2=SSUSE(ic,2)
           call edituse(iz,isur,icon,guesstype)
           if(TOUSE1(1:12).eq.SSUSE(ic,1)(1:12).and.
@@ -5120,6 +5146,10 @@ C the calling code so inform the user.
 C Tell the user the current use of the surface.   
       write(outs,'(6a)') 'The current use/semantic of surface ',
      &  ssname(ic),' is ',SSUSE(ic,1),' and ',SSUSE(ic,2)
+      call edisp(iuout,outs)
+      
+      write(outs,'(3a)') 'The use/semantic options for surface ',
+     &  ssname(ic),' are...'
       call edisp(iuout,outs)
 
 C Help for the various choices.

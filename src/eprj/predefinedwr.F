@@ -895,11 +895,11 @@ C Prepend prec to the name.
      &        lnblnk(VOBJLIST(icomp,nbvo,ibvo))
           enddo  ! ibvo
 C Debug.
-          write(6,*) 'vis obj ',icomp,nbvo,iv,VOBJNAME(icomp,nbvo),
-     &      LNVOBJNAME(icomp,nbvo),VOBJDESC(icomp,nbvo),
-     &      LNVOBJDESC(icomp,nbvo),
-     &      VOBJLIST(icomp,nbvo,1),LNVOBJLIST(icomp,nbvo,1),
-     &      VOBJLIST(icomp,nbvo,2),LNVOBJLIST(icomp,nbvo,2)
+c          write(6,*) 'vis obj ',icomp,nbvo,iv,VOBJNAME(icomp,nbvo),
+c     &      LNVOBJNAME(icomp,nbvo),VOBJDESC(icomp,nbvo),
+c     &      LNVOBJDESC(icomp,nbvo),
+c     &      VOBJLIST(icomp,nbvo,1),LNVOBJLIST(icomp,nbvo,1),
+c     &      VOBJLIST(icomp,nbvo,2),LNVOBJLIST(icomp,nbvo,2)
         endif
         continue  ! look for more key words
       else

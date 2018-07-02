@@ -277,7 +277,7 @@ C it into words.
 
 C Ancient operation files assumed 3 day types. Reset ip3ver if there
 C are more than 3 day types.
-        if(nbdaytype.gt.3.and.ip3ver(icomp).lt.2) ip3ver(icomp)=2
+        if(nbdaytype.gt.3.and.ip3ver(icomp).lt.2) ip3ver(icomp)=21
         CALL STRIPC(IUO,OUTSTR,0,ND,1,'header',IER)
         IF(IER.NE.0) goto 1002
         K=0
@@ -1746,7 +1746,7 @@ C Write either the combined or scheduled air description.
 C Write air flow control data to the file.
 C If ipv3ver is 0, 1 or 2 write ventilation control data as if
 C there was only one day type and one period during the day.
-      if(ip3ver(icomp).le.21)then
+      if(ip3ver(icomp).lt.21)then
         WRITE(IUO,'(3A)',IOSTAT=IOS,ERR=1)
      &    '# control(',ctlstr(icomp,1),'), low mid & high setpoints '
         WRITE(IUO,'(I4,3F10.3)',IOSTAT=IOS,ERR=1)ITCTL(ICOMP),
@@ -1767,12 +1767,7 @@ C there was only one day type and one period during the day.
      &      IVH(ICOMP),TAH(ICOMP)
         ENDIF
 
-      elseif(ip3ver(icomp).gt.21)then
-
-C Write the scheduled air documentation.
-        WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1) '*ventilation_descr'
-        WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &    ventdesc(ICOMP)(1:lnblnk(ventdesc(ICOMP)))
+      elseif(ip3ver(icomp).ge.21)then
 
 C Write the infiltration and ventilation control data.
 C << calendar day types to be done >>
@@ -1951,11 +1946,20 @@ C << need to update reporting for different day types and ctl periods >>
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
+C Markdown flag.
+      logical markdown
+      common/markdownflag/markdown
+
       CHARACTER outs*124
 
 C Write documentation on air schedules. 
-      call edisp(itru,' Air schedule notes:')
-      call edisp248(itru,ventdesc(icomp),72)
+      if(markdown)then
+        call edispxtr(itru,'Air schedule notes  ')
+        call edisp248(itru,ventdesc(icomp),100)
+      else
+        call edisp(itru,' Air schedule notes:')
+        call edisp248(itru,ventdesc(icomp),72)
+      endif
       if(ip3ver(icomp).le.21)then
 
 C Older file versions only display ctlstr for first day and period.
@@ -1989,16 +1993,31 @@ C Older file versions only display ctlstr for first day and period.
         else
           ctlstr(icomp,1)='unknown flow control    '
         endif
-        write(outs,'(a,a)') ' Control: ',ctlstr(icomp,1)
-        call edisp(itru,outs)
+        if(markdown)then
+          write(outs,'(a,a)') 'Control ',ctlstr(icomp,1)
+          call edisp2tr(itru,outs)
+        else
+          write(outs,'(a,a)') ' Control: ',ctlstr(icomp,1)
+          call edisp(itru,outs)
+        endif
 
         if(IY.eq.0) goto 1225
-        write(outs,'(2a)')' Control Setpoint  Infiltration',
-     &    '     Ventilation    Source  temp'
-        call edisp(itru,outs)
-        write(outs,'(2a)')' range             ac/h   m^3/s',
+
+        if(markdown)then
+          write(outs,'(2a)')' Control Setpoint  Infiltration',
+     &      '     Ventilation    Source  temp'
+          call edisp(itru,outs)
+          write(outs,'(2a)')' range             ac/h   m^3/s',
      &    '     ac/h   m^3/s   index   degC'
-        call edisp(itru,outs)
+          call edisp(itru,outs)
+        else
+          write(outs,'(2a)')' Control Setpoint  Infiltration',
+     &      '     Ventilation    Source  temp'
+          call edisp(itru,outs)
+          write(outs,'(2a)')' range             ac/h   m^3/s',
+     &    '     ac/h   m^3/s   index   degC'
+          call edisp(itru,outs)
+        endif
         acilm = (VOL(ICOMP)*ACIL(ICOMP))/3600.0
         acvlm = (VOL(ICOMP)*ACVL(ICOMP))/3600.0
         WRITE(outs,'(A,F7.2,F9.3,F8.4,F10.3,F8.4,I5,F10.3)')
@@ -2055,10 +2074,16 @@ C Display ctlstr for day and period << convert to multi days >>.
         else
           ctlstr(icomp,1)='unknown flow control    '
         endif
-        write(outs,'(a,a)') ' Control: ',ctlstr(icomp,1)
-        call edisp(itru,outs)
+        if(markdown)then
+          write(outs,'(a,a)') 'Control ',ctlstr(icomp,1)
+          call edisp2tr(itru,outs)
+        else
+          write(outs,'(a,a)') ' Control: ',ctlstr(icomp,1)
+          call edisp(itru,outs)
+        endif
 
         if(IY.eq.0) goto 1225
+
         WRITE(outs,'(A,3F7.2)')' Lower/Middle/High temp setpoints: ',
      &    TLO(ICOMP),TUP(ICOMP),THI(ICOMP)
         call edisp(itru,outs)
@@ -2092,25 +2117,47 @@ C Display ctlstr for day and period << convert to multi days >>.
 
 C Write header for scheduled air flow.
       call edisp(itru,' ')
-      call edisp(itru,'Scheduled air infiltration and ventilation: ')
-      WRITE(outs,'(2A)')
-     &'Daytype    Period     Infiltration     Ventilation     ',
-     &'From Source'
-      call edisp(itru,outs)
-      WRITE(outs,'(2A)')
-     &'           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  ',
-     &'Zone DegC'
-      call edisp(itru,outs)
+      if(markdown)then
+        call edispxtr(itru,
+     &    'Scheduled air infiltration and ventilation  ')
+        call edisp(itru,' ')
+        WRITE(outs,'(2A)')
+     &   'Day type  ID  Hours   Infil. (ac/h)  Infil. (m^3^/s)  ',
+     &   'Vent. (ac/h)  Vent. (m^3^/s)  From zone  Source DegC'
+        call edisp(itru,outs)
+        WRITE(outs,'(2A)')
+     &   '--------  --  ------  -------------  ---------------  ',
+     &   '------------  --------------  ---------  -----------'
+        call edisp(itru,outs)
+      else
+        call edisp(itru,'Scheduled air infiltration and ventilation: ')
+        WRITE(outs,'(2A)')
+     &   'Daytype    Period     Infiltration     Ventilation     ',
+     &   'From Source'
+        call edisp(itru,outs)
+        WRITE(outs,'(2A)')
+     &   '           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  ',
+     &   'Zone DegC'
+        call edisp(itru,outs)
+      endif
 
       DO 400 IDTY=1,NBDAYTYPE
         IF(NAC(IDTY).EQ.0)GOTO 400
         DO 1230 I=1,NAC(IDTY)
           acim = (VOL(ICOMP)*ACI(IDTY,I))/3600.0
           acvm = (VOL(ICOMP)*ACV(IDTY,I))/3600.0
-          WRITE(outs,'(a,i2,i3,a,i2,F8.2,F8.4,F8.2,F8.4,I4,F9.2)')
+          if(markdown)then
+            WRITE(outs,
+     &      '(a,i2,i3,a,i2,F8.2,8x,F8.4,8x,F8.2,8x,F8.4,I11,F13.2)')
      &      calentag(idty)(1:10),I,IACS(IDTY,I),' - ',IACF(IDTY,I),
      &      ACI(IDTY,I),acim,ACV(IDTY,I),acvm,IPT(IDTY,I),TA(IDTY,I)
-          call edisp(itru,outs)
+            call edisp(itru,outs)
+          else
+            WRITE(outs,'(a,i2,i3,a,i2,F8.2,F8.4,F8.2,F8.4,I4,F9.2)')
+     &      calentag(idty)(1:10),I,IACS(IDTY,I),' - ',IACF(IDTY,I),
+     &      ACI(IDTY,I),acim,ACV(IDTY,I),acvm,IPT(IDTY,I),TA(IDTY,I)
+            call edisp(itru,outs)
+          endif
 1230    CONTINUE
  400  CONTINUE
       RETURN
@@ -2130,6 +2177,10 @@ C from zone operation common block data.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
 
+C Markdown flag.
+      logical markdown
+      common/markdownflag/markdown
+
 C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
       COMMON/ELP3N/NEL(MDTY),PF(MDTY,MC),IPF(MDTY,MC),PWR(MDTY,MC),
@@ -2138,11 +2189,16 @@ C Electrical data flag and elctrical data.
       REAL PF,PWR,BVOLT
 
       CHARACTER outs*124
-      CHARACTER llbl*24
+      CHARACTER llbl*24,llbl2*25
 
       call edisp(itru,' ')
-      call edisp(itru,'Notes: ')
-      call edisp248(itru,oprdesc(icomp),72)
+      if(markdown)then
+        call edispxtr(itru,'Notes  ')
+        call edisp248(itru,oprdesc(icomp),100)
+      else
+        call edisp(itru,'Notes: ')
+        call edisp248(itru,oprdesc(icomp),72)
+      endif
       call edisp(itru,' ')
       if(IELF(ICOMP).EQ.1)then
         write(outs,'(3a)')'Daytype   Gain Label    Type    Unit',
@@ -2154,12 +2210,23 @@ C Electrical data flag and elctrical data.
      &    '   (W)    (V) (rgb)'
         call edisp(itru,outs)
       else  
-        write(outs,'(2a)')'Daytype   Gain Label     Type    Unit',
+        if(markdown)then
+          write(outs,'(2a)')
+     &    'Daytype   ID   Label      Type       Unit  Hours  Sens.(W)',
+     &    '  Late.(W)   Rad. Frac   Con. Frac'
+          call edisp(itru,outs)
+          write(outs,'(2a)')
+     &    '--------  ---  ---------  ---------  ----  -----  --------',
+     &    '  --------   ---------   ---------'
+          call edisp(itru,outs)
+        else
+          write(outs,'(2a)')'Daytype   Gain Label     Type    Unit',
      &    ' Period Sensible  Latent     Radiant    Convec'
-        call edisp(itru,outs)
-        write(outs,'(2a)')'          No.                        ',
+          call edisp(itru,outs)
+          write(outs,'(2a)')'          No.                        ',
      &    '  Hours Magn.(W)  Magn.(W)   Fraction   Fraction'
-        call edisp(itru,outs)
+          call edisp(itru,outs)
+        endif
       endif
       DO 600 IDTY=1,NBDAYTYPE
         if(NCAS(IDTY).eq.0) goto 600
@@ -2169,34 +2236,72 @@ C Electrical data flag and elctrical data.
             DO 1269 I=1,NCAS(IDTY)
               jicgt=iabs(ICGT(IDTY,I))
               if(caskeytype(icomp,jicgt)(1:13).eq.'dynamicpeople')then
-                write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+                if(markdown)then
+                  write(llbl2,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+     &            ' ',caskeytype(icomp,jicgt)(1:10),' ocu'
+                else
+                  write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
      &            ' ',caskeytype(icomp,jicgt)(1:10),'ocu'
+                endif
               else
                 if(ICGT(IDTY,I).gt.0)then
-                  write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+                  if(markdown)then
+                    write(llbl2,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+     &              ' ',caskeytype(icomp,jicgt)(1:10),' W  '
+                  else
+                    write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
      &              ' ',caskeytype(icomp,jicgt)(1:10),'W  '
+                  endif
                 elseif(ICGT(IDTY,I).eq.-1)then
-                  write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+                  if(markdown)then
+                    write(llbl2,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+     &              ' ',caskeytype(icomp,jicgt)(1:10),' m2p'
+                  else
+                    write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
      &              ' ',caskeytype(icomp,jicgt)(1:10),'m2p'
+                  endif
                 elseif(ICGT(IDTY,I).lt.-1)then
-                  write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+                  if(markdown)then
+                    write(llbl2,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+     &              ' ',caskeytype(icomp,jicgt)(1:10),' Wm2'
+                  else
+                    write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
      &              ' ',caskeytype(icomp,jicgt)(1:10),'Wm2'
+                  endif
                 endif
               endif
               if(caskeytype(icomp,jicgt)(1:13).eq.'dynamicpeople')then
-                WRITE(outs,'(a,I3,1x,A,I3,a,I2,6F6.2,F8.2,F8.2,1x,
-     &            F7.2,I3,F7.1,F7.1,I3)')
-     &            calentag(idty)(1:10),I,llbl,
-     &            ICGS(IDTY,I),'-',ICGF(IDTY,I),
-     &            tnbmen(IDTY,I),tnbwomen(IDTY,I),tnbchild(IDTY,I),
-     &            metabolic(IDTY,I),clov(IDTY,I),airvel(IDTY,I),
-     &            RADC(IDTY,I),CONC(IDTY,I),PF(IDTY,I),
-     &            IPF(IDTY,I),PWR(IDTY,I),BVOLT(IDTY,I),IPHAS(IDTY,I)
+                if(markdown)then
+                  WRITE(outs,'(a,I3,1x,A,I3,a,I2,6F6.2,F8.2,F8.2,1x,
+     &              F7.2,I3,F7.1,F7.1,I3)')
+     &              calentag(idty)(1:10),I,llbl2,
+     &              ICGS(IDTY,I),'-',ICGF(IDTY,I),
+     &              tnbmen(IDTY,I),tnbwomen(IDTY,I),tnbchild(IDTY,I),
+     &              metabolic(IDTY,I),clov(IDTY,I),airvel(IDTY,I),
+     &              RADC(IDTY,I),CONC(IDTY,I),PF(IDTY,I),
+     &              IPF(IDTY,I),PWR(IDTY,I),BVOLT(IDTY,I),IPHAS(IDTY,I)
+                else
+                  WRITE(outs,'(a,I3,1x,A,I3,a,I2,6F6.2,F8.2,F8.2,1x,
+     &              F7.2,I3,F7.1,F7.1,I3)')
+     &              calentag(idty)(1:10),I,llbl,
+     &              ICGS(IDTY,I),'-',ICGF(IDTY,I),
+     &              tnbmen(IDTY,I),tnbwomen(IDTY,I),tnbchild(IDTY,I),
+     &              metabolic(IDTY,I),clov(IDTY,I),airvel(IDTY,I),
+     &              RADC(IDTY,I),CONC(IDTY,I),PF(IDTY,I),
+     &              IPF(IDTY,I),PWR(IDTY,I),BVOLT(IDTY,I),IPHAS(IDTY,I)
+                endif
               else
-                WRITE(outs,5361)calentag(idty)(1:10),I,llbl,
-     &            ICGS(IDTY,I),'-',ICGF(IDTY,I),CMGS(IDTY,I),
-     &            CMGL(IDTY,I),RADC(IDTY,I),CONC(IDTY,I),PF(IDTY,I),
-     &            IPF(IDTY,I),PWR(IDTY,I),BVOLT(IDTY,I),IPHAS(IDTY,I)
+                if(markdown)then
+                  WRITE(outs,5361)calentag(idty)(1:10),I,llbl2,
+     &              ICGS(IDTY,I),'-',ICGF(IDTY,I),CMGS(IDTY,I),
+     &              CMGL(IDTY,I),RADC(IDTY,I),CONC(IDTY,I),PF(IDTY,I),
+     &              IPF(IDTY,I),PWR(IDTY,I),BVOLT(IDTY,I),IPHAS(IDTY,I)
+                else
+                  WRITE(outs,5361)calentag(idty)(1:10),I,llbl,
+     &              ICGS(IDTY,I),'-',ICGF(IDTY,I),CMGS(IDTY,I),
+     &              CMGL(IDTY,I),RADC(IDTY,I),CONC(IDTY,I),PF(IDTY,I),
+     &              IPF(IDTY,I),PWR(IDTY,I),BVOLT(IDTY,I),IPHAS(IDTY,I)
+                endif
  5361           FORMAT(a,I3,1x,A,I3,a,I2,F9.1,F9.1,F8.2,F8.2,
      &            1x,F7.2,I3,F7.1,F7.1,I3)
               endif
@@ -2204,41 +2309,82 @@ C Electrical data flag and elctrical data.
  1269       CONTINUE
           ELSE
 
+C No electrical data.
             DO 1270 I=1,NCAS(IDTY)
               jicgt=iabs(ICGT(IDTY,I))
               if(caskeytype(icomp,jicgt)(1:13).eq.'dynamicpeople')then
-                write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+                if(markdown)then
+                  write(llbl2,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+     &            ' ',caskeytype(icomp,jicgt)(1:10),' ocu'
+                else
+                  write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
      &            ' ',caskeytype(icomp,jicgt)(1:10),'ocu'
+                endif
               else
                 if(ICGT(IDTY,I).gt.0)then
-                  write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+                  if(markdown)then
+                    write(llbl2,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+     &              ' ',caskeytype(icomp,jicgt)(1:10),' W  '
+                  else
+                    write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
      &              ' ',caskeytype(icomp,jicgt)(1:10),'W  '
+                  endif
                 elseif(ICGT(IDTY,I).eq.-1)then
-                  write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+                  if(markdown)then
+                    write(llbl2,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+     &              ' ',caskeytype(icomp,jicgt)(1:10),' m2p'
+                  else
+                    write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
      &              ' ',caskeytype(icomp,jicgt)(1:10),'m2p'
+                  endif
                 elseif(ICGT(IDTY,I).lt.-1)then
-                  write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+                  if(markdown)then
+                    write(llbl2,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+     &              ' ',caskeytype(icomp,jicgt)(1:10),' Wm2'
+                  else
+                    write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
      &              ' ',caskeytype(icomp,jicgt)(1:10),'Wm2'
+                  endif
                 endif
               endif
               if(caskeytype(icomp,jicgt)(1:13).eq.'dynamicpeople')then
-                WRITE(outs,'(a,I3,1x,A,I3,a,I2,6F6.2,F11.2,F11.2)')
-     &            calentag(idty)(1:10),I,llbl,
-     &            ICGS(IDTY,I),'-',ICGF(IDTY,I),
-     &            tnbmen(IDTY,I),tnbwomen(IDTY,I),tnbchild(IDTY,I),
-     &            metabolic(IDTY,I),clov(IDTY,I),airvel(IDTY,I),
-     &            RADC(IDTY,I),CONC(IDTY,I)
+                if(markdown)then
+                  WRITE(outs,'(a,I4,2x,A,I4,a,I2,6F6.2,F11.2,F11.2)')
+     &              calentag(idty)(1:10),I,llbl2,
+     &              ICGS(IDTY,I),'-',ICGF(IDTY,I),
+     &              tnbmen(IDTY,I),tnbwomen(IDTY,I),tnbchild(IDTY,I),
+     &              metabolic(IDTY,I),clov(IDTY,I),airvel(IDTY,I),
+     &              RADC(IDTY,I),CONC(IDTY,I)
+                else
+                  WRITE(outs,'(a,I3,1x,A,I3,a,I2,6F6.2,F11.2,F11.2)')
+     &              calentag(idty)(1:10),I,llbl,
+     &              ICGS(IDTY,I),'-',ICGF(IDTY,I),
+     &              tnbmen(IDTY,I),tnbwomen(IDTY,I),tnbchild(IDTY,I),
+     &              metabolic(IDTY,I),clov(IDTY,I),airvel(IDTY,I),
+     &              RADC(IDTY,I),CONC(IDTY,I)
+                endif
               else
-                WRITE(outs,'(a,I3,1x,A,I3,a,I2,F9.1,F9.1,F11.2,F11.2)')
-     &            calentag(idty)(1:10),I,llbl,
-     &            ICGS(IDTY,I),'-',ICGF(IDTY,I),CMGS(IDTY,I),
-     &            CMGL(IDTY,I),RADC(IDTY,I),CONC(IDTY,I)
+                if(markdown)then
+                  WRITE(outs,
+     &              '(a,I3,2x,A,I5,a,I2,F10.1,F9.1,F11.2,F11.2)')
+     &              calentag(idty)(1:10),I,llbl2,
+     &              ICGS(IDTY,I),'-',ICGF(IDTY,I),CMGS(IDTY,I),
+     &              CMGL(IDTY,I),RADC(IDTY,I),CONC(IDTY,I)
+                else
+                  WRITE(outs,
+     &              '(a,I3,1x,A,I3,a,I2,F9.1,F9.1,F11.2,F11.2)')
+     &              calentag(idty)(1:10),I,llbl,
+     &              ICGS(IDTY,I),'-',ICGF(IDTY,I),CMGS(IDTY,I),
+     &              CMGL(IDTY,I),RADC(IDTY,I),CONC(IDTY,I)
+                endif
 5362            FORMAT(a,I3,1x,A,I3,a,I2,F9.1,F9.1,F11.2,F11.2)
               endif
               call edisp(itru,outs)
 1270        CONTINUE
           ENDIF
-          if(NBDAYTYPE.gt.3) call edisp(itru,' ')  ! if long list
+          if(NBDAYTYPE.gt.3)then
+            if(.NOT.markdown) call edisp(itru,' ')  ! if long list
+          endif
         ENDIF
  600  CONTINUE
       RETURN
@@ -3197,7 +3343,7 @@ C power.
  400      CONTINUE
 
 C Write zone operations file.
-          ip3ver(icomp)=2
+          ip3ver(icomp)=21
           CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
         ENDIF
  100  CONTINUE

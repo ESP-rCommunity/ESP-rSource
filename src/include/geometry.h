@@ -89,7 +89,7 @@ C calculated based on FLOR orientations (zero). IZBASELIST is the
 C number of items in the list. 
       real zbasea
       integer ibases,iuzbasea,izbaselist
-      common/prec17/zbasea(MCOM),ibases(MCOM,12),iuzbasea(MCOM),
+      common/prec17/zbasea(MCOM),ibases(MCOM,MBL),iuzbasea(MCOM),
      &  izbaselist(MCOM)
 
 C nbedgshr(MCON) number of surfaces (same orient) which share an edge:

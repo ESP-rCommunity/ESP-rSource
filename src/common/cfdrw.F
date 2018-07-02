@@ -52,7 +52,8 @@ C Passed parameters.
      &  NCELZE(MNREG,MNZ),XREG(MNREG,MNZ),YREG(MNREG,MNZ),
      &  ZREG(MNREG,MNZ),ZREGE(MNREG,MNZ),Xplaw(MNREG,MNZ),
      &  Yplaw(MNREG,MNZ),Zplaw(MNREG,MNZ),Zplawe(MNREG,MNZ),NREG(4,MNZ)
-      common/GRDVRTS/iorg,ixend,iyend,izend,izende
+      common/GRDVRTS/iorg(MNZ),ixend(MNZ),iyend(MNZ),izend(MNZ),
+     &  izende(MNZ)
       common/CLVTXNO/ivxhigh(MV),ivxlow(MV),ihigh,ilow
       COMMON/INITIA/UINIT(MNZ),VINIT(MNZ),WINIT(MNZ),PINIT(MNZ),
      &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ),POLINIT(MNZ,MCTM)
@@ -81,8 +82,8 @@ C ZEROT (logical) use Zero-equation fixed-eddy-viscosity turbulence.
 C ZandKE (logical) use fixed eddy viscosity then k-epsilon.
 C MITzero (logical) use the MIT zero-equation model
 
-      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX,URFC(MCTM)
+      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),
+     &               NCTM(MNZ),JHUMINDX(MNZ),URFC(MCTM)
 C CALPOL Calculate contaminant concentration
 C CALLMA (logical) calculate local mean age of air.
 C NCTM total number of contaminants in a model
@@ -211,10 +212,10 @@ C Geometry and gridding.
       write(IUF,'(a)',IOSTAT=ios,ERR=3) '*thermal_geom'
       if(ortho)then
         write(IUF,'(a,4i4)',IOSTAT=ios,ERR=3) 
-     &    '*vrts ',iorg,ixend,iyend,izend
+     &    '*vrts ',IORG(ICFD),ixend(ICFD),iyend(ICFD),izend(ICFD)
       else
-        write(IUF,'(a,4i4)',IOSTAT=ios,ERR=3) 
-     &    '*vrts ',iorg,ixend,iyend,izend,izende
+        write(IUF,'(a,4i4)',IOSTAT=ios,ERR=3)'*vrts ',IORG(ICFD),
+     &    ixend(ICFD),iyend(ICFD),izend(ICFD),izende(ICFD)
         write(IUF,'(a,4i4)',IOSTAT=ios,ERR=3) 
      &    '*high ',(ivxhigh(IIX),IIX=1,ihigh)
         write(IUF,'(a,4i4)',IOSTAT=ios,ERR=3) 
@@ -350,8 +351,9 @@ C Boundary conditions.
  80   continue
       write(IUF,'(a)',IOSTAT=ios,ERR=3) '# Internal sources.'
       write(IUF,'(a,I3,a,I3,a)',IOSTAT=ios,ERR=3) '*contaminants( ',
-     &NCTM,' contaminants, humdity is contaminant number ',JHUMINDX,' )'
-      DO 156 ICTM=1,NCTM
+     &  NCTM(ICFD),' contaminants, humdity is contaminant number ',
+     &  JHUMINDX(ICFD),' )'
+      DO 156 ICTM=1,NCTM(ICFD)
         IF(ISCHMT(ICTM).EQ.0)THEN
           WRITE(IUF,'(A,1X,I3,1X,F9.4)')POLNAM(ICTM,ICFD),0,SCHMT(ICTM)
         ELSEIF(ISCHMT(ICTM).EQ.1)THEN
@@ -363,7 +365,8 @@ C Boundary conditions.
       do 90 I=1,NVOL(ICFD)
         if (IVTYPE(I,ICFD).eq.20) then
           IF(.NOT.PNAMWRT)THEN
-            CALL ASLIST2(1,NCTM,POLNAM,MCTM,MNZ,ICFD,' ',PNMSTR,ILP,ILT)
+            CALL ASLIST2(1,NCTM(ICFD),POLNAM,MCTM,MNZ,ICFD,' ',PNMSTR,
+     &        ILP,ILT)
             write(IUF,'(3a)',IOSTAT=ios,ERR=3) '*volume name,',
      &      'heat source,cas gain index and fraction, ',PNMSTR
             PNAMWRT=.TRUE.
@@ -371,7 +374,7 @@ C Boundary conditions.
           NLEN=0
           PCCSTR=' '
           PCCSTRA=' '
-          DO 91 ICTM=1,NCTM
+          DO 91 ICTM=1,NCTM(ICFD)
             CALL RELSTR(VOLPOL(ICTM,I,ICFD),PCCSTRA,ILN,IER)
             IF(SRCE(I,ICTM,ICFD)(:1).EQ.' '.OR.ICTDFAF.NE.1)THEN
               PCCSTRB='none'
@@ -460,7 +463,7 @@ C Turbulence.
      &    'Epd ',EDINIT(ICFD),' Linear ',URFCE(ICFD),URFCE2(ICFD)
 
 C Concentration.
-      DO 123 ICTM=1,NCTM
+      DO 123 ICTM=1,NCTM(ICFD)
         IF(CALPOL(ICTM,ICFD))THEN
           write(IUF,'(2a,G10.3,1X,G10.3)',IOSTAT=ios,ERR=3) 
      &                  POLNAM(ICTM,ICFD)(1:LNBLNK(POLNAM(ICTM,ICFD))),
@@ -574,8 +577,8 @@ C      (used in the case of curvilinear Z)
       common/EQTION/CALLU(MNZ),CALLV(MNZ),CALLW(MNZ),CALLT(MNZ),
      &             CALLC(MNZ),KEMDL(MNZ),BUOY(MNZ),BOUSSI(MNZ),
      &             ZEROT(MNZ),ZandKE(MNZ),MITzero(MNZ)
-      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX,URFC(MCTM)
+      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),
+     &               NCTM(MNZ),JHUMINDX(MNZ),URFC(MCTM)
       common/param1/MAXITR(MNZ),IMONT(MNZ),JMONT(MNZ),KMONT(MNZ),
      1             IPPHI(MNZ),SRMAX(MNZ)
       common/param2/TITLE(MNZ),CFTRFL(MNZ),LPHI(MNZ)
@@ -598,7 +601,8 @@ C   ICFMFS(ICFD)=mass flow conflation mechanism (0=none, 1=active)
       common/grdmax/NTCX,NTCY,NTCZ
 
 C Domain geometry.
-      common/GRDVRTS/iorg,ixend,iyend,izend,izende
+      common/GRDVRTS/iorg(MNZ),ixend(MNZ),iyend(MNZ),izend(MNZ),
+     &  izende(MNZ)
       common/GRIDEFN/origin,xgrid,ygrid,zgrid,zegrid,ortho
 
 C Solution methods.
@@ -760,18 +764,18 @@ C Read in vertex linking.
         CALL EGETW(OUTSTR,K,WORD,'W','verts',IER)
         if (WORD(1:5).eq.'*vrts') then
           CALL EGETWI(OUTSTR,K,IVAL,0,MTV,'W','orig vertex no',IER)
-          if (IER.eq.0) iorg=IVAL
+          if (IER.eq.0) IORG(ICFD)=IVAL
           CALL EGETWI(OUTSTR,K,IVAL,0,MTV,'W','x axis vertex no',IER)
-          if (IER.eq.0) ixend=IVAL
+          if (IER.eq.0) ixend(ICFD)=IVAL
           CALL EGETWI(OUTSTR,K,IVAL,0,MTV,'W','y axis vertex no',IER)
-          if (IER.eq.0) iyend=IVAL
+          if (IER.eq.0) iyend(ICFD)=IVAL
           CALL EGETWI(OUTSTR,K,IVAL,0,MTV,'W','z axis vertex no',IER)
-          if (IER.eq.0) izend=IVAL
+          if (IER.eq.0) izend(ICFD)=IVAL
           if (ND.eq.6) then
             CALL EGETWI(OUTSTR,K,IVAL,0,MTV,'W','ze axis vertex no',IER)
-            if (IER.eq.0) izende=IVAL
+            if (IER.eq.0) izende(ICFD)=IVAL
           else
-            izende=0
+            izende(ICFD)=0
           endif
         else
           IER=1
@@ -1514,15 +1518,17 @@ C Loop back again for next air flow BC.
         endif
 
 C Read number of contaminants defined and which one is water (humidity)
-        CALL EGETWI(OUTSTR,K,NCTM,0,MCTM,'w','# of contaminants',IER)
+        CALL EGETWI(OUTSTR,K,NCTM(ICFD),0,MCTM,'w','# of contaminants',
+     &    IER)
         CALL EGETW(OUTSTR,K,WORD,'W','string in *sources line',IER)
         IF(VER.GT.2.15.AND.VER.LT.2.25)K=63
         IF(VER.GT.2.05.AND.VER.LT.2.15)K=57
-        CALL EGETWI(OUTSTR,K,JHUMINDX,0,MCTM,'w','water index',IER)
+        CALL EGETWI(OUTSTR,K,JHUMINDX(ICFD),0,MCTM,'w','water index',
+     &    IER)
 
 C Read data to calculate turbulent Schmidt number
         IF(VER.GT.2.15.AND.VER.LT.2.25)THEN
-          DO 156 ICTM=1,NCTM
+          DO 156 ICTM=1,NCTM(ICFD)
             CALL STRIPC(IFL,OUTSTR,0,ND,1,'tur schmdt #',IER)
             K=0
             CALL EGETW(OUTSTR,K,WORD,'W','ctm name',IER)
@@ -1554,14 +1560,14 @@ C List conflated mfs (if one is active) before describing *blockages
       ENDIF
 
 C Read line containing contaminant name information
-      IF(NCTM.GE.1)THEN
+      IF(NCTM(ICFD).GE.1)THEN
         CALL STRIPC(IFL,OUTSTR,0,ND,1,'ctm names',IER)
         K=0
         CALL EGETW(OUTSTR,K,WORD,'W','ctm tag',IER)
         IF(WORD(1:7).EQ.'*volume')THEN
           IF(VER.GT.2.15.AND.VER.LT.2.25)K=53
           IF(VER.GT.2.05.AND.VER.LT.2.15)K=52
-          DO 705 ICTM=1,NCTM
+          DO 705 ICTM=1,NCTM(ICFD)
             CALL EGETW(OUTSTR,K,WORD,'W','ctm names',IER)
             POLNAM(ICTM,ICFD)=WORD(1:12)
             CALPOL(ICTM,ICFD)=.TRUE.
@@ -1569,7 +1575,7 @@ C Read line containing contaminant name information
         ENDIF
         CALL SCHCHK
         if (itrc.gt.0) then
-          do 711 ICTM=1,NCTM    
+          do 711 ICTM=1,NCTM(ICFD)
             write(outs,'(3a)')'Contaminant ',
      &                  POLNAM(ICTM,ICFD)(1:LNBLNK(POLNAM(ICTM,ICFD))),
      &                                 ' has turbulent Schmidt number'
@@ -1622,7 +1628,7 @@ C           write(6,*)'idcasgn',idcasgn(15,1),idcasgn(16,1)
 C Debug.
 C           write(6,*)'fcasgn',fcasgn(15,1),fcasgn(16,1)
 
-            DO 109 ICTM=1,NCTM
+            DO 109 ICTM=1,NCTM(ICFD)
               CALL EGETWR(OUTSTR,K,VALS,0.,1.,'-','ctm generation',IER)
               VOLPOL(ICTM,IV,ICFD)=VALS
               IF(VER.GT.2.15.AND.VER.LT.2.25)THEN
@@ -1649,10 +1655,10 @@ C           write(6,*)'fcasgn',fcasgn(15,1),fcasgn(16,1)
      &                   IDcasgn(IV,ICFD),', fraction ',Fcasgn(IV,ICFD)
               endif
               call edisp(itu,outs)
-              if (NCTM.ne.0) then
+              if (NCTM(ICFD).ne.0) then
                 write(outs,'(a)')'  This source generates'
                 outs_pre=outs
-                do 234 ICTM=1,NCTM
+                do 234 ICTM=1,NCTM(ICFD)
                   if (len(outs(1:LNBLNK(outs))).gt.23) then
                     write(outs,'(2a)')outs_pre(1:LNBLNK(outs_pre)),','
                     outs_pre=outs
@@ -1730,7 +1736,7 @@ C Read in `equations to be solved' this includes methods.
       ZEROT(ICFD)=.FALSE.
       ZandKE(ICFD)=.FALSE.
       MITzero(ICFD)=.FALSE.
-      DO 39 ICTM=1,NCTM
+      DO 39 ICTM=1,NCTM(ICFD)
         CALPOL(ICTM,ICFD)=.FALSE.
  39   CONTINUE
       CALLMA(ICFD)=.FALSE.
@@ -2059,7 +2065,7 @@ C Contaminant information.
             endif
             call edisp(itu,outs)
           endif
-          DO 41 ICTM=2,NCTM
+          DO 41 ICTM=2,NCTM(ICFD)
             CALL STRIPC(IFL,OUTSTR,99,ND,1,
      &                                   'contaminant information',IER)
             K=0
@@ -2797,8 +2803,8 @@ C CFDDEFLT - Sets default values for all data items.
       common/EQTION/CALLU(MNZ),CALLV(MNZ),CALLW(MNZ),CALLT(MNZ),
      &             CALLC(MNZ),KEMDL(MNZ),BUOY(MNZ),BOUSSI(MNZ),
      &             ZEROT(MNZ),ZandKE(MNZ),MITzero(MNZ)
-      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX,URFC(MCTM)
+      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),
+     &               NCTM(MNZ),JHUMINDX(MNZ),URFC(MCTM)
       COMMON/NSSWP/NSSWPU(MNZ),NSSWPV(MNZ),NSSWPW(MNZ),NSSWPP(MNZ),
      &             NSSWPT(MNZ),NSSWPK(MNZ),NSSWPE(MNZ)
       common/METHDS/ITURB(MNZ),IBUOY(MNZ)
@@ -2828,7 +2834,7 @@ C Clear mass flow links.
 
 C Equations to be solved, this includes methods.
       CALLT(ICFD)=.TRUE.
-      DO 39 ICTM=1,NCTM
+      DO 39 ICTM=1,NCTM(ICFD)
         CALPOL(ICTM,ICFD)=.FALSE.
  39   CONTINUE
       CALLMA(ICFD)=.FALSE.
@@ -2906,15 +2912,16 @@ C contaminant is zero it is set to the default value unity
       SUBROUTINE SCHCHK
 #include "cfd.h"
 
+      COMMON/ICFNOD/ICFD,ICP
       COMMON/SCHMTT/SCHMT(MCTM),GFM(MCTM),VCRIT(MCTM),TBOIL(MCTM),
      &       TCRIT(MCTM),ISCHMT(MCTM)
-      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX,URFC(MCTM)
+      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),
+     &               NCTM(MNZ),JHUMINDX(MNZ),URFC(MCTM)
       LOGICAL ISCLOSE,CALLMA,CALPOL
       CHARACTER POLNAM*12
 
       ISCLOSE=.FALSE.
-      DO 234 ICTM=1,NCTM
+      DO 234 ICTM=1,NCTM(ICFD)
         CALL ECLOSE(SCHMT(ICTM),0.0,0.01,ISCLOSE)
         IF(ISCLOSE)SCHMT(ICTM)=1.0
  234  CONTINUE
@@ -3174,16 +3181,12 @@ C of domain and zone to initial values.
 C Passed parameters.
       integer ier
 
-      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX,URFC(MCTM)
-      LOGICAL CALPOL,CALLMA
       CHARACTER POLNAM*12
       COMMON/ICFNOD/ICFD,ICP
       COMMON/MFS/IMFACT
       COMMON/BUOYAN/BUOYA,BOUSSA,TBAR(MNZ)
       COMMON/ZTURB/rMOOT(MNZ),nZtoKE(MNZ)
       common/grdmax/NTCX,NTCY,NTCZ
-      common/GRDVRTS/iorg,ixend,iyend,izend,izende
       common/GRIDEFN/origin,xgrid,ygrid,zgrid,zegrid,ortho
       COMMON/SCHMTT/SCHMT(MCTM),GFM(MCTM),VCRIT(MCTM),TBOIL(MCTM),
      &       TCRIT(MCTM),ISCHMT(MCTM)
@@ -3192,7 +3195,6 @@ C Passed parameters.
       logical origin,xgrid,ygrid,zgrid,zegrid,ortho
       LOGICAL BUOYA,BOUSSA
 
-      JHUMINDX=0
       ICFD=0
       ICP=0
       IMFACT=0
@@ -3201,11 +3203,6 @@ C Passed parameters.
       NTCX=0
       NTCY=0
       NTCZ=0
-      iorg=0
-      ixend=0
-      iyend=0
-      izend=0
-      izende=0
       origin=.false.
       xgrid=.false.
       ygrid=.false.

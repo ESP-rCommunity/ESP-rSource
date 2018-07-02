@@ -445,8 +445,10 @@ C Uncertainty.
       COMMON/UAFCT/IADIR(MNFA),NFA
 
 C Simulator parameters.
-      COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      COMMON/SPFL/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      LOGICAL     spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
 
 C scname is the first 12 characters of the overall control name.
       CHARACTER CTLDOC*248,LCTLF*72,RSNAME*40,outs*124,scname*12

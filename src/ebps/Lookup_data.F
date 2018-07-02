@@ -770,8 +770,10 @@ C ESP-r variables
       integer iuout, iuin     ! channels for writing messages to screen
 
 C Simulator status variables
-      common/spfl/spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      logical spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      common/spfl/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      logical spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
 
 
 C Local variables
@@ -1108,8 +1110,10 @@ C ESP-r variables
        integer iuout, iuin     ! channels for writing messages to screen
 
 C Simulator status 
-       common/spfl/spfileok,perok,tstepok,saveok,autook,exitok,startupok
-       logical spfileok,perok,tstepok,saveok,autook,exitok,startupok
+       common/spfl/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+       logical spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
 
 C Local variables
 

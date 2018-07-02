@@ -91,7 +91,10 @@ C Active domain common.
 
       COMMON/save/isave
 
-      COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      COMMON/SPFL/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      LOGICAL spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
 
 C Toggle for extreme silent running (endless) mode.
       logical endless,issilient
@@ -104,7 +107,6 @@ C      character path*72
 
       logical OK,dok,remote,browse
 C      logical unixok
-      LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical CFDOK,concat
       integer nsim  ! number of simulations
 

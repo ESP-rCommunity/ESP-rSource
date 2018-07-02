@@ -230,76 +230,6 @@ C PRNNEW - Write variable fields in the present time-step.
       RETURN
       END
 
-C ********* SCAN3dI- scanns an (3D) array in planes of I=const 
-C IEX - flag for excel output=1 (i,j,k headings omited)
-C IEX = 0 write i,j,k headings
-C      arr-the array, arrtit - its title up to 10 characters
-       subroutine scan3di(arr,arrtit,IEX)
-#include "cfd.h"
-      
-      integer lnblnk  ! function definition
-
-      COMMON/FILEP/IFIL
-      COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
-
-      dimension arr(ntcelx,ntcely,ntcelz)
-      character*(*) arrtit
-      character lflname*72
-
-      IUNIT=IFIL+1
-      write (lflname,'(a,a)') arrtit(1:lnblnk(arrtit)),'.tst'
-      call EFOPSEQ(IUNIT,lflname,4,ier)
-      write(IUNIT,200) arrtit
-           
-      do 100 i=1,ni
-        if (IEX.eq.0) write(IUNIT,210) i
-        jstart=-11
- 110    jstart=jstart+12
-        jend=jstart+11
-        jend=min0(jend,nj)
-        if (IEX.eq.0) write(IUNIT,220) (j,j=jstart,jend)
-        if (IEX.eq.0) write(IUNIT,'(a)') '  k'
-        do 120 k=nk,1,-1
-          write(IUNIT,230) k,(arr(i,j,k),j=jstart,jend)
- 120    continue
-        if(jend.lt.nj) goto 110
- 100  continue       
-
-      call ERPFREE(IUNIT,ISTAT)
-       
- 200  format(//,40x,a,/,39x,12('*'),/)
- 210  format(/,2x,33('*-'),7x,' i =',i3,' ',7x,33('-*'))
- 220  format(3x,'j = ',i3,11i12)
- 230  format(1x,i3,12e12.4)
-C 230  format(1x,i3,1p12e12.4)  ! syntax check does not like the 1p
-
-      return
-      end
-
-C ******** SCANall- scans (3D) arrays
-      subroutine scanall 
-#include "cfd.h"
-
-      COMMON/COEF/AP(ntcelx,ntcely,ntcelz),AE(ntcelx,ntcely,ntcelz),
-     1            AW(ntcelx,ntcely,ntcelz),AN(ntcelx,ntcely,ntcelz),
-     2            AS(ntcelx,ntcely,ntcelz),AH(ntcelx,ntcely,ntcelz),
-     3            AL(ntcelx,ntcely,ntcelz),SU(ntcelx,ntcely,ntcelz),
-     4            SP(ntcelx,ntcely,ntcelz)
-
-      IEXCEL=0 
-      call scan3di(AP,'zz_AP',IEXCEL) 
-      call scan3di(AE,'zz_AE',IEXCEL) 
-      call scan3di(AW,'zz_AW',IEXCEL) 
-      call scan3di(AN,'zz_AN',IEXCEL) 
-      call scan3di(AS,'zz_AS',IEXCEL) 
-      call scan3di(AH,'zz_AH',IEXCEL) 
-      call scan3di(AL,'zz_AL',IEXCEL) 
-      call scan3di(SU,'zz_SU',IEXCEL) 
-      call scan3di(SP,'zz_SP',IEXCEL) 
-
-      return
-      end
-
 C ******** tecplotend - output of tecplot-readable text files
 Cag@241106
 C Change call to call with parameter "IFRAME" which is the time step!
@@ -384,6 +314,8 @@ C
 C Call with parameter "IFRAME" which is the time step!
       subroutine paraviewend(IFRAME)
 #include "cfd.h"
+#include "building.h"
+#include "geometry.h"
 
       COMMON/FILEP/IFIL
       COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),
@@ -401,6 +333,10 @@ C Call with parameter "IFRAME" which is the time step!
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
       COMMON/CFDPOL/POLCONCp(MCTM,ntcelx,ntcely,ntcelz),
      1              POLCONCf(MCTM,ntcelx,ntcely,ntcelz)
+      common/CFDSV/IRECPC,ICFDSV,IEQSV(5+MCTM)
+      common/GRDVRTS/iorg(MNZ),ixend(MNZ),iyend(MNZ),izend(MNZ),
+     &  izende(MNZ)
+      COMMON/ICFNOD/ICFD,ICP
 
       common/rpath/path
       character*72 path,lpath
@@ -408,6 +344,7 @@ C Call with parameter "IFRAME" which is the time step!
       integer IFRAME
 
       real Uftmp,Vftmp,Wftmp
+      real Xtmp,Ytmp,Ztmp,Xorg,Yorg,Zorg
 
 C 'lflname' is the name of the current output file
       character lflname*72
@@ -429,7 +366,6 @@ C Check and open data output file.
       path='./'
       call EFOPSEQ(IUNIT,lflname,4,ier)
       path=lpath
-      
 
 C Write the '.vtk' header (total of 4 lines)
 C It would be sexy to be able to enter the text for line 2
@@ -438,6 +374,19 @@ C from the ESP-r interface ...
       write(IUNIT,'(a)') 'ESP-r CFD output'
       write(IUNIT,'(a)') 'ASCII'
       write(IUNIT,'(a)') 'DATASET RECTILINEAR_GRID'
+
+C If we have a version 3 results library, use domain origin vertex
+C cooridinates to ensure that multiple domains do not overlap in
+C paraview.
+      if (ICFDSV.eq.3) then
+        Xorg=VCOORD(ICP,IORG(ICFD),1)
+        Yorg=VCOORD(ICP,IORG(ICFD),2)
+        Zorg=VCOORD(ICP,IORG(ICFD),3)
+      else
+        Xorg=0.
+        Yorg=0.
+        Zorg=0.
+      endif
 
 C Increase loop starts to "2" and reduced loop runs by "-1".
 C I.e., cut off one slice off each face of the CFD region
@@ -452,21 +401,24 @@ C Write the x coordinates
       write(IUNIT,'(a,i3,a)') 'X_COORDINATES ',(ni-2),' float'
 
       do 100 i=2,ni-1
-            write(IUNIT,200)XP(I)
+        Xtmp=XP(I)+Xorg
+        write(IUNIT,200)Xtmp
  100  continue
 
 C Write the y coordinates
       write(IUNIT,'(a,i3,a)') 'Y_COORDINATES ',(nj-2),' float'
 
       do 101 j=2,nj-1
-            write(IUNIT,200)YP(J)
+        Ytmp=YP(J)+Yorg
+        write(IUNIT,200)Ytmp
  101  continue
 
 C Write the z coordinates
       write(IUNIT,'(a,i3,a)') 'Z_COORDINATES ',(nk-2),' float'
 
       do 102 k=2,nk-1
-            write(IUNIT,200)ZP(K)
+        Ztmp=ZP(K)+Zorg
+        write(IUNIT,200)Ztmp
  102  continue
 
 C Write data header followed by data

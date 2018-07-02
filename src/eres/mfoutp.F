@@ -33,10 +33,24 @@ C This output mode allows the various causal relationships
 C to be displayed and so visually investigated.   
 C act='p' iget parameters already set.
 
+C <CFD>
+C We also hijack this subroutine for CFD metric reporting, as many of
+C the metrics are similar and this prevents duplication of effort. It
+C also means that mass flow and CFD graphing can theoretically be
+C combined (currently mass flow and building graphing cannot).
+C In the future, could consider breaking down the fuctionality of this
+C subroutine into it's component parts, perhaps allowing homogenisation
+C with the graphing code for the building domain?
+C act='c' we are looking at CFD instead of mass flow.
+C </CFD>
+
       SUBROUTINE MFOUTP(act)
 #include "building.h"
+#include "model.h"
+#include "geometry.h"
+#include "prj3dv.h"
 #include "net_flow.h"
-C act='p' iget parameters already set.
+#include "net_flow_data.h"
       
       integer lnblnk  ! function definition
 
@@ -48,12 +62,15 @@ C act='p' iget parameters already set.
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
-      COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
+      COMMON/GRAF1/YMAX(6),YMIN(6),YAXSET(6),ADDLIN,horaxisdiv
+      COMMON/GRAF2/YSC(6),Yadd(6),TSC,Xadd,IGX(6),ILR(6),DT
       common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      integer ncomp,ncon
+      common/C1/NCOMP,NCON
 
       common/getmenu/menutype,igetind(65),igetflux(65)
       common/exporttg/xfile,tg,delim
@@ -90,16 +107,21 @@ C Occupancy filter info.
       COMMON/MFGET/FLOWVALS(MFRS),MFRECVR(MCNN+2+MCONTM)
 
 C Simulator parameters.
-      COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      COMMON/SPFL/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      LOGICAL spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
       COMMON/FREQS/NBINS,XBIN1,XBINN,DXBIN,IFREQ,IHITS,IMISS,INBIN(MF)
       integer ICBIN,IRCBIN
       COMMON/FREQS1/ICBIN(MF),IRCBIN(MF),ITOTAL
+      integer net3ddelay  ! delay between timesteps in 3D network
+      common/delay3d/net3ddelay
 
       dimension Yold(MZS), TIMEold(MZS)
       character TLABEL*60,trange*20,tranged*20,t28*28,dg*1
       character outs*124,outs248*248
       character outs800*800,outs800d*800  ! really long string buffers
-      character ALABEL(5)*12,t20*20,act*1
+      character ALABEL(6)*12,t20*20,act*1
       CHARACTER PDESCR*60,SDESCR*44,DESCR*7,DESCR1*10
       character lltmpc*144
       CHARACTER DESCRH*5,DESCRD*5,NT*14,XT*14
@@ -108,6 +130,7 @@ C Simulator parameters.
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character RFILEABS*144,PFILEABS*144,MSTRFILEABS*144,LAFRESABS*144
       character xfile*144,tg*1,delim*1,tab*1
+      character msg*32
       dimension FMAX(MFRS), FMIN(MFRS), FTOTSD(MFRS)
       dimension FAVE(MFRS), FSTD(MFRS), NF(MFRS)
       dimension TMAX(MFRS), TMIN(MFRS), IQHRS(MFRS)
@@ -117,20 +140,32 @@ C Simulator parameters.
       integer lnb,lsn1
       integer k,k4,ke,ke4  ! used for string positions
       integer lke,lket28        ! length of label and packed label
+      integer POS,NEG,CMPIS
+      real xc,yc,zc
+      character word*12   ! for 3D value plotting.
 
-      logical colok,ok,dok
-      LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      logical colok,ok,dok,CFDOK
 #ifdef OSI
-      integer IGX  ! see common graf2
+      integer igx,iigx  ! see array above
       integer iupdown,isym    ! passed to etplot
       integer iid1,iid2,iicol
       integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iside,isize,ifont     ! passed to viewtext
 #else
-      integer*8 IGX  ! see common graf2
+      integer*8 igx,iigx  ! see array above
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iid1,iid2,iicol
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
+
+C <CFD>
+      COMMON/cfdsmper/ICDYS,ICDYF,CFTS,CFTF
+      COMMON/cfdotper/ICDYOS,ICDYOF,CFTOS,CFTOF
+      common/CFDFL/LCFDFL
+      character LCFDFL*72
+      COMMON/ICFNOD/ICFD,ICP
+C </CFD>
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -142,22 +177,32 @@ C For help messages
 C Cast values for linescale.
       iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
+C<CFD>
+C Are we looking at CFD?
+      if (act.eq.'c') then
+        CFDOK=.true.
+      else
+        CFDOK=.false.
+      endif
+
+C If we're looking at CFD, skip opening mass flow library.
+C CFD library should already be open.
+      if (CFDOK) goto 671
+C </CFD>
+
 C If the network flow file has not yet been opened request information.
       if(iflib.eq.1)then
         continue
       else
-
-C Debug.
-C        write(6,*) 'iairn,lafres ',iairn,lafres
-
         if(iairn.ge.1)then
 
 C If there was a flow network defined ask for the flow results file.
 C Assume standard naming convention (*.mfr for flow results), if the
 C user specified a different flow results file then he will have to
 C specify it here as well.
-        lltmpc=LAFRESABS   ! based on the file name that was passed in the command line
+        lltmpc=LAFRESABS   ! based on the file name passed in the command line
         llt=lnblnk(lltmpc)
+        if(llt.le.2) lltmpc='  '
 
 C Use ifdefs because the X11 version will be returning only the
 C name of the file, while the GTK version will be returning the
@@ -167,20 +212,20 @@ C name with the full path.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
-            CALL EASKF(lltmpc,'Flow Library name ? ',' ',96,DAFRES,
+            CALL EASKF(lltmpc,'Flow Library name? ',' ',96,DAFRES,
      &        'flow library file',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(lltmpc,'Flow Library name ? ',' ',124,DAFRES,
+            CALL EASKF(lltmpc,'Flow Library name? ',' ',124,DAFRES,
      &        'flow library file',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(lltmpc,'Flow Library name ? ',' ',144,DAFRES,
+            CALL EASKF(lltmpc,'Flow Library name? ',' ',144,DAFRES,
      &        'flow library file',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
-          CALL EASKF(lltmpc,'Flow Library name ? ',' ',144,DAFRES,
+          CALL EASKF(lltmpc,'Flow Library name? ',' ',144,DAFRES,
      &      'flow library file',IER,nbhelp)
         else
-          CALL EASKF(lltmpc,'Flow Library name ? ',' ',96,DAFRES,
+          CALL EASKF(lltmpc,'Flow Library name? ',' ',96,DAFRES,
      &      'flow library file',IER,nbhelp)
         endif
 
@@ -216,7 +261,7 @@ C name to report in header of graphs and scan its header.
       endif
 
 C Define prompt and set an initial value for xquery.
-      outs='  '
+  671 outs='  '
       XQUERY=0.0
 
 C Check if can draw in colour.
@@ -235,23 +280,44 @@ C If output to file alter the edisp unit number.
         endif
         call edisp(iuout,outs)
       elseif(ixopen.eq.0)then
-        if(MMOD.eq.8)call startbuffer
+        if(MMOD.eq.8)then
+          if(iairn.eq.3)then
+            call startbuffer
+            call MFWFDRAW('r')  ! Draw £D flow network.
+          endif
+        endif
       endif
 
 C Call the menu of choices (this also sets some default options).
 C First clear current selections.
       call MOFLOWSU
- 1    call MFMENU
+
+C <CFD>
+C Set default period to when CFD is available
+      if (CFDOK) CALL CFDPER(1)
+
+C In the future, could consider some clever logic (or just ask) for
+C calling MOFLOWSU ... this could be a relatively straighforward way to
+C allow combined reporting.
+      idone=0
+    1 if (CFDOK) then
+        call MCFDV(idone)
+      else
+        call MFMENU(idone)
+      endif
+c 1    call MFMENU
+
+C User exited without selecting anything to display.
+      if (idone.eq.1) return
+C </CFD>
+
       if(ixopen.eq.1)then
         itru = ixunit
       else
         itru = icout
       endif
-      if (MENUTYPE.eq.-1)then
 
-C User exited without selecting anything to display.
-        return
-      elseif (MENUTYPE.eq.9)then
+      if (MENUTYPE.eq.9)then
         call usrmsg('Psychrometrics of flow not yet supported...',
      &    'please select another view.','W')
         goto 1
@@ -269,12 +335,32 @@ C Ask for set point value.
       endif
 
 C Set up recovery commons.
-      call GOMFGETSU
 
-C TSTART and TFINISH - start and finish times in hours from 0000 on the 
+C <CFD>
+      if (.not.CFDOK) then
+        call GOMFGETSU
+      endif
+c      call GOMFGETSU
+C </CFD>
+
+C TSTART and TFINSH - start and finish times in hours from 0000 on the 
 C first day of output.
-      TSTART=FLOAT(IOH1)
-      TFINSH=FLOAT(((IODF)*24+IOH2)-(IODS)*24)
+
+C <CFD>
+      if (CFDOK) then
+        TSTART=CFTOS
+        TFINSH=float((ICDYOF-ICDYOS)*24)+CFTOF
+        IIODS=ICDYOS
+        IIODF=ICDYOF
+      else
+        TSTART=FLOAT(IOH1)
+        TFINSH=FLOAT(((IODF)*24+IOH2)-(IODS)*24)
+        IIODS=IODS
+        IIODF=IODF
+      endif
+c      TSTART=FLOAT(IOH1)
+c      TFINSH=FLOAT(((IODF)*24+IOH2)-(IODS)*24)
+C </CFD>
 
 C Generate a descriptive string for the time period to be displayed
 C and the simulation and output timesteps.
@@ -290,7 +376,7 @@ C For line graphs, check if axis is currently drawn, if not then scale.
 C Setup parameters and call GOMFGET for each output to get required data.
 C GOMFGET recovers the data in FLOWVAL2 (and averages output if required.)
 C Set TIMEold to -ive number so as to identify first point to be plotted.
-C The YMAX,MIN variables are for axis 1 through 5 max and min values.
+C The YMAX,MIN variables are for axis 1 through 6 max and min values.
             call AXISINT(2,ALABEL)
             do 6 J=1,MZS
               TIMEold(J)=-1.
@@ -301,14 +387,26 @@ C The YMAX,MIN variables are for axis 1 through 5 max and min values.
 
 C For timestep listings generate initial lines.
         lsn1=MIN0(lnblnk(LAFRES),42)
-        if (IHFLAG.eq.1.and.ixopen.eq.1) then
-          call edisp(itru,'# Timestep performance metrics.')
-          WRITE(outs248,'(4A)')'# Lib: ',LAFRES(1:lsn1),
-     &      ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
+        if (CFDOK) then
+          if (IHFLAG.eq.1.and.ixopen.eq.1) then
+            call edisp(itru,'# CFD timestep performance metrics.')
+            WRITE(outs248,'(3A,I2,A,I2,A)')'# Lib: ',
+     &       LCFDFL(1:lnblnk(LCFDFL)),': domain ',ICFD,' (zone ',ICP,')'
+          else
+            call edisp(itru,'CFD timestep performance metrics.')
+            WRITE(outs248,'(3A,I2,A,I2,A)')'Lib: ',
+     &       LCFDFL(1:lnblnk(LCFDFL)),': domain ',ICFD,' (zone ',ICP,')'
+          endif
         else
-          call edisp(itru,'Timestep performance metrics.')
-          WRITE(outs248,'(4A)')'Lib: ',LAFRES(1:lsn1),
-     &      ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
+          if (IHFLAG.eq.1.and.ixopen.eq.1) then
+            call edisp(itru,'# Mass flow timestep performance metrics.')
+            WRITE(outs248,'(4A)')'# Lib: ',LAFRES(1:lsn1),
+     &        ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
+          else
+            call edisp(itru,'Mass flow timestep performance metrics.')
+            WRITE(outs248,'(4A)')'Lib: ',LAFRES(1:lsn1),
+     &        ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
+          endif
         endif
         if(ixopen.eq.1)then
           lnb=lnblnk(outs248)   ! write directly to file
@@ -321,6 +419,8 @@ C For timestep listings generate initial lines.
             call edisp248(itru,outs248,124)
           endif
         endif
+      elseif (MENUTYPE.eq.15) then
+        continue
       endif
       call usrmsg('Scanning data for range of values...','  ','-')
 
@@ -340,53 +440,72 @@ C Set histogram bounds.
       XMIN=1.E+10
 
 C First recover bounds of selected data.
-      do 97 IDAY=IODS,IODF
+      do 97 IDAY=IIODS,IIODF
         IHRD=(IDAY-IODS)*24
         JJ=0
         do 98 IHR=1,24
           do 99 ITS=1,NTS
             JJ=JJ+1
             IDAYR=IDAY-ISDS+1
-            call GOMFGET(IDAYR,IHR,ITS)
+
+C <CFD>
+            if (CFDOK) then
+              CALL GETIFRM(IDAY,JJ,IFRAME,IER)
+              if (IER.ne.0) then
+                IER=0
+                cycle
+              else
+                call GOCFDGET(IFRAME,IDAYR,IHR,ITS,IER)
+                if (IER.ne.0) RETURN
+              endif
+            else
+              call GOMFGET(IDAYR,IHR,ITS)
+            endif 
+c            call GOMFGET(IDAYR,IHR,ITS)
+
+C </CFD>
             do 40 IX=1,NMFGET
 
 C Calculate summary stats (part 1)
               J=IHR*NTS+(ITS-1)
               TIME=real(IHRD)+real(J)/real(NTS)
 
+C Only consider data within the selected period. 
+              IF (TIME.GE.TSTART.and.TIME.LE.TFINSH) THEN
+
 C If there is occupancy filter and occupancy then use pattern
 C from zone iocpzone. Start with assumption of full occupancy.
-              call DATIME(JJ,ATIME)
-              ih=int(ATIME+1.)
-              ioc=1
-              if(iocupf.eq.1.and.iocpzone.ne.0)then
-                call getocup(iocpzone,IDAY,JJ,ioc,iier)
-              endif
-              if(ioc.ne.0) then
-                if(FLOWVALS(IX).gt.FMAX(IX))then
-                  FMAX(IX)=FLOWVALS(IX)
-                  TMAX(IX)=TIME
-                elseif(FLOWVALS(IX).lt.FMIN(IX))then
-                  FMIN(IX)=FLOWVALS(IX)
-                  TMIN(IX)=TIME
+                ioc=1
+                if(iocupf.eq.1.and.iocpzone.ne.0)then
+                  call getocup(iocpzone,IDAY,JJ,ioc,iier)
                 endif
-                FAVE(IX)=FAVE(IX)+FLOWVALS(IX)
-                NF(IX)=NF(IX)+1
-              endif
+                if(ioc.ne.0) then
+                  if(FLOWVALS(IX).gt.FMAX(IX))then
+                    FMAX(IX)=FLOWVALS(IX)
+                    TMAX(IX)=TIME
+                  endif
+                  if(FLOWVALS(IX).lt.FMIN(IX))then
+                    FMIN(IX)=FLOWVALS(IX)
+                    TMIN(IX)=TIME
+                  endif
+                  FAVE(IX)=FAVE(IX)+FLOWVALS(IX)
+                  NF(IX)=NF(IX)+1
+                endif
 
 C Set max and min for graph axis.
-              IAX=IMFGETNO(IX,7)
-              if (YAXSET(IAX).lt.2) then
-                YMAX(IAX)=MAX(FLOWVALS(IX),YMAX(IAX))
-                YMIN(IAX)=MIN(FLOWVALS(IX),YMIN(IAX))
-                YAXSET(IAX)=1
-              endif
+                IAX=IMFGETNO(IX,7)
+                if (YAXSET(IAX).lt.2) then
+                  YMAX(IAX)=MAX(FLOWVALS(IX),YMAX(IAX))
+                  YMIN(IAX)=MIN(FLOWVALS(IX),YMIN(IAX))
+                  YAXSET(IAX)=1
+                endif
 
 C Set max and min for any histogram, (this follows the pattern
 C used in frqdis.F where initial range of data is not filtered
 C by occupancy.
-              XMAX=MAX(FLOWVALS(IX),XMAX)
-              XMIN=MIN(FLOWVALS(IX),XMIN)
+                XMAX=MAX(FLOWVALS(IX),XMAX)
+                XMIN=MIN(FLOWVALS(IX),XMIN)
+              ENDIF
  40         continue
  99       continue
  98     continue
@@ -510,12 +629,20 @@ C Write graph head and set up axis positions and draw.
         call MOMFGHED
         call AXISPOS
         call AXISDRW(TSTART,TFINSH,ALABEL,'-')
+
+C Cast values for linescale.
+        iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+      elseif (MENUTYPE.eq.15) then
+
+C 3D overlay draw just the nodes and components.
+        if(iairn.eq.3)then
+          call startbuffer
+          call MFWFDRAWNC('g')  ! Draw flow nodes & components in grey.
+        endif
       endif
 
 C Recover and plot data. If listing to file or text feedback then
 C write out labels for each column.
-
-C << place to add logic to also detect ixopen as in table.F:381 >>
 
       do 10 IDAY=IODS,IODF
         if (MENUTYPE.eq.4) then
@@ -714,254 +841,329 @@ C is equivalent to the J counter in table.F
           do 10 ITS=1,NTS
             JJ=JJ+1
             IDAYR=IDAY-ISDS+1
-            call GOMFGET(IDAYR,IHR,ITS)
 
-            if (MENUTYPE.eq.4) then
+C <CFD>
+            if (CFDOK) then
+              CALL GETIFRM(IDAY,JJ,IFRAME,IER)
+              if (IER.ne.0) then
+                IER=0
+              else
+                call GOCFDGET(IFRAME,IDAYR,IHR,ITS,IER)
+                if (IER.ne.0) RETURN
+              endif
+            else
+              call GOMFGET(IDAYR,IHR,ITS)
+            endif 
+c            call GOMFGET(IDAYR,IHR,ITS)
+C </CFD>
 
-C If timestep listing format output for all items.
-C Compute current time.
+C Compute current time:
 C IHRD - number of days since start of plotting period in hours.
 C TIME - time in hours since start of first day plotted.
-              IHRD=(IDAY-IODS)*24
-              J=IHR*NTS+(ITS-1)
-              TIME=real(IHRD)+real(J)/real(NTS)
+            IHRD=(IDAY-IODS)*24
+            J=IHR*NTS+(ITS-1)
+            TIME=real(IHRD)+real(J)/real(NTS)
 
-C Within requested output period.
-              IF(TIME.LT.(TSTART-1.0).or.TIME.GT.TFINSH)goto 10
+C If within requested output period, do stuff with data depending on
+C MENUTYPE.
+            IF (TIME.GE.TSTART.and.TIME.LE.TFINSH) THEN
 
-C Tabular list. First, recalculate time as it is done in table.F 
-C If there is occupancy filter and occupancy then use pattern
-C from zone iocpzone. Start with assumption of full occupancy.
-              call DATIME(JJ,ATIME)
-              TIME=float(IHRD)+ATIME
-              outs248='  '
-              outs800='  '
-              if (IHFLAG.eq.0) then 
+C If tabular, initialise output string with timestamp.
+C Assume no time step averaging.
+              if (MENUTYPE.eq.4) then
+
+C If writing to file, use 800 char buffer,
+                if (ixopen.eq.1) then
+                  outs800='  '
 
 C Split flow time into hours and minutes, repeating every 24 hours.
-                call STIME(JJ,LTIME)
-                write (outs248,'(a5)') LTIME
-                write (outs800,'(a5)') LTIME
-                K=6
-              else
-                RDOTY=FLOAT(IDAY)+(ATIME/24.)
-                write (outs248,'(f10.4)') RDOTY
-                write (outs800,'(f10.4)') RDOTY
-                K=11
+                  if (IHFLAG.eq.0) then 
+                    call STIMENA(JJ,LTIME)
+                    write (outs800,'(a5)') LTIME
+                    K=6
+                  else
+                    call DATIME(JJ,ATIME)
+                    RDOTY=FLOAT(IDAY)+(ATIME/24.)
+                    write (outs800,'(f10.4)') RDOTY
+                    K=11
+                  endif
+
+C If writing to screen, use 248 char buffer.
+                else
+                  outs248='  '
+                  if (IHFLAG.eq.0) then 
+                    call STIMENA(JJ,LTIME)
+                    write (outs248,'(a5)') LTIME
+                    K=6
+                  else
+                    call DATIME(JJ,ATIME)
+                    RDOTY=FLOAT(IDAY)+(ATIME/24.)
+                    write (outs248,'(f10.4)') RDOTY
+                    K=11
+                  endif
+                endif
+              elseif (MENUTYPE.eq.15) then
+
+C Generate a label for time.
+                if (IHFLAG.eq.0) then 
+                  call STIMENA(JJ,LTIME)
+                  write (msg,'(2a)') 'Time: ',LTIME
+                else
+                  call DATIME(JJ,ATIME)
+                  RDOTY=FLOAT(IDAY)+(ATIME/24.)
+                  write (msg,'(a,f10.4)') 'Time: ',RDOTY
+                endif
+                iside=3; isize=1; ifont=1
+                call viewtext(msg,iside,isize,ifont)
               endif
 
-C First write data to the 248 char string buffer.
-              klast=k
-              do 410 IXY=1,NMFGET
-                KE=K+11
-                if(KE.le.248)then
+C Loop over selected metrics.
+              do 400 IX=1,NMFGET
 
-C If there is occupancy filter and occupancy then include in check.
-C Assume fully occupied.
-                  ih=int(ATIME+1.)
+                if (MENUTYPE.eq.2) then
+
+C Histogram.
+C If there is occupancy filter and occupancy then use pattern
+C from zone iocpzone. Start with assumption of full occupancy.
                   ioc=1
                   if(iocupf.eq.1.and.iocpzone.ne.0)then
                     call getocup(iocpzone,IDAY,JJ,ioc,iier)
                   endif
                   if(ioc.ne.0) then
-                    write (outs248(K:KE),'(f11.4)') FLOWVALS(IXY)
-                  else
-                    write (outs248(K:KE),'(a)') '  not occ  '
-                  endif
-                  K=K+11
-                endif
- 410          continue
-
-C If writing to file then write data to the 800 char string buffer.
-              if(ixopen.eq.1)then
-                k=klast   ! re-establish k position value
-                do 411 IXY=1,NMFGET
-                  KE=K+11
-                  if(KE.le.800)then
-
-C If there is occupancy filter and occupancy then include in check.
-C Assume fully occupied.
-                    ih=int(ATIME+1.)
-                    ioc=1
-                    if(iocupf.eq.1.and.iocpzone.ne.0)then
-                      call getocup(iocpzone,IDAY,JJ,ioc,iier)
-                    endif
-                    if(ioc.ne.0) then
-                      write (outs800(K:KE),'(f11.4)') FLOWVALS(IXY)
+                    IB = INT(((FLOWVALS(IX) - XBIN1) / DXBIN) + 1.)
+                    if(IB.LE.0)then
+                      iunder = iunder +1
+                      IMISS = IMISS + 1
+                    elseif(IB.GT.NBINS)then
+                      iover = iover +1
+                      IMISS = IMISS + 1
                     else
-                      write (outs800(K:KE),'(a)') '  not occ  '
+                      INBIN(IB) = INBIN(IB) + 1
+                      IHITS = IHITS + 1
                     endif
-                    K=K+11
                   endif
- 411            continue
-              endif
+                elseif (MENUTYPE.eq.3) then
 
-              if(ixopen.eq.1)then
-                lnb=lnblnk(outs800)   ! write directly to file
+C Graphical. If this is the first data point, do not draw anything but
+C remember this data point to give the next line somewhere to start
+C from. If not, draw then next section of line.
+                  if (TIME.GT.TSTART) then
 
-                if(delim.eq.'-')then
-                  write(itru,'(A)',iostat=ios,err=1)outs800(1:lnb)
-                else
+C Reset scaling factor for this axis.
+                    Iax=IMFGETNO(IX,7)
+                    call linescale
+     &                (iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))        
 
-C If delimiter set to alternative then process text before writing.
-C If using X delimeter (tagged data) then set the delimeter to a comma.
-                  dg=delim
-                  if (delim.eq.'X') dg='C'
-                  call SDELIM(outs800,outs800d,dg,IW)
-                  lnb=lnblnk(outs800d)   ! write directly to file
-                  write(itru,'(A)',iostat=ios,err=1) outs800d(1:lnb)
-                endif
-              else
-
-C Writing to screen so use shorter file buffer.
-                lnb=MIN0(lnblnk(outs248),124)
-                if(lnb.lt.124)then
-                  call eddisp(itru,outs248(1:lnb))
-                else
-                  call eddisp248(itru,outs248,124)
-                endif
-              endif
-
-C Debug.
-C             write(6,*)TIME,(FLOWVALS(IXY),IXY=1,NMFGET)
-
-              goto 10
-            endif
-
-C Do the other menu types. If graph reset scaling factor for appropriate axis.
-            do 400 IX=1,NMFGET
-              if (MENUTYPE.eq.3) then
-                Iax=IMFGETNO(IX,7)
-                call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
-                if (TIMEold(IX).lt.0.0.or.ADDLIN.eq.1) then
-                  TIMEold(IX)=0.0
-                  Yold(IX)=FLOWVALS(IX)
-                endif
-                ioldpos=1
-              endif
-
-C Compute current time:
-C IHRD - number of days since start of plotting period in hours.
-C TIME - time in hours since start of first day plotted.
-              IHRD=(IDAY-IODS)*24
-              J=IHR*NTS+(ITS-1)
-              TIME=real(IHRD)+real(J)/real(NTS)
-
-C Within requested output period.
-              IF(TIME.LT.(TSTART-1.0).or.TIME.GT.TFINSH)goto 421
-
-              if (MENUTYPE.eq.2) then
-
-C First, recalculate time as it is done in table.F 
-C If there is occupancy filter and occupancy then use pattern
-C from zone iocpzone. Start with assumption of full occupancy.
-                call DATIME(JJ,ATIME)
-                ih=int(ATIME+1.)
-                ioc=1
-                if(iocupf.eq.1.and.iocpzone.ne.0)then
-                  call getocup(iocpzone,IDAY,JJ,ioc,iier)
-                endif
-                if(ioc.ne.0) then
-                  IB = INT(((FLOWVALS(IX) - XBIN1) / DXBIN) + 1.)
-                  if(IB.LE.0)then
-                    iunder = iunder +1
-                    IMISS = IMISS + 1
-                  elseif(IB.GT.NBINS)then
-                    iover = iover +1
-                    IMISS = IMISS + 1
-                  else
-                    INBIN(IB) = INBIN(IB) + 1
-                    IHITS = IHITS + 1
-                  endif
-                endif
-              elseif (MENUTYPE.eq.3) then
-
-C Draw next section of line.
-                iupdown=0
-                isym=0
-                if (ioldpos.eq.1)then
-                  call etplot(TIMEold(IX),Yold(IX),iupdown,isym)
-                endif
-                ioldpos=0
-                IPEN=1
-                MARK=0
-                RMK=AMOD((TIME-(0.5*float(NOUT)/float(NTS))),DT)
-                if (RMK.lt.0.001) MARK=6
-                TIMEold(IX)=TIME
-                Yold(IX)=FLOWVALS(IX)
+                    iupdown=0
+                    isym=0
+                    call etplot(TIMEold(IX),Yold(IX),iupdown,isym)
+                    IPEN=1
+                    MARK=0
+                    RMK=AMOD((TIME-(0.5*float(NOUT)/float(NTS))),DT)
+                    if (RMK.lt.0.001) MARK=6
 
 C If plotting colours for different zones then recall which
 C item we are dealing with. If the index of the item is greater
 C than that of the number of colours re-use an earlier colour.
-                if(colok)then
-                  if(IMFGETNO(IX,2).gt.0)then
-                    ICM=IMFGETNO(IX,2)
-                    if(ICM.gt.nzonec) ICM=IMFGETNO(IX,2)-nzonec
-                    if(ICM.gt.nzonec) ICM=IMFGETNO(IX,2)-nzonec
-                    iicol=ICM
-                    call winscl('z',iicol)
+                    if(colok)then
+                      if(IMFGETNO(IX,2).gt.0)then
+                        ICM=IMFGETNO(IX,2)
+                        if(ICM.gt.nzonec) ICM=IMFGETNO(IX,2)-nzonec
+                        if(ICM.gt.nzonec) ICM=IMFGETNO(IX,2)-nzonec
+                        iicol=ICM
+                        call winscl('z',iicol)
+                        call forceflush()
+                      endif
+                    endif
+
+C Plot the current value and then reset to forground colour.
+                    iupdown=IPEN
+                    isym=MARK
+                    call etplot(TIME,FLOWVALS(IX),iupdown,isym)
+                    if(colok)then
+                      iicol=0
+                      call winscl('-',iicol)
+                    endif
                     call forceflush()
                   endif
-                endif
 
-C Plot the current value - this has already been copied to Yold and
-C then reset to forground colour.
-                iupdown=IPEN
-                isym=MARK
-                call etplot(TIME,Yold(IX),iupdown,isym)
-                if(colok)then
-                  iicol=0
-                  call winscl('-',iicol)
-                endif
-                call forceflush()
-              elseif (MENUTYPE.eq.5) then
+C Remember this data point.
+                  TIMEold(IX)=TIME
+                  Yold(IX)=FLOWVALS(IX)
+                elseif (MENUTYPE.eq.4) then
 
-C Stats, calculate standard deviation. First, recalculate time as it
-C is done in table.F If there is occupancy filter and occupancy then
-C use pattern from zone iocpzone. Start with assumption of full occupancy.
-                call DATIME(JJ,ATIME)
-                ih=int(ATIME+1.)
-                ioc=1
-                if(iocupf.eq.1.and.iocpzone.ne.0)then
-                  call getocup(iocpzone,IDAY,JJ,ioc,iier)
-                endif
-                if(ioc.ne.0) then
-                  FTOTSD(IX)=FTOTSD(IX)+((FAVE(IX)-FLOWVALS(IX))**2)
-                  NF(IX)=NF(IX)+1
-                endif
-              elseif (MENUTYPE.eq.7) then
+C Tabular list. If there is occupancy filter and occupancy then use
+C pattern from zone iocpzone. Start with assumption of full occupancy.
+                  KE=K+11
 
-C Hours above, calculate standard deviation. First, recalculate time as it
-C is done in table.F If there is occupancy filter and occupancy then
-C use pattern from zone iocpzone. Start with assumption of full occupancy.
-                call DATIME(JJ,ATIME)
-                ih=int(ATIME+1.)
-                ioc=1
-                if(iocupf.eq.1.and.iocpzone.ne.0)then
-                  call getocup(iocpzone,IDAY,JJ,ioc,iier)
-                endif
-                if(ioc.ne.0) then
-                  if (FLOWVALS(IX).gt.XQUERY)then
-                    IQHRS(ix)=IQHRS(IX)+1
+C If writing to file then write data to the 800 char string buffer.
+                  if(ixopen.eq.1)then
+                    if(KE.le.800)then
+                      ioc=1
+                      if(iocupf.eq.1.and.iocpzone.ne.0)then
+                        call getocup(iocpzone,IDAY,JJ,ioc,iier)
+                      endif
+                      if(ioc.ne.0) then
+                        write (outs800(K:KE),'(f11.4)') FLOWVALS(IX)
+                      else
+                        write (outs800(K:KE),'(a)') '  not occ  '
+                      endif
+                      K=K+11
+                    endif
+
+C If writing to screen, use the 248 char string buffer.
+                  else
+                    if(KE.le.248)then
+                      ioc=1
+                      if(iocupf.eq.1.and.iocpzone.ne.0)then
+                        call getocup(iocpzone,IDAY,JJ,ioc,iier)
+                      endif
+                      if(ioc.ne.0) then
+                        write (outs248(K:KE),'(f11.4)') FLOWVALS(IX)
+                      else
+                        write (outs248(K:KE),'(a)') '  not occ  '
+                      endif
+                      K=K+11
+                    endif
                   endif
-                endif
-              elseif (MENUTYPE.eq.8) then
+
+                elseif (MENUTYPE.eq.5) then
+
+C Stats, calculate standard deviation. If there is occupancy filter and
+C occupancy then use pattern from zone iocpzone. Start with assumption
+C of full occupancy.
+                  ioc=1
+                  if(iocupf.eq.1.and.iocpzone.ne.0)then
+                    call getocup(iocpzone,IDAY,JJ,ioc,iier)
+                  endif
+                  if(ioc.ne.0) then
+                    FTOTSD(IX)=FTOTSD(IX)+((FAVE(IX)-FLOWVALS(IX))**2)
+                    NF(IX)=NF(IX)+1
+                  endif
+                elseif (MENUTYPE.eq.7) then
+
+C Hours above, calculate standard deviation. If there is occupancy
+C filter and occupancy then use pattern from zone iocpzone. Start with
+C assumption of full occupancy.
+                  ioc=1
+                  if(iocupf.eq.1.and.iocpzone.ne.0)then
+                    call getocup(iocpzone,IDAY,JJ,ioc,iier)
+                  endif
+                  if(ioc.ne.0) then
+                    if (FLOWVALS(IX).gt.XQUERY)then
+                      IQHRS(ix)=IQHRS(IX)+1
+                    endif
+                  endif
+                elseif (MENUTYPE.eq.8) then
 
 C Hours below.
-                call DATIME(JJ,ATIME)
-                ih=int(ATIME+1.)
-                ioc=1
-                if(iocupf.eq.1.and.iocpzone.ne.0)then
-                  call getocup(iocpzone,IDAY,JJ,ioc,iier)
-                endif
-                if(ioc.ne.0) then
-                  if (FLOWVALS(IX).lt.XQUERY)then
-                    IQHRS(ix)=IQHRS(ix)+1
+                  ioc=1
+                  if(iocupf.eq.1.and.iocpzone.ne.0)then
+                    call getocup(iocpzone,IDAY,JJ,ioc,iier)
+                  endif
+                  if(ioc.ne.0) then
+                    if (FLOWVALS(IX).lt.XQUERY)then
+                      IQHRS(ix)=IQHRS(ix)+1
+                    endif
+                  endif
+                elseif (MENUTYPE.eq.15) then
+
+C 3D network here FLOWVALS(IX) lets assume IMFGETNO(IX,2) yields the
+C connection number. If plotting mass flows use 5 decimal places.
+                  if(IMFGETNO(IX,1).eq.7)then
+                    iside=2; isize=1; ifont=1
+                    write(msg,'(a)') "Pressure difference (Pa)"
+                    call viewtext(msg,iside,isize,ifont)
+                  elseif(IMFGETNO(IX,1).eq.8)then
+                    iside=2; isize=1; ifont=1
+                    write(msg,'(a)') "Stack pressure (Pa)"
+                    call viewtext(msg,iside,isize,ifont)
+                  elseif(IMFGETNO(IX,1).eq.3)then
+                    iside=2; isize=1; ifont=1
+                    write(msg,'(a)') "Conn flow rate (kg/s)"
+                    call viewtext(msg,iside,isize,ifont)
+                  elseif(IMFGETNO(IX,1).eq.4)then
+                    iside=2; isize=1; ifont=1
+                    if(IMFGETNO(IX,8).eq.0)then
+                      write(msg,'(a)') "Conn flow rate (m^3/s)"
+                    else
+                      write(msg,'(a)') "Conn flow rate (l/s)"
+                    endif
+                    call viewtext(msg,iside,isize,ifont)
+                  elseif(IMFGETNO(IX,1).eq.6)then
+                    iside=2; isize=1; ifont=1
+                    write(msg,'(a)') "Conn fluid velocity (m/s)"
+                    call viewtext(msg,iside,isize,ifont)
+                  endif
+                  icn=IMFGETNO(IX,2)
+                  if(icn.ne.0)then
+                    POS=NODPS(ICN); NEG=NODNE(ICN)
+                    CMPIS=ITPCON(ICN)
+                    xc=HCMP(CMPIS,1,1); yc=HCMP(CMPIS,1,2)
+                    zc=HCMP(CMPIS,1,3)
+                    if(IMFGETNO(IX,8).eq.0)then
+                      write(word,'(f10.5)')FLOWVALS(IX)
+                    else
+                      write(word,'(f10.4)')FLOWVALS(IX)
+                    endif
+                    call draw_flow_value(word,HNOD(POS,1),HNOD(POS,2),
+     &                HNOD(POS,3),xc,yc,zc)
+                    call draw_flow_value(word,xc,yc,zc,
+     &                HNOD(NEG,1),HNOD(NEG,2),HNOD(NEG,3))
+                    if(net3ddelay.eq.1)then
+                      call pausems(100) ! slow it down a bit
+                    else
+                      call pausems(10)  ! slow it down a bit less
+                    endif
                   endif
                 endif
+ 400          CONTINUE  ! of selected metrics
+
+C If tabular, write output.
+              if (MENUTYPE.eq.4) then
+                if(ixopen.eq.1)then
+                  lnb=lnblnk(outs800)   ! write directly to file
+
+                  if(delim.eq.'-')then
+                    write(itru,'(A)',iostat=ios,err=1)outs800(1:lnb)
+                  else
+
+C If delimiter set to alternative then process text before writing.
+C If using X delimeter (tagged data) then set the delimeter to a comma.
+                    dg=delim
+                    if (delim.eq.'X') dg='C'
+                    call SDELIM(outs800,outs800d,dg,IW)
+                    lnb=lnblnk(outs800d)   ! write directly to file
+                    write(itru,'(A)',iostat=ios,err=1) outs800d(1:lnb)
+                  endif
+                else
+
+C Writing to screen so use shorter file buffer.
+                  lnb=MIN0(lnblnk(outs248),124)
+                  if(lnb.lt.124)then
+                    call EDDISP(itru,outs248(1:lnb))
+                  else
+                    call eddisp248(itru,outs248,124)
+                  endif
+                endif
+              elseif (MENUTYPE.eq.15) then
+
+C Pause just before continuing. Redraw the background nodes & components.
+                if(iairn.eq.3)then
+                  if(net3ddelay.eq.1)then
+                    call pauses(2) ! pause 2 sec
+                  elseif(net3ddelay.eq.2)then
+                    call pauses(1) ! pause 1 sec
+                  elseif(net3ddelay.eq.3)then
+                    call pausems(500) ! pause half sec
+                  else
+                    call pausems(250) ! pause quarter sec
+                  endif
+                  call startbuffer
+                  call MFWFDRAWNC('g')  ! Draw flow nodes & components in grey.
+                endif
               endif
- 421          CONTINUE
- 400        CONTINUE
+            endif
 
 C Reset add profile.
             ADDLIN=0
@@ -1120,6 +1322,7 @@ C If there are optional user defined labels draw them.
             call wstxpt(iid1,iid2,t24)
  201      continue
         endif
+
       elseif (MENUTYPE.eq.5) then
 
 C Display stats.
@@ -1155,6 +1358,7 @@ C Flow data in m^3/s or kg/s deserves 3 decimal places.
         if(iocupf.eq.1.and.iocpzone.ne.0)then
           call eddisp(itru,'(above data filtered by occupancy)')
         endif
+
       elseif (MENUTYPE.eq.7) then
 
 C Display stats + hrs above.
@@ -1197,6 +1401,7 @@ C          write(6,*) FMAX(I),FMIN(I),FAVE(I),FSTD(I),IQHRS(I)
         if(iocupf.eq.1.and.iocpzone.ne.0)then
           call eddisp(itru,'(above data filtered by occupancy)')
         endif
+
       elseif (MENUTYPE.eq.8) then
 
 C Display stats + hrs below.
@@ -1239,6 +1444,10 @@ C          write(6,*) FMAX(I),FMIN(I),FAVE(I),FSTD(I),IQHRS(I)
         if(iocupf.eq.1.and.iocpzone.ne.0)then
           call eddisp(itru,'(above data filtered by occupancy)')
         endif
+      elseif (MENUTYPE.eq.15) then
+
+C << 3D network here >>
+
       endif
 
       goto 1
@@ -1410,7 +1619,6 @@ C to graphical result display of network flows.
       CHARACTER ETEXT*124, RSNAME*40
       CHARACTER PDESCR*60,SDESCR*44
       character graftitle*64,grlbl*24,t64*64
-      character LAPROB*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
@@ -1455,9 +1663,7 @@ C Setup and pass in parameters to win3d.
         WRITE(ETEXT,'(4A)')'Lib: ',LAFRES(1:lsn1),
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
       endif
-      iside=1
-      isize=0
-      ifont=1
+      iside=1; isize=0; ifont=1
       call viewtext(etext,iside,isize,ifont)
 
       WRITE(ETEXT,'(3A)')PDESCR(1:lnblnk(PDESCR)),' ',
@@ -1469,15 +1675,11 @@ C Setup and pass in parameters to win3d.
       if(graftitle(1:2).ne.'  ')then
         t64=graftitle
         if(iancline.gt.0)then
-          iside=4
-          isize=1
-          ifont=2
+          iside=4; isize=1; ifont=2
           call viewtext(t64,iside,isize,ifont)
         endif
         if(iancline.eq.0)then
-          iside=3
-          isize=1
-          ifont=2
+          iside=3; isize=1; ifont=2
           call viewtext(t64,iside,isize,ifont)
         endif
       endif

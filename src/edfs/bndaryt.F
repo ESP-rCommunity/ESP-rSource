@@ -101,7 +101,7 @@ C
       COMMON/YUANcm/Uqstor(ntcelx,ntcely,ntcelz),Uqinit
 
       LOGICAL INCALU,INCALV,INCALW,INCALT,INCALK,INCALD
-      LOGICAL IZEROT,IZanKE,IMITZ,Uqinit
+      LOGICAL IZEROT,IZanKE,IMITZ,Uqinit,OK
 
 C ********************* MODUT *********************
 C MODUT - U direction boundary conditions - turbulent.
@@ -151,8 +151,45 @@ C Set up boundary conditions on South solid wall.
  801    IF(location.EQ.3)THEN
           J=JSBi(L,ICFD)
           DYS=YP(J)-YV(J)
-          DO 102 I=ISBii,ISBf(L,ICFD)
-            DO 1122 K=KSBi(L,ICFD),KSBf(L,ICFD)
+          DO 102 K=KSBi(L,ICFD),KSBf(L,ICFD)
+
+C This code is a proposed solution to the procedure in lines 143 - 148.
+C Commented for the time being, as it needs further testing. Also
+C present in MODVT and MODWT.
+
+C Because the velocity grid is staggered, handling of grid cells at the
+C boundary between BCs can be complicated, as they are half bounded by
+C one BC and half by the other in the relevant direction (in this case
+C the I direction). The convention is that each solid boundary condition
+C handles velocity grid cells with indices corresponding to its scalar
+C grid cells. The velocity grid is offset negatively, so the first row
+C in the relevant direction is the contentious one. 
+C How this is handled depends on what BC is before this one in the I
+C direction, in this K row. If it is another solid BC, handle as usual
+C (wall temperatures are not factored into calculations here, so no
+C interpolation is needed). If it is an opening, do nothing, and allow
+C this grid cell to be handled by the opening boundary condition (INOUT
+C in cfcalc.F). If it is inside a boundary in a different direction
+C (i.e. in a corner), also do nothing, as it will be handled by the
+C boundary condition in that direction.
+C             I=ISBi(L,ICFD)
+C             if (I.eq.2) then
+C               ISBii=I+1
+C             else
+C               ISBii=I
+C               do M=1,NOPEN(ICFD)
+C                 OK=LINVOL(I-1,J,K,
+C      &            IOPENi(M,ICFD),IOPENf(M,ICFD),
+C      &            JOPENi(M,ICFD),JOPENf(M,ICFD),
+C      &            KOPENi(M,ICFD),KOPENf(M,ICFD))
+C                 if (OK) then 
+C                   ISBii=I+1
+C                   EXIT
+C                 endif
+C               enddo
+C             endif
+
+            DO 1122 I=ISBii,ISBf(L,ICFD)
               TMULT=TRBSRCU(I,J,K,DYS)
               TAUSU(I,J,K)=-TMULT*Uf(I,J,K)
               SP(I,J,K)=SP(I,J,K)-TMULT*AreaNSU(I,K)
@@ -170,8 +207,26 @@ C Set up boundary conditions on North solid wall.
         ELSEIF(location.EQ.4)THEN
           J=JSBi(L,ICFD)
           DYN=YV(J+1)-YP(J)
-          DO 112 I=ISBii,ISBf(L,ICFD)
-            DO 1121 K=KSBi(L,ICFD),KSBf(L,ICFD)
+          DO 112 K=KSBi(L,ICFD),KSBf(L,ICFD)
+
+C             I=ISBi(L,ICFD)
+C             if (I.eq.2) then
+C               ISBii=I+1
+C             else
+C               ISBii=I
+C               do M=1,NOPEN(ICFD)
+C                 OK=LINVOL(I-1,J,K,
+C      &            IOPENi(M,ICFD),IOPENf(M,ICFD),
+C      &            JOPENi(M,ICFD),JOPENf(M,ICFD),
+C      &            KOPENi(M,ICFD),KOPENf(M,ICFD))
+C                 if (OK) then 
+C                   ISBii=I+1
+C                   EXIT
+C                 endif
+C               enddo
+C             endif
+
+            DO 1121 I=ISBii,ISBf(L,ICFD)
               TMULT=TRBSRCU(I,J,K,DYN)
               TAUNU(I,J,K)=-TMULT*Uf(I,J,K)
               SP(I,J,K)=SP(I,J,K)-TMULT*AreaNSU(I,K)
@@ -189,8 +244,26 @@ C Set up boundary conditions on Low solid wall.
         ELSEIF(location.EQ.5)THEN
           K=KSBi(L,ICFD)
           DZL=ZP(K)-ZW(K)
-          DO 122 I=ISBii,ISBf(L,ICFD)
-            DO 1221 J=JSBi(L,ICFD),JSBf(L,ICFD)
+          DO 122 J=JSBi(L,ICFD),JSBf(L,ICFD)            
+
+C             I=ISBi(L,ICFD)
+C             if (I.eq.2) then
+C               ISBii=I+1
+C             else
+C               ISBii=I
+C               do M=1,NOPEN(ICFD)
+C                 OK=LINVOL(I-1,J,K,
+C      &            IOPENi(M,ICFD),IOPENf(M,ICFD),
+C      &            JOPENi(M,ICFD),JOPENf(M,ICFD),
+C      &            KOPENi(M,ICFD),KOPENf(M,ICFD))
+C                 if (OK) then 
+C                   ISBii=I+1
+C                   EXIT
+C                 endif
+C               enddo
+C             endif
+
+            DO 1221 I=ISBii,ISBf(L,ICFD)
               TMULT=TRBSRCU(I,J,K,DZL)
               TAULU(I,J,K)=-TMULT*Uf(I,J,K)
               SP(I,J,K)=SP(I,J,K)-TMULT*AreaHLU(I,J)
@@ -208,8 +281,26 @@ C Set up boundary conditions on High solid wall.
         ELSEIF(location.EQ.6)THEN
           K=KSBi(L,ICFD)
           DZH=ZW(K+1)-ZP(K)
-          DO 132 I=ISBii,ISBf(L,ICFD)
-            DO 1321 J=JSBi(L,ICFD),JSBf(L,ICFD)
+          DO 132 J=JSBi(L,ICFD),JSBf(L,ICFD)            
+
+C             I=ISBi(L,ICFD)
+C             if (I.eq.2) then
+C               ISBii=I+1
+C             else
+C               ISBii=I
+C               do M=1,NOPEN(ICFD)
+C                 OK=LINVOL(I-1,J,K,
+C      &            IOPENi(M,ICFD),IOPENf(M,ICFD),
+C      &            JOPENi(M,ICFD),JOPENf(M,ICFD),
+C      &            KOPENi(M,ICFD),KOPENf(M,ICFD))
+C                 if (OK) then 
+C                   ISBii=I+1
+C                   EXIT
+C                 endif
+C               enddo
+C             endif
+
+            DO 1321 I=ISBii,ISBf(L,ICFD)
               TMULT=TRBSRCU(I,J,K,DZH)
               TAUHU(I,J,K)=-TMULT*Uf(I,J,K)
               SP(I,J,K)=SP(I,J,K)-TMULT*AreaHLU(I,J)
@@ -276,8 +367,6 @@ C              SU(I,J,K+1)=GREAT*Uf(I,J,K)
 
 C Momentum BCs for openings were formerly handled here, but now are treated
 C in INOUT.
-
-
 
 C Airflow at inlet not perpendicular to wall. Examine each opening and
 C treat those that have `directed. flow.
@@ -445,8 +534,26 @@ C Calculate distance from wall to next-to-wall grid point ($DELTA y sub p$).
           DXW=XP(I)-XU(I)
 
 C Treat each cell on solid boundary.
-          DO 202 J=JSBii,JSBf(L,ICFD)
-            DO 2021 K=KSBi(L,ICFD),KSBf(L,ICFD)
+          DO 202 K=KSBi(L,ICFD),KSBf(L,ICFD)
+
+C             J=JSBi(L,ICFD)
+C             if (J.eq.2) then
+C               JSBii=J+1
+C             else
+C               JSBii=J
+C               do M=1,NOPEN(ICFD)
+C                 OK=LINVOL(I,J-1,K,
+C      &            IOPENi(M,ICFD),IOPENf(M,ICFD),
+C      &            JOPENi(M,ICFD),JOPENf(M,ICFD),
+C      &            KOPENi(M,ICFD),KOPENf(M,ICFD))
+C                 if (OK) then 
+C                   JSBii=J+1
+C                   EXIT
+C                 endif
+C               enddo
+C             endif
+
+            DO 2021 J=JSBii,JSBf(L,ICFD)
               TMULT=TRBSRCV(I,J,K,DXW)
 
 C Calculate wall shear stress (+ value means stress operates in axis direction.
@@ -465,13 +572,32 @@ C Disconnect cell from fictitious cell to west.
             TAUWV(I,JI,K)=TAUWV(I,JI+1,K)
             TAUWV(I,JF+1,K)=TAUWV(I,JF,K)
  210      CONTINUE
+
         ELSEIF(location.EQ.2)THEN
 
 C Set up boundary conditions for East solid wall.
           I=ISBi(L,ICFD)
           DXE=XU(I+1)-XP(I)
-          DO 212 J=JSBii,JSBf(L,ICFD)
-            DO 2121 K=KSBi(L,ICFD),KSBf(L,ICFD)
+          DO 212 K=KSBi(L,ICFD),KSBf(L,ICFD)
+
+C             J=JSBi(L,ICFD)
+C             if (J.eq.2) then
+C               JSBii=J+1
+C             else
+C               JSBii=J
+C               do M=1,NOPEN(ICFD)
+C                 OK=LINVOL(I,J-1,K,
+C      &            IOPENi(M,ICFD),IOPENf(M,ICFD),
+C      &            JOPENi(M,ICFD),JOPENf(M,ICFD),
+C      &            KOPENi(M,ICFD),KOPENf(M,ICFD))
+C                 if (OK) then 
+C                   JSBii=J+1
+C                   EXIT
+C                 endif
+C               enddo
+C             endif
+
+            DO 2121 J=JSBii,JSBf(L,ICFD)
               TMULT=TRBSRCV(I,J,K,DXE)
               TAUEV(I,J,K)=-TMULT*Vf(i,j,K)
               SP(I,J,K)=SP(I,J,K)-TMULT*AreaEWV(J,K)
@@ -484,12 +610,31 @@ C Set up boundary conditions for East solid wall.
             TAUEV(I,JI,K)=TAUEV(I,JI+1,K)
             TAUEV(I,JF+1,K)=TAUEV(I,JF,K)
  220      CONTINUE
+
         ELSEIF(location.EQ.5)THEN
 
 C Set up boundary conditions on Low solid wall.
           K=KSBi(L,ICFD)
           DZL=ZP(K)-ZW(K)
           DO 222 I=ISBi(L,ICFD),ISBf(L,ICFD)
+
+C             J=JSBi(L,ICFD)
+C             if (J.eq.2) then
+C               JSBii=J+1
+C             else
+C               JSBii=J
+C               do M=1,NOPEN(ICFD)
+C                 OK=LINVOL(I,J-1,K,
+C      &            IOPENi(M,ICFD),IOPENf(M,ICFD),
+C      &            JOPENi(M,ICFD),JOPENf(M,ICFD),
+C      &            KOPENi(M,ICFD),KOPENf(M,ICFD))
+C                 if (OK) then 
+C                   JSBii=J+1
+C                   EXIT
+C                 endif
+C               enddo
+C             endif
+
             DO 2221 J=JSBii,JSBf(L,ICFD)
               TMULT=TRBSRCV(I,J,K,DZL)
               TAULV(I,J,K)=-TMULT*Vf(i,j,K)
@@ -503,17 +648,36 @@ C Set up boundary conditions on Low solid wall.
             TAULV(I,JI,K)=TAULV(I,JI+1,K)
             TAULV(I,JF+1,K)=TAULV(I,JF,K)
  230      CONTINUE
+
         ELSEIF(location.EQ.6)THEN
 
 C Set up boundary conditions on High solid wall.
           K=KSBi(L,ICFD)
           DZH=ZW(K+1)-ZP(K)
           DO 232 I=ISBi(L,ICFD),ISBf(L,ICFD)
+
+C             J=JSBi(L,ICFD)
+C             if (J.eq.2) then
+C               JSBii=J+1
+C             else
+C               JSBii=J
+C               do M=1,NOPEN(ICFD)
+C                 OK=LINVOL(I,J-1,K,
+C      &            IOPENi(M,ICFD),IOPENf(M,ICFD),
+C      &            JOPENi(M,ICFD),JOPENf(M,ICFD),
+C      &            KOPENi(M,ICFD),KOPENf(M,ICFD))
+C                 if (OK) then 
+C                   JSBii=J+1
+C                   EXIT
+C                 endif
+C               enddo
+C             endif
+
             DO 2321 J=JSBii,JSBf(L,ICFD)
               TMULT=TRBSRCV(I,J,K,DZH)
               TAUHV(I,J,K)=-TMULT*Vf(i,j,K)
               SP(I,J,K)=SP(I,J,K)-TMULT*AreaHLV(I,J)
-             AH(I,J,K)=0.0
+              AH(I,J,K)=0.0
  2321       CONTINUE
  232      CONTINUE
           JI=JSBi(L,ICFD)
@@ -578,7 +742,7 @@ C Momentum BCs for openings were formerly handled here, but now are treated
 C in INOUT.
 
 C Airflow at inlet not perpendicular to wall. Examine each opening and
-C treat those that have `directed. flow.
+C treat those that have "directed" flow.
       DO 241 L=1,NOPEN(ICFD)
         J=JOPENi(L,ICFD)
 C West wall.
@@ -771,6 +935,24 @@ C Set up boundary conditions for West solid wall if log-law wall functions in us
           I=ISBi(L,ICFD)
           DXW=XP(I)-XU(I)
           DO 302 J=JSBi(L,ICFD),JSBf(L,ICFD)
+
+C             K=KSBi(L,ICFD)
+C             if (K.eq.2) then
+C               KSBii=K+1
+C             else
+C               KSBii=K
+C               do M=1,NOPEN(ICFD)
+C                 OK=LINVOL(I,J,K-1,
+C      &            IOPENi(M,ICFD),IOPENf(M,ICFD),
+C      &            JOPENi(M,ICFD),JOPENf(M,ICFD),
+C      &            KOPENi(M,ICFD),KOPENf(M,ICFD))
+C                 if (OK) then 
+C                   KSBii=K+1
+C                   EXIT
+C                 endif
+C               enddo
+C             endif
+
             DO 3021 K=KSBii,KSBf(L,ICFD)
               TMULT=TRBSRCW(I,J,K,DXW)
               TAUWW(I,J,K)=-TMULT*Wf(i,j,K)
@@ -790,6 +972,24 @@ C Set up boundary conditions for East solid wall if log-law wall functions in us
           I=ISBi(L,ICFD)
           DXE=XU(I+1)-XP(I)
           DO 312 J=JSBi(L,ICFD),JSBf(L,ICFD)
+
+C             K=KSBi(L,ICFD)
+C             if (K.eq.2) then
+C               KSBii=K+1
+C             else
+C               KSBii=K
+C               do M=1,NOPEN(ICFD)
+C                 OK=LINVOL(I,J,K-1,
+C      &            IOPENi(M,ICFD),IOPENf(M,ICFD),
+C      &            JOPENi(M,ICFD),JOPENf(M,ICFD),
+C      &            KOPENi(M,ICFD),KOPENf(M,ICFD))
+C                 if (OK) then 
+C                   KSBii=K+1
+C                   EXIT
+C                 endif
+C               enddo
+C             endif
+
             DO 3121 K=KSBii,KSBf(L,ICFD)
               TMULT=TRBSRCW(I,J,K,DXE)
               TAUEW(I,J,K)=-TMULT*Wf(i,j,K)
@@ -809,6 +1009,24 @@ C Set up boundary conditions on South solid wall if log-law wall functions in us
           J=JSBi(L,ICFD)
           DYS=YP(J)-YV(J)
           DO 322 I=ISBi(L,ICFD),ISBf(L,ICFD)
+
+C             K=KSBi(L,ICFD)
+C             if (K.eq.2) then
+C               KSBii=K+1
+C             else
+C               KSBii=K
+C               do M=1,NOPEN(ICFD)
+C                 OK=LINVOL(I,J,K-1,
+C      &            IOPENi(M,ICFD),IOPENf(M,ICFD),
+C      &            JOPENi(M,ICFD),JOPENf(M,ICFD),
+C      &            KOPENi(M,ICFD),KOPENf(M,ICFD))
+C                 if (OK) then 
+C                   KSBii=K+1
+C                   EXIT
+C                 endif
+C               enddo
+C             endif
+
             DO 3221 K=KSBii,KSBf(L,ICFD)
               TMULT=TRBSRCW(I,J,K,DYS)
               TAUSW(I,J,K)=-TMULT*Wf(I,J,K)
@@ -828,6 +1046,24 @@ C Set up boundary conditions on North solid wall if log-law wall functions in us
           J=JSBi(L,ICFD)
           DYN=YV(J+1)-YP(J)
           DO 332 I=ISBi(L,ICFD),ISBf(L,ICFD)
+
+C             K=KSBi(L,ICFD)
+C             if (K.eq.2) then
+C               KSBii=K+1
+C             else
+C               KSBii=K
+C               do M=1,NOPEN(ICFD)
+C                 OK=LINVOL(I,J,K-1,
+C      &            IOPENi(M,ICFD),IOPENf(M,ICFD),
+C      &            JOPENi(M,ICFD),JOPENf(M,ICFD),
+C      &            KOPENi(M,ICFD),KOPENf(M,ICFD))
+C                 if (OK) then 
+C                   KSBii=K+1
+C                   EXIT
+C                 endif
+C               enddo
+C             endif
+
             DO 3321 K=KSBii,KSBf(L,ICFD)
               TMULT=TRBSRCW(I,J,K,DYN)
               TAUNW(I,J,K)=-TMULT*Wf(I,J,K)
@@ -847,6 +1083,24 @@ C Set up boundary conditions on West solid wall if Yuan wall functions in use.
           I=ISBi(L,ICFD)
           DXW=XP(I)-XU(I)
           DO 902 J=JSBi(L,ICFD),JSBf(L,ICFD)
+
+C             K=KSBi(L,ICFD)
+C             if (K.eq.2) then
+C               KSBii=K+1
+C             else
+C               KSBii=K
+C               do M=1,NOPEN(ICFD)
+C                 OK=LINVOL(I,J,K-1,
+C      &            IOPENi(M,ICFD),IOPENf(M,ICFD),
+C      &            JOPENi(M,ICFD),JOPENf(M,ICFD),
+C      &            KOPENi(M,ICFD),KOPENf(M,ICFD))
+C                 if (OK) then 
+C                   KSBii=K+1
+C                   EXIT
+C                 endif
+C               enddo
+C             endif
+
             DO 3921 K=KSBii,KSBf(L,ICFD)
               Utau = YUANBC(I,J,K,DXW)
 
@@ -881,6 +1135,24 @@ C Set up boundary conditions for East solid wall if Yuan wall functions in use.
           I=ISBi(L,ICFD)
           DXE=XU(I+1)-XP(I)
           DO 912 J=JSBi(L,ICFD),JSBf(L,ICFD)
+
+C             K=KSBi(L,ICFD)
+C             if (K.eq.2) then
+C               KSBii=K+1
+C             else
+C               KSBii=K
+C               do M=1,NOPEN(ICFD)
+C                 OK=LINVOL(I,J,K-1,
+C      &            IOPENi(M,ICFD),IOPENf(M,ICFD),
+C      &            JOPENi(M,ICFD),JOPENf(M,ICFD),
+C      &            KOPENi(M,ICFD),KOPENf(M,ICFD))
+C                 if (OK) then 
+C                   KSBii=K+1
+C                   EXIT
+C                 endif
+C               enddo
+C             endif
+
             DO 3991 K=KSBii,KSBf(L,ICFD)
               Utau = YUANBC(I,J,K,DXE)
               if( Wf(i,j,K).lt.0.)then
@@ -905,6 +1177,24 @@ C Set up boundary conditions on South solid wall if Yuan wall functions in use.
           J=JSBi(L,ICFD)
           DYS=YP(J)-YV(J)
           DO 922 I=ISBi(L,ICFD),ISBf(L,ICFD)
+
+C             K=KSBi(L,ICFD)
+C             if (K.eq.2) then
+C               KSBii=K+1
+C             else
+C               KSBii=K
+C               do M=1,NOPEN(ICFD)
+C                 OK=LINVOL(I,J,K-1,
+C      &            IOPENi(M,ICFD),IOPENf(M,ICFD),
+C      &            JOPENi(M,ICFD),JOPENf(M,ICFD),
+C      &            KOPENi(M,ICFD),KOPENf(M,ICFD))
+C                 if (OK) then 
+C                   KSBii=K+1
+C                   EXIT
+C                 endif
+C               enddo
+C             endif
+
             DO 3929 K=KSBii,KSBf(L,ICFD)
               Utau = YUANBC(I,J,K,DYS)
               if( Wf(i,j,K).lt.0. )then
@@ -929,6 +1219,24 @@ C Set up boundary conditions on North solid wall if Yuan wall functions in use.
           J=JSBi(L,ICFD)
           DYN=YV(J+1)-YP(J)
           DO 932 I=ISBi(L,ICFD),ISBf(L,ICFD)
+
+C             K=KSBi(L,ICFD)
+C             if (K.eq.2) then
+C               KSBii=K+1
+C             else
+C               KSBii=K
+C               do M=1,NOPEN(ICFD)
+C                 OK=LINVOL(I,J,K-1,
+C      &            IOPENi(M,ICFD),IOPENf(M,ICFD),
+C      &            JOPENi(M,ICFD),JOPENf(M,ICFD),
+C      &            KOPENi(M,ICFD),KOPENf(M,ICFD))
+C                 if (OK) then 
+C                   KSBii=K+1
+C                   EXIT
+C                 endif
+C               enddo
+C             endif
+
             DO 3992 K=KSBii,KSBf(L,ICFD)
               Utau = YUANBC(I,J,K,DYN)
               if( Wf(i,j,K).lt.0. )then
@@ -1051,6 +1359,7 @@ C East wall.
  3851       CONTINUE
  385      CONTINUE
         I=IOPENi(L,ICFD)
+
 C South wall.
         ELSEIF(IWOPEN(L,ICFD).EQ.3.AND.FIXM(L,ICFD).GT.0.) THEN
           J=JOPENi(L,ICFD)
@@ -1104,7 +1413,6 @@ C North wall.
  395      CONTINUE
         endif
  341  continue
-
 
       RETURN
 
@@ -1180,10 +1488,11 @@ C If flow is 1D or 2D make coefficients in other directions zero.
 
 C Openings.
       DO 371 L=1,NOPEN(ICFD)
+c        IF(IWOPEN(L,ICFD).EQ.0)THEN
         IF(IWOPEN(L,ICFD).EQ.0.OR.(IWOPEN(L,ICFD).GE.1.AND.
      &     IWOPEN(L,ICFD).LE.6.AND.IMFACT.EQ.1))THEN
 
-C Velocity.
+C Pressure or velocity.
           DO 372 I=IOPENi(L,ICFD),IOPENf(L,ICFD)
             DO 3721 J=JOPENi(L,ICFD),JOPENf(L,ICFD)
               DO 3722 K=KOPENi(L,ICFD),KOPENf(L,ICFD)
@@ -1194,7 +1503,7 @@ C Velocity.
  372      CONTINUE
         ELSEIF(IWOPEN(L,ICFD).EQ.99)THEN
 
-C Zero velocity gradient - mass type bc?.
+C Mass.
           DO 373 I=IOPENi(L,ICFD),IOPENf(L,ICFD)
             DO 3731 J=JOPENi(L,ICFD),JOPENf(L,ICFD)
               DO 3732 K=KOPENi(L,ICFD),KOPENf(L,ICFD)

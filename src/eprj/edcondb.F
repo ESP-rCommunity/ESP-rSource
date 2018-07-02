@@ -61,12 +61,12 @@ C CLSSEL (36 char) is an array for menu items for the selected class.
       character PDBM*86     ! array to hold summary of each material
       DIMENSION PDBM(37)    ! within the category
       character managearray*32  ! string array for material management
-      dimension managearray(60)
+      dimension managearray(150)
       integer iwhichmanage,iwhichmsel
-      dimension iwhichmanage(60),iwhichmsel(60) ! for each management array point back
+      dimension iwhichmanage(150),iwhichmsel(150) ! for each management array point back
       integer iwhicharray   ! for each item in menu point back to array
       integer lsn,lfordoc   ! for detecting string lengths
-      dimension iwhicharray(60)
+      dimension iwhicharray(150)
       character ACTION*1,lltmp*144
       CHARACTER KEY*1,outs*124
       CHARACTER xfile*144,tg*1,delim*1,t32*32,t248*248
@@ -3736,13 +3736,13 @@ C CLSSEL (36 char) is an array for menu items for the selected class.
       DIMENSION CLSDES(36),CLSSEL(30),ICLSSEL(30)
       CHARACTER*66 MLCITM(37)
       character managearray*32  ! string array for material management
-      dimension managearray(60)
+      dimension managearray(150)
       integer pointback(30) ! to point back to item in list
       integer iwhichmanage,iwhichmsel
-      dimension iwhichmanage(60),iwhichmsel(60) ! for each management array point back
+      dimension iwhichmanage(150),iwhichmsel(150) ! for each management array point back
       integer iwhicharray   ! for each item in menu point back to array
       integer lsn,lfordoc   ! for detecting string lengths
-      dimension iwhicharray(60)
+      dimension iwhicharray(150)
       character lltmp*144
       CHARACTER KEY*1,outs*124
       CHARACTER T12*12,T12OTH*12,T14*14,T72*72

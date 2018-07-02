@@ -365,6 +365,17 @@ C the 16 char of string + 2 " plus the , is 19
           if(irows.eq.1)then
             do IH=1,NC
               lnrs=lnblnk(RSNAME(IGETNO(IH,5)))
+
+C Test of limiting set name to first 26 char if <50 sets or
+C 17 characters if there are between 50 and 80 columns.
+C If >80 truncate at 12 characters.
+              if(NC.lt.50)then
+                if(lnrs.gt.26) lnrs=26
+              elseif(NC.ge.50.and.NC.lt.80)then
+                if(lnrs.gt.17) lnrs=17
+              elseif(NC.ge.80)then
+                if(lnrs.gt.12) lnrs=12
+              endif
               ln19=lnrs+3; ln18=lnrs+2; ln16=lnrs  ! for current
               IADS=((IH-1)*ln19)+1
               IADF=IADS+ln18
@@ -787,8 +798,8 @@ C SAINTER calculates summary statistics within result sets.
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
-      COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
+      COMMON/GRAF1/YMAX(6),YMIN(6),YAXSET(6),ADDLIN,horaxisdiv
+      COMMON/GRAF2/YSC(6),Yadd(6),TSC,Xadd,IGX(6),ILR(6),DT
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
@@ -797,6 +808,8 @@ C SAINTER calculates summary statistics within result sets.
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
+      character graftitle*64,grlbl*24
+      common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
 
       character SLABEL*32,GLABEL*20,TABLABEL*36
       COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
@@ -939,8 +952,8 @@ C Copy current sub-set of sets into IGETNO array.
           IGETNO(NGET,5)=NSNO(ISET)
         endif
  20   continue
-      write(6,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' is focus'
-      write(6,'(a,a)') GLABEL(1)(1:LNGLABEL(1)),' is focus'
+C      write(6,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' is focus'
+C      write(6,'(a,a)') GLABEL(1)(1:LNGLABEL(1)),' is focus'
 
 C NDTS - the number of timesteps in a day.
       NDTS=24*NTS
@@ -1236,10 +1249,14 @@ C Calculate overall standard deviation and display depending on IFMT.
      &                    SDTOT/real(NSDTOT)
         call edisp(ITRU,outs)
       elseif (IFMT.eq.3.and.(.not.graphit)) then
+        write (graftitle,'(3a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
+     &    ' in: ',zname(IGETNO(1,2)) 
+        ngrlbl=0
         call MOGHED
         YMAX(1)=VMAX
         YMIN(1)=VMIN
-        YAXSET(1)=1  ! lets try left axis
+        YAXSET(1)=1  ! use left axis
+        YAXSET(2)=0; YAXSET(3)=0; YAXSET(4)=0  ! off other axis
         DHR=FLOAT(((IODF-1)*24+IOH2)-((IODS-1)*24+IOH1))
         TMIN=FLOAT(IOH1)-1.0/FLOAT(NTS)
         TMAX=FLOAT(IOH1)+DHR+1.0/FLOAT(NTS)

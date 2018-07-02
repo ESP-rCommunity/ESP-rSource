@@ -1620,6 +1620,10 @@ C based on contents of material.h. Should work for mlcver 0 and 1.
       
       COMMON/GVALCAL/CLAMDA(MMLC)
 
+C Markdown flag.
+      logical markdown
+      common/markdownflag/markdown
+
       integer matarrayindex ! the indes within matdatarray
       integer cfcarrayindex ! CFClayers db index
       integer lnam    ! length of material name
@@ -1629,7 +1633,7 @@ C based on contents of material.h. Should work for mlcver 0 and 1.
       integer lnlist
 
       DIMENSION PNAM(ME)
-      CHARACTER OUTSTR*148,PNAM*124
+      CHARACTER OUTSTR*148,PNAM*124,outstr2*224
       CHARACTER SOPT*12,GDESCR*36
       integer lnmlcn,lnmlco,lnother
       CHARACTER layertp*9
@@ -1646,40 +1650,97 @@ C Pick up general description of the composite.
         CALL EDISP(ITRU,' ')
         IF(mlctype(IFOC)(1:4).NE.'OPAQ'.AND.
      &     mlctype(IFOC)(1:3).NE.'CFC')THEN
-          WRITE(OUTSTR,'(5a,f6.3)')
-     &      ' Details of transparent construction: ',
-     &      mlcname(ifoc)(1:lnmlcname(ifoc)),' with ',
-     &      mlcoptical(ifoc)(1:lnmlco),
-     &      ' optics and overall thickness ',THKMLC(ifoc)
-          CALL EDISP(ITRU,OUTSTR)
-        ELSEIF(mlctype(IFOC)(1:3).EQ.'CFC')THEN
-          WRITE(OUTSTR,'(3a)')' ',
-     &      'Details of complex fenestration construction: ',
-     &      mlcname(ifoc)(1:lnmlcname(ifoc))
-          CALL EDISP(ITRU,OUTSTR)
-        ELSE
-          if(isymindex.eq.0)then
-            WRITE(OUTSTR,'(3a,f6.3)')
-     &      ' Details of opaque construction: ',
-     &      mlcname(ifoc)(1:lnmlcname(ifoc)),
-     &      ' and overall thickness ',THKMLC(ifoc)
+          if(markdown)then
+            call edisp(ITRU,' ')
+            write(outstr,'(2a)')'### ',mlcname(ifoc)(1:lnmlcname(ifoc))
+            call edisp2tr(ITRU,OUTSTR)
+            WRITE(OUTSTR,'(5a,f6.3,a)')
+     &        'Details of transparent construction ',
+     &        mlcname(ifoc)(1:lnmlcname(ifoc)),' with ',
+     &        mlcoptical(ifoc)(1:lnmlco),
+     &        ' optics with an overall thickness of ',THKMLC(ifoc),'m.'
+            call edisp2tr(ITRU,OUTSTR)
           else
             WRITE(OUTSTR,'(5a,f6.3)')
-     &      ' Details of opaque construction: ',
-     &      mlcname(ifoc)(1:lnmlcname(ifoc)),' linked to ',
-     &      mlcname(isymindex)(1:lnmlcname(isymindex)),
-     &      ' & with overall thickness ',THKMLC(ifoc)
+     &        ' Details of transparent construction: ',
+     &        mlcname(ifoc)(1:lnmlcname(ifoc)),' with ',
+     &        mlcoptical(ifoc)(1:lnmlco),
+     &        ' optics and overall thickness ',THKMLC(ifoc)
+            CALL EDISP(ITRU,OUTSTR)
           endif
-          CALL EDISP(ITRU,OUTSTR)
+        ELSEIF(mlctype(IFOC)(1:3).EQ.'CFC')THEN
+          if(markdown)then
+            call edisp(ITRU,' ')
+            write(outstr,'(2a)')'### ',mlcname(ifoc)(1:lnmlcname(ifoc))
+            call edisp(itru,outstr)
+            WRITE(OUTSTR,'(3a)')' ',
+     &        'Details of complex fenestration construction ',
+     &        mlcname(ifoc)(1:lnmlcname(ifoc))
+            call edisp2tr(ITRU,OUTSTR)
+          else
+            WRITE(OUTSTR,'(3a)')' ',
+     &        'Details of complex fenestration construction: ',
+     &        mlcname(ifoc)(1:lnmlcname(ifoc))
+            CALL EDISP(ITRU,OUTSTR)
+          endif
+        ELSE
+          if(isymindex.eq.0)then
+            if(markdown)then
+              call edisp(ITRU,' ')
+              write(outstr,'(2a)')'### ',
+     &          mlcname(ifoc)(1:lnmlcname(ifoc))
+              call edisp(itru,outstr)
+              WRITE(OUTSTR,'(3a,f6.3,a)')
+     &         'Details of opaque construction: ',
+     &         mlcname(ifoc)(1:lnmlcname(ifoc)),
+     &         ' with an overall thickness of ',THKMLC(ifoc),'m.'
+               call edisp2tr(ITRU,OUTSTR)
+            else
+              WRITE(OUTSTR,'(3a,f6.3)')
+     &         ' Details of opaque construction: ',
+     &         mlcname(ifoc)(1:lnmlcname(ifoc)),
+     &         ' and overall thickness ',THKMLC(ifoc)
+              CALL EDISP(ITRU,OUTSTR)
+            endif
+          else
+            if(markdown)then
+              call edisp(ITRU,' ')
+              write(outstr,'(2a)')'### ',
+     &          mlcname(ifoc)(1:lnmlcname(ifoc))
+              call edisp(itru,outstr)
+              WRITE(OUTSTR,'(5a,f6.3,a)')
+     &          'Details of opaque construction: ',
+     &          mlcname(ifoc)(1:lnmlcname(ifoc)),' linked to ',
+     &          mlcname(isymindex)(1:lnmlcname(isymindex)),
+     &          ' with an overall thickness of ',THKMLC(ifoc),'m.'
+              call edisp2tr(ITRU,OUTSTR)
+            else
+              WRITE(OUTSTR,'(5a,f6.3)')
+     &          ' Details of opaque construction: ',
+     &          mlcname(ifoc)(1:lnmlcname(ifoc)),' linked to ',
+     &          mlcname(isymindex)(1:lnmlcname(isymindex)),
+     &          ' & with overall thickness ',THKMLC(ifoc)
+              CALL EDISP(ITRU,OUTSTR)
+            endif
+          endif
 
 C If newer MLC also display documentation of the MLC.
           if(mlcver.eq.1)then
-            WRITE(OUTSTR,'(4a)')
+            if(markdown)then
+              WRITE(OUTSTR,'(4a)')
+     &        'In category ',mlcincat(ifoc)(1:lnblnk(mlcincat(ifoc))),
+     &        ' also shown in menus as: ',
+     &        mlcmenu(ifoc)(1:lnmlcmenu(ifoc))
+              call edisp2tr(ITRU,OUTSTR)
+              call edisp248(ITRU,mlcdoc(ifoc),100)
+            else
+              WRITE(OUTSTR,'(4a)')
      &        ' In category ',mlcincat(ifoc)(1:lnblnk(mlcincat(ifoc))),
      &        ' also shown in menus as: ',
      &        mlcmenu(ifoc)(1:lnmlcmenu(ifoc))
-            CALL EDISP(ITRU,OUTSTR)
-            call edisp248(ITRU,mlcdoc(ifoc),100)
+              CALL EDISP(ITRU,OUTSTR)
+              call edisp248(ITRU,mlcdoc(ifoc),100)
+            endif
           endif
         ENDIF
       ENDIF
@@ -1710,13 +1771,26 @@ C for reporting
 C CFC2 Reporting based on report level.
       IF(ITRC.GT.1)THEN
         CALL EDISP(ITRU,' ')
-        write(OUTSTR,'(2a)')
-     &' Layer|CFC |Thick |Conduc-|Density|Specif|Layer tp|',
-     &' Description'
-        CALL EDISP(ITRU,OUTSTR)
-        write(OUTSTR,'(1a)')
-     &'      |db  |(mm)  |tivity |       |heat  |        |'
-        CALL EDISP(ITRU,OUTSTR)
+        if(markdown)then
+          write(OUTSTR2,'(3a)')
+     &    'Layer  Thickness (mm)  Conductivity (W/(mK))  ',
+     &    'Density (kg/m^3^)  Specific heat (J/(kgK))  Emissivity  ',
+     &    'Absorption  Diffusivity  R (m^2^K/W)  kg/m^2^  Description'
+          CALL EDISP(ITRU,OUTSTR)
+          write(OUTSTR,'(3a)')
+     &    '-----  --------------  ---------------------  ',
+     &    '-----------------  -----------------------  ----------  ',
+     &    '----------  -----------  -----------  -------  -----------'
+          CALL EDISP(ITRU,OUTSTR2)
+        else
+          write(OUTSTR,'(2a)')
+     &    ' Layer|CFC |Thick |Conduc-|Density|Specif|Layer tp|',
+     &    ' Description'
+          CALL EDISP(ITRU,OUTSTR)
+          write(OUTSTR,'(1a)')
+     &    '      |db  |(mm)  |tivity |       |heat  |        |'
+          CALL EDISP(ITRU,OUTSTR)
+        endif
       ELSEIF(ITRC.EQ.1)THEN
         CALL EDISP(ITRU,' ')
         CALL EDISP(ITRU,' Layer|CFC |Thick | Description ')
@@ -1800,18 +1874,41 @@ C Compact report has more room for material description.
 C MLC Reporting based on report level.
       IF(ITRC.GT.1)THEN
         CALL EDISP(ITRU,' ')
-        write(OUTSTR,'(2a)')
-     &' Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu|',
-     &' R    | Kg |Description'
-        CALL EDISP(ITRU,OUTSTR)
-        write(OUTSTR,'(2a)')
-     &'      |(mm)  |tivity |       |heat  |emis|abs  |resis|',
-     &'m^2K/W| m^2|'
-        CALL EDISP(ITRU,OUTSTR)
+        if(markdown)then
+          write(OUTSTR2,'(3a)')
+     &    'Layer  Thickness (mm)  Conductivity (W/(mK))  ',
+     &    'Density (kg/m^3^)  Specific heat (J/(kgK))  Emissivity  ',
+     &    'Absorption  Diffusivity  R (m^2^K/W)  kg/m^2^  Description'
+          CALL EDISP(ITRU,OUTSTR2)
+          write(OUTSTR2,'(4a)')
+     &    '-----  --------------  ---------------------  ',
+     &    '-----------------  -----------------------  ----------  ',
+     &    '----------  -----------  -----------  -------  -----------',
+     &    '------------------------'
+          CALL EDISP(ITRU,OUTSTR2)
+        else
+          write(OUTSTR,'(2a)')
+     &    ' Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu|',
+     &    ' R    | Kg |Description'
+          CALL EDISP(ITRU,OUTSTR)
+          write(OUTSTR,'(2a)')
+     &    '      |(mm)  |tivity |       |heat  |emis|abs  |resis|',
+     &    'm^2K/W| m^2|'
+          CALL EDISP(ITRU,OUTSTR)
+        endif
       ELSEIF(ITRC.EQ.1)THEN
-        CALL EDISP(ITRU,' ')
-        CALL EDISP(ITRU,' Layer|Thick | Description ')
-        CALL EDISP(ITRU,'      |(mm)  | of material ')
+        if(markdown)then
+          CALL EDISP(ITRU,' ')
+          CALL EDISP(ITRU,
+     &    'Layer  Thick (mm)  Description                 ')
+          write(OUTSTR,'(a)')
+     &    '-----  ----------  --------------------------  '
+          CALL EDISP(ITRU,OUTSTR)
+        else
+          CALL EDISP(ITRU,' ')
+          CALL EDISP(ITRU,' Layer|Thick | Description ')
+          CALL EDISP(ITRU,'      |(mm)  | of material ')
+        endif
       ENDIF
 
 C Loop through all of the layers and compose RT for the construction.
@@ -1874,29 +1971,61 @@ C is zero then avoid divide by zero.
 
 C Reporting.
         IF(ITRC.GT.1)THEN
-          lnlist = MIN0(LNBLNK(PNAM(IL)),82)    ! space left for doc
-          if(LAYERS(IFOC).eq.1)then 
-            WRITE(OUTSTR,24)IL,DTHK(IFOC,IL)*1000.0,
-     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
-          elseif(LAYERS(IFOC).ge.2.and.IL.eq.1)then 
-            WRITE(OUTSTR,25)' Ext ',DTHK(IFOC,IL)*1000.0,
-     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
-          elseif(LAYERS(IFOC).ge.2.and.IL.eq.LAYERS(IFOC))then 
-            WRITE(OUTSTR,25)' Int ',DTHK(IFOC,IL)*1000.0,
-     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
-          else 
-            WRITE(OUTSTR,24)IL,DTHK(IFOC,IL)*1000.0,
-     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
+          if(markdown)then
+            lnlist = MIN0(LNBLNK(PNAM(IL)),72)    ! space left for doc
+          else
+            lnlist = MIN0(LNBLNK(PNAM(IL)),82)    ! space left for doc
           endif
+          if(LAYERS(IFOC).eq.1)then 
+            if(markdown)then
+              WRITE(OUTSTR2,241)IL,DTHK(IFOC,IL)*1000.0,
+     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
+            else
+              WRITE(OUTSTR,24)IL,DTHK(IFOC,IL)*1000.0,
+     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
+            endif
+          elseif(LAYERS(IFOC).ge.2.and.IL.eq.1)then 
+            if(markdown)then
+              WRITE(OUTSTR2,251)'Ext  ',DTHK(IFOC,IL)*1000.0,
+     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
+            else
+              WRITE(OUTSTR,25)' Ext ',DTHK(IFOC,IL)*1000.0,
+     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
+            endif
+          elseif(LAYERS(IFOC).ge.2.and.IL.eq.LAYERS(IFOC))then 
+            if(markdown)then
+              WRITE(OUTSTR2,251)'Int  ',DTHK(IFOC,IL)*1000.0,
+     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
+            else
+              WRITE(OUTSTR,25)' Int ',DTHK(IFOC,IL)*1000.0,
+     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
+            endif
+          else 
+            if(markdown)then
+              WRITE(OUTSTR2,241)IL,DTHK(IFOC,IL)*1000.0,
+     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
+            else
+              WRITE(OUTSTR,24)IL,DTHK(IFOC,IL)*1000.0,
+     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
+            endif
+          endif
+ 241      FORMAT(I5,F7.1,7x,F10.3,16x,F7.0,11x,F7.0,20x,F5.2,7x,F5.2,
+     &      5x,F7.0,7x,F6.2,8x,F6.1,3X,A)
   24      FORMAT(I5,F7.1,F10.3,F7.0,F7.0,F5.2,F5.2,F7.0,F6.2,F6.1,1X,A)
+ 251      FORMAT(A5,F7.1,7x,F10.3,16x,F7.0,11x,F7.0,20x,F5.2,7x,F5.2,
+     &      5x,F7.0,7x,F6.2,8x,F6.1,3X,A)
   25      FORMAT(A5,F7.1,F10.3,F7.0,F7.0,F5.2,F5.2,F7.0,F6.2,F6.1,1X,A)
-          CALL EDISP(ITRU,OUTSTR)
+          if(markdown)then
+            CALL EDISP(ITRU,OUTSTR2)
+          else
+            CALL EDISP(ITRU,OUTSTR)
+          endif
         ELSEIF(ITRC.EQ.1)THEN
 
 C Compact report has more room for material description.
           WRITE(OUTSTR,29)IL,DTHK(IFOC,IL)*1000.0,
      &      PNAM(IL)(1:lnblnk(PNAM(IL)))
-  29      FORMAT(I5,F8.1,1X,a)
+  29      FORMAT(I5,F10.1,5X,a)
           CALL EDISP(ITRU,OUTSTR)
         ENDIF
 
@@ -1911,19 +2040,32 @@ C 0.10 inside upward flow and 0.17 inside downward flow.
       RTI=RT+0.13+0.13; UVALUEI=1.0/RTI
 
       If(mlctype(IFOC)(1:4).NE.'CFC2')THEN
-        write(OUTSTR,'(A,3F7.3,a,F7.3)')
+        if(markdown)then
+          IF(ITRC.NE.0)call edisp(itru,' ')
+          write(OUTSTR,'(A,3F7.3,a,F7.3)')
+     &    'ISO 6946 U values (horiz/upward/downward heat flow)=',
+     &    UVALUEH,UVALUEU,UVALUED,' (partition)',UVALUEI
+          IF(ITRC.NE.0)call edisp2tr(itru,OUTSTR)
+        else
+          write(OUTSTR,'(A,3F7.3,a,F7.3)')
      &    ' ISO 6946 U values (horiz/upward/downward heat flow)=',
      &    UVALUEH,UVALUEU,UVALUED,' (partition)',UVALUEI
-
-        IF(ITRC.NE.0)call edisp(itru,OUTSTR)
+          IF(ITRC.NE.0)call edisp(itru,OUTSTR)
+        endif
 
 C Include admittance calculations (use TM33 Table 4.5 values for admittance calcs)
 C If in verbose mode, otherwise ignore. Also report kg/m^2 for the construction.
 C << NOTE this code needs further debugging.
         if(ITRC.gt.1)then
-          write(OUTSTR,'(A,F7.2)') 
+          if(markdown)then
+            write(OUTSTR,'(A,F7.2)') 
+     &      'Weight per m^2 of this construction',tkgpm2
+            call edisp2tr(itru,OUTSTR)
+          else
+            write(OUTSTR,'(A,F7.2)') 
      &      ' Weight per m^2 of this construction',tkgpm2
-          call edisp(itru,OUTSTR)
+            call edisp(itru,OUTSTR)
+          endif
           Rsi=0.12
           Rso=0.06
           call ADMIT(ITRU,IFOC,Rsi,Rso)
@@ -2553,6 +2695,10 @@ C Parameters
 
       COMMON/OUTIN/IUOUT,IUIN
 
+C Markdown flag.
+      logical markdown
+      common/markdownflag/markdown
+
 C DG Direct trans at 5 angles.
 C HG Solar heat gain at 5 angles (for documentation purposes only).
 C UVAL optical property U value (for documentation purposes only).
@@ -2701,11 +2847,27 @@ C documentation purposes).
 
       IF(ITRC.GE.1)THEN
         IF(FOUND.OR.SOPT(1:3).EQ.'ALL')THEN
-          CALL EDISP(ITOPT,
-     &  ' Direct transmission @ 0, 40, 55, 70, 80 deg')
-          WRITE(OUTSTR,'(2x,5F6.3)')(DG(I),I=1,5)
-          CALL EDISP(ITOPT,OUTSTR)
-          CALL EDISP(ITOPT,' Layer| absorption @ 0, 40, 55, 70, 80 deg')
+          if(markdown)then
+            CALL EDISP(ITOPT,' ')
+            CALL EDISP(ITOPT,': Direct transmission @deg')
+            CALL EDISP(ITOPT,' ')
+            CALL EDISP(ITOPT,'   0     40    55    70    80')
+            CALL EDISP(ITOPT,'   ----- ----- ----- ----- -----')
+            WRITE(OUTSTR,'(2x,5F6.3)')(DG(I),I=1,5)
+            CALL EDISP(ITOPT,OUTSTR)
+            CALL EDISP(ITOPT,' ')
+            CALL EDISP(ITOPT,': Absorption @deg')
+            CALL EDISP(ITOPT,' ')
+            CALL EDISP(ITOPT,' Layer 0     40    55    70    80')
+            CALL EDISP(ITOPT,' ----- ----- ----- ----- ----- ----- ')
+          else
+            CALL EDISP(ITOPT,
+     &      ' Direct transmission @ 0, 40, 55, 70, 80 deg')
+            WRITE(OUTSTR,'(2x,5F6.3)')(DG(I),I=1,5)
+            CALL EDISP(ITOPT,OUTSTR)
+            CALL EDISP(ITOPT,
+     &      ' Layer| absorption @ 0, 40, 55, 70, 80 deg')
+          endif
         ENDIF
       ENDIF
 
@@ -2741,8 +2903,13 @@ C If an old format database skip the first two fields.
 C Reporting.
         IF(ITRC.GE.1)THEN
           IF(FOUND.OR.SOPT(1:3).EQ.'ALL')THEN
-            WRITE(OUTSTR,26)IL,(AB(IL,J),J=1,5)
-   26       FORMAT(I5,1X,5F6.3)
+            if(markdown)then
+              WRITE(OUTSTR,261)IL,(AB(IL,J),J=1,5)
+  261         FORMAT(I5,2X,5F7.3)
+            else
+              WRITE(OUTSTR,26)IL,(AB(IL,J),J=1,5)
+   26         FORMAT(I5,1X,5F6.3)
+            endif
             CALL EDISP(ITOPT,OUTSTR)
           ENDIF
         ENDIF
@@ -2965,6 +3132,10 @@ C << some variables are off - further debugging required.
 #include "esprdbfile.h"
 #include "material.h"
 
+C Markdown flag.
+      logical markdown
+      common/markdownflag/markdown
+
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
       
@@ -3145,7 +3316,11 @@ C Calculate surface factor.
 C Report values for partitions.
       write (outs,'(4(a,f6.2))') ' Partition admittance Y=',Y,
      &  '  w=',omega,' surface factor f=',f,'  phi=',phi
-      call edisp(itru,outs)
+      if(markdown)then
+        call edisp2tr(itru,outs)
+      else
+        call edisp(itru,outs)
+      endif
       return
       end
 

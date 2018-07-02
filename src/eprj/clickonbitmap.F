@@ -4430,9 +4430,9 @@ C If user typed `p` or `P` then do panning until user says done and then continu
             goto 346
           else
             inpm=inpmode
-            write(6,*) 'clickobstructions ctlbmpan',iwm,fname,ixoffset,
-     &        iyoffset,ibmwidth,ibmhight,iwidth,ihight,inpm,
-     &        nw,ixtn1,ixtn2,iytn1,iytn2,ixo,iyo
+c            write(6,*) 'clickobstructions ctlbmpan',iwm,fname,ixoffset,
+c     &        iyoffset,ibmwidth,ibmhight,iwidth,ihight,inpm,
+c     &        nw,ixtn1,ixtn2,iytn1,iytn2,ixo,iyo
             call ctlbmpan(iwm,fname,ixoffset,iyoffset,ibmwidth,
      &        ibmhight,iwidth,ihight,inpm,
      &        nw,ixtn1,ixtn2,iytn1,iytn2,ixo,iyo)

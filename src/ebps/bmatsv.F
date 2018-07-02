@@ -214,7 +214,7 @@ C Common for results file names (ag@20131221)
 C Additional commons for SHOCC.
 
 C ZBASEA    - area of base (m^2)
-C IBASES    - surfaces (up to 12) associated with base area. If all 0 then
+C IBASES    - surfaces (up to MBL) associated with base area. If all 0 then
 C             base area has been supplied by the user.
 C Common block G5 documented in geometry.h
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
@@ -1273,6 +1273,16 @@ C Set `itsmus' if output is required at this time-row.
             call eclose(rem,0.00,0.0001,close)
             if (close.and.itrflg.eq.0) itsmus=1
 
+C <FMI>
+            if (is_FMU) then
+              if (.not.bInStartup()) then
+                call FMI_SIMSTEP(IER)
+              else
+                call FMI_CLEARCTL()
+              endif
+            endif
+C </FMI>
+
 C Skip CFD if it has been disabled.
             if (CFDOK) then
 
@@ -1306,15 +1316,25 @@ C Do this by resetting IFCFD variable this is then checked below.
 C 1st clause: Present day is within defined range.
                   IF((IDYP.GE.ICFDYS.AND.IDYP.LE.ICFDYF).or.
 
-C 2nd clause: Future time is the first time step of CFD start day, but
-C             present time is still the previous day.
-C             May need results for this time step.
+C OR 2nd clause: Future time is the first time step of CFD start day,
+C                AND present time is still the previous day.
+C                May need results for this time step.
      &    (IDYP.eq.(ICFDYS-1).and.CFTIMS.eq.1.0.and.btimef.eq.1.0))THEN
 
-                    IF(btimef.GE.CFTIMS.and.abs(IFCFD(ICP)).eq.0)THEN
-C Ensure IFCFD is negative, necessary for SURFCONF.
-                      IFCFD(ICP)=-abs(ICFAUX(ICP))
-                    ELSEIF(btimef.GT.CFTIMF.and.IDYP.eq.ICFDYF)THEN
+                    if (btimef.le.1.0) then
+                      rtmp=btimef+24.
+                    else
+                      rtmp=btimef
+                    endif
+
+                    IF(rtmp.GE.CFTIMS.and.abs(IFCFD(ICP)).eq.0)
+
+C Ensure IFCFD is negative, means SURFCONF will write out results.
+     &                IFCFD(ICP)=-abs(ICFAUX(ICP))
+
+                    IF(IDYP.eq.ICFDYF.and.rtmp.GT.CFTIMF)THEN
+
+C CFD has finished.
                       IFCFD(ICP)=0
                       ICFAUX(ICP)=0
                       if(outs.eq.'not yet')then
@@ -1372,16 +1392,6 @@ C reflectivity; simple model; or advanced model)
 C Execute complex fenestration control to determine state of shading
 C layers for the current time step.
             call CFC_control()
-
-C <FMI>
-            if (is_FMU) then
-              if (.not.bInStartup()) then
-                call FMI_SIMSTEP(IER)
-              else
-                call FMI_CLEARCTL()
-              endif
-            endif
-C </FMI>
 
 C Consider each zone in turn.
             do 40 l=1,ncomp

@@ -283,7 +283,10 @@ C Uncertainty common.
       INTEGER :: imet,isim,nrsim
 
 C Simulator parameter.
-      COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      COMMON/SPFL/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      LOGICAL spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
       common/SPFLN/spsname
       COMMON/Vld30/Tinitial
       REAL :: Tinitial
@@ -319,7 +322,6 @@ C Toggle for extreme silent running (endless) mode.
 C HVAC AIM-2
       character hvacfile*72
 
-      LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST,CFCDBOK
       logical dll,closemat1,closemat2,unixok,concat
       logical closecfc1,closecfc2
@@ -1130,8 +1132,10 @@ C Dll mode error subroutine and error details.
       common/dllerr/dllsubr,dllmesg
 
 C Simulator parameters.
-      COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      COMMON/SPFL/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      LOGICAL     spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
 
 C Toggle for extreme silent running (endless) mode.
       logical endless,issilient
@@ -1928,7 +1932,10 @@ C lafres  - fluid flow network results file
       character ERESLIB*72
       common/dllerr/dllsubr,dllmesg
 
-      COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      COMMON/SPFL/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      LOGICAL     spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/ACTDOM/CFDOK
       logical CFDOK
@@ -1941,7 +1948,6 @@ C lafres  - fluid flow network results file
       COMMON/CFSEUP/CFTIMS,CFTIMF,ICFDYS,ICFDYF,ICFAUX(MCOM),ICFVIEW,
      &  ICFVIEWMINT,ICFVIEWMAXT
 
-      LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical dll,match
 
       character outs*124, outs2*124
@@ -2046,12 +2052,16 @@ C Loop through zones to see if there is a cfd domain description.
 C If there is a CFD domain set its attributes from sps.
 C Also if there is a directive to ignore reset CFDOK.
 C The CFSEUP attributes will be used in askaboutcfd.
+          cfdperok=.false.
           if(CFDOK)then
-            CFTIMS=scftims(i)
-            CFTIMF=scftimf(i)  ! start and finish times for CFD assessment
-            ICFDYS=isicfdys(i)
-            ICFDYF=isicfdyf(i) ! julian day-of-year at start and end of CFD
-            if(iscfdactivate(i).eq.0) CFDOK=.false.
+            if (iscfdactivate(i).gt.-1) then
+              CFTIMS=scftims(i)
+              CFTIMF=scftimf(i)  ! start and finish times for CFD assessment
+              ICFDYS=isicfdys(i)
+              ICFDYF=isicfdyf(i) ! julian day-of-year at start and end of CFD
+              if(iscfdactivate(i).eq.0) CFDOK=.false.
+              cfdperok=.true.
+            endif
           endif
 
 C Debug.

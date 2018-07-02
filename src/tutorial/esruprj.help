@@ -9378,7 +9378,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 *item EDCONN boundary_back_to_back
 'Typically, back-to-back surfaces in a room represent mass and/or'
 'blinds and if these surfaces are connected to each other heat'
-'will flow. If you want the option to reset these to ADIABETIC say YES.'
+'will flow. If you want the option to reset these to ADIABETIC say NO.'
 *enditem
           call askok('Do you want to confirm back-to-back surfaces',
 *item EDCONN boundary_clear_all

@@ -21,7 +21,7 @@ C Type declarations.
       integer MNRS,MNFA,MROW,MCOL,MLAY,MLEV,MGRID,MMTR,MBND,MSNOD
       integer MMAT,MIPVM,MIPVA,MSPS,MDTY,MGTY,MGPER
       integer MCNDV,MCNDC,MPICK,MVAR,MIMG
-      integer MCFC,MSPMRES
+      integer MCFC,MSPMRES,MBL
 
 C Geometry.
       PARAMETER (MCOM=32)      !- Zones.
@@ -31,6 +31,7 @@ C Geometry.
       PARAMETER (MV=82)        !- Vertices/surface.
       PARAMETER (MST=MS)       !- Used with view factors.
       PARAMETER (MSM=MS+6)     !- Used with view factors.
+      PARAMETER (MBL=10)       !- Base surfaces/zone.
 
 C Ground topology.
       PARAMETER (MGRT=100)     !- Surfaces.

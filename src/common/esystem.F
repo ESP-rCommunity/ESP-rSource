@@ -558,8 +558,10 @@ C  zSWA - shortwave absorption (W).
       common/excludediff/iexcludediff_flag
 
 C Simulation parameters
-      COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      COMMON/SPFL/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      LOGICAL spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
 
       LOGICAL dll,browse,context
       LOGICAL XST,OK,DOK,IGDCVS,IGDCNC,IGDNDC,IGDTAQ,cnnok
@@ -2267,10 +2269,13 @@ C No extended sps data found so set to global values.
 C Opportunity for improvenemt: Should error trap duplicate
 C (ie ambigious) set names
           CALL EGETRM(OUTSTR,K,spfdescr(iss),'W','set name',IER)
-
+          iscfdactivate(iss)=-1
  334      CALL STRIPC(IUC,OUTSTR,0,ND,1,'res names',IER)
           K=0
           CALL EGETW(OUTSTR,K,WORD,'W','res tags',IFLAG)
+
+C Might have a simulation preset without CFD information, so initialise
+C iscfdactivate to -1. This can then be used as a test for such cases.
           if(WORD(1:5).eq.'*sblr')then
             CALL EGETRM(OUTSTR,K,sblres(iss),'W','zone res',IER)
           elseif(WORD(1:5).eq.'*sflr')then
@@ -2291,9 +2296,9 @@ C isicfdys(iss),isicfdyf(iss),scftims(iss),scftimf(iss)
      &        'cfd start',IER)
             CALL EGETWI(OUTSTR,K,isicfdyf(iss),1,365,'W',
      &        'cfd finish',IER)
-            CALL EGETWR(OUTSTR,K,scftims(iss),0.,24.,'W',
+            CALL EGETWR(OUTSTR,K,scftims(iss),1.0,25.0,'W',
      &        'cfd start time',IER)
-            CALL EGETWR(OUTSTR,K,scftimf(iss),0.,24.,'W',
+            CALL EGETWR(OUTSTR,K,scftimf(iss),1.0,25.0,'W',
      &        'cfd finish time',IER)
             CALL EGETRM(OUTSTR,K,scfdres(iss),'W','cfd res',IER)
           elseif(WORD(1:5).eq.'*spvr')then

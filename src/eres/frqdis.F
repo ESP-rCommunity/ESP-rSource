@@ -64,7 +64,10 @@ C index is the goget index.
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
 C Simulator parameters.
-      COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      COMMON/SPFL/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      LOGICAL     spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
 
 C Selection menu for graphs and/or tables.
       dimension item(8)
@@ -74,7 +77,6 @@ C Selection menu for graphs and/or tables.
       character TLABEL*60,trange*20,tab*1
       character prompt*124,prompte*124
 
-      LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical zlist,ok,dok
       logical HAVEIT
       integer NITMS,IG ! max items and current menu item
@@ -878,9 +880,13 @@ C corresponding to graphical result display.
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
 
+      logical libheading ! have we printed report heading (library name etc).
+      logical headingcontext ! has set or period changed so heading needs reprint
+      common/libhead/libheading,headingcontext
+
       CHARACTER ETEXT*94,GTEXT*94,PDESCR*60,SDESCR*44,act*1
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      character outsd*80,outsd1*81,RSNAME*40
+      character outsd*96,outsd1*124,RSNAME*40
       logical zlist
       integer lsn1
 
@@ -942,7 +948,9 @@ C If output to file alter the edisp unit number.
         ifont=1
         call viewtext(gtext,iside,isize,ifont)
       else
-        call edisp(itru,GTEXT)
+        if((.NOT.libheading).and.(.NOT.headingcontext))then
+          call edisp(itru,GTEXT)
+        endif
       endif
 
       WRITE(ETEXT,'(3A)')PDESCR(1:lnblnk(PDESCR)),' ',
@@ -954,7 +962,9 @@ C If output to file alter the edisp unit number.
         ifont=1
         call viewtext(gtext,iside,isize,ifont)
       else
-        call edisp(itru,GTEXT)
+        if((.NOT.libheading).and.(.NOT.headingcontext))then
+          call edisp(itru,GTEXT)
+        endif
       endif
 
 C If information is zone based, include zone list in header. Check to see
@@ -974,7 +984,7 @@ C if names of zones can be shown.
         else
           call znlist(outsd,len,ierr) 
           if(ierr.ne.1)then
-            write(outsd1,'(1x,a)')outsd
+            write(outsd1,'(2a)')'Frequency in ',outsd
             if(act.eq.'g')then
               iside=3
               isize=0

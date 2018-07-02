@@ -3331,10 +3331,10 @@ C Debug.
      &  isur,NVER(isur),(jvn(isur,j),J=1,NVER(isur))
       if(itrc.gt.0)call edisp248(iuout,louts,100)
       CALL SURLEHI(IPS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)
-      write(6,*) 'par llpos lrpos ulpos urpos',llpos,lrpos,ulpos,urpos
+C      write(6,*) 'par llpos lrpos ulpos urpos',llpos,lrpos,ulpos,urpos
       CALL SURLEHI(ICS,XYMAX,ZMAX,lldpos,lrdpos,uldpos,urdpos)
-      write(6,*) 'win lldpos lrdpos uldpos urdpos',
-     &  lldpos,lrdpos,uldpos,urdpos
+C      write(6,*) 'win lldpos lrdpos uldpos urdpos',
+C     &  lldpos,lrdpos,uldpos,urdpos
      
 C For each of the child vertex closest to LL LR UL UR find the
 C distance to parent vertices and report on the shortest.

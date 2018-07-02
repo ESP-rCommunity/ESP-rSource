@@ -159,6 +159,10 @@ C EGETAGWRA recovers (IRVA) reals of real array (RVA) from a string
 C   TSTR (from position K) and if TSTR does not hold all of the array then
 C   it continues reading from an ASCII file (unit IAF) reading as
 C   many lines as necessary to recover the data.
+C EGETAGWRA1K recovers (IRVA) reals of real array (RVA) from a string
+C   TSTR (from position K) and if TSTR does not hold all of the array then
+C   it continues reading from an ASCII file (unit IAF) into 1K buffer reading as
+C   many lines as necessary to recover the data.
 C EGETAGWSA recovers (ISVA) words into string array (SVA) from a string
 C   TSTR (from position K) and if TSTR does not hold all of the array then
 C   it continues reading from an ASCII file (unit IAF) reading as
@@ -5911,6 +5915,92 @@ C          CALL LSTRIPC(IAF,OUTS,0,ND,0,MSG,IER)
 
       END
 
+
+C *************** EGETWIA1K
+C EGETWIA1K recovers (IRVA) integers of integer array (IVA) from an
+C ASCII file (unit IAF) reading as many lines as necessary into a 1K
+C buffer to recover the data.
+C IER=2 if EOF is reached before IRVA items have been parsed. IER=1 if
+C there was a problem reading it. Each value is tested against
+C the minimum IRMN and the maximum IRMX and provides a warning
+C message if IACT='W', a failure message if IACT='F' and does
+C no range checking if IACT='-'. Words may be separated by blanks,
+C commas, or tab: WORD,WORD,WORD or WORD WORD WORD or WORD, WORD, WORD
+C are all valid.  Will deal with input lines upto 1K wide.
+C Note: all reads are able to accept commented files.
+      SUBROUTINE EGETWIA1K(IAF,IVA,IRVA,IRMN,IRMX,IACT,MSG,IER)
+      common/OUTIN/IUOUT,IUIN
+      DIMENSION IVA(*)
+      CHARACTER*(*) MSG
+      CHARACTER OUTS*248,MSG1*124,IACT*1,out*124,lkouts*1000
+      logical unixok
+
+      IF(IRVA.LE.0)GOTO 99
+
+C Read a line from the file, if no problems set position to 0 and begin
+C to parse words.
+      CALL STRIPC1K(IAF,lkouts,0,ND,1,MSG,IER)
+C      CALL LSTRIPC(IAF,OUTS,0,ND,1,MSG,IER)
+      LN=max(1,LNBLNK(lkouts))
+      IF(IER.NE.0)RETURN
+      K=0
+      DO 12 KV=1,IRVA
+
+C If character position is < actual length of string parse another
+C word, otherwise read another line from the file.
+        IF(K.LT.LN)THEN
+          CALL EGETWI(lkouts,K,IVAL,IRMN,IRMX,IACT,MSG,IERV)
+          IF(IERV.NE.0) THEN
+            CALL STRIPC1K(IAF,lkouts,0,ND,0,MSG,IER)
+C            CALL LSTRIPC(IAF,OUTS,0,ND,0,MSG,IER)
+            LN=max(1,LNBLNK(lkouts))
+            IF(IER.NE.0)RETURN
+            K=0
+            CALL EGETWI(lkouts,K,IVAL,IRMN,IRMX,IACT,MSG,IERV)
+          ENDIF
+        ELSE
+          CALL STRIPC1K(IAF,lkouts,0,ND,0,MSG,IER)
+C          CALL LSTRIPC(IAF,OUTS,0,ND,0,MSG,IER)
+          LN=max(1,LNBLNK(lkouts))
+          IF(IER.NE.0)RETURN
+          K=0
+          CALL EGETWI(lkouts,K,IVAL,IRMN,IRMX,IACT,MSG,IERV)
+        ENDIF
+        IF(IERV.NE.0) GOTO 1001
+        IVA(KV)=IVAL
+   12 CONTINUE
+
+  100 RETURN
+
+   99 CALL EDISP(iuout,' array size zero, skipping read.')
+      GOTO 100
+
+ 1001 LNM=max(1,lnblnk(MSG))
+      WRITE(MSG1,1002,IOSTAT=IOS,ERR=1)MSG(1:LNM),IVAL,K
+ 1002 FORMAT(' Problem reading ',A,' value= ',I8,' @ pos ',
+     &       I3,' in the string:')
+      CALL EDISP(iuout,MSG1)
+      if(LNM.ge.124)then
+        write(out,*) 'EGETWIA: error writing ',lkouts(1:72),'...'
+        CALL EDISP(iuout,out)
+      else
+        CALL EDISP(iuout,OUTS)
+      endif
+      IER=1
+      GOTO 100
+
+   1  call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      if(IOS.eq.2)then
+        write(6,*) 'EGETWIA: permission error writing warning re:',OUTS
+      else
+        write(6,*) 'EGETWIA: error writing warning re: ',OUTS
+      endif
+      return
+
+      END
+
+
 C *************** EGETAGWIA
 C EGETAGWIA recovers (IRVA) integers of integer array (IVA) from a string
 C TSTR (from position K) and if TSTR does not hold all of the array then
@@ -6089,6 +6179,100 @@ C word, otherwise read another line from the file.
       return
 
       end
+
+C *************** EGETAGWRA1K
+C EGETAGWRA1K recovers (IRVA) reals of real array (RVA) from a string
+C TSTR (from position K) and if TSTR does not hold all of the array then
+C it continues reading from an ASCII file (unit IAF) into a 1K buffer,
+C reading as many lines as necessary to recover the data.
+C IER=2 if EOF is reached before IRVA items have been parsed. IER=1 if
+C there was a problem reading it. Each value is tested against
+C the minimum RMN and the maximum RMX and provides a warning
+C message if IACT='W', a failure message if IACT='F' and does
+C no range checking if RACT='-'. Words may be separated by blanks,
+C commas, or tab: WORD,WORD,WORD or WORD WORD WORD or WORD, WORD, WORD
+C are all valid.
+C Note: all reads are able to accept commented files.
+      SUBROUTINE EGETAGWRA1K(TSTR,K,IAF,IRVA,RVA,RMN,RMX,RACT,MSG,IER)
+      common/OUTIN/IUOUT,IUIN
+      DIMENSION RVA(*)
+      CHARACTER*(*) TSTR,MSG
+      CHARACTER OUTS*1000,RACT*1,MSG1*124,out*124,out2*248
+      logical swapover
+      logical unixok
+
+      IF(IRVA.LE.0)GOTO 99
+
+C LN is the actual length of TSTR.
+      ier=0
+      LN=max(1,lnblnk(TSTR))
+
+C Initially set swapover = false. When TSTR exhaused set swapover
+C = true and read from outs.
+      swapover=.false.
+      DO 12 KV=1,IRVA
+
+C If character position is < actual length of string parse another
+C word, otherwise read another line from the file.
+        IF(K.LT.LN)THEN
+          if(swapover)then
+            CALL EGETWR(OUTS,K,VAL,RMN,RMX,RACT,MSG,IERV)
+          else
+            CALL EGETWR(TSTR,K,VAL,RMN,RMX,RACT,MSG,IERV)
+          endif
+          IF(IERV.NE.0) THEN
+            CALL STRIPC1K(IAF,OUTS,0,ND,0,MSG,IER)
+            LN=max(1,LNBLNK(OUTS))
+            IF(IER.NE.0)RETURN
+            K=0
+            CALL EGETWR(OUTS,K,VAL,RMN,RMX,RACT,MSG,IERV)
+            swapover=.true.
+          ENDIF
+        ELSE
+          CALL STRIPC1K(IAF,OUTS,0,ND,0,MSG,IER)
+          LN=max(1,LNBLNK(OUTS))
+          IF(IER.NE.0)RETURN
+          K=0
+          CALL EGETWR(OUTS,K,VAL,RMN,RMX,RACT,MSG,IERV)
+          swapover=.true.
+        ENDIF
+        IF(IERV.NE.0) GOTO 1001
+        RVA(KV)=VAL
+   12 CONTINUE
+
+  100 RETURN
+
+   99 CALL EDISP(iuout,' array size zero, skipping read.')
+      GOTO 100
+
+ 1001 LNM=max(1,lnblnk(MSG))
+      WRITE(MSG1,1002,IOSTAT=IOS,ERR=1)MSG(1:LNM),VAL,K
+ 1002 FORMAT(' Problem reading ',A,' value= ',F9.3,' @ pos ',
+     &       I3,' in the string:')
+      CALL EDISP(iuout,MSG1)
+      if(LNM.ge.124)then
+        write(out,*) 'EGETAGWRA1K: error writing ',OUTS(1:72),'...'
+        CALL EDISP(iuout,out)
+      elseif(LNM.gt.124.and.LNM.le.248)then
+        CALL EDISP(iuout,OUTS)
+      else
+        write(out2,*) 'EGETAGWRA1K: error writing ',OUTS(1:200),'...'
+        CALL EDISP(iuout,out2)
+      endif
+      IER=1
+      GOTO 100
+
+   1  call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      if(IOS.eq.2)then
+        write(6,*) 'EGETAGWRA: permission error writing warning ',OUTS
+      else
+        write(6,*) 'EGETAGWRA: error writing warning re: ',OUTS
+      endif
+      return
+
+      end
+
 
 C *************** EGETAGWSA
 C EGETAGWSA recovers (ISVA) words into string array (SVA) from a string
@@ -7159,7 +7343,7 @@ C usrdir: Find current folder.
       subroutine usrdir(upwd)
       common/OUTIN/IUOUT,IUIN
       character*(*) upwd
-      character local*96   ! getcwd needs a fixed char array
+      character local*124   ! getcwd needs a fixed char array
       integer i,jlen,kblnk
 
 C Older definition used function call.
@@ -7534,7 +7718,7 @@ C working then try switching bweteen these options.
       subroutine runit(cmd,tg)
       common/OUTIN/IUOUT,IUIN
       character*(*) cmd,tg
-      character tmp*360,ltmp*360,tmode*8,message*248
+      character tmp*560,ltmp*560,tmode*8,message*248
       character dq*1
       integer system
       logical unixok
@@ -7561,12 +7745,12 @@ C          i = system(cmd)
           call edisp(iuout,'task terminated with an error condition')
           LN=max(1,lnblnk(cmd))
           write(tmp,'(a,i3,2a)') 'status ',i,' ',cmd(1:LN)
-          call edisp248(iuout,tmp,90)
+          call edisp248(iuout,tmp,100)
         elseif(i.eq.127)then
           call edisp(iuout,'task requested was unknown.')
           LN=max(1,lnblnk(cmd))
           write(tmp,'(a,i3,2a)') 'status ',i,' ',cmd(1:LN)
-          call edisp248(iuout,tmp,90)
+          call edisp248(iuout,tmp,100)
         endif
         return
       else

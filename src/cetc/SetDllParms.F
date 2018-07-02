@@ -71,8 +71,10 @@ C----------------------------------------------------
      
       common/rcmd/LCMDFL
 
-      COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      COMMON/SPFL/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      LOGICAL     spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
             
       character LCMDFL*144,inf*144,sps*30,aut*12,fs*1,actf*72
  

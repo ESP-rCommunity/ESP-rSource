@@ -82,7 +82,7 @@ C updated when the user exits).
       logical gotviabrowse
 
       CHARACTER tcname*248
-      CHARACTER ITEM(14)*33,choices(25)*32,LTMP*72,GFILE*72
+      CHARACTER ITEM(14)*33,choices(26)*32,LTMP*72,GFILE*72
       character sfile*72,snpfile*72,fs*1,outs*124,louts*248
       character priorname*72
       integer lnprior,lnoprf
@@ -319,22 +319,23 @@ C the definition already defined in another zone.
         choices(8) ='h nothing happens in the zone'
         choices(9) ='i cellular office (1 occ)    '
         choices(10)='j open plan office (9 m2/occ)'
-        choices(11)='k office corridor or stair   '
-        choices(12)='l meeting room (3-6 occ)     '
-        choices(13)='m office WC (5-10 uses/hr)   '
-        choices(14)='n ceiling void recessed ltng '
-        choices(15)='o dining room (house 2-4 occ)'
-        choices(16)='p lounge (house 2-3 occ)     '
-        choices(17)='q kitchen (house 1-2 occ)    '
-        choices(18)='r kitchen/dining/liv (~3 occ)'
-        choices(19)='s master bed room (~2 occ)   '
-        choices(20)='t small bed room (~1 occ)    '
-        choices(21)='u residential corridor/stair '
-        choices(22)='v residential bath/shower    '
-        choices(23)=' ___________________________ '
-        choices(24)='! cancel                     '
-        choices(25)='? help                       '
-        NIGU=25
+        choices(11)='k office corridor:stair heavy'
+        choices(12)='l office corridor:stair lite '
+        choices(13)='m meeting room (3-6 occ)     '
+        choices(14)='n office WC (5-10 uses/hr)   '
+        choices(15)='o ceiling void recessed ltng '
+        choices(16)='p dining room (house 2-4 occ)'
+        choices(17)='q lounge (house 2-3 occ)     '
+        choices(18)='r kitchen (house 1-2 occ)    '
+        choices(19)='s kitchen/dining/liv (~3 occ)'
+        choices(20)='t master bed room (~2 occ)   '
+        choices(21)='u small bed room (~1 occ)    '
+        choices(22)='v residential corridor/stair '
+        choices(23)='w residential bath/shower    '
+        choices(24)=' ___________________________ '
+        choices(25)='! cancel                     '
+        choices(26)='? help                       '
+        NIGU=26
         IGU=-2
         if(mmod.eq.8)then
           CALL EMENU('Operations File Options',choices,NIGU,IGU)
@@ -344,7 +345,7 @@ C the definition already defined in another zone.
 
         if(igu.eq.0)then
           goto 19
-        elseif(igu.ge.8.and.igu.le.22)then
+        elseif(igu.ge.8.and.igu.le.23)then
           if(igu.eq.8)then
 
 C Setup nothing happens here.
@@ -359,15 +360,20 @@ C Setup an open plan office with 100% being 9 m2/person.
             call initcaspattern(icomp,igu,ier)
           elseif(igu.eq.11)then
 
-C Setup an office corridor with 3 peak uses during office
+C Setup an office corridor with ~3 occuant equivalent during office
 C hours as well as cleaning 1st thing in morning.
             call initcaspattern(icomp,igu,ier)
           elseif(igu.eq.12)then
 
+C Setup an office corridor with mix of transient occupants during office
+C hours as well as cleaning 1st thing in morning.
+            call initcaspattern(icomp,igu,ier)
+          elseif(igu.eq.13)then
+
 C Setup an office meeting room for up to 6 with diversity
 C and occassional projector use. Only weekdays.
             call initcaspattern(icomp,igu,ier)
-          elseif(igu.eq.13)then
+          elseif(igu.eq.14)then
 
 C Setup an office WC with peaks at start and end of office
 C hours as well as around lunch. Brief cleaning Sat morning.
@@ -376,53 +382,54 @@ C morning use. Sunday & holidays essentially unoccupied. Occupants
 C avg 5minute visit - 10 visits @peak and 5 visits otherwise. Hand
 C dryer 20 uses @ 15 sec *1050W = 95Whr, 15 uses@15 sec = 72Whr.
             call initcaspattern(icomp,igu,ier)
-          elseif(igu.eq.14)then
+          elseif(igu.eq.15)then
 
 C Setup ceiling void with heat gains from recessed lighting in
 C zone below (38% of 8W/m2 CIBSE table 6.5) mostly radiant.
 C And 1W/m2 equipment gains and minor infiltration (0.2ach).
             call initcaspattern(icomp,igu,ier)
-          elseif(igu.eq.15)then
+          elseif(igu.eq.16)then
 
 C Setup an residential dining room - two people for breakfast
 C and 4 in the evening with diversity for different day types.
             call initcaspattern(icomp,igu,ier)
-          elseif(igu.eq.16)then
+          elseif(igu.eq.17)then
 
 C Setup an residential lounge - mostly used in the evening
 C with diversity for different day types. Max 3.5 people.
             call initcaspattern(icomp,igu,ier)
-          elseif(igu.eq.17)then
+          elseif(igu.eq.18)then
 
 C Setup an residential kitchen diversity breakfast or brunch
 C boil a few kettles during day, no weekday lunches and
-C dinner = cooking 2kg rice. Assumes a separate dining room.'
+C dinner = cooking 2kg rice. Assumes a separate dining room.
+C Includes average 32Whr for standard fridge/freezer.
             call initcaspattern(icomp,igu,ier)
-          elseif(igu.eq.18)then
+          elseif(igu.eq.19)then
 
 C Setup an residential kitchen/dining/lounge - one cooking breakfast 20 minutes
 C eating breakfast another 20 minutes and one in the evening (30+30 minutes)
 C with diversity for different day types. Lights at 8W/m2. Equipment as in
 C the kitchen above but with additional living room loads added.
             call initcaspattern(icomp,igu,ier)
-          elseif(igu.eq.19)then
+          elseif(igu.eq.20)then
 
 C Setup an residential master bedroom diversity 2 adults overnight
 C occassional use in evening, one sleeps later weekdays & weekends
 C limited electrical.
             call initcaspattern(icomp,igu,ier)
-          elseif(igu.eq.20)then
+          elseif(igu.eq.21)then
 
 C Setup an residential single bedroom diversity 1 adult overnight
 C occassional use in evening. Plays games or TV in evening.
             call initcaspattern(icomp,igu,ier)
-          elseif(igu.eq.21)then
+          elseif(igu.eq.22)then
 
 C Setup an residential passage with diversity in trasient
 C occupancy. Lights 4W/m2 day and 8W/m2 evening. Cleaning
 C in morning.
             call initcaspattern(icomp,igu,ier)
-          elseif(igu.eq.22)then
+          elseif(igu.eq.23)then
 
 C Setup an residential bathroom with showers in the morning and occassionally
 C at night. Latent loads adjusted to track observed RH patterns of showers
@@ -6433,7 +6440,8 @@ C m2/person with 9 as 100% occupied.
         elseif(igu.eq.11)then
 
 C Setup an office corridor with peaks at start and end of office
-C hours as well as around lunch. Brief cleaning each morning.
+C hours as well as around lunch. Brief cleaning each morning. Occupancy
+C is assumed to be equivalent to 2-4 people constantly in the room.
 C Uses CIBSE Guide A 6.3 for radiant-convective splits. Saturday 
 C morning use. Sunday & holidays essentially unoccupied.
           ctlstr(icomp,I)='no control of air flow  '
@@ -6514,7 +6522,98 @@ C morning use. Sunday & holidays essentially unoccupied.
             ICGS(I,2)=0; ICGF(I,2)=24; CMGS(I,2)=1.0; CMGL(I,2)=0.0  ! emergency lights W/m2
             ICGS(I,3)=0; ICGF(I,3)=24; CMGS(I,3)=1.0; CMGL(I,3)=0.0
           endif
+
         elseif(igu.eq.12)then
+
+C Office corridor with transient occupancy (1 2 & 2.5 minutes)
+C 50 20 10 & 5 people per hour e.g. 50person @1m=83Wsen & 50Wlat
+C 20person @2.5m=83Wsen 42Wlat, 25person @1m=41Wsen 25Wlat,
+C 10people @2m=33Wsen 20W lat, 10people @1m=16Wsen 11.6Wlat,
+C 5people @2m=16.6Wsen 8.3Wlat.
+C lights emergency & 7W/m2 and brief small power 2W/m2. Reduced
+C hours @ weekends.
+C Uses CIBSE Guide A 6.3 for radiant-convective splits. Saturday 
+C morning use. Sunday & holidays essentially unoccupied.
+          ctlstr(icomp,I)='no control of air flow  '
+          NAC(I)=1; IACS(I,1)=0; IACF(I,1)=24
+          ACI(I,1)=0.5; ACV(I,1)=0.0; IPT(I,1)=0; TA(I,1)=0.0
+          if(I.eq.1)then
+            NCAS(I)=15
+            do loop=1,15  ! set common information
+              if(loop.ge.1.and.loop.le.9)then
+                ICGUnit(I,loop)=0; ICGT(I,loop)=1  ! ocup Watts
+                RADC(I,loop)=0.6; CONC(I,loop)=0.4
+              elseif(loop.ge.10.and.loop.le.12)then
+                ICGUnit(I,loop)=1; ICGT(I,loop)= -2  ! for lights
+                RADC(I,loop)=0.3; CONC(I,loop)=0.7
+              elseif(loop.ge.13.and.loop.le.15)then
+                ICGUnit(I,loop)=1; ICGT(I,loop)= -3  ! for equip
+                RADC(I,loop)=0.4; CONC(I,loop)=0.6
+              endif
+            enddo
+            ICGS(I,1)=0; ICGF(I,1)=7; CMGS(I,1)=32.0; CMGL(I,1)=20.0  ! 10 & 5 people
+            ICGS(I,2)=7; ICGF(I,2)=8; CMGS(I,2)=75.0; CMGL(I,2)=45.0  ! 25 & 10 people
+            ICGS(I,3)=8; ICGF(I,3)=9; CMGS(I,3)=166.0; CMGL(I,3)=91.0 ! 50 & 20 people
+            ICGS(I,4)=9; ICGF(I,4)=12; CMGS(I,4)=75.0; CMGL(I,4)=45.0
+            ICGS(I,5)=12; ICGF(I,5)=14; CMGS(I,5)=166.; CMGL(I,5)=91.
+            ICGS(I,6)=14; ICGF(I,6)=17; CMGS(I,6)=32.; CMGL(I,6)=20.0
+            ICGS(I,7)=17; ICGF(I,7)=18; CMGS(I,7)=166.; CMGL(I,7)=91.
+            ICGS(I,8)=18; ICGF(I,8)=21; CMGS(I,8)=32.0; CMGL(I,8)=20.0
+            ICGS(I,9)=21; ICGF(I,9)=24; CMGS(I,9)=16.0; CMGL(I,9)=11.6 ! 5 people @2m
+              
+            ICGS(I,10)=0; ICGF(I,10)=7; CMGS(I,10)=1.0; CMGL(I,10)=0.0 ! lights W/m2
+            ICGS(I,11)=7; ICGF(I,11)=21; CMGS(I,11)=8.; CMGL(I,11)=0.0
+            ICGS(I,12)=21; ICGF(I,12)=24; CMGS(I,12)=1.; CMGL(I,12)=0.0
+
+            ICGS(I,13)=0; ICGF(I,13)=7; CMGS(I,13)=0.0; CMGL(I,13)=0.0  ! equipment W/m2
+            ICGS(I,14)=7; ICGF(I,14)=8; CMGS(I,14)=3.0; CMGL(I,14)=0.0  ! equipment W/m2 cleaning
+            ICGS(I,15)=8; ICGF(I,15)=24; CMGS(I,15)=0.0; CMGL(I,15)=0.0   ! sbem equipment W/m2
+          elseif(I.eq.2)then
+            NCAS(I)=12  ! saturdays only mornings
+            do loop=1,12
+              if(loop.ge.1.and.loop.le.6)then
+                ICGUnit(I,loop)=0; ICGT(I,loop)=1  ! ocup Watts
+                RADC(I,loop)=0.6; CONC(I,loop)=0.4
+              elseif(loop.ge.7.and.loop.le.9)then
+                ICGUnit(I,loop)=1; ICGT(I,loop)= -2
+                RADC(I,loop)=0.3; CONC(I,loop)=0.7
+              elseif(loop.ge.10.and.loop.le.12)then
+                ICGUnit(I,loop)=1; ICGT(I,loop)= -3
+                RADC(I,loop)=0.4; CONC(I,loop)=0.6
+              endif
+            enddo
+            ICGS(I,1)=0; ICGF(I,1)=7; CMGS(I,1)=32.0; CMGL(I,1)=20.0  ! 10 & 5 people
+            ICGS(I,2)=7; ICGF(I,2)=8; CMGS(I,2)=75.0; CMGL(I,2)=45.0 ! 50 & 20 people
+            ICGS(I,3)=8; ICGF(I,3)=9; CMGS(I,3)=166.0; CMGL(I,3)=91.0
+            ICGS(I,4)=9; ICGF(I,4)=12; CMGS(I,4)=75.0; CMGL(I,4)=45.0
+            ICGS(I,5)=12; ICGF(I,5)=14; CMGS(I,5)=100.0; CMGL(I,5)=50.
+            ICGS(I,6)=14; ICGF(I,6)=24; CMGS(I,6)=32.0; CMGL(I,6)=11.6  ! mornings only
+            ICGS(I,7)=0; ICGF(I,7)=8; CMGS(I,7)=1.0; CMGL(I,7)=0.0 ! lights W/m2
+            ICGS(I,8)=8; ICGF(I,8)=12; CMGS(I,8)=7.0; CMGL(I,8)=0.0
+            ICGS(I,9)=12; ICGF(I,9)=24; CMGS(I,9)=5.0; CMGL(I,9)=0.0
+            ICGS(I,10)=0; ICGF(I,10)=7; CMGS(I,10)=0.0; CMGL(I,10)=0.0  ! equipment W/m2
+            ICGS(I,11)=7; ICGF(I,11)=14; CMGS(I,11)=1.0; CMGL(I,11)=0.
+            ICGS(I,12)=14; ICGF(I,12)=24; CMGS(I,12)=0.; CMGL(I,12)=0.
+          else
+            NCAS(I)=3  ! Sunday holiday & other minimal
+            do loop=1,3
+              if(loop.eq.1)then
+                ICGUnit(I,loop)=0; ICGT(I,loop)=1  ! ocup Watts
+                RADC(I,loop)=0.6; CONC(I,loop)=0.4
+              elseif(loop.eq.2)then
+                ICGUnit(I,loop)=1; ICGT(I,loop)= -2
+                RADC(I,loop)=0.3; CONC(I,loop)=0.7
+              elseif(loop.eq.3)then
+                ICGUnit(I,loop)=1; ICGT(I,loop)= -3
+                RADC(I,loop)=0.4; CONC(I,loop)=0.6
+              endif
+            enddo
+            ICGS(I,1)=0; ICGF(I,1)=24; CMGS(I,1)=8.0; CMGL(I,1)=4.0  ! security only
+            ICGS(I,2)=0; ICGF(I,2)=24; CMGS(I,2)=1.0; CMGL(I,2)=0.0  ! emergency lights W/m2
+            ICGS(I,3)=0; ICGF(I,3)=24; CMGS(I,3)=1.0; CMGL(I,3)=0.0
+          endif
+
+        elseif(igu.eq.13)then
 
 C Office meeting room for up to 6 with some diversity. Uses CIBSE Guide A 6.3
 C for radiant-convective splits. Saturday, Sunday & holidays unoccupied.
@@ -6579,7 +6678,7 @@ C for radiant-convective splits. Saturday, Sunday & holidays unoccupied.
             ICGS(I,3)=0; ICGF(I,3)=24; CMGS(I,3)=0.0; CMGL(I,3)=0.0
           endif
 
-        elseif(igu.eq.13)then
+        elseif(igu.eq.14)then
 
 C Setup an office WC with peaks at start and end of office
 C hours as well as around lunch. Brief cleaning Sat morning.
@@ -6664,7 +6763,7 @@ C dryer 20 uses @ 15 sec *1050W = 95Whr, 15 uses@15 sec = 72Whr.
             ICGS(I,3)=0; ICGF(I,3)=24; CMGS(I,3)=10.0; CMGL(I,3)=10.0
           endif
 
-        elseif(igu.eq.14)then
+        elseif(igu.eq.15)then
 
 C Setup ceiling void with heat gains from recessed lighting in
 C zone below (38% of 8W/m2 CIBSE table 6.5) mostly radiant.
@@ -6729,7 +6828,7 @@ C And 1W/m2 equipment gains and minor infiltration (0.2ach).
             ICGS(I,3)=0; ICGF(I,3)=24; CMGS(I,3)=1.0; CMGL(I,3)=1.0
           endif
 
-        elseif(igu.eq.15)then
+        elseif(igu.eq.16)then
 
 C Setup an residential dining room - two people for breakfast
 C (half hour occupied) and 4 in the evening (45 minutes)
@@ -6822,7 +6921,7 @@ C No equipment gains in this room. Lights at 8W/m2.
             ICGS(I,2)=0; ICGF(I,2)=24; CMGS(I,2)=1.0; CMGL(I,2)=0.0  ! lights W/m2
           endif
 
-        elseif(igu.eq.16)then
+        elseif(igu.eq.17)then
 
 C Setup an residential lounge - used primarily in the evning with
 C diversity of occupancy and equipment use. Lights at 8W/m2.
@@ -6939,7 +7038,7 @@ C diversity of occupancy and equipment use. Lights at 8W/m2.
             ICGS(I,2)=0; ICGF(I,2)=24; CMGS(I,2)=1.0; CMGL(I,2)=0.0  ! lights W/m2
           endif
 
-        elseif(igu.eq.17)then
+        elseif(igu.eq.18)then
 
 C Setup an residential kitchen - one cooking breakfast 20 minutes
 C and one in the evening (30 minutes) with diversity for different day types.
@@ -6978,13 +7077,13 @@ C Fridge 280litre 150kWhr/year = 18Whr average include in standby
             ICGS(I,9)=18; ICGF(I,9)=20; CMGS(I,9)=8.0; CMGL(I,9)=0.0
             ICGS(I,10)=20; ICGF(I,10)=24; CMGS(I,10)=1.; CMGL(I,10)=0.
 
-            ICGS(I,11)=0; ICGF(I,11)=7; CMGS(I,11)=20.; CMGL(I,11)=20.   ! standby W
+            ICGS(I,11)=0; ICGF(I,11)=7; CMGS(I,11)=32.; CMGL(I,11)=20.   ! standby W
            ICGS(I,12)=7; ICGF(I,12)=8; CMGS(I,12)=325.; CMGL(I,12)=300.  ! breakfast = 2 kettles
            ICGS(I,13)=8; ICGF(I,13)=12; CMGS(I,13)=160.;CMGL(I,13)=160. ! boil 1 kettle
-           ICGS(I,14)=12; ICGF(I,14)=13; CMGS(I,14)=20.; CMGL(I,14)=20. ! no lunch
-           ICGS(I,15)=13; ICGF(I,15)=18; CMGS(I,15)=20.; CMGL(I,15)=20. ! standby W
-           ICGS(I,16)=18; ICGF(I,16)=19;CMGS(I,16)=832.;CMGL(I,16)=800. ! dinner W ??
-           ICGS(I,17)=19; ICGF(I,17)=24; CMGS(I,17)=20.; CMGL(I,17)=20. ! standby ??
+           ICGS(I,14)=12; ICGF(I,14)=13; CMGS(I,14)=32.; CMGL(I,14)=20. ! no lunch
+           ICGS(I,15)=13; ICGF(I,15)=18; CMGS(I,15)=32.; CMGL(I,15)=20. ! standby W
+           ICGS(I,16)=18; ICGF(I,16)=19;CMGS(I,16)=832.;CMGL(I,16)=800. ! dinner W
+           ICGS(I,17)=19; ICGF(I,17)=24; CMGS(I,17)=32.; CMGL(I,17)=20. ! standby W
             
           elseif(I.eq.2)then  ! later on Saturday and 30 min breakfast
             NCAS(I)=17
@@ -7012,13 +7111,13 @@ C Fridge 280litre 150kWhr/year = 18Whr average include in standby
             ICGS(I,9)=18; ICGF(I,9)=20; CMGS(I,9)=8.0; CMGL(I,9)=0.0
             ICGS(I,10)=20; ICGF(I,10)=24; CMGS(I,10)=1.; CMGL(I,10)=0.
 
-            ICGS(I,11)=0; ICGF(I,11)=8; CMGS(I,11)=20.; CMGL(I,11)=20.  ! standby W
+            ICGS(I,11)=0; ICGF(I,11)=8; CMGS(I,11)=32.; CMGL(I,11)=20.  ! standby W
             ICGS(I,12)=8; ICGF(I,12)=9; CMGS(I,12)=325.;CMGL(I,12)=300. ! breakfast = 2 kettles
             ICGS(I,13)=9; ICGF(I,13)=12;CMGS(I,13)=160.;CMGL(I,13)=160. ! boil 1 kettle
            ICGS(I,14)=12; ICGF(I,14)=13;CMGS(I,14)=325.;CMGL(I,14)=300. ! lunch = 2 kettles
-           ICGS(I,15)=13; ICGF(I,15)=18; CMGS(I,15)=20.;CMGL(I,15)=20.  ! standby W
-           ICGS(I,16)=18; ICGF(I,16)=19;CMGS(I,16)=832.;CMGL(I,16)=800. ! dinner W ??
-           ICGS(I,17)=19; ICGF(I,17)=24; CMGS(I,17)=20.0;CMGL(I,17)=20. ! standby W
+           ICGS(I,15)=13; ICGF(I,15)=18; CMGS(I,15)=32.;CMGL(I,15)=20.  ! standby W
+           ICGS(I,16)=18; ICGF(I,16)=19;CMGS(I,16)=832.;CMGL(I,16)=800. ! dinner W
+           ICGS(I,17)=19; ICGF(I,17)=24; CMGS(I,17)=32.0;CMGL(I,17)=20. ! standby W
 
           elseif(I.eq.3)then  ! later Sunday brunch 30 min and evening 2*45 min
             NCAS(I)=16
@@ -7046,12 +7145,12 @@ C Fridge 280litre 150kWhr/year = 18Whr average include in standby
             ICGS(I,9)=19; ICGF(I,9)=21; CMGS(I,9)=8.; CMGL(I,9)=0.0
             ICGS(I,10)=21; ICGF(I,10)=24; CMGS(I,10)=1.; CMGL(I,10)=0.
 
-            ICGS(I,11)=0; ICGF(I,11)=9; CMGS(I,11)=20.; CMGL(I,11)=20.   ! standby W
+            ICGS(I,11)=0; ICGF(I,11)=9; CMGS(I,11)=32.; CMGL(I,11)=20.   ! standby W
            ICGS(I,12)=9; ICGF(I,12)=10; CMGS(I,12)=160.;CMGL(I,12)=160.  ! breakfast = 1 kettles
            ICGS(I,13)=10; ICGF(I,13)=11;CMGS(I,13)=320.;CMGL(I,13)=300. ! brunch= 2 kettle
-           ICGS(I,14)=11; ICGF(I,14)=18;CMGS(I,14)=20.;CMGL(I,14)=20. ! standby
-           ICGS(I,15)=18; ICGF(I,15)=19;CMGS(I,15)=832.;CMGL(I,15)=800. ! dinner W ??
-           ICGS(I,16)=19; ICGF(I,16)=24;CMGS(I,16)=20.; CMGL(I,16)=20. ! standby W
+           ICGS(I,14)=11; ICGF(I,14)=18;CMGS(I,14)=32.;CMGL(I,14)=20. ! standby
+           ICGS(I,15)=18; ICGF(I,15)=19;CMGS(I,15)=832.;CMGL(I,15)=800. ! dinner W
+           ICGS(I,16)=19; ICGF(I,16)=24;CMGS(I,16)=32.; CMGL(I,16)=20. ! standby W
 
           else
             NCAS(I)=3  ! holiday & other minimal
@@ -7069,10 +7168,10 @@ C Fridge 280litre 150kWhr/year = 18Whr average include in standby
             enddo
             ICGS(I,1)=0; ICGF(I,1)=24; CMGS(I,1)=0.0; CMGL(I,1)=0.0  ! occupants only in morning
             ICGS(I,2)=0; ICGF(I,2)=24; CMGS(I,2)=1.0; CMGL(I,2)=0.0  ! lights W/m2
-            ICGS(I,3)=0; ICGF(I,3)=24; CMGS(I,3)=20.0; CMGL(I,3)=20.0   ! standby W
+            ICGS(I,3)=0; ICGF(I,3)=24; CMGS(I,3)=32.0; CMGL(I,3)=20.0   ! standby W
           endif
 
-        elseif(igu.eq.18)then
+        elseif(igu.eq.19)then
 
 C Setup an residential kitchen/dining/lounge - one cooking breakfast 20 minutes
 C eating breakfast another 20 minutes and one in the evening (30+30 minutes)
@@ -7109,11 +7208,11 @@ C the kitchen above but with additional living room loads added.
             ICGS(I,11)=18; ICGF(I,11)=20; CMGS(I,11)=8.; CMGL(I,11)=0.
             ICGS(I,12)=20; ICGF(I,12)=24; CMGS(I,12)=5.; CMGL(I,12)=0.
 
-            ICGS(I,13)=0; ICGF(I,13)=7; CMGS(I,13)=30.; CMGL(I,13)=20.   ! standby W
+            ICGS(I,13)=0; ICGF(I,13)=7; CMGS(I,13)=42.; CMGL(I,13)=20.   ! standby W
            ICGS(I,14)=7; ICGF(I,14)=8; CMGS(I,14)=335.; CMGL(I,14)=300.  ! breakfast = 2 kettles
            ICGS(I,15)=8; ICGF(I,15)=12; CMGS(I,15)=160.;CMGL(I,15)=160. ! boil 1 kettle
-           ICGS(I,16)=12; ICGF(I,16)=13; CMGS(I,16)=30.; CMGL(I,16)=30. ! no lunch
-           ICGS(I,17)=13; ICGF(I,17)=18; CMGS(I,17)=30.; CMGL(I,17)=30. ! standby W
+           ICGS(I,16)=12; ICGF(I,16)=13; CMGS(I,16)=42.; CMGL(I,16)=30. ! no lunch
+           ICGS(I,17)=13; ICGF(I,17)=18; CMGS(I,17)=42.; CMGL(I,17)=30. ! standby W
            ICGS(I,18)=18; ICGF(I,18)=19;CMGS(I,18)=900.;CMGL(I,18)=800. ! dinner W ??
            ICGS(I,19)=19; ICGF(I,19)=24; CMGS(I,19)=80.; CMGL(I,19)=30. ! standby ??
             
@@ -7145,13 +7244,13 @@ C the kitchen above but with additional living room loads added.
             ICGS(I,11)=18; ICGF(I,11)=20; CMGS(I,11)=8.; CMGL(I,11)=0.
             ICGS(I,12)=20; ICGF(I,12)=24; CMGS(I,12)=6.; CMGL(I,12)=0.
 
-            ICGS(I,13)=0; ICGF(I,13)=8; CMGS(I,13)=30.; CMGL(I,13)=20.   ! standby W
+            ICGS(I,13)=0; ICGF(I,13)=8; CMGS(I,13)=40.; CMGL(I,13)=20.   ! standby W
            ICGS(I,14)=8; ICGF(I,14)=9; CMGS(I,14)=305.; CMGL(I,14)=300.  ! breakfast = 2 kettles
            ICGS(I,15)=9; ICGF(I,15)=12; CMGS(I,15)=160.;CMGL(I,15)=160. ! boil 1 kettle
-           ICGS(I,16)=12; ICGF(I,16)=13; CMGS(I,16)=50.; CMGL(I,16)=50. ! some lunch
-           ICGS(I,17)=13; ICGF(I,17)=18; CMGS(I,17)=30.; CMGL(I,17)=30. ! standby W
+           ICGS(I,16)=12; ICGF(I,16)=13; CMGS(I,16)=70.; CMGL(I,16)=50. ! some lunch
+           ICGS(I,17)=13; ICGF(I,17)=18; CMGS(I,17)=42.; CMGL(I,17)=30. ! standby W
            ICGS(I,18)=18; ICGF(I,18)=19;CMGS(I,18)=800.;CMGL(I,18)=800. ! dinner W ??
-           ICGS(I,19)=19; ICGF(I,19)=24; CMGS(I,19)=90.; CMGL(I,19)=40. ! TV
+           ICGS(I,19)=19; ICGF(I,19)=24; CMGS(I,19)=100.; CMGL(I,19)=40. ! TV & fridge
 
           elseif(I.eq.3)then  ! later Sunday brunch 30 min and evening 2*45 min
             NCAS(I)=16
@@ -7179,10 +7278,10 @@ C the kitchen above but with additional living room loads added.
             ICGS(I,9)=19; ICGF(I,9)=21; CMGS(I,9)=8.; CMGL(I,9)=0.0
             ICGS(I,10)=21; ICGF(I,10)=24; CMGS(I,10)=1.; CMGL(I,10)=0.
 
-            ICGS(I,11)=0; ICGF(I,11)=9; CMGS(I,11)=20.; CMGL(I,11)=20.   ! standby W
+            ICGS(I,11)=0; ICGF(I,11)=9; CMGS(I,11)=42.; CMGL(I,11)=20.   ! standby W
            ICGS(I,12)=9; ICGF(I,12)=10; CMGS(I,12)=160.;CMGL(I,12)=160.  ! breakfast = 1 kettles
            ICGS(I,13)=10; ICGF(I,13)=11;CMGS(I,13)=320.;CMGL(I,13)=300. ! brunch= 2 kettle
-           ICGS(I,14)=11; ICGF(I,14)=18;CMGS(I,14)=40.;CMGL(I,14)=20.   ! occassional TV
+           ICGS(I,14)=11; ICGF(I,14)=18;CMGS(I,14)=62.;CMGL(I,14)=20.   ! occassional TV
            ICGS(I,15)=18; ICGF(I,15)=19;CMGS(I,15)=832.;CMGL(I,15)=800. ! dinner W
            ICGS(I,16)=19; ICGF(I,16)=24;CMGS(I,16)=120.; CMGL(I,16)=80. ! TV & coffee
 
@@ -7202,10 +7301,10 @@ C the kitchen above but with additional living room loads added.
             enddo
             ICGS(I,1)=0; ICGF(I,1)=24; CMGS(I,1)=0.0; CMGL(I,1)=0.0  ! occupants away
             ICGS(I,2)=0; ICGF(I,2)=24; CMGS(I,2)=1.0; CMGL(I,2)=0.0  ! lights W/m2
-            ICGS(I,3)=0; ICGF(I,3)=24; CMGS(I,3)=30.0; CMGL(I,3)=30.0  ! standby W
+            ICGS(I,3)=0; ICGF(I,3)=24; CMGS(I,3)=42.0; CMGL(I,3)=30.0  ! standby W
           endif
 
-        elseif(igu.eq.19)then
+        elseif(igu.eq.20)then
 
 C Setup an residential master bedroom diversity 2 adults overnight
 C occassional use in evening, one sleeps later weekdays & weekends
@@ -7322,7 +7421,7 @@ C limited electrical.
             ICGS(I,3)=0; ICGF(I,3)=24; CMGS(I,3)=5.0; CMGL(I,3)=20.0  ! standby W
           endif
 
-        elseif(igu.eq.20)then
+        elseif(igu.eq.21)then
 
 C Setup an residential single bedroom diversity 1 adults overnight
 C tends to play games or TV in evenings.
@@ -7434,7 +7533,7 @@ C tends to play games or TV in evenings.
             ICGS(I,2)=0; ICGF(I,2)=24; CMGS(I,2)=1.0; CMGL(I,2)=0.0  ! lights W/m2
             ICGS(I,3)=0; ICGF(I,3)=24; CMGS(I,3)=5.0; CMGL(I,3)=10.0  ! standby W
           endif
-        elseif(igu.eq.21)then
+        elseif(igu.eq.22)then
 
 C Setup an residential corridor with peaks in morning & evening. As people
 C are in transit assume 5 minute occupancy per hour during peaks (8.33 Whr)
@@ -7503,7 +7602,6 @@ C represented as 4 W/m2 during the day.
             ICGS(I,12)=0; ICGF(I,12)=7; CMGS(I,12)=0.0; CMGL(I,12)=0.0  ! equipment W/m2
             ICGS(I,13)=7; ICGF(I,13)=8; CMGS(I,13)=3.0; CMGL(I,13)=0.0  ! equipment W/m2 cleaning
             ICGS(I,14)=8; ICGF(I,14)=24; CMGS(I,14)=0.0; CMGL(I,14)=0.0   ! sbem equipment W/m2
-            NCAS(I)=12  ! saturdays only mornings
           else
             NCAS(I)=3  ! holiday & other minimal
             do loop=1,3
@@ -7522,7 +7620,7 @@ C represented as 4 W/m2 during the day.
             ICGS(I,2)=0; ICGF(I,2)=24; CMGS(I,2)=1.0; CMGL(I,2)=0.0  ! emergency lights W/m2
             ICGS(I,3)=0; ICGF(I,3)=24; CMGS(I,3)=1.0; CMGL(I,3)=0.0
           endif
-        elseif(igu.eq.22)then
+        elseif(igu.eq.23)then
 
 C Setup an residential bathroom with showers in the morning and occassionally
 C at night. Latent loads adjusted to track observed RH patterns of showers
@@ -7666,58 +7764,67 @@ C Instanciate initial documentation for air schedules and casual gains.
      &    'Assumes 0.5 ach infiltration. No ventilation from ',
      &    'other zones and no control imposed on air movement.'
       elseif(igu.eq.12)then
+        write(oprdesc(icomp),'(4a)')
+     &   'Office corridor with transient occupancy (1 2 & 2.5 minutes)',
+     &   ' 50 20 10 & 5 people per hour e.g. 50per @1m=83Wsen & 50Wlat',
+     &   ' lights emergency & 7W/m2 and brief small power 2W/m2. ',
+     &   'Reduced hours @ weekends.'
+        write(ventdesc(icomp),'(2a)')
+     &    'Assumes 0.5 ach infiltration. No ventilation from ',
+     &    'other zones and no control imposed on air movement.'
+      elseif(igu.eq.13)then
         write(oprdesc(icomp),'(2a)')
      &   'Meeting room max 6 with diversity, lights emergency & ',
      &   '7W/m2 with occassional projector use. Weekdays only.'
         write(ventdesc(icomp),'(2a)')
      &    'Assumes 0.5 ach infiltration. No ventilation from ',
      &    'other zones and no control imposed on air movement.'
-      elseif(igu.eq.13)then
+      elseif(igu.eq.14)then
         write(oprdesc(icomp),'(2a)')
      &   'Office WC with peaks during office hours. Assumes 5min ',
      &   'visits 10/hour peak 5/hour normal with hand dryer.'
         write(ventdesc(icomp),'(2a)')
      &    'Assumes 0.5 ach infiltration. No ventilation from ',
      &    'other zones and no control imposed on air movement.'
-      elseif(igu.eq.14)then
+      elseif(igu.eq.15)then
         write(oprdesc(icomp),'(2a)')
      &   'Ceiling void with heat gains from recessed lighting ',
      &   'from below 38% of 8W/m2 equipment 1W/m2.'
         write(ventdesc(icomp),'(2a)')
      &    'Assumes 0.2 ach infiltration. No ventilation from ',
      &    'other zones and no control imposed on air movement.'
-      elseif(igu.eq.15)then
+      elseif(igu.eq.16)then
         write(oprdesc(icomp),'(2a)')
      &   'Dining room (max 4) with diversity used for breakfast ',
      &   'and dinner & with occassional lighting. Extra latent.'
         write(ventdesc(icomp),'(2a)')
      &    'Assumes 0.5 ach infiltration. No ventilation from ',
      &    'other zones and no control imposed on air movement.'
-      elseif(igu.eq.16)then
+      elseif(igu.eq.17)then
         write(oprdesc(icomp),'(2a)')
      &   'Lounge (max 3) with diversity used mostly in evening ',
      &   'with occassional lighting radio TV etc.'
         write(ventdesc(icomp),'(2a)')
      &    'Assumes 0.5 ach infiltration. No ventilation from ',
      &    'other zones and no control imposed on air movement.'
-      elseif(igu.eq.17)then
+      elseif(igu.eq.18)then
         write(oprdesc(icomp),'(3a)')
      &   'Residential kitchen with diversity breakfast or brunch ',
      &   'boil a few kettles during day, no weekday lunches and ',
-     &   'dinner = cooking 2kg rice. Assumes separate dining room.'
-        write(ventdesc(icomp),'(2a)')
-     &    'Assumes 0.5 ach infiltration. No ventilation from ',
-     &    'other zones and no control imposed on air movement.'
-      elseif(igu.eq.18)then
-        write(oprdesc(icomp),'(4a)')
-     &   'Kitchen/din/long up to 3 people with diversity ',
-     &   'breakfast or brunch ~30 minutes dinner 45min. A few',
-     &   'kettles during day, no weekday lunches. Dinner = ',
-     &   'cooking 2kg rice. TV in evening.'
+     &   'dinner = cooking 2kg rice. Std Fridge separate dining room.'
         write(ventdesc(icomp),'(2a)')
      &    'Assumes 0.5 ach infiltration. No ventilation from ',
      &    'other zones and no control imposed on air movement.'
       elseif(igu.eq.19)then
+        write(oprdesc(icomp),'(4a)')
+     &   'Kitchen/din/long up to 3 people with diversity ',
+     &   'breakfast or brunch ~30 minutes dinner 45min. A few',
+     &   'kettles during day, no weekday lunches. Dinner = ',
+     &   'cooking 2kg rice. Std Fridge, TV in evening.'
+        write(ventdesc(icomp),'(2a)')
+     &    'Assumes 0.5 ach infiltration. No ventilation from ',
+     &    'other zones and no control imposed on air movement.'
+      elseif(igu.eq.20)then
         write(oprdesc(icomp),'(3a)')
      &   'Residential master bedroom diversity 2 adults overnight ',
      &   'occassional evening use, one sleeps later most days ',
@@ -7725,21 +7832,21 @@ C Instanciate initial documentation for air schedules and casual gains.
         write(ventdesc(icomp),'(2a)')
      &    'Assumes 0.5 ach infiltration. No ventilation from ',
      &    'other zones and no control imposed on air movement.'
-      elseif(igu.eq.20)then
+      elseif(igu.eq.21)then
         write(oprdesc(icomp),'(2a)')
      &   'Residential single bedroom diversity 1 adult overnight ',
      &   'with games/computer in evenings.'
         write(ventdesc(icomp),'(2a)')
      &    'Assumes 0.5 ach infiltration. No ventilation from ',
      &    'other zones and no control imposed on air movement.'
-      elseif(igu.eq.21)then
+      elseif(igu.eq.22)then
         write(oprdesc(icomp),'(2a)')
      &   'Residential corridor diversity in people in transit ',
      &   'lights 7W/m2 and brief small power 2W/m2 for cleaning.'
         write(ventdesc(icomp),'(2a)')
      &    'Assumes 0.2 ach infiltration. No ventilation from ',
      &    'other zones and no control imposed on air movement.'
-      elseif(igu.eq.22)then
+      elseif(igu.eq.23)then
         write(oprdesc(icomp),'(3a)')
      &   'Residential bath/shower 2x15min showers most mornings ',
      &   'lights 8W/m2 with wet towels included in latent gains ',

@@ -519,6 +519,7 @@ C Convert to node-related vapour resistance.
 C Ask for time.
       IDO=IOD1
       IMO=IOM1
+      TIME=FLOAT(IOH1)
    41 call askrtim(IFDAY,IMO,IDO,IJDAY,TIME,IT,IER)
       IDAYO=IJDAY
       TIMO=TIME

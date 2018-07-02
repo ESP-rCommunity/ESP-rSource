@@ -1378,7 +1378,7 @@ C MOSYSSU clears commons/ sets default values for systems plotting.
 
       COMMON/MSYSPICK/NPGET,IPGETNO(MSYSRS,8)
 
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
+      COMMON/GRAF1/YMAX(6),YMIN(6),YAXSET(6),ADDLIN,horaxisdiv
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/SYSLABEL/SPLABEL(MSYSRS),GPLABEL(MSYSRS)
 
@@ -1444,8 +1444,8 @@ C act='p' iget parameters already set.
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
-      COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
+      COMMON/GRAF1/YMAX(6),YMIN(6),YAXSET(6),ADDLIN,horaxisdiv
+      COMMON/GRAF2/YSC(6),Yadd(6),TSC,Xadd,IGX(6),ILR(6),DT
       common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
 
       COMMON/PPERS/IPSD1,IPSM1,IPSD2,IPSM2,IPSDS,IPSDF,NPTS,ipsav
@@ -1469,7 +1469,10 @@ C Occupancy filter info.
       COMMON/SYSLABEL/SPLABEL(MSYSRS),GPLABEL(MSYSRS)
 
 C Simulator parameters.
-      COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      COMMON/SPFL/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      LOGICAL spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
       COMMON/FREQS/NBINS,XBIN1,XBINN,DXBIN,IFREQ,IHITS,IMISS,INBIN(MF)
       integer ICBIN,IRCBIN
       COMMON/FREQS1/ICBIN(MF),IRCBIN(MF),ITOTAL
@@ -1483,7 +1486,7 @@ C Flags identifying if results libries are available. =0 no lib, =1 lib exists.
 
       dimension Yold(65),TIMEold(65),val(MSYSRS)
       character outs*124,TLABEL*60,trange*20,tranged*20
-      character ALABEL(5)*12,t20*20,act*1
+      character ALABEL(6)*12,t20*20,act*1
       CHARACTER PDESCR*60,SDESCR*44,DESCR*7,DESCR1*10
       character SPLABEL*32,GPLABEL*20
       CHARACTER DESCRH*5,DESCRD*5,NT*14,XT*14
@@ -1513,7 +1516,6 @@ C Flags identifying if results libries are available. =0 no lib, =1 lib exists.
 #endif
 
       logical colok,ok,dok,unixok
-      LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
 C For help messages
       character helpinsub*24   ! subroutine name

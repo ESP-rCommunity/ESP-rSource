@@ -1970,3 +1970,30 @@ C        CALL EASKABC('Data display options:',outs,
 'convective portion of these gains.'
 *enditem
     8 CALL EASKAB(' ','Casual gains :',
+*subroutine MCFDV
+*item MCFDV res_CFD_var_menu
+'This menu allows selection of CFD metrics (options e-k), as well as'
+'some climate metrics (options a-d). When selecting CFD metrics, you'
+'must specify a grid cell to view results for. An image of the domain'
+'gridding will be displayed when prompting you to select a grid cell.'
+'For option k, you will also be prompted to select which contaminant.'
+' '
+'Currently, you may only view results for one domain at a time.'
+' '
+'Option 2 - specify results library and select domain'
+'Option 3 - specify period to view results for'
+'Option 4 - select how to view results'
+'Option a - ambient dry bulb temperature (degrees C)'
+'Option b - ambient wind speed (m/s)'
+'Option c - ambient wind direction (degrees clockwise from north)'
+'Option d - ambient relative humidity (percent)'
+'Option e - component of velocity in the X (i) direction (m/s)'
+'Option f - component of velocity in the Y (j) direction (m/s)'
+'Option g - component of velocity in the Z (k) direction (m/s)'
+'Option h - magnitude of velocity vector (m/s, always +ve)'
+'Option i - fluid temperature (degrees C)'
+'Option j - mean age of air, if available (s)'
+'Option k - contaminant concentration, if available (g/kg)'
+*enditem
+      CALL EMENU(MTITLE,ITEM,NITMS,INO)
+

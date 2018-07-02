@@ -342,7 +342,7 @@ C hasname (string array) the surface name for each surface (so fillsur does not 
       LOGICAL QUIET,closez
       logical anunknownmlc ! if true then there was an unknown MLC
 
-      character choices(14)*32
+      character choices(15)*32
       character defmlc*32  ! names of default MLC for Office
       dimension defmlc(13)
 
@@ -787,18 +787,19 @@ C via calls to initcaspattern.
         choices(1)='a nothing happens in the zone'
         choices(2)='b cellular office (1 occ)    '
         choices(3)='c open plan office (9 m2/occ)'
-        choices(4)='d office corridor or stair   '
-        choices(5)='e meeting room (3-6 occ) '
-        choices(6)='f office WC (5-10 uses/hr)   '
-        choices(7)='g ceiling void recessed ltng '
-        choices(8)='h dining room (house 2-4 occ)'
-        choices(9)='i lounge (house 2-3 occ)     '
-        choices(10)='j kitchen (house 1-2 occ)    '
-        choices(11)='k kitchen/dining/liv (~3 occ)'
-        choices(12)='l master bed room (~2 occ)   '
-        choices(13)='m small bed room (~1 occ)    '
-        choices(14)='n residential corridor/stair '
-        NIGU=14
+        choices(4)='d office corridor:stair heavy'
+        choices(5)='e office corridor:stair lite '
+        choices(6)='f meeting room (3-6 occ) '
+        choices(7)='g office WC (5-10 uses/hr)   '
+        choices(8)='h ceiling void recessed ltng '
+        choices(9)='i dining room (house 2-4 occ)'
+        choices(10)='j lounge (house 2-3 occ)     '
+        choices(11)='k kitchen (house 1-2 occ)    '
+        choices(12)='l kitchen/dining/liv (~3 occ)'
+        choices(13)='m master bed room (~2 occ)   '
+        choices(14)='n small bed room (~1 occ)    '
+        choices(15)='o residential corridor/stair '
+        NIGU=15
         IIGU=-2
         CALL EMENU('Usage pattern for room',choices,NIGU,IIGU)
       endif

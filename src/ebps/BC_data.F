@@ -2010,8 +2010,10 @@ C----------------------------------------------------------------------
       integer iSF            ! simulation end day
 
 C.....Simulator status
-      common/spfl/spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      logical spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      common/spfl/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      logical spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
 
 C.....Time
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
@@ -2266,8 +2268,10 @@ C----------------------------------------------------------------------
 C     ESP-r variables
 C----------------------------------------------------------------------
 C.....Simulator status
-      common/spfl/spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      logical spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      common/spfl/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      logical spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
 C.....I/O
       common/outin/iuout,iuin
       integer iuout, iuin      ! channels for writing messages to screen
@@ -2482,8 +2486,10 @@ C----------------------------------------------------------------------
 C     ESP-r variables
 C----------------------------------------------------------------------
 C.....Simulator status
-      common/spfl/spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      logical spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      common/spfl/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      logical spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
 C.....I/O
       common/outin/iuout,iuin
       integer iuout, iuin      ! channels for writing messages to screen

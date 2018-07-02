@@ -609,93 +609,164 @@ C seasons.h provides typper and typsea
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
+C Markdown flag.
+      logical markdown
+      common/markdownflag/markdown
+
 C See ipvdata.h and ripvdat for IPV common block information.
       integer list
       dimension list(MCOM)  ! zone lists set to MCOM
 
-      character outs*124
+      character outs*124,outs2*248
       character act*1
       character descr*7,descrst*10,descrfn*10
       character zdescr*248   ! sized to hold 72 zone names
       character descra*7,descrb*7,descrc*7,descrd*7,descre*7
 
       if(act.eq.'a')then
-        write(outs,'(2A)')     'Title : ',ipvtitl
-        call edisp(itru,outs)
-        write(outs,'(2A)')     'Version   : ',ipvvers
-        call edisp(itru,outs)
-        call edisp(itru,'synopsis:')
-        call edisp248(itru,ipvsynop,80)
-        write(outs,'(A,I3)')   'Images    : ',nipvimg
-        call edisp(itru,outs)
+        if(markdown)then
+          write(outs,'(2A)')     'Title ',ipvtitl
+          call edisp2tr(itru,outs)
+          write(outs,'(2A)')     'Version ',ipvvers
+          call edisp2tr(itru,outs)
+          call edisp(itru,'synopsis ')
+          call edisp248(itru,ipvsynop,120)
+          write(outs,'(A,I3)')   'Images  ',nipvimg
+          call edisp2tr(itru,outs)
+        else
+          write(outs,'(2A)')     ' Title :',ipvtitl
+          call edisp(itru,outs)
+          write(outs,'(2A)')     'Version   : ',ipvvers
+          call edisp(itru,outs)
+          call edisp(itru,'synopsis:')
+          call edisp248(itru,ipvsynop,80)
+          write(outs,'(A,I3)')   'Images    : ',nipvimg
+          call edisp(itru,outs)
+        endif
         if(nipvimg.gt.0)then
           do 42 i=1,nipvimg
             call edisp(itru,lipvimg(i))
   42      continue
         endif
         call edisp(itru,'  ')
-        call edisp(itru,'Simulations to be undertaken:')
-        write(outs,'(a,i2,a)') '____simulations (',nipvassmt,
-     &  ')____________days descrip___'
-        call edisp(itru,outs)
+        if(markdown)then
+          call edisp2tr(itru,'Simulations to be undertaken  ')
+          call edisp(itru,' ')
+          write(outs,'(a)') 
+     &    'name    simulations                days  descripion'
+          call edisp(itru,outs)
+          write(outs,'(a)') 
+     &    '------  -------------------------  ----  ----------'
+          call edisp(itru,outs)
+        else
+          call edisp(itru,'Simulations to be undertaken:')
+          write(outs,'(a,i2,a)') '____simulations (',nipvassmt,
+     &    ')____________days descrip___'
+          call edisp(itru,outs)
+        endif
         if(nipvassmt.eq.0)then
           call edisp(itru,'Simulations not yet defined.')
         elseif(nipvassmt.eq.1)then
           call stdate(iyear,ipvastjd(1),descr,descrst)
           call stdate(iyear,ipvafnjd(1),descr,descrfn)
           jjd1=(ipvafnjd(1)-ipvastjd(1))+1
-          write(outs,'(4a,i4,2a)') 'annual ',descrst,' to ',descrfn,
-     &      jjd1,' ',ipvadesc(1)
+          if(markdown)then
+            write(outs,'(4a,i4,2a)') 'annual  ',descrst,' to ',
+     &      descrfn,jjd1,'      ',ipvadesc(1)
+          else
+            write(outs,'(4a,i4,2a)') 'annual ',descrst,' to ',
+     &      descrfn,jjd1,' ',ipvadesc(1)
+          endif
           call edisp(itru,outs)
         elseif(nipvassmt.eq.3)then
           call stdate(iyear,ipvastjd(1),descr,descrst)
           call stdate(iyear,ipvafnjd(1),descr,descrfn)
           jjd1=(ipvafnjd(1)-ipvastjd(1))+1
-          write(outs,'(4a,i4,2a)') 'winter ',descrst,' to ',descrfn,
-     &      jjd1,' ',ipvadesc(1)
+          if(markdown)then
+            write(outs,'(4a,i4,2a)') 'winter  ',descrst,' to ',
+     &      descrfn,jjd1,'     ',ipvadesc(1)
+          else
+            write(outs,'(4a,i4,2a)') 'winter ',descrst,' to ',
+     &      descrfn,jjd1,' ',ipvadesc(1)
+          endif
           call edisp(itru,outs)
           call stdate(iyear,ipvastjd(2),descr,descrst)
           call stdate(iyear,ipvafnjd(2),descr,descrfn)
           jjd2=(ipvafnjd(2)-ipvastjd(2))+1
-          write(outs,'(4a,i4,2a)') 'trans  ',descrst,' to ',descrfn,
-     &      jjd2,' ',ipvadesc(2)
+          if(markdown)then
+            write(outs,'(4a,i4,2a)') 'trans   ',descrst,' to ',
+     &      descrfn,jjd2,'     ',ipvadesc(2)
+          else
+            write(outs,'(4a,i4,2a)') 'trans  ',descrst,' to ',
+     &      descrfn,jjd2,' ',ipvadesc(2)
+          endif
           call edisp(itru,outs)
           call stdate(iyear,ipvastjd(3),descr,descrst)
           call stdate(iyear,ipvafnjd(3),descr,descrfn)
           jjd3=(ipvafnjd(3)-ipvastjd(3))+1
-          write(outs,'(4a,i4,2a)')  'summer ',descrst,' to ',descrfn,
-     &      jjd3,' ',ipvadesc(3)
+          if(markdown)then
+            write(outs,'(4a,i4,2a)')  'summer  ',descrst,' to ',
+     &      descrfn,jjd3,'     ',ipvadesc(3)
+          else
+            write(outs,'(4a,i4,2a)')  'summer ',descrst,' to ',
+     &      descrfn,jjd3,' ',ipvadesc(3)
+          endif
           call edisp(itru,outs)
         elseif(nipvassmt.eq.5)then
           call stdate(iyear,ipvastjd(1),descr,descrst)
           call stdate(iyear,ipvafnjd(1),descr,descrfn)
           jjd1=(ipvafnjd(1)-ipvastjd(1))+1
-          write(outs,'(4a,i4,2a)')  '1st win ',descrst,' to ',descrfn,
-     &      jjd1,' ',ipvadesc(1)
+          if(markdown)then
+            write(outs,'(4a,i4,2a)')  '1st win  ',descrst,' to ',
+     &        descrfn,jjd1,'     ',ipvadesc(1)
+          else
+            write(outs,'(4a,i4,2a)')  '1st win ',descrst,' to ',
+     &        descrfn,jjd1,' ',ipvadesc(1)
+          endif
           call edisp(itru,outs)
           call stdate(iyear,ipvastjd(2),descr,descrst)
           call stdate(iyear,ipvafnjd(2),descr,descrfn)
           jjd2=(ipvafnjd(2)-ipvastjd(2))+1
-          write(outs,'(4a,i4,2a)')  'spring  ',descrst,' to ',descrfn,
-     &      jjd2,' ',ipvadesc(2)
+          if(markdown)then
+            write(outs,'(4a,i4,2a)')  'spring   ',descrst,' to ',
+     &      descrfn,jjd2,'     ',ipvadesc(2)
+          else
+            write(outs,'(4a,i4,2a)')  'spring  ',descrst,' to ',
+     &      descrfn,jjd2,' ',ipvadesc(2)
+          endif
           call edisp(itru,outs)
           call stdate(iyear,ipvastjd(3),descr,descrst)
           call stdate(iyear,ipvafnjd(3),descr,descrfn)
           jjd3=(ipvafnjd(3)-ipvastjd(3))+1
-          write(outs,'(4a,i4,2a)')  'summer  ',descrst,' to ',descrfn,
-     &      jjd3,' ',ipvadesc(3)
+          if(markdown)then
+            write(outs,'(4a,i4,2a)')  'summer   ',descrst,' to ',
+     &      descrfn,jjd3,'     ',ipvadesc(3)
+          else
+            write(outs,'(4a,i4,2a)')  'summer  ',descrst,' to ',
+     &      descrfn,jjd3,' ',ipvadesc(3)
+          endif
           call edisp(itru,outs)
           call stdate(iyear,ipvastjd(4),descr,descrst)
           call stdate(iyear,ipvafnjd(4),descr,descrfn)
           jjd4=(ipvafnjd(4)-ipvastjd(4))+1
-          write(outs,'(4a,i4,2a)')  'autumn  ',descrst,' to ',descrfn,
-     &      jjd4,' ',ipvadesc(4)
+          if(markdown)then
+            write(outs,'(4a,i4,2a)')  'autumn   ',descrst,' to ',
+     &      descrfn,jjd4,'     ',ipvadesc(4)
+          else
+            write(outs,'(4a,i4,2a)')  'autumn  ',descrst,' to ',
+     &      descrfn,jjd4,' ',ipvadesc(4)
+          endif
           call edisp(itru,outs)
           call stdate(iyear,ipvastjd(5),descr,descrst)
           call stdate(iyear,ipvafnjd(5),descr,descrfn)
           jjd5=(ipvafnjd(5)-ipvastjd(5))+1
-          write(outs,'(4a,i4,2a)')  '2nd win ',descrst,' to ',descrfn,
-     &      jjd5,' ',ipvadesc(5)
+          if(markdown)then
+            write(outs,'(4a,i4,2a)')  '2nd win  ',descrst,' to ',
+     &      descrfn,jjd5,'     ',ipvadesc(5)
+          else
+            write(outs,'(4a,i4,2a)')  '2nd win ',descrst,' to ',
+     &      descrfn,jjd5,' ',ipvadesc(5)
+          endif
           call edisp(itru,outs)
         endif
 
@@ -710,9 +781,18 @@ C Display days.
         endif
 
         call edisp(itru,'  ')
-        call edisp(itru,'Seasons (as found in climatelist file):')
-        call edisp(itru,
+        if(markdown)then
+          call edisp2tr(itru,'Seasons (as found in climatelist)  ')
+          call edisp(itru,' ')
+          call edisp(itru,
      &    '         winter  spring  summer  autumn  winter')
+          call edisp(itru,
+     &    '-------  ------- ------  ------  ------  ------')
+        else
+          call edisp(itru,'Seasons (as found in climatelist file):')
+          call edisp(itru,
+     &    '         winter  spring  summer  autumn  winter')
+        endif
         call stdate(iyear,is1wins,descra,descrst)
         call stdate(iyear,is1sprs,descrb,descrst)
         call stdate(iyear,is1sums,descrc,descrst)
@@ -739,59 +819,166 @@ C Display days.
 
         call edisp(itru,'  ')
         if(nipvassmt.eq.1)then
-          call edisp(itru,'Ratios between assessments and all seasons:')
-          WRITE(outs,'(a,f7.2)')  ' heating    ',ddmheat(1)
+          if(markdown)then
+            call edisp(itru,'Ratios between assessments & all seasons')
+            call edisp(itru,'  ')
+            call edisp(itru,      '-------------  ---------  ')
+          else
+            call edisp(itru,'Ratios between assessments & all seasons:')
+          endif 
+          if(markdown)then
+            WRITE(outs,'(a,f7.2)')  ' heating      ',ddmheat(1)
+          else
+            WRITE(outs,'(a,f7.2)')  ' heating    ',ddmheat(1)
+          endif
           call edisp(itru,outs)
-          WRITE(outs,'(a,f7.2)')  ' cooling    ',ddmcool(1)
+          if(markdown)then
+            WRITE(outs,'(a,f7.2)')  ' cooling      ',ddmcool(1)
+          else
+            WRITE(outs,'(a,f7.2)')  ' cooling    ',ddmcool(1)
+          endif
           call edisp(itru,outs)
-          WRITE(outs,'(a,f7.2)')  ' lighting   ',ddmlight(1)
+          if(markdown)then
+            WRITE(outs,'(a,f7.2)')  ' lighting     ',ddmlight(1)
+          else
+            WRITE(outs,'(a,f7.2)')  ' lighting   ',ddmlight(1)
+          endif
           call edisp(itru,outs)
-          WRITE(outs,'(a,f7.2)')  ' small power',ddmsmlpw(1)
+          if(markdown)then
+            WRITE(outs,'(a,f7.2)')  ' small power  ',ddmsmlpw(1)
+          else
+            WRITE(outs,'(a,f7.2)')  ' small power',ddmsmlpw(1)
+          endif
           call edisp(itru,outs)
-          WRITE(outs,'(a,f7.2)')  ' fans&pumps ',ddmfan(1)
+          if(markdown)then
+            WRITE(outs,'(a,f7.2)')  ' fans&pumps   ',ddmfan(1)
+          else
+            WRITE(outs,'(a,f7.2)')  ' fans&pumps ',ddmfan(1)
+          endif
           call edisp(itru,outs)
-          WRITE(outs,'(a,f7.2)')  ' DHW        ',ddmdhw(1)
+          if(markdown)then
+            WRITE(outs,'(a,f7.2)')  ' DHW          ',ddmdhw(1)
+          else
+            WRITE(outs,'(a,f7.2)')  ' DHW        ',ddmdhw(1)
+          endif
           call edisp(itru,outs)
         elseif(nipvassmt.eq.3)then
-          call edisp(itru,
+          if(markdown)then
+            call edisp(itru,'Ratios between assessments')
+            call edisp(itru,'')
+            call edisp(itru,
+     &      '              winter  transition  summer')
+            call edisp(itru,
+     &      '------------  ------  ----------  ------')
+          else
+            call edisp(itru,
      &      'Ratios between assessments and winter transition summer:')
-          WRITE(outs,'(a,3f7.2)') ' heating    ',ddmheat(1),
+          endif
+          if(markdown)then
+            WRITE(outs,'(a,3f8.2)') ' heating      ',ddmheat(1),
      &      ddmheat(2),ddmheat(3)
+          else
+            WRITE(outs,'(a,3f7.2)') ' heating    ',ddmheat(1),
+     &      ddmheat(2),ddmheat(3)
+          endif
           call edisp(itru,outs)
-          WRITE(outs,'(a,3f7.2)') ' cooling    ',ddmcool(1),
+          if(markdown)then
+            WRITE(outs,'(a,3f8.2)') ' cooling      ',ddmcool(1),
      &      ddmcool(2),ddmcool(3)
+          else
+            WRITE(outs,'(a,3f7.2)') ' cooling    ',ddmcool(1),
+     &      ddmcool(2),ddmcool(3)
+          endif
           call edisp(itru,outs)
-          WRITE(outs,'(a,3f7.2)') ' lighting   ',ddmlight(1),
+          if(markdown)then
+            WRITE(outs,'(a,3f8.2)') ' lighting     ',ddmlight(1),
      &      ddmlight(2),ddmlight(3)
+          else
+            WRITE(outs,'(a,3f7.2)') ' lighting   ',ddmlight(1),
+     &      ddmlight(2),ddmlight(3)
+          endif
           call edisp(itru,outs)
-          WRITE(outs,'(a,3f7.2)') ' small power',ddmsmlpw(1),
+          if(markdown)then
+            WRITE(outs,'(a,3f8.2)') ' small power  ',ddmsmlpw(1),
      &      ddmsmlpw(2),ddmsmlpw(3)
+          else
+            WRITE(outs,'(a,3f7.2)') ' small power',ddmsmlpw(1),
+     &      ddmsmlpw(2),ddmsmlpw(3)
+          endif
           call edisp(itru,outs)
-          WRITE(outs,'(a,3f7.2)') ' fans&pumps ',ddmfan(1),
+          if(markdown)then
+            WRITE(outs,'(a,3f8.2)') ' fans&pumps   ',ddmfan(1),
      &      ddmfan(2),ddmfan(3)
+          else
+            WRITE(outs,'(a,3f8.2)') ' fans&pumps ',ddmfan(1),
+     &      ddmfan(2),ddmfan(3)
+          endif
           call edisp(itru,outs)
-          WRITE(outs,'(a,3f7.2)') ' DHW        ',ddmdhw(1),
+          if(markdown)then
+            WRITE(outs,'(a,3f8.2)') ' DHW          ',ddmdhw(1),
      &      ddmdhw(2),ddmdhw(3)
+          else
+            WRITE(outs,'(a,3f7.2)') ' DHW        ',ddmdhw(1),
+     &      ddmdhw(2),ddmdhw(3)
+          endif
+          call edisp(itru,outs)
         elseif(nipvassmt.eq.5)then
-          call edisp(itru,
+          if(markdown)then
+            call edisp(itru,
+     &      'Ratios for:   winter  spring summer autumn winter ')
+            call edisp(itru,
+     &      '------------  ------- ------ ------ ------ -------')
+          else
+            call edisp(itru,
      &      ' Ratios for:  winter spring summer autumn winter')
-          WRITE(outs,'(a,5f7.2)') ' heating    ',ddmheat(1),
+          endif
+          if(markdown)then
+            WRITE(outs,'(a,5f7.2)') ' heating      ',ddmheat(1),
      &      ddmheat(2),ddmheat(3),ddmheat(4),ddmheat(5)
+          else
+            WRITE(outs,'(a,5f7.2)') ' heating    ',ddmheat(1),
+     &      ddmheat(2),ddmheat(3),ddmheat(4),ddmheat(5)
+          endif
           call edisp(itru,outs)
-          WRITE(outs,'(a,5f7.2)') ' cooling    ',ddmcool(1),
+          if(markdown)then
+            WRITE(outs,'(a,5f7.2)') ' cooling      ',ddmcool(1),
      &      ddmcool(2),ddmcool(3),ddmcool(4),ddmcool(5)
+          else
+            WRITE(outs,'(a,5f7.2)') ' cooling    ',ddmcool(1),
+     &      ddmcool(2),ddmcool(3),ddmcool(4),ddmcool(5)
+          endif
           call edisp(itru,outs)
-          WRITE(outs,'(a,5f7.2)') ' lighting   ',ddmlight(1),
+          if(markdown)then
+            WRITE(outs,'(a,5f7.2)') ' lighting     ',ddmlight(1),
      &      ddmlight(2),ddmlight(3),ddmlight(4),ddmlight(5)
+          else
+            WRITE(outs,'(a,5f7.2)') ' lighting   ',ddmlight(1),
+     &      ddmlight(2),ddmlight(3),ddmlight(4),ddmlight(5)
+          endif
           call edisp(itru,outs)
-          WRITE(outs,'(a,5f7.2)') ' small power',ddmsmlpw(1),
+          if(markdown)then
+            WRITE(outs,'(a,5f7.2)') ' small power  ',ddmsmlpw(1),
      &      ddmsmlpw(2),ddmsmlpw(3),ddmsmlpw(4),ddmsmlpw(5)
+          else
+            WRITE(outs,'(a,5f7.2)') ' small power',ddmsmlpw(1),
+     &      ddmsmlpw(2),ddmsmlpw(3),ddmsmlpw(4),ddmsmlpw(5)
+          endif
           call edisp(itru,outs)
-          WRITE(outs,'(a,5f7.2)') ' fans&pumps ',ddmfan(1),
+          if(markdown)then
+            WRITE(outs,'(a,5f7.2)') ' fans&pumps   ',ddmfan(1),
      &      ddmfan(2),ddmfan(3),ddmfan(4),ddmfan(5)
+          else
+            WRITE(outs,'(a,5f7.2)') ' fans&pumps ',ddmfan(1),
+     &      ddmfan(2),ddmfan(3),ddmfan(4),ddmfan(5)
+          endif
           call edisp(itru,outs)
-          WRITE(outs,'(a,5f7.2)') ' DHW        ',ddmdhw(1),
+          if(markdown)then
+            WRITE(outs,'(a,5f7.2)') ' DHW          ',ddmdhw(1),
      &      ddmdhw(2),ddmdhw(3),ddmdhw(4),ddmdhw(5)
+          else
+            WRITE(outs,'(a,5f7.2)') ' DHW        ',ddmdhw(1),
+     &      ddmdhw(2),ddmdhw(3),ddmdhw(4),ddmdhw(5)
+          endif
           call edisp(itru,outs)
         endif
       endif
@@ -800,17 +987,23 @@ C Display days.
 C List current metrics and demand sets.
         if(nms.ge.1)then
           call edisp(itru,' ')
-          call edisp(itru,
-     &    'Metric                zones area scaling weight  type name')
+          if(markdown)then
+            write(outs2,'(2a)')
+     &      'ID  Metric               zones area    scale ',
+     &      'weight type      name        zones'
+            call edisp(itru,outs2)
+            write(outs,'(2a)')
+     &      '--  -------------------- ----- ------  ----- ',
+     &      '------ --------- ----------  ------------------------'
+            call edisp(itru,outs)
+          else
+            call edisp(itru,
+     &'Metric                    zones area scaling weight  type name')
+          endif
           do 269 ij=1,nms
             lnd=lnblnk(msdoc(ij))
             lnz=lnblnk(metgroup(ij))
             lng=lnblnk(metrglbl(ij))
-            write(outs,'(i2,3a,i4,f8.2,2f6.3,4a)') ij,' ',
-     &        metrglbl(ij)(1:lng),' ',nzmg(ij),emgflr(ij),emgsca(ij),
-     &        emgwtg(ij),' ',msdoc(ij)(1:lnd),' ',metgroup(ij)(1:lnz)
-     &        
-            call edisp(itru,outs)
             inlist=nzmg(ij)
             do 829 ijj=1,nzmg(ij)
               list(ijj)=izmg(ij,ijj)
@@ -818,7 +1011,19 @@ C List current metrics and demand sets.
 
 C 3rd parameter needs to be MCOM.
             call znarlist(inlist,list,MCOM,zdescr,length,ier)
-            call edisp248(itru,zdescr,100)
+            if(markdown)then
+              write(outs2,'(i2,3a,i5,f9.2,2f7.2,6a)') ij,'  ',
+     &         metrglbl(ij)(1:lng),' ',nzmg(ij),emgflr(ij),emgsca(ij),
+     &         emgwtg(ij),'  ',msdoc(ij)(1:lnd),'  ',
+     &         metgroup(ij)(1:lnz),'  ',zdescr(7:lnblnk(zdescr))
+              call edisp(itru,outs2)
+            else
+              write(outs2,'(i2,3a,i4,f8.2,2f6.3,4a)') ij,' ',
+     &          metrglbl(ij)(1:lng),' ',nzmg(ij),emgflr(ij),emgsca(ij),
+     &          emgwtg(ij),' ',msdoc(ij)(1:lnd),' ',metgroup(ij)(1:lnz)
+              call edisp(itru,outs2)
+            endif
+            if(.NOT.markdown) call edisp248(itru,zdescr,100)
  269      continue
         else
           call edisp(itru,'No metrics have been defined.')
@@ -829,18 +1034,35 @@ C 3rd parameter needs to be MCOM.
 C List current demand sets.
         if(neds.ge.1)then
           call edisp(itru,' ')
-          call edisp(itru,
-     &    'Demand set,  nb zones, floor area, scaling factor')
-          do 268 ij=1,neds
-            write(outs,'(i2,2a,i4,f8.2,f6.3)') ij,' ',zedsdoc(ij),
-     &        nzedg(ij),edgflr(ij),edgsca(ij)
+          if(markdown)then
+            call edisp(itru,' ')
+            write(outs,'(a)')
+     &      'ID Name          Zones  Area     Scale   Notes   '
             call edisp(itru,outs)
+            write(outs,'(a)')
+     &      '-- ------------  ------ -------  ------  --------'
+            call edisp(itru,outs)
+          else
+            call edisp(itru,
+     &      'Demand set,  nb zones, floor area, scaling factor')
+          endif
+          do 268 ij=1,neds
             inlist=nzedg(ij)
             do 828 ijj=1,nzedg(ij)
               list(ijj)=izedg(ij,ijj)
  828        continue
             call znarlist(inlist,list,MCOM,zdescr,length,ier)
-            call edisp248(itru,zdescr,100)
+            if(markdown)then
+              write(outs2,'(i2,2a,i8,f8.2,f8.3,2a)') ij,' ',zedsdoc(ij),
+     &          nzedg(ij),edgflr(ij),edgsca(ij),'  ',
+     &          zdescr(7:lnblnk(zdescr))
+              call edisp(itru,outs2)
+            else
+              write(outs,'(i2,2a,i4,f8.2,f6.3)') ij,' ',zedsdoc(ij),
+     &          nzedg(ij),edgflr(ij),edgsca(ij)
+              call edisp(itru,outs)
+            endif
+            if(.NOT.markdown) call edisp248(itru,zdescr,100)
  268      continue
         else
           call edisp(itru,'No demand sets have been defined.')

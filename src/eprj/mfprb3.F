@@ -903,9 +903,9 @@ C Fict bi-directional - door component IVALCM(14)=130 MF130I
      &      ' coef 0.6 base @XYZ',xc,yc,zc
           if(act.eq.'v') call edisp(iuout,outs)
           if(inthenetwork)then
-            call symbol_flow_cmp(name,'bi','r',xc,yc,VAL3)
+            call symbol_flow_cmp(name,'bi','r',xc,yc,zc)
           else
-            call symbol_flow_cmp(name,'bi','g',xc,yc,VAL3)
+            call symbol_flow_cmp(name,'bi','g',xc,yc,zc)
           endif
           call pausems(50)
         endif

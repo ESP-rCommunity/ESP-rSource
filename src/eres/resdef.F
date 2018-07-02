@@ -43,6 +43,9 @@ C routines.
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/INITL/INIT1,INIT2
+
+C Simulation output files held in cfg file and then
+C file names guessed from the name of the zone results file.
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/ABSRESLIB/RFILEABS,PFILEABS,MSTRFILEABS,LAFRESABS
       COMMON/ABSRESLIB2/EFILEABS
@@ -59,7 +62,10 @@ C Defaults.
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Simulator parameters.
-      COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      COMMON/SPFL/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      LOGICAL     spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
  
       character LTMP*72,outs*124,outs248*248
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
@@ -67,7 +73,6 @@ C Simulator parameters.
       character EFILEABS*144
       character path*72,lcmdfl*144,ltmpc*144,lpath*72
       logical XST
-      LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -745,6 +750,10 @@ C               the output interval if NOUT > 1 (IAV=1 yes; IAV=0 no)
       common/MMAFDAT/IFILT,RDFMAX(MCOM,3,MZRL),RDFMIN(MCOM,3,MZRL),
      &    RDFAVE(MCOM,3,MZRL),RDTFMAX(MCOM,3,MZRL),RDTFMIN(MCOM,3,MZRL)
 
+      logical libheading ! have we printed report heading (library name etc).
+      logical headingcontext ! has set or period changed so heading needs reprint
+      common/libhead/libheading,headingcontext
+
       character outs*124,PDESCR*60
       logical ok,dok
 
@@ -774,11 +783,14 @@ C timestep as simulation, assume no filtering.
         call edisp(iuout,outs)
         call edisp(iuout,' Output time-step interval = 1')
         return
+
+C Reset so heading printed at next available opportunity.
+        libheading=.false.; headingcontext=.false.
       endif
 
       call edisp(iuout,' Output period and interval definition')
 
-   9  call askper(IFDAY,IER)
+   9  call ASKPER(IFDAY,IER)
 
 C Start time must be before finish time.
       IF(IODS.LT.IODF)goto 18
@@ -798,6 +810,9 @@ C Output time-step increment ?
       call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKI(NOUT,' ',' Output time-step increment ? ',
      &  1,'F',60,'F',1,'output time-step',IER,nbhelp)
+
+C Reset so heading printed at next available opportunity.
+      libheading=.false.; headingcontext=.false.
 
       IAV=0
       if (NOUT.gt.1) then

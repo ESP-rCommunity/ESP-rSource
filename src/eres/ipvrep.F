@@ -87,7 +87,10 @@ C IPV description.
 C << is pvdayhr useful? >>
       common/spm55/pvdayhr(2*MTS)
       common/ract/paction
-      COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      COMMON/SPFL/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      LOGICAL spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
@@ -124,7 +127,6 @@ C Pre calculated data (filtered).
       character ipvaction*3  ! to signal external IPV file
 
       logical XST,OK,DOK,pvok,usermode,within,dmdsok
-      LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       integer IWM  ! for radio button
       integer NITMS,INO ! max items and current menu item
 
@@ -3550,13 +3552,15 @@ C file. tg is a character T text or X tabular info being saved.
       common/rpath/path
 
 C Simulator parameters. autook signals silent operation.
-      COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      COMMON/SPFL/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
+      LOGICAL spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
+     &  startupok
 
       character*(*) msg
       character xfile*144,path*72,outs*124,outs248*248
       character tg*1,act*1
       character longtfile*144,longtfiledos*144
-      LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical concat,remote,unixok,there
 
 C For help messages
