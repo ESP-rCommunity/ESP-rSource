@@ -2,7 +2,7 @@
 [Desktop Entry]
 MimeType=text/pro;
 Name=esp-r
-Exec=/opt/esru/esp-r/bin/esp-r
+Exec=/opt/esp-r/bin/esp-r
 Icon=esplogosmall
 Categories=Education;Science;Engineering;
 Type=Application

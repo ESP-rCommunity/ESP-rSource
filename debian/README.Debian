@@ -3,7 +3,7 @@ espr for Debian
 
 Note about package building
 The original install script make configuration, build binaries, install program and update some files
- Because the install path for packaging(./debian/espr/usr/esru/esp-r/...) and the final path in debian(/usr/esru/esp-r/...) are different, the path configuration in some files is not correct if we use this script . 
+ Because the install path for packaging(./debian/espr/usr/esp-r/...) and the final path in debian(/opt/esp-r/...) are different, the path configuration in some files is not correct if we use this script . 
 
  Look in rules files
  It uses original makefile for clean, strip and install binaries

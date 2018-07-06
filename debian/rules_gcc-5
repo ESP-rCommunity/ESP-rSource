@@ -4,8 +4,8 @@
 #Compile X11 version without (SQLite and xml_status)
 #export DH_VERBOSE=1
 export LC_ALL=C
-export DESTdir=/opt/esru
-export ESPdir=$(DESTdir)/esp-r
+export DESTdir=/opt/esp-r
+export ESPdir=$(DESTdir)
 export SRCdir=$(CURDIR)
 export ESPBinDir=$(SRCdir)/debian/espr$(ESPdir)/bin
 export DEBdir=$(SRCdir)/debian/espr$(ESPdir)
@@ -37,7 +37,7 @@ endif
 #export COSIMDir=
 #targets for make
 OPTIONS=disableSQLite enableXML  libX11
-PROGRAMS = aco b2e bps dbm dfs dfv cdb c2e clm e2r ecnv eco enet grd ish mfs mld mrt pdb prj res stats vew 
+PROGRAMS = aco b2e bps dfs dfv cdb c2e clm e2r ecnv eco enet grd ish mfs mld mrt pdb prj res vew 
 #path for installation package
 
 

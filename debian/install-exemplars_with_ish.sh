@@ -12,12 +12,12 @@
 # see export in rules file
 DEBdir=$SRCdir/debian/espr-exemplars$ESPdir
 #local binary
-CLM=$SRCdir/src/esruclm/clm
-PDB=$SRCdir/src/esrupdb/pdb
-BPS=$SRCdir/src/esrubps/bps
-ISH=$SRCdir/src/esruish/ish
-PRJ=$SRCdir/src/esruprj/prj
-PDB=$SRCdir/src/esrupdb/pdb
+CLM=$SRCdir/src/eclm/clm
+PDB=$SRCdir/src/epdb/pdb
+BPS=$SRCdir/src/ebps/bps
+ISH=$SRCdir/src/eish/ish
+PRJ=$SRCdir/src/eprj/prj
+PDB=$SRCdir/src/epdb/pdb
 cd ${SRCdir}/models/
 printf "Copy exemplar models..."
 cp -r training $DEBdir

@@ -1,3 +1,17 @@
+espr (13.1.2) xenial; urgency=low
+
+  * Updated to include a debian folder1.
+  * Reorganized source folder names.
+
+-- Jon Hand <jon@esru.strath.ac.uk>  Fri 6 Jul 12:21:25 +0100
+ 
+espr (13.1.1) xenial; urgency=low
+
+  * Updated to reflect July 2018 distribution of ESP-r at V13.1.1.
+  * Reorganized source folder names.
+
+-- Jon Hand <jon@esru.strath.ac.uk>  Fri 13 Apr 13:28:25 +0100
+ 
 espr (12.7.1634-1) wheezy; urgency=low
 
   * Updated to reflect April 2018 distribution of ESP-r at 1634.
@@ -5,21 +19,21 @@ espr (12.7.1634-1) wheezy; urgency=low
   * Extended calibration facilities.
   * Import of gbXML included.
 
- -- Jon Hand <jon@esru.strath.ac.uk>  Fri 13 Apr 13:28:25 BST 2018
+-- Jon Hand <jon@esru.strath.ac.uk>  Fri 13 Apr 13:28:25 +0100
  
 espr (12.6.1054-1) wheezy; urgency=low
 
   * Updated to reflect 2017 distribution of ESP-r at 1054.
   * Less chatter in interface.
 
- -- Jon Hand <jon@esru.strath.ac.uk>  Tue, 14 Feb 2017 14:52:57 +0000
+-- Jon Hand <jon@esru.strath.ac.uk>  Tue, 14 Feb 2017 14:52:57 +0000
  
 espr (12.5.1048-1) wheezy; urgency=low
 
   * Updated to reflect 2017 distribution of ESP-r
   * Modifing source Build-Depends, compilers version 4.9 are used
 
- -- Jon Hand <jon@esru.strath.ac.uk>  Tue, 14 Feb 2017 14:52:57 +0000
+-- Jon Hand <jon@esru.strath.ac.uk>  Tue, 14 Feb 2017 14:52:57 +0000
 
 espr (12.0.9264-1) wheezy; urgency=low
 
@@ -31,14 +45,14 @@ espr (12.0.9264-1) wheezy; urgency=low
   * Deleting tester suite folder in the source files 
     it's only for devellopement use
 
- -- Frederic Patacq <s.dodo@orange.fr>  Tue, 11 Jun 2013 20:06:57 +0200
+-- Frederic Patacq <s.dodo@orange.fr>  Tue, 11 Jun 2013 20:06:57 +0200
 
 espr (12.0.9015-0ubuntu1~oneiric2) oneiric; urgency=low
 
   * Adding *.xsl files (missing in previous version)
   * Adding  Sample result set in espr-database.sh
 
- -- dodo <s.dodo@orange.fr>  Mon, 21 Jan 2013 14:31:58 +0100
+-- dodo <s.dodo@orange.fr>  Mon, 21 Jan 2013 14:31:58 +0100
 
 espr (12.0.9015-0ubuntu1~oneiric1) oneiric; urgency=low
 
@@ -49,21 +63,21 @@ espr (12.0.9015-0ubuntu1~oneiric1) oneiric; urgency=low
     So this packaging creates only espr binaries and databases now. And, there is another to install 
     validation tests and training examples which depend of this package
 
- -- dodo <s.dodo@orange.fr>  Sun, 20 Jan 2013 21:47:14 +0100
+-- dodo <s.dodo@orange.fr>  Sun, 20 Jan 2013 21:47:14 +0100
 
 espr (12.0-0ubuntu1~oneiric7) oneiric; urgency=low
 
   * Fixing a bug, creation of *.shd files crashes (copy *.shda to *.shd before use ish conversion)
   * Change install directory /opt/esru... to /usr/esru... (tester suite can be used)   
 
- -- dodo <s.dodo@orange.fr>  Thu, 17 Jan 2013 21:03:16 +0100
+-- dodo <s.dodo@orange.fr>  Thu, 17 Jan 2013 21:03:16 +0100
 
 espr (12.0-0ubuntu1~oneiric6) oneiric; urgency=low
 
   * Adding packagesrc.sh for creation of source package
   * Adding user guide html doc (convertion from troff files) see install-doc.sh
 
- -- dodo <s.dodo@orange.fr>  Mon, 14 Jan 2013 00:09:00 +0100
+-- dodo <s.dodo@orange.fr>  Mon, 14 Jan 2013 00:09:00 +0100
 
 espr (12.0-0ubuntu1~oneiric5) oneiric; urgency=low
 
@@ -73,4 +87,4 @@ espr (12.0-0ubuntu1~oneiric5) oneiric; urgency=low
   * Adding README.Debian for explanations on install	
   * Adding dh command  dh_installdocs and dh_installchangelogs
 
- -- dodo <s.dodo@orange.fr>  Mon, 07 Jan 2013 00:00:08 +0100
+-- dodo <s.dodo@orange.fr>  Mon, 07 Jan 2013 00:00:08 +0100
