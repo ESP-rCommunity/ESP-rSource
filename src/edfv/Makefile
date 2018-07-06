@@ -77,7 +77,7 @@ install:
 clean:
 	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
 	arrow.F c2fdum.F cfdat.F cfdrw.F cfgrid.F cgd.F e3dviews.F \
-	startup.F visgrd.F visual.F visvec.F
+	plot.F startup.F visgrd.F visual.F visvec.F
 
 distclean: clean
 

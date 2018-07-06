@@ -1954,11 +1954,12 @@ C Markdown flag.
 
 C Write documentation on air schedules. 
       if(markdown)then
-        call edispxtr(itru,'Air schedule notes  ')
+        call edispxtr(itru,'Schedule notes ')
         call edisp248(itru,ventdesc(icomp),100)
+        call edisp248(itru,oprdesc(icomp),100)
       else
         call edisp(itru,' Air schedule notes:')
-        call edisp248(itru,ventdesc(icomp),72)
+        call edisp248(itru,ventdesc(icomp),82)
       endif
       if(ip3ver(icomp).le.21)then
 
@@ -1994,10 +1995,10 @@ C Older file versions only display ctlstr for first day and period.
           ctlstr(icomp,1)='unknown flow control    '
         endif
         if(markdown)then
-          write(outs,'(a,a)') 'Control ',ctlstr(icomp,1)
+          write(outs,'(a,a)') 'Flow control ',ctlstr(icomp,1)
           call edisp2tr(itru,outs)
         else
-          write(outs,'(a,a)') ' Control: ',ctlstr(icomp,1)
+          write(outs,'(a,a)') ' Flow control: ',ctlstr(icomp,1)
           call edisp(itru,outs)
         endif
 
@@ -2193,8 +2194,9 @@ C Electrical data flag and elctrical data.
 
       call edisp(itru,' ')
       if(markdown)then
-        call edispxtr(itru,'Notes  ')
-        call edisp248(itru,oprdesc(icomp),100)
+        continue ! these notes already shown in VENTINF
+C        call edispxtr(itru,'Notes  ')
+C        call edisp248(itru,oprdesc(icomp),100)
       else
         call edisp(itru,'Notes: ')
         call edisp248(itru,oprdesc(icomp),72)

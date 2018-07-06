@@ -4544,12 +4544,13 @@ C        call edisp2tr(itu,outstr)
         endif
       endif
       if(markdown)then
-        call edisp2tr(itu,outstr)
+C        call edisp2tr(itu,outstr)
+        call edisp(itu,outstr)
       else
         call edisp(itu,outstr)
       endif
       if(markdown)then
-        WRITE(outstr,'(A)') zdesc(ICOMP)(1:lnzdesc(ICOMP))
+        WRITE(outstr,'(2A)') zdesc(ICOMP)(1:lnzdesc(ICOMP)),'. '
         call edisp2tr(itu,outstr)
       else
         WRITE(outstr,'(1x,A)') zdesc(ICOMP)(1:lnzdesc(ICOMP))

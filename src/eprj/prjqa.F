@@ -203,6 +203,13 @@ C Thermal bridges.
       INTEGER iExtLgRadFlag
       REAL eGrdTp
 
+C For reporting day types.
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      character calename*32,calentag*12,calendayname*32
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      integer nbdaytype,nbcaldays,icalender
+      integer idty  ! foer loop
+
 C bridgelen was calculated in subroutine suredgeadj
       real bridgelen ! Length of potential thermal bridges in each zone.
       common/gbridge/bridgelen(MCOM,10)
@@ -297,7 +304,7 @@ C in the current model. A -1 means not applicable
       integer iitrc   ! for passing verbosity
       integer imlc    ! loop for MLC reporting
       logical odd     ! for display of vertex info
-      integer lnsmlcn,lnl ! char lengths
+      integer lnsmlcn,lnl,lnlist ! char lengths
       
       INTEGER :: i,icc,icoth,ie,ieripv,irec,iprb,inv
       INTEGER :: ins4,ino,imerr,ilcot,ijk,ij,ii,igrdp
@@ -329,14 +336,14 @@ C Check if Unix-based or DOS based.
       newgeo=.false.     ! assume older format geometry.
       havebrdge=.false.  ! assume no thermal bridges
       IUF=IFIL+2
-      siteinfo=2
+      siteinfo=1      ! constrained site information
       databaseinfo=2  ! assume verbose mode for database reporting
-      contextinfo=2
+      contextinfo=1   ! constrained context information
       ICTLF=IUF
       CALL ERPFREE(ICTLF,ISTAT)
       call FINDFIL(LCTLF,XST)
       if(XST)then
-        controlinfo=2  ! if control used set to verbose
+        controlinfo=1  ! if control used set to terse
       else
         controlinfo=-1
       endif
@@ -1608,7 +1615,7 @@ C If there is an AIM-2 descritption scan the file and then report.
       endif
 
 C Check if IPV file and dispersed demands files are known.
-      if(contextinfo.gt.0)then
+      if(contextinfo.gt.1)then
         if(lnblnk(bdmds).eq.0)then
           continue
         elseif(bdmds(1:7).eq.'UNKNOWN')then
@@ -1796,10 +1803,10 @@ C what ever the value of databaseinfo.
         endif
         if(ipathapres.eq.0.or.ipathapres.eq.1)then
           if(markdown)then
-            WRITE(outs248,'(2A)')'pressure distributions    ',
+            WRITE(outs248,'(2A)')'pressure distributions     ',
      &        LAPRES(1:lnblnk(LAPRES))
           else
-            WRITE(outs248,'(2A)')' pressure distributions : ',
+            WRITE(outs248,'(2A)')' pressure distributions :  ',
      &        LAPRES(1:lnblnk(LAPRES))
           endif
           call edisp248(itu,outs248,100)
@@ -1816,10 +1823,10 @@ C what ever the value of databaseinfo.
 
         if(ipathmat.eq.0.or.ipathmat.eq.1)then
           if(markdown)then
-            WRITE(outs248,'(2A)')'materials                 ',
+            WRITE(outs248,'(2A)')'materials                  ',
      &        LFMAT(1:lnblnk(LFMAT))
           else
-            WRITE(outs248,'(2A)')' materials              : ',
+            WRITE(outs248,'(2A)')' materials              :  ',
      &        LFMAT(1:lnblnk(LFMAT))
           endif
           call edisp248(itu,outs248,100)
@@ -1836,10 +1843,10 @@ C what ever the value of databaseinfo.
 
         if(ipathmul.eq.0.or.ipathmul.eq.1)then
           if(markdown)then
-            WRITE(outs248,'(2A)')'constructions             ',
+            WRITE(outs248,'(2A)')'constructions              ',
      &        LFMUL(1:lnblnk(LFMUL))
           else
-            WRITE(outs248,'(2A)')' constructions          : ',
+            WRITE(outs248,'(2A)')' constructions          :  ',
      &        LFMUL(1:lnblnk(LFMUL))
           endif
           call edisp248(itu,outs248,100)
@@ -1856,10 +1863,10 @@ C what ever the value of databaseinfo.
 
         if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
           if(markdown)then
-            WRITE(outs248,'(2A)')'plant components          ',
+            WRITE(outs248,'(2A)')'plant components           ',
      &        LPCDB(1:lnblnk(LPCDB))
           else
-            WRITE(outs248,'(2A)')' plant components       : ',
+            WRITE(outs248,'(2A)')' plant components       :  ',
      &        LPCDB(1:lnblnk(LPCDB))
           endif
           call edisp248(itu,outs248,100)
@@ -1876,10 +1883,10 @@ C what ever the value of databaseinfo.
 
         if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
           if(markdown)then
-            WRITE(outs248,'(2A)')'event profiles            ',
+            WRITE(outs248,'(2A)')'event profiles             ',
      &        LPRFDB(1:lnblnk(LPRFDB))
           else
-            WRITE(outs248,'(2A)')' event profiles         : ',
+            WRITE(outs248,'(2A)')' event profiles         :  ',
      &        LPRFDB(1:lnblnk(LPRFDB))
           endif
           call edisp248(itu,outs248,100)
@@ -1896,7 +1903,7 @@ C what ever the value of databaseinfo.
 
         if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
           if(markdown)then
-            WRITE(outs248,'(2A)')'optical properties        ',
+            WRITE(outs248,'(2A)')'optical properties         ',
      &        LOPTDB(1:lnblnk(LOPTDB))
           else
             WRITE(outs248,'(2A)')' optical properties     : ',
@@ -1916,7 +1923,7 @@ C what ever the value of databaseinfo.
 
         if(ipathsbem.eq.0.or.ipathsbem.eq.1)then
           if(markdown)then
-            WRITE(outs248,'(2a)')'UK NCM data               ',
+            WRITE(outs248,'(2a)')'UK NCM data                ',
      &        LSBEM(1:lnblnk(LSBEM))
           else
             WRITE(outs248,'(2a)')' UK NCM data            : ',
@@ -1936,7 +1943,7 @@ C what ever the value of databaseinfo.
 
         if(ipathpredef.eq.0.or.ipathpredef.eq.1)then
           if(markdown)then
-            WRITE(outs248,'(2a)')'predefined objects        ',
+            WRITE(outs248,'(2a)')'predefined objects         ',
      &        LPREDEF(1:lnblnk(LPREDEF))
           else
             WRITE(outs248,'(2a)')' predefined objects     : ',
@@ -1956,7 +1963,7 @@ C what ever the value of databaseinfo.
 
         if(ipathmould.eq.0.or.ipathmould.eq.1)then
           if(markdown)then
-            WRITE(outs248,'(2A)')'mould isopleths           ',
+            WRITE(outs248,'(2A)')'mould isopleths            ',
      &        lfmould(1:lnblnk(lfmould))
           else
             WRITE(outs248,'(2A)')' mould isopleths        : ',
@@ -1992,9 +1999,9 @@ C       Initialize special material common data
         call SPMINIT
 C       Write out some info on special materials
         call edisp(itu,
-     &        '  Details of special materials in the model:')
+     &     '  Details of special materials in the model:')
         call edisp(itu,
-     &        '  Type  | Number of entries ')
+     &     '  Type  | Number of entries ')
 
         countspmtyp=1
         numoftyp(countspmtyp)=0
@@ -2067,21 +2074,19 @@ C List control data.
           write(outs,'(3A)') 'Ideal control is defined in: ',
      &      LCTLF(1:lnblnk(LCTLF)),' as follows:'
           call edisp(itu,outs)
-        else
-          if(markdown)then
-            call edisp2tr(itu,
-     &        'The model includes the following ideal controls  ')
-          else
-            call edisp(itu,
-     &        'The model includes ideal controls as follows:')
-          endif
         endif
         if(markdown)then
-          call edisp2tr(itu,'Control description  ')
+
+C Put all documentation together.
+          call edisp(itu,'The model includes ideal controls - ')
           call edisp248(itu,ctldoc,120)
+          call edisp248(itu,znctldoc,120)
         else
+          call edisp(itu,
+     &      'The model includes ideal controls as follows:')
           call edisp(itu,'Control description: ')
           call edisp248(itu,ctldoc,80)
+          call edisp248(itu,znctldoc,80)
         endif
 
         if(NCF.gt.0)then
@@ -2097,13 +2102,29 @@ C that have been referenced and if very verbose (3) list all controls.
           else
             call edisp(itu,outs)
           endif
-          call edisp248(itu,znctldoc,80)
+
+C List the day types (these can be used by all of the controls which
+C are not bounded by period of validity.
+          call edisp(itu,' ')
+          if(markdown)then
+            write(outs,'(a,20a)') 
+     &        'The following day types are defined ',
+     &         (CALENTAG(idty),idty=1,NBDAYTYPE)
+            call edisp2tr(itu,outs)
+          else
+            write(outs,'(a,20a)') 
+     &        'The following day types are defined: ',
+     &         (CALENTAG(idty),idty=1,NBDAYTYPE)
+            call edisp(itu,outs)
+          endif
+
           if(controlinfo.eq.2)then
             if(markdown)then
               call edispxtr(itu,' ')
               call edispxtr(itu,
      &        'Details of control loops referenced in the model  ')
             else
+              call edispxtr(itu,' ')
               call edisp(itu,
      &        'Details of control loops referenced in the model:')
             endif
@@ -2340,7 +2361,7 @@ C              call edisp248(itu,outs248,140)
         endif
   97  continue
       if(markdown)then
-        write(outs,'(a,f9.0,i14,11x,f8.1,13x,f8.1,14x,f8.1,6x,a)')
+        write(outs,'(a,f9.0,i14,11x,f8.1,13x,f8.1,9x,f8.1,6x,a)')
      &    ' -  all       ',TVOL,NCON,TOPQ,TTRN,TFLA,'       -'
       else
         write(outs,'(a,f9.0,i5,3f8.0)') '   all      ',TVOL,NCON,
@@ -2459,7 +2480,7 @@ C If there is external glazing or skylights then report.
             endif
             if(attribok(IVALS(IZ)))then
               if(markdown)then
-                call edisp2tr(itu,outs)
+                call edisp(itu,outs)
               else
                 call edisp(itu,outs)
               endif
@@ -2474,17 +2495,19 @@ C If there is external glazing or skylights then report.
             call rel16str(wallper(IZZ),t16a,lna,ier)
             call rel16str(uavwall(IZZ),t16b,lnb,ier)
             if(markdown)then
-              write(outs,'(5a,F5.3,2a)')'Facade opaque is ',t16c(1:lnc),
-     &        ' m^2^ & ',t16a(1:lna),' % of floor area & average U of ',
-     &        uavwall(IZZ)/areawall(IZZ),' & UA of ',t16b(1:lnb)
+              write(outs,'(3a,F5.1,a,F5.3,3a)')'Facade opaque is ',
+     &          t16c(1:lnc),' m^2^ & ',wallper(IZZ),
+     &          ' % of floor area & average U of ',
+     &          uavwall(IZZ)/areawall(IZZ),' & UA of ',t16b(1:lnb),'. '
             else
-             write(outs,'(5a,F5.3,2a)')' Facade opaque is ',t16c(1:lnc),
-     &        'm2 & ',t16a(1:lna),' % of floor area & average U of ',
-     &        uavwall(IZZ)/areawall(IZZ),' & UA of ',t16b(1:lnb)
+              write(outs,'(3a,F5.1,a,F5.3,3a)')' Facade opaque is ',
+     &          t16c(1:lnc),'m2 & ',wallper(IZZ),
+     &          ' % of floor area & average U of ',
+     &          uavwall(IZZ)/areawall(IZZ),' & UA of ',t16b(1:lnb),'. '
             endif
             if(attribok(IVALS(IZ)))then
               if(markdown)then
-                call edisp2tr(itu,outs)
+                call edisp(itu,outs)
               else
                 call edisp(itu,outs)
               endif
@@ -2499,10 +2522,10 @@ C If there is external glazing or skylights then report.
             call rel16str(slproofper(IZZ),t16a,lna,ier)
             call rel16str(uavslproof(IZZ),t16b,lnb,ier)
             if(markdown)then
-              write(outs,'(3a,F5.3,2a)')'Sloped roof is ',
+              write(outs,'(3a,F5.3,3a)')'Sloped roof is ',
      &        t16a(1:lna),' % of floor area & average U of ',
      &        uavslproof(IZZ)/areaslproof(IZZ),' & UA of ',
-     &        t16b(1:lnb)
+     &        t16b(1:lnb),'. '
             else
               write(outs,'(3a,F5.3,2a)')' Sloped roof is ',
      &        t16a(1:lna),' % of floor area & average U of ',
@@ -2511,7 +2534,7 @@ C If there is external glazing or skylights then report.
             endif
             if(attribok(IVALS(IZ)))then
               if(markdown)then
-                call edisp2tr(itu,outs)
+                call edisp(itu,outs)
               else
                 call edisp(itu,outs)
               endif
@@ -2525,13 +2548,14 @@ C If there is external glazing or skylights then report.
             endif
             call rel16str(flatroofper(IZZ),t16a,lna,ier)
             call rel16str(uavfltroof(IZZ),t16b,lnb,ier)
-            write(outs,'(3a,F5.3,2a)')'Flat roof is ',
+            write(outs,'(3a,F5.3,3a)')'Flat roof is ',
      &        t16a(1:lna),' % of floor area & average U of ',
      &        uavfltroof(IZZ)/areafltroof(IZZ),' & UA of ',
-     &        t16b(1:lnb)
+     &        t16b(1:lnb),'. '
             if(attribok(IVALS(IZ)))then
               if(markdown)then
-                call edisp2tr(itu,outs)
+C                call edisp2tr(itu,outs)
+                call edisp(itu,outs)
               else
                 call edisp(itu,outs)
               endif
@@ -2549,15 +2573,15 @@ C If there is external glazing or skylights then report.
             call rel16str(uavgtran(IZZ),t16c,lnc,ier)
             call rel16str(areatran(IZZ),t16d,lnd,ier)
             if(markdown)then
-              write(outs,'(7a,F5.3,2a)')
-     &        'Facade glazing is ',t16d(1:lnd),' m^2^ & ',t16a(1:lna),
-     &        ' % of floor & ',t16b(1:lnb),
+              write(outs,'(3a,F5.1,a,F5.1,a,F5.3,3a)')
+     &        'Facade glazing is ',t16d(1:lnd),' m^2^ & ',tranper(IZZ),
+     &        ' % of floor & ',vtranper,
      &        ' % facade with average U of ',
-     &        uavgtran(IZZ)/areatran(IZZ),' & UA of ',t16c(1:lnc)
+     &        uavgtran(IZZ)/areatran(IZZ),' & UA of ',t16c(1:lnc),'. '
             else
-              write(outs,'(7a,F5.3,2a)')
-     &        ' Facade glazing is ',t16d(1:lnd),'m2 & ',t16a(1:lna),
-     &        ' % of floor & ',t16b(1:lnb),
+              write(outs,'(3a,F5.1,a,F5.1,a,F5.3,2a)')
+     &        ' Facade glazing is ',t16d(1:lnd),'m2 & ',tranper(IZZ),
+     &        ' % of floor & ',vtranper,
      &        ' % facade with average U of ',
      &        uavgtran(IZZ)/areatran(IZZ),' & UA of ',t16c(1:lnc)
             endif
@@ -2739,41 +2763,92 @@ C See if an even or odd number of items in list.
           im=MOD(NZTV(izz),2)
           odd=.false.
           if(im.eq.1) odd=.true.
-          call edisp(itu,' Vertices ( index X Y Z) in the zone...')
+          if(markdown)then
+            call edisp(itu,'  ')
+            call edisp(itu,': A summary of the vertices')
+            call edisp(itu,'  ')
+            write(outs,'(2a)')
+     &'Vertex X          Y          Z         Vertex ',
+     &'X         Y          Z'
+            call edisp(itu,outs)
+            write(outs,'(2a)')
+     &'------ ---------  ---------  --------- ------ ',
+     &'--------- ---------  ---------'
+            call edisp(itu,outs)
+          else
+            call edisp(itu,' Vertices ( index X Y Z) in the zone...')
+          endif
           if(NZTV(izz).lt.20)then
             DO I = 1,NZTV(izz)
-              WRITE(outs,'(a,i3,3F12.5,a,i3)')'*vertex ',I,
-     &          X(I),Y(I),Z(I)
+              if(markdown)then
+                WRITE(outs,'(i5,3F11.4)') I,X(I),Y(I),Z(I)
+              else
+                WRITE(outs,'(a,i3,3F12.5)')'*vertex ',I,
+     &            X(I),Y(I),Z(I)
+              endif
               call edisp(itu,outs)
             enddo  ! of I
           else
             MNULEN=(NZTV(izz)/2)
             DO K=1,MNULEN
-              WRITE(outs,'(a,i3,3f11.5,a,i3,3f11.5)') 'vertex ',k,
-     &        X(k),Y(k),Z(k),'   vertex ',K+MNULEN,
-     &        X(K+MNULEN),Y(K+MNULEN),Z(K+MNULEN)
+              if(markdown)then
+                WRITE(outs,'(i5,3f11.4,i5,3f11.4)') k,
+     &          X(k),Y(k),Z(k),K+MNULEN,
+     &          X(K+MNULEN),Y(K+MNULEN),Z(K+MNULEN)
+              else
+                WRITE(outs,'(a,i3,3f11.5,a,i3,3f11.5)') 'vertex ',k,
+     &          X(k),Y(k),Z(k),'   vertex ',K+MNULEN,
+     &          X(K+MNULEN),Y(K+MNULEN),Z(K+MNULEN)
+              endif
               call edisp(itu,outs)
             enddo  ! of K
 
 C Put odd vertex in right column.
             if(odd)then
-              WRITE(outs,'(46x,a,i3,3f11.5)') 'vertex ',NZTV(izz),
+              if(markdown)then
+                WRITE(outs,'(38x,i5,3f11.4)') NZTV(izz),
      &          X(NZTV(izz)),Y(NZTV(izz)),Z(NZTV(izz))
+              else
+                WRITE(outs,'(46x,a,i3,3f11.5)') 'vertex ',NZTV(izz),
+     &          X(NZTV(izz)),Y(NZTV(izz)),Z(NZTV(izz))
+              endif
               call edisp(itu,outs)
             endif 
           endif
 
-          call edisp(itu,
+          if(markdown)then
+            call edisp(itu,'  ')
+            call edisp(itu,': A summary of the edges')
+            call edisp(itu,'  ')
+            call edisp(itu,
+     &'Edge List                              Name          Perimeter')
+            call edisp(itu,
+     &'---- --------------------------------  ------------- ---------')
+          else
+            call edisp(itu,
      &' Number of vertices followed by list, name & perimeter length')
+          endif
           DO I = 1,NZSUR(izz)
             icc=izstocn(izz,i)        ! find connection
             lsna=lnblnk(SSNAME(icc))  ! get length of surf name
-            write(louts,'(a,i3,124I4)') '*edges ',NVER(I),
+            if(markdown)then
+              write(louts,'(124I4)') (JVN(I,J),J=1,NVER(I))
+            else
+              write(louts,'(a,i3,124I4)') '*edges ',NVER(I),
      &        (JVN(I,J),J=1,NVER(I))
+            endif
             call SDELIM(louts,loutsd,'C',IW)  ! make comma separated
-            write(louts600,'(3a,f8.3,a)') 
+            if(markdown)then
+              lnlist=lnblnk(loutsd)
+              if(lnlist.lt.32)lnlist=32
+              if(lnlist.gt.32)lnlist=32
+              write(louts600,'(i4,4a,f8.3)') NVER(I),' ',
+     &        loutsd(1:lnlist),'   ',SSNAME(icc),SSPERIM(icc)
+            else
+              write(louts600,'(3a,f8.3,a)') 
      &        loutsd(1:lnblnk(loutsd)),'   ',SSNAME(icc)(1:lsna),
      &        SSPERIM(icc),'m perimeter'
+            endif
             call edisp248(itu,louts600,100)
           enddo  ! of I
 
@@ -2906,18 +2981,41 @@ C then rescan that zone file with verbose setting.
             call ercgcf(iitrc,itu,LCGCIN(IVALS(IZ)),IVALS(IZ),ier)
           endif
           if(IOBS(ivz).gt.0.and.nbobs(ivz).gt.0)then
-            call edisp(itu,
-     &   'Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity')
+            if(markdown)then
+              call edisp(itu,': Blocks associated with zone')
+              call edisp(itu,'  ')
+              write(outs,'(2a)')
+     &   'Block X       Y      Z      DX     DY     DZ     ',
+     &   'Orient        Opacity Name     Constr'
+              call edisp(itu,outs)
+              write(outs,'(2a)')
+     &   '----- ------- ------ ------ ------ ------ ------ ',
+     &   '------ ------ ------- -------- -----------'
+              call edisp(itu,outs)
+            else
+              write(outs,'(2a)')
+     &   'Block  X-     Y-    Z-coords   DX-    DY-    DZ-values  ',
+     &   'Orientation   Opacity  Name  Construction'
+              call edisp(itu,outs)
+            endif
             DO I=1,nbobs(ivz)
               llbm=LNBLOCKMAT(ivz,I)
               llbn=LNBLOCKNAME(ivz,I)
               if(BLOCKTYP(ivz,I)(1:4).eq.'obs '.or.
      &           BLOCKTYP(ivz,I)(1:4).eq.'obs3')then
-                WRITE(OUTS,'(I3,8F8.1,F5.2,4a)') I,
+                if(markdown)then
+                  WRITE(OUTS,'(I5,a,8F7.1,F6.2,4a)') I,' ',
+     &            XOB(ivz,I),YOB(ivz,I),ZOB(ivz,I),
+     &            DXOB(ivz,I),DYOB(ivz,I),DZOB(ivz,I),
+     &            BANGOB(ivz,I,1),BANGOB(ivz,I,2),OPOB(ivz,I),'   ',
+     &            BLOCKNAME(ivz,I)(1:llbn),' ',BLOCKMAT(ivz,I)(1:llbm)
+                else
+                  WRITE(OUTS,'(I3,8F8.1,F5.2,4a)') I,
      &            XOB(ivz,I),YOB(ivz,I),ZOB(ivz,I),
      &            DXOB(ivz,I),DYOB(ivz,I),DZOB(ivz,I),
      &            BANGOB(ivz,I,1),BANGOB(ivz,I,2),OPOB(ivz,I),' ',
      &            BLOCKNAME(ivz,I)(1:llbn),' ',BLOCKMAT(ivz,I)(1:llbm)
+                endif
                 call edisp(itu,OUTS)
               else
                 WRITE(OUTS,'(i3,a,44x,3a)')I,' user defined coords ',

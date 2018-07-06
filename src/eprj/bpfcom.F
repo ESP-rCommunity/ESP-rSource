@@ -1745,22 +1745,20 @@ C List function details.
       endif
 
 C NN is overloaded - zero follows the calendar day types, otherwise
-C non-zero signals the control uses dates-of-validity.
+C non-zero signals the control uses dates-of-validity. The QA report
+C will already have mentioned the day types so skip unless nn>0.
       if(nn.eq.0)then
-        if(markdown)then
-          call edisp2tr(itru,'The following day types are defined  ')
-        else
-          call edisp(itru,' The following day types are defined:')
-        endif
-        write(outs,'(20a)') (CALENTAG(idty),idty=1,NBDAYTYPE)
-        if(markdown)then
-          call edisp2tr(itru,outs)
-        else
-          call edisp(itru,outs)
-        endif
-C        DO 30 ID=1,NBDAYTYPE
-C          call edisp(itru,calentag(id))
-C 30     CONTINUE
+C        if(markdown)then
+C          call edisp(itru,'The following day types are defined  ')
+C        else
+C          call edisp(itru,' The following day types are defined:')
+C        endif
+C        write(outs,'(20a)') (CALENTAG(idty),idty=1,NBDAYTYPE)
+C        if(markdown)then
+C          call edisp2tr(itru,outs)
+C        else
+C          call edisp(itru,outs)
+C        endif
       else
         write(outs,'(a,i2,a)') ' > ',nn,
      &    ' periods of validity during the year have been defined.'

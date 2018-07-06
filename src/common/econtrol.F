@@ -627,8 +627,9 @@ C Reporting:
             write(outstr,'(20a)') (CALENTAG(idty),idty=1,NBDAYTYPE)
             call edisp2tr(ITRU,outstr)
           else
-            CALL EDISP(ITRU,' For building control')
-           CALL EDISP(ITRU,' the following day types have been defined')
+            write(outstr,'(2a)') 'For building control ',
+     &        ' the following day types have been defined: '
+            call edisp(ITRU,outstr)
             write(outstr,'(20a)') (CALENTAG(idty),idty=1,NBDAYTYPE)
             call edisp(ITRU,outstr)
           endif
@@ -2792,9 +2793,9 @@ C If zero for minimums write a terse string.
               if(zeroht.and.zerocl)then
                 write(lmsg,
      &            '(2a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
-     &            msg1,' max heating capacity ',cm(2),
-     &            'W max cooling capacity ',cm(4),
-     &            'W. Heating setpoint ',cm(6),'C cooling setpoint ',
+     &            msg1,' heating capacity ',cm(2),
+     &            'W cooling capacity ',cm(4),
+     &            'W. heating setpoint ',cm(6),'C cooling setpoint ',
      &            cm(7),'C. (missing 7th item)'
               else
                 write(lmsg,
@@ -2803,7 +2804,7 @@ C If zero for minimums write a terse string.
      &            'W min heating capacity ',cm(3),
      &            'W max cooling capacity ',cm(4),
      &            'W min cooling capacity ',cm(5),
-     &            'W. Heating setpoint ',cm(6),'C cooling setpoint ',
+     &            'W. heating setpoint ',cm(6),'C cooling setpoint ',
      &            cm(7),'C. (missing 7th item)'
               endif
             elseif(nint(cm(1)).eq.7)then
@@ -2814,9 +2815,9 @@ C Newer control files have an extra item related to humidity control.
               if(zeroht.and.zerocl)then
                 write(lmsg,
      &            '(2a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
-     &            msg1(1:lnblnk(msg1)),' max heating capacity ',cm(2),
-     &            'W max cooling capacity ',cm(4),
-     &            'W. Heating setpoint ',cm(6),'C cooling setpoint ',
+     &            msg1(1:lnblnk(msg1)),' heating capacity ',cm(2),
+     &            'W cooling capacity ',cm(4),
+     &            'W. heating setpoint ',cm(6),'C cooling setpoint ',
      &            cm(7),'C.'
               else
                 write(lmsg,
@@ -2825,7 +2826,7 @@ C Newer control files have an extra item related to humidity control.
      &            'W min heating capacity ',cm(3),
      &            'W max cooling capacity ',cm(4),
      &            'W min cooling capacity ',cm(5),
-     &            'W. Heating setpoint ',cm(6),'C cooling setpoint ',
+     &            'W. heating setpoint ',cm(6),'C cooling setpoint ',
      &            cm(7),'C.'
                endif
             elseif(nint(cm(1)).eq.11)then
@@ -2835,8 +2836,8 @@ C Newer control files have an extra item related to humidity control.
                 if(zeroht.and.zerocl)then
                   write(lmsg,'(2a,f9.1,a,f9.1,a,f7.2,
      &              a,f7.2,a,f5.1,a,f5.1,a,f6.2,a,f6.2,a)') 
-     &              msg1(1:lnblnk(msg1)),' mx heat cap',cm(2),
-     &              'W mx cool cap',cm(4),
+     &              msg1(1:lnblnk(msg1)),' heat cap',cm(2),
+     &              'W cool cap',cm(4),
      &              'W. Heat sp',cm(6),
      &              'C cool sp',cm(7),
      &              'C & moist inj RH ctl hi sp',
@@ -2861,8 +2862,8 @@ C Newer control files have an extra item related to humidity control.
                 if(zeroht.and.zerocl)then
                   write(lmsg,'(2a,f9.1,a,f9.1,a,f7.2,
      &              a,f7.2,a,f5.1,a,f5.1,a)') 
-     &              msg1(1:lnblnk(msg1)),' max heating cap ',cm(2),
-     &              'W max cooling cap ',cm(4),
+     &              msg1(1:lnblnk(msg1)),' Heating cap ',cm(2),
+     &              'W cooling cap ',cm(4),
      &              'W. Heating sp ',cm(6),
      &              'C cooling sp ',cm(7),
      &              'C and T based RH ctl upper sp ',
@@ -2885,8 +2886,8 @@ C Newer control files have an extra item related to humidity control.
                 if(zeroht.and.zerocl)then
                   write(lmsg,
      &              '(2a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
-     &              msg1(1:lnblnk(msg1)),' max heating capacity ',cm(2),
-     &              'W max cooling capacity ',cm(4),
+     &              msg1(1:lnblnk(msg1)),' Heating capacity ',cm(2),
+     &              'W cooling capacity ',cm(4),
      &              'W. Heating setpoint ',cm(6),'C cooling setpoint ',
      &              cm(7),'C. with incomplete RH control.'
                 else
@@ -4017,41 +4018,36 @@ C If nnd is zero then omitt days of validity information, otherwise
 C include it in the documentation line.
       lncal=lnblnk(CALENTAG(JJ))
       if(nnd.eq.0)then
-        if(markdown)then
-          call edisp(itru,' ')
-          WRITE(outs,'(3A,I2,A)') 'Day type ',CALENTAG(JJ)(1:lncal),
-     &    ' control has ',LL,' periods.  '
-        else
-           WRITE(outs,'(3A,I2,A)') ' Day type ',CALENTAG(JJ)(1:lncal),
-     &    ' control has ',LL,' periods.'
-        endif
+        continue
       else
         if(markdown)then
           call edisp(itru,' ')
           WRITE(outs,'(3A,I2,A)') 'Control is valid ',
      &    PERST3(9:lnblnk(PERST3)),' with ',LL,' periods.'
+          call edisp(itru,outs)
         else
           WRITE(outs,'(3A,I2,A)') ' Control is valid ',
      &    PERST3(9:lnblnk(PERST3)),' with ',LL,' periods.'
+          call edisp(itru,outs)
         endif
-      endif
-      if(markdown)then
-        call edisp2tr(itru,outs)
-      else
-        call edisp(itru,outs)
       endif
 
       if(markdown)then
         call edisp(itru,' ')
-        call edisp(itru,
-     &  'Per  Start  Sensing   Actuating   Control law description')
+        write(outs,'(3a)') 
+     &  'Per  Start  Sensing   Actuating   ',CALENTAG(JJ)(1:lncal),
+     &  ' control laws'
+        call edisp(itru,outs)
         write(outs,'(2A)')
      &  '---  -----  -------   ---------   ',
      &  '-------------------------------------------'
         call edisp(itru,outs)
       else
-        call edisp(itru,
-     &  ' Per|Start|Sensing  |Actuating  | Control law description')
+        call edisp(itru,' ')
+        write(outs,'(3a)') 
+     &  ' Per|Start|Sensing  |Actuating  | ',CALENTAG(JJ)(1:lncal),
+     &  ' control laws'
+        call edisp(itru,outs)
       endif
       DO 30 K=1,LL
         CALL EVCNTRL(icfoc,II,JJ,K,'T',SSTR)

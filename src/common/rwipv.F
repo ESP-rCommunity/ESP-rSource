@@ -989,12 +989,12 @@ C List current metrics and demand sets.
           call edisp(itru,' ')
           if(markdown)then
             write(outs2,'(2a)')
-     &      'ID  Metric               zones area    scale ',
-     &      'weight type      name        zones'
+     &      'ID  Metric                zones  area    scale ',
+     &      'weight type      name          zones'
             call edisp(itru,outs2)
             write(outs,'(2a)')
-     &      '--  -------------------- ----- ------  ----- ',
-     &      '------ --------- ----------  ------------------------'
+     &      '--  --------------------  -----  ------  ----- ',
+     &      '------ --------- ------------  ------------------------'
             call edisp(itru,outs)
           else
             call edisp(itru,
@@ -1012,6 +1012,9 @@ C List current metrics and demand sets.
 C 3rd parameter needs to be MCOM.
             call znarlist(inlist,list,MCOM,zdescr,length,ier)
             if(markdown)then
+              if(lng.lt.20) lng=20  ! to assist alignment
+              if(lnd.lt.8) lnd=8
+              if(lnz.lt.10) lnz=10
               write(outs2,'(i2,3a,i5,f9.2,2f7.2,6a)') ij,'  ',
      &         metrglbl(ij)(1:lng),' ',nzmg(ij),emgflr(ij),emgsca(ij),
      &         emgwtg(ij),'  ',msdoc(ij)(1:lnd),'  ',
