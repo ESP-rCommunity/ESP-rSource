@@ -3734,44 +3734,36 @@ C Recover the string indicated by iLocation
       end
 
 
-C ******************************* H3K Transport Massflow Network Data ************************
+C ****************** H3K Transport Massflow Network Data ************************
 C
 C Created by: Achim Geissler
 C Created on: June 17, 2008
 C Copyright: GaCH
 C ________
 C ABSTRACT:
-C This is the routine used to transport mass flow domain state-variable data to the H3K
-C reporting facilities.
+C This is the routine used to transport mass flow domain state-variable data 
+C to the H3K reporting facilities.
 C
-C**********************************************************************************************
+C********************************************************************************
       subroutine h3k_transport_mfn_data()
       use h3kmodule
       implicit none
 #include "building.h"
 #include "net_flow.h"
+#include "net_flow_data.h"
 C.....ESP-r commons
 C      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 C      CHARACTER LAPROB*72
 
-      COMMON/MFLOW1/NNOD,NCMP,NCNN
-C Network size
-      integer     NNOD  !  - number of nodes (building zones and/or plant components)
-      Integer     NCMP  ! - number of fluid flow components (flow restrictions)
-      integer     NCNN  ! - number of interconnections (branches)
-C
-      COMMON/MFLOW2/NDNAM(0:MNOD)
-      character*12  NDNAM  ! - identifier/name
-C
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),
-     & SUPNOD(MNOD,MNDS)
-      integer     NDFLD ! - fluid type (1=air, 2=water)
-      Integer     NDTYP ! - type (0=internal; unknown pressure
-C                                                  1=internal; known total pressure
-C                                                  2=boundary; known total pressure
-C                                                  3=boundary; wind induced pressure; implies NDFLD=1)
-      REAL          HNOD  ! - height above datum (m)
-      REAL          SUPNOD ! - supplementary data items (max. MNDS)
+C (in net_flow_data.h)     COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD,3),
+C     & SUPNOD(MNOD,MNDS)
+C      integer  NDFLD  ! - fluid type (1=air, 2=water)
+C      Integer  NDTYP  ! - type (0=internal; unknown pressure
+C                         1=internal; known total pressure
+C                         2=boundary; known total pressure
+C                         3=boundary; wind induced pressure; implies NDFLD=1)
+C      REAL     HNOD   ! - XYZ position (m)
+C      REAL     SUPNOD ! - supplementary data items (max. MNDS)
 C              if NDTYP=0 none
 C                 NDTYP=1 total pressure (Pa)
 C                 NDTYP=2 total pressure (Pa)
@@ -3781,31 +3773,31 @@ C                         1: TNOD equals DRYB
 C                 NDTYP=3 wind pressure coefficients index
 C                         surface azimuth (degrees clockwise from north)
 C
-      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
-      integer     ITND !  - node temperature index; if ITND(I)=N then TNOD(I)=TNOD(N)
-      real      TNOD  ! - node fluid temperature (C)
+C      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
+C      integer     ITND !  - node temperature index; if ITND(I)=N then TNOD(I)=TNOD(N)
+C      real      TNOD  ! - node fluid temperature (C)
 
 C Components: fixed input data
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      character*12     CMNAM ! - identifier/name
-      Character*60     LTPCMP ! - short description of that type
+C      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
+C      character*12     CMNAM ! - identifier/name
+C      Character*60     LTPCMP ! - short description of that type
 
-      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
-     &              SUPCMP(MCMP,MCMS)
-      integer     ITPCMP ! - type number
-      integer     ISDCMP  ! - number of supplementary data items (max. MCMS)
-      integer     ISDCNN  ! - number of connection level supplementary items (max. MCNS)
-      real         SUPCMP ! - component supplementary data items (1st item = fluid type)
+C      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
+C     &              SUPCMP(MCMP,MCMS)
+C      integer     ITPCMP ! - type number
+C      integer     ISDCMP  ! - number of supplementary data items (max. MCMS)
+C      integer     ISDCNN  ! - number of connection level supplementary items (max. MCNS)
+C      real         SUPCMP ! - component supplementary data items (1st item = fluid type)
 
 C Connections: fixed input data
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
-      integer     NODPS ! - node number on positive side of connection
-      real          HGTPS ! - height of +ve linkage point relative to NODPS (m)
-      integer     NODNE ! - node number on negative side of connection
-      Real          HGTNE ! - height of -ve linkage point relative to NODNE (m)
-      integer     ITPCON ! - number of linking fluid flow component
-      integer     NDSCNN ! - connection level component supplementary node numbers
+C      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
+C     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+C      integer     NODPS ! - node number on positive side of connection
+C      real          HGTPS ! - height of +ve linkage point relative to NODPS (m)
+C      integer     NODNE ! - node number on negative side of connection
+C      Real          HGTNE ! - height of -ve linkage point relative to NODNE (m)
+C      integer     ITPCON ! - number of linking fluid flow component
+C      integer     NDSCNN ! - connection level component supplementary node numbers
 
 C Output data
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
@@ -3833,7 +3825,7 @@ C.....Local variables
 
       integer i_neg, i_CompType,i_CompIndex
 
-      real area,rhon,PI ! component area and fluid density at node, PI
+      real area,rhond,PI ! component area and fluid density at node, PI
 
       Logical b_noveloc ! logical for velocity calc.
 
@@ -3989,15 +3981,15 @@ C.........Loop through all interconnections in a flow network
         ! Now get density of "sending" node. If flw1(jj) is negative, use density of
         ! node "i_neg". Densit() returns density in kg/m3
                   if (FLW1(jj) .lt. 0) THEN
-                    rhon=DENSIT(NDFLD(i_neg),TNOD(i_neg))
+                    rhond=DENSIT(NDFLD(i_neg),TNOD(i_neg))
                   Else
-                    rhon=DENSIT(NDFLD(ii),TNOD(ii))
+                    rhond=DENSIT(NDFLD(ii),TNOD(ii))
                   Endif
 
         ! Finally, write to H3K reporting
                   call AddToReport(
      &               rvMfnConnectVeloc%Identifier,
-     &               real(FLW1(jj))/rhon/area,
+     &               real(FLW1(jj))/rhond/area,
      &               fluid(1:fluid_len),
      &               Connect_Name(1:connect_len))
 

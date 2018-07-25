@@ -17,11 +17,12 @@ C For the building:
 C Common blocks associated with sensitivity studies.
       integer NILOC  ! number of uncertainty locations
       integer NZGU   ! for each location how many zones
-      integer NZNOGU  ! for each location array of associated zones
-      integer NSGU    ! for each associated zone how many surfaces
+      integer NZNOGU ! for each location array of associated zones
+      integer NSGU   ! for each associated zone how many surfaces
       integer NSNOG  ! for each location array of associated surfaces
+      integer NTGU   ! for each location blind TMC type and period
       COMMON/UA2/NILOC,NZGU(MNIL),NZNOGU(MNIL,MCOM),NSGU(MNIL,MCOM),
-     &             NSNOG(MNIL,MCOM,MS)
+     &             NSNOG(MNIL,MCOM,MS),NTGU(MNIL,MCOM,2)
 
       integer NICNG  ! number of uncertainty distributions (e.g. +-)
       integer IDTYPU ! distribution type: 1=materials, 2=MLC, 

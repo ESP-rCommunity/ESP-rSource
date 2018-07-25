@@ -1,0 +1,222 @@
+ tester.pl Test Report 
+ Testing commenced on 23/02/2018 13:44:17 
+  
+  
+ Test parameters: 
+  - Test suite path:        /home/jon/Src/svn_sandboxes/esprsvn/jwh_nov_2017/tester/test_suite/ 
+  - Abbreviated runs:       disabled 
+  
+ Test System Information: 
+  - Username:               jon 
+  - Host:                   mae-esru-jon 
+  - Platform:               x86_64 
+  - Operating system:       Linux:4.4.0-112-generic 
+  
+ bps binaries: 
+  - Path:                   (reference)  mae-esru-jon:/home/jon/esru_jwh/esp-r/bin/bps 
+                            (test)       mae-esru-jon:/home/jon/esru_calib/esp-r/bin/bps 
+  - SVN source:             (reference)  @rRevision: 1486 (locally modified) 
+                            (test)       @rRevision: 1544 (locally modified) 
+  - Compilers:              (reference)  gcc/g++/gfortran 
+                            (test)       gcc/g++/gfortran 
+  - Graphics library:       (reference)  X11 
+                            (test)       X11 
+  - XML support:            (reference)  Supported 
+                            (test)       Supported 
+  - Modifiation date:       (reference)  2018-01-25 09:33:44.480602133 +0000 
+                            (test)       2018-02-23 12:33:45.125781669 +0000 
+  - MD5 Checksum:           (reference)  5283021bb4b2b89bf8203a7f5bf9cb36 
+                            (test)       df148f57ea3533939f920c7686566e7f 
+                                         (files differ) 
+  
+ Compared output: .csv .data .summary files 
+ Overall result: Pass. 
+  
+ Summary of test results: 
+   - '-' indicates test case passes 
+   - 'X' indicates test case fails 
+   - '.' indicates files were not produced, or were not compared 
+ ------------------------------------------------------------------------------------------------------------------------------------ 
+ Folder                          Model                                              .summary  .xml .csv  overall dt-CPU(%) 
+ ------------------------------------------------------------------------------------------------------------------------------------ 
+ Annex42_fuel_cell               SOFC_constant                                          -       .    -      -     -18          
+ Lion_battery                    Lion_battery                                           .       .    .      X     N/A          
+ NCHE_basic                      NCHE_basic                                             -       .    -      -     -13          
+ NCHE_complete                   NCHE_complete                                          -       .    -      -     -25          
+ NCHE_complete_noNCHE            NCHE_complete                                          -       .    -      -     -24          
+ Ventilation                     CVS_ERV                                                -       .    -      -     -19          
+ Ventilation                     CVS_Fan                                                -       .    -      -     -20          
+ Ventilation                     CVS_HRV                                                -       .    -      -     -19          
+ Ventilation                     CVS_None                                               -       .    -      -     -16          
+ alberta_infil_model             basic_AIM_MAX                                          -       .    -      -     -17          
+ alberta_infil_model             basic_AIM_MIN                                          -       .    -      -     -16          
+ alberta_infil_model             basic_AIM_TIGHT                                        -       .    -      -     -16          
+ alberta_infil_model             basic_AIM_reference                                    -       .    -      -     -22          
+ alberta_infil_model             detailed_AIM_MAX                                       -       .    -      -     -18          
+ alberta_infil_model             detailed_AIM_MAX_ver1                                  -       .    -      -     -20          
+ alberta_infil_model             detailed_AIM_MIN                                       -       .    -      -     -21          
+ alberta_infil_model             detailed_AIM_MIN_ver1                                  -       .    -      -     -20          
+ alberta_infil_model             detailed_AIM_TIGHT                                     -       .    -      -     -17          
+ alberta_infil_model             detailed_AIM_TIGHT_ver1                                -       .    -      -     -18          
+ alberta_infil_model             detailed_AIM_reference                                 -       .    -      -     -23          
+ basesimp                        basic_BSM_MAX                                          -       .    -      -     -16          
+ basesimp                        basic_BSM_MAX_MooreModel                               -       .    -      -     -19          
+ basesimp                        basic_BSM_MIN                                          -       .    -      -     -18          
+ basesimp                        basic_BSM_reference                                    -       .    -      -     -17          
+ basesimp                        detailed_BSM_MAX                                       -       .    -      -     -21          
+ basesimp                        detailed_BSM_MIN                                       -       .    -      -     -18          
+ basesimp                        detailed_BSM_reference                                 -       .    -      -     -18          
+ bat_life_no_control             h2-ctrl                                                -       .    -      -     -16          
+ bat_life_with_control           h2-ctrl                                                -       .    -      -     -15          
+ bld_PV                          PVTest2                                                -       .    -      -     -18          
+ bld_ground_reflectivity         advanced_albedo_model                                  -       .    -      -     -24          
+ bld_ground_reflectivity         constant_albedo                                        -       .    -      -     -25          
+ bld_ground_reflectivity         full_year_test_advanced_model                          -       .    -      -     -40          
+ bld_ground_reflectivity         simple_albedo_model                                    -       .    -      -     -24          
+ bld_hc_ISO15099                 HC                                                     -       .    -      -     -21          
+ bld_hc_ISO15099                 HC_no-ISO                                              -       .    -      -     -21          
+ ccht_benchmark                  basic_ctl_sorted_gains                                 -       .    -      -     -16          
+ ccht_benchmark                  basic_ctl_summer                                       -       .    -      -     -15          
+ ccht_benchmark                  basic_ctl_unsorted_gains                               -       .    -      -     -17          
+ ccht_benchmark                  basic_ctl_winter                                       -       .    -      -     -18          
+ ccht_benchmark                  basic_no_ctl_summer                                    -       .    -      -     -17          
+ ccht_benchmark                  basic_no_ctl_winter                                    -       .    -      -     -17          
+ ccht_benchmark                  detailed_airflow_gains_summer                          -       .    -      -     -21          
+ ccht_benchmark                  detailed_airflow_gains_winter                          -       .    -      -     -19          
+ ccht_benchmark                  detailed_airflow_summer                                -       .    -      -     -17          
+ ccht_benchmark                  detailed_airflow_winter                                -       .    -      -     -20          
+ ccht_benchmark                  detailed_ctl_summer                                    -       .    -      -     -22          
+ ccht_benchmark                  detailed_ctl_winter                                    -       .    -      -     -18          
+ ccht_benchmark                  detailed_no_ctl_no_gains_summer                        -       .    -      -     -16          
+ ccht_benchmark                  detailed_no_ctl_no_gains_winter                        -       .    -      -     -18          
+ ccht_benchmark                  detailed_no_ctl_summer                                 -       .    -      -     -20          
+ ccht_benchmark                  detailed_no_ctl_winter                                 -       .    -      -     -23          
+ cellular_miso                   cellular_miso                                          .       .    .      X     N/A          
+ cellular_offices                office_operations                                      -       .    -      -     -22          
+ complex_fenestration            complex_fenestration                                   -       .    -      -     -31          
+ complex_fenestration            complex_fenestration_BUG                               -       .    -      -     -33          
+ complex_fenestration            complex_fenestration_DRP                               -       .    -      -     -36          
+ complex_fenestration            complex_fenestration_RLD                               -       .    -      -     -34          
+ complex_fenestration            complex_fenestration_VBD                               -       .    -      -     -34          
+ dhw_bcd                         bld_simple                                             -       .    -      -     -17          
+ elec_gain_into_zone             ccht-elec-gain-into-zone                               -       .    -      -     -7           
+ elec_gain_into_zone             ccht-elec-gain-into-zone2.0                            -       .    -      -     -17          
+ elec_gain_into_zone             ccht-elec-gain-into-zone2.1                            -       .    -      -     -13          
+ elec_gain_into_zone             ccht-elec-gain-into-zone2.15                           -       .    -      -     -19          
+ esru_benchmark_model            bld_basic_af1_summer                                   -       .    -      -     -18          
+ esru_benchmark_model            bld_basic_af1_winter                                   -       .    -      -     -18          
+ esru_benchmark_model            bld_basic_af2_summer_shortTS                           .       .    .      X     N/A          
+ esru_benchmark_model            bld_basic_af2_winter_shortTS                           .       .    .      X     N/A          
+ esru_benchmark_model            bld_basic_no_ctl_summer                                -       .    -      -     -17          
+ esru_benchmark_model            bld_basic_no_ctl_winter                                -       .    -      -     -18          
+ esru_benchmark_model            bld_basic_shd_summer                                   -       .    -      -     -18          
+ esru_benchmark_model            bld_basic_shd_winter                                   -       .    -      -     -17          
+ esru_benchmark_model            bld_basic_summer                                       -       .    -      -     -17          
+ esru_benchmark_model            bld_basic_winter                                       -       .    -      -     -15          
+ h3kreports                      save_to_disk                                           -       .    -      -     -18          
+ idealized_hvac                  ashp_baseboard_cont_summer                             -       .    -      -     -17          
+ idealized_hvac                  ashp_baseboard_cont_winter                             -       .    -      -     -16          
+ idealized_hvac                  ashp_boiler_auto_no-cap_summer                         -       .    -      -     -20          
+ idealized_hvac                  ashp_boiler_auto_no-cap_winter                         -       .    -      -     -15          
+ idealized_hvac                  ashp_cool_auto_conv_summer                             -       .    -      -     -16          
+ idealized_hvac                  ashp_cool_auto_conv_winter                             -       .    -      -     -17          
+ idealized_hvac                  ashp_cool_cont_conv_summer                             -       .    -      -     -17          
+ idealized_hvac                  ashp_cool_cont_conv_winter                             -       .    -      -     -19          
+ idealized_hvac                  ashp_furnace_auto_balv_summer                          -       .    -      -     -19          
+ idealized_hvac                  ashp_furnace_auto_balv_winter                          -       .    -      -     -18          
+ idealized_hvac                  baseboard_auto_no-cap_summer                           -       .    -      -     -17          
+ idealized_hvac                  baseboard_auto_no-cap_winter                           -       .    -      -     -17          
+ idealized_hvac                  baseboard_auto_summer                                  -       .    -      -     -16          
+ idealized_hvac                  baseboard_auto_winter                                  -       .    -      -     -14          
+ idealized_hvac                  baseboard_cont_no-cap_summer                           -       .    -      -     -17          
+ idealized_hvac                  baseboard_cont_no-cap_winter                           -       .    -      -     -17          
+ idealized_hvac                  baseboard_cont_summer                                  -       .    -      -     -14          
+ idealized_hvac                  baseboard_cont_winter                                  -       .    -      -     -17          
+ idealized_hvac                  boiler_auto_no-cap_summer                              -       .    -      -     -19          
+ idealized_hvac                  boiler_auto_no-cap_winter                              -       .    -      -     -15          
+ idealized_hvac                  boiler_auto_summer                                     -       .    -      -     -16          
+ idealized_hvac                  boiler_auto_winter                                     -       .    -      -     -16          
+ idealized_hvac                  boiler_cont_no-cap_summer                              -       .    -      -     -20          
+ idealized_hvac                  boiler_cont_no-cap_winter                              -       .    -      -     -15          
+ idealized_hvac                  boiler_cont_summer                                     -       .    -      -     -18          
+ idealized_hvac                  boiler_cont_winter                                     -       .    -      -     -17          
+ idealized_hvac                  ccht_dhw_summer                                        -       .    -      -     -15          
+ idealized_hvac                  ccht_dhw_summer_MooreModel                             -       .    -      -     -17          
+ idealized_hvac                  ccht_dhw_winter                                        -       .    -      -     -18          
+ idealized_hvac                  ccht_gcep_summer                                       -       .    -      -     -17          
+ idealized_hvac                  ccht_gcep_winter                                       -       .    -      -     -18          
+ idealized_hvac                  ccht_gshp.H4_summer                                    -       .    -      -     -19          
+ idealized_hvac                  ccht_gshp.H4_summer_MooreModel                         -       .    -      -     -21          
+ idealized_hvac                  ccht_gshp.H4_winter                                    -       .    -      -     -16          
+ idealized_hvac                  ccht_gshp.HS_summer                                    -       .    -      -     -16          
+ idealized_hvac                  ccht_gshp.HS_winter                                    -       .    -      -     -16          
+ idealized_hvac                  ccht_gshp.SL_summer                                    -       .    -      -     -16          
+ idealized_hvac                  ccht_gshp.SL_winter                                    -       .    -      -     -16          
+ idealized_hvac                  ccht_gshp.V1_summer                                    -       .    -      -     -16          
+ idealized_hvac                  ccht_gshp.V1_winter                                    -       .    -      -     -17          
+ idealized_hvac                  ccht_slr_flag_summer                                   -       .    -      -     -16          
+ idealized_hvac                  ccht_slr_flag_winter                                   -       .    -      -     -17          
+ idealized_hvac                  ext_longwave_rad_summer                                -       .    -      -     -19          
+ idealized_hvac                  ext_longwave_rad_winter                                -       .    -      -     -17          
+ idealized_hvac                  furnace_auto_no-cap_summer                             -       .    -      -     -22          
+ idealized_hvac                  furnace_auto_no-cap_winter                             -       .    -      -     -14          
+ idealized_hvac                  furnace_auto_summer                                    -       .    -      -     -18          
+ idealized_hvac                  furnace_auto_winter                                    -       .    -      -     -17          
+ idealized_hvac                  furnace_cont_no-cap_summer                             -       .    -      -     -19          
+ idealized_hvac                  furnace_cont_no-cap_winter                             -       .    -      -     -16          
+ idealized_hvac                  furnace_cont_summer                                    -       .    -      -     -16          
+ idealized_hvac                  furnace_cont_winter                                    -       .    -      -     -20          
+ multi_year_simulations          multi_year_simulations                                 .       .    .      X     N/A          
+ plt_SDHW                        system2_50_per_cent_glycol                             -       .    -      -     -22          
+ plt_SDHW                        system2_strat_tank                                     -       .    -      -     -26          
+ plt_SDHW                        system2_water                                          -       .    -      -     -22          
+ plt_SDHW                        system3_50_per_cent_glycol                             .       .    .      X     N/A          
+ plt_SDHW                        system3_water                                          .       .    .      X     N/A          
+ plt_SDHW                        system4_50_per_cent_glycol                             .       .    .      X     N/A          
+ plt_SDHW                        system4_water                                          .       .    .      X     N/A          
+ plt_boundary_conditions         connected_flow                                         -       .    -      -     -8.5         
+ plt_boundary_conditions         connected_temperature                                  -       .    -      -     0            
+ plt_boundary_conditions         unconnected_controls                                   -       .    -      -     -8.6         
+ plt_boundary_conditions         unconnected_flow                                       -       .    -      -     -10          
+ plt_boundary_conditions         unconnected_temperature                                -       .    -      -     -8.7         
+ plt_elec_net                    elec_net                                               -       .    -      -     -22          
+ plt_electric_HWT                ccht_elec_tank                                         -       .    -      -     -24          
+ plt_lookup_table                elec-follow                                            -       .    -      -     -19          
+ plt_pre_A42_PEMFC_model         ccht                                                   .       .    .      X     N/A          
+ plt_pre_A42_SOFC_model          const-elec_summer                                      -       .    -      -     -23          
+ plt_pre_A42_SOFC_model          const-elec_winter                                      -       .    -      -     -22          
+ plt_pre_A42_SOFC_model          elec-load-follow_summer                                -       .    -      -     -22          
+ plt_pre_A42_SOFC_model          elec-load-follow_winter                                -       .    -      -     -21          
+ plt_pre_A42_SOFC_model          parasitics_summer                                      -       .    -      -     -23          
+ plt_pre_A42_SOFC_model          parasitics_winter                                      -       .    -      -     -21          
+ plt_radiant_floor               rhc-plant_summer                                       -       .    -      -     -20          
+ plt_radiant_floor               rhc-plant_winter                                       -       .    -      -     -19          
+ plt_solar_collector             IPH                                                    -       .    -      -     -21          
+ plt_stratifed_tank              Test1                                                  -       .    -      -     -4.5         
+ plt_stratifed_tank              Test2                                                  .       .    .      X     N/A          
+ plt_stratifed_tank              Test3                                                  -       .    -      -     -1.5         
+ plt_zone_heat_gain_coupling     plt_multizone_construction_gain_test                   -       .    -      -     -19          
+ plt_zone_heat_gain_coupling     plt_multizone_nogain_test                              -       .    -      -     -18          
+ plt_zone_heat_gain_coupling     plt_multizone_surface_gain_test                        -       .    -      -     -20          
+ plt_zone_heat_gain_coupling     plt_multizone_zone_gain_test                           -       .    -      -     -19          
+ pv_example                      pv_2000Glo                                             -       .    -      -     -19          
+ shading                         obs_4_eachface                                         -       .    -      -     -20          
+ sloped_obstr                    bld_simple_shd                                         -       .    -      -     -18          
+ therm_man_test                  h2-ctrl                                                -       .    -      -     -9.1         
+ type-999                        gc80                                                   -       .    -      -     -19          
+ window_control                  bld_simple                                             .       .    .      X     N/A          
+ ------------------------------------------------------------------------------------------------------------------------------------ 
+   
+ Parameter dt-CPU describes the percent change in simulation CPU  
+ runtime between the reference and test versions of bps. 
+   - When different versions of bps are exercised on the same 
+     machine, dt-CPU is a measure of the relative efficieny of 
+     the ESP-r source code.  
+   - When the same version of bps is exercised on different  
+     machines, dt-CPU is a measure of the comparative performance 
+     of ESP-r on different hardware and operating systems. 
+   
+ =========== Comparison of Numerical results =================  
+  
+ No differences were found in numerical output. Detailed report unnecessary.  
+  

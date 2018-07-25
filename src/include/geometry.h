@@ -67,23 +67,15 @@ C   any other zone shapes).
       common/c20/nzsur(MCOM),nztv(MCOM),nbwalls(MCOM),zorigin(MCOM,3),
      &  zsize(MCOM,3)
 
-C Arrays of verious types which hold data in (zone,surface) size primarily
+C Arrays of various types which hold data in (zone,surface) size primarily
 C for use with META files.
       integer zboundarytype  ! equivalent to ICT/IC2/IE2 in common c3
       common/metac3/zboundarytype(MCOM,MS,3)
 
-      integer znbglz   ! nb of windows (META directive)
-      integer znbdoor  ! nb of doors (META directive)
-      real zhasglaze   ! percentage of glazing (default position) in each surface of
-                       ! the initial room shape and where zero is no glazing
-      real zhasdoor    ! width of door in each surface of the initial room shape
-                       ! where zero is no door
       integer znbmass  ! number of META paired mass rectangles in room
                        ! Note these pairs of surfaces are not included in the *surface list
       real zdatamass   ! origin, size, orientations of META mass objects (4 per zone).
-      common/metahas/znbglz(MCOM),zhasglaze(MCOM,MS),
-     &               znbdoor(MCOM),zhasdoor(MCOM,MS),
-     &               znbmass(MCOM),zdatamass(MCOM,4,7)
+      common/metahas/znbmass(MCOM),zdatamass(MCOM,4,7)
 
 
 C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
@@ -97,7 +89,7 @@ C calculated based on FLOR orientations (zero). IZBASELIST is the
 C number of items in the list. 
       real zbasea
       integer ibases,iuzbasea,izbaselist
-      common/prec17/zbasea(MCOM),ibases(MCOM,12),iuzbasea(MCOM),
+      common/prec17/zbasea(MCOM),ibases(MCOM,MBL),iuzbasea(MCOM),
      &  izbaselist(MCOM)
 
 C nbedgshr(MCON) number of surfaces (same orient) which share an edge:
@@ -126,14 +118,14 @@ C   eight is jamb at window or door
      &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCON,MV)
 
 C G9 holds information on children of a surface and its parent.
-      integer nbchild   ! how many children (up to 4) for each connection
-      integer nbgchild  ! how many grand children (up to 4) for each connection
+      integer nbchild   ! how many children (up to 24) for each connection
+      integer nbgchild  ! how many grand children (up to 24) for each connection
       integer ichild    ! list of children for each connection
       integer igchild   ! list of grand children for each connection
       integer iparent   ! parent surface connection (zero is no parent)
       integer igparent  ! grandparent surface connection (zero is no grandparent)
-      common/G9/nbchild(MCON),nbgchild(MCON),ichild(MCON,4),
-     &          igchild(MCON,4),iparent(MCON),igparent(MCON)
+      common/G9/nbchild(MCON),nbgchild(MCON),ichild(MCON,24),
+     &          igchild(MCON,24),iparent(MCON),igparent(MCON)
 
 C Global coordinates for whole model (connection based).
       real VCOORD    ! X,Y & Z coordinates of vertices in all zones.
@@ -143,15 +135,15 @@ C Global coordinates for whole model (connection based).
 
 C Global coordinates for whole model (zone & surface based). These are used
 C to accumulate information prior to the generation of the connection list.
-      integer isznbedges ! nb of edges per surface in poly shaped zone
+      integer isznver    ! nb of edges per surface in poly shaped zone
                          ! equivalent to nznver and nver
-      integer iszlist    ! indices of coords making up edges of each surface
+      integer iszjvn     ! indices of coords making up edges of each surface
                          ! equivalent to NZJVN and jvn
       real szcoords      ! coordinates associated with each zone, equivalent
                          ! to X Y Z and VCOORD for shape=box ignore,
                          ! for shape=extrude the 1st value is X and 2nd is Y
                          ! For shape=poly the Z is also used.
-      common/metageo/isznbedges(MCOM,MS),iszlist(MCOM,MS,MV),
+      common/metageo/isznver(MCOM,MS),iszjvn(MCOM,MS,MV),
      &               szcoords(MCOM,MTV,3)
 
 C The following section holds derived data such as volume and surface
@@ -243,11 +235,11 @@ C LNVOBJNAME,LNVOBJDESC,LNVOBJLIST - length of strings.
 C NBVOBJ - number of visual objects in each zone
 C NBVOJBLIST - number of primitives in ojbect
       character VOBJNAME*12,VOBJDESC*32,VOBJLIST*12
-      common/GSVOBJN/VOBJNAME(MCOM,20),VOBJDESC(MCOM,20),
-     &  VOBJLIST(MCOM,20,14)
+      common/GSVOBJN/VOBJNAME(MCOM,50),VOBJDESC(MCOM,50),
+     &  VOBJLIST(MCOM,50,14)
       integer NBVOBJ,LNVOBJNAME,LNVOBJDESC,LNVOBJLIST,NBVOBJLIST
-      common/GSVOBJI/NBVOBJ(MCOM),LNVOBJNAME(MCOM,20),
-     &  LNVOBJDESC(MCOM,20),LNVOBJLIST(MCOM,20,14),NBVOBJLIST(MCOM,20)
+      common/GSVOBJI/NBVOBJ(MCOM),LNVOBJNAME(MCOM,50),
+     &  LNVOBJDESC(MCOM,50),LNVOBJLIST(MCOM,50,14),NBVOBJLIST(MCOM,50)
 
 C MRT sensors for the model.
       integer ncub  ! for each zone number of mrt sensors

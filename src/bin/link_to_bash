@@ -14,6 +14,8 @@ rm -f $HOME/bin/clm; ln -s $1/clm $HOME/bin/clm
 echo clm " is now pointing to "$1/clm
 rm -f $HOME/bin/dfs; ln -s $1/dfs $HOME/bin/dfs
 echo dfs " is now pointing to "$1/dfs
+rm -f $HOME/bin/dfv; ln -s $1/dfs $HOME/bin/dfv
+echo dfv " is now pointing to "$1/dfv
 rm -f $HOME/bin/e2r; ln -s $1/e2r $HOME/bin/e2r
 echo e2r " is now pointing to "$1/e2r
 rm -f $HOME/bin/ecnv; ln -s $1/ecnv $HOME/bin/ecnv
@@ -22,7 +24,7 @@ rm -f $HOME/bin/enet; ln -s $1/enet $HOME/bin/enet
 echo enet " is now pointing to "$1/enet
 rm -f $HOME/bin/eco; ln -s $1/eco $HOME/bin/eco
 echo eco " is now pointing to "$1/eco
-rm -f $HOME/bin/espvwf; ln -s $1/espvwf $HOME/bin/espvwf
+rm -f $HOME/bin/mrt; ln -s $1/mrt $HOME/bin/mrt
 echo espvwf " is now pointing to "$1/espvwf
 rm -f $HOME/bin/grd; ln -s $1/grd $HOME/bin/grd
 echo grd " is now pointing to "$1/grd

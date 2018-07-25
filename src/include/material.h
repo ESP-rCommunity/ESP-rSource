@@ -224,7 +224,7 @@ C Data structures for verbose names and documentation associated with MLC
       common/mlcnamearray/mlcname(MMLC),mlcmenu(MMLC),mlcdoc(MMLC),
      &  mlcincat(MMLC),mlctype(MMLC),mlcoptical(MMLC),mlcsymetric(MMLC)
 
-      integer lnmlcname,lnmlcmenu,lnmlccatname,lnmlccatmenu  ! string lengths
+      integer lnmlcname,lnmlcmenu,lnmlccatname  ! string lengths
       common/mlcnameln/lnmlcname(MMLC),lnmlcmenu(MMLC),
      &  lnmlccatname(MGCL)
 

@@ -7,24 +7,24 @@ C  these variables to be sized to 32. The other variables have little
 C  impact of the size of dfs and bps.
 C
 C  Maximum number of cells in x direction (usual setting NTCELX=52)
-      INTEGER, PARAMETER :: NTCELX=52
+      INTEGER, PARAMETER :: NTCELX=102
 C  Maximum number of cells in y direction (usual setting NTCELY=52)
-      INTEGER, PARAMETER :: NTCELY=52
+      INTEGER, PARAMETER :: NTCELY=102
 C  Maximum number of cells in z direction (usual setting NTCELZ=52)
-      INTEGER, PARAMETER :: NTCELZ=52
-C  Maximum number between ntcelx, ntcely and ntcelz (usual setting MCEL1D=32)
-      INTEGER, PARAMETER :: MCEL1D=52
+      INTEGER, PARAMETER :: NTCELZ=102
+C  Maximum number between ntcelx, ntcely and ntcelz (usual setting MCEL1D=52)
+      INTEGER, PARAMETER :: MCEL1D=102
 C  Maximum number of new mfs connections created for CFD domain (usual setting MCFND=20)
       INTEGER, PARAMETER :: MCFND=20
 C  Maximum number of gridding regions per axis (usual setting MNREG=50)
-      INTEGER, PARAMETER :: MNREG=50
+      INTEGER, PARAMETER :: MNREG=80
 C  Maximum number of heat source (usual setting MNHS=36)
       INTEGER, PARAMETER :: MNHS=36
 C  Maximum number of solid boundaries per zone
 C (set equal to 2* or greater than MS in building.h, because of current
 C method of specification of solid boundary conditions from building
 C surfaces)
-      INTEGER, PARAMETER :: MNSBZ=240
+      INTEGER, PARAMETER :: MNSBZ=480
 C  Maximum number of zones with CFD (usual setting MNZ=4)
       INTEGER, PARAMETER :: MNZ=4
 C  Maximum number of key volumes (usual setting MNVLS=120)

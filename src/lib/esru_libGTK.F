@@ -28,6 +28,7 @@ C  EASKE:   Ask user for a real in exponential format, otherwise as easkr.
 C  EASKF:   Ask user for a file name with prompt, error messages & help.
 C  EASKS:   Ask user for a string with prompt, error messages & help.
 C  EASKS248: Edit a long (248 char) string in sections.
+C  EASKS496: Edit a long (496 char) string in sections.
 C  EASKSCMD Ask user for a string with prompt, alt, error messages & help.
 C  EASKSCNCL Asking the user for a text string with prompt cancel error & help.
 C  EASKS2CMD Ask user for a string with prompt, 2 alts, error messages & help.
@@ -192,7 +193,7 @@ C In text mode, remind user of current value.
         write(OUTSTR,'(3a)')'(currently: ',STR2(1:IW2),')'
         call edisp(iuout,OUTSTR)
         CALL USRMSG(PROMP1,PROMP2,'?')
-        READ(IUIN,24)WORD
+        READ(IUIN,24,END=666)WORD
    24   FORMAT(A10)
         A=WORD(1:1)
         IF(LNBLNK(WORD).EQ.1)THEN
@@ -296,6 +297,12 @@ C Return to calling module
         call edisp(iuout,outs)
       endif
       return
+      
+C If an EOF is detected when reading from IUIN, we often get infinite
+C looping, creating infinite output. Stop the program.
+  666 write(IUOUT,*)'EASKI: EOF detected, error in input commands.'
+      call pauses(1)
+      STOP
 
       END
 
@@ -437,7 +444,7 @@ C In text mode, remind user of current value.
         write(OUTSTR,'(3a)')'(currently: ',STR2(1:IW2),')'
         call edisp(iuout,OUTSTR)
         CALL USRMSG(PROMP1,PROMP2,'?')
-        READ(IUIN,24)WORD
+        READ(IUIN,24,END=666)WORD
    24   FORMAT(A16)
         A=WORD(1:1)
         IF(LNBLNK(WORD).EQ.1)THEN
@@ -549,6 +556,12 @@ C Return to calling module
         call edisp(iuout,outs)
       endif
       RETURN
+      
+C If an EOF is detected when reading from IUIN, we often get infinite
+C looping, creating infinite output. Stop the program.
+  666 write(IUOUT,*)'EASKR: EOF detected, error in input commands.'
+      call pauses(1)
+      STOP
 
       END
 
@@ -668,7 +681,7 @@ C In text mode, remind user of current value.
         write(OUTSTR,'(3a)')'(currently: ',STR2(1:IW2),')'
         call edisp(iuout,OUTSTR)
         CALL USRMSG(PROMP1,PROMP2,'?')
-        READ(IUIN,24)WORD
+        READ(IUIN,24,END=666)WORD
    24   FORMAT(A16)
         A=WORD(1:1)
         IF(LNBLNK(WORD).EQ.1)THEN
@@ -769,6 +782,12 @@ C Return to calling module
         call edisp(iuout,outs)
       endif
       return
+
+C If an EOF is detected when reading from IUIN, we often get infinite
+C looping, creating infinite output. Stop the program.
+  666 write(IUOUT,*)'EASKE: EOF detected, error in input commands.'
+      call pauses(1)
+      STOP
 
       END
 
@@ -916,7 +935,7 @@ C In text mode, remind user of current string.
           call edisp(iuout,OUTSTR)
         endif
         CALL USRMSG(PROMP1,PROMP2,'?')
-        READ(IUIN,'(A144)')WORD144
+        READ(IUIN,'(A144)',END=666)WORD144
         A=WORD144(1:1)
         IF(lnblnk(WORD144).EQ.1)THEN
           IF(A.EQ.'D'.OR.A.EQ.'d')THEN
@@ -997,6 +1016,13 @@ C Must have input a character string.
         call edisp(iuout,outs)
       endif
       return
+      
+C If an EOF is detected when reading from IUIN, we often get infinite
+C looping, creating infinite output. Stop the program.
+  666 write(IUOUT,*)'EASKF: EOF detected, error in input commands.'
+      call pauses(1)
+      STOP
+
       END
 
 C ************* EASKS
@@ -1134,7 +1160,7 @@ C In text mode, remind user of current string.
           call edisp(iuout,OUTSTR)
         endif
         CALL USRMSG(PROMP1,PROMP2,'?')
-        READ(IUIN,'(A)')WORD
+        READ(IUIN,'(A)',END=666)WORD
         A=WORD(1:1)
         IF(lnblnk(WORD).EQ.1)THEN
           IF(A.EQ.'D'.OR.A.EQ.'d')THEN
@@ -1209,6 +1235,13 @@ C Must have input a character string.
         call edisp(iuout,outs)
       endif
       return
+      
+C If an EOF is detected when reading from IUIN, we often get infinite
+C looping, creating infinite output. Stop the program.
+  666 write(IUOUT,*)'EASKS: EOF detected, error in input commands.'
+      call pauses(1)
+      STOP
+
       END
 
 C ************* EASKS248
@@ -1433,6 +1466,278 @@ C When writing out the combined text, put a space between each section.
       return
       end
 
+C ************* EASKS496
+C EASKS496 edit a (496 char) string in a multi-line graphic box or via phrases.
+C << TO BE ADAPTED with logic from NonGTK EASKS496 >>
+C STRVAL is the string returned, ISTRW is its length.
+C PROMP1 & PROMP2 are the prompts using the same syntax as USRMSG.
+C If a space is typed then STRVAL is not changed.
+C ERMSG is a string placed at the top of the selection menu and to
+C any range checking or read errors to identify the value.
+C IER is the error state, if 0 then OK, if -3 then cancel button pressed.
+C NHELP is the number of help lines and H() is the array
+C of text strings to be printed out if '?','H','h' is typed
+C by the user.
+C DSTR is a string to use as a default.
+      SUBROUTINE EASKS496(STRVAL,PROMP1,PROMP2,ISTRW,DSTR,ERMSG,IER,
+     &   NHELP)
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      CHARACTER*(*) PROMP1,PROMP2,ERMSG,STRVAL,DSTR
+      CHARACTER t72*72,t72a*72,t72b*72,t72c*72,t72d*72
+      character t72e*72,t72f*72
+      character outstr*248,word*248,prompt*144,LASTS*248,outs*124
+      LOGICAL next,OK,DOK,unixok
+
+   20 IER=0
+      WORD=' '
+      last=max(1,lnblnk(STRVAL))
+      LASTS=STRVAL(1:last)
+      if (last.gt.6) then
+        if(STRVAL(1:7).eq.'UNKNOWN'.or.STRVAL(1:7).eq.'unknown'.or.
+     &     STRVAL(1:7).eq.'Unknown') STRVAL='  '
+      endif
+
+C Generate custom help text and use local var for NHELP.
+      call helpwithblank(ermsg,nhelp,newnbhelp,ier)
+
+      call edisp(iuout,'Current...')
+      call edisp248(iuout,STRVAL,72)
+      call edisp(iuout,' ')
+
+      IF(MMOD.EQ.8)THEN
+
+C For graphic version use the standard GTK widget as does easks.
+        IFLG=0
+        WORD=' '
+        CALL PHELPW(newnbhelp,IHW,IER)
+        call dupphelp(newnbhelp)
+        lmmod=mmod
+        LN1=max(1,lnblnk(PROMP1))
+        LN2=max(1,lnblnk(PROMP2))
+        if((LN1+LN2+1).lt.144)then
+          if(LN1.eq.1)then
+            write(prompt,'(a)') PROMP2(1:LN2)
+          else
+            write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          endif
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        endif
+
+C Debug.
+C        write(6,*) '< 248 askdialog prompt ',PROMPT(1:lnblnk(PROMPT))
+C        write(6,*) '< 248 askdialog string ',STRVAL(1:lnblnk(STRVAL))
+
+C << CHECK THIS AND SEE IF A VARIANT NEEDED >>
+        CALL askdialog248(PROMPT,STRVAL,IFLG)
+
+C Debug.
+C        write(6,*) 'askdialog STRVAL:',STRVAL,' iflg ',IFLG
+
+C PATCH to restore mmod (occassioanlly gets corrupted in linux)
+        if(lmmod.ne.mmod)mmod=lmmod
+
+C Strip off the last character (end of line mark) as well as any
+C leading blanks from string returned.
+        call c2fstr(STRVAL,WORD)
+C Debug
+C        write(6,*) word
+
+        IF(iflg.EQ.-3)THEN
+
+C A cancel answer detected, set ier to -3 and return.
+          CALL USRMSG('User requested a cancel for dialog',PROMPT,'-')
+          ier=-3
+          RETURN
+        ELSEIF(iflg.EQ.-2)THEN
+          LN=max(1,LNBLNK(DSTR))
+          WRITE(OUTSTR,'(3a)',iostat=ios,err=1)' The default is ',
+     &      DSTR(1:LN),'.'
+          DOK=.true.
+          CALL ASKOK(OUTSTR,' Is this ok?',OK,DOK,newnbhelp)
+          IF(OK)THEN
+            STRVAL=DSTR(1:LN)
+            RETURN
+          ELSE
+            GOTO 20
+          ENDIF
+        ENDIF
+        IF(WORD.EQ.' '.or.IFLG.eq.-1)THEN
+
+C A blank, carriage return or line feed encountered, assume user
+C wishes to use prior/existing string.
+          IF(LASTS.NE.' ')THEN
+            call isunix(unixok)
+            if(unixok)then
+              WRITE(IUOUT,55,iostat=ios,err=1)LASTS(1:last)
+   55         FORMAT(' The existing string (',a,') will be used.')
+            endif
+            STRVAL=LASTS(1:last)
+            RETURN
+          ELSE
+            CALL USRMSG(' The current string is blank!',
+     &                  ' Please re-enter.','W')
+            GOTO 20
+          ENDIF
+        ENDIF
+
+C Must have input a character string.
+        STRVAL=WORD(1:lnblnk(WORD))
+
+C Debug.
+C        write(6,*) 'eask496 returning ',STRVAL(1:lnblnk(STRVAL))
+
+        RETURN
+      ELSE
+
+C Find breakpoints near 72 144 216 and 248 characters.
+C If STRVAL null make into a blank string.
+        ipall=lnblnk(STRVAL)
+        if(ipall.le.1) STRVAL='  '
+        ip72=iprevblnk(STRVAL,72)
+        ip144=iprevblnk(STRVAL,ip72+71)
+        ip216=iprevblnk(STRVAL,ip144+71)
+        ip288=iprevblnk(STRVAL,ip216+71)
+        ip360=iprevblnk(STRVAL,ip288+71)
+        ip432=iprevblnk(STRVAL,ip360+71)
+        ip496=iprevblnk(STRVAL,496)
+
+C Create working strings for each section of text. Either as blanks
+C in the case of a short initial string or in lengths of ~72 char.
+C Remember the lengths in lt72 lt72a etc. in case user edits only
+C a portion of the text block. These working strings are used
+C with the text version.
+        t72a=' '; t72b=' '; t72c=' '
+        t72d=' '; t72e=' '; t72f=' '
+        write(t72,'(a)') STRVAL(1:ip72)
+        lt72=max(1,lnblnk(t72))
+        if(ip144.gt.ip72)write(t72a,'(a)') STRVAL(ip72+1:ip144)
+        lt72a=max(1,lnblnk(t72a))
+        if(ip216.gt.ip144)write(t72b,'(a)') STRVAL(ip144+1:ip216)
+        lt72b=max(1,lnblnk(t72b))
+        if(ip288.gt.ip216)write(t72c,'(a)') STRVAL(ip216+1:ip288)
+        lt72c=max(1,lnblnk(t72c))
+        if(ip360.gt.ip288)write(t72d,'(a)') STRVAL(ip288+1:ip360)
+        lt72d=max(1,lnblnk(t72d))
+        if(ip432.gt.ip360)write(t72e,'(a)') STRVAL(ip360+1:ip432)
+        lt72e=max(1,lnblnk(t72e))
+        if(ip496.gt.ip432)write(t72f,'(a)') STRVAL(ip432+1:ip496)
+        lt72f=max(1,lnblnk(t72f))
+
+C Logic supports stepwise scrolling within the text. 243 label
+C is the point for editing the initial portion of the text. 244 label
+C is the point for editing 2nd tranche of text.
+ 243    CALL EASKSCMD(t72,PROMP1,PROMP2,'>',next,ISTRW,DSTR,
+     &    'synp 1',IER,newnbhelp)
+
+C lt72 is the number of characters found after editing. If this is
+C less than 72 then cut characters from ipvsynop.
+        lt72=max(1,lnblnk(t72))
+        if(next)then
+
+C Edit second section.
+          CALL EASKS2CMD(t72a,PROMP1,PROMP2,'|<','>',
+     &      inext,ISTRW,DSTR,ERMSG,IER,newnbhelp)
+          lt72a=max(1,lnblnk(t72a))
+          if(inext.eq.1)then
+
+C If text to left requested go back to start.
+            goto 243
+          elseif(inext.eq.2)then
+
+C If text to right requested, load 3rd portion and offer option to
+C jump to earlier or next of text.
+            CALL EASKS2CMD(t72b,PROMP1,PROMP2,'|<','>',
+     &        inext,ISTRW,DSTR,ERMSG,IER,NHELP)
+            lt72b=max(1,lnblnk(t72b))
+            if(inext.eq.1)then
+
+C Go back to start.
+              next=.true.
+              goto 243
+            elseif(inext.eq.2)then
+
+C If text to right requested, load 4th portion and offer option to
+C jump to earlier or next of text.
+              CALL EASKS2CMD(t72c,PROMP1,PROMP2,'|<','>',
+     &          inext,ISTRW,DSTR,ERMSG,IER,NHELP)
+              lt72c=max(1,lnblnk(t72c))
+              if(inext.eq.1)then
+
+C Go back to start.
+                next=.true.
+                goto 243
+              elseif(inext.eq.2)then
+
+C If text to right requested, load 5th portion and offer option to
+C jump to earlier or next of text.
+                CALL EASKS2CMD(t72d,PROMP1,PROMP2,'|<','>',
+     &            inext,ISTRW,DSTR,ERMSG,IER,NHELP)
+                lt72d=max(1,lnblnk(t72d))
+                if(inext.eq.1)then
+
+C Go back to start.
+                  next=.true.
+                  goto 243
+                elseif(inext.eq.2)then
+
+C If text to right requested, load 6th portion and offer option to
+C jump to earlier or next of text.
+                  CALL EASKS2CMD(t72e,PROMP1,PROMP2,'|<','>',
+     &              inext,ISTRW,DSTR,ERMSG,IER,NHELP)
+                  lt72e=max(1,lnblnk(t72e))
+                  if(inext.eq.1)then
+
+C Go back to start.
+                    next=.true.
+                    goto 243
+                  elseif(inext.eq.2)then
+
+C Work with last portion of string, offer option to jump back
+C to the start.
+                    CALL EASKSCMD(t72f,PROMP1,PROMP2,'|<..',next,ISTRW,
+     &                DSTR,ERMSG,IER,NHELP)
+                    lt72f=max(1,lnblnk(t72f))
+                    if(next)then
+                      goto 243
+                    endif
+                  endif
+                endif
+              endif
+            endif
+          endif
+        endif
+
+C When writing out the combined text, put a space between each section.
+        call usrmsg(' ',' ','-')
+        itwid=lt72+lt72a+lt72b+lt72c+lt72d+lt72e+lt72f+6
+        if(itwid.le.496)then
+          write(STRVAL,'(13a)') t72(1:lt72),' ',t72a(1:lt72a),' ',
+     &      t72b(1:lt72b),' ',t72c(1:lt72c),' ',t72d(1:lt72d),' ',
+     &      t72e(1:lt72e),' ',t72f(1:lt72f)
+        else
+          itwid=496-(lt72+lt72a+lt72b+lt72d+lt72e+lt72f+6)
+          write(STRVAL,'(13a)') t72(1:lt72),' ',t72a(1:lt72a),' ',
+     &      t72b(1:lt72b),' ',t72c(1:lt72c),' ',t72d(1:lt72d),' ',
+     &      t72e(1:lt72e),' ',t72f(1:itwid)
+        endif
+      endif
+      return
+
+   1  if(IOS.eq.2)then
+        write(outs,*) 
+     &  'EASKS496: permissions exception while composing prompt.'
+        call edisp(iuout,outs)
+      else
+        write(outs,*) 'EASKS496: error composing message or prompt.'
+        call edisp(iuout,outs)
+      endif
+      return
+      end
+
 C ************* EASKSCMD
 C EASKSCMD is a facility for asking the user for a text string which
 C incorporates the prompt, alternative command, error messages and
@@ -1571,7 +1876,7 @@ C Must have input a character string.
         RETURN
       ELSE
         CALL USRMSG(PROMP1,PROMP2,'?')
-        READ(IUIN,'(A72)')WORD
+        READ(IUIN,'(A72)',END=666)WORD
         A=WORD(1:1)
         IF(lnblnk(WORD).EQ.1)THEN
           IF(A.EQ.'D'.OR.A.EQ.'d')THEN
@@ -1627,6 +1932,13 @@ C Must have input a character string.
         ENDIF
       ENDIF
       RETURN
+      
+C If an EOF is detected when reading from IUIN, we often get infinite
+C looping, creating infinite output. Stop the program.
+  666 write(IUOUT,*)'EASKSCMD: EOF detected, error in input commands.'
+      call pauses(1)
+      STOP
+
       END
 
 C ************* EASKSCNCL
@@ -1743,7 +2055,7 @@ C Must have input a character string.
         RETURN
       ELSE
         CALL USRMSG(PROMP1,PROMP2,'?')
-        READ(IUIN,'(A72)')WORD
+        READ(IUIN,'(A72)',END=666)WORD
         A=WORD(1:1)
         IF(lnblnk(WORD).EQ.1)THEN
           IF(A.EQ.'D'.OR.A.EQ.'d')THEN
@@ -1798,6 +2110,13 @@ C Must have input a character string.
           RETURN
         ENDIF
       ENDIF
+      RETURN
+      
+C If an EOF is detected when reading from IUIN, we often get infinite
+C looping, creating infinite output. Stop the program.
+  666 write(IUOUT,*)'EASKSCNCL: EOF detected, error in input commands.'
+      call pauses(1)
+      STOP
 
       return
       end
@@ -1961,7 +2280,7 @@ C Must have input a character string.
         RETURN
       ELSE
         CALL USRMSG(PROMP1,PROMP2,'?')
-        READ(IUIN,'(A72)')WORD
+        READ(IUIN,'(A72)',END=666)WORD
         A=WORD(1:1)
         IF(lnblnk(WORD).EQ.1)THEN
           IF(A.EQ.'D'.OR.A.EQ.'d')THEN
@@ -2017,6 +2336,13 @@ C Must have input a character string.
         ENDIF
       ENDIF
       RETURN
+      
+C If an EOF is detected when reading from IUIN, we often get infinite
+C looping, creating infinite output. Stop the program.
+  666 write(IUOUT,*)'EASKS2CMD: EOF detected, error in input commands.'
+      call pauses(1)
+      STOP
+
       END
 
 
@@ -2566,7 +2892,7 @@ C Setup a single line menu to pick from via EASKS.
         WRITE(IUOUT,'(a)')MSG3(1:LN3)
 
 C Querry yes or no.
-        READ(IUIN,'(A2)',IOSTAT=IOS,ERR=1)ANS
+        READ(IUIN,'(A2)',IOSTAT=IOS,ERR=1,END=666)ANS
         IF(ANS(1:1).EQ.'Y'.OR.ANS(1:1).EQ.'y')THEN
           OK=.TRUE.
         ELSEIF(ANS(1:1).EQ.'N'.OR.ANS(1:1).EQ.'n')THEN
@@ -2650,6 +2976,13 @@ C of help supplied and then provide the prompt again.
         call edisp(iuout,outs)
       endif
       RETURN
+      
+C If an EOF is detected when reading from IUIN, we often get infinite
+C looping, creating infinite output. Stop the program.
+  666 write(IUOUT,*)'ASKOK: EOF detected, error in input commands.'
+      call pauses(1)
+      STOP
+
       END
 
 C ******************** EASKATOG
@@ -2722,7 +3055,7 @@ C Setup a single line menu to pick from via EASKS.
         endif
         ans = '  '
         call usrmsg(msg1,msg3,'?')
-        read(iuin,'(A2)')ANS
+        read(iuin,'(A2)',END=666)ANS
 
         IF(ANS(1:1).EQ.'a'.OR.ANS(1:1).EQ.'A')THEN
           IWHICH=1
@@ -2789,6 +3122,12 @@ C of help supplied and then provide the prompt again.
         IWHICH=IW
       ENDIF
       RETURN
+
+C If an EOF is detected when reading from IUIN, we often get infinite
+C looping, creating infinite output. Stop the program.
+  666 write(IUOUT,*)'EASKATOG: EOF detected, error in input commands.'
+      call pauses(1)
+      STOP
 
       END
 
@@ -2892,7 +3231,7 @@ C Setup a single line menu to pick from via EASKS.
         endif
         ans = '  '
         call usrmsg(msg1,msg3,'?')
-        read(iuin,'(A2)')ANS
+        read(iuin,'(A2)',END=666)ANS
 
         IF(ANS(1:1).EQ.'a'.OR.ANS(1:1).EQ.'A')THEN
           IWHICH=1
@@ -2965,6 +3304,12 @@ C of help supplied and then provide the prompt again.
       ENDIF
       RETURN
 
+C If an EOF is detected when reading from IUIN, we often get infinite
+C looping, creating infinite output. Stop the program.
+  666 write(IUOUT,*)'EASKATOG: EOF detected, error in input commands.'
+      call pauses(1)
+      STOP
+
       END
 
 
@@ -2987,7 +3332,7 @@ C MMOD=-2 TELETYPE: wait if full, page with blank line.
           IF(IPAG.EQ.1)THEN
             WRITE(IUOUT,301)
   301       FORMAT(/,' ',50('-'),'>>',$)
-            READ(IUIN,'(A1)') DUMMY
+            READ(IUIN,'(A1)',END=666)DUMMY
           ENDIF
           LIMIT=LIMTTY
           RETURN
@@ -3033,6 +3378,15 @@ C If scrolling text display (in GTK no need to clear it).
           call winfin
         ENDIF
       ENDIF
+      goto 999
+      
+C If an EOF is detected when reading from IUIN, we often get infinite
+C looping, creating infinite output. Stop the program.
+  666 write(IUOUT,*)'EMPAGE: EOF detected, error in input commands.'
+      call pauses(1)
+      STOP
+
+  999 CONTINUE
       END
 
 c ******************** ELINC
@@ -3278,7 +3632,7 @@ C Solicit Reply.
   20    LN=max(1,LNBLNK(NAME))
         WRITE(IUOUT,104)NAME(1:LN)
  104    FORMAT(/,' ',a,':?> ',$)
-        READ(IUIN,105,iostat=ios,ERR=20)JJ
+        READ(IUIN,105,iostat=ios,ERR=20,END=666)JJ
  105    FORMAT(A1)
         ICUR=IFIRST(JJ)
 
@@ -3304,6 +3658,13 @@ C TEST REPLY IS IN MENU
         call edisp(IUOUT,'emenu: error composing item.')
       endif
       return
+      
+C If an EOF is detected when reading from IUIN, we often get infinite
+C looping, creating infinite output. Stop the program.
+  666 write(IUOUT,*)'EMENU: EOF detected, error in input commands.'
+      call pauses(1)
+      STOP
+
       END
 
 
@@ -3670,6 +4031,8 @@ C treatment as a scrolling window.
       CHARACTER WWMSG*144,dispbuf*144
       logical unixok
 
+C Function determining if HOT3000 features enabled?
+      logical bH3KExtentionsActive
 C Temporarily set ICOUT.
       ICOUT=0
 
@@ -3717,6 +4080,10 @@ C otherwise redirect to user display.
 
 C Write this to standard text window.
         WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
+c.......write console output (ITRU=6) to file       
+        if(ITRU.eq.6 .and. bH3KExtentionsActive() )then
+            call redir_console_output_to_file(MSG(1:lnm)//CHAR(0))
+        endif
       ENDIF
 
       RETURN
@@ -3746,6 +4113,204 @@ C Write this to standard text window.
       return
       END
 
+C ********************* EDISPxtr
+C EDISPxtr is a generic routine which displays lines of text passed to it
+C in a format depending on the terminal type (no trailing whitespace trim
+C useful for markdown documents):
+C For types -1 -2 9 does a fortran write to channel IUOUT,
+C For types -6 writes to ICOUT,
+C For type 8 manages the text which is passed to inserttext for
+C treatment as a scrolling window.
+      SUBROUTINE EDISPxtr(ITRU,MSG)
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      COMMON/OUTIN/IUOUT,IUIN
+      common/textbuf/dispbuf(500)
+      common/textbufl/indexbuf,lnbuf(500)
+      CHARACTER*(*) MSG
+      CHARACTER WWMSG*144,dispbuf*144
+      logical unixok
+
+C Function determining if HOT3000 features enabled?
+      logical bH3KExtentionsActive
+C Temporarily set ICOUT.
+      ICOUT=0
+
+C Create matching string to pass to wwlib.c and hold in dispbuf.
+C Use logic similar to that in egdisp.
+      lnm=max0(1,lnblnk(MSG))
+      lcc = MIN0(lnm,144)
+      if(lcc.eq.0) lcc=1
+      write(WWMSG,'(a)',iostat=ios,err=1)MSG(1:lcc)
+
+      if(indexbuf.lt.500)then
+        indexbuf=indexbuf+1
+        lnbuf(indexbuf)=lcc
+        dispbuf(indexbuf)='  '
+        write(dispbuf(indexbuf),'(a)') MSG(1:lcc)
+      else
+        do 42 i=1,499
+          dispbuf(i)=dispbuf(i+1)
+          lnbuf(i)=lnbuf(i+1)
+  42    continue
+        lnbuf(indexbuf)=lcc
+        dispbuf(indexbuf)='  '
+        write(dispbuf(indexbuf),'(a)') MSG(1:lcc)
+      endif
+      IF(MMOD.EQ.8.AND.ITRU.NE.IUOUT)THEN
+
+C If trace channel etc then just write to file with no trim.
+        WRITE(ITRU,'(A)',iostat=ios,err=1)MSG
+      ELSEIF(MMOD.EQ.8.AND.ITRU.EQ.IUOUT)THEN
+        LINE=LIMTTY-LIMIT
+        LIMIT=LIMIT-1
+        if (LIMIT.lt.1) LIMIT=1
+        call espad(limit,limtty,line)
+        CALL inserttext(WWMSG)
+      ELSEIF(MMOD.EQ.-6)THEN
+
+C Write this to error channel if user specified channel = ICOUT
+C with no trim otherwise redirect to user display.
+        IF(ITRU.EQ.ICOUT)THEN
+          WRITE(ICOUT,'(A)',iostat=ios,err=1)MSG
+        ELSE
+          WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
+        ENDIF
+      ELSE
+
+C Write this to standard text window.
+        WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
+c.......write console output (ITRU=6) to file       
+        if(ITRU.eq.6 .and. bH3KExtentionsActive() )then
+            call redir_console_output_to_file(MSG(1:lnm)//CHAR(0))
+        endif
+      ENDIF
+
+      RETURN
+   1  call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      if(IOS.eq.2)then
+        if(lnm.le.1)then
+          write(6,*) 'edispxtr: permission error writing blank/null '
+        else
+          write(6,*) 'edispxtr: permission error writing text: ',MSG
+        endif
+      else
+        if(lnm.le.1)then
+          write(6,*) 'edispxtr: error writing blank/null '
+        else
+          write(6,*) 'edispxtr: error writing text: ',MSG
+        endif
+      endif
+      return
+   2  call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      if(IOS.eq.2)then
+        write(6,*) 'edisp: permission error writing text: ',WWMSG
+      else
+        write(6,*) 'edisp: error writing text: ',WWMSG
+      endif
+      return
+      END
+
+
+C ********************* EDISP2tr
+C EDISP2tr is a generic routine which displays lines of text passed to it
+C in a format depending on the terminal type with 2 trailing spaces for
+C use in markdown documents to signal return:
+C For types -1 -2 9 does a fortran write to channel IUOUT,
+C For types -6 writes to ICOUT,
+C For type 8 manages the text which is passed to inserttext for
+C treatment as a scrolling window.
+      SUBROUTINE EDISP2tr(ITRU,MSG)
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      COMMON/OUTIN/IUOUT,IUIN
+      common/textbuf/dispbuf(500)
+      common/textbufl/indexbuf,lnbuf(500)
+      CHARACTER*(*) MSG
+      CHARACTER WWMSG*144,dispbuf*144
+      logical unixok
+
+C Function determining if HOT3000 features enabled?
+      logical bH3KExtentionsActive
+C Temporarily set ICOUT.
+      ICOUT=0
+
+C Create matching string to pass to wwlib.c and hold in dispbuf.
+C Use logic similar to that in egdisp but add 2 whitespace.
+      lnm=max0(1,lnblnk(MSG)); lnm=lnm+2
+      lcc = MIN0(lnm,144)
+      if(lcc.eq.0) lcc=3
+      write(WWMSG,'(a)',iostat=ios,err=1)MSG(1:lcc)
+
+      if(indexbuf.lt.500)then
+        indexbuf=indexbuf+1
+        lnbuf(indexbuf)=lcc
+        dispbuf(indexbuf)='  '
+        write(dispbuf(indexbuf),'(a)') MSG(1:lcc)
+      else
+        do 42 i=1,499
+          dispbuf(i)=dispbuf(i+1)
+          lnbuf(i)=lnbuf(i+1)
+  42    continue
+        lnbuf(indexbuf)=lcc
+        dispbuf(indexbuf)='  '
+        write(dispbuf(indexbuf),'(a)') MSG(1:lcc)
+      endif
+      IF(MMOD.EQ.8.AND.ITRU.NE.IUOUT)THEN
+
+C If trace channel etc then just write to file.
+        WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
+      ELSEIF(MMOD.EQ.8.AND.ITRU.EQ.IUOUT)THEN
+        LINE=LIMTTY-LIMIT
+        LIMIT=LIMIT-1
+        if (LIMIT.lt.1) LIMIT=1
+        call espad(limit,limtty,line)
+        CALL inserttext(WWMSG)
+      ELSEIF(MMOD.EQ.-6)THEN
+
+C Write this to error channel if user specified channel = ICOUT
+C otherwise redirect to user display.
+        IF(ITRU.EQ.ICOUT)THEN
+          WRITE(ICOUT,'(A)',iostat=ios,err=1)MSG(1:lnm)
+        ELSE
+          WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
+        ENDIF
+      ELSE
+
+C Write this to standard text window.
+        WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
+c.......write console output (ITRU=6) to file       
+        if(ITRU.eq.6 .and. bH3KExtentionsActive() )then
+            call redir_console_output_to_file(MSG(1:lnm)//CHAR(0))
+        endif
+      ENDIF
+
+      RETURN
+   1  call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      if(IOS.eq.2)then
+        if(lnm.le.1)then
+          write(6,*) 'edisp: permission error writing blank/null '
+        else
+          write(6,*) 'edisp: permission error writing text: ',MSG
+        endif
+      else
+        if(lnm.le.1)then
+          write(6,*) 'edisp: error writing blank/null '
+        else
+          write(6,*) 'edisp: error writing text: ',MSG
+        endif
+      endif
+      return
+   2  call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      if(IOS.eq.2)then
+        write(6,*) 'edisp: permission error writing text: ',WWMSG
+      else
+        write(6,*) 'edisp: error writing text: ',WWMSG
+      endif
+      return
+      END
 
 C ****** write current text buffer to an appropraite file
       subroutine proftxdump()
@@ -3759,6 +4324,7 @@ C Path to model and command line file (if any).
       common/rpath/path
       common/pophelp/h(60)
 
+C Indicator of possible focus zone.
       logical browse
       common/user/browse
       common/textbuf/dispbuf(500)
@@ -4117,21 +4683,21 @@ C current line index.
           if(IPM.eq.1)then
             call edisp(iuout,
      &        ' Options:  a) -, b) next, c) continue ')
-            READ(IUIN,'(A3)',IOSTAT=IOS,ERR=1)IA
+             READ(IUIN,'(A3)',IOSTAT=IOS,ERR=1,END=666)IA
             if(IA(1:1).eq.'a'.or.IA(1:1).eq.'A')iw1=1
             if(IA(1:1).eq.'b'.or.IA(1:1).eq.'B')iw1=2
             if(IA(1:1).eq.'c'.or.IA(1:1).eq.'C')iw1=3
           elseif(IPM.eq.MPM)then
             call edisp(iuout,
      &        ' Options:  a) previous, b) -, c) continue ')
-            READ(IUIN,'(A3)',IOSTAT=IOS,ERR=1)IA
+            READ(IUIN,'(A3)',IOSTAT=IOS,ERR=1,END=666)IA
             if(IA(1:1).eq.'a'.or.IA(1:1).eq.'A')iw1=1
             if(IA(1:1).eq.'b'.or.IA(1:1).eq.'B')iw1=2
             if(IA(1:1).eq.'c'.or.IA(1:1).eq.'C')iw1=3
           else
             call edisp(iuout,
      &        ' Options:  a) previous, b) next, c) continue ')
-            READ(IUIN,'(A3)',IOSTAT=IOS,ERR=1)IA
+            READ(IUIN,'(A3)',IOSTAT=IOS,ERR=1,END=666)IA
             if(IA(1:1).eq.'a'.or.IA(1:1).eq.'A')iw1=1
             if(IA(1:1).eq.'b'.or.IA(1:1).eq.'B')iw1=2
             if(IA(1:1).eq.'c'.or.IA(1:1).eq.'C')iw1=3
@@ -4161,6 +4727,13 @@ C current line index.
         call edisp(iuout,outs)
       endif
       return
+      
+C If an EOF is detected when reading from IUIN, we often get infinite
+C looping, creating infinite output. Stop the program.
+  666 write(IUOUT,*)'EHELPD: EOF detected, error in input commands.'
+      call pauses(1)
+      STOP
+
       END
 
 C ******** HPAGE

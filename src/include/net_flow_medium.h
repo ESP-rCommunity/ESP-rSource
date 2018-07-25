@@ -10,7 +10,7 @@ C Type declarations:
       integer MSPMNO, MSRC
 
 C Maximum number of nodes, components, connections.
-      PARAMETER (MNOD=80,MCMP=80,MCNN=199)
+      PARAMETER (MNOD=70,MCMP=80,MCNN=199)
 C Maximum number of node supplementary data items
       PARAMETER (MNDS=2)
 C Number of valid fluid flow component types
@@ -29,7 +29,7 @@ C Record width of binary results file (should be larger of MNOD or MCMS + 6)
       PARAMETER (NMRL=70)
 C Results analysis:
 C Max number of connection lists and number of connections allowed.
-      PARAMETER (MFCNLST=10)
+      PARAMETER (MFCNLST=20)
       PARAMETER (MFCNEL=5)
 C Max items to display
       PARAMETER (MFRS=20)

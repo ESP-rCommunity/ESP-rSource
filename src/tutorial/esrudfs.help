@@ -338,4 +338,44 @@
 'for later review. Please supply a file name.'
 *enditem
  1      call EASKS(t72,'File name for flow visualization parameters ?',
-*subroutine BLKBNDH
+*subroutine dfv
+*item dfv dfv_results_menu
+'There is not much help for results sub-menu of dfv ;-( '
+'  '
+'If you choose the ASCII format file you will be asked to'
+'supply a file name for the simulation predictions.'
+'Currently there is only one name requested'
+'because there is currently only one domain in a model.'
+'  '
+'If you select PHOTON analysis: the following files should'
+'be copied to the current folder:'
+'     [prefix[   and    [runpho]   '
+'These files are usually resident in:'
+'../d_phoe21/d_modpri'
+'Also, the following link should be made:'
+'     ln -s ../d_phoe21 lp21'
+'  '
+'If you select Matlab you will be asked to enter an'
+'index of the X Y Z slice to be visualized.'
+'  '
+'During the simulation an input-file for MATLAB, named'
+'startup.m is created. 
+'Check if non-DFS related file startup.m exists.'
+'If yes, move file to other folder BEFORE'
+'continuation of MATLAB analysis'
+'  '
+'to quit MATLAB, enter: quit'
+*enditem
+  389     CALL EASKS(RESFL,' Result file name ? ','  ',
+          CALL PHELPD('PHOTON file',8,'-',0,0,IER)
+          CALL PHELPD('PHOTON analysis',8,'-',0,0,IER)
+  74      CALL EASKI(islice,'  ',' Enter slice number ',
+  76      CALL EASKI(jslice,'  ',' Enter slice number ',
+  78      CALL EASKI(kslice,'  ',' Enter slice number ',
+          CALL PHELPD('MATLAB file',8,'-',0,0,IER)
+          CALL PHELPD('MATLAB analysis',2,'-',0,0,IER)
+*item dfv contaminant_scale_req
+'You are requested to provide a maximum and minimum value for the'
+'scale of the vertical axis. '
+*enditem
+ 203        call EASKS(t24,'  ',

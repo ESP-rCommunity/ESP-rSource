@@ -37,7 +37,7 @@ C             FMI.h.
       INTEGER, PARAMETER :: MFMIIREFS=6
 
 C Numeric indices refer to possible values of FMUIVAR (see FMI.h).
-C 1: Zone_mean_drybulb_temperature  ! units of degrees C
+C 1: Zone_drybulb_temperature  ! units of degrees C
 C 2: Zone_illumination              ! units of lux
 C 3: Zone_CO2_concentration         ! units of ppm
 C 4: Zone_lights_power              ! units of W
@@ -45,12 +45,12 @@ C 5: Ambient_drybulb_temperature    ! units of degrees C
 C 6: Ambient_rain_indicator         ! binary; 0 = no rain, 1 = rain
 
       CHARACTER*30, PARAMETER :: FMIIREFS(MFMIIREFS)=
-     &  (/'Zone_mean_drybulb_temperature ',
-     &    'Zone_illumination             ',
-     &    'Zone_CO2_concentration        ',
-     &    'Zone_lights_power             ',
-     &    'Ambient_drybulb_temperature   ',
-     &    'Ambient_rain_indicator        '/)
+     &  (/'Drybulb_temperature           ',
+     &    'Illumination                  ',
+     &    'CO2_concentration             ',
+     &    'Lights_power                  ',
+     &    'Drybulb_temperature_ambient   ',
+     &    'Rain_indicator                '/)
 
       INTEGER, PARAMETER :: FMIIAorZ(MFMIIREFS)=(/1,1,1,1,0,0/)
 
@@ -81,13 +81,13 @@ C 6. Zone_blinds_closed ! binary; 0 = blinds open, 1 = blinds closed
 C 7. Zone_occupancy     ! number of occupants
 
       CHARACTER*30, PARAMETER :: FMIOREFS(MFMIOREFS)=
-     &  (/'Zone_control_on               ',
-     &    'Zone_lights_on                ',
-     &    'Zone_windows_open             ',
-     &    'Zone_equipment_on             ',
-     &    'Zone_thermostat               ',
-     &    'Zone_blinds_closed            ',
-     &    'Zone_occupancy                '/)
+     &  (/'Control_on                    ',
+     &    'Lights_on                     ',
+     &    'Windows_open                  ',
+     &    'Equipment_on                  ',
+     &    'Thermostat                    ',
+     &    'Blinds_closed                 ',
+     &    'Occupancy                     '/)
 
       INTEGER, PARAMETER :: FMIOAorZ(MFMIOREFS)=(/1,1,1,1,1,1,1/)
 

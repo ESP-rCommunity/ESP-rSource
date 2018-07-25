@@ -2048,7 +2048,7 @@ void drawswl(xa,ya,xb,yb)
 /* *************** ESRU symbol drawing routine. *************** */
 /*
  esymbol is passed a pixel coord, a symbol index, and a size.
- currently there are 33 symbols.
+ currently there are 38 symbols.
 */
 void esymbol_(x,y,sym,size)
   long int *x, *y, *sym, *size;
@@ -2107,10 +2107,20 @@ void esymbol_(x,y,sym,size)
       p[0].x=ix+2; p[0].y=iy+3; p[1].x=ix+2; p[1].y=iy-2;
       p[2].x=ix-3; p[2].y=iy-2; p[3].x=ix+2; p[3].y=iy+3;
       XDrawLines(theDisp,win,theGC,p,4,CoordModeOrigin); break;
-    case 8 : 		/* dot 2 pix wide, 3 pix high */
-      drawswl(ix-1,iy-1,ix+1,iy-1);
-      drawswl(ix-1,iy,ix+1,iy);
-      drawswl(ix-1,iy+1,ix+1,iy+1);  break;
+    case 8 : 		/* size 1 = dot 2 pix wide, 3 pix high */
+      if(isize==1) {
+        drawswl(ix-1,iy-1,ix+1,iy-1);
+        drawswl(ix-1,iy,ix+1,iy);
+        drawswl(ix-1,iy+1,ix+1,iy+1);
+      } else if(isize==0) {  /* dot 2 pix wide, 2 pix high (32) */
+        drawswl(ix-1,iy-1,ix+1,iy-1);
+        drawswl(ix-1,iy,ix+1,iy);
+      } else if(isize==2) { /* dot 4 pix wide, 4 pix high (33) */
+        drawswl(ix-2,iy-2,ix+2,iy-2);
+        drawswl(ix-2,iy-1,ix+2,iy-1);
+        drawswl(ix-2,iy,ix+2,iy);
+        drawswl(ix-2,iy+1,ix+2,iy+1);
+      }  break;
     case 9 : 		/* X */
       drawswl(ix-2,iy-2,ix+3,iy+3);
       drawswl(ix-2,iy+3,ix+3,iy-2);  break;
@@ -2254,6 +2264,47 @@ void esymbol_(x,y,sym,size)
       drawswl(ix-2,iy-1,ix+2,iy-1);
       drawswl(ix-2,iy,ix+2,iy);
       drawswl(ix-2,iy+1,ix+2,iy+1); break;
+    case 34 : 		/* flow crack --\/\--*/
+      drawdwl(ix-8,iy,ix-3,iy);
+      drawdwl(ix-3,iy,ix,iy-4);
+      drawdwl(ix,iy-4,ix+2,iy+4);
+      drawdwl(ix+2,iy+4,ix+5,iy);
+      drawdwl(ix+5,iy,ix+9,iy);  break;
+    case 35 : 		/* flow bi-direc via closed left & right arrows */
+      drawswl(ix-1,iy+7,ix+4,iy+5);
+      drawswl(ix+4,iy+5,ix-1,iy+2);  /* from left */
+      drawswl(ix-1,iy+2,ix-1,iy+7);
+      drawswl(ix-6,iy+5,ix-1,iy+5);  /* shaft */
+      drawswl(ix+1,iy-3,ix-4,iy-5);
+      drawswl(ix-4,iy-5,ix+1,iy-8);  /* from right */
+      drawswl(ix+1,iy-8,ix+1,iy-3);
+      drawswl(ix+1,iy-5,ix+6,iy-5); break; /* shaft */
+    case 36 :	       /* flow orifice 6*6 pixels double width */
+      drawdwl(ix-4,iy-4,ix+3,iy-4);
+      drawdwl(ix+3,iy-4,ix+3,iy+3);
+      drawdwl(ix+3,iy+3,ix-4,iy+3);
+      drawdwl(ix-4,iy+3,ix-4,iy-4);  break;
+    case 37 :	       /* flow conduit */
+      drawswl(ix-7,iy+5,ix,iy+8);
+      drawswl(ix,iy+8,ix+5,iy+7);
+      drawswl(ix+5,iy+7,ix+5,iy);
+      drawswl(ix+5,iy,ix-3,iy-4);
+      drawswl(ix-3,iy-4,ix-7,iy-2);
+      drawswl(ix-7,iy-2,ix-7,iy+5);
+      drawswl(ix-7,iy-2,ix,iy+3);
+      drawswl(ix,iy+3,ix+5,iy);
+      drawswl(ix,iy+3,ix,iy+8);
+      drawswl(ix,iy+4,ix+5,iy+7);  break;
+    case 38 :	       /* flow closed box */
+      drawswl(ix+3,iy-2,ix+3,iy+5);
+      drawswl(ix+3,iy+5,ix-2,iy+7);
+      drawswl(ix-2,iy+7,ix-7,iy+3);
+      drawswl(ix-7,iy+3,ix-7,iy-2);
+      drawswl(ix-7,iy-2,ix-2,iy-4);
+      drawswl(ix-2,iy-4,ix+3,iy-2);
+      drawswl(ix-7,iy-2,ix-2,iy+1);
+      drawswl(ix+3,iy-2,ix-2,iy+1);
+      drawswl(ix-2,iy+7,ix-2,iy+1);  break;
     default : 		/* big dot 2 pix wide, 3 pix high */
       drawswl(ix-1,iy-1,ix+1,iy-1);
       drawswl(ix-1,iy,ix+1,iy);
@@ -5537,6 +5588,10 @@ void etplot_(ux,uy,updown,sym)
     case 29: gs=30;  break;  /* solid left arrow */
     case 30: gs=31;  break;  /* solid right arrow */
     case 31: gs=32;  break;  /* solid 2x3 square */
+    case 32: gs=33;  break;  /* solid 4x4 square */
+    case 33: gs=34;  break;  /* crack flow */
+    case 34: gs=35;  break;  /* bidir flow */
+    case 35: gs=36;  break;  /* orifice flow */
     default: gs=-1;  break;  /* nothing */
   }
   if(gs >= 0)esymbol_(&lx2,&ly2,&gs,&isz);

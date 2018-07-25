@@ -3359,20 +3359,24 @@ void TReportsManager::SetFlags(){
     bUseResFilenameRoot = false;
   }
 
-  // Output zone names (instead of zone_xx)?
+  // Output zone names
   if ( m_params["use_zonenames"] == "true" ){
     bUseZoneNames = true;
   }else{
-    m_params["use_zonenames"] = "false";
-    bUseZoneNames = false;
+  //  m_params["use_zonenames"] = "false";  set always to true
+  //  bUseZoneNames = false;
+    m_params["use_zonenames"] = "true";
+    bUseZoneNames = true;
   }
 
-  // Output surface names (instead of surface_xx)?
+  // Output surface names
   if ( m_params["use_surfacenames"] == "true" ){
     bUseSurfaceNames = true;
   }else{
-    m_params["use_surfacenames"] = "false";
-    bUseSurfaceNames = false;
+  //  m_params["use_surfacenames"] = "false";  set always to true
+  //  bUseSurfaceNames = false;
+    m_params["use_surfacenames"] = "true";
+    bUseSurfaceNames = true;
   }
 
   // Timestep averaging

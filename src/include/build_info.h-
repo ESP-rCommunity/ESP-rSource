@@ -1,0 +1,51 @@
+C      build_info.h
+C      
+C      This file contains versioning and build information
+C      for the ESP-r system. It is generated automatically
+C      by the Install script each time ESP-r is recompiled.
+C      Changes should be made in the Install scipt and not
+C      not in this file
+C      
+C      The following Fortran variable assignments are used
+C      by ESPrVersion() in common/Startup.F
+       
+       logical  bRelease,bVersioned,bModified
+       character cBuilder*32       ! User who compiled system
+       character cArchitecture*32  ! Machine architecture
+       character cOperSystem*32    ! Operating system
+       character cOSversion*32     ! Operating system version
+       character cHost*256         ! Host name
+       character cRelease_Num*8    ! Release version
+       character cSource*32        ! Repository version
+       character cBranch*48        ! Branch name
+       character cRevision*32      ! Revision number
+       character cState*32         ! Flag for repository state
+       character cCC*32            ! Flags for C compiler
+       character cFC*32            ! Flags for Fortran compiler
+       character cCPL*32           ! Flags for C++ compiler
+       character cXML_support*32   ! XML compile-time options
+       character cSQLite_support*32! SQLite compile-time options
+       character cXlibrary*32      ! X11 library location
+       
+       cBuilder          = "jon" 
+       cHost             = "mae-esru-jon"
+       cArchitecture     = "x86_64"
+       cOperSystem       = "Linux"
+       cOSversion        = "4.4.0-119-generic"
+       bRelease          = .FALSE.
+       cRelease_num      = ""
+       bVersioned        = .FALSE. 
+       bModified         = .TRUE.
+C      URL commented out, as it likely exceeds g77's  
+C      72 character-per-line limit.
+C      cURL              = ""
+       cSource           = ""
+       cBranch           = "" 
+       cRevision         = ""
+       cState            = ""
+       cCC               = "gcc"
+       cFC               = "gfortran"
+       cCPL              = "g++"
+       cXML_support      = "unsupported"
+       cSQLite_support   = "unsupported"
+       cXlibrary         = "X11" 

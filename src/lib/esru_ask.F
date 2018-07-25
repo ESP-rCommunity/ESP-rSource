@@ -187,6 +187,17 @@ C        write(6,*) 'the module is ',module,' request to initialise only'
         if(initonly.eq.0)then
           CALL PHELPD('cfg opening',23,'-',0,0,IER)
         endif
+      elseif(module(1:3).eq.'cdb')then
+        H(1)='Welcome to the ESP-r components mananger. '
+        H(2)=' '
+        h(3)='This is a work-in-progress utility for icon based'
+        h(4)='components databases. Components are held in domain'
+        H(5)='catebories: Plant (hvac components), Hydraulic (flow'
+        H(6)='components), Electrical (electrical components). '
+        H(7)=' '
+        if(initonly.eq.0)then
+          CALL PHELPD('cdb opening',7,'-',0,0,IER)
+        endif
       elseif(module(1:3).eq.'clm')then
         H(1)='Clm provides browsing, editing and analysis facilities'
         H(2)='for climatic data used by ESRU applications.'
@@ -251,6 +262,13 @@ C        write(6,*) 'the module is ',module,' request to initialise only'
         H(3)='to do an integrated simulation use bps.'
         if(initonly.eq.0)then
           CALL PHELPD('dfs opening',3,'-',0,0,IER)
+        endif
+      elseif(module(1:3).eq.'dfv')then
+        H(1)='The domain flow viewer can be called as the'
+        H(2)='assessment progresses to view curent performance'
+        H(3)='of CFD domains.'
+        if(initonly.eq.0)then
+          CALL PHELPD('dfv opening',3,'-',0,0,IER)
         endif
       elseif(module(1:4).eq.'ecnv')then
         h(1)='The module ecnv converts between different application'
@@ -749,6 +767,8 @@ C Get to work.
       folder(4)='UNKNOWN'
       if(app(1:3).eq.'aco')then
         folder='esruaco'
+      elseif(app(1:3).eq.'cdb')then
+        folder(1)='esrucdb'
       elseif(app(1:3).eq.'clm')then
         folder(1)='esruclm'
       elseif(app(1:3).eq.'bps')then
@@ -757,10 +777,14 @@ C Get to work.
         folder(1)='esrudbm'
       elseif(app(1:3).eq.'dfs')then
         folder(1)='esrudfs'
+      elseif(app(1:3).eq.'dfv')then
+        folder(1)='esrudfs'
       elseif(app(1:3).eq.'e2r')then
         folder(1)='esrue2r'
       elseif(app(1:3).eq.'eco')then
         folder(1)='esrueco'
+      elseif(app(1:4).eq.'ecnv')then
+        folder(1)='esrucnv'
       elseif(app(1:3).eq.'grd')then
         folder(1)='esrugrd'
       elseif(app(1:3).eq.'ish')then
@@ -844,8 +868,13 @@ C Check the header to see if this is a help text file.
 C If we are looking in the primary help file check the app name.
 C Subsequent help texts will not have a matching app line.
       if(trywhich.eq.1)then
-        if(WORD(1:lna).ne.app(1:lna))then
-          write(outs,'(2a)') 'Not a help text file for ',app(1:lna)
+        if(WORD(1:3).eq.'dfv'.and.app(1:3).eq.'dfs')then
+          continue  ! dfv uses dfs help text
+        elseif(WORD(1:3).eq.'dfs'.and.app(1:3).eq.'dfv')then
+          continue  ! dfv uses dfs help text
+        elseif(WORD(1:lna).ne.app(1:lna))then
+          write(outs,'(3a)') WORD(1:lna),
+     &      ' is not a help text file for ',app(1:lna)
           call edisp(iuout,outs)
           goto 1
         endif

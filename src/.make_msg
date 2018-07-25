@@ -1,0 +1,142 @@
+Compilation of aco on Wed, Jul 25, 2018 10:56:16 AM
+ Make command:
+ -------------
+   make MCTYPE=cygw MCC=gcc MCPL=g++ MFC=gfortran DESTdir=/usr/esru/GitNew ESPdir=/usr/esru/GitNew/ WWLINK=unshared EXE=.exe XINSTALLDIR=/usr CFLAGS=-I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -I/usr/include -I/usr/include -I/usr/include/libxml2 -I/usr/local/include/libxml2 -I/usr/include/libxslt -I/local/include/libxslt -DCYGW -DX11 -O1 -DXSL  FFLAGS=-I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1 -fno-automatic -DGCC4 LD_FLAGS=-Wl,--reduce-memory-overheads ULIBS=-L/home/Willsa/ESP-r_V13.2.1_Src/src/lib -lversion -lxesru -L/usr/lib64 -lX11 -lXML -lstdc++ -lxslt -lxml2 -lSQLite  xml_status= SQLite_status= FMIarg=disableFMI -f Makefile  aco >>.make_msg 2>&1 
+ 
+ Make output:
+ ------------
+if [ "" = "yes" ]; then \
+  cd `pwd`/eaco; make ESPBinDir= EXE=.exe install; \
+else \
+  cd `pwd`/eaco; make; \
+fi
+make[1]: Entering directory '/home/Willsa/ESP-r_V13.2.1_Src/src/eaco'
+rm -f h3kmodule.f90
+ln -s `pwd`/../cetc/h3kmodule.f90 .
+gcc -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c h3kmodule.f90
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f startup.F
+ln -s `pwd`/../common/startup.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c startup.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f aim2_module.F
+ln -s `pwd`/../ebld/aim2_module.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c aim2_module.F
+Warning: Nonexistent include directory "/usr/local/include"
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c aco.F
+Warning: Nonexistent include directory "/usr/local/include"
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c acocalc.F
+Warning: Nonexistent include directory "/usr/local/include"
+acocalc.F: In function ‘surfequicalc’:
+acocalc.F:176:0: warning: iteration 85 invokes undefined behavior [-Waggressive-loop-optimizations]
+           SurfEquP(J,I) = 0.0
+ ^
+acocalc.F:174:0: note: containing loop
+         do 11 J=1,MS
+ ^
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c acoesp.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f arrow.F
+ln -s `pwd`/../common/arrow.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c arrow.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f ascii_mat.F
+ln -s `pwd`/../common/ascii_mat.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c ascii_mat.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f c2fdum.F
+ln -s `pwd`/../common/c2fdum.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c c2fdum.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f common3dv.F
+ln -s `pwd`/../common/common3dv.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c common3dv.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f CDBPlugins.F
+ln -s `pwd`/../ecdb/CDBPlugins.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c CDBPlugins.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f CDBCommon.F
+ln -s `pwd`/../ecdb/CDBCommon.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c CDBCommon.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f CDBExplore.F
+ln -s `pwd`/../ecdb/CDBExplore.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c CDBExplore.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f cread3dv.F
+ln -s `pwd`/../common/cread3dv.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c cread3dv.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f ctlexp.F
+ln -s `pwd`/../common/ctlexp.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c ctlexp.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f ctread.F
+ln -s `pwd`/../common/ctread.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c ctread.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f dossupport.F
+ln -s `pwd`/../common/dossupport.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c dossupport.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f e3dviews.F
+ln -s `pwd`/../common/e3dviews.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c e3dviews.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f econstr.F
+ln -s `pwd`/../common/econstr.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c econstr.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f edatabase.F
+ln -s `pwd`/../common/edatabase.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c edatabase.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f edcondb.F
+ln -s `pwd`/../eprj/edcondb.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c edcondb.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f egeometry.F
+ln -s `pwd`/../common/egeometry.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c egeometry.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f emfnetw.F
+ln -s `pwd`/../common/emfnetw.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c emfnetw.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f enetmisc.F
+ln -s `pwd`/../common/enetmisc.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c enetmisc.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f eroper.F
+ln -s `pwd`/../common/eroper.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c eroper.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f esru_misc.F
+ln -s `pwd`/../common/esru_misc.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c esru_misc.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f esystem.F
+ln -s `pwd`/../common/esystem.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c esystem.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f filelist.F
+ln -s `pwd`/../common/filelist.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c filelist.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f item.F
+ln -s `pwd`/../common/item.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c item.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f mfcdat.F
+ln -s `pwd`/../emfs/mfcdat.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c mfcdat.F
+Warning: Nonexistent include directory "/usr/local/include"
+rm -f nwkrewr.F
+ln -s `pwd`/../common/nwkrewr.F .
+gfortran -I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DCYGW -DX11 -O1    -fno-automatic  -DGCC4 -c nwkrewr.F
+Warning: Nonexistent include directory "/usr/local/include"
+Makefile:21: recipe for target 'nwkrewr.o' failed
+make[1]: *** [nwkrewr.o] Interrupt
+Makefile:53: recipe for target 'aco' failed
+make: *** [aco] Interrupt

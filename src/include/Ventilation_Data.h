@@ -1,10 +1,7 @@
 C      Module Ventilation_Data
 c
 c Copyright 2001: NRCan Buildings Group
-c
-C         Implicit None
-c ---
-c
+
 c Part 1 : Central ventilation system  - HRV or Fans without heat recovery
 c
 c Central Ventilation System type
@@ -77,12 +74,7 @@ c it (else = zero)
 c        Integer iCrawl_Space_Zone  Moved to AIM2  BB Sep 27/01
 
 C      End Module Ventilation_Data
-c
-c ---
-c Edit history
-c July 9, 2001, Jul 10, 12, Aug 2, 3, 15, 16, Sep 27, Oct 25  : BB
-c
-c ( JWH remove continuation lines)
+
       COMMON/  Ventilation_Data /
      & iCVSType ,HRVTest,CoolEF ,CVSSupplyRate,CVSExhaustRate,
      & PERV5, MCP, HCF, MVAC,PreHtrCap,CVSOpTime,IntDD,RealDD,
@@ -90,8 +82,6 @@ c ( JWH remove continuation lines)
      & iCVSOpType,rCVSLowTempTrip, rCVSHighTempTrip,
      & TMAIN,SensibleEff, HRVventHLR, HRVairHLR,
      & CVSSupplyTemp,TotalPower,ExhaustFanPower, PreheaterPower,
-c --- 27-08-2014: Patrice Pinel: Changed HRV ducts for CVS ducts
-c	  & HRVSupDuctHG, HRVExhDuctHG,iOtherFans,OtherFansSupplyRate,
      & CVSSupDuctHG, CVSExhDuctHG,iOtherFans,OtherFansSupplyRate,
      & OtherFansExhaustRate,OtherFansTotalPower,ERVTest,
      & CVSZoneFrac,CVSmDotAir, bCVS_OFF,
@@ -130,9 +120,9 @@ c --- 27-08-2014: Patrice Pinel: Changed HRV ducts for CVS ducts
         Integer  OtherFansExhaustRate
         Integer  OtherFansTotalPower
 c --- Mass flow rate of air in a stream (kg/s)
-        Real  CVSmDotAir			
+        Real  CVSmDotAir
 c --- Zone volume fractions
-        Real  CVSZoneFrac(MCOM)		
+        Real  CVSZoneFrac(MCOM)
 c --- Flag to indicate when temperature control results in the CVS being OFF
         Logical bCVS_OFF
 c --- Temperature below which the ERV operates
@@ -196,7 +186,7 @@ c --- Flag indicating a pre-heater
         Logical  ERVPreHtr
 
 c These parameters are referenced from the 
-c Home Ventilating Institute (HVI) and used in the 	
+c Home Ventilating Institute (HVI) and used in the 
 c Central ventilation system model
 c-------------------------------------------------
 c      COMMON/  HVI_Data /
