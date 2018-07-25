@@ -1438,7 +1438,10 @@ if [ "$mode" = "interactive" ]; then
   fi
 fi
 cd ${SRCdir} 
-# Establish if this is a copy from svn or git.  
+#--------------------------------------------------------------
+# Get build info for versioning purposes.
+#--------------------------------------------------------------
+echo -n "    - gathering version information ("
 NotAnSvnWorkingCopy=`svn info 2>&1 | grep "is not a working copy"`
 NotAGitRepo=`git status 2>&1 | grep "fatal: Not a git repository"`
  
@@ -1456,7 +1459,7 @@ else
   fi 
 fi    
  
-#echo -n "${VersioningScheme}) ..."
+echo "${VersioningScheme}) ..."
  
 # Ensure that build information is always recompiled into
 # every binary - touch common file version.F.
@@ -1473,15 +1476,34 @@ host=`uname -n`
 
 # Copy version information to Version text file.
 release=`cat ${HOMEdir}/Version | grep "ESP-r Release " | sed "s/ESP-r Release //g"`
-echo " "
-echo " Installing components of ESP-r version ${release}"
-echo " to ${DESTdir} from source in ${SRCdir}."
+#echo " "
+#echo " Installing components of ESP-r version ${release}"
+#echo " to ${DESTdir} from source in ${SRCdir}."
 if [ "${VersioningScheme}" == "svn" ]; then 
     versioned_repository="yes"
-    revision_number=`svn info 2>&1 | grep "Revision:"` 
+    revision_number=`svn info 2>&1 | grep "Revision:"`
+    echo "Revision: ${revision_number}" 
 fi
 if [ "${VersioningScheme}" == "git" ]; then
     versioned_repository="yes"
+          state=localMods
+      revision_number=`git log --pretty=format:'%h' -n 1`
+      branch_name=`git rev-parse --abbrev-ref HEAD`
+      URL=`git config --get remote.origin.url`
+      source=$(echo $URL| cut -d'/' -f 4)
+# Make sure there are no local commits      
+      NotUpToDate=`git status 2>&1 | grep "Your branch is up-to-date with"`
+      
+      if [ "${NotUpToDate}" != "" ]; then 
+# No local commits, check for local modifications
+         NoLocalMods=`git status 2>&1 | grep "modified:"`
+            if [ "${NoLocalMods}" == "" ]; then
+               state=Vanilla
+            fi
+      fi
+      echo "        - Remote: ${URL}"
+      echo "        - Branch: ${branch_name}"
+      echo "        - SHA1: ${revision_number}"
 fi 
 
 # Write build information to header file.

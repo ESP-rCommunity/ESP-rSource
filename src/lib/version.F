@@ -170,21 +170,30 @@ C Source code version: ' - Source: BRANCH @ rXYZ (modified state)'.
         call edisp(iuout," ")       
         call edisp(iuout,"Build information:")
         if ( bVersioned ) then 
-C          write (cTemp_a,'(5A)') 
-C     &      "  SVN source -       ",
-C     &      cBranch(1:lnblnk(cBranch)), 
-C     &      "@r",
-C     &      cRevision(1:lnblnk(cRevision))
-C          if ( bModified ) then
-C            write (cTemp_a,'(2A)') cTemp_a(1:lnblnk(cTemp_a)),
-C     &        " (locally modified)"
-C          else 
-C            write (cTemp_a,'(2A)') cTemp_a(1:lnblnk(cTemp_a)),
-C     &        " (unmodified)"
-C          endif
-C        else
-C           write (cTemp_a,'(A)') 
-C     &       "  SVN source -       UNKNOWN"
+          write (cTemp_a,'(4A)') 
+     &      "  git origin -       ",
+     &      cSource(1:lnblnk(cSource))
+          call edisp(iuout,cTemp_a)
+
+          write (cTemp_a,'(5A)') 
+     &      "  git branch -       ",
+     &      cBranch(1:lnblnk(cBranch)), 
+     &      ", SHA1: ",
+     &      cRevision(1:lnblnk(cRevision))
+  
+          if ( bModified ) then
+            write (cTemp_a,'(2A)') cTemp_a(1:lnblnk(cTemp_a)),
+     &        " (locally modified)"
+          else 
+            write (cTemp_a,'(2A)') cTemp_a(1:lnblnk(cTemp_a)),
+     &        " (unmodified)"
+          endif
+          call edisp(iuout,cTemp_a)   
+        
+        else
+           write (cTemp_a,'(A)') 
+     &       "      source -       UNKNOWN"
+           call edisp(iuout,cTemp_a)   
         endif 
 C        call edisp(iuout,cTemp_a)      
 
