@@ -499,7 +499,7 @@ C In case of connection type 3, IPOFS2 holds the column index
 
 C If mfs active, negate ipofs2 so that coefficient
 C will be moved to the matrix right-hand-side by MZPMSU.
-            if(iflwn.ne.0) then
+            if(iflwn.ne.0.and.ICFFS(IPCON).ne.0) then
                INN=NPCDAT(IP1,9)+IPN1(IPCON)-1
                knh=KNHIT(INN)+1
                ipofs2(nxt,2)=-knh
@@ -516,7 +516,7 @@ C connection in case of ISTATS=2 (1st phase mass) and mfs not active
             IPOFS2(NXT,1)=-KNH
             IPOFS2(NXT,3)=-KNH
             IPOFS2(NXT,4)=-KNH
-            IF(IFLWN.EQ.0) THEN
+            IF(IFLWN.EQ.0.or.ICFFS(IPCON).eq.0) THEN
                IP2=IPC2(IPCON)
                ICOL=NPCDAT(IP2,9)+IPN2(IPCON)-1
                IPOFS2(NXT,2)=ICOL
@@ -585,7 +585,7 @@ C New connector types go here!
 C In case fluid flow network solver active, check
 C connection mapping regarding type of fluid (ie. water to water etc).
 C IMFCTP is fluid through corresponding mfs connection (1=air, 2=water)
-         IF(IFLWN.EQ.1) THEN
+         IF(IFLWN.EQ.1.AND.ICFFS(IPCON).NE.0) THEN
             IMFCTP=int(SUPCMP(ITPCON(ICFFS(IPCON)),1))
             IF((IMFCTP.EQ.1.AND.
      &          ICONTP(IPCON).NE.11.AND.ICONTP(IPCON).NE.21).OR.
@@ -692,39 +692,44 @@ C for new non-zero coefficients.
       ntcoe=nmax
 
 C Note that PCONDR is set to 1 in case fluid mass flow solver active
-      IF(NPCON.GT.0.AND.IFLWN.EQ.0) THEN
+      IF(NPCON.GT.0) THEN
          DO 92 IPCON=1,NPCON
-         IF(IPCT(IPCON).NE.3) GOTO 92
-         K=NPCDAT(IPC2(IPCON),9)+IPN2(IPCON)-1
-         ZDR(K)=ZDR(K)+PCONDR(IPCON)
+           IF(IFLWN.EQ.0.OR.ICFFS(IPCON).EQ.0) THEN
+             IF(IPCT(IPCON).NE.3) GOTO 92
+             K=NPCDAT(IPC2(IPCON),9)+IPN2(IPCON)-1
+             ZDR(K)=ZDR(K)+PCONDR(IPCON)
+           ENDIF
    92    CONTINUE
 
          DO 94 IPNOD=1,NPNOD
-         IPCMP=IDENC(IPNOD)
-         ICNOD=IDENN(IPNOD)
-         IF(NDCON(IPCMP,ICNOD).EQ.0) GOTO 94
-         IF(ZDR(IPNOD).LT.0.OR.ZDR(IPNOD).GT.1.) THEN
-            write(outs,904) ipcmp,icnod
-            call edisp(iuout,outs)
-  904       format(' MZPMXT error: component ',i5,' node ',i5)
-            write(outs,905) zdr(ipnod)
-            call edisp(iuout,outs)
-  905       format(' exit mass diversion ratio erroneous : ',f10.5)
-            GOTO 999
-         ELSE IF(ZDR(IPNOD).GT.0..AND.(ZDR(IPNOD)-1.).gT.1.e-4) THEN
-            write(outs,906) ipcmp,icnod
-            call edisp(iuout,outs)
-  906       format(' MZPMXT warning: component ',i5,' node ',i5)
-            write(outs,907) zdr(ipnod)
-            call edisp(iuout,outs)
-  907       format(' exit mass diversion ratios do not summate',
+           IF(IFLWN.EQ.0.OR.ICFFS(IPCON).EQ.0) THEN
+           IPCMP=IDENC(IPNOD)
+           ICNOD=IDENN(IPNOD)
+           IF(NDCON(IPCMP,ICNOD).EQ.0) GOTO 94
+           IF(ZDR(IPNOD).LT.0.OR.ZDR(IPNOD).GT.1.) THEN
+             write(outs,904) ipcmp,icnod
+             call edisp(iuout,outs)
+  904        format(' MZPMXT error: component ',i5,' node ',i5)
+             write(outs,905) zdr(ipnod)
+             call edisp(iuout,outs)
+  905        format(' exit mass diversion ratio erroneous : ',f10.5)
+             GOTO 999
+           ELSE IF(ZDR(IPNOD).GT.0..AND.(ZDR(IPNOD)-1.).gT.1.e-4) THEN
+             write(outs,906) ipcmp,icnod
+             call edisp(iuout,outs)
+  906        format(' MZPMXT warning: component ',i5,' node ',i5)
+             write(outs,907) zdr(ipnod)
+             call edisp(iuout,outs)
+  907        format(' exit mass diversion ratios do not summate',
      &                     ' to unity, but ',f15.10)
-         ELSE IF(ZDR(IPNOD).LT.SMALL.AND.ICNOD.NE.1) THEN
-            write(outs,908) ipcmp,icnod
-            call edisp(iuout,outs)
-  908       format(' MZPMXT warning: component ',i5,' node ',i5)
-            call edisp(iuout,' is a connector with no exit connection')
-         END IF
+           ELSE IF(ZDR(IPNOD).LT.SMALL.AND.ICNOD.NE.1) THEN
+             write(outs,908) ipcmp,icnod
+             call edisp(iuout,outs)
+  908        format(' MZPMXT warning: component ',i5,' node ',i5)
+             call edisp(iuout,' is a connector 
+     &             with no exit connection')
+           END IF
+           END IF
    94    CONTINUE
       END IF
 
@@ -918,23 +923,25 @@ C Reset mass diversion ratios to 1 for istats=1 or 2
 C if mfs is active.
             if((istats.eq.1.or.istats.eq.2).and.iflwn.eq.1) then
               do icon=1,npcon
-                pcondr(icon)=1.0
+                if(icffs(icon).ne.0) pcondr(icon)=1.0
               end do
 
 C For istats=3 and if mfs active, calculate mass
 C diversion ratios for connection type 3 only.
             elseif(istats.eq.3.and.iflwn.eq.1) then
               do icon=1,npcon
-                ict=ipct(icon)
-                inod=npcdat(ipc2(icon),9)+ipn2(icon)-1
-                if(ict.eq.3) then
-                  if(csvf(inod,2).ne.0.0) then
-                    pcondr(icon)=convar(icon,2)/csvf(inod,2)
-                  else
-                    pcondr(icon)=0.0
+                if(icffs(icon).ne.0) then
+                  ict=ipct(icon)
+                  inod=npcdat(ipc2(icon),9)+ipn2(icon)-1
+                  if(ict.eq.3) then
+                    if(csvf(inod,2).ne.0.0) then
+                      pcondr(icon)=convar(icon,2)/csvf(inod,2)
+                    else
+                      pcondr(icon)=0.0
+                    endif
                   endif
+                  if(pcondr(icon).gt.1.0) pcondr(icon)=1.0
                 endif
-                if(pcondr(icon).gt.1.0) pcondr(icon)=1.0
               end do
             endif
 

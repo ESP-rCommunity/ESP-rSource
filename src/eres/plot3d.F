@@ -59,7 +59,7 @@ C user-specified variable.
       CHARACTER*23 ITEM(28)
       CHARACTER*10 ITITLX,ITITLY,ITITLZ
       CHARACTER*40 ITITLE
-      DIMENSION DATA(10),CQ(MTS)
+      DIMENSION DATA(24),CQ(MTS)
       CHARACTER LNAME*72,outs*124,etxt*10
       logical zlist
       real QCASR,QCASC,QCASL  ! total radiant/convective/latent
@@ -118,9 +118,7 @@ C Set chosen result set.
       ITEM(28)='- exit                '
 
       IUNIT=IFIL+6
-      XR=45.
-      ZR=45.
-      YS=0.
+      XR=45.0; ZR=45.0; YS=0.0
       II=NZNO(1)
 
    61 NITMS=28
@@ -360,55 +358,60 @@ C Set scale.
       endif
       goto 61
 
-C Assign user-defined display file and write display information
-C to file.
- 2    CALL FPRAND(IUNIT,ISTAT,12,3,LNAME)
+C Assign E9S7P3 display file and write display information.
+C Open it with 26 words wide
+ 2    CALL FPRAND(IUNIT,ISTAT,26,3,LNAME)
       IF(ISTAT.GE.0)goto 5
       goto 61
     5 IREC=1
 
-C Make up title of plot with the menu text selected.
+C Make up 40 char title of plot with the menu text selected.
+C Follow with 3x10 char axis titles.
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)ITITLE
       IREC=IREC+1
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)ITITLX,ITITLY,ITITLZ
       IREC=IREC+1
-      NXPNTS=24*NTS
-      if(NXPNTS.gt.100)then
+      NXPNTS=24*NTS   ! number of time step axis points
+      if(NXPNTS.ge.360)then
         call edisp(iuout,
-     &    'More than 100 data for X axis (timestep less than 15min)')
+     &    'More than 360 data for X axis (timestep less than 4 min)')
         INO=-1
         goto 3
       endif
-      NZPNTS=IODF-IODS+1
+      NZPNTS=IODF-IODS+1  ! number of day axis points
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NXPNTS,NZPNTS
       IREC=IREC+1
+
+C Write NXPNTS ten at a time into the file.
       IC=0
-      DO 10 I=1,NXPNTS
+      DO 10 I=1,NXPNTS  ! for each of the time step points
         IC=IC+1
         DATA(IC)=I
-        IF(IC.EQ.10)goto 7
+        IF(IC.EQ.24)goto 7 ! write 24 data items
         goto 10
-    7   WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(DATA(J),J=1,10)
-        IREC=IREC+1
+    7   WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(DATA(J),J=1,24)
+        IREC=IREC+1        ! incement record and reset IC
         IC=0
    10 CONTINUE
-      IREM=MOD(NXPNTS,10)
-      IF(IREM.GT.0)goto 8
+      IREM=MOD(NXPNTS,24)
+      IF(IREM.GT.0)goto 8  ! write remainder of points
       goto 9
     8 WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(DATA(J),J=1,IREM)
+
+C For each day write out in chunks of ten.
       IREC=IREC+1
     9 IC=0
       DO 20 I=IODS,IODF
         IC=IC+1
-        DATA(IC)=I
-        IF(IC.EQ.10)goto 11
+        DATA(IC)=I  ! the julian days are written out
+        IF(IC.EQ.24)goto 11
         goto 20
-   11   WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(DATA(J),J=1,10)
+   11   WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(DATA(J),J=1,24)
         IREC=IREC+1
         IC=0
    20 CONTINUE
-      IREM=MOD(NZPNTS,10)
-      IF(IREM.GT.0)goto 12
+      IREM=MOD(NZPNTS,24)
+      IF(IREM.GT.0)goto 12  ! write remainder
       goto 13
    12 WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(DATA(J),J=1,IREM)
       IREC=IREC+1
@@ -567,17 +570,17 @@ C ********
 C Stepping at defined output interval.
         IC=0
         N=24*NTS
-        DO 40 J=1,N
-        IC=IC+1
-        DATA(IC)=VAL1(1,J)
-        IF(IC.EQ.10)goto 58
-        goto 40
-   58   WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(DATA(K),K=1,10)
-        IC=0
-        IREC=IREC+1
+        DO 40 J=1,N  ! for each timestep in the day.
+          IC=IC+1
+          DATA(IC)=VAL1(1,J)
+          IF(IC.EQ.24)goto 58  ! write 24 of performance data
+          goto 40
+   58     WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(DATA(K),K=1,24)
+          IC=0
+          IREC=IREC+1
    40   CONTINUE
-        IREM=MOD(N,10)
-        IF(IREM.GT.0)goto 59
+        IREM=MOD(N,24)
+        IF(IREM.GT.0)goto 59  ! write remainder of performance data.
         goto 30
    59     WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(DATA(K),K=1,IREM)
       IREC=IREC+1
@@ -593,8 +596,10 @@ C Terminate the temporary file with one record beyond standard data.
       call usrmsg('  ','  ','-')
       CALL EPWAIT
 
-C Invoke drawing routines.
-      CALL SURF3(IUNIT,XR,ZR,YS,1.,xxmin,xxmax,zlist)
+C Invoke drawing routines passing the file unit for the data just
+C collecte, the X and Y rotations, X & Y scale factors, data max
+C an min.
+      CALL SURF3(IUNIT,XR,ZR,YS,1.,xxmin,xxmax,zlist,ier)
       CALL EPWAIT
       CALL EFDELET(IUNIT,ISTAT)    
       call usrmsg(' ',' ','-')
@@ -612,7 +617,7 @@ C ******************** SURF3 ********************
 
 C Plot a 3D surface representation of 2D arrays of time
 C series data ie. timesteps-vs-day-vs-data. 
-      SUBROUTINE SURF3(LU1,ROTNXX,ROTNYY,YS,ZS,xxmin,xxmax,zlist)
+      SUBROUTINE SURF3(LU1,ROTNXX,ROTNYY,YS,ZS,xxmin,xxmax,zlist,ier)
 #include "building.h"
 #include "geometry.h"
 
@@ -622,7 +627,9 @@ C Parameters passed
       real YS,ZS         ! scale factor for X and Y
       real xxmin,xxmax   ! data range minimum and maximum
       logical zlist      ! if true indicate zone name
+      integer ier        ! return -1 if overly complex.
 
+      COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
@@ -631,21 +638,32 @@ C Parameters passed
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/ZONPIK/NZ,NZNO(MCOM)
 
-C << Question about sizing of arrays. 3D plot crashes if there are many
-C << points (e.g. the period exceeds some number of timesteps). Perhaps
-C << the 100 below needs to be bigger? 
+C 3D plot crashes if there are many points (e.g. the period exceeds
+C some number of timesteps). Perhaps the 360 below needs to be bigger? 
+C The middle set of parameters is ok for 7-8 months of data, the
+C bottom set if mostly doing shorter periods 1-5 months.
       REAL MARGIN
-      PARAMETER ( MARGIN=75.0,BMARGN=55.0,IRANDR=1,
-     &            NPR=10,IRSTART=3,ARRLEN=25.0,ARRWID=12.0 )
+C      PARAMETER ( MARGIN=75.0,BMARGN=55.0,IRANDR=1,
+C     &            NPR=24,IRSTART=3,ARRLEN=25.0,ARRWID=12.0 )
+      PARAMETER ( MARGIN=70.0,BMARGN=35.0,IRANDR=1,
+     &            NPR=24,IRSTART=3,ARRLEN=25.0,ARRWID=12.0 )
+C      PARAMETER ( MARGIN=60.0,BMARGN=25.0,IRANDR=1,
+C     &            NPR=24,IRSTART=3,ARRLEN=25.0,ARRWID=12.0 )
+C      PARAMETER ( MARGIN=50.0,BMARGN=25.0,IRANDR=1,
+C     &            NPR=24,IRSTART=3,ARRLEN=25.0,ARRWID=12.0 )
+
+C MASK is 1000 pairs (MHIGH & MLOW). YDATA set to 8000 to
+C support ~330 days in the graph.
       INTEGER MASK(2000),IVER(12),IAXIS(3),IPOS(3)
-      REAL XDATA(100),YDATA(100),ZDATA(100),VERTEX(16),
-     1     YDATA1(1000),XLT(2),YLT(2),XYZARW(6,3),COEFF(5)
+      REAL XDATA(360),YDATA(360),ZDATA(360),VERTEX(16),
+     1     YDATA1(8000),XLT(2),YLT(2),XYZARW(6,3),COEFF(5)
 
       CHARACTER LNAME*72,ETEXT*72,PDESCR*60,SDESCR*44
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER*40 TITLE,NAME
       CHARACTER*10 AXIS(3),ANAME,ANAME1
       character detail*72
+      character outs*124
       logical close
       real z1,x1  ! to avoid conflicts with G1 common
 
@@ -669,6 +687,7 @@ C and the simulation and output timesteps. Use opengdisp to get
 C pixel references for calls to viewtext.
       CALL HDDATE(PDESCR)
       CALL HDSTEP(SDESCR)
+      ier=0
 
       IF(MMOD.EQ.8)THEN
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
@@ -679,7 +698,8 @@ C pixel references for calls to viewtext.
         endif
 
 C Setup and pass in parameters to win3d.
-        iiw1=9; iiw2=16; iiw3=7; iiw4=2; iimenu=menuchw
+C        iiw1=9; iiw2=16; iiw3=7; iiw4=2; iimenu=menuchw
+        iiw1=7; iiw2=16; iiw3=7; iiw4=2; iimenu=menuchw
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
@@ -691,10 +711,10 @@ C Setup and pass in parameters to win3d.
         call usrmsg(' ',' ','-')
       ENDIF
 
+C Generate strings for the library, the period and then the
+C focus zone and data range.
       WRITE(ETEXT,'(1X,A44,A,A20)')SDESCR,' Lib:',RFILE(1:20)
-      iside=1
-      isize=0
-      ifont=1
+      iside=1; isize=0; ifont=1
       call viewtext(etext,iside,isize,ifont)
 
       WRITE(ETEXT,'(1x,A60)')PDESCR
@@ -719,15 +739,15 @@ C Scaling happens here...
      &  Xadd,Yadd)
       call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
 
+C Read the E9S7P3 display file on LU1 and extract the context.
       READ(LU1,REC=1) TITLE
       READ(LU1,REC=2) (AXIS(I),I=1,3)
       READ(LU1,REC=3) NXPNTS,NZPNTS
 
       NAME=TITLE(1:40)
-      iside=6
-      isize=1
-      ifont=2
+      iside=6; isize=1; ifont=2
       call viewtext(name,iside,isize,ifont)
+      call forceflush()
 
 C Make sure all rotations are positive.
       ROTNX=ABS(ROTNXX)
@@ -753,10 +773,13 @@ C Use logical unit LU2 for MASK.DAT.
       LU2=LU1+1
       CALL FPOPEN(LU2,ISTAT,3,3,LNAME)
 
-C First figure. Generate data running parallel to X-axis.
+C First figure. Generate data running parallel to X-axis (time-steps).
       IREC=IRSTART+1
 
-      CALL RWRAND(LU1,IRANDR,NPR,1,IREC,NXPNTS,XDATA)
+C From file in LU1 in read mode assuming 24 points per record
+C and 1 step per record beginning at record irec for each timestep
+C of the day into the array XDATA. 
+      CALL RWRAND(LU1,IRANDR,NPR,360,1,IREC,NXPNTS,XDATA)
 
 C Store X 3D coordinates for axis arrow heads.
       XYZARW(1,1)=XDATA(NXPNTS)
@@ -765,7 +788,11 @@ C Store X 3D coordinates for axis arrow heads.
       XYZARW(5,1)=XDATA(1)
       XYZARW(6,1)=XDATA(1)
 
-      CALL RWRAND(LU1,IRANDR,NPR,1,IREC,NZPNTS,ZDATA)
+
+C From file in LU1 in read mode assuming 24 points per record
+C and 1 step per record beginning at record irec for each day
+C the julian day of the year into the array ZDATA. 
+      CALL RWRAND(LU1,IRANDR,NPR,360,1,IREC,NZPNTS,ZDATA)
 
 C Store Z 3D coordinates for axis arrow heads.
       XYZARW(1,3)=ZDATA(1)
@@ -783,7 +810,7 @@ C Set index to previous element.
       NLEFT=NZPNTS-NZ*NPR
       IF(NLEFT.NE.0) NZ=NZ+1
 
-      IREC1=IRSTART+NX+NZ+1
+      IREC1=IRSTART+NX+NZ+1  ! where the performance data starts
 
 C If YS=0.0 then setup a reasonable scale.
       call eclose(YS,0.0,0.001,close)
@@ -791,9 +818,17 @@ C If YS=0.0 then setup a reasonable scale.
 
       YMAX=0.0
 
-      DO 58 ILINE=1,NZPNTS
+      DO 58 ILINE=1,NZPNTS   ! for each day
         IREC=(ILINE-1)*NX+IREC1
-        CALL RWRAND(LU1,IRANDR,NPR,1,IREC,NXPNTS,YDATA)
+
+C From file in LU1 in read mode assuming 24 points per record
+C and 1 step per record beginning at record irec for each timestep
+C of the day get the requested performance data into the array YDATA. 
+        if(NXPNTS.gt.330)then
+          write(6,'(a,3i5)') '@ line 815 NXPNTS',
+     &      irec,nzpnts,nxpnts
+        endif 
+        CALL RWRAND(LU1,IRANDR,NPR,360,1,IREC,NXPNTS,YDATA)
 
         DO 57 IPOINT=1,NXPNTS
           AYDATA=ABS(YDATA(IPOINT))
@@ -801,10 +836,12 @@ C If YS=0.0 then setup a reasonable scale.
 57      CONTINUE
 58    CONTINUE
 
+C Hour at end of day / day at end of period
       ZSCALE=ABS(XDATA(NXPNTS)/ZDATA(NZPNTS))
       IF(ZSCALE.GT.4.0) ZSCALE=4.0
       IF(ZSCALE.LT.0.25) ZSCALE=0.25
 
+C Hour at end of day / maximum of performance data
       YSCALE=ABS(XDATA(NXPNTS)/YMAX)
       IF(YSCALE.GT.4.0) YSCALE=4.0
       IF(YSCALE.LT.0.25) YSCALE=0.25
@@ -817,6 +854,7 @@ C Display rotation parameters & yscale and zscale.
       isize=0
       ifont=1
       call viewtext(detail,iside,isize,ifont)
+      call forceflush()
 
 C Set up the plotting direction to produce the proper mask.
 C Set vertices to be plotted by the frame routine into the
@@ -836,9 +874,11 @@ C Secondly, rotate, scale, mask and plot.
         IALT=1
         DO 70 ILINE = IZFRON,IZBACK,IZSTEP
           IREC=(ILINE-1)*NX+IREC1
-          CALL RWRAND(LU1,IRANDR,NPR,1,IREC,NXPNTS,YDATA)
 
-          IF(ILINE.NE.1) GOTO 60
+C Get performance data for all timesteps of day into YDATA.
+          CALL RWRAND(LU1,IRANDR,NPR,360,1,IREC,NXPNTS,YDATA)
+
+          IF(ILINE.NE.1) GOTO 60  ! jump if not the initial edge.
 
 C Store 3D coordinates for axis arrow heads.
           XYZARW(1,2)=0.0
@@ -847,11 +887,12 @@ C Store 3D coordinates for axis arrow heads.
           XYZARW(5,2)=0.0
           XYZARW(6,2)=0.0
 
-60        Z1=ZDATA(ILINE)
+60        Z1=ZDATA(ILINE)  ! first day index
 
 C Plot each line on the second pass only.
-C Note: Z1 in PLOT3e should be an array of 100 elements but does not
-C work if done that way.
+C Note: Z1 in PLOT3e should be an array of 360 elements but does not
+C work if done that way. Here XDATA is the timesteps of the day and
+C YDATA is the performance values for each timestep.
           CALL PLOT3E(1110,XDATA,YDATA,Z1,XSCALE,YSCALE,ZSCALE,
      1                IPASS,XMAX,XMIN,YMAX,YMIN,SCALE,II,JVXYZ,INCI,
      2                ILINE,IFIRST,NXPNTS,COEFF,MASK,VERTEX,
@@ -885,11 +926,13 @@ C Scale arrow heads.
         XYZARW(6,3)=XYZARW(5,3)-ARRL/ZSCALE
 75    CONTINUE
 
+C Over the 2000 array write pairs.
 78    DO 79 K=1,1999,2
         WRITE(LU2,*) MASK(K),MASK(K+1)
 79    CONTINUE
 
-C Second figure - data running parallel to Z axis.
+C Second figure - data running parallel to Z axis. The
+C NPNTS is number of day axis points * 24 values per record.
       NPNTS=NZPNTS*NPR
 
       IFIRST=1
@@ -899,8 +942,19 @@ C Second figure - data running parallel to Z axis.
 
       DO 90 IX=IXFRON,IXBACK,IXSTEP
         IREC=IX-1+IREC1
-
-        CALL RWRAND(LU1,IRANDR,NPR,NX,IREC,NPNTS,YDATA1)
+        if(NPNTS.gt.7000)then
+          write(6,'(a,5i5)') '@ line 929',NPNTS,
+     &      irec,npr,nzpnts,nxpnts
+        endif 
+        if(NPNTS.ge.8000)then
+          write(outs,'(a,i5,a,i4,a,i4)') 
+     &      'Extent of data is too big. Please shorten period.',
+     &       NPNTS,' days',nzpnts,' timesteps',nxpnts
+          call edisp(iuout,outs)
+          ier=-1
+          return
+        endif
+        CALL RWRAND(LU1,IRANDR,NPR,8000,NX,IREC,NPNTS,YDATA1)
 
         IX1=(IX-1)*NPR+1
         IX2=IX*NPR
@@ -920,6 +974,10 @@ C Second figure - data running parallel to Z axis.
 83        CONTINUE
 
 C Call to plot3e, X1 below should be an array.
+C          if(iline.gt.340)then
+C            write(6,'(a,9i5)') '@ line 950 iline',iline,
+C     &        irec,npr,ix1,ix2,ix3,il,nzpnts,nxpnts
+C          endif 
           X1=XDATA(ILINE)
 
 C Plot each line.
@@ -938,6 +996,7 @@ C     3         XLT,YLT,IALT,XLAST,YLAST)
 90    CONTINUE
 
 C Create complete mask before drawing the frame.
+C Rewind the mask file and then read pairs of MHIGH MLOW
       REWIND LU2
 
       DO 100 K=1,1999,2
@@ -979,18 +1038,20 @@ C Draw arrow on axis.
 C ******************** RWRAND ********************
 
 C Read and write binary random access file for drawing data.
-      SUBROUTINE RWRAND(LU,IRW,NPR,ISTEP,IREC,NPNTS,ARRAY)
+C ARRAY size passed in NA.
+      SUBROUTINE RWRAND(LU,IRW,NPR,NA,ISTEP,IREC,NPNTS,ARRAY)
 
 C Parameters:-
 C  LU     = logical unit no.
 C  IRW    = 1 for read and 2 for write
 C  NPR    = no. of points per record
+C  NA     = size of the passed array
 C  ISTEP  = step between each record
 C  IREC   = record no. to be accessed first
 C  NPNTS  = no. of points or elements to be transferred
-C  ARRAY  = real array to hold transferred data
+C  ARRAY  = real array to hold transferred data size NA.
 
-      DIMENSION ARRAY(1)
+      DIMENSION ARRAY(NA)
 
       NACCES=NPNTS/NPR
       NLEFT=NPNTS-NACCES*NPR
@@ -1056,8 +1117,8 @@ C Draw the frame (context of the surface plot).
       PARAMETER ( DRAW=1,MOVE=0,NOMARK=0 )
       REAL COEFF(5),XLT(2),YLT(2)
 
-      DIMENSION  VERTEX(16),MASK(2000),ARRAY(100),IVER(12)
-      dimension  zdat(100)
+      DIMENSION  VERTEX(16),MASK(2000),ARRAY(360),IVER(12)
+      dimension  zdat(360)
 #ifdef OSI
       integer iupdown,isym    ! passed to etplot
 #else
@@ -1068,7 +1129,7 @@ C Draw the frame (context of the surface plot).
         ARRAY(I)=VERTEX(2*IVER(I)-1)
         ARRAY(I+5)=VERTEX(2*IVER(I))
 2     CONTINUE
-      do 3 I=1,100
+      do 3 I=1,360
         zdat(I)=0.0
 3     continue
 
@@ -1101,6 +1162,7 @@ C     2          -1,0,5,COEFF,MASK,VERTEX,XLT,YLT,IALT,XLAST,YLAST)
         IY=2*IVER(J)
         IX=IY-1
         call etplot(VERTEX(IX),VERTEX(IY),iupdown,isym)
+        call forceflush()
    10 CONTINUE
 
       IY=2*IVER(11)
@@ -1112,6 +1174,7 @@ C     2          -1,0,5,COEFF,MASK,VERTEX,XLT,YLT,IALT,XLAST,YLAST)
       IX=IY-1
       iupdown=DRAW
       call etplot(VERTEX(IX),VERTEX(IY),iupdown,isym)
+      call forceflush()
 
       RETURN
       END
@@ -1213,13 +1276,14 @@ C ******************** PLOT3E ********************
 
       REAL XLT(2),YLT(2),COEFF(5)
       logical close
-      DIMENSION  XDATA(100),YDATA(100),ZDATA(100),MASK(2000),VERTEX(16)
+      DIMENSION  XDATA(360),YDATA(360),ZDATA(360),MASK(2000),VERTEX(16)
 #ifdef OSI
       integer iupdown,isym    ! passed to etplot
 #else
       integer*8 iupdown,isym    ! passed to etplot
 #endif
 
+C If 17th parameter was -1 do not clear the mask array. 
       IF(NLINE.EQ.-1) GOTO 15
       IF (NLINE .NE. IFIRST)  GOTO  20
       LIMITX =1000
@@ -1233,10 +1297,7 @@ C ******************** PLOT3E ********************
       II = 0
    20 IF (JVXYZ .EQ. IVXYZ)  GOTO  80
       JVXYZ = IVXYZ
-      INDX = 1
-      INDY = 1
-      INDZ = 1
-      INDV = 1
+      INDX = 1; INDY = 1; INDZ = 1; INDV = 1
       IF (JVXYZ .LT. 1000)  GOTO  30
       INDV = 2
       JVXYZ = JVXYZ -1000
@@ -1279,10 +1340,7 @@ C Need to test limits for the XDATA and YDATA array.
 
         IF(NLINE.NE.IFIRST) GOTO 172
         IF(K.GT.1) GOTO 172
-        XMAX=XX
-        XMIN=XX
-        YMAX=YY
-        YMIN=YY
+        XMAX=XX; XMIN=XX; YMAX=YY; YMIN=YY
         GOTO 245
 
 172     CALL MAXMIN(XX,YY,XMAX,XMIN,YMAX,YMIN)
@@ -1396,82 +1454,84 @@ C Move back to first point on the line and store that point.
 
 270     DO 525 K1=1,NINC
 
-        XJ=XJ+XINC
-        JX=int(XJ+HALFX)
-        YJ=YJ+YINC
-        JY=int(YJ+HALFY)
+          XJ=XJ+XINC
+          JX=int(XJ+HALFX)
+          YJ=YJ+YINC
+          JY=int(YJ+HALFY)
 
-        LOW = JX+JX
-        HIGH = LOW -1
-        MLOW = MASK(LOW)
-        MHIGH = MASK(HIGH)
+          LOW = JX+JX
+          HIGH = LOW -1
+          MLOW = MASK(LOW)
+          MHIGH = MASK(HIGH)
 
-        IF(MHIGH.LT.0) GOTO 290
+          IF(MHIGH.LT.0) GOTO 290
 
 C Mask exists.
-        IF(MHIGH.LT.JY) GOTO 280
-        IF(MLOW.LE.JY) GOTO 400
+          IF(MHIGH.LT.JY) GOTO 280
+          IF(MLOW.LE.JY) GOTO 400
 
 C New mask - low.
-        MASK(LOW)=JY
-        LOC=0
-        GOTO 300
+          MASK(LOW)=JY
+          LOC=0
+          GOTO 300
 
 C New mask - high.
-280     MASK(HIGH)=JY
-        LOC=1
-        GOTO 300
+280       MASK(HIGH)=JY
+          LOC=1
+          GOTO 300
 
 C No mask exists at this point.
-290     MASK(HIGH)=JY
-        MASK(LOW)=JY
+290       MASK(HIGH)=JY
+          MASK(LOW)=JY
 
 C Check to see if just emerged from mask.
-300     ML=MLOW
-        MH=MHIGH
-        if(LASTPT.EQ.-2)then
-          iupdown=MOVE
-          isym=NOMARK
-          call etplot(XLAST,YLAST,iupdown,isym)
-        endif
-        LASTPT=0
+300       ML=MLOW
+          MH=MHIGH
+          if(LASTPT.EQ.-2)then
+            iupdown=MOVE
+            isym=NOMARK
+            call etplot(XLAST,YLAST,iupdown,isym)
+          endif
+          LASTPT=0
 
 C Outside of the mask.
-        GOTO 520
+          GOTO 520
 
 C Inside the mask, but check in case point has disappeared.
-400     IF(LASTPT.EQ.-2) GOTO 520
-        X=JX
-        call eclose(xlast,x,0.001,close)
-        IF(.NOT.close) GOTO 450
+400       IF(LASTPT.EQ.-2) GOTO 520
+          X=JX
+          call eclose(xlast,x,0.001,close)
+          IF(.NOT.close) GOTO 450
 
 C Masking has just occurred by drawing vertically towards the mask.
-        IF(LOC.NE.1) GOTO 430
+          IF(LOC.NE.1) GOTO 430
 
 C Between new HIGH mask and old HIGH mask.
-        IF(MH.EQ.JY) GOTO 450
-        GOTO 520
+          IF(MH.EQ.JY) GOTO 450
+          GOTO 520
 
 C Between new LOW mask and old LOW mask.
-430     IF(ML.GT.JY) GOTO 520
+430       IF(ML.GT.JY) GOTO 520
 
 C Just entered the mask.
-450     Y=JY
-        iupdown=DRAW
-        isym=NOMARK
-        call etplot(X,Y,iupdown,isym)
-        LASTPT=-2
+450       Y=JY
+          iupdown=DRAW
+          isym=NOMARK
+          call etplot(X,Y,iupdown,isym)
+          call forceflush()
+          LASTPT=-2
 
-520     XLAST=JX
-        YLAST=JY
+520       XLAST=JX
+          YLAST=JY
 
 525     CONTINUE
 
-C Finish drawing the line if required.
+C Finish drawing the line segment if required.
         IF(LASTPT.EQ.-2) GOTO 530
         iupdown=DRAW
         isym=NOMARK
         call etplot(XLAST,YLAST,iupdown,isym)
+        call forceflush()
 
 530   CONTINUE
 
@@ -1676,6 +1736,7 @@ C Draw rest of arrow.
       iupdown=DRAW
       DO 70 I=2,4
         call etplot(XYZ(I,1),XYZ(I,2),iupdown,isym)
+        call forceflush()
 70    CONTINUE
 
       RETURN

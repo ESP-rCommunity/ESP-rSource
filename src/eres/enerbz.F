@@ -54,6 +54,10 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/SNAP/SNAPSH
       logical SNAPSH
+
+C Markdown flag.
+      logical markdown
+      common/markdownflag/markdown
       
       character outs*124,xfile*144,tg*1,delim*1
 
@@ -139,11 +143,20 @@ C If snapshot IOH1 is timesteps rather than integer hours.
         write(outs,'(A,A10,A,A5)') ' Time: ',DDX1,'@',DHX
         call edisp(itru,outs)
       else
-        call edisp(itru,' ')
-        write(outs,43)IZONE,zname(IZONE)
-   43   FORMAT(' Causal energy breakdown (kWhrs) at air point for zone',
-     &         I3,': ',A12)
-        call edisp(itru,outs)
+        if(markdown)then
+          call edisp(itru,' ')
+          write(outs,'(a)') '## Causal energy breakdown (kWhrs)'	
+          call edisp(itru,outs)
+          write(outs,'(2a,i3,2a)') ': Causal energy breakdown (kWhrs) ',
+     &      'at air point for zone',IZONE,': ',zname(IZONE)	
+          call edisp(itru,outs)
+        else
+          call edisp(itru,' ')
+          write(outs,'(a,i2,2a)')
+     &    ' Causal energy breakdown (kWhrs) at air point for zone',
+     &    IZONE,': ',zname(IZONE)
+          call edisp(itru,outs)
+        endif
       endif
       if(ISAVE.lt.4.and.izver.lt.2)then
         call edisp(itru,' ')
@@ -161,9 +174,19 @@ C gains/loss or user defined.
      &  ' Gain      Loss        Gain      Loss        Gain      Loss'
         call edisp(itru,outs)
       ELSEIF(IANZSE.EQ.2)THEN
-        call edisp(itru,' ')
-        write(outs,'(35X,A)')'   Gain         Loss'
-        call edisp(itru,outs)
+        if(markdown)then
+          call edisp(itru,' ')
+          write(outs,'(A)')
+     &' Path                                 Gain         Loss'
+          call edisp(itru,outs)
+          write(outs,'(A)')
+     &' ------------------------------  ----------  ----------'
+          call edisp(itru,outs)
+        else
+          call edisp(itru,' ')
+          write(outs,'(35X,A)')'   Gain         Loss'
+          call edisp(itru,outs)
+        endif
       ENDIF
 
 C Determine the plant type for this zone.

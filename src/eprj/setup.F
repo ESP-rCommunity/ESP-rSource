@@ -133,7 +133,7 @@ C Display of time of day.
       elseif(igupgrade.eq.1)then
         ITEMS1(11)='l upgrade files >> save current format        '
       endif
-      ITEMS1(12)  ='* test button (esp-r meta file scan)          '
+      ITEMS1(12)  ='* test button                                 '
       ITEMS1(13)  ='r cores available to Radiance                 '
       ITEMS1(14)  ='s surface match tollerance                    '
       ITEMS1(15)  ='? help                                        '
@@ -412,36 +412,36 @@ C Test button for ESP-r meta file read testing.
 C Add a choice point here - one to carry on with the current model,
 C one to start a fresh model, one to just list the details of the
 C silent file.
-        helptopic='setup_date_format'
-        call gethelptext(helpinsub,helptopic,nbhelp)
-        CALL EASKABCD(' META file options',' :',
-     &    'retrieve description','process META data','XX','continue',
-     &    IW,nbhelp)
+C        helptopic='setup_date_format'
+C        call gethelptext(helpinsub,helptopic,nbhelp)
+C        CALL EASKABCD(' META file options',' :',
+C     &    'retrieve description','process META data','XX','continue',
+C     &    IW,nbhelp)
 
 C Allow user to edit a file.  Use file browser if in GTK mode.
 C If vi then spawn a new window to do the editing in.
-        LFIL=' '
-        longtfile=' '    ! reset return string
-        CALL EASKXORGTKF(LFIL,'ESP-r meta file name?',' ',
-     &    'xxx.txt',longtfile,'esp-r meta file',IER,nbhelp)
+C        LFIL=' '
+C        longtfile=' '    ! reset return string
+C        CALL EASKXORGTKF(LFIL,'ESP-r meta file name?',' ',
+C     &    'xxx.txt',longtfile,'esp-r meta file',IER,nbhelp)
      
-        IUNIT=IFIL+1
-        if(IW.EQ.1)then
-          call silentread(iunit,longtfile,'?',ureturn,ier)
-          call edisp(iuout,ureturn)
-          call edisp(iuout,modeltitle)
-          call edisp248(iuout,modeldocblock,80)
-        elseif(IW.eq.2)then
-          call silentread(iunit,longtfile,'-',ureturn,ier)
-          call edisp(iuout,ureturn)
-          call edisp(iuout,modeltitle)
-          call edisp248(iuout,modeldocblock,80)
-          return
-        elseif(IW.eq.3)then
-          continue
-        elseif(IW.eq.4)then
-          continue
-        endif
+C        IUNIT=IFIL+1
+C        if(IW.EQ.1)then
+C          call silentread(iunit,longtfile,'?',ureturn,ier)
+C          call edisp(iuout,ureturn)
+C          call edisp(iuout,modeltitle)
+C          call edisp248(iuout,modeldocblock,80)
+C        elseif(IW.eq.2)then
+C          call silentread(iunit,longtfile,'-',ureturn,ier)
+C          call edisp(iuout,ureturn)
+C          call edisp(iuout,modeltitle)
+C          call edisp248(iuout,modeldocblock,80)
+C          return
+C        elseif(IW.eq.3)then
+C          continue
+C        elseif(IW.eq.4)then
+C          continue
+C        endif
         
       ELSEIF(INO1.EQ.13)THEN
 

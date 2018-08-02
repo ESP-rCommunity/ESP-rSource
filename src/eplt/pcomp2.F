@@ -1093,7 +1093,7 @@ C First initialize UA modulus (for calculation of containment heat loss)
 C Establish absorbed power E based on current water flow rate which might
 C have been calculated by mfs
 C In case of mfs E is based on flow rate, pressure *rise*, and efficiency
-         IF(IFLWN.NE.0) THEN
+         IF(IFLWN.NE.0.AND.ICFFS(ICON1).NE.0) THEN
             ICNN=ICFFS(ICON1)
             E=real((FLW1(ICNN)+FLW2(ICNN))
      &        *(PRES(NODNE(ICNN))-PRES(NODPS(ICNN)))
@@ -1172,7 +1172,7 @@ C 1st phase mass (ie. water) balance coefficients
 C Note that if fluid mass flow solver active, source of mass zeroised
       ELSE IF(ISTATS.EQ.2) THEN
         COUT(1)=1.
-        IF(IFLWN.EQ.0) THEN
+        IF(IFLWN.EQ.0.or.ICFFS(ICON1).eq.0) THEN
           COUT(2)=0.
           COUT(3)=CDATA(IPCOMP,1)*GLY_WATER_DEN*
      &            (1.-GLYCOL_MASS_FRACTION/100.)
@@ -1184,7 +1184,7 @@ C Note that if fluid mass flow solver active, source of mass zeroised
 C 2nd phase mass (ie. "vapour") balance coefficients
       ELSE IF(ISTATS.EQ.3) THEN
         COUT(1)=1.
-        IF(IFLWN.EQ.0) THEN
+        IF(IFLWN.EQ.0.or.ICFFS(ICON1).eq.0) THEN
           COUT(2)=0.
           COUT(3)=CDATA(IPCOMP,1)*GLY_WATER_DEN*
      &    GLYCOL_MASS_FRACTION/100.
@@ -4681,7 +4681,7 @@ C First initialize UA modulus (for calculation of containment heat loss)
 C Establish absorbed power E based on current water flow rate which might
 C have been calculated by mfs
 C In case of mfs E is based on flow rate, pressure *rise*, and efficiency
-         IF(IFLWN.NE.0) THEN
+         IF(IFLWN.NE.0.AND.ICFFS(ICON1).NE.0) THEN
             ICNN=ICFFS(ICON1)
             E=real((FLW1(ICNN)+FLW2(ICNN))
      &        *(PRES(NODNE(ICNN))-PRES(NODPS(ICNN)))
@@ -4749,7 +4749,7 @@ C 1st phase mass (ie. water) balance coefficients
 C Note that if fluid mass flow solver active, source of mass zeroised
       ELSE IF(ISTATS.EQ.2) THEN
          COUT(1)=1.
-         IF(IFLWN.EQ.0) THEN
+         IF(IFLWN.EQ.0.or.ICFFS(ICON1).eq.0) THEN
             COUT(2)=0.
             COUT(3)=CDATA(IPCOMP,1)
          ELSE

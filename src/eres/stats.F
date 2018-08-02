@@ -65,6 +65,10 @@ C results. Available at present:
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       common/zcondhr/izctime(MCON)
 
+C Markdown flag.
+      logical markdown
+      common/markdownflag/markdown
+
       logical libheading ! have we printed report heading (library name etc).
       logical headingcontext ! has set or period changed so heading needs reprint
       common/libhead/libheading,headingcontext
@@ -73,7 +77,7 @@ C SNAPSH is a logical flag to request variation in header.
       COMMON/SNAP/SNAPSH
       logical SNAPSH,close
       DIMENSION ATI(8),RTI(8),TATI(8),TRTI(8),NDYMTH(12)
-      dimension ITEM(24)
+      dimension ITEM(25)
       CHARACTER ITEM*23,tg*1,delim*1,xfile*144
       CHARACTER PDESCR*60,SDESCR*44
       character prompt*124,outs*124
@@ -124,21 +128,26 @@ C      ITEM(10)='e CEN statistics     '
       elseif(ixopen.eq.0)then
         ITEM(21)='> output >> screen  '
       endif
-      if(delim.eq.'-')then
-        ITEM(22)='^ delim >> normal      '
-      elseif(delim.eq.'T')then
-        ITEM(22)='^ delim >> tab         '
-      elseif(delim.eq.'C')then
-        ITEM(22)='^ delim >> comma       '
-      elseif(delim.eq.'S')then
-        ITEM(22)='^ delim >> space       '
-      elseif(delim.eq.'X')then
-        ITEM(22)='^ delim >> tagged      '
+      if(markdown)then
+       ITEM(22)=': output >> Markdown '
+      else
+       ITEM(22)=': output >> ASCII    '
       endif
-      ITEM(23)='? help               '
-      ITEM(24)='- exit               '
+      if(delim.eq.'-')then
+        ITEM(23)='^ delim >> normal      '
+      elseif(delim.eq.'T')then
+        ITEM(23)='^ delim >> tab         '
+      elseif(delim.eq.'C')then
+        ITEM(23)='^ delim >> comma       '
+      elseif(delim.eq.'S')then
+        ITEM(23)='^ delim >> space       '
+      elseif(delim.eq.'X')then
+        ITEM(23)='^ delim >> tagged      '
+      endif
+      ITEM(24)='? help               '
+      ITEM(25)='- exit               '
 
- 2    NITMS=24
+ 2    NITMS=25
       if(MMOD.eq.8)then
         INO=-1
       else
@@ -659,8 +668,22 @@ C Dump annual statistics.
           call eddisp(itru,outs)
           call edisp(itru,' ')
   860   CONTINUE
-      elseif(INO.EQ.(NITMS-3)) then
+      elseif(INO.EQ.(NITMS-4)) then
+
         call ctlexp(xfile,ixopen,ixunit,ixpunit,'X','Tabular',IER)
+
+      elseif(INO.EQ.(NITMS-3)) then
+
+C Toggle markdown mode.
+        if(markdown)then
+          markdown=.false.
+        else
+
+C Set markdown and if output is to a file reset heading logicals 
+          markdown=.true.
+          libheading=.false.; headingcontext=.false. ! reset heading logicals
+        endif
+
       elseif(INO.EQ.(NITMS-2)) then
 
 C Toggle delimeter.
@@ -761,6 +784,10 @@ C act='p' iget parameters already set.
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
+
+C Markdown flag.
+      logical markdown
+      common/markdownflag/markdown
 
       logical libheading ! have we printed report heading (library name etc).
       logical headingcontext ! has set or period changed so heading needs reprint
@@ -982,36 +1009,93 @@ C separator between reports.
         call edisp(itru,' ')
       endif
       
-C If writing to file prefix text with a '#' mark.
+C If writing to file prefix text with a '#' mark. If we have
+C not yet printed the heading do so and mark as printed.
       if(ixopen.eq.1)then
-        if(NSIM.gt.1)then
-          WRITE(outs,'(3A,I4,2A)')'# Lib: ',RFILE(1:lsn1),' Set:',ISIM,
-     &     ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
-        else
-          WRITE(outs,'(4A)')'# Lib: ',RFILE(1:lsn1),
-     &     ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
-        endif
-        call edisp(itru,outs)
-        WRITE(outs,'(4A)')'# ',PDESCR(1:lnblnk(PDESCR)),' ',
+        if((.NOT.libheading).and.(.NOT.headingcontext))then
+          libheading=.true.; headingcontext=.true.
+          if(NSIM.gt.1)then
+            if(markdown)then
+              write(outs,'(2a)') '# Performance Report for ',
+     &          RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
+              call edisp(itru,outs)
+	    
+              write(outs,'(3A,I4)')'### Library ',RFILE(1:lsn1),
+     &          ' Set:',ISIM
+              call edisp(itru,outs)
+            else
+              WRITE(outs,'(3A,I4,2A)')'# Lib: ',RFILE(1:lsn1),' Set:',
+     &          ISIM,': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
+              call edisp(itru,outs)
+            endif
+          else
+            if(markdown)then
+              write(outs,'(2a)') '# Performance Report for ',
+     &          RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
+              call edisp(itru,outs)
+              write(outs,'(2A)')'### Library ',RFILE(1:lsn1)
+              call edisp(itru,outs)
+            else
+              WRITE(outs,'(4A)')'# Lib: ',RFILE(1:lsn1),
+     &         ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
+              call edisp(itru,outs)
+            endif
+          endif
+          if(markdown)then
+            write(outs,'(4A)')'### ',PDESCR(1:lnblnk(PDESCR)),' ',
+     &        SDESCR(11:lnblnk(SDESCR))
+          else
+            WRITE(outs,'(4A)')'# ',PDESCR(1:lnblnk(PDESCR)),' ',
      &                    SDESCR(11:lnblnk(SDESCR))
-        call edisp(itru,outs)
-        write (outs,'(2a)') '# ',SLABEL(NGET)
-        call edisp(itru,outs)
+          endif
+          call edisp(itru,outs)
+        endif
+        if(markdown)then
+          call edisp(itru,'  ')
+          write (outs,'(2a)') '## ',SLABEL(NGET)
+          call edisp(itru,outs)
+          write (outs,'(2a)') ': ',SLABEL(NGET)
+          call edisp(itru,outs)
+          call edisp(itru,' ')
+        else
+          write (outs,'(2a)') '# ',SLABEL(NGET)
+          call edisp(itru,outs)
+        endif
       else
-        if(NSIM.gt.1)then
-          WRITE(outs,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',ISIM,
-     &     ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
-        else
-          WRITE(outs,'(4A)')'Lib: ',RFILE(1:lsn1),
-     &     ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
+        if((.NOT.libheading).and.(.NOT.headingcontext))then
+          libheading=.true.; headingcontext=.true.
+          if(NSIM.gt.1)then
+            WRITE(outs,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',ISIM,
+     &       ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
+          else
+            WRITE(outs,'(4A)')'Lib: ',RFILE(1:lsn1),
+     &       ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
+          endif
+          call edisp(itru,outs)
+          WRITE(outs,'(3A)')PDESCR(1:lnblnk(PDESCR)),' ',
+     &                      SDESCR(11:lnblnk(SDESCR))
+          call edisp(itru,outs)
         endif
-        call edisp(itru,outs)
-        WRITE(outs,'(3A)')PDESCR(1:lnblnk(PDESCR)),' ',
-     &                    SDESCR(11:lnblnk(SDESCR))
-        call edisp(itru,outs)
         write (outs,'(a)') SLABEL(NGET)
         call edisp(itru,outs)
         call edisp(itru,'  ')
+      endif
+C       write(6,'(a,i3)') 'The igetno is',IGETNO(NGET,1)
+
+C For temperatures or humidity we only need 1 decimal place.
+      if (IGETNO(NGET,1).eq.1.or.IGETNO(NGET,1).eq.2.or.
+     &    IGETNO(NGET,1).eq.3.or.IGETNO(NGET,1).eq.4.or.
+     &    IGETNO(NGET,1).eq.5.or.IGETNO(NGET,1).eq.6.or.
+     &    IGETNO(NGET,1).eq.7.or.IGETNO(NGET,1).eq.11.or.
+     &    IGETNO(NGET,1).eq.12.or.IGETNO(NGET,1).eq.13.or.
+     &    IGETNO(NGET,1).eq.14.or.IGETNO(NGET,1).eq.15.or.
+     &    IGETNO(NGET,1).eq.16.or.IGETNO(NGET,1).eq.21.or.
+     &    IGETNO(NGET,1).eq.22.or.IGETNO(NGET,1).eq.24.or.
+     &    IGETNO(NGET,1).eq.29.or.IGETNO(NGET,1).eq.34.or.
+     &    IGETNO(NGET,1).eq.35.or.IGETNO(NGET,1).eq.41.or.
+     &    IGETNO(NGET,1).eq.42.or.IGETNO(NGET,1).eq.43.or.
+     &    IGETNO(NGET,1).eq.44.or.IGETNO(NGET,1).eq.45) then
+        nbdecimal=1  ! we can't measure any tighter than this.
       endif
       
 C Write specific cases first, generally in numerical order of IGET.
@@ -1021,14 +1105,49 @@ C Climate data therefore do not print zone names.
      &    IGETNO(NGET,1).eq.22.or.IGETNO(NGET,1).eq.26) then
         if(ixopen.eq.1)then
           if (IROC.eq.-1) then
-            write(outs,'(2a)')'Max_value Max_occur Min_value ',
+            if(markdown)then
+C              call edisp(itru,'  ')
+              write(outs,'(2A)')
+     &'---------  -------------  ----------  ',
+     &'------------   ----------  ----------  -----'
+              call edisp(itru,outs)
+              write(outs,'(2A)')
+     &'Max        Max            Min         ',
+     &'Min            Average     Std        -Total'
+              call edisp(itru,outs)
+              write(outs,'(2A)')
+     &'value      occurrance     value       ',
+     &'occurance      value       deviation'             
+              call edisp(itru,outs)
+             else
+               write(outs,'(2a)')'Max_value Max_occur Min_value ',
      &                      'Min_occur Ave_value Std_dev Total'
+               call eddisp(itru,outs)
+             endif
           else
-            write(outs,'(2a)')'Max_value Max_occur Min_value ',
+            if(markdown)then
+C              call edisp(itru,'  ')
+              write(outs,'(2A)')
+     &'---------  -------------  ----------  ',
+     &'------------   ----------  ----------'
+              call edisp(itru,outs)
+              write(outs,'(2A)')
+     &'Max        Max            Min         ',
+     &'Min            Average     Std      '
+              call edisp(itru,outs)
+              write(outs,'(2A)')
+     &'value      occurrance     value       ',
+     &'occurance      value       deviation '             
+              call edisp(itru,outs)
+            else
+              write(outs,'(2a)')'Max_value Max_occur Min_value ',
      &                      'Min_occur Ave_value Std_dev'
+              call eddisp(itru,outs)
+            endif
           endif
-          call eddisp(itru,outs)
         else
+
+C Writing to the screen.
           if (IROC.eq.-1) then
             write (outs,'(2a)') '    Maximum                  Minimum',
      &                      '                Mean   Standard  Total'
@@ -1071,11 +1190,41 @@ C Create string description for time of minimum occurrance.
           call EDTIME(TMINHR,DESCRH,DESCRD,TIMER)
           write (NT,'(3a)')DESCR(1:6),'@',DESCRH
           if (IROC.eq.-1) then
-            write (outs,'(2(f7.1,2x,a12,4x),2(f7.2,3x),g12.6)') YMAX(1),
-     &                            XT,YMIN(1),NT,YAVE(1),YSTD(1),YTOT(1)
+            if(markdown)then
+              if(nbdecimal.eq.1)then
+                write (outs,'(2(f9.1,2x,a12,4x),2(f9.2,3x),g12.6)')
+     &            YMAX(1),XT,YMIN(1),NT,YAVE(1),YSTD(1),YTOT(1)
+              else
+                write (outs,'(2(f9.1,2x,a12,4x),2(f9.1,3x),g12.6)')
+     &            YMAX(1),XT,YMIN(1),NT,YAVE(1),YSTD(1),YTOT(1)
+              endif    
+            else
+              if(nbdecimal.eq.1)then
+                write (outs,'(2(f7.1,2x,a12,4x),2(f7.2,3x),g12.6)')
+     &            YMAX(1),XT,YMIN(1),NT,YAVE(1),YSTD(1),YTOT(1)
+              else
+                write (outs,'(2(f7.1,2x,a12,4x),2(f7.1,3x),g12.6)')
+     &            YMAX(1),XT,YMIN(1),NT,YAVE(1),YSTD(1),YTOT(1)
+              endif
+            endif
           else
-            write (outs,'(2(f7.1,2x,a12,4x),2(f7.2,3x))') YMAX(1),
-     &                            XT,YMIN(1),NT,YAVE(1),YSTD(1)
+            if(markdown)then
+              if(nbdecimal.eq.1)then
+                write (outs,'(2(f9.1,2x,a12,4x),2(f9.2,3x))') 
+     &            YMAX(1),XT,YMIN(1),NT,YAVE(1),YSTD(1)
+              else
+                write (outs,'(2(f9.1,2x,a12,4x),2(f9.1,3x))') 
+     &            YMAX(1),XT,YMIN(1),NT,YAVE(1),YSTD(1)
+              endif
+            else
+              if(nbdecimal.eq.1)then
+                write (outs,'(2(f7.1,2x,a12,4x),2(f7.2,3x))') 
+     &            YMAX(1),XT,YMIN(1),NT,YAVE(1),YSTD(1)
+              else
+                write (outs,'(2(f7.1,2x,a12,4x),2(f7.1,3x))') 
+     &            YMAX(1),XT,YMIN(1),NT,YAVE(1),YSTD(1)
+              endif
+            endif
           endif
         endif
 
@@ -1091,24 +1240,93 @@ C Generate and display column headings.
             call edisp(itru,outs)
           endif
           if (IROC.eq.-1) then
-            write(outs,'(2a)')'Description Max_value Max_occur ',
+            if(markdown)then
+              call edisp(itru,'  ')
+              write(outs,'(2A)')
+     &'----------------   -----------  -------------  ----------  ',
+     &'------------   ----------  ---------  -----'
+              call edisp(itru,outs)
+              write(outs,'(2A)')
+     &'Description        Max          Max            Min         ',
+     &'Min            Average     Std        Total'
+              call edisp(itru,outs)
+              write(outs,'(2A)')
+     &'                   value        occurrance     value       ',
+     &'occurance      value       deviation       '             
+              call edisp(itru,outs)
+            else
+              write(outs,'(2a)')'Description Max_value Max_occur ',
      &                 'Min_value Min_occur Ave_value Std_dev Total'
+              call eddisp(itru,outs)
+            endif	
           else
-            write(outs,'(2a)')'Description Max_value Max_occur ',
+            if(markdown)then
+              call edisp(itru,'  ')
+              write(outs,'(2A)')
+     &'----------------   -----------  -------------  ----------  ',
+     &'------------   ----------  ---------'
+              call edisp(itru,outs)
+              write(outs,'(2A)')
+     &'Description        Max          Max            Min         ',
+     &'Min            Average     Std      '
+              call edisp(itru,outs)
+              write(outs,'(2A)')
+     &'                   value        occurrance     value       ',
+     &'occurance      value       deviation'             
+              call edisp(itru,outs)
+            else
+              write(outs,'(2a)')'Description Max_value Max_occur ',
      &                 'Min_value Min_occur Ave_value Std_dev'
+              call eddisp(itru,outs)
+            endif
           endif
-          call eddisp(itru,outs)
         else
           if (IROC.eq.-1) then
-            write(outs,'(2a)')' Description           Maximum         ',
-     & '          Minimum                 Mean         Standard   Total'
+            if(markdown)then
+              call edisp(itru,'  ')
+              write(outs,'(2A)')
+     &'----------------   -----------  -------------  ----------  ',
+     &'------------   ----------  ---------  -----'
+              call edisp(itru,outs)
+              write(outs,'(2A)')
+     &'Description        Max          Max            Min         ',
+     &'Min            Average     Std        Total'
+              call edisp(itru,outs)
+              write(outs,'(2A)')
+     &'                   value        occurrance     value       ',
+     &'occurance      value       deviation'             
+              call edisp(itru,outs)
+            else
+              write(outs,'(2a)')
+     &' Description           Maximum         ',
+     &'          Minimum                  Mean        Standard   Total'
+              call eddisp(itru,outs)
+            endif
           else
-            write(outs,'(2a)')' Description           Maximum         ',
-     & '          Minimum                 Mean         Standard'
+            if(markdown)then
+              call edisp(itru,'  ')
+              write(outs,'(2A)')
+     &'----------------   -----------  -------------  ----------  ',
+     &'------------   ----------  ---------'
+              call edisp(itru,outs)
+              write(outs,'(2A)')
+     &'Description        Max          Max            Min         ',
+     &'Min            Average     Std      '
+              call edisp(itru,outs)
+              write(outs,'(2A)')
+     &'                   value        occurrance     value       ',
+     &'occurance      value       deviation'             
+              call edisp(itru,outs)
+            else
+              write(outs,'(2a)')
+     &' Description           Maximum           ',
+     &'        Minimum                  Mean      Standard'
+              call eddisp(itru,outs)
+            endif
           endif
-          call eddisp(itru,outs)
-          write(outs,'(2a)')  '                     value   occurrence',
-     & '        value   occurrence        value        deviation'
+          write(outs,'(2a)')  
+     &'                       value   occurrence',
+     &'        value   occurrence       value     deviation'
           call eddisp(itru,outs)
         endif
         do 30 I=1,NGET
@@ -1138,21 +1356,54 @@ C Create string description for time of minimum occurrance.
             write (NT,'(3a)')DESCR(1:6),'@',DESCRH
 
 C Build up string for displaying.
-            write (outs,'(a)') GLABEL(I)(1:20)
-            
-C Write out results to 5 significant figures starting at col 22.
-            NSIG=5
-            call sigfig(YMAX(I),NSIG,RNO,t12,LSTR)
-            write (outs(22:47),'(a,1x,a,1x)') t12(1:LSTR),XT
-            call sigfig(YMIN(I),NSIG,RNO,t12,LSTR)
-            write (outs(48:73),'(a,1x,a,1x)') t12(1:LSTR),NT
-            call sigfig(YAVE(I),NSIG,RNO,t12,LSTR)
-            write (outs(74:86),'(a,1x)') t12
-            call sigfig(YSTD(I),NSIG,RNO,t12,LSTR)
-            write (outs(87:99),'(a,1x)') t12
-            if (IROC.eq.-1) then
-              call sigfig(YTOT(I),NSIG,RNO,t12,LSTR)
-              write (outs(100:112),'(a)') t12
+            if(markdown)then
+              if (IROC.eq.-1) then
+                if(nbdecimal.eq.1)then
+                  write(outs,'(a,f10.1,3a,f10.1,3a,f10.1,a,f10.2,
+     &            a,f10.3)') GLABEL(I)(1:20),YMAX(I),
+     &            '  ',XT,' ',YMIN(I),'  ',NT,' ',YAVE(I),' ',YSTD(I),
+     &            ' ',YTOT(I)
+                else
+                  write(outs,'(a,f10.3,3a,f10.3,3a,f10.3,a,f10.3,
+     &            a,f10.3)') GLABEL(I)(1:20),YMAX(I),
+     &            '  ',XT,' ',YMIN(I),'  ',NT,' ',YAVE(I),' ',YSTD(I),
+     &            ' ',YTOT(I)
+                endif
+              else
+                if(nbdecimal.eq.1)then
+                  write (outs,'(a,f10.1,3a,f10.1,3a,f10.2,a,f10.3)') 
+     &            GLABEL(I)(1:20),YMAX(I),
+     &            '  ',XT,' ',YMIN(I),'  ',NT,' ',YAVE(I),' ',YSTD(I)
+                else
+                  write (outs,'(a,f10.3,3a,f10.3,3a,f10.3,a,f10.3)') 
+     &            GLABEL(I)(1:20),YMAX(I),
+     &            '  ',XT,' ',YMIN(I),'  ',NT,' ',YAVE(I),' ',YSTD(I)
+                endif
+              endif
+            else
+              if (IROC.eq.-1) then
+                if(nbdecimal.eq.1)then
+                  write(outs,'(a,f9.1,3a,f9.1,3a,f9.1,a,f9.2,
+     &            a,f10.3)') GLABEL(I)(1:20),YMAX(I),
+     &            '  ',XT,' ',YMIN(I),'  ',NT,' ',YAVE(I),' ',YSTD(I),
+     &            ' ',YTOT(I)
+                else
+                  write(outs,'(a,f9.3,3a,f9.3,3a,f9.3,a,f9.3,
+     &            a,f10.3)') GLABEL(I)(1:20),YMAX(I),
+     &            '  ',XT,' ',YMIN(I),'  ',NT,' ',YAVE(I),' ',YSTD(I),
+     &            ' ',YTOT(I)
+                endif
+              else
+                if(nbdecimal.eq.1)then
+                  write (outs,'(a,f9.1,3a,f9.1,3a,f9.2,a,f9.3)') 
+     &            GLABEL(I)(1:20),YMAX(I),
+     &            '  ',XT,' ',YMIN(I),'  ',NT,' ',YAVE(I),' ',YSTD(I)
+                else
+                  write (outs,'(a,f9.3,3a,f9.3,3a,f9.3,a,f9.3)') 
+     &            GLABEL(I)(1:20),YMAX(I),
+     &            '  ',XT,' ',YMIN(I),'  ',NT,' ',YAVE(I),' ',YSTD(I)
+                endif
+              endif
             endif
           endif
           call eddisp(itru,outs)
@@ -1164,7 +1415,7 @@ C heating and cooling.
           write(outs,'(a,i4,a)')'*data ',IGETNO(NGET,1),' 0 0 0 0'
           call eddisp(itru,outs)
         else
-          call edisp(itru,'  ')
+          if(.NOT.markdown) call edisp(itru,'  ')
         endif
         if (NX.eq.0) then
           if(ixopen.eq.1)then
@@ -1196,41 +1447,156 @@ C Create string description for time of minimum occurrance.
             write (NT,'(3a)')DESCR(1:6),'@',DESCRH
             
 C Build up string for displaying.
-            write (outs,'(3x,a,14x)') 'All'
-            
-C Write out results to 5 significant figures.
-            NSIG=5
-            call sigfig(DIVMX,NSIG,RNO,t12,LSTR)
-            write (outs(21:46),'(a,1x,a,1x)') t12(1:LSTR),XT
-            call sigfig(DIVMN,NSIG,RNO,t12,LSTR)
-            write (outs(47:72),'(a,1x,a,1x)') t12(1:LSTR),NT
-            write (outs(73:98),'(a)') '     --           --     '
-            if (IROC.eq.-1) then
-              call sigfig(XTOT,NSIG,RNO,t12,LSTR)
-              write (outs(99:111),'(a)') t12
+            if(markdown)then
+              if (IROC.eq.-1) then
+                if(nbdecimal.eq.1)then
+                  write(outs,'(a,f10.1,3a,f10.1,3a,f10.1)')
+     &            '   All              ',DIVMX,'  ',
+     &            XT,' ',DIVMN,'  ',NT,'     --           --     ',
+     &             XTOT
+                else
+                  write(outs,'(a,f10.3,3a,f10.3,3a,f10.3)')
+     &            '   All              ',DIVMX,'  ',
+     &            XT,' ',DIVMN,'  ',NT,'     --           --     ',
+     &             XTOT
+                endif
+                write(outs,'(2A)')
+     &'----------------   -----------  -------------  ----------  ',
+     &'------------   ----------  ---------'
+                call edisp(itru,outs)
+                call edisp(itru,' ')
+              else
+                if(nbdecimal.eq.1)then
+                  write (outs,'(a,f10.1,3a,f10.1,3a)') 
+     &            '   All              ',DIVMX,
+     &            '  ',XT,' ',DIVMN,'  ',NT,'     --           --     '
+                else
+                  write (outs,'(a,f10.3,3a,f10.3,3a)') 
+     &            '   All              ',DIVMX,
+     &            '  ',XT,' ',DIVMN,'  ',NT,'     --           --     '
+                endif
+                call edisp(itru,outs)
+                write(outs,'(2A)')
+     &'----------------   -----------  -------------  ----------  ',
+     &'------------   ----------  ---------'
+                call edisp(itru,outs)
+                call edisp(itru,' ')
+              endif
+            else
+
+C Feedback to screen.
+              if (IROC.eq.-1) then
+                if(nbdecimal.eq.1)then
+                  write(outs,'(a,f9.1,3a,f9.1,3a,f9.1)')
+     &            '   All              ',DIVMX,'  ',
+     &            XT,' ',DIVMN,'  ',NT,'     --           --     ',
+     &             XTOT
+                else
+                  write(outs,'(a,f9.3,3a,f9.3,3a,f9.3)')
+     &            '   All              ',DIVMX,'  ',
+     &            XT,' ',DIVMN,'  ',NT,'     --           --     ',
+     &             XTOT
+                endif
+                call edisp(itru,outs)
+                call edisp(itru,' ')
+              else
+                if(nbdecimal.eq.1)then
+                  write (outs,'(a,f9.1,3a,f9.1,3a)') 
+     &            '   All              ',DIVMX,
+     &            '  ',XT,' ',DIVMN,'  ',NT,'     --           --     '
+                else
+                  write (outs,'(a,f9.3,3a,f9.3,3a)') 
+     &            '   All              ',DIVMX,
+     &            '  ',XT,' ',DIVMN,'  ',NT,'     --           --     '
+                endif
+                call edisp(itru,outs)
+                call edisp(itru,' ')
+              endif
             endif
           else
           
 C Build up string for displaying.
             write (outs,'(3x,a,15x)') 'All'
+            if(markdown)then
+              if (IROC.eq.-1) then
+                if(nbdecimal.eq.1)then
+                  write(outs,'(a,f10.1,a,f10.1,a,f10.2,a,f10.3)') 
+     &            '   All              ',XMAX,
+     &            '     --          ',XMIN,'     --          ',XAVE,
+     &            '     --          ',XTOT
+                else
+                  write(outs,'(a,f10.3,a,f10.3,a,f10.3,a,f10.3)') 
+     &            '   All              ',XMAX,
+     &            '     --          ',XMIN,'     --          ',XAVE,
+     &            '     --          ',XTOT
+                endif
+                call edisp(itru,outs)
+                write(outs,'(2A)')
+     &'----------------   -----------  -------------  ----------  ',
+     &'------------   ----------  ---------'
+                call edisp(itru,outs)
+                call edisp(itru,' ')
+              else
+                if(nbdecimal.eq.1)then
+                  write (outs,'(a,f10.1,a,f10.1,a,f10.2,a)') 
+     &            '   All              ',XMAX,
+     &            '     --          ',XMIN,'     --          ',XAVE,
+     &            '     --          '
+                else
+                  write (outs,'(a,f10.3,a,f10.3,a,f10.3,a)') 
+     &            '   All              ',XMAX,
+     &            '     --          ',XMIN,'     --          ',XAVE,
+     &            '     --          '
+                endif
+                call edisp(itru,outs)
+                write(outs,'(2A)')
+     &'----------------   -----------  -------------  ----------  ',
+     &'------------   ----------  ---------'
+                call edisp(itru,outs)
+                call edisp(itru,' ')
+              endif
+            else
+
+C Feedback to screen.
+              if (IROC.eq.-1) then
+                if(nbdecimal.eq.1)then
+                  write(outs,'(a,f9.1,a,f9.1,a,f9.2,a,f9.3)') 
+     &            '   All              ',XMAX,
+     &            '     --          ',XMIN,'     --          ',XAVE,
+     &            '     --          ',XTOT
+                else
+                  write(outs,'(a,f9.3,a,f9.3,a,f9.3,a,f9.3)') 
+     &            '   All              ',XMAX,
+     &            '     --          ',XMIN,'     --          ',XAVE,
+     &            '     --          ',XTOT
+                endif
+                call edisp(itru,outs)
+                call edisp(itru,' ')
+              else
+                if(nbdecimal.eq.1)then
+                  write (outs,'(a,f9.1,a,f9.1,a,f9.2,a)') 
+     &            '   All              ',XMAX,
+     &            '     --          ',XMIN,'     --          ',XAVE,
+     &            '     --          '
+                else
+                  write (outs,'(a,f9.3,a,f9.3,a,f9.3,a)') 
+     &            '   All              ',XMAX,
+     &            '     --          ',XMIN,'     --          ',XAVE,
+     &            '     --          '
+                endif
+                call edisp(itru,outs)
+                call edisp(itru,' ')
+              endif
             
-C Write out results to 5 significant figures.
-            NSIG=5
-            call sigfig(XMAX,NSIG,RNO,t12,LSTR)
-            write (outs(22:47),'(a,1x,a,1x)') t12(1:LSTR),'     -- '
-            call sigfig(XMIN,NSIG,RNO,t12,LSTR)
-            write (outs(48:73),'(a,1x,a,1x)') t12(1:LSTR),'     -- '
-            call sigfig(XAVE,NSIG,RNO,t12,LSTR)
-            write (outs(74:99),'(a,1x,a)') t12,'     -- '
-            if (IROC.eq.-1) then
-              call sigfig(XTOT,NSIG,RNO,t12,LSTR)
-              write (outs(100:112),'(a)') t12
+
+C Display 'all zones' text.
+C              call eddisp(itru,outs)
             endif
           endif
         endif
 
 C Display 'all zones' text.
-        call eddisp(itru,outs)
+C        call eddisp(itru,outs)
       endif
 
 C End tag for tagged data
@@ -1477,6 +1843,10 @@ C act='p' iget parameters already set.
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
+
+C Markdown flag.
+      logical markdown
+      common/markdownflag/markdown
 
       logical libheading ! have we printed report heading (library name etc).
       logical headingcontext ! has set or period changed so heading needs reprint
@@ -1780,34 +2150,96 @@ C changed.
       CALL HDDATE(PDESCR)
       CALL HDSTEP(SDESCR)
       lsn1=MIN0(lnblnk(RFILE),42)
-      WRITE(outs,'(3A,I4,2A)')
-     &  'Lib: ',RFILE(1:lsn1),' Set:',ISIM,': ',RSNAME(ISIM)
-      call edisp(itru,outs)
-      WRITE(outs,'(A)')PDESCR
-      call edisp(itru,outs)
-      WRITE(outs,'(A)')SDESCR
-      call edisp(itru,outs)
-      write (outs,'(a)') SLABEL(NGET)
-      call edisp(itru,outs)
-      if (iabove.gt.0) then
-        write (outs,'(a,f7.2)')'Reporting number of hours above ',XQUERY
-      else
-        write (outs,'(a,f7.2)')'Reporting number of hours below ',XQUERY
+      if((.NOT.libheading).and.(.NOT.headingcontext))then
+        libheading=.true.; headingcontext=.true.
+        if(markdown)then
+          write(outs,'(2a)') '# Performance Report for ',
+     &      RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
+          call edisp(itru,outs)
+          write(outs,'(2A)')'### Library ',RFILE(1:lsn1)
+          call edisp(itru,outs)
+        else
+          WRITE(outs,'(3A,I4,2A)')
+     &    'Lib: ',RFILE(1:lsn1),' Set:',ISIM,': ',RSNAME(ISIM)
+          call edisp(itru,outs)
+        endif
+        if(markdown)then
+          write(outs,'(4A)')'### ',PDESCR(1:lnblnk(PDESCR)),' ',
+     &      SDESCR(11:lnblnk(SDESCR))
+        else
+          WRITE(outs,'(4A)')'# ',PDESCR(1:lnblnk(PDESCR)),' ',
+     &      SDESCR(11:lnblnk(SDESCR))
+        endif
+        call edisp(itru,outs)
       endif
-      call edisp(itru,outs)
+      if(markdown)then
+        call edisp(itru,'  ')
+        write (outs,'(2a)') '## ',SLABEL(NGET)
+        call edisp(itru,outs)
+        if (iabove.gt.0) then
+          write (outs,'(3a,f7.2)') ': ',
+     &      SLABEL(NGET)(1:lnblnk(SLABEL(NGET))),
+     &      ' number of hours above',XQUERY
+        else
+          write (outs,'(3a,f7.2)') ': ',SLABEL(NGET),
+     &    ' number of hours below',XQUERY
+        endif
+        call edisp(itru,outs)
+C        call edisp(itru,' ')
+      else
+        write (outs,'(2a)') '# ',SLABEL(NGET)
+        call edisp(itru,outs)
+        if (iabove.gt.0) then
+        write (outs,'(a,f7.2)')'Reporting number of hours above ',XQUERY
+        else
+        write (outs,'(a,f7.2)')'Reporting number of hours below ',XQUERY
+        endif
+        call edisp(itru,outs)
+      endif
       call edisp(itru,'  ')
+
+C For temperatures or humidity we only need 1 decimal place.
+      if (IGETNO(NGET,1).eq.1.or.IGETNO(NGET,1).eq.2.or.
+     &    IGETNO(NGET,1).eq.3.or.IGETNO(NGET,1).eq.4.or.
+     &    IGETNO(NGET,1).eq.5.or.IGETNO(NGET,1).eq.6.or.
+     &    IGETNO(NGET,1).eq.7.or.IGETNO(NGET,1).eq.11.or.
+     &    IGETNO(NGET,1).eq.12.or.IGETNO(NGET,1).eq.13.or.
+     &    IGETNO(NGET,1).eq.14.or.IGETNO(NGET,1).eq.15.or.
+     &    IGETNO(NGET,1).eq.16.or.IGETNO(NGET,1).eq.21.or.
+     &    IGETNO(NGET,1).eq.22.or.IGETNO(NGET,1).eq.24.or.
+     &    IGETNO(NGET,1).eq.29.or.IGETNO(NGET,1).eq.34.or.
+     &    IGETNO(NGET,1).eq.35.or.IGETNO(NGET,1).eq.41.or.
+     &    IGETNO(NGET,1).eq.42.or.IGETNO(NGET,1).eq.43.or.
+     &    IGETNO(NGET,1).eq.44.or.IGETNO(NGET,1).eq.45) then
+        nbdecimal=1  ! we can't measure any tighter than this.
+      endif
 
 C Write specific cases first, generally in numerical order of IGET.
 C Climate data therefore do not print zone names.
       if (IGETNO(NGET,1).eq.2.or.IGETNO(NGET,1).eq.19.or.
      &    IGETNO(NGET,1).eq.20.or.IGETNO(NGET,1).eq.21.or.
      &    IGETNO(NGET,1).eq.22.or.IGETNO(NGET,1).eq.26) then
-        write (outs,'(a,a)') '    Maximum               Minimum',
-     &                      '              Mean    No of hours'
-        call eddisp(itru,outs)
-        write (outs,'(a,a)') '  value    occurrence   value',
+        if(markdown)then
+          write (outs,'(2a)') 
+     &'--------------     -----------  -------------  ----------  ',
+     &'------------  -----------  --------  --------  --------'
+          call edisp(itru,outs)
+          write (outs,'(2a)')
+     &'Description        Max          Max            Min         ',
+     &'Min           Mean         Hours     Hours     % above'
+          call edisp(itru,outs)
+          write (outs,'(2a)')
+     &'                   value        occurrance     value       ',
+     &'occurance     value        above     below            '
+          call edisp(itru,outs)
+        else
+          write (outs,'(a,a)') '    Maximum               Minimum',
+     &                         '              Mean    No of hours'
+          call eddisp(itru,outs)
+          write (outs,'(a,a)') '  value    occurrence   value',
      &            '    occurrence    value   above    below'
-        call eddisp(itru,outs)
+          call eddisp(itru,outs)
+        endif
 
 C Now generate climate data output text.
         if (NX.eq.0) then
@@ -1847,38 +2279,94 @@ C filtering, take total period as the time occupied.
               AYAB=TFINSH-(TSTART-1.0)-TActive(1)
             endif
           endif
-          write (outs,'(2(f7.1,2x,a12,1x),3f8.2)')YMAX(1),XT,
+          if(nbdecimal.eq.1)then
+            write (outs,'(2(f7.1,2x,a12,1x),3f8.1)')YMAX(1),XT,
      &                                  YMIN(1),NT,YAVE(1),AYAB,AYBE
+          else
+            write (outs,'(2(f7.1,2x,a12,1x),3f8.2)')YMAX(1),XT,
+     &                                  YMIN(1),NT,YAVE(1),AYAB,AYBE
+          endif
         endif
 
 C Write climate data text as required.
         call eddisp(itru,outs)
+        if(markdown)then
+          write (outs,'(2a)') 
+     &'--------------     -----------  -------------  ----------  ',
+     &'------------  -----------  --------  --------  -------'
+          call edisp(itru,outs)
+        endif
       else
 
 C All other IGET's. Display zone based information.
 C Generate and display column headings.
         if(IGETNO(NGET,9).ge.15)then
-          write(outs,'(a,a)')' Description              Maximum',
+          if(markdown)then
+            write (outs,'(2a)') 
+     &'--------------     -----------  -------------  ----------  ',
+     &'------------  -----------  --------  --------  --------'
+            call edisp(itru,outs)
+            write (outs,'(2a)')
+     &'Description        Max          Max            Min         ',
+     &'Min           Mean         Hours     Hours     % above'
+            call edisp(itru,outs)
+            write (outs,'(2a)')
+     &'                   value        occurrance     value       ',
+     &'occurance     value        above     below            '
+            call edisp(itru,outs)
+          else
+            write(outs,'(a,a)')' Description              Maximum',
      & '                Minimum             Mean    No of hours     %'
-          call eddisp(itru,outs)
-          write(outs,'(a,a)')
+            call eddisp(itru,outs)
+            write(outs,'(a,a)')
      & '                        value  occurrence',
      & '     value  occurrence     value   above  below   above'
-          call eddisp(itru,outs)
+            call eddisp(itru,outs)
+          endif
         elseif(IGETNO(NGET,9).le.12)then
-          write(outs,'(a,a)')' Description       Maximum',
+          if(markdown)then
+            write (outs,'(2a)') 
+     &'--------------     -----------  -------------  ----------  ',
+     &'------------  -----------  --------  --------  --------'
+            call edisp(itru,outs)
+            write (outs,'(2a)')
+     &'Description        Max          Max            Min         ',
+     &'Min           Mean         Hours     Hours     % above'
+            call edisp(itru,outs)
+            write (outs,'(2a)')
+     &'                   value        occurrance     value       ',
+     &'occurance     value        above     below            '
+            call edisp(itru,outs)
+          else
+            write(outs,'(a,a)')' Description       Maximum',
      & '                Minimum            Mean    No of hours     %'
-          call eddisp(itru,outs)
-          write(outs,'(a,a)')'                value  occurrence',
+            call eddisp(itru,outs)
+            write(outs,'(a,a)')'                value  occurrence',
      & '     value  occurrence     value   above  below   above'
-          call eddisp(itru,outs)
+            call eddisp(itru,outs)
+         endif
         else
-          write(outs,'(a,a)')' Description          Maximum',
+          if(markdown)then
+            write (outs,'(2a)') 
+     &'--------------     -----------  -------------  ----------  ',
+     &'------------  -----------  --------  --------  --------'
+            call edisp(itru,outs)
+            write (outs,'(2a)')
+     &'Description        Max          Max            Min         ',
+     &'Min           Mean         Hours     Hours     % above'
+            call edisp(itru,outs)
+            write (outs,'(2a)')
+     &'                   value        occurrance     value       ',
+     &'occurance     value        above     below            '
+            call edisp(itru,outs)
+          else
+            write(outs,'(a,a)')' Description          Maximum',
      & '                Minimum            Mean    No of hours     %'
-          call eddisp(itru,outs)
-          write(outs,'(a,a)')'                    value  occurrence',
+            call eddisp(itru,outs)
+            write(outs,'(a,a)')'                    value  occurrence',
      & '     value  occurrence    value   above  below   above'
-          call eddisp(itru,outs)
+            call eddisp(itru,outs)
+          endif
         endif
         do 30 I=1,NGET
           if (NY(I).eq.0) then
@@ -1922,19 +2410,69 @@ C filtering, take total period as the time occupied.
             APYAB=(AYAB/(AYAB+AYBE))*100.
 
             if(IGETNO(NGET,9).ge.15)then
-              write (outs,1102) GLABEL(I)(1:20),YMAX(I),XT,YMIN(I),NT,
-     &          YAVE(I),AYAB,AYBE,APYAB
+              if(markdown)then
+                if(nbdecimal.eq.1)then
+                  write (outs,1205) GLABEL(I)(1:20),YMAX(I),XT,YMIN(I),
+     &              NT,YAVE(I),AYAB,AYBE,APYAB
+                else
+                  write (outs,1105) GLABEL(I)(1:20),YMAX(I),XT,YMIN(I),
+     &              NT,YAVE(I),AYAB,AYBE,APYAB
+                endif
+              else
+                write (outs,1102) GLABEL(I)(1:20),YMAX(I),XT,YMIN(I),NT,
+     &            YAVE(I),AYAB,AYBE,APYAB
+              endif
             elseif(IGETNO(NGET,9).le.12)then
-              write (outs,1102) GLABEL(I)(1:12),YMAX(I),XT,YMIN(I),NT,
-     &          YAVE(I),AYAB,AYBE,APYAB
+              if(markdown)then
+                if(nbdecimal.eq.1)then
+                  write (outs,1203) GLABEL(I)(1:12),YMAX(I),XT,YMIN(I),
+     &              NT,YAVE(I),AYAB,AYBE,APYAB
+                else
+                  write (outs,1103) GLABEL(I)(1:12),YMAX(I),XT,YMIN(I),
+     &              NT,YAVE(I),AYAB,AYBE,APYAB
+                endif
+              else
+                if(nbdecimal.eq.1)then
+                  write (outs,1202) GLABEL(I)(1:12),YMAX(I),XT,YMIN(I),
+     &              NT,YAVE(I),AYAB,AYBE,APYAB
+                else
+                  write (outs,1102) GLABEL(I)(1:12),YMAX(I),XT,YMIN(I),
+     &              NT,YAVE(I),AYAB,AYBE,APYAB
+                endif
+              endif
             else
-              write (outs,1102) GLABEL(I)(1:15),YMAX(I),XT,YMIN(I),NT,
-     &          YAVE(I),AYAB,AYBE,APYAB
+              if(markdown)then
+                if(nbdecimal.eq.1)then
+                  write (outs,1214) GLABEL(I)(1:15),YMAX(I),XT,YMIN(I),
+     &              NT,YAVE(I),AYAB,AYBE,APYAB
+                else
+                  write (outs,1114) GLABEL(I)(1:15),YMAX(I),XT,YMIN(I),
+     &              NT,YAVE(I),AYAB,AYBE,APYAB
+                endif
+              else
+                write (outs,1102) GLABEL(I)(1:15),YMAX(I),XT,YMIN(I),NT,
+     &            YAVE(I),AYAB,AYBE,APYAB
+              endif
             endif
  1102       format (a,1x,2(f8.2,1x,a12,1x),3f8.2,f7.1)
+ 1202       format (a,1x,2(f8.1,1x,a12,1x),f8.2,2f8.1,f7.1)
+ 1103       format (a,8x,2(f10.2,2x,a,1x),3f10.2,f10.1)
+ 1203       format (a,8x,2(f10.1,2x,a,1x),f10.2,3f10.1)
+ 1114       format (a,4x,2(f10.2,2x,a,1x),3f10.2,f10.1)
+ 1214       format (a,4x,2(f10.1,2x,a,1x),f10.2,3f10.1)
+ 1105       format (a,2x,2(f10.2,2x,a,1x),3f10.2,f10.1)
+ 1205       format (a,2x,2(f10.1,2x,a,1x),f10.2,3f10.1)
           endif
           call eddisp(itru,outs)
  30     continue
+
+C Close off markdown table.
+        if(markdown)then
+          write (outs,'(2a)') 
+     &'--------------     -----------  -------------  ----------  ',
+     &'------------  -----------  --------  --------  --------'
+          call edisp(itru,outs)
+        endif
 
 C Generate 'all zones' text.  
 C Remember that depending on query the number of hours will be 
@@ -2041,6 +2579,10 @@ C Also called by recovert if act = 'p' << needs checking >>
 
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
+C Markdown flag.
+      logical markdown
+      common/markdownflag/markdown
+
       logical libheading ! have we printed report heading (library name etc).
       logical headingcontext ! has set or period changed so heading needs reprint
       common/libhead/libheading,headingcontext
@@ -2115,32 +2657,89 @@ C Energy requirements.
         CALL HDDATE(PDESCR)
         CALL HDSTEP(SDESCR)
         lsn1=MIN0(lnblnk(RFILE),42)
-        if(NSIM.gt.1)then
-          write(outs,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',ISIM,
-     &      ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
-        else
-          write(outs,'(4A)')'Lib: ',RFILE(1:lsn1),
-     &      ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
+        if((.NOT.libheading).and.(.NOT.headingcontext))then
+          libheading=.true.; headingcontext=.true.
+          if(NSIM.gt.1)then
+            if(markdown)then
+              write(outs,'(2a)') '# Performance Report for ',
+     &          RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
+              call edisp(itru,outs)
+	    
+              write(outs,'(3A,I4)')'### Library ',RFILE(1:lsn1),
+     &          ' Set:',ISIM
+              call edisp(itru,outs)
+            else
+              write(outs,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',
+     &          ISIM,': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
+              call edisp(itru,outs)
+            endif
+          else
+            if(markdown)then
+              write(outs,'(2a)') '# Performance Report for ',
+     &          RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
+              call edisp(itru,outs)
+              write(outs,'(2A)')'### Library ',RFILE(1:lsn1)
+              call edisp(itru,outs)
+            else
+              write(outs,'(4A)')'Lib: ',RFILE(1:lsn1),
+     &        ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
+              call edisp(itru,outs)
+            endif
+          endif
+          if(markdown)then
+            write(outs,'(4A)')'### ',PDESCR(1:lnblnk(PDESCR)),' ',
+     &        SDESCR(11:lnblnk(SDESCR))
+          else
+            write(outs,'(3A)')PDESCR(1:lnblnk(PDESCR)),' ',
+     &        SDESCR(11:lnblnk(SDESCR))
+          endif
+          call edisp(itru,outs)
         endif
-        call edisp(itru,outs)
-        write(outs,'(3A)')PDESCR(1:lnblnk(PDESCR)),' ',
-     &    SDESCR(11:lnblnk(SDESCR))
-        call edisp(itru,outs)
 
         call edisp(itru,' ')
-        call edisp(itru,' Zone energy requirements summary')
-        write(outs,'(2A)')
+        if(markdown)then
+          call edisp(itru,'## Zone energy requirements summary')
+          call edisp(itru,': Zone energy requirements summary')
+          call edisp(itru,' ')
+        else
+          call edisp(itru,' Zone energy requirements summary')
+        endif
+	
+        if(markdown)then
+          write(outs,'(3A)')
+     &'--- -------------  -------- --------- --------   --------  ',
+     &'-------- --------  --------------  --------------  ',
+     &'----------------  ----------------'
+          call edisp(itru,outs)
+          write(outs,'(3A)')
+     &'    Zone           Sensible Sensible  Sensible   Sensible  ',
+     &'Sensible Sensible  Humidification  Humidification  ',
+     &'Dehumidification  Dehumidification'
+          call edisp(itru,outs)
+          write(outs,'(3A)')
+     &' id name           heating  heating   heating    cooling   ',
+     &'cooling  cooling   energy          hours           ',
+     &'energy            hours'
+          call edisp(itru,outs)
+          write(outs,'(3A)')
+     &'                   kWhrs    kWhrs/m2  hours      kWhrs     ',
+     &'kWhrs/m2 hours     kWhrs           required        ',
+     &'kWhrs             required'
+          call edisp(itru,outs)
+        else
+          write(outs,'(2A)')
      &'    Zone                 Sensible heating            Sensible ',
      &'cooling         Humidification    Dehumidification'
-        call edisp(itru,outs)
-        write(outs,'(2A)')
+          call edisp(itru,outs)
+          write(outs,'(2A)')
      &' id name                 Energy       Hours          Energy   ',
      &'    Hours       Energy   Hours    Energy  Hours'
-        call edisp(itru,outs)
-        write(outs,'(2A)')
+          call edisp(itru,outs)
+          write(outs,'(2A)')
      &'                     kWhrs  kWhrs/m2 required    kWhrs  kWhrs/',
      &'m2 required     kWhrs  required   kWhrs  required'
-        call edisp(itru,outs)
+          call edisp(itru,outs)
+        endif
       endif
 
 C Find the number of hours represented by an output timestep.
@@ -2199,24 +2798,50 @@ C Calcalate the sums and statistics to display during relevant period.
         tzlhtime=tzlhtime+zlhtime
         tzlctime=tzlctime+zlctime
         if(act(1:1).ne.'i') then
-          write(outs,'(I3,1x,a12,2(f11.2,f9.2,f8.1),2(f11.2,f8.1))')
+          if(markdown)then
+        write(outs,'(I3,1x,a12,2(f11.2,f9.2,f10.1),2(f16.2,f16.1))')
      &      IZ,zname(IZ),ZHE,ZHE/ZBASEA(IZ),ZHTIME,ZCE,ZCE/ZBASEA(IZ),
      &      Zctime,ZLHE,ZLHTIME,ZLCE,zlctime
-          call eddisp(itru,outs)
+            call eddisp(itru,outs)
+          else
+           write(outs,'(I3,1x,a12,2(f11.2,f9.2,f8.1),2(f11.2,f8.1))')
+     &      IZ,zname(IZ),ZHE,ZHE/ZBASEA(IZ),ZHTIME,ZCE,ZCE/ZBASEA(IZ),
+     &      Zctime,ZLHE,ZLHTIME,ZLCE,zlctime
+            call eddisp(itru,outs)
+          endif
         endif
    65 CONTINUE
       if(act(1:1).ne.'i') then
         if(THE.gt.99999.0.or.TCE.lt.-99999.0)then
-          write(outs,'(a,2(f11.1,f9.1,f8.0),2(f11.1,f8.0))') 
-     &    '   All        ',THE,THE/ZBA,tzhtime,TCE,
-     &    TCE/ZBA,tzctime,TLHE,tzlhtime,TLCE,tzlctime
+          if(markdown)then
+            write(outs,'(a,2(f11.1,f9.1,f10.0),2(f16.1,f16.0))') 
+     &      '    All       ',THE,THE/ZBA,tzhtime,TCE,
+     &      TCE/ZBA,tzctime,TLHE,tzlhtime,TLCE,tzlctime
+          else
+            write(outs,'(a,2(f11.1,f9.1,f8.0),2(f11.1,f8.0))') 
+     &      '   All        ',THE,THE/ZBA,tzhtime,TCE,
+     &      TCE/ZBA,tzctime,TLHE,tzlhtime,TLCE,tzlctime
+          endif
         else
-          write(outs,'(a,2(f11.1,f9.1,f8.0),2(f11.1,f8.1))')
-     &    '   All         ',THE,THE/ZBASEA(IZ),tzhtime,TCE,
-     &    TCE/ZBA,tzctime,TLHE,tzlhtime,TLCE,tzlctime
+          if(markdown)then
+            write(outs,'(a,2(f11.1,f9.1,f10.0),2(f16.1,f16.1))')
+     &      '    All        ',THE,THE/ZBA,tzhtime,TCE,
+     &      TCE/ZBASEA(IZ),tzctime,TLHE,tzlhtime,TLCE,tzlctime
+          else
+            write(outs,'(a,2(f11.1,f9.1,f8.0),2(f11.1,f8.1))')
+     &      '   All         ',THE,THE/ZBA,tzhtime,TCE,
+     &      TCE/ZBA,tzctime,TLHE,tzlhtime,TLCE,tzlctime
+          endif
         endif
-        call edisp(itru,' ')
+        if(.NOT.markdown) call edisp(itru,' ')
         call eddisp(itru,outs)
+        if(markdown)then
+          write(outs,'(3A)')
+     &'--- -------------  -------- --------- --------   --------  ',
+     &'-------- --------  --------------  --------------  ',
+     &'----------------  ----------------'
+          call edisp(itru,outs)
+        endif
         call edisp(itru,' ')
       endif
 
@@ -2270,6 +2895,7 @@ C Clear the day array.
       write(outs,'(f8.1,a)') AGRCLSTEPS*TFACT,
      &  ' hours when cooling required in at least one zone.'
       call eddisp(itru,outs)
+      if(markdown) call edisp(itru,'  ')
 
       call usrmsg(prompte,'  ','P')
       if(MMOD.eq.8)call usrmsg('  ','  ','-')

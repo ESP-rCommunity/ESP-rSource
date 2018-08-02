@@ -201,7 +201,7 @@ C If act = 'a' then return.
 C Otherwise commission an explicit calculation.
 
 C Get logical name of terminal type, expand model name
-C to include the path and create a string to drive espvwf module.
+C to include the path and create a string to drive mrt module.
           doit = ' '
           call terminalmode(childterminal,tmode)
           if(unixok)then
@@ -224,15 +224,15 @@ C an offset from prj start position.
             iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
           endif
           if(iappwpc.gt.0.and.iappwpc.le.200)then
-            write(doit,'(3a,3i4,4a)') 'espvwf -mode ',tmode,
+            write(doit,'(3a,3i4,4a)') 'mrt -mode ',tmode,
      &        ' -s ',iappwpc,iappx+20,iappy+30,' -file ',
      &        longtfile(:lnblnk(longtfile)),' -zone ',ZN(1:lnblnk(ZN))
           else
-            write(doit,'(6a)') 'espvwf -mode ',tmode,
+            write(doit,'(6a)') 'mrt -mode ',tmode,
      &        ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
      &        ' -zone ',ZN(1:lnblnk(ZN))
           endif
-          call usrmsg('starting espvwf module via',doit,'-')
+          call usrmsg('starting mrt module via',doit,'-')
           call runit(doit,tmode)
           call usrmsg(' Reading viewfactor file....',' ','-')
           call pauses(1)
@@ -602,7 +602,7 @@ C offer the user a chance to re-edit if not close to one.
       ELSEIF(IVERT.EQ.4)THEN
 
 C View factor calculations - offer choice of default viewfactors or
-C call to ESPVWF. Recover information on areas in the current zone for
+C call to MRT. Recover information on areas in the current zone for
 C use in area weighted computation.
         call easkabc(' Zone viewfactor calculations can be either',
      &    ':','Area weighted','Based on ray-tracing calcs','continue',
@@ -627,7 +627,7 @@ C << Rewrite logic to use G7 common blocks rather than call zinfo. >>
         elseif(IW.eq.2)then
 
 C Get logical name of terminal type, expand model name
-C to include the path and create a string to drive espvwf.
+C to include the path and create a string to drive mrt.
           doit = ' '
           call terminalmode(childterminal,tmode)
           if(unixok)then
@@ -650,16 +650,16 @@ C an offset from prj start position.
             iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
           endif
           if(iappwpc.gt.0.and.iappwpc.le.200)then
-            write(doit,'(3a,3i4,5a)') 'espvwf -mode ',tmode,
+            write(doit,'(3a,3i4,5a)') 'mrt -mode ',tmode,
      &        ' -s ',iappwpc,iappx+20,iappy+30,' -file ',
      &        longtfile(:lnblnk(longtfile)),' -zone ',ZN(1:lnblnk(ZN)),
      &        ' &'
           else
-            write(doit,'(7a)') 'espvwf -mode ',tmode,
+            write(doit,'(7a)') 'mrt -mode ',tmode,
      &        ' -s 0 0 0 -file ',longtfile(:lnblnk(longtfile)),
      &        ' -zone ',ZN(1:lnblnk(ZN)),' &'
           endif
-          call usrmsg('starting espvwf module via',doit,'-')
+          call usrmsg('starting mrt module via',doit,'-')
           call runit(doit,tmode)
 
           helptopic='pause_for_calcs'

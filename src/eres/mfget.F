@@ -202,13 +202,13 @@ C  NLIST - node list
 C  CNLST - connection node list to restrict choice (e.g. all flows through node x)
 C  CRLST - reference node list for connection information (e.g. volume for ac/h)
 C  CTLST - contaminant list
-      net3ddelay=2  ! assume 1 sec delay
-      IDH=1   ! assume no horizontal separator
  1    CLIST=.FALSE.
       NLIST=.FALSE.
       CNLST=.FALSE.
       CRLST=.FALSE.
       CTLST=.FALSE.
+      IDH=1   ! assume no horizontal separator
+      net3ddelay=2  ! assume 1 sec delay
 
 C MNGET is the maximum number of metrics allowed to be chosen from the menu.
       if (MENUTYPE.eq.1) then

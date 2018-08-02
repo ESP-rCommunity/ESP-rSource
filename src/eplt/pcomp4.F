@@ -933,7 +933,7 @@ C Determine variables for PP5.3
 C Establish absorbed power E based on current air flow rate which might
 C have been calculated by mfs
 C In case of mfs E is based on flow rate, pressure *rise*, and efficiency
-        IF(IFLWN.NE.0) THEN
+        IF(IFLWN.NE.0.AND.ICFFS(ICON1).NE.0) THEN
           ICNN=ICFFS(ICON1)
           E=real((FLW1(ICNN)+FLW2(ICNN))
      &      *(PRES(NODNE(ICNN))-PRES(NODPS(ICNN)))

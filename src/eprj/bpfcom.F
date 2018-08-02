@@ -1641,6 +1641,10 @@ C Parameters
       integer icascf
       common/cctl/icascf(mcom)
 
+C Markdown flag.
+      logical markdown
+      common/markdownflag/markdown
+
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       character calename*32,calentag*12,calendayname*32
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
@@ -1652,11 +1656,19 @@ C List linkages with zones if II = 0.
       if(II.eq.0)then
         if(icfoc.eq.0) then !.or.icfoc.eq.6)then
           call edisp(itru,' ')
-          call edisp(itru,' Zone to contol loop linkages:')
+          if(markdown)then
+            call edisp2tr(itru,'Zone to contol loop linkages  ')
+          else
+            call edisp(itru,' Zone to contol loop linkages:')
+          endif
           DO 28 LC=1,NCOMP
             WRITE(outs,'(a,i2,a,a,a,i2)')' zone (',LC,') ',zname(LC),
      &        ' << control ',ICASCF(LC)
-            call edisp(itru,outs)
+            if(markdown)then
+              call edisp2tr(itru,outs)
+            else
+              call edisp(itru,outs)
+            endif
   28      CONTINUE
         elseif(icfoc.eq.1)then
         elseif(icfoc.eq.2)then
@@ -1674,23 +1686,48 @@ C List function details.
       LN=max(1,LNBLNK(SSTR))
       if(icfoc.eq.0)then
         if(IBSN(II,4).eq.0)then
-          WRITE(outs,'(a,i2,2a)') ' The sensor for function ',
+          if(markdown)then
+            WRITE(outs,'(a,i2,2a)') 'The sensor for function ',
      &      II,' ',SSTR(1:LN)
+          else
+            WRITE(outs,'(a,i2,2a)') ' The sensor for function ',
+     &      II,' ',SSTR(1:LN)
+          endif
         else
-          WRITE(outs,'(a,i2,3a,i2)') ' The sensor for function ',
+          if(markdown)then
+            WRITE(outs,'(a,i2,3a,i2)') 'The sensor for function ',
      &      II,' ',SSTR(1:LN),' with nested loop ',IBSN(II,4)
+          else
+            WRITE(outs,'(a,i2,3a,i2)') ' The sensor for function ',
+     &      II,' ',SSTR(1:LN),' with nested loop ',IBSN(II,4)
+          endif
         endif
       else
-        WRITE(outs,'(a,i2,2a)') ' The sensor for function ',
+        if(markdown)then
+          WRITE(outs,'(a,i2,2a)') 'The sensor for function ',
      &    II,' ',SSTR(1:LN)
+        else
+          WRITE(outs,'(a,i2,2a)') ' The sensor for function ',
+     &    II,' ',SSTR(1:LN)
+        endif
       endif
-      call edisp(itru,outs)
+      if(markdown)then
+        call edisp2tr(itru,outs)
+      else
+        call edisp(itru,outs)
+      endif
 
       CALL EVCNTRL(icfoc,II,1,1,'A',SSTR)
       LN=max(1,LNBLNK(SSTR))
-      WRITE(outs,75)II,SSTR(1:LN)
-  75  FORMAT(' The actuator for function ',I2,' is ',a)
-      call edisp(itru,outs)
+      if(markdown)then
+        WRITE(outs,751)II,SSTR(1:LN)
+ 751    FORMAT('The actuator for function ',I2,' is ',a)
+        call edisp2tr(itru,outs)
+      else
+        WRITE(outs,75)II,SSTR(1:LN)
+  75    FORMAT(' The actuator for function ',I2,' is ',a)
+        call edisp(itru,outs)
+      endif
       if(icfoc.eq.0)then
         nn=nbcdt(ii)
       elseif(icfoc.eq.1)then
@@ -1708,14 +1745,20 @@ C List function details.
       endif
 
 C NN is overloaded - zero follows the calendar day types, otherwise
-C non-zero signals the control uses dates-of-validity.
+C non-zero signals the control uses dates-of-validity. The QA report
+C will already have mentioned the day types so skip unless nn>0.
       if(nn.eq.0)then
-        call edisp(itru,' The following day types are defined:')
-        write(outs,'(20a)') (CALENTAG(idty),idty=1,NBDAYTYPE)
-        call edisp(itru,outs)
-C        DO 30 ID=1,NBDAYTYPE
-C          call edisp(itru,calentag(id))
-C 30     CONTINUE
+C        if(markdown)then
+C          call edisp(itru,'The following day types are defined  ')
+C        else
+C          call edisp(itru,' The following day types are defined:')
+C        endif
+C        write(outs,'(20a)') (CALENTAG(idty),idty=1,NBDAYTYPE)
+C        if(markdown)then
+C          call edisp2tr(itru,outs)
+C        else
+C          call edisp(itru,outs)
+C        endif
       else
         write(outs,'(a,i2,a)') ' > ',nn,
      &    ' periods of validity during the year have been defined.'

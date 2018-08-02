@@ -109,6 +109,10 @@ if [ $# -ne 0 ]; then
                         input="yes";
                         enable_cosim="yes";        shift;;
         --gcc4)         gnu_version="gcc4";        shift;;
+        --opt0)         opt="-O0";        shift;;
+        --opt1)         opt="-O1";        shift;;
+        --opt2)         opt="-O2";        shift;;
+        --opt3)         opt="-O3";        shift;;
         --intel)        use_intel="yes";           shift;;
         --X11)          xLibs="X11";               shift;;
         --GTK)          xLibs="GTK";               shift;;
@@ -224,8 +228,12 @@ if [ $help -eq 1 ]; then
   echo "           Use the gcc4 compilers (gcc, g++ and gFortran)."
   echo "           (the default)."
   echo " "
-  echo "    -h, --help"
-  echo "           Display this help message."
+  echo "    --opt0: no compiler optimization"
+  echo "    --opt1: -O1 compiler optimization ~x1.5 speed"
+  echo "    --opt2: -O2 compiler optimization ~x1.7 speed"
+  echo "    --opt3: -O3 compiler optimization ~x1.8 speed"
+  echo " "
+  echo "    -h, --help:  Display this help message."
   echo " "
   echo "    --intel"
   echo "           Use the Intel compiler suite (icc,ifort,icpc)."
@@ -1026,10 +1034,23 @@ esac
 
 # Append -DX11 flag as necessary
 if [ "$xLibs" = "X11" ]; then
-  fDefType="$fDefType -DX11 -O1"
+  fDefType="$fDefType -DX11"
 fi
 if [ "$xLibs" = "GTK" ]; then
-  fDefType="$fDefType -DGTK -O1"
+  fDefType="$fDefType -DGTK"
+fi
+# Append optimization flag as necessary
+if [ "$opt" = "-O0" ]; then
+  fDefType="$fDefType -O0"
+fi
+if [ "$opt" = "-O1" ]; then
+  fDefType="$fDefType -O1"
+fi
+if [ "$opt" = "-O2" ]; then
+  fDefType="$fDefType -O2"
+fi
+if [ "$opt" = "-O3" ]; then
+  fDefType="$fDefType -O3"
 fi
 
 # Assign Fortran compilation flags.

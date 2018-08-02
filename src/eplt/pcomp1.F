@@ -780,7 +780,7 @@ C First initialize UA modulus (for calculation of containment heat loss)
 C Establish absorbed power E based on current air flow rate which might
 C have been calculated by mfs
 C In case of mfs E is based on flow rate, pressure *rise*, and efficiency
-         IF(IFLWN.NE.0) THEN
+         IF(IFLWN.NE.0.AND.ICFFS(ICON1).NE.0) THEN
             ICNN=ICFFS(ICON1)
             E=real((FLW1(ICNN)+FLW2(ICNN))*
      &             (PRES(NODNE(ICNN))-PRES(NODPS(ICNN))))/
@@ -860,7 +860,7 @@ C 1st phase mass (ie. dry air) balance coefficients
 C Note that if fluid mass flow solver active, source of mass zeroised
       ELSE IF(ISTATS.EQ.2) THEN
          COUT(1)=1.
-         IF(IFLWN.EQ.0) THEN
+         IF(IFLWN.EQ.0.or.ICFFS(ICON1).eq.0) THEN
             COUT(2)=0.
             COUT(3)=CDATA(IPCOMP,1)*RHOFLD(1,CSVF(INOD1,1))
          ELSE
@@ -1587,7 +1587,7 @@ c Initialise mass flow fraction entering damper.
 
 c In case a mass flow network is defined, 
 c reset 'fm' to 1.
-      if(iflwn.ne.0) fm=1.0
+      if(iflwn.ne.0.and.icffs(icon1).ne.0) fm=1.0
 
 c Generate coefficients for energy balance equation
       if(istats.eq.1) then
@@ -1782,7 +1782,7 @@ c Alter the corresponding flow through the second connection
 
 c In case a mass flow network is defined, 
 c reset 'fm' to 1.
-      if(iflwn.ne.0) fm=1.0
+      if(iflwn.ne.0.and.icffs(icon1).ne.0) fm=1.0
 
 c Generate coefficients for energy balance equation
       if(istats.eq.1) then
@@ -3597,7 +3597,7 @@ C First initialize UA modulus (for calculation of containment heat loss)
 C Establish absorbed power E based on current air flow rate which might
 C have been calculated by mfs
 C In case of mfs E is based on flow rate, pressure *rise*, and efficiency
-         IF(IFLWN.NE.0) THEN
+         IF(IFLWN.NE.0.AND.ICFFS(ICON1).NE.0) THEN
             ICNN=ICFFS(ICON1)
             E=real((FLW1(ICNN)+FLW2(ICNN))*
      &             (PRES(NODNE(ICNN))-PRES(NODPS(ICNN))))/
@@ -3670,7 +3670,7 @@ C 1st phase mass (ie. dry air) balance coefficients
 C Note that if fluid mass flow solver active, source of mass zeroised
       ELSE IF(ISTATS.EQ.2) THEN
          COUT(1)=1.
-         IF(IFLWN.EQ.0) THEN
+         IF(IFLWN.EQ.0.or.ICFFS(ICON1).eq.0) THEN
             COUT(2)=0.
             COUT(3)=CDATA(IPCOMP,1)
          ELSE

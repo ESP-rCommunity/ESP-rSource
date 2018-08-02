@@ -330,6 +330,10 @@ C espriou.h provides currentfile.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
+
+C Markdown flag.
+      logical markdown
+      common/markdownflag/markdown
       integer ncomp,ncon
       common/c1/ncomp,ncon
       common/cctlnm/ctldoc,lctlf
@@ -547,15 +551,30 @@ C Reporting: Get a string describing the current sensor based on common.
           IIS=II
           CALL EVCNTRL(0,IIS,1,1,'S',SSTR)
           if(IBSN(II,4).eq.0)then
-            WRITE(OUTSTR,'(a,i2,2a)') ' The sensor for function ',
+            if(markdown)then
+              WRITE(OUTSTR,'(a,i2,2a)') 'The sensor for function ',
      &        II,' ',SSTR(1:LNBLNK(SSTR))
+            else
+              WRITE(OUTSTR,'(a,i2,2a)') ' The sensor for function ',
+     &        II,' ',SSTR(1:LNBLNK(SSTR))
+            endif
           else
-            WRITE(OUTSTR,'(a,i2,3a,i2)') ' The sensor for function ',
+            if(markdown)then
+              WRITE(OUTSTR,'(a,i2,3a,i2)') 'The sensor for function ',
      &        II,' ',SSTR(1:LNBLNK(SSTR)),
      &        ' with nested loop ',IBSN(II,4)
+            else
+              WRITE(OUTSTR,'(a,i2,3a,i2)') ' The sensor for function ',
+     &        II,' ',SSTR(1:LNBLNK(SSTR)),
+     &        ' with nested loop ',IBSN(II,4)
+            endif
           endif
           CALL EDISP(ITRU,' ')
-          CALL EDISP(ITRU,OUTSTR)
+          if(markdown)then
+            call edisp2tr(ITRU,OUTSTR)
+          else
+            CALL EDISP(ITRU,OUTSTR)
+          endif
         ENDIF
 
         CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'actuator',IER)
@@ -581,9 +600,15 @@ C Reporting: Get a string describing the actuator based on common block.
         IF(ITRC.GE.1)THEN
           IIS=II
           CALL EVCNTRL(0,IIS,1,1,'A',SSTR)
-          WRITE(OUTSTR,75)II,SSTR(1:LNBLNK(SSTR))
-  75      FORMAT(' The actuator for function ',I2,' is ',a)
-          CALL EDISP(ITRU,OUTSTR)
+          if(markdown)then
+            WRITE(OUTSTR,751)II,SSTR(1:LNBLNK(SSTR))
+  751       FORMAT('The actuator for function ',I2,' is ',a)
+            call edisp2tr(ITRU,OUTSTR)
+          else
+            WRITE(OUTSTR,75)II,SSTR(1:LNBLNK(SSTR))
+  75        FORMAT(' The actuator for function ',I2,' is ',a)
+            call edisp(ITRU,OUTSTR)
+          endif
         ENDIF
 
 C Day types.
@@ -595,10 +620,19 @@ C Day types.
 
 C Reporting:
         IF(ITRC.GE.1)THEN
-          CALL EDISP(ITRU,' For building control')
-          CALL EDISP(ITRU,' the following day types have been defined')
-          write(outstr,'(20a)') (CALENTAG(idty),idty=1,NBDAYTYPE)
-          call edisp(ITRU,outstr)
+          if(markdown)then
+            write(outstr,'(2a)') 'For building control ',
+     &        ' the following day types have been defined'
+            call edisp(ITRU,outstr)
+            write(outstr,'(20a)') (CALENTAG(idty),idty=1,NBDAYTYPE)
+            call edisp2tr(ITRU,outstr)
+          else
+            write(outstr,'(2a)') 'For building control ',
+     &        ' the following day types have been defined: '
+            call edisp(ITRU,outstr)
+            write(outstr,'(20a)') (CALENTAG(idty),idty=1,NBDAYTYPE)
+            call edisp(ITRU,outstr)
+          endif
         ENDIF
 
         nn=nbcdt(ii)  ! a zero says use all day types
@@ -694,9 +728,13 @@ C Range checking (protect from 0 array reference).
 
 C Reporting.
         IF(ITRC.GE.1)THEN
-           WRITE(OUTS,85)LC,ZNAME(LC),ICASCF(LC)
-  85       FORMAT(' zone (',I2,') ',A12,' << control ',I2)
-           CALL EDISP(ITRU,OUTS)
+          WRITE(OUTS,85)LC,ZNAME(LC),ICASCF(LC)
+  85      FORMAT(' zone (',I2,') ',A,' << control ',I2)
+          if(markdown)then
+            call edisp2tr(ITRU,outs)
+          else
+            CALL EDISP(ITRU,OUTS)
+          endif
         ENDIF
   28  CONTINUE
       goto 15
@@ -1050,8 +1088,13 @@ C Reporting: Get a string describing the current sensor based on common.
         IF(ITRC.GE.1)THEN
           IIS=II
           CALL EVCNTRL(2,IIS,1,1,'S',SSTR)
-          WRITE(OUTSTR,'(a,i2,2a)') ' The sensor for function ',
+          if(markdown)then
+            WRITE(OUTSTR,'(a,i2,2a)') 'The sensor for function ',
      &      II,' ',SSTR(1:LNBLNK(SSTR))
+          else
+            WRITE(OUTSTR,'(a,i2,2a)') ' The sensor for function ',
+     &      II,' ',SSTR(1:LNBLNK(SSTR))
+          endif
           CALL EDISP(ITRU,OUTSTR)
         ENDIF
 
@@ -1645,8 +1688,13 @@ C Reporting: Get a string describing the current sensor based on common.
         IF(ITRC.GE.1)THEN
           IIS=II
           CALL EVCNTRL(5,IIS,1,1,'S',SSTR)
-          WRITE(OUTSTR,'(a,i2,2a)')' The sensor for function ',II,' ',
+          if(markdown)then
+            WRITE(OUTSTR,'(a,i2,2a)')'The sensor for function ',II,' ',
      &      SSTR(1:LNBLNK(SSTR))
+          else
+            WRITE(OUTSTR,'(a,i2,2a)')' The sensor for function ',II,' ',
+     &      SSTR(1:LNBLNK(SSTR))
+          endif
           CALL EDISP(ITRU,OUTSTR)
         ENDIF
 
@@ -1843,8 +1891,13 @@ C Reporting: Get a string describing the current sensor based on common.
         IF(ITRC.GE.1)THEN
           IIS=II
           CALL EVCNTRL(6,IIS,1,1,'S',SSTR)
-          WRITE(OUTSTR,'(a,i2,2a)') ' The sensor for function ',
+          if(markdown)then
+            WRITE(OUTSTR,'(a,i2,2a)') 'The sensor for function ',
      &      II,' ',SSTR(1:LNBLNK(SSTR))
+          else
+            WRITE(OUTSTR,'(a,i2,2a)') ' The sensor for function ',
+     &      II,' ',SSTR(1:LNBLNK(SSTR))
+          endif
           CALL EDISP(ITRU,' ')
           CALL EDISP(ITRU,OUTSTR)
         ENDIF
@@ -2734,57 +2787,119 @@ C Check if the sensor is thermophysical property substitution.
             if(nint(cm(1)).eq.6)then
 
 C Older control files might only have 6 items for basic controller.
-              write(lmsg,
-     &          '(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
-     &          msg1,' max heating capacity ',cm(2),
-     &          'W min heating capacity ',cm(3),
-     &          'W max cooling capacity ',cm(4),
-     &          'W min cooling capacity ',cm(5),
-     &          'W. Heating setpoint ',cm(6),'C cooling setpoint ',
-     &          cm(7),'C. (missing 7th item)'
+C If zero for minimums write a terse string.
+              if(cm(3).lt.0.01)zeroht=.true.
+              if(cm(5).lt.0.01)zerocl=.true.
+              if(zeroht.and.zerocl)then
+                write(lmsg,
+     &            '(2a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
+     &            msg1,' heating capacity ',cm(2),
+     &            'W cooling capacity ',cm(4),
+     &            'W. heating setpoint ',cm(6),'C cooling setpoint ',
+     &            cm(7),'C. (missing 7th item)'
+              else
+                write(lmsg,
+     &            '(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
+     &            msg1,' max heating capacity ',cm(2),
+     &            'W min heating capacity ',cm(3),
+     &            'W max cooling capacity ',cm(4),
+     &            'W min cooling capacity ',cm(5),
+     &            'W. heating setpoint ',cm(6),'C cooling setpoint ',
+     &            cm(7),'C. (missing 7th item)'
+              endif
             elseif(nint(cm(1)).eq.7)then
 
 C Newer control files have an extra item related to humidity control.
-              write(lmsg,
-     &          '(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
-     &          msg1(1:lnblnk(msg1)),' max heating capacity ',cm(2),
-     &          'W min heating capacity ',cm(3),
-     &          'W max cooling capacity ',cm(4),
-     &          'W min cooling capacity ',cm(5),
-     &          'W. Heating setpoint ',cm(6),'C cooling setpoint ',
-     &          cm(7),'C.'
-            elseif(nint(cm(1)).eq.11)then
-              if(nint(cm(12)).eq.1)then
-                write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,
-     &            a,f7.2,a,f5.1,a,f5.1,a,f6.2,a,f6.2,a)') 
-     &            msg1(1:lnblnk(msg1)),' mx heat cap',cm(2),
-     &            'W mn heat cap',cm(3),'W mx cool cap',cm(4),
-     &            'W mn cool cap',cm(5),'W. Heat sp',cm(6),
-     &            'C cool sp',cm(7),
-     &            'C & moist inj RH ctl hi sp',
-     &            cm(8),'(%) low sp',cm(9),
-     &            '(%) max humid ',cm(10),
-     &            '(g/s) max dehumid ',cm(11),'(g/s).'
-              elseif(nint(cm(12)).eq.2)then
-                write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,
-     &            a,f7.2,a,f5.1,a,f5.1,a)') 
-     &            msg1(1:lnblnk(msg1)),' max heating cap ',cm(2),
-     &            'W min heating cap ',cm(3),
-     &            'W max cooling cap ',cm(4),
-     &            'W min heaing cap ',cm(5),
-     &            'W. Heating sp ',cm(6),
-     &            'C cooling sp ',cm(7),
-     &            'C and T based RH ctl upper sp ',
-     &            cm(8),'(%) lower sp ',cm(9),'(%).'
-              elseif(nint(cm(12)).eq.0)then
+              if(cm(3).lt.0.01)zeroht=.true.
+              if(cm(5).lt.0.01)zerocl=.true.
+              if(zeroht.and.zerocl)then
+                write(lmsg,
+     &            '(2a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
+     &            msg1(1:lnblnk(msg1)),' heating capacity ',cm(2),
+     &            'W cooling capacity ',cm(4),
+     &            'W. heating setpoint ',cm(6),'C cooling setpoint ',
+     &            cm(7),'C.'
+              else
                 write(lmsg,
      &            '(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
      &            msg1(1:lnblnk(msg1)),' max heating capacity ',cm(2),
      &            'W min heating capacity ',cm(3),
      &            'W max cooling capacity ',cm(4),
      &            'W min cooling capacity ',cm(5),
-     &            'W. Heating setpoint ',cm(6),'C cooling setpoint ',
-     &            cm(7),'C. with incomplete RH control.'
+     &            'W. heating setpoint ',cm(6),'C cooling setpoint ',
+     &            cm(7),'C.'
+               endif
+            elseif(nint(cm(1)).eq.11)then
+              if(nint(cm(12)).eq.1)then
+                if(cm(3).lt.0.01)zeroht=.true.
+                if(cm(5).lt.0.01)zerocl=.true.
+                if(zeroht.and.zerocl)then
+                  write(lmsg,'(2a,f9.1,a,f9.1,a,f7.2,
+     &              a,f7.2,a,f5.1,a,f5.1,a,f6.2,a,f6.2,a)') 
+     &              msg1(1:lnblnk(msg1)),' heat cap',cm(2),
+     &              'W cool cap',cm(4),
+     &              'W heat sp',cm(6),
+     &              'C cool sp',cm(7),
+     &              'C & moist inj RH ctl hi sp',
+     &              cm(8),'(%) low sp',cm(9),
+     &              '(%) max humid ',cm(10),
+     &              '(g/s) max dehumid ',cm(11),'(g/s).'
+                else
+                  write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,
+     &              a,f7.2,a,f5.1,a,f5.1,a,f6.2,a,f6.2,a)') 
+     &              msg1(1:lnblnk(msg1)),' mx heat cap',cm(2),
+     &              'W mn heat cap',cm(3),'W mx cool cap',cm(4),
+     &              'W mn cool cap',cm(5),'W. Heat sp',cm(6),
+     &              'C cool sp',cm(7),
+     &              'C & moist inj RH ctl hi sp',
+     &              cm(8),'(%) low sp',cm(9),
+     &              '(%) max humid ',cm(10),
+     &              '(g/s) max dehumid ',cm(11),'(g/s).'
+                endif
+              elseif(nint(cm(12)).eq.2)then
+                if(cm(3).lt.0.01)zeroht=.true.
+                if(cm(5).lt.0.01)zerocl=.true.
+                if(zeroht.and.zerocl)then
+                  write(lmsg,'(2a,f9.1,a,f9.1,a,f7.2,
+     &              a,f7.2,a,f5.1,a,f5.1,a)') 
+     &              msg1(1:lnblnk(msg1)),' Heating cap ',cm(2),
+     &              'W cooling cap ',cm(4),
+     &              'W heating sp ',cm(6),
+     &              'C cooling sp ',cm(7),
+     &              'C and T based RH ctl upper sp ',
+     &              cm(8),'(%) lower sp ',cm(9),'(%).'
+                else
+                  write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,
+     &              a,f7.2,a,f5.1,a,f5.1,a)') 
+     &              msg1(1:lnblnk(msg1)),' max heating cap ',cm(2),
+     &              'W min heating cap ',cm(3),
+     &              'W max cooling cap ',cm(4),
+     &              'W min heaing cap ',cm(5),
+     &              'W heating sp ',cm(6),
+     &              'C cooling sp ',cm(7),
+     &              'C and T based RH ctl upper sp ',
+     &              cm(8),'(%) lower sp ',cm(9),'(%).'
+                endif
+             elseif(nint(cm(12)).eq.0)then
+                if(cm(3).lt.0.01)zeroht=.true.
+                if(cm(5).lt.0.01)zerocl=.true.
+                if(zeroht.and.zerocl)then
+                  write(lmsg,
+     &              '(2a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
+     &              msg1(1:lnblnk(msg1)),' Heating capacity ',cm(2),
+     &              'W cooling capacity ',cm(4),
+     &              'W heating setpoint ',cm(6),'C cooling setpoint ',
+     &              cm(7),'C. with incomplete RH control.'
+                else
+                  write(lmsg,
+     &              '(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
+     &              msg1(1:lnblnk(msg1)),' max heating capacity ',cm(2),
+     &              'W min heating capacity ',cm(3),
+     &              'W max cooling capacity ',cm(4),
+     &              'W min cooling capacity ',cm(5),
+     &              'W heating setpoint ',cm(6),'C cooling setpoint ',
+     &              cm(7),'C. with incomplete RH control.'
+                endif
               endif
             endif
           endif
@@ -3847,6 +3962,10 @@ C Parameters
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       character calename*32,calentag*12,calendayname*32
 
+C Markdown flag.
+      logical markdown
+      common/markdownflag/markdown
+
       character outs*124,SSTR*96,TMP*96,LTMP*248
       CHARACTER PERST1*14,PERST2*44,PERST3*44
       character outsa*84,outs400*400
@@ -3899,53 +4018,111 @@ C If nnd is zero then omitt days of validity information, otherwise
 C include it in the documentation line.
       lncal=lnblnk(CALENTAG(JJ))
       if(nnd.eq.0)then
-        WRITE(outs,'(3A,I2,A)') ' Day type ',CALENTAG(JJ)(1:lncal),
-     &    ' control has ',LL,' periods.'
+        continue
       else
-        WRITE(outs,'(3A,I2,A)') ' Control is valid ',
+        if(markdown)then
+          call edisp(itru,' ')
+          WRITE(outs,'(3A,I2,A)') 'Control is valid ',
      &    PERST3(9:lnblnk(PERST3)),' with ',LL,' periods.'
+          call edisp(itru,outs)
+        else
+          WRITE(outs,'(3A,I2,A)') ' Control is valid ',
+     &    PERST3(9:lnblnk(PERST3)),' with ',LL,' periods.'
+          call edisp(itru,outs)
+        endif
       endif
-      call edisp(itru,outs)
 
-      call edisp(itru,
-     &' Per|Start|Sensing  |Actuating  | Control law description')
+      if(markdown)then
+        call edisp(itru,' ')
+        write(outs,'(3a)') 
+     &  'Per  Start  Sensing   Actuating   ',CALENTAG(JJ)(1:lncal),
+     &  ' control laws'
+        call edisp(itru,outs)
+        write(outs,'(2A)')
+     &  '---  -----  -------   ---------   ',
+     &  '-------------------------------------------'
+        call edisp(itru,outs)
+      else
+        call edisp(itru,' ')
+        write(outs,'(3a)') 
+     &  ' Per|Start|Sensing  |Actuating  | ',CALENTAG(JJ)(1:lncal),
+     &  ' control laws'
+        call edisp(itru,outs)
+      endif
       DO 30 K=1,LL
         CALL EVCNTRL(icfoc,II,JJ,K,'T',SSTR)
         CALL EVCNTRLAW(icfoc,II,JJ,K,TMP,LTMP)
         if(icfoc.eq.0)then
-          WRITE(outsa,83)K,TBCPS(II,JJ,K),SSTR(1:21),TMP(1:20)
+          if(markdown)then
+            WRITE(outsa,831)K,TBCPS(II,JJ,K),SSTR(1:21),TMP(1:20)
+          else
+            WRITE(outsa,83)K,TBCPS(II,JJ,K),SSTR(1:21),TMP(1:20)
+          endif
           NITEMS=INT(BMISCD(II,JJ,K,1))
         elseif(icfoc.eq.1)then
-          WRITE(outsa,83)K,TPCPS(II,JJ,K),SSTR(1:21),TMP(1:20)
+          if(markdown)then
+            WRITE(outsa,831)K,TPCPS(II,JJ,K),SSTR(1:21),TMP(1:20)
+          else
+            WRITE(outsa,83)K,TPCPS(II,JJ,K),SSTR(1:21),TMP(1:20)
+          endif
           NITEMS=INT(PMISCD(II,JJ,K,1))
         elseif(icfoc.eq.2)then
-          WRITE(outsa,83)K,TFCPS(II,JJ,K),SSTR(1:21),TMP(1:20)
+          if(markdown)then
+            WRITE(outsa,831)K,TFCPS(II,JJ,K),SSTR(1:21),TMP(1:20)
+          else
+            WRITE(outsa,83)K,TFCPS(II,JJ,K),SSTR(1:21),TMP(1:20)
+          endif
           NITEMS=INT(FMISCD(II,JJ,K,1))
         elseif(icfoc.eq.3)then
-          WRITE(outsa,83)K,TGCPS(II,JJ,K),SSTR(1:21),TMP(1:20)
+          if(markdown)then
+            WRITE(outsa,831)K,TGCPS(II,JJ,K),SSTR(1:21),TMP(1:20)
+          else
+            WRITE(outsa,83)K,TGCPS(II,JJ,K),SSTR(1:21),TMP(1:20)
+          endif
           NITEMS=INT(GMISCD(II,JJ,K,1))
         elseif(icfoc.eq.5)then
-          WRITE(outsa,83)K,TOCPS(II,JJ,K),SSTR(1:21),TMP(1:21)
+          if(markdown)then
+            WRITE(outsa,831)K,TOCPS(II,JJ,K),SSTR(1:21),TMP(1:21)
+          else
+            WRITE(outsa,83)K,TOCPS(II,JJ,K),SSTR(1:21),TMP(1:21)
+          endif
           NITEMS=INT(OMISCD(II,JJ,K,1))
         elseif(icfoc.eq.6)then
-          WRITE(outsa,83)K,CFCctlperiodstart(II,JJ,K),
-     &                   SSTR(1:21),TMP(1:21)
+          if(markdown)then
+            WRITE(outsa,831)K,CFCctlperiodstart(II,JJ,K),
+     &        SSTR(1:21),TMP(1:21)
+          else
+            WRITE(outsa,83)K,CFCctlperiodstart(II,JJ,K),
+     &        SSTR(1:21),TMP(1:21)
+          endif
           NITEMS=INT(CFCmiscdata(II,JJ,K,1))
         endif
+ 831    FORMAT(I3,F7.2,'  ',a,' ',a)
   83    FORMAT(I4,F6.2,' ',a,' ',a)
 
-         if(NITEMS.GT.0)then
+        if(NITEMS.GT.0)then
 
 C Write the initial part of the control followed by description.
-          write(outs400,'(a,1x,a)',IOSTAT=IOS,ERR=3) outsa(1:32),
+          if(markdown)then
+            write(outs400,'(a,3x,a)',IOSTAT=IOS,ERR=3) outsa(1:32),
      &        ltmp(1:lnblnk(ltmp))
+          else
+            write(outs400,'(a,1x,a)',IOSTAT=IOS,ERR=3) outsa(1:32),
+     &        ltmp(1:lnblnk(ltmp))
+          endif
 
 C For zone, plant, flow and global controls list out the verbose 
 C decoding of the control law attributes.  Note that edisp248 is
 C able to work with strings longer than 248 characters.
           if(icfoc.eq.0.or.icfoc.eq.1.or.icfoc.eq.2.or.icfoc.eq.3.or.
      &      icfoc.eq.5.or.icfoc.eq.6)then
-            call edisp248(itru,outs400,90)
+            if(markdown)then
+              lnall=lnblnk(outs400)
+              write(itru,'(2a)') outs400(1:lnall),'  '  ! direct write
+C              call edisp248(itru,outs400,140)
+            else
+              call edisp248(itru,outs400,100)
+            endif
           endif
         elseif(NITEMS.eq.0)then
           write(outs,'(a)',IOSTAT=IOS,ERR=3) outsa(1:52)

@@ -76,6 +76,10 @@ C Function definition
       INTEGER :: ifil
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: iuout,iuin
+
+C Markdown flag.
+      logical markdown
+      common/markdownflag/markdown
       common/appw/iappw,iappx,iappy
       INTEGER :: iappw,iappx,iappy
       integer childterminal  ! picks up mmod from starting of prj
@@ -1446,7 +1450,28 @@ C that all zones in the model are to be included.
         do 29 iz=1,inpic
           ivals(iz)=iz
   29    continue
+
+C Ask about Markdown or plain text. Other subroutines will check
+C the common block value of markdown.
+        DOK=.false.
+        helptopic='use_markdown'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL ASKOK('Format the contents report in Markdown?',
+     &    ' ',OK,DOK,nbhelp)
+        if(OK)then
+          markdown=.true.
+        else
+          markdown=.false.
+        endif
         call prjqa(inpic,ivals,silent,ier)
+
+C If markdown true reset after report generated.
+        if(markdown) markdown=.false.
+
+      ELSEIF(INO.EQ.26)THEN
+
+C Calibration (to be added in a later commit).
+        goto 3
       ELSE
         GOTO 3
       ENDIF

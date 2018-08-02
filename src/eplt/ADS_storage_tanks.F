@@ -3215,7 +3215,7 @@ C Establish absorbed power E based on current water flow rate which might
 C have been calculated by mfs
 C In case of mfs E is based on flow rate, pressure *rise*, and efficiency
 
-         IF(IFLWN.NE.0) THEN
+         IF(IFLWN.NE.0.AND.ICFFS(ICON1).NE.0) THEN
             ICNN=ICFFS(ICON1)
 
             Temp = CSVF(INOD1,1) + 273.15
@@ -3310,7 +3310,7 @@ C 1st phase mass (ie. water) balance coefficients
 C Note that if fluid mass flow solver active, source of mass zeroised
       ELSE IF(ISTATS.EQ.2) THEN
          COUT(1)=1.
-         IF(IFLWN.EQ.0) THEN
+         IF(IFLWN.EQ.0.OR.ICFFS(ICON1).EQ.0) THEN
             COUT(2)=0.
 
 C revised calculation of COUT(3)

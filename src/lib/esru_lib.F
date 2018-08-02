@@ -7709,7 +7709,8 @@ C ************* runit
 C runit: Execute a command string, in text (runs in a new xterm) or graphics
 C mode.  Assumes that command string terminates in a '&' if the
 C user wishes to run in background mode. For minGW xterm is not used.
-
+C As runit is sometimes called with verbose command strings ensure
+C the local buffer (tmp & ltmp) can handle 1K characters.
 C WARNING - possible OS dependency:
 C runit invokes the command. system() is a C function which
 C works well on MSYS and Linux while execute_command_line is
@@ -7718,7 +7719,7 @@ C working then try switching bweteen these options.
       subroutine runit(cmd,tg)
       common/OUTIN/IUOUT,IUIN
       character*(*) cmd,tg
-      character tmp*560,ltmp*560,tmode*8,message*248
+      character tmp*1000,ltmp*1000,tmode*8,message*248
       character dq*1
       integer system
       logical unixok

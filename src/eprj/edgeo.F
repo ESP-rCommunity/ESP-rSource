@@ -6861,7 +6861,7 @@ C test for picking up a close vertex.
             CALL EGETWR(HOLD,K,py,-999.,999.,'W','Y cd',IER)
             CALL EGETWR(HOLD,K,pz,-9.9,999.9,'W','Z cd',IER)
             call pointmergewithinlinesatz(icomp,px,py,pz,rx,ry,rz,iok)
-            write(6,*) 'after pointmerge',px,py,pz,rx,ry,rz,iok
+C            write(6,*) 'after pointmerge',px,py,pz,rx,ry,rz,iok
           else
             continue
           endif
