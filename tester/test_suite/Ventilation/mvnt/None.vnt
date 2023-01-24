@@ -1,0 +1,7 @@
+# Sample ventilation system input file
+# Central Ventilation System (CVS) type
+1 # (1=None, 2=HRV, 3=Fans no heat recovery, 4=ERV)
+#--- Other fans (point exhaust and supply fans)
+2 # Type (1=None, 2=Other)
+# Supply, Exhaust flow(L/s), Total fan power (W)
+52.0 52.0 93.0

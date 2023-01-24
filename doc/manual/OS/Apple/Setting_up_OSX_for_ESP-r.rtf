@@ -1,0 +1,285 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1348\cocoasubrtf170
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fmodern\fcharset0 Courier;\f2\fnil\fcharset0 Tahoma;
+}
+{\colortbl;\red255\green255\blue255;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid1}
+{\list\listtemplateid2\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{hyphen\}}{\leveltext\leveltemplateid101\'01\uc0\u8259 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid2}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}{\listoverride\listid2\listoverridecount0\ls2}}
+\paperw11900\paperh16840\margl1440\margr1440\vieww18200\viewh7240\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\qc
+
+\f0\fs24 \cf0              Setting up OSX 10.8, 10.9, 10.10 10.11 for ESP-r Development & Use\
+Jon W. Hand, ESRU, Glasgow\
+March 2017\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+\cf0 \
+
+\b INTRODUCTION
+\b0 \
+\
+Apple computers can run ESP-r and are also great computers for doing development work on ESP-r. OSX includes the scripting, security and multi-tasking features of Linux/Unix computers which ESP-r requires. For development work the compiler 'tool-chain' is almost identical to that on Linux.\
+\
+There are several tasks that are required before you can embark on creating or using the virtual physics of ESP-r. If you only want to use ESP-r and have no need for a development environment see the 
+\i INSTALL from DMG
+\i0  below. If you want to 
+\i INSTALL ESP-r from scratch
+\i0  then jump to that section. section. \
+\
+
+\b INSTALL from DMG
+\b0 \
+\
+ESP-r is available as a DMG file with a pre-compiled version of ESP-r which should work on any recent OS X version. It includes a script to run to carry out the install process. You need the following installed first:  \
+\pard\tx220\tx720\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\li720\fi-720\pardirnatural
+\ls1\ilvl0\cf0 {\listtext	\'95	}XQuartz <https://www.xquartz.org> allows software such as ESP-r to be displayed on your computer. After this package is installed you need to reboot.\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+\cf0 \
+There is a video which shows the steps involved. Inside the DMG file are instructions. Read them before invoking the script.\
+\
+
+\b INSTALL from scratch
+\b0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+\cf0 \
+Building ESP-r from its source requires that you have development tools (the so-called tool-chain) as well as a package manager. Unless you want it for other processes the full Xcode download is huge and the basic requirement is to install the command line utilities for XCode. Use the Apple Store to get the command line utilities (see notes at the end of this document). Reboot after you have installed the command line utilities. Although this will install a C compiler you need a matching set of the GNU compilers (gcc g++ gfortran) and for that we recommend either MacPorts or Homebrew (see notes below). You will also need XQuartz (see above for details). Again reboot after you have installed the XQuartz package.\
+\
+ESP-r works differently from most OSX applications. You invoke it via commands entered within an OSX terminal. It knows that OSX has most of the Linux utilities and command syntax and so you have to adopt some of these as well.\
+\
+
+\b MACPORTS
+\b0 \
+\
+The MacPorts environment (see useful links below) is designed to assist OSX users in installing open source software. It supports getting the necessary utilities as well as the GCC compiler collections (gcc g++ gfortran). MacPorts will place newly installed software in /opt/local (so that they do not clash with other software). MacPorts package manages dependencies so the hassles of acquiring related software packages and/or libraries are reduced. With very few commands the dependencies needed for ESP-r development and use can be installed on your computer.\
+\
+Go to the folder /opt/local. Check if a port exists use commands in the form:\
+\
+  
+\f1 sudo bin/port search gcc5
+\f0 \
+\
+And to install a package and its dependencies issue commands in the form:\
+  sudo bin/port install <package_name>\
+\
+You will want to install the following port packages along with their dependencies:\
+  
+\f1 sudo bin/port install gcc5, ddd gimp2-devel
+\f0 \
+\
+This combination of ports will result in g++-mp-5, gcc-mp-5 and gfortran-mp-5 in /opt/local/bin and the X11 and GTK libraries being located in /opt/local/lib in addition to the X11 libraries generated by the initial X11 install in /usr/X11R6.\
+\
+The pure-text version needs none of the graphic libraries and will almost always compile. The GTK version uses a utility called pkg-config to locate libraries and will compile with few questions being asked.\
+\
+
+\b HOMEBREW
+\b0 \
+\
+An alternative package manager is called Homebrew. You can find this at <http://brew.sh>. Homebrew requires the command line tools for XCode as well as XQuartz (see above). Once these are installed the home page includes a command that you can paste into an OSX command window to download it. \
+\
+After the initial homebrew is working there are a sequence of commands you will need to issue:\
+\
+ 
+\f2  
+\f1 brew update\
+ brew upgrade\
+\
+
+\f0 To acquire the tool-chain issue the following commands:\
+\
+  b
+\f1 rew install gcc gtk+
+\f0 \
+\
+This could take a few minutes, you might have to hit the carnage return a couple of times. Homebrew seem to have most of the other libraries needed for ESP-r development work. The next step is to acquire the ASCII text editor and file comparison tool which are used by ESP-r:\
+\
+  
+\f1 brew install nedit diffuse\
+
+\f0  \
+\
+
+\b COMPILING
+\b0 \
+\
+By default OS X will place user accounts under the folder /Users. The default location for ESP-r is /opt/esru. To create /opt/esru folder use a sudo command to create the new folder and to gain ownership of the new folder so that you can install ESP-r there.\
+    
+\f1 cd /opt\
+  sudo mkdir esru\
+  sudo chown your_login_name /opt/esru\
+  sudo chgrp staff /opt/esru\
+
+\f0 \
+When compiling esp-r use Install script in the ESP-r source code distribution. A typical command would be:\
+\
+ 
+\f1 ./Install_o1 -d /opt/esru --gcc4 --debug --compiler_version -mp-5\
+\
+or if you are using homebrew the compiler name is a bit different so use:\
+\
+
+\f0  
+\f1 ./Install_o1 -d /opt/esru --gcc4 --debug --compiler_version -6\
+
+\f0 \
+\
+You can find out more about the source code compile process by giving the command:\
+\
+  
+\f1 ./Install --help
+\f0 \
+\
+There are a few responses you need to provide during the Install process: \
+\pard\tx220\tx720\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\li720\fi-720\pardirnatural
+\ls2\ilvl0\cf0 {\listtext	\uc0\u8259 	}if the Installer detects a machine type x86_64 say yes\
+{\listtext	\uc0\u8259 	}if XML support is detected and you want to have XML output say yes\
+{\listtext	\uc0\u8259 	}you are given a choice of GTK or X11 or pure-text interfaces\
+{\listtext	\uc0\u8259 	}typically says yes to retaining debugging symbols\
+{\listtext	\uc0\u8259 	}on first install and after merging in new databases or updates say yes to databases and training models\
+{\listtext	\uc0\u8259 	}and if /opt/esru does not already have all of the distribution folders in place say yes to a request to create them. If the Install process cannot create the sub-folders you may have to update permissions.\
+{\listtext	\uc0\u8259 	}lastly say yes to proceed with the installation.\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+\cf0 \
+The Install will echo the general progress as modules are built. \
+\
+\
+
+\b SETTING UP YOUR ENVIRONMENT
+\b0 \
+\
+To use ESP-r it is suggested that in your $HOME folder e.g. /Users/fred you create a bin folder and a Models folder.  In bin place the scripts link_to and link_to_bash from the distribution scripts folder. After building ESP-r into /opt/esru issue the following commands:\
+    
+\f1 cd\
+  cd bin\
+  ./link_to /opt/esru/esp-r/bin
+\f0 \
+\
+This will create links to the ESP-r executables. If your .profile or your .cshrc\
+environment files include $HOME/bin in the PATH definition when you login in\
+the next time you should be able to issue the command:\
+  
+\f1 which prj
+\f0 \
+and get back\
+  /
+\f1 Users/fred/bin/prj
+\f0 \
+\
+If this does not work you may need to issue the following commands first:\
+    
+\f1 cd\
+  source .profile\
+  which prj\
+
+\f0 \
+When creating new models a good habit is to start from your Models folder:\
+    
+\f1 cd\
+  cd Models\
+  prj\
+
+\f0 \
+This will start up the ESP-r Project Manager and if you ask for a new model it will be located in a subfolder of Models.\
+\
+
+\b FONTS
+\b0 \
+\
+On OSX sometimes the GTK version of ESP-r will crash when attempting to display a pop-up message or display such as the wire-frame control proforma. This is usually resolved by re-freshing the font cache via the following command:\
+  
+\f1 sudo fc-cache -f -v
+\f0 \
+\
+It might take several minutes to do this refresh of the font cache.\
+\
+
+\b RADIANCE
+\b0 \
+\
+The Radiance visual simulation suite R4.1 compiles ok on recent OSX computers.  You also need to create a link named genrbox pointing at genbox in /usr/local/bin (the typical location where Radiance is compiled to). Normally it is not necessary to set the RAYPATH environment variable if the Radiance library files are in /usr/local/lib/ray.\
+\
+
+\b HELPER APPLICATIONS
+\b0 \
+\
+ESP-r assumes that Linux-like operating systems will have installed the ImageMagick package for displaying or capturing images as well as nedit as a text editor and xfig to work with vector graphics.  These are available via MacPorts.  The xfig is not available on Homebrew.\
+\
+\
+
+\b USEFUL LINKS
+\b0 \
+\
+Here is a list of useful sites:\
+\
+Command line tools for XCode <developer.apple.com/support/development/>\
+MacPorts site <http://www.macports.org>\
+The MacPorts GCC 4.9 or 5 works well in OSX. GCC 6 compiles but has not been extensively tested.\
+Homebrew site <http://brew.sh>\
+XQuartz <http://www.xquartz.org>\
+\
+
+\b DEPENDENCIES
+\b0 \
+\
+There are two versions of ESP-r which can be installed. The so-called X11 version which uses the X11 graphics libraries and the GTK version which is based on the GTK+ graphics libraries. There are a few functions which are not available in the GTK version (e.g. click-on-bitmap). And ESP-r can also be invoked on the command line to run in a pure-text mode and there is an option to compile a version of ESP-r which is text based and has no dependencies on the X11 or GTK libraries.\
+\
+ESP-r has a number of library dependencies for the X11 and GTK versions. If you have all of the libraries that you need then the various modules of the ESP-r suite will run. If not all of them exist then you will get an error message with the name of the library or libraries that have not been found. \
+\
+If you are running the X11 version of esp-r there are only a few libraries that the executables will be looking for (the version numbers may be different on your machine):\
+\
+otool -L ./clm\
+./clm:\
+        /usr/X11/lib/libX11.6.dylib (compatibility version 10.0.0, current version 10.0.0)\
+        /opt/local/lib/libgcc/libstdc++.6.dylib (compatibility version 7.0.0, current version 7.18.0)\
+        /usr/lib/libxslt.1.dylib (compatibility version 3.0.0, current version 3.24.0)\
+        /usr/lib/libxml2.2.dylib (compatibility version 10.0.0, current version 10.3.0)\
+        /opt/local/lib/libgcc/libgfortran.3.dylib (compatibility version 4.0.0, current version 4.0.0)\
+        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 159.1.0)\
+        /opt/local/lib/libgcc/libgcc_s.1.dylib (compatibility version 1.0.0, current version 1.0.0)\
+        /opt/local/lib/libgcc/libquadmath.0.dylib (compatibility version 1.0.0, current version 1.0.0)\
+\
+These libraries will typically be installed with the X11 environment on Apple computers.\
+\
+If you are using the GTK version of ESP-r then there are additional libraries that are required. Many of these tend to be located in a /sw folder structure which is maintained by the 'fink' development packages or in /opt/lib if you are using MacPorts. \
+\
+% otool -L ./clm\
+./clm:\
+        /opt/local/lib/libgtk-x11-2.0.0.dylib (compatibility version 2401.0.0, current version 2401.22.0)\
+        /opt/local/lib/libgdk-x11-2.0.0.dylib (compatibility version 2401.0.0, current version 2401.22.0)\
+        /opt/local/lib/libpangocairo-1.0.0.dylib (compatibility version 3601.0.0, current version 3601.0.0)\
+        /opt/local/lib/libgio-2.0.0.dylib (compatibility version 3801.0.0, current version 3801.1.0)\
+        /opt/local/lib/libXrender.1.dylib (compatibility version 5.0.0, current version 5.0.0)\
+        /opt/local/lib/libXinerama.1.dylib (compatibility version 2.0.0, current version 2.0.0)\
+        /opt/local/lib/libXi.6.dylib (compatibility version 8.0.0, current version 8.0.0)\
+        /opt/local/lib/libXrandr.2.dylib (compatibility version 5.0.0, current version 5.0.0)\
+        /opt/local/lib/libXcursor.1.dylib (compatibility version 2.0.0, current version 2.2.0)\
+        /opt/local/lib/libXcomposite.1.dylib (compatibility version 2.0.0, current version 2.0.0)\
+        /opt/local/lib/libXdamage.1.dylib (compatibility version 3.0.0, current version 3.0.0)\
+        /opt/local/lib/libXfixes.3.dylib (compatibility version 5.0.0, current version 5.0.0)\
+        /opt/local/lib/libX11.6.dylib (compatibility version 10.0.0, current version 10.0.0)\
+        /opt/local/lib/libXext.6.dylib (compatibility version 11.0.0, current version 11.0.0)\
+        /opt/local/lib/libatk-1.0.0.dylib (compatibility version 21010.0.0, current version 21010.1.0)\
+        /opt/local/lib/libcairo.2.dylib (compatibility version 11203.0.0, current version 11203.16.0)\
+        /opt/local/lib/libgdk_pixbuf-2.0.0.dylib (compatibility version 3001.0.0, current version 3001.0.0)\
+        /opt/local/lib/libpangoft2-1.0.0.dylib (compatibility version 3601.0.0, current version 3601.0.0)\
+        /opt/local/lib/libpango-1.0.0.dylib (compatibility version 3601.0.0, current version 3601.0.0)\
+        /opt/local/lib/libgobject-2.0.0.dylib (compatibility version 3801.0.0, current version 3801.1.0)\
+        /opt/local/lib/libglib-2.0.0.dylib (compatibility version 3801.0.0, current version 3801.1.0)\
+        /opt/local/lib/libintl.8.dylib (compatibility version 10.0.0, current version 10.2.0)\
+        /opt/local/lib/libfontconfig.1.dylib (compatibility version 10.0.0, current version 10.0.0)\
+        /opt/local/lib/libfreetype.6.dylib (compatibility version 17.0.0, current version 17.2.0)\
+        /opt/local/lib/libgcc/libstdc++.6.dylib (compatibility version 7.0.0, current version 7.18.0)\
+        /opt/local/lib/libxslt.1.dylib (compatibility version 3.0.0, current version 3.28.0)\
+        /opt/local/lib/libxml2.2.dylib (compatibility version 12.0.0, current version 12.1.0)\
+        /opt/local/lib/libgcc/libgfortran.3.dylib (compatibility version 4.0.0, current version 4.0.0)\
+        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 159.1.0)\
+        /opt/local/lib/libgcc/libgcc_s.1.dylib (compatibility version 1.0.0, current version 1.0.0)\
+        /opt/local/lib/libgcc/libquadmath.0.dylib (compatibility version 1.0.0, current version 1.0.0)\
+\
+\
+
+\b Additional notes:
+\b0 \
+\
+The developer kit XCode is only available via the Apple App Store and comes with GCC. The command line tools needed for compiling ESP-r are an additional install which is accessed via the Xcode -> Open developer tool -> More developer tools options. It is likely that you can do development work by only downloading the command line tools for XCode <developer.apple.com/support/development/>\
+\
+\
+}

@@ -1,0 +1,813 @@
+Synopsis
+ 
+Synopsis of the model basic 3 zone simulation of CCHT house in ESP-r defined
+in case_207.cfg generated on Tue Jan  7 08:34:07 2014. Notes associated with
+the model are in ccht.log
+ 
+The model is located at latitude   45.47 with a longitude difference of   1.25
+from the local time meridian. The year used in simulations is 1999 and
+weekends occur on Saturday and Sunday.
+The site exposure is isolated rural site site and the ground reflectance is
+0.20.
+ 
+ 
+Simulationist name:  not yet defined
+Simulationist telephone:  not yet defined
+Simulationist address:  not yet defined
+Simulationist city:  not yet defined
+Simulationist postcode:  not yet defined
+ 
+The climate is: Montreal Mirabel PQ CAN and is held in: can_montreal with hour
+centred solar data.
+ standard annual weather: can_montreal
+Calculated ground temp at 0.5m depth
+-6.8703 -8.1305 -5.8955 -2.3980 6.7503 13.810 18.572 20.021 17.552 12.071 4.7458 -2.0506
+Calculated ground temp at 1.0m depth
+-5.1482 -6.8749 -5.3670 -2.5045 5.5397 12.105 16.839 18.733 17.068 12.495 5.9897 -0.34097
+Calculated ground temp at 2.0m depth
+-2.2333 -4.4787 -4.0203 -2.1625 3.9589 9.4926 13.919 16.295 15.788 12.680 7.6334 2.2822
+Calculated ground temp at 4.0m depth
+1.6050 -0.69759 -1.2011 -0.50456 2.9602 6.6883 10.106 12.485 13.041 11.694 8.7305 5.1103
+ 
+ 
+Alberta Infil Method defined in ../aim2/ccht.aim version 0.0 based on a blower door test
+with   1.500 ac/h @ 50Pa &  10.000 press diff. ELA cm      0.0 ELA Cd   0.000.
+The distribution of leakage has been set as: ceiling 0.20 walls 0.65 floor 0.15.
+ 
+Weather measurements taken open flat terrain, grass (wind @  10.0m) and the building
+site is suburban, forest with very heavy shielding of building and light local shielding
+of flues.
+ 
+The building is a one storey single detached with a unspecified foundation. There is no
+fireplace in the building and the furnace flue is   0.00mm.
+Hot water: there is one DHW system where primary DHW shares furnace flue. Location:
+primary DHW is inside .
+Indoor air temperatures are taken from main_second and infiltration is applied to  2
+zones. There is no crawl space. Zone roof is the attic space.
+An Integrated Performance View is incomplete or missing.
+ 
+Databases associated with the model:
+ standard pressure distr: pressc.db1
+ materials              : ../databases/ccht_materialdb
+ constructions          : ../databases/A42_ccht_constr.db1
+ plant components       : ../databases/plant_cetc.db1
+ standard event profiles: profiles.db2.a
+ standard optical prop  : ccht-optics.db1
+ standard UK NCM data   : SBEM.db1
+ standard mould isopleth: mould.db1
+ 
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+control for CCHT house
+ 
+Zones control includes  4 functions.
+no descrip
+Details of control loops referenced in the model:
+ 
+ The sensor for function  1 senses the temperature of the current zone.
+ The actuator for function  1 is air point of the current zone
+There have been  1 periods of validity defined during the year.
+ Control is valid Fri-01-Jan to Fri-31-Dec, 1999 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      free floating
+ 
+ The sensor for function  3 senses dry bulb temperature in main_second.
+ The actuator for function  3 is the air point in main_second.
+There have been  3 periods of validity defined during the year.
+ Control is valid Fri-01-Jan to Fri-30-Apr, 1999 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      plant/zone coupling: source plant component 6 plant
+component node 2 coupling type mCp(0s-0a) sequential. Max heating 99000.00W max cooling
+99000.00W. Extract plant component 10 and extract node 1.
+ Control is valid Sat-01-May to Thu-30-Sep, 1999 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 0.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+0.00C cooling setpoint 100.00C.
+ Control is valid Fri-01-Oct to Fri-31-Dec, 1999 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      plant/zone coupling: source plant component 6 plant
+component node 2 coupling type mCp(0s-0a) sequential. Max heating 99000.00W max cooling
+99000.00W. Extract plant component 10 and extract node 1.
+ 
+ The sensor for function  4 senses the temperature of the current zone.
+ The actuator for function  4 is air point of the current zone
+There have been  1 periods of validity defined during the year.
+ Control is valid Fri-01-Jan to Fri-31-Dec, 1999 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 20000.0W min cooling capacity 0.0W. Heating
+setpoint 20.00C cooling setpoint 20.10C.
+ 
+ Zone to contol loop linkages:
+ zone ( 1) basement     << control  4
+ zone ( 2) main_second  << control  3
+ zone ( 3) roof         << control  1
+ zone ( 4) garage       << control  1
+ 
+ Plant control includes  4 loops.
+no descrip
+ 
+ The sensor for function  1 senses var in compt.  2:hot-water-tank @ node no.  1
+ The actuator for function  1 is plant component   2:hot-water-tank @ node no.  2
+There have been  1 periods of validity defined during the year.
+ Control is valid Fri-01-Jan to Fri-31-Dec, 1999 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb   > varb     OnOff std mode 1.0 on setpt 50.00C off setpt 60.00C
+output @ hi 1.000 output @ lo 0.000 sensor lag 0.0s actuator lag 0.0s.
+ 
+ The sensor for function  2 senses dry bulb temperature in main_second.
+ The actuator for function  2 is plant component   5:coil-fan @ node no.  1
+There have been  3 periods of validity defined during the year.
+ Control is valid Fri-01-Jan to Fri-30-Apr, 1999 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb   > flow     OnOff std mode 1.0 on setpt 19.50C off setpt 20.50C
+output @ hi 0.310 output @ lo 0.000 sensor lag 0.0s actuator lag 0.0s.
+ Control is valid Sat-01-May to Thu-30-Sep, 1999 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb   > flow     OnOff std mode 1.0 on setpt 10.00C off setpt 50.00C
+output @ hi 0.000 output @ lo 0.000 sensor lag 0.0s actuator lag 0.0s.
+ Control is valid Fri-01-Oct to Fri-31-Dec, 1999 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb   > flow     OnOff std mode 1.0 on setpt 19.50C off setpt 20.50C
+output @ hi 0.310 output @ lo 0.000 sensor lag 0.0s actuator lag 0.0s.
+ 
+ The sensor for function  3 senses dry bulb temperature in main_second.
+ The actuator for function  3 is plant component   4:coil-pump @ node no.  1
+There have been  3 periods of validity defined during the year.
+ Control is valid Fri-01-Jan to Fri-30-Apr, 1999 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb   > flux     OnOff std mode 1.0 on setpt 19.50C off setpt 20.50C
+output @ hi 0.000 output @ lo 0.000 sensor lag 0.0s actuator lag 0.0s.
+ Control is valid Sat-01-May to Thu-30-Sep, 1999 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb   > flow     OnOff std mode 1.0 on setpt 10.00C off setpt 50.00C
+output @ hi 0.000 output @ lo 0.000 sensor lag 0.0s actuator lag 0.0s.
+ Control is valid Fri-01-Oct to Fri-31-Dec, 1999 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb   > flux     OnOff std mode 1.0 on setpt 19.50C off setpt 20.50C
+output @ hi 0.000 output @ lo 0.000 sensor lag 0.0s actuator lag 0.0s.
+ 
+ The sensor for function  4 senses var in compt.  2:hot-water-tank @ node no.  1
+ The actuator for function  4 is plant component   2:hot-water-tank @ node no.  2
+There have been  1 periods of validity defined during the year.
+ Control is valid Fri-01-Jan to Fri-31-Dec, 1999 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb   > varb     not yet coded for system controls.
+ 
+The model includes a plant network.
+ 
+ The plant network contains  6 components from ../databases/plant_cetc.db1
+ 
+ Component: fuel-cell ( 1) code  1, db reference  77
+ Control data:    1.000    0.750
+ Modified parameters for fuel-cell
+ FCPM elec eff e0 coeff [eff=e0+e1*Pel+e2*Pel^2]    :  0.30000
+ FCPM elec eff e1 coeff [eff=e0+e1*Pel+e2*Pel^2]    :  0.11000E-03
+ FCPM elec eff e2 coeff [eff=e0+e1*Pel+e2*Pel^2]    : -0.20000E-07
+ FCPM elec eff degradation per off-on cycle (fracti :   0.0000
+ FCPM elec eff operational degradation (fraction pe :   0.0000
+ FCPM elec eff time threshold for oper degradation  :   0.0000
+ FCPM minimun DC production (W)                     :   0.0000
+ FCPM maximum DC production (W)                     :   5000.0
+ Max rate of change in FCPM elec output [power incr :   10.000
+ Max rate of change in FCPM elec output [power decr :   10.000
+ Duration of start-up period [cold start to nominal :   3600.0
+ Fuel consumption during start-up period (kmol)     :  0.20000
+ Electrical consumption during start-up period (MJ) :   6.0000
+ Net DC electrical production during start-up perio :   0.0000
+ Duration of cool-down period [to switch off or res :   3600.0
+ Fuel consumption during cool-down period (kmol)    :  0.20000
+ Electrical consumption during cool-down period (MJ :   6.0000
+ FCPM ancillary draw a0 coeff [Panc=a0+a1*Nf+a2*Nf^ :   0.0000
+ FCPM ancillary draw a1 coeff [Panc=a0+a1*Nfuel+a2* :   0.0000
+ Molar fraction of H2 in fuel                       :   0.0000
+ Molar fraction of CH4 in fuel                      :  0.94900
+ Molar fraction of C2H6 in fuel                     :  0.25000E-01
+ Molar fraction of C3H8 in fuel                     :  0.20000E-02
+ Molar fraction of C4H10 in fuel                    :  0.60000E-03
+ Molar fraction of C5H12 in fuel                    :  0.10000E-03
+ Molar fraction of C6H14 in fuel                    :  0.10000E-03
+ Molar fraction of CH3OH in fuel                    :   0.0000
+ Molar fraction of C2H5OH in fuel                   :   0.0000
+ Molar fraction of CO2 in fuel                      :  0.70000E-02
+ Molar fraction of N2 in fuel                       :  0.16000E-01
+ Molar fraction of O2 in fuel                       :  0.20000E-03
+ Temp of fuel entering compressor [1=room T; 2=outd :   1.0000
+ Compressor power draw c0 coeff [P=c0+c1*Nf+c2*Nf^2 :   10.000
+ Compressor power draw c1 coeff [P=c0+c1*Nf+c2*Nf^2 :  0.10000E+07
+ Compressor power draw c2 coeff [P=c0+c1*Nf+c2*Nf^2 :   0.0000
+ Compressor power draw c3 coeff [P=c0+c1*Nf+c2*Nf^2 :   0.0000
+ Compressor heat loss ratio [ratio=heat-out/elec-in :   1.0000
+ Molar fraction of N2 in air                        :  0.77280
+ Molar fraction of O2 in air                        :  0.20730
+ Molar fraction of H2O in air                       :  0.10400E-01
+ Molar fraction of Ar in air                        :  0.92000E-02
+ Molar fraction of CO2 in air                       :  0.30000E-03
+ Method to calc excess air ratio [1=const; 2=f(Pel) :   2.0000
+ Constant excess air ratio or a0 coeff [depends upo :  0.50000E-04
+ Excess air ratio a1 coeff [depends upon method]    :  0.15000E-06
+ Excess air ratio a2 coeff [depends upon method]    :  0.11000E-11
+ Excess air ratio a3 coeff [depends upon method]    :   0.0000
+ Temp of air entering blower [1=room T; 2=outdoor T :   1.0000
+ Blower power draw b0 coeff [P=b0+b1*Na+b2*Na^2+b3* :   50.000
+ Blower power draw b1 coeff [P=b0+b1*Na+b2*Na^2+b3* :  0.40000E+06
+ Blower power draw b2 coeff [P=b0+b1*Na+b2*Na^2+b3* :   0.0000
+ Blower power draw b3 coeff [P=b0+b1*Na+b2*Na^2+b3* :   0.0000
+ Blower heat loss ratio [ratio=heat-out/elec-input] :   1.0000
+ Water supply w0 coeff [Nw=w0+w1*Nf+w2*Nf^2]        :   0.0000
+ Water supply w1 coeff [Nw=w0+w1*Nf+w2*Nf^2]        :   0.0000
+ Water supply w2 coeff [Nw=w0+w1*Nf+w2*Nf^2]        :   0.0000
+ Temp of water entering pump [1=room; 2=water mains :   1.0000
+ Pump power draw p0 coeff [P=p0+p1*Nw+p2*Nw^2+p3*Nw :   0.0000
+ Pump power draw p1 coeff [P=p0+p1*Nw+p2*Nw^2+p3*Nw :   0.0000
+ Pump power draw p2 coeff [P=p0+p1*Nw+p2*Nw^2+p3*Nw :   0.0000
+ Pump power draw p3 coeff [P=p0+p1*Nw+p2*Nw^2+p3*Nw :   0.0000
+ Pump heat loss ratio [ratio=heat-out/elec-input]   :   0.0000
+ HX method [1=fixed eff; 2=LMTD-emp; 3=LMTD-det; 4= :   4.0000
+ Fixed heat exchanger effectiveness (only for metho :  0.80000
+ UA s0 coeff [UA=s0+s1*Nw+s2*Nw^2+s3*Ng+s4*Ng^2] (m :   20.000
+ UA s1 coeff [UA=s0+s1*Nw+s2*Nw^2+s3*Ng+s4*Ng^2] (m :   1470.0
+ UA s2 coeff [UA=s0+s1*Nw+s2*Nw^2+s3*Ng+s4*Ng^2] (m :   21000.
+ UA s3 coeff [UA=s0+s1*Nw+s2*Nw^2+s3*Ng+s4*Ng^2] (m :   19608.
+ UA s4 coeff [UA=s0+s1*Nw+s2*Nw^2+s3*Ng+s4*Ng^2] (m :  0.40000E+07
+ UA h0_gas coeff (only for method 3: refer to docum :   0.0000
+ UA N_dot_gas_ref coeff (only for method 3: refer t :   0.0000
+ UA n coeff (only for method 3: refer to documentat :   0.0000
+ UA Area_gas (only for method 3: refer to documenta :   0.0000
+ UA h0_water coeff (only for method 3: refer to doc :   0.0000
+ UA N_dot_water_ref coeff (only for method 3: refer :   0.0000
+ UA m coeff (only for method 3: refer to documentat :   0.0000
+ UA Area_water coeff (only for method 3: refer to d :   0.0000
+ Adjustment factor, F (only for method 3: refer to  :   0.0000
+ UA l1 coeff (only for method 4: refer to documenta :  0.10000E-04
+ UA l2 coeff (only for method 4: refer to documenta :   0.0000
+ Condensation threshold (oC; only for method 4)     :   90.000
+ Method to calc FCPM skin loss [1=const; 2=f(dT); 3 :   1.0000
+ Convective portion of FCPM skin loss (radiative =  :   0.0000
+ Skin loss in W (method 1); UA (method 2); s0 coeff :   100.00
+ Skin loss s1 coeff (method 3 only) [q=s0+s1*Nf+s2* :   0.0000
+ Skin loss s2 coeff (method 3 only) [q=s0+s1*Nf+s2* :   0.0000
+ Auxiliary burner present or not? [0=no; 1=yes]     :   1.0000
+ Aux-burner capacity in W output (=1) or kmol/s fue :   1.0000
+ Aux-burner min output (W) or input (kmol/s) [depen :   1000.0
+ Aux-burner max output (W) or input (kmol/s) [depen :   8000.0
+ Aux-burner heat loss added to room (=1) or FCPM ai :   1.0000
+ Aux-burner UA (W/K) [dT=T_gas - T_room]            :  0.50000
+ Aux-burner ancillary power draw anc0 coeff [P=anc0 :   10.000
+ Aux-burner ancillary power draw anc1 coeff [P=anc0 :  0.10000E+08
+ Aux-burner excess air ratio (constant)             :  0.30000
+ Diluation air system present or not? [0=no; 1=yes] :   0.0000
+ Dilution air flow rate (kmol/s)                    :   0.0000
+ Power draw of dilution air fan (W)                 :   0.0000
+ Heat transfer from FCPM to dilution air (W)        :   0.0000
+ HRV present or not [0=no; 1=yes]                   :   0.0000
+ Outdoor air flow rate through HRV (kmol/s)         :   0.0000
+ Power of HRV fan (W)                               :   0.0000
+ Effectiveness of HRV (-)                           :   0.0000
+ Battery maximum storage capacity (J)               :  0.36000E+08
+ Battery maximum charge rate (W)                    :   10000.
+ Battery maximum discharge rate (W)                 :   10000.
+ Battery energetic efficiency for charging (-)      :   1.0000
+ Battery energetic efficiency for discharging (-)   :   1.0000
+ Battery initial SOC (fraction of max capacity)     :  0.18000E+07
+ Battery heat loss added to room (=1) or FCPM air i :   1.0000
+ PCU eff u0 coeff [eff=u0+u1*Ppcu-in+u2*Ppcu-in^2]  :   1.0000
+ PCU eff u1 coeff [eff=u0+u1*Ppcu-in+u2*Ppcu-in^2]  :   0.0000
+ PCU eff u2 coeff [eff=u0+u1*Ppcu-in+u2*Ppcu-in^2]  :   0.0000
+ PCU heat loss added to room (=1) or FCPM air intak :   1.0000
+ PEM stack cooling loop present or not [0=no; 1=yes :   0.0000
+ PEM actual stack temp (oC)                         :   0.0000
+ PEM nominal stack temp (oC)                        :   0.0000
+ PEM stack cooling power r0 coeff                   :   0.0000
+ PEM stack cooling power r1 coeff                   :   0.0000
+ PEM stack cooling power r2 coeff                   :   0.0000
+ PEM stack cooling power r3 coeff                   :   0.0000
+ PEM internal HX UA (W/K)                           :   0.0000
+ PEM stack cooling loop mass flow rate (kg/s)       :   0.0000
+ PEM stack cooling external HX UA value (0 if calcu :   0.0000
+ PEM stack cooling external HX nominal mass flow ra :   0.0000
+ PEM stack cooling external HX nominal area on heat :   0.0000
+ PEM stack cooling external HX adjustment factor    :   0.0000
+ PEM stack cooling external HX nominal film coeff ( :   0.0000
+ PEM stack cooling external HX empirical exponent,  :   0.0000
+ PEM stack cooling air cooler f0 coeff              :   0.0000
+ PEM stack cooling air cooler f1 coeff              :   0.0000
+ PEM stack cooling air cooler f2 coeff              :   0.0000
+ PEM stack cooling pump heat loss ratio [ratio=heat :   0.0000
+ PEM stack cooling pump AC power draw (W)           :   0.0000
+Electrical data for component   1
+1.000  -1      0.000    120.000   4
+ 
+ 
+ Component: hot-water-tank ( 2) code  2, db reference  57
+ Control data:    1.000
+ Modified parameters for hot-water-tank
+ Component total mass (kg)                          :   300.00
+ Average specific heat of water and casing (J/kgK)  :   4180.0
+ UA modulus (node 1 to surroundings) (W/K)          :   1.1750
+ Nominal burner capacity when ON (W)                :   11700.
+ Nominal burner capacity when OFF (standby) (W)     :   0.0000
+ Combustion + flue efficiency (%)                   :   85.000
+ Excess air (%)                                     :   165.00
+ molar fraction of N2 in fuel                       :  0.17600E-01
+ molar fraction of CO2 in fuel                      :  0.55000E-02
+ molar fraction of CH4 in fuel                      :  0.94760
+ molar fraction of C2H6 in fuel                     :  0.27000E-01
+ molar fraction of C3H8 in fuel                     :  0.23000E-02
+ DHW draw profile (0=no DHW; 1=CSA)                 :   1.0000
+ Space-heating flag (0=no fan-coil; 1=fan-coil)     :   1.0000
+ 
+ Component: fc-pump ( 3) code  3, db reference  15
+ Control data:    0.000
+ Modified parameters for fc-pump
+ Component total mass (kg)                          :   5.0000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :  0.20000
+ Rated total absorbed power (W)                     :   150.00
+ Rated volume flow rate (m^3/s)                     :  0.12600E-03
+ Overall efficiency (-)                             :  0.70000
+Electrical data for component   3
+1.000  -1      0.000    120.000   4
+ 
+ 
+ Component: coil-pump ( 4) code  4, db reference  15
+ Control data:    0.000
+ Modified parameters for coil-pump
+ Component total mass (kg)                          :   5.0000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :  0.20000
+ Rated total absorbed power (W)                     :   150.00
+ Rated volume flow rate (m^3/s)                     :  0.30000E-03
+ Overall efficiency (-)                             :  0.70000
+Electrical data for component   4
+1.000  -1      0.000    120.000   4
+ 
+ 
+ Component: coil-fan ( 5) code  5, db reference   3
+ Control data:    0.310
+ Modified parameters for coil-fan
+ Component total mass (kg)                          :   10.000
+ Mass weighted average specific heat (J/kgK)        :   500.00
+ UA modulus (W/K)                                   :   7.0000
+ Rated total absorbed power (W)                     :   200.00
+ Rated volume flow rate (m^3/s)                     :  0.31000
+ Overall efficiency (-)                             :  0.70000
+Electrical data for component   5
+1.000  -1      0.000    120.000   4
+ 
+ 
+ Component: heating-coil ( 6) code  6, db reference  21
+ No Control data
+ Modified parameters for heating-coil
+ Component total mass (kg)                          :   15.000
+ Average specific heat of solids (J/kgK)            :   500.00
+ UA modulus (node 1 to surroundings) (W/K)          :   3.5000
+ Mass of water encapsulated in component (kg)       :   2.0000
+ Coil outside (air) heat transfer area (m^2)        :   15.000
+ Coil inside (water) heat transfer area (m^2)       :  0.33000
+ Coil face area (m^2)                               :  0.25000
+ Metal thermal resistance (m^2K/W)                  :  0.10000E-02
+ Internal tube diameter (m)                         :  0.15000E-01
+ 
+ Nb of plant component connections:  9
+ Con receiving component node type sending component node
+ 
+  1 fc-pump node 1 (from another component.) hot-water-tank node 1 details:     0.50    0.00    0.00
+ 
+  2 fuel-cell node14 (from another component.) fc-pump node 1 details:     1.00    0.00    0.00
+ 
+  3 fuel-cell node 6 (from another component.) fuel-cell node14 details:     1.00    0.00    0.00
+ 
+  4 hot-water-tank node 1 (from another component.) fuel-cell node 6 details:     1.00    0.00    0.00
+ 
+  5 coil-pump node 1 (from another component.) hot-water-tank node 1 details:     0.50    0.00    0.00
+ 
+  6 heating-coil node 3 (from another component.) coil-pump node 1 details:     1.00    0.00    0.00
+ 
+  7 hot-water-tank node 1 (from another component.) heating-coil node 3 details:     1.00    0.00    0.00
+ 
+  8 coil-fan node 1 (zone air or ambient.) heating-coil node 2 details:     1.00    2.00    0.00
+ 
+  9 heating-coil node 2 (from another component.) coil-fan node 1 details:     1.00    0.00    0.00
+ 
+ No of component containments =  2
+  Component      | Containment descr. | Type
+ 
+ 1  fuel-cell       zone: basement         3 details:     1.00    0.00    0.00
+ 
+ 2  hot-water-tank  zone: basement         3 details:     1.00    0.00    0.00
+ changing over connections    2 and    3
+ changing over connections    6 and    9
+ 
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 basement      218.3   8   283.4     0.0    84.0  simplified basement elevation
+ 2 main_second   554.3  18   465.2    22.4    84.0  simplified elevation of main and second floors
+ 3 roof          175.2  10   282.5     0.0   122.0  roof describes the two-level roof of the house
+ 4 garage        114.9   7   151.2     0.0    38.0  garage describes the garage with slab on grade floor, exterior s
+   all          1063.   43   1182.     22.    328.
+ 
+ 
+ Zone basement ( 1) is composed of 8 surfaces and 12 vertices.
+ It encloses a volume of 218.m^3 of space, with a total surface
+ area of 283.m^2 & approx floor area of 84.0m^2
+ simplified basement elevation
+ 
+ A summary of the surfaces in basement( 1) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  26.0    180.   0. Surf-1       OPAQUE   VERT -     foundation_  ||< BASESIMP config type   1
+  2  17.7     90.   0. Surf-2       OPAQUE   VERT -     foundation_  ||< BASESIMP config type   1
+  3  7.72      0.   0. Surf-5       OPAQUE   VERT -     foundation_  ||< BASESIMP config type   1
+  4  31.7    270.   0. Surf-6       OPAQUE   VERT -     foundation_  ||< BASESIMP config type   1
+  5  84.0      0.  90. to_upstairs  OPAQUE   CEIL -     floors_r     ||< floor:main_second
+  6  84.0      0. -90. floor_slab   OPAQUE   FLOR -     slab_floor   ||< BASESIMP config type   1
+  7  14.1     90.   0. Surf-7       OPAQUE   VERT -     foundation_  ||< BASESIMP config type   1
+  8  18.3      0.   0. Surf-8       OPAQUE   VERT -     foundation_  ||< BASESIMP config type   1
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ Air schedule notes:
+nil_operations
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekday    1  0 - 24    0.30  0.0182    6.39  0.3874   2     0.00
+saturday   1  0 - 24    0.30  0.0182    6.39  0.3874   2     0.00
+sunday     1  0 - 24    0.30  0.0182    6.39  0.3874   2     0.00
+ 
+Notes:
+nil_operations
+ 
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+ 
+ ____________________________________________________________
+ 
+ Zone main_second ( 2) is composed of 18 surfaces and 50 vertices.
+ It encloses a volume of 554.m^3 of space, with a total surface
+ area of 488.m^2 & approx floor area of 84.0m^2
+ simplified elevation of main and second floors
+ There is 205.97m2 of exposed surface area, 205.97m2 of which is vertical.
+ Outside walls are 218.66 % of floor area & average U of 0.315 & UA of 57.875
+ Glazing is 26.624 % of floor & 10.854 % facade with average U of 1.548 & UA of 34.612
+ 
+ A summary of the surfaces in main_second( 2) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  53.3    180.   0. Surf-1       OPAQUE   VERT -     ccht_wall    ||< external
+  2  39.3     90.   0. Surf-2       OPAQUE   VERT -     ccht_wall    ||< external
+  3  31.6    360.   0. Surf-3       OPAQUE   VERT -     ccht_wall    ||< external
+  4  59.3    270.   0. Surf-4       OPAQUE   VERT -     ccht_wall    ||< external
+  5  122.      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< ceiling:roof
+  6  84.0      0. -90. floor        OPAQUE   FLOR -     floors       ||< to_upstairs:basement
+  7  0.994     0.   0. W5           ccht-win VERT -     ccht_window  ||< external
+  8  0.994     0.   0. W6           ccht-win VERT -     ccht_window  ||< external
+  9  4.47     90.   0. W1           ccht-win VERT -     ccht_window  ||< external
+ 10  3.99     90.   0. W2           ccht-win VERT -     ccht_window  ||< external
+ 11  2.78     90.   0. W4           ccht-win VERT -     ccht_window  ||< external
+ 12  3.00    270.   0. W9           ccht-win VERT -     ccht_window  ||< external
+ 13  2.27    270.   0. W12          ccht-win VERT -     ccht_window  ||< external
+ 14  1.56    180.   0. W13          ccht-win VERT -     ccht_window  ||< external
+ 15  2.31    270.   0. W10_11       ccht-win VERT -     ccht_window  ||< external
+ 16  21.2      0.   0. garage_in    OPAQUE   VERT -     ccht_wall    ||< main_share:garage
+ 17  16.3     90.   0. garage_back  OPAQUE   VERT -     ccht_wall    ||< garage_back:garage
+ 18  38.0      0. -90. garage_ceil  OPAQUE   FLOR -     exp_flr      ||< garage_ceiln:garage
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ 
+ Air schedule notes:
+nil_operations
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekday    1  0 - 24    0.43  0.0667    2.62  0.4028   1     0.00
+saturday   1  0 - 24    0.43  0.0667    2.62  0.4028   1     0.00
+sunday     1  0 - 24    0.43  0.0667    2.62  0.4028   1     0.00
+ 
+Notes:
+nil_operations
+ 
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 Occupt     people    W    0-24      0.0      0.0       0.60       0.40
+saturday    1 Occupt     people    W    0-24      0.0      0.0       0.60       0.40
+sunday      1 Occupt     people    W    0-24      0.0      0.0       0.60       0.40
+ 
+ ____________________________________________________________
+ 
+ Zone roof ( 3) is composed of 10 surfaces and 13 vertices.
+ It encloses a volume of 175.m^3 of space, with a total surface
+ area of 283.m^2 & approx floor area of 122.m^2
+ roof describes the two-level roof of the house
+ There is 160.51m2 of exposed surface area, 8.2000m2 of which is vertical.
+ Outside walls are 6.7213 % of floor area & average U of 3.932 & UA of 32.239
+ Sloped roof is 124.84 % of floor area & average U of 4.457 & UA of 678.88
+ 
+ A summary of the surfaces in roof( 3) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  24.7    270.  44. roof1_back   OPAQUE   SLOP -     asphalt      ||< external
+  2  23.1     90.  64. roof1_frnt   OPAQUE   SLOP -     asphalt      ||< external
+  3  28.5    181.  51. roof1_side   OPAQUE   SLOP -     asphalt      ||< external
+  4  8.20     90.   0. roof1_vert   OPAQUE   VERT -     asphalt      ||< external
+  5  19.5      0.  50. roof2_vert   OPAQUE   SLOP -     asphalt      ||< external
+  6  14.0    270.  58. roof2_back   OPAQUE   SLOP -     asphalt      ||< external
+  7  19.3     90.  67. roof2_front  OPAQUE   SLOP -     asphalt      ||< external
+  8  16.2    358.  50. roof_1_2     OPAQUE   SLOP -     asphalt      ||< external
+  9  7.07    180.  45. roof1_tri    OPAQUE   SLOP -     asphalt      ||< external
+ 10  122.      0. -90. ceiling      OPAQUE   FLOR -     ceiling_r    ||< ceiling:main_second
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ Air schedule notes:
+nil_operations
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+ 
+Notes:
+nil_operations
+ 
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+ 
+ ____________________________________________________________
+ 
+ Zone garage ( 4) is composed of 7 surfaces and 12 vertices.
+ It encloses a volume of 115.m^3 of space, with a total surface
+ area of 151.m^2 & approx floor area of 38.0m^2
+ garage describes the garage with slab on grade floor, exterior s
+ There is 37.569m2 of exposed surface area, 37.569m2 of which is vertical.
+ Outside walls are 98.787 % of floor area & average U of 0.492 & UA of 18.491
+ 
+ A summary of the surfaces in garage( 4) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  21.2    180.   0. main_share   OPAQUE   VERT -     ccht_wall_r  ||< garage_in:main_second
+  2  6.58     90.   0. front_garage OPAQUE   VERT -     ccht_wall    ||< external
+  3  21.2      0.   0. side_wall    OPAQUE   VERT -     ccht_wall    ||< external
+  4  16.3    270.   0. garage_back  OPAQUE   VERT -     ccht_wall_r  ||< garage_back:main_second
+  5  38.0      0.  90. garage_ceiln OPAQUE   CEIL -     exp_flr_r    ||< garage_ceil:main_second
+  6  38.0      0. -90. slab-on-grad OPAQUE   FLOR -     slab_floor   ||< BASESIMP config type  28
+  7  9.76     90.   0. garage_door  OPAQUE   VERT -     ext_doors    ||< external
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ Air schedule notes:
+nil_operations
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+ 
+Notes:
+nil_operations
+ 
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+ 
+ ____________________________________________________________
+ 
+ Project floor area is 327.97m2, wall area is 229.38m2, window area is 22.356m2.
+ Sloped roof area is 152.31m2, flat roof area is 0.00m2, skylight area is 0.00m2.
+ In contact with ground 0.00m2.
+ There is 404.04m2 of outside surface area, 251.73m2 of which is vertical.
+ 
+ Outside walls are 69.939 % of floor area & average U of 0.473 & UA of 108.61 & max MLC thickness 0.251
+ Sloped roof is 46.439 % of floor area & average U of 4.457 & UA of 678.88
+ Glazing is 6.8164 % of floor & 8.8808 % facade with average U of 1.548 & UA of 34.612
+ 
+ ____________________________________________________________
+ Multi-layer constructions used:
+ 
+ Details of opaque construction: ccht_wall linked to ccht_wall_r & with overall thickness  0.251
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   100.0     0.960  2000.   650. 0.90 0.93    25.  0.10 Outer leaf brick : Outer leaf brick
+    2   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3   11.0     0.150   800.  2093. 0.91 0.65    96.  0.07 Chipboard : Chipboard
+    4  103.0     0.040    16.   840. 0.90 0.65    30.  2.58 Glass Fibre Quilt : Glass Fibre Quilt
+ Int    12.0     0.150   700.  1420. 0.90 0.65   576.  0.08 Plywood 700d : Plywood 700d
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.315  0.318  0.311 (partition)  0.307
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.31
+ External surface admittance Y=  0.92  w=  4.12 decrement factor f=  0.95  phi=  0.39 surface factor f=  0.95  phi=  0.39
+ Partition admittance Y=  1.09  w=  4.57 surface factor f=  0.96  phi=  0.49
+ Total area of ccht_wall is    248.99
+ 
+ Details of transparent construction: ccht_window with ccht-win optics and overall thickness  0.019
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     3.0     0.760  2710.   837. 0.83 0.05 19200.  0.00 Plate glass : Plate glass with placeholder single layer optics
+    2   13.0     0.000     0.     0. 0.99 0.99     1.  0.47 air  0.47 0.47 0.47
+ Int     3.0     0.760  2710.   837. 0.83 0.05 19200.  0.00 Plate glass : Plate glass with placeholder single layer optics
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.548  1.624  1.458 (partition)  1.359
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.52
+ External surface admittance Y=  1.58  w=  0.81 decrement factor f=  0.82  phi=  0.19 surface factor f=  0.82  phi=  0.19
+ Partition admittance Y=  0.45  w=  5.80 surface factor f=  1.00  phi=  0.21
+ 
+ data from Kamel's spreadsheet: with id of: ccht-win
+ with 3 layers [including air gaps] and visible trn: 0.89
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.624 0.602 0.544 0.385 0.186
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.095 0.105 0.115 0.129 0.135
+    2  0.001 0.001 0.001 0.001 0.001
+    3  0.135 0.137 0.130 0.109 0.064
+ Total area of ccht_window is     22.36
+ 
+ Details of opaque construction: slab_floor and overall thickness  0.250
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1  250.0     0.380  1200.   653. 0.90 0.65     6.  0.66 Light mix : Light mix
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.208  1.253  1.152 (partition)  1.089
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.19
+ External surface admittance Y=  3.22  w=  1.99 decrement factor f=  0.69  phi=  1.08 surface factor f=  0.69  phi=  1.08
+ Partition admittance Y=  3.67  w=  2.45 surface factor f=  0.70  phi=  1.48
+ Total area of slab_floor is     61.00
+ 
+ Details of opaque construction: foundation_ and overall thickness  0.214
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   200.0     0.380  1200.   653. 0.90 0.65     6.  0.53 Light mix : Light mix
+ Int    13.5     0.190   950.   840. 0.91 0.50    11.  0.07 Gypsum plasterboard : Gypsum plasterboard
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.303  1.356  1.239 (partition)  1.166
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.29
+ External surface admittance Y=  2.92  w=  1.89 decrement factor f=  0.71  phi=  0.90 surface factor f=  0.71  phi=  0.90
+ Partition admittance Y=  3.34  w=  2.68 surface factor f=  0.74  phi=  1.36
+ Total area of foundation_ is     57.72
+ 
+ Details of opaque construction: ceiling linked to ceiling_r & with overall thickness  0.288
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    12.7     0.190   950.   840. 0.91 0.50    11.  0.07 Gypsum plasterboard : Gypsum plasterboard
+    2  250.0     0.110   480.  1050. 0.90 0.65    10.  2.27 Thermalite turbo block : Thermalite turbo block
+ Int    25.0     0.150   700.  1420. 0.90 0.65   576.  0.17 Plywood 700d : Plywood 700d
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.374  0.378  0.368 (partition)  0.362
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.37
+ External surface admittance Y=  2.29  w=  2.74 decrement factor f=  0.81  phi=  0.85 surface factor f=  0.81  phi=  0.85
+ Partition admittance Y=  2.35  w=  2.65 surface factor f=  0.80  phi=  0.86
+ Total area of ceiling is    122.00
+ 
+ Details of opaque construction: ccht_wall_r linked to ccht_wall & with overall thickness  0.251
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    12.0     0.150   700.  1420. 0.90 0.65   576.  0.08 Plywood 700d : Plywood 700d
+    2  103.0     0.040    16.   840. 0.90 0.65    30.  2.58 Glass Fibre Quilt : Glass Fibre Quilt
+    3   11.0     0.150   800.  2093. 0.91 0.65    96.  0.07 Chipboard : Chipboard
+    4   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   100.0     0.960  2000.   650. 0.90 0.93    25.  0.10 Outer leaf brick : Outer leaf brick
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.315  0.318  0.311 (partition)  0.307
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.31
+ External surface admittance Y=  5.23  w=  2.09 decrement factor f=  0.57  phi=  2.34 surface factor f=  0.57  phi=  2.34
+ Partition admittance Y=  5.31  w=  2.19 surface factor f=  0.58  phi=  2.44
+ Total area of ccht_wall_r is     37.57
+ 
+ Details of opaque construction: floors linked to floors_r & with overall thickness  0.157
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    15.0     0.060   160.  2500. 0.90 0.65    10.  0.25 Synthetic carpet : Synthetic carpet
+    2   25.0     0.140   600.  1210. 0.91 0.65    14.  0.18 Flooring : Flooring
+    3  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    17.0     0.150   560.  2500. 0.90 0.65   576.  0.11 Plywood : Plywood
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.134  1.174  1.085 (partition)  1.029
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.12
+ External surface admittance Y=  1.98  w=  2.64 decrement factor f=  0.83  phi=  0.70 surface factor f=  0.83  phi=  0.70
+ Partition admittance Y=  1.94  w=  4.69 surface factor f=  0.95  phi=  0.89
+ Total area of floors is     83.97
+ 
+ Details of opaque construction: floors_r linked to floors & with overall thickness  0.157
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    17.0     0.150   560.  2500. 0.90 0.65   576.  0.11 Plywood : Plywood
+    2  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3   25.0     0.140   600.  1210. 0.91 0.65    14.  0.18 Flooring : Flooring
+ Int    15.0     0.060   160.  2500. 0.90 0.65    10.  0.25 Synthetic carpet : Synthetic carpet
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.134  1.174  1.085 (partition)  1.029
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.12
+ External surface admittance Y=  1.38  w=  1.51 decrement factor f=  0.85  phi=  0.29 surface factor f=  0.85  phi=  0.29
+ Partition admittance Y=  1.12  w=  4.75 surface factor f=  0.97  phi=  0.50
+ Total area of floors_r is     83.97
+ 
+ Details of opaque construction: ext_doors and overall thickness  0.035
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     5.0    40.000  7800.   502. 0.82 0.45 19200.  0.00 light steel door : light steel door
+    2   25.0     0.030    30.   837. 0.90 0.50    90.  0.83 Polyurethane foam board : Polyurethane foam board
+ Int     5.0    40.000  7800.   502. 0.82 0.45 19200.  0.00 light steel door : light steel door
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.996  1.027  0.958 (partition)  0.914
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.99
+ External surface admittance Y=  1.59  w=  2.90 decrement factor f=  0.87  phi=  0.58 surface factor f=  0.87  phi=  0.58
+ Partition admittance Y=  1.34  w=  5.40 surface factor f=  0.99  phi=  0.62
+ Total area of ext_doors is      9.76
+ 
+ Details of opaque construction: asphalt and overall thickness  0.017
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     5.0     1.150  2325.   837. 0.90 0.90 19200.  0.00 Asphalt mastic roofing : Asphalt mastic roofing
+ Int    12.0     0.150   700.  1420. 0.90 0.65   576.  0.08 Plywood 700d : Plywood 700d
+ ISO 6946 U values (horiz/upward/downward heat flow)=  3.932  4.457  3.397 (partition)  2.904
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.78
+ External surface admittance Y=  3.80  w=  0.18 decrement factor f=  0.55  phi=  0.15 surface factor f=  0.55  phi=  0.15
+ Partition admittance Y=  0.51  w=  5.74 surface factor f=  1.00  phi=  0.23
+ Total area of asphalt is    160.51
+ 
+ Details of opaque construction: ceiling_r linked to ceiling & with overall thickness  0.288
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    25.0     0.150   700.  1420. 0.90 0.65   576.  0.17 Plywood 700d : Plywood 700d
+    2  250.0     0.110   480.  1050. 0.90 0.65    10.  2.27 Thermalite turbo block : Thermalite turbo block
+ Int    12.7     0.190   950.   840. 0.91 0.50    11.  0.07 Gypsum plasterboard : Gypsum plasterboard
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.374  0.378  0.368 (partition)  0.362
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.37
+ External surface admittance Y=  1.97  w=  2.72 decrement factor f=  0.84  phi=  0.71 surface factor f=  0.84  phi=  0.71
+ Partition admittance Y=  2.03  w=  2.61 surface factor f=  0.83  phi=  0.72
+ Total area of ceiling_r is    122.00
+ 
+ Details of opaque construction: exp_flr linked to exp_flr_r & with overall thickness  0.297
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    15.0     0.060   160.  2500. 0.90 0.65    10.  0.25 Synthetic carpet : Synthetic carpet
+    2   25.0     0.140   600.  1210. 0.91 0.65    14.  0.18 Flooring : Flooring
+    3  140.0     0.040    16.   840. 0.90 0.65    30.  3.50 Glass Fibre Quilt : Glass Fibre Quilt
+    4  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    17.0     0.150   560.  2500. 0.90 0.65   576.  0.11 Plywood : Plywood
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.228  0.230  0.226 (partition)  0.224
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.23
+ External surface admittance Y=  1.66  w=  4.47 decrement factor f=  0.94  phi=  0.75 surface factor f=  0.94  phi=  0.75
+ Partition admittance Y=  1.76  w=  4.83 surface factor f=  0.96  phi=  0.81
+ Total area of exp_flr is     38.03
+ 
+ Details of opaque construction: exp_flr_r linked to exp_flr & with overall thickness  0.297
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    17.0     0.150   560.  2500. 0.90 0.65   576.  0.11 Plywood : Plywood
+    2  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  140.0     0.040    16.   840. 0.90 0.65    30.  3.50 Glass Fibre Quilt : Glass Fibre Quilt
+    4   25.0     0.140   600.  1210. 0.91 0.65    14.  0.18 Flooring : Flooring
+ Int    15.0     0.060   160.  2500. 0.90 0.65    10.  0.25 Synthetic carpet : Synthetic carpet
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.228  0.230  0.226 (partition)  0.224
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.23
+ External surface admittance Y=  1.41  w=  3.54 decrement factor f=  0.91  phi=  0.57 surface factor f=  0.91  phi=  0.57
+ Partition admittance Y=  1.47  w=  4.03 surface factor f=  0.93  phi=  0.63
+ Total area of exp_flr_r is     38.03

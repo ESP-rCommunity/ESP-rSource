@@ -1,0 +1,37 @@
+# Plant component data base:
+/usr/esru/esp-r/databases/plantc.db1                                           
+# Project title:
+                                                                      
+# Total no. of specified components and simulation type
+    3    3
+#->   1, non-condensing boiler & aquastat control; 2 node IEA Annex X model      
+  boiler            17
+    2        # Component has   2 control variable(s).
+  60.  1.
+   17
+  225.00       951.00      0.63030E-03  0.13600       34.280      0.50000    
+ 0.50000E-02   4.2080       9.7920      0.50000      0.63030E-03   1.6240    
+ 0.13600       3294.0       2105.0       1880.0      0.42875E+08
+#->   2, Slab-on-grade hydronic floor; 1 node model                              
+  slab              63
+    0        # Component has   0 control variable(s).
+    14
+  8.0000      0.12000E-01  0.16000E-01  0.30000      0.38000      0.32000E+07
+  1.0000       8.0000       7.0000    0.0 0.5 100. 1. 20.
+#->   3, variable speed domestic WCH pump; 1 node model                          
+  pump              15
+    1        # Component has   1 control variable(s).
+  0.000199999995
+    6
+  5.0000       2250.0      0.20000       150.00      0.30000E-03  0.70000    
+# The following is a list of component connections.
+  3          # Total number of connections
+# receiving       node  conncn sending          node  diversion  suppl1   suppl2
+# component              type  component                ratio
+  slab              1     3     boiler            2    1.000                 #  1
+  pump              1     3     slab              1    1.000                 #  2
+  boiler            1     3     pump              1    1.000                 #  3
+# No containment temperatures defined
+  0
+# No mass flow network defined.
+    0

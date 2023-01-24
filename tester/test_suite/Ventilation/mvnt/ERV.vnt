@@ -1,0 +1,28 @@
+# Sample ventilation system input file
+# Central Ventilation System (CVS) type
+4 # (1=None, 2=HRV, 3=Fans with no heat recovery, 4=ERV)
+# HVI ERV test data (Broan ERV200HC)
+# Heating Season Performance (HSP) Test
+0.00 69.00 0.45 93.00 # (temp C, SRE(%), LRMT(frac), power (W))
+# Very Low Temperature Test (VLTT)
+-15.00 55.00 0.26 122.0 # (temp C, SRE(%), LRMT(frac), power (W))
+52.00 # ERV flow rate for test and operation(L/s)
+41.00 # Cooling Season Performance (CSP) Test (TRE(%))
+0.00  # Preheater capacity (watts)
+# ERV temp control data (flag,low temp trip, high temp trip)
+1 0.00 0.00 # flag 3 = Temperature controlled, or 1,2,4,5,6,7 = N/A
+# ERV duct data
+# Vent. Duct Location: # of zone in which duct is located
+# Duct Type: # 1=Flex, 2=Sheet metal w/ liner, 3=Ext. ins. Sheet metal
+# Sealing Characteristic: # 1=Very Tight, 2=Sealed, 3=Unsealed
+#
+# Location,Type,Sealing,Length(m),Diameter(mm),Insul.RSI
+2 1 2 5.0 152.4 0.7 # Supply duct
+2 1 2 5.0 152.4 0.7 # Exhaust duct
+# End of Central ventilation system inputs
+#
+#
+#--- Other fans (point exhaust and supply fans)
+1 # Type (1=None, 2=Other)
+# Supply, Exhaust flow(L/s), Total fan power(watts)
+0.0 0.0 0.0

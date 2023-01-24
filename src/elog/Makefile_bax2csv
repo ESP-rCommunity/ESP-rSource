@@ -1,0 +1,41 @@
+# detect OS
+ifeq ($(OS),Windows_NT)
+  UNAME := $(OS)
+else
+  UNAME := $(shell uname -s)
+endif
+
+ifeq ($(UNAME),Linux)
+  LIBS := -lm
+else ifeq ($(UNAME),Windows_NT)
+  LIBS := -lwsock32 -lcfgmgr32
+else
+  LIBS := -lm
+endif
+
+SRCdir = `pwd`/..
+PROG = bax2csv$(EXE)
+MCC=gcc
+CFLAGS=-I/usr/local/include -I../  -I../include -I/usr/include -g -fno-automatic -Wall
+LD_FLAGS=-Wl,--reduce-memory-overheads
+##LD_FLAGS=" "
+
+.SUFFIXES: .o .c
+.c.o:
+	$(MCC) $(CFLAGS) -c $<
+
+OBJECTS = aes.o  bax2csv.o  BaxRx.o  BaxUtils.o  Debug.o  Serial.o  UDP.o
+
+$(PROG): $(OBJECTS)
+	$(MCC) $(LD_FLAGS) -o $(PROG) $(OBJECTS)
+
+
+strip:
+	@if [ -f $(PROG) ]; then strip $(PROG); fi
+
+install:
+	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
+
+clean:
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) 
+        

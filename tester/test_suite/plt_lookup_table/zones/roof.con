@@ -1,0 +1,42 @@
+*Constructions 2.1                              # thermophysical properties of roof
+*date Wed Sep  8 12:42:02 2021                  # latest file modification
+# layers|air | emissivity |absorptivity| tmc | surface|surface     |construction 
+#       |gaps|inside other|inside other|index| index  |name        |name 
+     2     0   0.90   0.90   0.65   0.90   0    #   1  roof1_back   asphalt
+     2     0   0.90   0.90   0.65   0.90   0    #   2  roof1_frnt   asphalt
+     2     0   0.90   0.90   0.65   0.90   0    #   3  roof1_side   asphalt
+     2     0   0.90   0.90   0.65   0.90   0    #   4  roof1_vert   asphalt
+     2     0   0.90   0.90   0.65   0.90   0    #   5  roof2_vert   asphalt
+     2     0   0.90   0.90   0.65   0.90   0    #   6  roof2_back   asphalt
+     2     0   0.90   0.90   0.65   0.90   0    #   7  roof2_front  asphalt
+     2     0   0.90   0.90   0.65   0.90   0    #   8  roof_1_2     asphalt
+     2     0   0.90   0.90   0.65   0.90   0    #   9  roof1_tri    asphalt
+     5     0   0.91   0.90   0.50   0.65   0    #  10  ceiling      ceiling_r
+# air gap layer positions and restances
+# layer thermophysical properties
+# conduc-  | density |specific | thick- |dpnd|ref.| temp. |moisture|surface|layer
+# tivity   |         |heat     |ness(m) |type|temp|factor | factor |       |  
+     1.1500    2325.0     837.0  0.0050   0   0.00 0.00000 0.00000  #   1   1 Asphalt mastic roofing
+     0.1500     700.0    1420.0  0.0120   0   0.00 0.00000 0.00000  #       2 Plywood 700d
+     1.1500    2325.0     837.0  0.0050   0   0.00 0.00000 0.00000  #   2   1 Asphalt mastic roofing
+     0.1500     700.0    1420.0  0.0120   0   0.00 0.00000 0.00000  #       2 Plywood 700d
+     1.1500    2325.0     837.0  0.0050   0   0.00 0.00000 0.00000  #   3   1 Asphalt mastic roofing
+     0.1500     700.0    1420.0  0.0120   0   0.00 0.00000 0.00000  #       2 Plywood 700d
+     1.1500    2325.0     837.0  0.0050   0   0.00 0.00000 0.00000  #   4   1 Asphalt mastic roofing
+     0.1500     700.0    1420.0  0.0120   0   0.00 0.00000 0.00000  #       2 Plywood 700d
+     1.1500    2325.0     837.0  0.0050   0   0.00 0.00000 0.00000  #   5   1 Asphalt mastic roofing
+     0.1500     700.0    1420.0  0.0120   0   0.00 0.00000 0.00000  #       2 Plywood 700d
+     1.1500    2325.0     837.0  0.0050   0   0.00 0.00000 0.00000  #   6   1 Asphalt mastic roofing
+     0.1500     700.0    1420.0  0.0120   0   0.00 0.00000 0.00000  #       2 Plywood 700d
+     1.1500    2325.0     837.0  0.0050   0   0.00 0.00000 0.00000  #   7   1 Asphalt mastic roofing
+     0.1500     700.0    1420.0  0.0120   0   0.00 0.00000 0.00000  #       2 Plywood 700d
+     1.1500    2325.0     837.0  0.0050   0   0.00 0.00000 0.00000  #   8   1 Asphalt mastic roofing
+     0.1500     700.0    1420.0  0.0120   0   0.00 0.00000 0.00000  #       2 Plywood 700d
+     1.1500    2325.0     837.0  0.0050   0   0.00 0.00000 0.00000  #   9   1 Asphalt mastic roofing
+     0.1500     700.0    1420.0  0.0120   0   0.00 0.00000 0.00000  #       2 Plywood 700d
+     0.1500     700.0    1420.0  0.0250   0   0.00 0.00000 0.00000  #  10   1 Plywood 700d
+     0.1100     480.0    1050.0  0.2056   0   0.00 0.00000 0.00000  #       2 Thermalite turbo block
+     0.1100     480.0    1050.0  0.2056   0   0.00 0.00000 0.00000  #       3 Thermalite turbo block
+     0.1100     480.0    1050.0  0.2055   0   0.00 0.00000 0.00000  #       4 Thermalite turbo block
+     0.1900     950.0     840.0  0.0127   0   0.00 0.00000 0.00000  #       5 Gypsum plasterboard
+*tmc NONE                                       # all surfaces are opaque

@@ -1,0 +1,26 @@
+*connections for obs_4_eachface
+*Date Wed Sep  8 12:41:38 2021
+     23  # number of connections
+   1   1   0   0   0  #    1 Mainfloor2 in Main is External
+   1   2   0   0   0  #    2 Mainfloor1 in Main is External
+   1   3   0   0   0  #    3 Mainfloor4 in Main is External
+   1   4   0   0   0  #    4 Mainfloor3 in Main is External
+   1   5   3   3   6  #    5 to_bsm in Main >|< to_main in Foundation-1
+   1   6   3   2   1  #    6 to_attic in Main >|< to_main in Ceiling01
+   1   7   0   0   0  #    7 Right0001 in Main is External
+   1   8   0   0   0  #    8 Door-01 in Main is External
+   1   9   0   0   0  #    9 Front0001 in Main is External
+   1  10   0   0   0  #   10 Left0001 in Main is External
+   1  11   0   0   0  #   11 Door-02 in Main is External
+   1  12   0   0   0  #   12 Back0001 in Main is External
+   2   1   3   1   6  #   13 to_main in Ceiling01 >|< to_attic in Main
+   2   2   0   0   0  #   14 WestSlope in Ceiling01 is External
+   2   3   0   0   0  #   15 NorthGable in Ceiling01 is External
+   2   4   0   0   0  #   16 EastSlope in Ceiling01 is External
+   2   5   0   0   0  #   17 SouthGable in Ceiling01 is External
+   3   1   6   1  11  #   18 bsm_Mainflr2 in Foundation-1 is BASESIMP fndtn
+   3   2   6   1  11  #   19 bsm_Mainflr1 in Foundation-1 is BASESIMP fndtn
+   3   3   6   1  11  #   20 bsm_Mainflr4 in Foundation-1 is BASESIMP fndtn
+   3   4   6   1  11  #   21 bsm_Mainflr3 in Foundation-1 is BASESIMP fndtn
+   3   5   6   1  57  #   22 slab in Foundation-1 is BASESIMP fndtn
+   3   6   3   1   5  #   23 to_main in Foundation-1 >|< to_bsm in Main

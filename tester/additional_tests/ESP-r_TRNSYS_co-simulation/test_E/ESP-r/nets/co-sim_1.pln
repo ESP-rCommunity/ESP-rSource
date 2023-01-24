@@ -1,0 +1,163 @@
+# Plant component data base:
+/usr/esru/esp-r/databases/plantc.db1                                  
+# Project title:
+                                                                      
+# Total no. of specified components and simulation type
+    9    3
+#->   1, IEA/ECBCS Annex 42 FC-cogeneration model                                
+  SOFC              77
+    2        # Component has   2 control variable(s).
+  0.4     0.
+  134     5
+# Component ADATA inputs
+0.354  0.  0.                                    # constant lectrical efficiency
+0.  0.  0.                                       # no degradation
+500.  2500.                                      # min and max Pel
+1.4  0.2                                         # calibrated transient response
+3600.  0.  0.  0.                                # start-up (not calibrated)
+3600.  0.  0.                                    # cool-down (not calibrated)
+0.   0.                                          # calibrated ancillaries
+0.  0.9577  0.01393  0.00291  0.001114  0.       # fuel mixture as per FCT GC
+0.  0.  0.  0.00509  0.01884  0.                 # fuel mixture (continued)
+1.0  0.  0.  0.  0.  1.0                         # compressor nullified
+0.7728  0.2073  0.0104  0.0092  0.0003           # air mixture (assumed)
+1.0  2.447  0.                                   # constant excess air ratio
+0.  0.                                           # (continued)
+1.0  0.  0.  0.  0.  1.0                         # blower nullified
+0.   0.  0.                                      # no water supply
+1.0  0.  0.  0.  0.  1.0                         # pump nullified
+1.0  0.9                                         # fixed effectiveness HX
+99.  99.  99.  99.  99.                          # (continued)
+99.  99.  99.  99.  99.  99.  99.  99.  99.      # (continued)
+99.  99.  99.                                    # (continued)
+1.0  1.  100.  999.  999.                        # calibrated skin losses
+0.  99.  99.  99.  99.  99.  99. 99.  99.        # auxiliary burner nullified
+0.  0.  0.  0.                                   # calibrated dilution air system
+0.  0.  0.  0.                                   # HRV
+1.  1.  1.  1.  1.  1.  1.                       # battery with negligible capacity & charge/discharge rates (calibrated)
+0.95  0.  0.  3.                                 # calibrated PCU efficiency
+0.                                               # PEM cooling loop nullified
+99.  99.                                         # PEM stack temp
+99.  99.  99.  99.                               # PEM stack cooling
+99.  99.  99.  99.  99.  99.  99.  99.           # PEM external HX
+99.  99.  99.                                    # PEM air cooler
+99.  99.                                         # PEM pump
+# Component electrical details.
+  0.000  -1      1.000      0.000   1
+#->   2, 3-node tank for charging by residential fuel cell                       
+  tank              57
+    1        # Component has   1 control variable(s).
+  0.
+   14
+       1000.00    #   1 Component total mass (kg)                                       
+       4180.0     #   2 Average specific heat of water and casing (J/kgK)               
+       1.43       #   3 UA modulus (node 1 to surroundings) (W/K)                       
+       19000.     #   4 Nominal burner capacity when ON (W)                             
+       0.0000     #   5 Nominal burner capacity when OFF (standby) (W)                  
+       95.000     #   6 Combustion + flue efficiency (%)                                
+       165.00     #   7 Excess air (%)                                                  
+      0.01884     #   8 molar fraction of N2 in fuel                                    
+      0.00509     #   9 molar fraction of CO2 in fuel                                   
+      0.9577      #  10 molar fraction of CH4 in fuel                                   
+      0.01393     #  11 molar fraction of C2H6 in fuel                                  
+      0.004024    #  12 molar fraction of C3H8 in fuel                                  
+       0.0000     #  13 DHW draw profile (0=no DHW; 1=CSA)                              
+       1.0000     #  14 Space-heating flag (0=no fan-coil; 1=fan-coil)                  
+#->   3, variable speed domestic WCH pump; 1 node model                          
+  SOFC-pump         15
+    1        # Component has   1 control variable(s).
+  0.000130000000
+    6     5
+       0.1000     #   1 Component total mass (kg)                                       
+       0.1000     #   2 Mass weighted average specific heat (J/kgK)                     
+       0.0000     #   3 UA modulus from wall to environment (W/K)                       
+       20.000     #   4 Rated total absorbed power (W)                                  
+      0.13000E-03 #   5 Rated volume flow rate (m^3/s)                                  
+      1.00000     #   6 Overall efficiency (-)                                          
+# Component electrical details.
+  0.000  -1      1.000      0.000   1
+#->   4, variable speed domestic WCH pump; 1 node model                          
+  SOFC-pump-d       15
+    1        # Component has   1 control variable(s).
+  0.000130000000
+    6     5
+       0.1000     #   1 Component total mass (kg)                                       
+       0.1000     #   2 Mass weighted average specific heat (J/kgK)                     
+       0.0000     #   3 UA modulus from wall to environment (W/K)                       
+       0.0000     #   4 Rated total absorbed power (W)                                  
+      0.13000E-03 #   5 Rated volume flow rate (m^3/s)                                  
+      0.70000     #   6 Overall efficiency (-)                                          
+# Component electrical details.
+  0.000  -1      1.000      0.000   1
+#->   5, variable speed domestic WCH pump; 1 node model                          
+  SH-pump-d         15
+    1        # Component has   1 control variable(s).
+  0.000127000007
+    6     5
+       0.1000     #   1 Component total mass (kg)                                       
+       0.1000     #   2 Mass weighted average specific heat (J/kgK)                     
+       0.0000     #   3 UA modulus from wall to environment (W/K)                       
+       0.0000     #   4 Rated total absorbed power (W)                                  
+      0.12700E-03 #   5 Rated volume flow rate (m^3/s)                                  
+      0.70000     #   6 Overall efficiency (-)                                          
+# Component electrical details.
+  0.000  -1      1.000      0.000   1
+#->   6, air heating coil fed by WCH system; 3 node model                        
+  water-air-HX      21
+    0        # Component has   0 control variable(s).
+    9
+       1.0000     #   1 Component total mass (kg)                                       
+       1.0000     #   2 Average specific heat of solids (J/kgK)                         
+       0.0000     #   3 UA modulus (node 1 to surroundings) (W/K)                       
+       1.0000     #   4 Mass of water encapsulated in component (kg)                    
+       15.000     #   5 Coil outside (air) heat transfer area (m^2)                     
+      0.33000     #   6 Coil inside (water) heat transfer area (m^2)                    
+      0.25000     #   7 Coil face area (m^2)                                            
+      0.10000E-02 #   8 Metal thermal resistance (m^2K/W)                               
+      0.15000E-01 #   9 Internal tube diameter (m)                                      
+#->   7, centrifugal fan, 1 node model ; flow control                            
+  blower             3
+    1        # Component has   1 control variable(s).
+  0.60000002    
+    6     5
+      5.00000     #   1 Component total mass (kg)                                       
+      500.000     #   2 Average specific heat of solids (J/kgK)                         
+       0.0000     #   3 UA modulus (node 1 to surroundings) (W/K)                       
+       50.000     #   4 Rater power (W)                    
+      0.60000     #   5 Rated flow rate (m^3/s)                     
+      0.70000     #   6 Overall efficiency (-)                    
+# Component electrical details.
+  0.000  -1      1.000      0.000   1
+#->   8, The sending hydronic coupling component (HCC-S) is used for water coupli
+  TRNSYS-S-1       106
+    0        # Component has   0 control variable(s).
+    1
+       1.0000     #   1 Index of TRNSYS coupling                                        
+#->   9, The receiving hydronic coupling component (HCC-R) is used for water coup
+  TRNSYS-R-1       107
+    0        # Component has   0 control variable(s).
+    1
+       1.0000     #   1 Index of TRNSYS output type                                     
+# The following is a list of component connections.
+ 12          # Total number of connections
+# receiving       node  conncn sending          node  diversion  suppl1   suppl2
+# component              type  component                ratio
+  SOFC              6     3     SOFC             14    1.000                 #  1
+  SOFC             14     3     SOFC-pump         1    1.000                 #  2
+  tank              1     3     SOFC              6    1.000                 #  3
+  SOFC-pump-d       1     3     tank              1    0.500                 #  4
+  SOFC-pump         1     3     SOFC-pump-d       1    1.000                 #  5
+  SH-pump-d         1     3     tank              1    0.500                 #  6
+  water-air-HX      2     3     blower            1    1.000                 #  7
+  tank              1     3     water-air-HX      3    1.000                 #  8
+  blower            1     4     water-air-HX      2    1.000     2.00        #  9
+  TRNSYS-S-1        1     3     SH-pump-d         1    1.000                 # 10
+  water-air-HX      3     3     TRNSYS-R-1        1    1.000                 # 11
+  TRNSYS-R-1        1     3     TRNSYS-S-1        1    1.000                 # 12
+# The following is a list of containment temperatures.
+  2          # Total number of containments
+# Component       cont type        suppl1     suppl2    suppl3
+  SOFC                3             1.00000   0.00000   0.00000
+  tank                3             1.00000   0.00000   0.00000
+# No mass flow network defined.
+    0

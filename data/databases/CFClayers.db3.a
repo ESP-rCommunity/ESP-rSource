@@ -1,0 +1,76 @@
+*CFClayers 1.2
+*date,Mon Dec 12 12:15:10 2016
+# CFClayers database defined in CFClayers.db2.a
+*doc,ESP-r CFClayers database contains CFC shading layers and IGDB glazing layers v49 with visual data.
+1  # number of classifications
+#
+# CFC layers have the following general attributes:
+#              conductivity (W/(m-K)
+#              density (kg/m**3)
+#              specific heat (J/(kg-K)
+#              default thickness (mm)
+#              layer type (-)
+#
+# Following attributes depend on the type of layer:
+#
+#  Gas gap (type 0):
+#              mole fraction, air (%)
+#              mole fraction, argon (%)
+#              mole fraction, krypton (%)
+#              mole fraction, xenon (%)
+#              mole fraction, SF6 (Sulfur hexafluoride) (%)
+#  Glazing (type 1):
+#              solar refl out (-)
+#              solar refl in (-)
+#              solar tran direct (-)
+#              emissivity out (-)
+#              emissivity in (-)
+#              longwave tran (-)
+#              ID (-)
+#              visual refl out (-)
+#              visual refl in (-)
+#              visual tran (-)
+#  Venetian Blind (type 2):
+#              solar refl out (-)
+#              solar refl in (-)
+#              solar tran direct (-)
+#              emissivity out (-)
+#              emissivity in (-)
+#              longwave tran (-)
+#              slat width (mm)
+#              slat spacing (mm)
+#              slat angle (deg)
+#              slat orient (HORZ or VERT)
+#              slat crown (mm)
+#              slat width/radius of curvature ratio (-)
+#              slat thk (mm)
+#  Pleated Drape (type 3):
+#              solar refl out (-)
+#              solar refl in (-)
+#              solar tran direct (-)
+#              solar total tran out (-)
+#              solar total tran in (-)
+#              drape pleat width (mm)
+#              drape pleat spacing (mm)
+#  Roller blind (type 4):
+#              solar refl out (-)
+#              solar refl in (-)
+#              solar tran direct (-)
+#              solar total tran out (-)
+#              solar total tran in (-)
+#  Insect Screen (type 5):
+#              solar refl out (-)
+#              solar refl in (-)
+#              solar tran direct (-)
+#              solar total tran out (-)
+#              solar total tran in (-)
+#              wire emissivity (-))
+#              wire diameter (mm)
+#              wire spacing (mm)
+# 
+# class index |nb items|description
+*class,1, 1,CFC venetian blind
+Category (1) CFC venetian blind contains shading layers used with the Complex Fenestration Construction (CFC).
+*item, VB 1/2in light Al,1, 1, VB 1/2in wide light Al
+100.00,2700.000,896.000,15.0,2,0.850,0.850,0.000,0.850,0.850,0.000,12.700,10.580,0.000,HORZ,0.810,0.502,0.330
+*end

@@ -1,0 +1,34 @@
+*Operations 2.1                               # zone operation definiions for secondfloor
+*date Wed May  5 10:53:31 2021                # latest file modification
+# infiltration and ventilation notes
+low constant infiltration
+# infiltration and ventilation controls:
+   0      0.00      0.00      0.00            # control index (no control of air flow), low middle high setpoints
+    1                                         # number of flow periods during weekday
+   0, 24,    0.300    0.000    0     0.00     # start, stop, infil ach ( 0.0290m^3/s)
+    1                                         # number of flow periods during saturday
+   0, 24,    0.300    0.000    0     0.00     # start, stop, infil ach ( 0.0290m^3/s)
+    1                                         # number of flow periods during sunday
+   0, 24,    0.300    0.000    0     0.00     # start, stop, infil ach ( 0.0290m^3/s)
+# casual gain type definitions:
+*casual
+# notes on casual gains:
+constant occupants and lighting.
+# casual label     type-key-word   slot index & attributes
+*type Occupt       people             1   0   0
+*type Lights       lighting           2   0   0
+*type Equipt       equipment          3   0   0
+*end_type 
+# casual gain schedules:
+     2   # number of casual gains in day type: weekday     
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,  24,    150.0,      0.0,   0.50,   0.50
+   2,   0,  24,    150.0,      0.0,   0.50,   0.50
+     2   # number of casual gains in day type: saturday    
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,  24,    150.0,      0.0,   0.50,   0.50
+   2,   0,  24,    150.0,      0.0,   0.50,   0.50
+     2   # number of casual gains in day type: sunday      
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,  24,    150.0,      0.0,   0.50,   0.50
+   2,   0,  24,    150.0,      0.0,   0.50,   0.50

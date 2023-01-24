@@ -1,0 +1,73 @@
+*help_text mrt
+
+*item espvwf user_supplied_cfg
+'The model configuration file holds the definition '
+'of the building/ plant to be simulated, including the'
+'names of all of the files required.'
+*enditem
+
+*item mrt grid_subdivision_density
+'Variable igfact represents the grid sub- '
+'division. Every surface is divided in '
+'igfact**2 sub-surfaces.  A bubble is placed '
+'at the centre of each sub-surface. '
+*enditem
+
+*item mrt patch_subdivision
+'Variable np is the patch subdivision.'
+'Every bubble is divided into np rings.'
+*enditem
+
+*item espvwf viewfactor_file_name
+'The view factor file contains viewfactors between'
+'each of the surfaces in a zone as well as MRT sensor'
+'definitions.'
+*enditem
+
+*item espvwf problem_reading_existing
+'The scan of the existing viewfactor file had a problem'
+'so you can read it again or create a new file or abandon'
+'this task.'
+*enditem
+
+*item espvwf user_review_of_calcs
+'Please review the results of the calculations. If all'
+'of the factors for each surface sum close to 1.0 then'
+'a yes is appropriate. '
+' '
+'If there are some surfaces with low or no viewfactors'
+'to other surfaces then you may need to increase the '
+'resolution of the grid. '
+*enditem
+
+*item mrtinput position_dep_mrt_menu
+'This menu allows position dependent Mean Radiant '
+'Temperature analysis to be carried out base on one'
+'or more [sensors] placed within a zone. '
+' '
+'The size and placement of MRT sensors is defined via'
+'the zone viewfactor file which may be created and'
+'edited within PRJ. '
+' '
+'The function of MRT is to calculate inter-surface'
+'viewfactors as well as viewfactors to MRT sensors '
+'and to update the viewfactor file. '
+*enditem
+
+*item mrtinput surf_temp_mrt_menu
+'This menu allows the zone surface temperatures to be'
+'displayed and edited.'
+'Note that the surface emissivities are NOT currently'
+*enditem
+
+*item mrtinput new_emissivity_dialog
+'Emissivities can be read from zone construction'
+'file or from measurements. Range 0.01 to 0.99.'
+'NOTE: not used in the current version!'
+*enditem
+
+*item mrtinput new_temperature_dialog
+'Temperatures can be from simulation results or'
+'from measurements.'
+*enditem
+ 

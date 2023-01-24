@@ -1,0 +1,17 @@
+*connections for PVTest2
+*Date Wed Sep  8 12:44:29 2021
+     14  # number of connections
+   1   1   0   0   0  #    1 WWall in Support1 is External
+   1   2   0   0   0  #    2 NWall in Support1 is External
+   1   3   0   0   0  #    3 EWall in Support1 is External
+   1   4   0   0   0  #    4 SWall in Support1 is External
+   1   5   0   0   0  #    5 Ceiling in Support1 is External
+   1   6   4   1   0  #    6 Floor in Support1 >|< ground profile 1
+   1   7   0   0   0  #    7 Pyranometer in Support1 is External
+   2   1   0   0   0  #    8 WWall in Support2 is External
+   2   2   0   0   0  #    9 NWall in Support2 is External
+   2   3   0   0   0  #   10 EWall in Support2 is External
+   2   4   0   0   0  #   11 SWall in Support2 is External
+   2   5   0   0   0  #   12 Ceiling in Support2 is External
+   2   6   4   1   0  #   13 Floor in Support2 >|< ground profile 1
+   2   7   0   0   0  #   14 PVModule in Support2 is External

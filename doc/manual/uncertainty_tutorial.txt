@@ -1,0 +1,318 @@
+
+Setting up uncertainty in ESP-r.
+
+Overview
+
+In ESP-r there is a formal description of uncertainty
+associated with specific attributes of a model. The attributes
+are a sub-set of the ESP-r data model and include:
+a) thermophysical properties, surface emissivity and absorptivity,
+   layer thickness within constructions,
+b) weather data,
+c) zone operations attributes for scheduled air flows and
+   casual gains and their scheduling,
+d) ideal zone controls attributes e.g. heating and cooling
+magnitudes, radiant convective splits and period start times,
+e) the air volume within rooms or surface areas within rooms.
+
+For each of these attributes user can define and name their
+own concepts of what-is-uncertain, for example [wall_insul_thick]
+and [roof_insul_thick] might identify a layer of insulation in
+two MLCs.  The range/bounds of uncertainty, either as a % of the
+nominal value of the attribute or a fixed offset i.e. 0.02m is
+also given for the concept.
+
+Separately users create named locations e.g. [facade_walls] and 
+[the_roof] each of which includes a list of surfaces in the model.
+There are options to define locations for all surfaces which use
+a specific MLC or material or for all surfaces facing ambient
+conditions. 
+
+Some topics such as weather or control are defined via time
+rather than location and so an [all_year] could be created
+for use with weather or control attributes.
+
+Lastly the user creates a list of [uncertainty pairs] which
+combine the defined [what-is-uncertain] and defined location. 
+When bps starts it recognises that there are uncertainty defintions 
+and ask the user whether a differential, factorial or Monti-Carlo 
+assessment should be used and how many runs should be comissioned 
+beyoned the base case model, typically 50-100. 
+
+At the start of each run the model details are scanned and
+the uncertainty description drives the modification of the model
+attributes in memory (no model files are changed), a random number
+is generated (a standard distribution between -2 and +2) which is
+applied to each uncertainty concept and its range/bounds directives.
+All runs are held in the same results file as separate [results sets].
+
+The results analysis facility also recognises the uncertainty
+sets and enable a [sensitivity] menu which allows analysis within
+the full range of sets or between specific sets.
+
+Procedure  
+
+Before you enter into the uncertainty facility create a model
+contents report so you can easily find items that are of interest.
+
+Once the model is fully attributed uncertainty can be selected 
+via the [Browse/Edit/Simulate] menu option [p]. The password is 
+101 and you are asked to confirm the name of the uncertainty file 
+(based on the model root name and ends with .ual).
+
+There is a 'create default definitions' option which brings
+up a list of uncertainty topics. For each you can set the bounds
+and whether these are based on a % of the entities current 
+attributes i.e. conductivity or are a real-number offset 
+i.e. 0.01m from the current thickness of a layer. There is 
+no specific requirment to use this facility.
+
+The 1st phase assigns a so-called [distribution] for a chosen 
+model attribute (also known as a parameter). For each of the major
+groupings of model attributes i.e. thermophysical properties you
+are asked to select a material used in the model as well as
+what attribute e.g. conductivity, density, is uncertain. Lets 
+say conductivity. The magnitude of uncertainty can be either 
+a percentage of the materials current conductivity or an 
+offset value. For example copper has a conductivity
+of ~200(W/(m-K) so an offset value of 20 could be used. 
+
+The 2nd phas selects the location of what is uncertain (e.g.
+a zone or surface). There is an initial question about location
+via [spatial] or [temporal]. Choose spatial unless you are dealing
+with weather or control attribues. You are then presented with 
+options for an automated search for surfaces matching specific
+criter or a manual selection of zones and surfaces. Lastly 
+give the location a name.
+
+The 3rd phase links the distributions and locations. Here you select 
+from the list of distributions and locations. Remember to save 
+the library.
+
+When running an assessment you need to invoke the simulator in
+silent mode. You will then be asked whether you want to carry
+out a [Differential] or [Factorial] or [Monte-Carlo] assessment.
+It will ask how many assessments to run 70-100 is typical for
+a limited number of uncertainties.
+
+After the assessment there will be a fort.36: file which will
+include entries such as:
+
+ ...
+ **
+ ** Edits for changes in set:           2           4
+ Uncertainty definition            1  altered by    1.03761053    
+ cav_ins_thick:facade         
+   
+Entering subroutine UAE02
+Focus zone:   1 room        
+Editing layer thickness..
+Zone:   1 Surface:   1 layer 3
+THRMLI:    0.0250
+to:
+THRMLI:    0.0328
+Editing layer thickness..
+Zone:   1 Surface:   2 layer 3
+THRMLI:    0.0250
+to:
+THRMLI:    0.0328
+Editing layer thickness..
+ Uncertainty definition            2  altered by  -0.572989583    
+ roof_insul_thick:roof           
+   
+Entering subroutine UAE02
+Focus zone:   1 room        
+Editing layer thickness..
+Zone:   1 Surface:   5 layer 4
+THRMLI:    0.0800
+to:
+THRMLI:    0.0458
+synopsis U01 1.04 U02-0.57
+ . . .
+ 
+Here is an example of changing thermophsical properties.
+ . . .
+ ** Edits for changes in set:          35           4
+ Uncertainty definition            1  altered by    1.29964566    
+    
+ Entering subroutine UAE01
+ Focus zone:            1
+ Editing element:
+ Zone:            1  Surface:            1  Element           1
+    con     den      sht    emis(I,E) abs(I,E)
+    0.770 1700.000 1000.000 0.91 0.90 0.50 0.70
+ to:
+    0.820 1700.000 1000.000 0.91 0.90 0.50 0.70
+ Editing element:
+ Zone:            1  Surface:            2  Element           1
+    con     den      sht    emis(I,E) abs(I,E)
+    0.770 1700.000 1000.000 0.91 0.90 0.50 0.70
+ to:
+    0.820 1700.000 1000.000 0.91 0.90 0.50 0.70
+ Editing element:
+ Zone:            1  Surface:            3  Element           1
+    con     den      sht    emis(I,E) abs(I,E)
+    0.770 1700.000 1000.000 0.91 0.90 0.50 0.70
+ to:
+    0.820 1700.000 1000.000 0.91 0.90 0.50 0.70
+ Editing element:
+ Zone:            1  Surface:            4  Element           1
+     con     den      sht    emis(I,E) abs(I,E)
+    0.770 1700.000 1000.000 0.91 0.90 0.50 0.70
+ to:
+    0.820 1700.000 1000.000 0.91 0.90 0.50 0.70
+ Uncertainty definition            2  altered by    1.30377197    
+    
+ Entering subroutine UAE01
+ Focus zone:            1
+ Editing element:
+ Zone:            1  Surface:            1  Element           3
+    con     den      sht    emis(I,E) abs(I,E)
+    0.040  105.000 1800.000 0.91 0.90 0.50 0.70
+ to:
+    0.043  105.000 1800.000 0.91 0.90 0.50 0.70
+ Editing element:
+ Zone:            1  Surface:            2  Element           3
+    con     den      sht    emis(I,E) abs(I,E)
+    0.040  105.000 1800.000 0.91 0.90 0.50 0.70
+ to:
+    0.043  105.000 1800.000 0.91 0.90 0.50 0.70
+ Editing element:
+ Zone:            1  Surface:            3  Element           3
+    con     den      sht    emis(I,E) abs(I,E)
+    0.040  105.000 1800.000 0.91 0.90 0.50 0.70
+ to:
+    0.043  105.000 1800.000 0.91 0.90 0.50 0.70
+ Editing element:
+ Zone:            1  Surface:            4  Element           3
+    con     den      sht    emis(I,E) abs(I,E)
+    0.040  105.000 1800.000 0.91 0.90 0.50 0.70
+ to:
+    0.043  105.000 1800.000 0.91 0.90 0.50 0.70
+ ** Edits for changes in set:          35           4
+ ** Edits for changes in set:          35           4
+ **
+ . . .
+
+The 'altered by' is the random number generated at the start of
+the run. This is multipled by the value of the range directive
+to get the specific change in the attribute.
+
+The dialog when res starts might look like:
+ The name (uncertain_ctl.res) will be used.
+ Opening file with record length 40
+Databases scan (ok)
+ 
+ Number of result-sets held = 20
+ 
+ Set|Control    |Start |Finish| Time   | Save |Average|Pre|Aid memoire
+ no.| name      | day  | day  |steps/hr|option| Flag  |sim|(for this set)
+  1 float until   1, 2  28, 2       4      4       0   21  Base case
+  2 float until   1, 2  28, 2       4      4       0   21  U01 0.81 U02-1.07
+  3 float until   1, 2  28, 2       4      4       0   21  U01 0.57 U02 2.25
+  4 float until   1, 2  28, 2       4      4       0   21  U01-0.77 U02 1.64
+  5 float until   1, 2  28, 2       4      4       0   21  U01-0.66 U02 0.07
+  6 float until   1, 2  28, 2       4      4       0   21  U01 0.81 U02-0.04
+  7 float until   1, 2  28, 2       4      4       0   21  U01-0.05 U02-0.90
+  8 float until   1, 2  28, 2       4      4       0   21  U01-0.89 U02-0.21
+  9 float until   1, 2  28, 2       4      4       0   21  U01-1.93 U02 1.37
+ 10 float until   1, 2  28, 2       4      4       0   21  U01-1.23 U02 0.06
+ 11 float until   1, 2  28, 2       4      4       0   21  U01 0.52 U02 0.17
+ 12 float until   1, 2  28, 2       4      4       0   21  U01-1.20 U02-1.82
+ 13 float until   1, 2  28, 2       4      4       0   21  U01-0.28 U02-0.01
+ 14 float until   1, 2  28, 2       4      4       0   21  U01 1.75 U02 1.57
+ 15 float until   1, 2  28, 2       4      4       0   21  U01-0.64 U02-1.08
+ 16 float until   1, 2  28, 2       4      4       0   21  U01 0.52 U02-1.28
+ 17 float until   1, 2  28, 2       4      4       0   21  U01 0.23 U02 1.06
+ 18 float until   1, 2  28, 2       4      4       0   21  U01 0.64 U02-0.16
+ 19 float until   1, 2  28, 2       4      4       0   21  U01-0.52 U02-0.50
+ 20 float until   1, 2  28, 2       4      4       0   21  M-C run:  19
+The current result library holds data from a monte carlo uncertainty analysis
+ Do you wish to analyse:  a) the uncertainties, b) a particular set ? 
+ . . .
+ 
+The [U01-1.20 U02-1.82] can be matched to the log entries in the fort.36 file
+to determine the specific changes applied to the run.
+
+Below is a tabular list of inter-set statistics:
+
+Zone db temperature (degC) is focus
+room is focus
+  Hour      Maximum       Minimum        Mean          Standard
+             value         value         value         deviation
+  0.12       13.7494       12.8298       13.2896        0.4598
+  0.38       13.6880       12.7798       13.2339        0.4541
+  0.62       13.6325       12.7358       13.1842        0.4483
+  0.88       13.5800       12.6946       13.1373        0.4427
+  1.12       13.5243       12.6499       13.0871        0.4372
+  1.38       13.4583       12.5944       13.0264        0.4319
+  1.62       13.3858       12.5319       12.9589        0.4270
+  1.88       13.3125       12.4682       12.8904        0.4222
+  2.12       13.2418       12.4068       12.8243        0.4175
+  2.38       13.1771       12.3514       12.7642        0.4128
+  2.62       13.1166       12.3002       12.7084        0.4082
+  2.88       13.0575       12.2503       12.6539        0.4036
+  3.12       12.9997       12.2015       12.6006        0.3991
+ . . .
+ 
+The uncertainty file
+
+The description of uncertainties in a model are held in a tag-data
+text file. Below is an example where several attributes of zone
+operations have been defined. There is an [all_year] temporal
+location that is not (yet) used as well as a [the_zone] location
+used by the various change definitions:
+
+*Uncertainty analysis library
+   4   2   4 # Changes, Locations, Actions
+#  
+# Changes definitions follow...
+#  
+*cng_def
+infil_rate               # Change id string
+   4 # Change type: Scheduled operation     
+   0   1 # ref 1, ref 2
+   2     0.200     0.000 # Data
+*cng_def
+people_watts             # Change id string
+   4 # Change type: Scheduled operation     
+   1   1 # ref 1, ref 2
+   2    20.000     0.000 # Data
+*cng_def
+rad_frac                 # Change id string
+   4 # Change type: Scheduled operation     
+   1   3 # ref 1, ref 2
+   2     0.100     0.000 # Data
+*cng_def
+occupant_start           # Change id string
+   4 # Change type: Scheduled operation     
+   1   6 # ref 1, ref 2
+   2     1.000     0.000 # Data
+#  
+# Locations definitions follow...
+#  
+*loc_def
+all_year        # Location id string
+   0 # Number of zones
+   1   1 365  24 # Start day, hour, finish day, hour
+*loc_def
+the_zone        # Location id string
+   1 # Number of zones
+   1   1 # Zone number, Number of surfaces
+  1
+#  
+# Action definitions follow...
+#  
+*act_def
+   2 # Uncertanty ref: people_watts            
+   2 # Location ref: the_zone       
+*act_def
+   1 # Uncertanty ref: infil_rate              
+   2 # Location ref: the_zone       
+*act_def
+   3 # Uncertanty ref: rad_frac                
+   2 # Location ref: the_zone       
+*act_def
+   4 # Uncertanty ref: occupant_start          
+   2 # Location ref: the_zone       
+

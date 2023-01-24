@@ -1,0 +1,35 @@
+*Constructions 2.1                              # thermophysical properties of TheSpace
+*date Wed Sep  8 12:40:37 2021                  # latest file modification
+# layers|air | emissivity |absorptivity| tmc | surface|surface     |construction 
+#       |gaps|inside other|inside other|index| index  |name        |name 
+     3     1   0.83   0.83   0.05   0.05   1    #   1  iCW          dbl_glz
+     1     0   0.90   0.90   0.25   0.25   0    #   2  Wall-2       mass_part
+     1     0   0.90   0.90   0.25   0.25   0    #   3  Wall-3       mass_part
+     1     0   0.90   0.90   0.25   0.25   0    #   4  Wall-4       mass_part
+     1     0   0.91   0.91   0.50   0.50   0    #   5  hungCeil     susp_ceil
+     5     1   0.90   0.12   0.60   0.20   0    #   6  Base-6       susp_flr_re
+# air gap layer positions and restances
+  2  0.170                                      # for iCW
+  3  0.170                                      # and for Base-6
+# layer thermophysical properties
+# conduc-  | density |specific | thick- |dpnd|ref.| temp. |moisture|surface|layer
+# tivity   |         |heat     |ness(m) |type|temp|factor | factor |       |  
+     0.7600    2710.0     837.0  0.0060   0   0.00 0.00000 0.00000  #   1   1 Plate glass
+     0.0000       0.0       0.0  0.0120   0   0.00 0.00000 0.00000  #       2 AIR
+     0.7600    2710.0     837.0  0.0060   0   0.00 0.00000 0.00000  #       3 Plate glass
+     0.5100    1400.0    1000.0  0.2400   0   0.00 0.00000 0.00000  #   2   1 Block white ptd inner (3% mc)
+     0.5100    1400.0    1000.0  0.2400   0   0.00 0.00000 0.00000  #   3   1 Block white ptd inner (3% mc)
+     0.5100    1400.0    1000.0  0.2400   0   0.00 0.00000 0.00000  #   4   1 Block white ptd inner (3% mc)
+     0.4200    1200.0     837.0  0.0130   0   0.00 0.00000 0.00000  #   5   1 Gypsum plaster
+    50.0000    7800.0     502.0  0.0040   0   0.00 0.00000 0.00000  #   6   1 Steel
+     1.4000    2100.0     653.0  0.1400   0   0.00 0.00000 0.00000  #       2 Heavy mix concrete
+     0.0000       0.0       0.0  0.0500   0   0.00 0.00000 0.00000  #       3 AIR
+     0.1500     800.0    2093.0  0.0190   0   0.00 0.00000 0.00000  #       4 Chipboard
+     0.0600     186.0    1360.0  0.0060   0   0.00 0.00000 0.00000  #       5 Wilton
+*tmc YES                                        # optical properties:
+   3  DCF7671_06nb                              # layers in tmc type 1
+  0.611  0.583  0.534  0.384  0.170  0.760      # transmission @ 5 angles & visible tr.
+  0.157  0.172  0.185  0.201  0.202             # for each layer absorption @ 5 angles
+  0.001  0.002  0.003  0.004  0.005
+  0.117  0.124  0.127  0.112  0.077
+   0                                            # no alternative optics

@@ -1,0 +1,20 @@
+#
+# AIM-2 input file for CCHT house from HOT2000 inputs
+#
+#---Leakage description-------------------------------------------------------------------------
+1  1.50  10  1  523.7       # blower door input; 1.5 ac/h @50Pa; ELA dP=10Pa; 1=ELA not given; ELA=523.7 cm^2.
+#                           # Set first number to 6 (and no other data) for energy tight house
+#---Leakage distribution------------------------------------------------------------------------
+1  0.20  0.65  0.15         # Use default leakage distribution.
+#                           # Set `1  0.1 0.6 0.2' for user input leakage distribution.
+#---Shielding and terrain data------------------------------------------------------------------
+3 7 4 2 10.0                # See subroutine /users/ian/src/esp-r/esrubld/aim2.F/AIM2_READIN
+#---Height of building eaves (m)----------------------------------------------------------------
+5.9
+#---Flue diameters (mm)-------------------------------------------------------------------------
+0  0. 0. 50.8 0. # furnace, fire#1, fire#2, dhw#1, dhw#2.
+#---Zone indices--------------------------------------------------------------------------------
+3                  # Zone whose temperature used to calculate density of indoor air.
+4 1 3 4 5          # Total number of zones receiving infil; indices of zones receive infil.
+1                  # Index of basement zone (=0 if no basement).
+#-----------------------------------------------------------------------------------------------

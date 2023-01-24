@@ -1,0 +1,8 @@
+This folder contais test files for the PEM fuel cell model. In this configuration,
+it is coupled to the distributed generation system controller and attached to 
+ESP-r's electrical network.
+
+The PEMFC model used in this test case is to be supplanted by ongoing work in
+Annex 42.
+
+(February 9, 2006)

@@ -1,0 +1,29 @@
+*Constructions 2.1                              # thermophysical properties of Foundation-1
+*date Wed Sep  8 12:41:35 2021                  # latest file modification
+# layers|air | emissivity |absorptivity| tmc | surface|surface     |construction 
+#       |gaps|inside other|inside other|index| index  |name        |name 
+     2     0   0.91   0.90   0.50   0.65   0    #   1  bsm_Mainflr2 foundation
+     2     0   0.91   0.90   0.50   0.65   0    #   2  bsm_Mainflr1 foundation
+     2     0   0.91   0.90   0.50   0.65   0    #   3  bsm_Mainflr4 foundation
+     2     0   0.91   0.90   0.50   0.65   0    #   4  bsm_Mainflr3 foundation
+     1     0   0.90   0.90   0.65   0.65   0    #   5  slab         slab_floor
+     4     1   0.90   0.90   0.65   0.65   0    #   6  to_main      floors_r
+# air gap layer positions and restances
+  2  0.170                                      # for to_main
+# layer thermophysical properties
+# conduc-  | density |specific | thick- |dpnd|ref.| temp. |moisture|surface|layer
+# tivity   |         |heat     |ness(m) |type|temp|factor | factor |       |  
+     1.4000    2100.0     653.0  0.1310   0   0.00 0.00000 0.00000  #   1   1 Heavy mix concrete
+     0.5000    1300.0    1000.0  0.0125   0   0.00 0.00000 0.00000  #       2 Dense plaster
+     1.4000    2100.0     653.0  0.1310   0   0.00 0.00000 0.00000  #   2   1 Heavy mix concrete
+     0.5000    1300.0    1000.0  0.0125   0   0.00 0.00000 0.00000  #       2 Dense plaster
+     1.4000    2100.0     653.0  0.1310   0   0.00 0.00000 0.00000  #   3   1 Heavy mix concrete
+     0.5000    1300.0    1000.0  0.0125   0   0.00 0.00000 0.00000  #       2 Dense plaster
+     1.4000    2100.0     653.0  0.1310   0   0.00 0.00000 0.00000  #   4   1 Heavy mix concrete
+     0.5000    1300.0    1000.0  0.0125   0   0.00 0.00000 0.00000  #       2 Dense plaster
+     0.3800    1200.0     653.0  0.2500   0   0.00 0.00000 0.00000  #   5   1 Light mix concrete
+     0.1500     560.0    2500.0  0.0170   0   0.00 0.00000 0.00000  #   6   1 Plywood
+     0.0000       0.0       0.0  0.1000   0   0.00 0.00000 0.00000  #       2 AIR
+     0.1400     600.0    1210.0  0.0250   0   0.00 0.00000 0.00000  #       3 flooring
+     0.0600     160.0    2500.0  0.0150   0   0.00 0.00000 0.00000  #       4 Synthetic carpet
+*tmc NONE                                       # all surfaces are opaque

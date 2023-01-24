@@ -1,0 +1,9 @@
+1		                   	# GSHP system type
+21.9    26.7      0.391     778.1	# pipe size and properties
+967.0   3.99      0.7    	        # fluid properties
+10.0    12.5      41         	        # Exterior conditions
+1.0     2         12.2                  # Vertical: Utube, Nsoil, Depth
+0.87    1.3     0.52E-06   0.64E-06     # Ks, Kw, Ds, Dw 	
+2.42    2.42    1.03E-06   1.03E-06     # these values will be repeated per soil layer
+2.83    1.8     15.3       0.770        # SP, Dtop, Dbore, Kgrout
+0       30                              # FixPara, Nbore/Dbottom

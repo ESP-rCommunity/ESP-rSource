@@ -1,0 +1,172 @@
+ESP-r FMI Developers Guide
+v2.1
+1/6/2017
+
+Note that this document builds on the users guide that should be in the
+same directory (Users.txt). Please read the users guide before reading 
+this.
+
+********************************
+* FMI Implementation Reference *
+********************************
+
+In general, the FMI implementation in ESP-r has 3 layers. Fortran code
+is used for the user interface, file I/O and book-keeping. During a 
+simulation, ESP-r calls Fortran subroutines at each time step which 
+control communication with the FMU(s). These call a set of C functions,
+which are effectively wrappers for the FMILibrary functions (which are
+themselves effectively wrappers for the functions defined by the FMI 
+standard).
+
+ESP-r files:
+[ESP-r source code directory]/
+  src/
+    esrubld/
+      FMIsim.F       - Fortran subroutines used during co-simulation.
+      FMIsim_dummy.F - Dummy Fortran subroutines used when FMI support 
+                       is disabled.
+      FMIc.c         - C functions used during co-simulation, called by 
+                       FMIsim.F.
+    esrucom/
+      FMIcom.F       - Common Fortran utility subroutines for file I/O 
+                       and book-keeping. 
+    esruprj/
+      FMIprj.F       - Fortran subroutines for the user interface.
+      FMIprj_dummy.F - Dummy Fortran subroutines used when FMI support 
+                       is disabled.
+    include/
+      FMI.h          - Fortran common blocks defining ESP-r's internal 
+                       FMI data structures.
+      FMIrefs.h      - Fortran common blocks defining FMU inputs and 
+                       outputs available in ESP-r.
+
+FMILibrary files (required if FMI support is enabled):
+[FMIL library directory (/usr/lib by default)]/
+  libfmilib_shared.so
+[FMIL headers directory (/usr/include by default)]/
+  fmilib.h
+  fmilib_config.h
+  FMI/
+    fmi_import_context.h
+    fmi_import_util.h
+    fmi_util.h
+    fmi_version.h
+  FMI1/
+    fmi1_enums.h
+    fmi1_functions.h
+    fmi1_import_capabilities.h
+    fmi1_import_capi.h
+    fmi1_import_convenience.h
+    fmi1_import_cosim.h
+    fmi1_import.h
+    fmi1_import_type.h
+    fmi1_import_unit.h
+    fmi1_import_variable.h
+    fmi1_import_variable_list.h
+    fmi1_import_vendor_annotations.h
+    fmi1_types.h
+    fmiFunctions.h
+    fmiModelFunctions.h
+    fmiModelTypes.h
+    fmiPlatformTypes.h
+  FMI2/
+    fmi2_enums.h
+    fmi2_functions.h
+    fmi2Functions.h
+    fmi2FunctionTypes.h
+    fmi2_import_capi.h
+    fmi2_import_convenience.h
+    fmi2_import.h
+    fmi2_import_type.h
+    fmi2_import_unit.h
+    fmi2_import_variable.h
+    fmi2_import_variable_list.h
+    fmi2_types.h
+    fmi2TypesPlatform.h
+    fmi2_xml_callbacks.h
+  JM/
+    jm_callbacks.h
+    jm_named_ptr.h
+    jm_portability.h
+    jm_stack.h
+    jm_string_set.h
+    jm_types.h
+    jm_vector.h
+    jm_vector_template.h
+
+********************
+* Adding Variables *
+********************
+
+There are two steps required to implement a new FMU input or output 
+variable in ESP-r:
+
+1. Variable information must be added into the header file
+   src/include/FMIrefs.h. Entries should be appended onto arrays 
+   FMI?REFS, FMI?AorZ and FMI?NSUP, and MFMI?REFS should be incremented
+   for each input or output, where ? is "I" for an input or "O" for an 
+   output. 
+   Entries to FMI?REFS must be a brief description of the variable 
+   (limited to 30 characters), with spaces as underscores. Entries to 
+   FMI?AorZ describe whether the variable is related to the ambient 
+   environment, a zone, or either, and must be an integer between 0 and
+   2. Entries to FMI?NSUP define how many supplementary data items are
+   needed for this variable type (supplementary data is entered by the
+   user when defining the input/output directive).
+   The new variable should also be appropriately documented in this
+   header file, associating it with its index in the arrays.
+
+2. Next, ESP-r must be told how to handle the new variable. This is a
+   different process for inputs and outputs:
+   * Inputs
+     These are directives to pull data from ESP-r and pass it to the 
+     FMU. They are implemented in FMI_SIMSTEP in src/esrubld/FMIsim.F.
+     New inputs must be given an elseif clause where indicated, testing
+     the value of FMUIVAR(ifmu,ifmuinp) against the index of the 
+     variable as defined in FMIrefs.h. Within this clause, the required
+     data should be extracted from ESP-r's existing data structures and
+     assigned to a variable "vartmp". Note that only real values are
+     currently supported.
+     Supplementary data for the input directive are in array 
+     FMIISUP(ifmu,ifmuinp,:).
+   * Outputs
+     These are directives to implement some form of control within ESP-r
+     based on data output from the FMU. Hence they cannot be implemented
+     in a single place, but are scattered throughout the ESP-r code. 
+     Generally speaking, you can find instances by searching for 'FMI'
+     in the code. When writing new output implementations, code should
+     be contained in an if clause that tests the value of boolean
+     variable 
+    FMUDOCTL([zone index],[output variable index defined in FMIrefs.h]).
+     The value recieved from the FMU is in variable
+     FMUCTL([zone index],[output variable index defined in FMIrefs.h]).
+     Note that only real values are currently supported.
+     Supplementary data for the output directive are in array
+ FMUCTLSUP([zone index],[output variable index defined in FMIrefs.h],:).
+
+If you have successfully interfaced ESP-r with a new FMU, please 
+consider contributing these developments. Contact esru@strath.ac.uk for
+more information.
+
+*********************
+* FMIL Installation *
+*********************
+
+By default, the ESP-r install script is configured to check for FMIL 
+resources in standard locations "/usr/lib" and "/usr/include". However 
+by passing an argument "--FMI" the install script can be directed to 
+bypass these checks, and simply assume that resources are available 
+somewhere on the linker/compiler paths. 
+
+This can be useful for local installations of ESP-r (on systems where 
+you may not have access to /usr), and for working with multiple versions 
+of the FMIL library "libfmilib_shared.so". For example you could use 
+environment variable "LD_RUN_PATH" to point the linker to a local 
+directory at compile-time, and can then easily swap different library 
+files in and out of this location. Because it is a dynamic library, it 
+is linked at run-time and you do not need to recompile ESP-r to use a 
+different FMIL library.
+
+Note that you can also use environment variable "LD_LIBRARY_PATH" to 
+point the linker to different locations at run-time.
+

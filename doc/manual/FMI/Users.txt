@@ -1,0 +1,235 @@
+ESP-r FMI Users Guide
+v2.1
+1/6/2017
+
+*******************
+* 1. What is FMI? *
+*******************
+
+FMI stands for Functional Mock-up Interface, and is a standard for model
+exchange and co-simulation. More information and downloads can be found
+on the website www.fmi-standard.org, which defines FMI as:
+
+"... a tool independent standard to support both model exchange and
+co-simulation of dynamic models using a combination of xml-files and
+compiled C-code ..."
+
+Essentially, the standard seeks to define a framework for encapsulating
+models, and protocols for other programs to communicate (or
+"co-simulate") with these models. Models are implemented as standalone
+programs called Functional Mock-up Units (FMUs), which respond to
+directives from external programs in a manner defined by the FMI
+standard. Therefore, models implemented as FMUs can theoretically be
+interfaced consistently with any program that supports the appropriate
+FMI standard.
+
+There are currently two versions of the FMI standard; version 1.0
+(published in 2010) and version 2.0 (published in 2014). ESP-r currently 
+supports FMI version 1.0 for co-simulation. This is essentially a 
+master-slave protocol; ESP-r acts as the master, and you must have a 
+seperate FMU to act as the slave. FMUs have the extension ".fmu", and 
+are zipped archives. To see the contents of an FMU file, you should be 
+able to simply rename it with an extension ".zip", and then use an 
+appropriate program to unzip it. 
+
+*******************
+* 2. FMI in ESP-r *
+*******************
+
+The implementation is broadly intended to allow FMUs to interact with or 
+replace control functions. At each time step during a simulation, 
+variables are transferred from ESP-r to the FMU, the FMU is run to make 
+control decisions, and control signals are transferred from the FMU back 
+to ESP-r to be implemented during that time step.
+
+This data exchange is enabled by creating directives through the 
+interface in project manager. This option is located in the 
+"browse/edit/simulate" menu, in the controls section. First an FMU must
+be specified, and then inputs (data required from ESP-r) and outputs 
+(data returned from the FMU to ESP-r) can be set up for that FMU. 
+You must associate the input/output with a zone in the model (or the 
+ambient environment), pick from a list of the available variables in 
+ESP-r, and then associate it with an instance and a variable type for 
+the FMU. Available variable types are defined in the 
+"modelDescription.xml" file within the FMU. Instance definition depends 
+on the FMU; some guidance on this should be provided in section 5 of 
+this manual, but documentation provided with the FMU may be a more 
+comprehensive source of information.
+
+A list of input and output variables currently available in ESP-r is 
+given below in section 4, and a list of FMUs that have been tested with 
+the FMI interface is given in section 5. It is possible to interface 
+with other FMUs, but the appropriate input and output variables must be
+coded into ESP-r. For example if an FMU requires input data for plant 
+energy use, and outputs CO2 emissions, ESP-r must be adapted to handle
+these linkages. Guidance on implementing new variables to interface with
+other FMUs can be found in the developers notes which should be found in 
+the same directory as this file.
+
+The ESP-r code uses external libraries to enable FMI functionality.
+These are collectively called "FMI Library (FMIL)". In order to use the
+FMI functionality of ESP-r these libraries must be downloaded and placed
+in the appropriate locations. Instructions for doing so are given below
+in section 3.
+
+*************************************
+* 3. FMIL Installation Instructions *
+*************************************
+
+FMI Library source code, binaries (for Windows) and documentation is
+available at www.fmi-library.org. The current implementation of FMI in
+ESP-r was designed to work with FMIL v2.0.1 and was developed and tested
+on Ubuntu; other FMIL versions and OSs are not supported.
+
+Download the source code for version 2.0.1, and follow instructions in
+the documentation to compile the libraries. If you do not have cmake
+the following should get most of what you need:
+  sudo apt-get install cmake cmake-curses-gui cmake-extras
+  
+If you extracted the source into a folder FMILibrary-2.0.1 you need to 
+create a folder build-fmil at the same level as FMILibrary-2.0.1. The 
+build command would then take the form of:
+  cd build-fmil
+  cmake ../FMILibrary-2.0.1/
+  make install test
+
+This will create a new folder called install which will have a lib 
+folder as well as an include folder.
+
+Copy the library "libfmilib_shared.so" from directory "install/lib" to 
+"/usr/lib". Copy all contents of directory "install/include" to 
+"/usr/include". You should now be able to compile ESP-r with FMI active 
+(give the option --FMI to the install script when compiling).
+
+For advanced users, more information on FMIL installation can be found
+in the FMI developers guide in the same directory as this file.
+
+*******************************************
+* 4. List of Supported Inputs and Outputs *
+*******************************************
+
+Inputs refer to FMU inputs, i.e. variables transfered from ESP-r to the
+FMU. Outputs are the opposite, i.e. variables transfered from the FMU to
+ESP-r. All inputs and outputs are implemented as type real/float, and
+are discretized to integers if required.
+
+Inputs
+
+Zone mean dry bulb temperature (degrees C)
+This takes the air point temperature for the associated zone.
+
+Zone illumination (lux)
+This requires casual gain control in the associated zone. Note that
+this is only required to set up the sensor locations; a control
+algorithm is not required and hence it is recommended to set the control
+type to "always on".
+
+Zone CO2 concentration (ppm)
+This requires a contaminant network in the associated zone.
+
+Zone lights power (watts)
+This takes data from the casual gains in the zone.
+
+Ambient dry bulb temperature (degrees C)
+This takes data from the weather data used for the simulation.
+
+Ambient rain indicator (binary; 0 = no rain, 1 = rain)
+You can input this data into ESP-r with a temporal entity. If the 
+temporal data is not present, this variable will always be forced to 0.
+
+Outputs
+
+Zone control on (binary; 0 = off, 1 = on)
+This interacts with zone control; a "0" signal will deactivate any zone 
+control in the associated zone, and a "1" signal will allow the control 
+to function as normal.
+
+Zone lights on (fraction; 0.0 (none) - 1.0 (full))
+This interacts with lighting casual gains; gains for the current time
+step are multiplied by this value.
+
+Zone windows open (fraction; 0.0 (closed) - 1.0 (open))
+This interacts with scheduled infiltration or on/off flow network 
+control. If there is no flow network, a portion of scheduled 
+infiltration in the associated zone will be multiplied by this value. 
+The portion of infiltration that is controlled by this variable is 
+defined by a supplementary data item for this output type. 
+If there is a flow network, signals from on/off flow network controls 
+that are set to sense air point temperature in the associated zone will 
+be overridden with this value. In this case the supplementary data is 
+not used.
+Note that if on/off flow controls are needed that sense temperature in 
+the associated zone but are not overridden by this value, this can be 
+achieved by setting the sensor to the appropriate flow node, rather 
+than the zone.
+Supplementary data:
+1. Fraction of scheduled infiltration controlled (fraction; 0.0 - 1.0)
+
+Zone equipment on (fraction; 0.0 (none) - 1.0 (full))
+This interacts with equipment casual gains; gains for the current time
+step are multiplied by this value.
+
+Zone thermostat (degrees C)
+This interacts with the following control functions:
+- basic zone control (zone law 1)
+- proportional plant control (laws 3 & 5) sensing thermostat or TRV
+  plant components (numbers 23 and 110)
+The heating and/or cooling setpoint(s) (according to supplementary data)
+of the control are set according to this value at each time step. This 
+will have no effect if none of the above controls apply to the associated 
+zone.
+Supplementary data:
+1. heating or cooling:
+   0 = set both heating and cooling setpoint
+   1 = set heating setpoint only
+   2 = set cooling setpoint only
+   3 = maintain delta between heating and cooling setpoints, set midpoint
+
+Zone blinds closed (binary; 0 = open, 1 = closed)
+This interacts with optical control; the binary control signal(s) from
+all such controls in the associated zone will be overridden with this
+value. Note that it is assumed that the ESP-r control is set up such
+that the alternative properties, i.e. those switched to when the control
+is active, correspond to closed blinds. If there is no optical control
+for constructions in the associated zone, this will have no effect.
+
+Zone occupancy (number of occupants)
+This interacts with occupant casual gains. The occupant gains for the
+associated zone should be set at appropriate values for a single
+occupant. These values will be multiplied by this number at each time
+step. Note that this is also taken into account when calculating 
+contaminant sources linked to occupant casual gains.
+
+**************************
+* 5. List of Tested FMUs *
+**************************
+
+obFMU (occupant behaviour FMU)
+
+obFMU is available to download at: 
+http://behavior.lbl.gov/?q=obFMUdownload
+
+This is a module for encapsulating occupant movement/presence and 
+behaviour models, developed under the remit of IEA-EBC Annex 66. It 
+allows users to implement bespoke models through an XML schema, but a
+library of existing models can be downloaded at:
+https://behaviour.lbl.gov/?q=obxmldownload
+
+There are three files required for co-simulation with obFMU; obFMU.fmu, 
+obXML.xml and obCoSim.xml. obFMU.fmu is a zipped archive (rename to 
+obFMU.zip and it will behave as such) that countains the binaries of the
+fmu, and the modelDescription.xml file that define the input and output 
+variables (as described in section 2). obXML.xml defines the rooms, 
+occupants and behaviour models that obFMU will use. obCoSim.xml maps 
+rooms onto instances. Usually there will be one instance of the FMU per 
+zone. Please refer to the obFMU documentation for guidance on setting up
+obXML.xml and obCoSim.xml files.
+
+For an ESP-r model to co-simulate with obFMU, all three of these files
+must be present in the "/cfg" directory of the model.
+
+An exemplar model is provided that demonstrates co-simulation with 
+obFMU. This can be found in:
+[ESP-r installation directory]/training/cellular_obFMU
+Model documentation can be found in the "/doc" folder from the model 
+root directory.

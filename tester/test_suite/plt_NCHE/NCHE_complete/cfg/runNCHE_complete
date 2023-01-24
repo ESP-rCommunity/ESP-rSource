@@ -1,0 +1,1 @@
+bps.exe -mode text -file NCHE_complete.cfg -p test silent

@@ -1,0 +1,9 @@
+# transparent properties of main_second
+  18                                            # number of surfaces followed by tmc index for each surface:
+0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0
+   3  ccht-win                                  # layers in tmc type 1
+  0.624  0.602  0.544  0.385  0.186  0.890      # transmission @ 5 angles & visible tr.
+  0.095  0.105  0.115  0.129  0.135             # for each layer absorption @ 5 angles
+  0.001  0.001  0.001  0.001  0.001
+  0.135  0.137  0.130  0.109  0.064
+   0                                            # optical control flag

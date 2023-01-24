@@ -1,0 +1,4 @@
+ESP-r Test Suite
+
+Move to the ./scripts folder and run './tester.pl --help' 
+for information. See also the file 'tester_example_use'.

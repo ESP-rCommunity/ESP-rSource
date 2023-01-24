@@ -1,0 +1,1774 @@
+*help_text common
+
+*item ascii_mat legacymat_scan
+'Each material should have a unique name. Duplicates were'
+'found and this needs to be rectified to prevent confusion.'
+'After editing the materials file, restart the Project Manager'
+'to re-open the model.'
+*enditem
+
+*item common3dv azalt_limits
+'There are some limits that should not be exceeded. If you'
+'answer no, the module will terminate. '
+*enditem
+
+*item bsimsel bsimtype_selection
+'Specify the BASESIMP configuration number (iconfig).'
+'Refer to src/esp-r/esrubld/bscoeff.F for the'
+'correspondence between iconfig and standard BASESIMP'
+'descriptors (e.g. BCIN_1).'
+'*any constr = and first storey construction.'
+'*brick on wall = brick veneer directly on basement wall.'
+'*non-brick = non-brick veneer or bricks thermally broken'
+'  from basement concrete walls.'
+'*brick on slab = brick veneer placed directly on floor slab'
+'TB = thermal-break between walls and floor slab,'
+'intrn full = internal wall insulation full height,'
+'extrn full = external wall insulation fill height,'
+'0.6m perm = slab permiter insulation 0.6m wide,'
+'wood Wl conc Fl = wood wall and concrete floor,'
+'conc Wl&Fl = concrete wall and floor,'
+'wood Wl&Fl = wooden wall and floor.'
+*enditem
+
+*item bsimsel bsimtype_details1-10
+'(1) BCIN_1 details: concrete walls and floor,'
+'interior surface of wall insulated over full-height,'
+'any first storey construction type.'
+' '
+'(2) BCIN_2 details: concrete walls and floor,'
+'interior surface of wall insulated from top of wall to'
+'0.2 m from floor, any first storey construction type.'
+' '
+'(3) BCIN_3 details: concrete walls and floor, interior surf'
+'of wall insulated from top of wall to 0.6 m below grade,'
+'1st storey brick veneer directly on basement walls.'
+' '
+'(4) BCIN_4 details: concrete walls and floor, interior surf'
+'of wall insulated from top of wall to 0.6 m below grade,'
+'1st storey is non-brick veneer or bricks thermally broken
+'from basement concrete walls.'
+' '
+'(5) BCEN_1 details: concrete walls and floor, exterior surf'
+'of wall insulated over full-height, first storey brick'
+'veneer placed directly on basement concrete walls.'
+' '
+'(6) BCEN_2 details: concrete walls and floor, exterior surf'
+'of wall insulated over full-height, first storey is'
+'non-brick veneer or bricks thermally broken from'
+'basement concrete walls.'
+' '
+'(7) BCEN_3 details: concrete walls and floor, exterior surf'
+'of wall insulated below grade, first storey brick'
+'veneer placed directly on basement concrete walls.'
+' '
+'(8) BCEN_4 details: concrete walls and floor, exterior surf'
+'of wall insulated below grade, first storey is non-brick'
+'veneer or bricks thermally broken from basement'
+'concrete walls.'
+' '
+'(9) BCNN_1 details: concrete walls and floor, no wall or'
+'floor insulation, first storey brick veneer placed'
+'directly on basement concrete walls.'
+' '
+'(10) BCNN_2 details: concrete walls and floor, no wall or'
+'floor insulation, first storey is non-brick veneer or'
+'bricks thermally broken from basement concrete walls.'
+*enditem
+
+*item bsimsel bsimtype_details11-20
+'(11) BCCN_1 details: concrete walls and floor, exterior of'
+'wall insulated below grade and interior insulation from'
+'top of wall overlapping with ext insulation. 1st story'
+'brick veneer placed directly on basement concrete walls.'
+' '
+'(12)BCCN_2 details: concrete walls and floor, exterior of'
+'wall insulated below grade and interior insulation from'
+'top of wall overlapping with ext insulation. 1st story'
+'is non-brick veneer or thermally broken bricks.'
+' '
+'(13) BWNN_1 details: wood walls and wood floor, no insulation'
+'and any first storey construction type.'
+' '
+'(14) BWIN_1 details: wood walls and wood floor, interior of'
+'wall insulated over full-height and any first storey'
+'construction type.'
+' '
+'(15) BWIN_2 details: wood walls and wood floor, interior of'
+'wall insulated from top of wall to 0.2 m from floor,'
+'any first storey construction type.'
+' '
+'(16) BWIN_3 details: wood walls and wood floor, interior of'
+'wall insulated from top of wall to 0.6 m below grade,'
+'any first storey construction type.'
+' '
+'(17) BWEN_1  details: wood walls and wood floor, exterior of'
+'wall insulated over full-height, any first storey'
+'construction type.'
+' '
+'(18) BWEN_2 details: wood walls and wood floor, exterior of'
+'wall insulated below grade, any first storey'
+'construction type.'
+' '
+'(19) BCIB_1 details: concrete walls and floor, interior wall'
+'insulated over full-height, sub-surface of slab fully'
+'insulated but no insulation under footings,any first'
+'storey construction type.'
+' '
+'(20) BCIB_2 details: concrete walls and floor, interior wall'
+'insulated over full-height, sub-surface of floor slab'
+'insulated with a 0.6 m strip around perimeter, any first'
+'storey construction type.'
+*enditem
+
+*item bsimsel bsimtype_details21-30
+'(21) BCIB_3 details: concrete walls and floor, interior wall'
+'insulated over full-height,sub-surface of floorslab'
+'insulated with a 1.0 m strip around perimeter, any first'
+'storey construction type.'
+' '
+'(22) BCIB_4 details: concrete walls and floor, interior wall'
+'insulated over full-height, sub-surface of slab fully'
+'insulated but no insulation under footings, thermal-break'
+'between walls and slab, any 1st storey construction type.'
+' '
+'(23) BCIB_5 details: concrete walls and floor, interior wall'
+'insulated over full-height, sub-surface of slab insulated'
+'with a 0.6 m strip around perimeter, thermal-break'
+'between walls and slab, any 1st storey construction type.'
+' '
+'(24) BCIB_6 details: concrete walls and floor, interior wall'
+'insulated over full-height, sub-surface of slab insulated'
+'with a 1.0 m strip around perimeter, thermal-break'
+'between walls and slab, any 1st storey construction type.'
+' '
+'(25) BCEB_1 details: concrete walls and floor, exterior wall'
+'insulated over full-height, sub-surface of slab fully'
+'insulated but no insulation under footings, first storey'
+'brick veneer placed directly on basement concrete walls.'
+' '
+'(26) BCEB_2 details: concrete walls and floor, exterior wall'
+'insulated over full-height, sub-surface of slab insulated'
+'with a 0.6 m strip around perimeter, first storey brick'
+'veneer placed directly on basement concrete walls.'
+' '
+'(27) BCEB_3 details: concrete walls and floor, exterior wall'
+'insulated over full-height, sub-surface of slab insulated'
+'with a 1.0 m strip around perimeter, first storey brick'
+'veneer placed directly on basement concrete walls.'
+' '
+'(28) SCN_1 details: concrete or soil (for crawl space) floor,'
+'no insulation, first storey is non-brick veneer or bricks'
+'thermally broken from concrete floor.'
+' '
+'(29) SCN_2 details: concrete or soil (for crawl space) floor,'
+'no insulation, first storey brick veneer placed directly'
+'on concrete slab.'
+' '
+'(30) SCN_3 details: concrete or soil (for crawl space) floor,'
+'no insulation except for thermal break around slab edge,'
+'first storey is non-brick veneer or bricks thermally'
+'broken from concrete floor.'
+*enditem
+
+*item bsimsel bsimtype_details31-40
+'(31) SCN_4 details: concrete or soil (for crawl space) floor,'
+'thermal break around edge of slab, first storey brick'
+'veneer placed directly on concrete slab.'
+' '
+'(32) SCN_7 details: concrete or soil (for crawl space) floor,'
+'thermal break around edge of slab, vertical skirt extends'
+'from bottom of slab,first storey is non-brick veneer or'
+'bricks thermally broken from concrete floor.'
+' '
+'(33) SCN_8 details: concrete or soil (for crawl space) floor,'
+'thermal break around edge of slab, vertical skirt extends'
+'from bottom of slab, first storey brick veneer placed'
+'directly on concrete slab.'
+' '
+'(34) SCB_1 details: concrete or soil (for crawl space) floor,'
+'bottom of slab insulated 0.6 m around perimeter, no'
+'insulation under footing or wall (starts 0.25m from edge)'
+'first storey is non-brick veneer or thermally broken.'
+' '
+'(35) SCB_2 details: concrete or soil (for crawl space) floor,'
+'bottom of slab insulated 0.6 m around perimeter, no'
+'insulation under footing or wall (starts 0.25m from edge)'
+'1st storey brick veneer placed directly on concrete slab.'
+' '
+'(36) SCB_3 details: concrete or soil (for crawl space) floor,'
+'bottom of slab insulated 0.6 m around perimeter and under'
+'footing creating a 0.85 m continuous section, 1st storey'
+'is non-brick veneer or bricks thermally broken.'
+' '
+'(37) SCB_4 details: concrete or soil (for crawl space) floor,'
+'bottom of slab insulated 0.6 m around perimeter and under'
+'footing creating a 0.85 m continuous section, 1st storey'
+'1st storey brick veneer placed directly on concrete slab.'
+' '
+'(38) SCB_5 details: concrete or soil (for crawl space) floor,'
+'bottom of slab insulated 0.6 m around perimeter, no'
+'insulation under footing or wall (starts 0.25m from edge)'
+'1st storey non-brick veneer or bricks thermally broken.'
+' '
+'(39) SCB_6 details: concrete or soil (for crawl space) floor,'
+'bottom of slab insulated 0.6 m around perimeter, no'
+'insulation under footing or wall (starts 0.25m from edge)'
+'1st storey brick veneer placed directly on concrete slab.'
+' '
+'(40) SCB_9 details: concrete or soil (for crawl space) floor,'
+'bottom of slab insulated 0.6 m around perimeter, no ins'
+'under footing or wall (starts 0.25m from edge), vertical'
+'skirt & 1st storey non-brick veneer or thermally broken.'
+*enditem
+
+*item bsimsel bsimtype_details41-50
+'(41) SCB_10 details: concrete or soil (for crawl space) floor,'
+'bottom of slab insulated 0.6 m around perimeter, no ins'
+'under footing or wall (starts 0.25m from edge), thermal'
+'break @ edge, vertical skirt, 1st storey brick on slab.'
+' '
+'(42) SCB_11 details: concrete or soil (for crawl space) floor,'
+'bottom of slab insulated 0.6 m around perimeter, no ins'
+'under footing or wall (starts 0.25m from edge), horiz'
+'skirt from slab, 1st storey non-brick or thermal brake.'
+' '
+'(43) SCB_12 details: concrete or soil (for crawl space) floor,'
+'bottom of slab insulated 0.6 m around perimeter, no ins'
+'under footing or wall (starts 0.25m from edge), horiz'
+'skirt from slab, 1st storey brick veneer on slab.'
+' '
+'(44) SCB_13 details: concrete or soil (for crawl space) floor,'
+'bottom of slab insulated 1.0 m around perimeter, no ins'
+'under footing or wall (starts 0.25m from edge), first'
+'storey non-brick veneer or thermally broken brick.'
+' '
+'(45) SCB_14 details: concrete or soil (for crawl space) floor,'
+'bottom of slab insulated 1.0 m around perimeter, no ins'
+'under footing or wall (starts 0.25m from edge), first' 
+'storey brick veneer on slab.'
+' '
+'(46) SCB_17 details: concrete or soil (for crawl space) floor,'
+'bottom of slab insulated 1.0 m around perimeter, no ins'
+'under footing or wall (starts 0.25m from edge), thermal'
+'break around edge of slab, 1st storey no-brick veneer.'
+' '
+'(47) SCB_18 details: concrete or soil (for crawl space) floor,'
+'bottom of slab insulated 1.0 m around perimeter, no ins'
+'under footing or wall (starts 0.25m from edge), thermal'
+'break around slab edge, 1st storey brick veneer on slab.'
+' '
+'(48) SCB_21 details: concrete or soil (for crawl space) floor,'
+'bottom of slab insulated 1.0 m around perimeter, no ins'
+'under footing or wall (starts 0.25m from edge), thermal'
+'break & slab edge, vertical skirt, 1st storey non-brick.'
+' '
+'(49) SCB_22 details: concrete or soil (for crawl space) floor,'
+'bottom of slab insulated 1.0 m around perimeter, no ins'
+'under footing or wall (starts 0.25m from edge), thermal'
+'break slab edge, vert. skirt, 1st storey brick on slab.'
+' '
+'(50) SCB_23 details: concrete or soil (for crawl space) floor,'
+'bottom of slab insulated 1.0 m around perimeter, no ins'
+'under footing or wall (starts 0.25m from edge), horiz.'
+'skirt, 1st storey non-brick veneer or thermally broken.'
+*enditem
+
+*item bsimsel bsimtype_details51-60
+'(51) SCB_24 details: concrete or soil (for crawl space) floor,'
+'bottom of slab insulated 1.0 m around perimeter, no ins'
+'under footing or wall (starts 0.25m from edge), horiz.'
+'skirt, 1st storey brick veneer on concrete slab.'
+' '
+'(52) SCB_25 details: concrete or soil (for crawl space) floor,'
+'bottom of slab fully insulated, no insulation under'
+'footing or wall (starts 0.25m from edge), first storey'
+'non-brick veneer or thermally broken brick.'
+' '
+'(53) SCB_26 details: concrete or soil (for crawl space) floor,'
+'bottom of slab fully insulated , no insulation'
+'under footing or wall (starts 0.25m from edge), first'
+'storey brick veneer placed directly on concrete slab.'
+' '
+'(54) SCB_29 details: concrete or soil (for crawl space) floor,'
+'bottom of slab fully insulated except under footing or'
+'wall (starts 0.25m from edge), thermal break around'
+'edge, 1st storey is not-brick veneer or thermally broken.'
+' '
+'(55) SCB_30 details: concrete or soil (for crawl space) floor,'
+'bottom of slab fully insulated except under footing or'
+'footing or wall (starts 0.25m from edge), thermal break'
+'around slab edge, 1st storey is brick veneer on slab.'
+' '
+'(56) SCB_33 details: concrete or soil (for crawl space) floor,'
+'bottom of slab fully insulated except under footing or'
+'wall (starts 0.25m from edge), thermal break around'
+'slab edge, vertical skirt, 1st storey non-brick veneer.'
+' '
+'(57) SCB_34 details: concrete or soil (for crawl space) floor,'
+'bottom of slab fully insulated except under footing or'
+'wall (starts 0.25m from edge), thermal break around slab'
+'edge, vertical skirt, 1st storey brick veneer on slab.'
+' '
+'(58) SCB_35 details: concrete or soil (for crawl space) floor,'
+'bottom of slab fully insulated except under footing or'
+'wall (starts 0.25m from edge), horizontal skirt extends'
+'from slab, 1st storey is non-brick veneer.'
+' '
+'(59) SCB_36 details: concrete or soil (for crawl space) floor,'
+'bottom of slab fully insulated except under footing or'
+'wall (starts 0.25m from edge), horizontal skirt extends'
+'from slab, 1st storey is brick veneer on slab.'
+' '
+'(60) SCA_17 details: concrete or soil (for crawl space) floor,'
+'top of slab fully insulated, first storey is non-brick'
+'veneer or bricks thermally broken from concrete slab.'
+*enditem
+
+*item bsimsel bsimtype_details61-70
+'(61) SCA_18 details: concrete or soil (for crawl space) floor,'
+'top of slab fully insulated, first storey is brick'
+'veneer placed directly on slab.'
+' '
+'(62) SCA_19 details: concrete or soil (for crawl space) floor,'
+'top of slab fully insulated, thermal break around edge'
+'of slab, first storey is non-brick veneer or bricks'
+'thermally broken from concrete floor.'
+' '
+'(63) SCA_20 details: concrete or soil (for crawl space) floor,'
+'top of slab fully insulated, thermal break around edge'
+'of slab, first storey brick veneer on concrete slab.'
+' '
+'(64) SCA_21 details: concrete or soil (for crawl space) floor,'
+'top of slab fully insulated, thermal break around edge'
+'of slab, vertical skirt extend from bottom of slab, 1st'
+'storey is non-brick veneer or thermally broken bricks.'
+' '
+'(65) SCA_22 details: concrete or soil (for crawl space) floor,'
+'top of slab fully insulated, thermal break around edge'
+'of slab, vertical skirt extend from bottom of slab, 1st'
+'storey is brick veneer placed directly on concrete slab.'
+' '
+'(66) SCA_23 details: concrete or soil (for crawl space) floor,'
+'top of slab fully insulated, horizontal skirt extending'
+'from slab, first storey is non-brick veneer or thermally'
+'broken bricks.'
+' '
+'(67) SCA_24 details: concrete or soil (for crawl space) floor,'
+'top of slab fully insulated, horizontal skirt extending'
+'from slab, first storey is brick veneer placed directly'
+'on concrete slab.'
+' '
+'(68) BCCN_3 details: concrete walls and floor, interior and'
+'exterior wall insulated over full-height, thermal-break'
+'between walls and floor slab, any first storey'
+'construction type.'
+' '
+'(69) BCCB_4 details: concrete walls and floor, interior and'
+'exterior wall insulated over full-height, sub-surface of'
+'slab fully insulated but no insulation under footings,'
+'thermal-break W/F, any first storey construction type.'
+' '
+'(70)BCEA_1 details: concrete walls and floor, exterior of'
+'wall insulated over full-height, top of slab fully'
+'insulated, first storey brick veneer placed directly on'
+'basement concrete walls.'
+*enditem
+
+*item bsimsel bsimtype_details71-80
+'(71) BCEA_4 details: concrete walls and floor, exterior of'
+'wall insulated over full-height, top of slab fully'
+'insulated, first storey non-brick veneer or thermally'
+'broken bricks.'
+' '
+'(72) BCIA_1 details: concrete walls and floor, interior of'
+'wall insulated over full-height, top of slab fully'
+'insulated, any first storey construction type.'
+' '
+'(73) BCIA_4 details: concrete walls and floor, interior of'
+'wall insulated from top of wall to 0.2 m from floor, top'
+'of slab fully insulated, any first storey construction.'
+' '
+'(74) BCEA_7 details: concrete walls and floor, exterior of'
+'wall insulated below grade, top of slab fully insulated,'
+'first storey brick veneer placed directly on basement'
+'concrete walls.'
+' '
+'(75) BCEA_8 details: concrete walls and floor, exterior of'
+'wall insulated below grade, top of slab fully insulated,'
+'first storey non-brick veneer or bricks thermally broken'
+'from basement concrete walls.'
+' '
+'(76) BCEB_8 details: concrete walls and floor, exterior of'
+'wall insulated to 0.6 m below grade, thermal-break at'
+'walls & floor, sub-surface of floor slab fully insulated'
+'except footings, 1st storey brick on concrete walls.'
+' '
+'(77) BCEB_9 details: concrete walls and floor, exterior of'
+'wall insulated to 0.6 m below grade, thermal-break at'
+'walls & floor, sub-surface of floor slab fully insulated'
+'except footings, 1st storey non-brick veneer.'
+' '
+'(78) BWEN_3 details: wood walls and wood floor, exterior wall'
+'insulated to 0.6 m below grade, any first storey'
+'construction type.'
+' '
+'(79) BBIB_3 details: wood walls and concrete floor, interior'
+'of wall insulated over full-height, thermal-break at'
+'walls & floor, sub-surface of floor slab fully insulated'
+'except footings, any first storey construction type.'
+' '
+'(80) BBIB_4 details: wood walls and concrete floor, interior'
+'wall insulated from top of wall to 0.6 m below grade,'
+'thermal-break at walls & floor, sub-surface of slab fully'
+'insulated except footings, 1st storey brick vnr on walls.'
+*enditem
+
+*item bsimsel bsimtype_details81-90
+'(81) SCB_31 details: concrete or soil (for crawl space) floor,'
+'bottom of slab fully insulated including footings,'
+'thermal break around edge of slab, first storey non-brick'
+'veneer or bricks thermally broken from concrete floor.'
+' '
+'(82) SCB_32 details: concrete or soil (for crawl space) floor,'
+'bottom of slab fully insulated including footings,'
+'thermal break around edge of slab, first storey brick'
+'brick veneer placed directly on concrete slab.'
+' '
+'(83) SCB_37 details: concrete or soil (for crawl space) floor,'
+'slab insulated 0.35 m around perimeter plus footings for'
+'0.6 m continuous section, thermal break around slab edge,'
+'first storey is non-brick veneer or thermally broken.'
+' '
+'(84) SCB_38 details: concrete or soil (for crawl space) floor,'
+'slab insulated 0.35 m around perimeter plus footings for'
+'0.6 m continuous section, thermal break around slab edge,'
+'first storey brick veneer placed directly on slab.'
+' '
+'(85) SCB_39 details: concrete or soil (for crawl space) floor,'
+'slab insulated 0.75 m around perimeter plus footings for'
+'1.0 m continuous section, thermal break around slab edge,'
+'first storey is non-brick veneer or thermally broken.'
+' '
+'(86) SCB_40 details: concrete or soil (for crawl space) floor,'
+'slab insulated 0.75 m around perimeter plus footings for'
+'1.0 m continuous section, thermal break around slab edge,'
+'first storey brick veneer placed directly on slab.'
+' '
+'(87) BBEB_1 details: wood walls and concrete floor, exterior'
+'wall insulated to 0.6 m below grade, sub-surface of slab'
+'fully insulated except footings, 1st storey brick veneer'
+'placed directly on slab.'
+' '
+'(88) BBEN_1 details: wood walls and concrete floor, exterior'
+'wall insulated over full-height, 1st storey brick veneer'
+'placed directly on basement concrete walls.'
+' '
+'(89) BBEN_2 details: wood walls and concrete floor, exterior'
+'wall insulated to 0.6 m below grade, 1st storey brick'
+'veneer placed directly on basement concrete walls.'
+' '
+'(90) BBIA_2 details: wood walls and concrete floor, interior'
+'wall insulated over full-height, top of slab fully'
+'insulated, any first storey construction type.'
+*enditem
+
+*item bsimsel bsimtype_details91-100
+'(91) BBIN_2 details: wood walls and concrete floor, interior'
+'wall insulated from top of wall to 0.6 m below grade,'
+'first storey is non-brick veneer or bricks thermally'
+'broken from  basement concrete walls.'
+' '
+'(92) BCCB_8 details: concrete walls and floor, interior and'
+'exterior wall insulated over full-height, perimeter of'
+'floor slab insulated to 0.6 m, any first storey'
+'construction type.'
+' '
+'(93) BCCA_7 details: concrete walls and floor, interior of'
+'wall insulated over full-height, exterior insulated to'
+'0.6 m below grade, top of slab fully insulated, any first'
+'storey construction type.'
+' '
+'(94) BCCA_8 details: concrete walls and floor, interior of'
+'wall insulated from top of wall to 0.2m, exterior wall'
+'insulated over full-height, top of slab fully insulated,'
+'any first storey construction type.'
+' '
+'(95) BCCN_4 details: concrete walls and floor, interior of'
+'wall insulated over full-height, exterior wall insulated'
+'to 0.6 m below grade, any first storey construction type.'
+' '
+'(96) BCCN_5 details: concrete walls and floor, interior of'
+'wall insulated from top of wall to 0.2 m exterior wall'
+'insulated over full-height, any first storey construction'
+'type.'
+' '
+'(97) BCEA_5 details: concrete walls and floor, exterior of'
+'wall insulated to 0.6 m below grade, top of slab fully'
+'insulated, first storey brick veneer placed directly on'
+'basement concrete walls.'
+' '
+'(98) BCEA_6 details: concrete walls and floor, exterior of'
+'wall insulated to 0.6 m below grade, top of slab fully'
+'insulated, first storey is non-brick veneer or bricks'
+'thermally broken from basement concrete walls.'
+' '
+'(99) BCEB_4 details: concrete walls and floor, exterior of'
+'wall insulated over full-height, sub-surface floor slab'
+'fully insulated except footings, first storey is non-'
+'brick veneer or thermally broken from basement walls.'
+' '
+'(100) BCEB_5 details: concrete walls and floor, exterior of'
+'wall insulated over full-height, sub-surface floor slab'
+'insulated with a 0.6 m strip around perimeter, 1st storey'
+'non-brick veneer or thermally broken from basement walls.'
+*enditem
+
+*item bsimsel bsimtype_details101-110
+'(101) BCEB_6 details: concrete walls and floor, exterior of'
+'wall insulated over full-height, slab insulated 1.0m'
+'around perimeter, 1st storey non-brick veneer or brick'
+'thermally broken from basement walls.'
+''
+'(102) BWIA_1 details: wood walls and wood floor, interior of'
+'wall insulated over full-height, top of slab insulated'
+'with a 0.6 m strip around perimeter,any first storey'
+'construction type.'
+' '
+'(103) BWIA_2 details: wood walls and wood floor, interior of'
+'wall insulated over full-height, top of slab fully'
+'insulated, any first storey construction type.'
+' '
+'(104) SCA_1 details: concrete or soil (for crawl space) floor,'
+'top of slab insulated with a 0.6 m perimeter strip,'
+'1st storey non-brick veneer or brick thermally broken'
+'from basement walls.'
+' '
+'(105) SCA_2 details: concrete or soil (for crawl space) floor,'
+'top of slab insulated with a 0.6 m perimeter strip,'
+'first storey brick veneer placed directly on slab.'
+' '
+'(106) SCA_9 details: concrete or soil (for crawl space) floor,'
+'top of slab insulated with a 1.0 m perimeter strip,'
+'first storey brick veneer placed directly on slab.'
+' '
+'(107) SCA_10 details: concrete or soil (for crawl space) floor,'
+'top of slab insulated with a 1.0 m perimeter strip,'
+'first storey brick veneer placed directly on slab.'
+' '
+'(108) BBIN_1 details: wood walls and concrete floor, interior'
+'wall insulated over full-height, first storey non-brick'
+'veneer or bricks thermally broken from concrete walls.'
+' '
+'(109) BCEN_5 details: concrete walls and floor, exterior of'
+'wall insulated to 0.6 m below grade, first storey brick'
+'veneer placed directly on basement concrete walls.'
+' '
+'(110) BCEN_6 details: concrete walls and floor, exterior of'
+'wall insulated to 0.6 m below grade, 1st storey non-brick'
+'veneer or bricks thermally broken from concrete walls.'
+*enditem
+
+*item bsimsel bsimtype_details111-120
+'(111) BBIA_1 details: wood walls and concrete floor, interior'
+'wall insulated over full-height, top of slab fully'
+'insulated, any first storey construction type.'
+' '
+'(112) BBIB_1 details: wood walls and concrete floor, interior'
+'wall insulated over full-height, floor slab insulated'
+'with a 0.6 m perimeter strip, any first storey'
+'construction type.'
+' '
+'(113) BBIB_2 details: wood walls and concrete floor, interior'
+'wall insulated over full-height, floor slab fully'
+'insulated except footings, any first storey construction'
+'type.'
+' '
+'(114) BCCB_9 details: concrete walls and floor, interior of'
+'wall insulated over full-height, exterior of wall'
+'insulated to 0.6 m below grade, floor slab fully'
+'insulated except footings,any first storey construction'
+'type.'
+' '
+'(115) BCCB_10 details: concrete walls and floor, interior of'
+'wall insulated over full-height, exterior of wall'
+'insulated to 0.6 m below grade, floor slab fully insul'
+'except for footings, any first storey construction type.'
+' '
+'(116) BCCA_1 details: concrete walls and floor, exterior of'
+'wall insulated below grade and interior from top of wall'
+'to produce an overlap, top of slab fully insulated, 1st'
+'storey brick veneer placed directly on basement walls.'
+' '
+'(117) BCCA_4 details: concrete walls and floor, exterior of'
+'wall insulated below grade and interior from top of wall'
+'to produce an overlap, top of slab fully insulated, 1st'
+'story non-brick veneer or thermally broken from walls.'
+' '
+'(118) BCIB_7 details: concrete walls and floor, interior wall'
+'insulated from top of wall to 0.6 m below grade, floor'
+'slab fully insulated except for footings, thermal-break'
+'walls & slab, 1st storey brick veneer on basement walls.'
+' '
+'(119) BCIB_8 details: concrete walls and floor, interior wall'
+'insulated from top of wall to 0.6 m below grade, floor'
+'slab fully insulated except for footings, thermal-break'
+'walls & slab, 1st storey is non-brick veneer.'
+' '
+'(120) BBEB_2 details: wood walls and concrete floor, exterior'
+'wall insulated to 0.6 m below grade, slab fully insulated'
+'except footings, thermal-break walls & slab, 1st storey'
+'brick veneer placed directly on basement concrete walls.'
+*enditem
+
+*item bsimsel bsimtype_details121-130
+'(121) BCIA_3 details: concrete walls and floor, interior wall'
+'insulated from top of wall to 0.6 m below grade, top of'
+'slab insulated with a 1.0 m strip around perimeter, 1st'
+'storey brick veneer on basement concrete walls.'
+' '
+'(122) BCIA_5 details: concrete walls and floor, interior wall'
+'insulated from top of wall to 0.6 m below grade, slab'
+'insulated with a 0.6 m perimeter strip, 1st storey brick'
+'veneer directly on basement concrete walls.'
+' '
+'(123) BCIA_6 details: concrete walls and floor, interior wall'
+'insulated from top of wall to 0.6 m below grade, slab'
+'insulated with a 0.6 m perimeter strip, first storey'
+'non-brick veneer or brick thermally broken from walls.'
+' '
+'(124) BCIB_9 details: concrete walls and floor, interior wall'
+'insulated from top of wall to 0.6 m below grade, slab'
+'insulated with a 0.6 m perimeter strip, thermal break'
+'walls & slab, 1st storey brick veneer direct on walls.'
+' '
+'(125) BCIB_10 details: concrete walls and floor, interior wall'
+'insulated from top of wall to 0.6 m below grade, slab'
+'insulated with a 0.6 m perimeter strip, thermal break'
+'walls & slab, 1st storey non-brick veneer.'
+' '
+'(126) BCEB_10 details: concrete walls and floor, exterior wall'
+'insulated to 0.6 m below grade, slab insulated with a'
+'0.6 m perimeter strip, thermal break walls & slab, 1st'
+'storey brick veneer direct on basement walls.'
+' '
+'(127) BCEB_11 details: concrete walls and floor, exterior wall'
+'insulated to 0.6 m below grade, slab insulated with a'
+'0.6 m perimeter strip, thermal break walls & slab, 1st'
+'storey non-brick veneer or thermally broken from walls.'
+' '
+'(128) BCEA_3 details: concrete walls and floor, exterior wall'
+'insulated over full-height, top slab insulated with a 1.0'
+'perimeter strip, first storey brick veneer direct on'
+'basement walls.'
+' '
+'(129) BCEA_9 details: concrete walls and floor, exterior wall'
+'insulated over full-height, top slab insulated with a 1.0'
+'perimeter strip, first storey non-brick veneer or brick'
+'thermally broken from walls.'
+' '
+'(130) BCEA_10 details: concrete walls and floor, exterior wall'
+'insulated to 0.6 m below grade, top slab insulated with'
+'a 0.6m perimeter strip, first storey brick veneer on'
+'basement concrete walls.'
+*enditem
+
+*item bsimsel bsimtype_details131-140
+'(131) BCEA_11 details: concrete walls and floor, exterior wall'
+'insulated to 0.6 m below grade, top slab insulated with'
+'a 0.6m perimeter strip, first storey non-brick veneer or'
+'brick thermally broken from walls.'
+' '
+'(132) BWIB_1 details: wood walls and wood floor, interior wall'
+'insulated over full-height, sub-surface slab insulated'
+'with a 1.0m perimeter strip, first storey brick veneer on'
+'basement concrete walls.'
+' '
+'(133) BWIB_2 details: wood walls and wood floor, interior wall'
+'insulated over full-height, sub-surface of floor slab'
+'insulated except for footings, first storey brick veneer'
+'on basement concrete walls.'
+' '
+'(134) BWIB_4 details: wood walls and wood floor, interior wall'
+'insulated over full-height, sub-surface slab insulated'
+'with a 0.6m perimeter strip, first storey brick veneer on'
+'basement concrete walls.'
+' '
+'(135) BWIA_3 details: wood walls and wood floor, interior wall'
+'insulated from top of wall to 0.6 m below grade, top'
+'slab insulated with a 0.6 m strip around perimeter, first'
+'storey brick veneer on basement concrete walls.'
+' '
+'(136) BWEB_1 details: wood walls and wood floor, exterior wall'
+'insulated over full-height, sub-surface slab insulated'
+'with a 1.0m perimeter strip, first storey brick veneer on'
+'basement concrete walls.'
+' '
+'(137) BWEB_2 details: wood walls and wood floor, exterior wall'
+'insulated over full-height, sub-surface of floor slab'
+'insulated except for footings, first storey brick veneer'
+'on basement concrete walls.'
+' '
+'(138) BWEB_3 details: wood walls and wood floor, exterior wall'
+'insulated to 0.6 m below grade, sub-surface slab'
+'insulated with a 0.6m perimeter strip, first storey'
+'brick veneer on basement concrete walls.'
+' '
+'(139) BWEB_4 details: wood walls and wood floor, exterior wall'
+'insulated over full-height, sub-surface slab insulated'
+'with a 0.6m perimeter strip, first storey brick veneer'
+'on basement concrete walls.'
+' '
+'(140) BBIB_5 details: wood walls and concrete floor, interior'
+'wall insulated over full-height, sub-surface slab'
+'insulated with a 1.0m perimeter strip, first storey brick'
+*enditem
+
+*item bsimsel bsimtype_details141-146
+'(141) BBIB_6 details: wood walls and concrete floor, interior'
+'wall insulated from top of wall to 0.6 m below grade,'
+' sub-surface slab insulated with a 0.6m perimeter strip,'
+'first storey brick veneer on basement concrete walls.'
+' '
+'(142) BBEB_3 details: wood walls and concrete floor, exterior'
+'wall insulated over full-height, sub-surface slab'
+'insulated with a 1.0m perimeter strip, first storey brick'
+'veneer on basement concrete walls.'
+' '
+'(143) BBEB_4 details: wood walls and concrete floor, exterior'
+'wall insulated over full-height, sub-surface slab'
+'insulated with a 0.6m perimeter strip, first storey brick'
+'veneer on basement concrete walls.'
+' '
+'(144) BBEB_5 details: wood walls and concrete floor, exterior'
+'wall insulated to 0.6 m below grade, sub-surface slab'
+'insulated with a 0.6m perimeter strip, first storey brick'
+'veneer on basement concrete walls.'
+' '
+'(145) BBEA_2 details: wood walls and concrete floor, exterior'
+'wall insulated over full-height, top of slab fully'
+'insulated,  first storey brick veneer on basement'
+'concrete walls.'
+' '
+'(146) Not a recognised foundation configuration.'
+*enditem
+
+*item common clm_latitude_match
+'The weather station latitude does not need to match'
+'the model site latitude. The latter will be used by default.'
+' '
+'Longitude difference is the offset from the local time'
+'reference meridian and is distinct from the site longitude.'
+*enditem
+
+*item common define_longitude_diff
+'Enter the difference between the weather station longitude'
+'and the reference meridian longitude for the time zone'
+'(East of the reference is positive, West negative.).
+*enditem
+
+*item common what_is_the_year
+'The year dictates the day of the week throughout a simulation'
+'and thereby influences aspects such as occupancy and control'
+'system actuation. For example, 1 January 2001 was a Monday.'
+*enditem
+
+*item lib mouse_controls
+'Left button - click and hold to rotate.'
+'Right button - click and hold to pan.'
+'Middle button - click to reset view.'
+'Mouse wheel - zoom in and out.'
+*enditem
+
+*item lib lib_general
+'This menu allows adjustment of the parameters'
+'relating to model viewing. In most cases, the'
+'image will be refreshed as the adjustment is made.'
+*enditem
+
+*item lib multizone_select
+'Zones may be selected via the names in the list. If'
+'you have just updated a file it may not be reported'
+'until you exit and re-enter this menu.'
+*enditem
+
+*item lib pickfromstringarray
+'For script mode - if one item required then'
+'type `1`. The index of `c` is `3`.'
+*enditem
+
+*item lib GPL_license
+'ESP-r is distributed as free software under the terms of'
+'the GNU General Public License as published by the Free'
+'Software Foundation (Version 2 or later), Details available'
+'at https://opensource.org/licenses/gpl-license.'
+*enditem
+
+*item lib module_aco
+'This module assesses the acoustic reverberation'
+'time of a zone.'
+*enditem
+
+*item lib module_b2e
+'This module manages the updating of measured'
+'data when ESP-r is in BEMS emulation mode.'
+*enditem
+
+*item lib module_bps
+'This module subjects a model to an integrated simulation'
+'as a function of the active domain information relating'
+'to the building, plant and control aspects.'
+*enditem
+
+*item lib module_cfg
+'This module checks the building topology by matching'
+'zone surfaces. Where a probable match is found, this is'
+'presented for user confirmation or association with a'
+'standard boundary condition (external, ground, adiabatic'
+'etc.). The test tolerance may be set to accommodate'
+'minor differences between zone geometries.'
+*enditem
+
+*item lib module_cdb
+'This module manages icons relating to flow, plant'
+'and electrical components as used in graphical'
+'network definition.'
+*enditem
+
+*item lib module_dbm
+'This module provides information on the various'
+'databases used to build ESP-r models.'
+*enditem
+
+*item lib module_dfs
+'This module allows an independent solution of CFD'
+'domains in the absence of building zone conflation'
+'(i.e free-standing CFD domain solution).'
+*enditem
+
+*item lib module_dfv
+'This module allows CFD flow results to be viewed as'
+'a simulation progresses.'
+*enditem
+
+*item lib module_ecnv
+'This module controls various data conversions, e.g. from'
+'an ESP-r geometry format to DXF.'
+*enditem
+
+*item lib module_e2r
+'This module converts an ESP-r model to a form suitable for the'
+'RADIANCE lighting simulation program and then executes RADIANCE.'
+*enditem
+
+*item lib module_grd
+'This module supports the definition of multi-dimensional'
+'grids for building constructions and the ground.'
+*enditem
+
+*item lib module_ish
+'This module pre-calculates the shading of external'
+'surfaces and the insolation of internal surfaces for'
+'a typical day in each month and passes these data to'
+'the ESP-r Integrated Simulator.'
+*enditem
+
+*item lib module_mfs
+'This module is a standalone solver for network flow'
+'problems (i.e. with no building/plant conflation).'
+*enditem
+
+*item lib module_mld
+'This is the main menu for mould growth results analysis,'
+'allowing superimosition of simulation results on growth'
+'condition curves for different mould types. The `statistics`'
+'option reports the time/conditions required for the growth'
+'of a particular mould.'
+*enditem
+
+*item lib module_mrt
+'MRT attrib & calc: Reads a viewfactor file which'
+'  includes the definition of MRT sensors within a'
+'  zone. The user may calculate viewfactors for the'
+'  sensors or use previously computed viewfactors to'
+'  be used for re-evaluation of position dependent'
+'  MRT with different sets of surface temperatures.'
+'  '
+'View factor calc: Calculate viewfactors for all'
+'  surfaces of the input geometry. '
+' '
+'Merge: Write zone viewfactors to file. '
+' '
+'Calc Parameters: Change number of bubbles on a'
+'  surface, or number of patches on bubble. '
+' '
+'Display surface info: list out the attributes of'
+'  the surfaces [depending on trace verbosity] '
+*enditem
+
+*item lib module_net
+'This is the ESP-r graphic network definition tool. '
+*enditem
+
+*item lib module_pdb
+' The MENU commands have the following meaning :'
+' '
+' HELP    this facility.'
+' '
+' LIST    chronological, sequential, alphabetical or'
+'	  user-defined-order list of the database'
+' '
+' INSERT  allows plant components to be entered into'
+'	  the database'
+' '
+' DELETE  allows components to be deleted from'
+'	  the database'
+' '
+' EDIT    enables component attributes to be'
+'	  individually edited'
+' '
+' FINISH  terminates the current program run'
+*enditem
+
+*item lib module_plt
+' 1:  initiates the input section of the program'
+'     reading all data files and performing all'
+'     time independant pre-simulation calculations.'
+'     Menu picks "2" and "3" cannot be selected'
+'     until the data has been successfully entered.'
+' 2:  invokes the simulation section of the program'
+' 3:  permits the re-specification of a climate file'
+' t:  allows the user to retrieve selected results'
+'     from a subroutine trace facility. This facility'
+'     is for use primarily by the experienced user.'
+' w:  stops non-fatal warning messages being'
+'     printed. However, the total number of warning'
+'     messages will be output in the simulation'
+'     description prior to commencement of simulation.'
+' ?:  invokes this and other descriptive messages'
+'     as an aid to inexperienced users. These '
+'     messages are a synopsis of, and should be used'
+'     in conjunction with, the ESP documentation set'
+'     "ESP-r A Building and Plant Energy Simulation'
+'     System".'
+*enditem
+
+*item lib module_pro
+'     ESP-r Standard Profiles Database '
+'   ================================ '
+' '
+' The data requirements are summarised below :- '
+' '
+' for each profile - number of events.'
+' '
+' for each event - start and finish hours'
+'		   percentage of first magnitude '
+'		   percentage of second magnitude '
+' '
+'Currently you may add new profiles at the end of the'
+'database or, for existing profiles alter event con- '
+'tents but not the number of events. '
+' '
+'Profiles in this database are currently used to  '
+'assist in the defintion of zone operations.  The'
+'standard is found in /usr/esru/esp-r/databases '
+*enditem
+
+*item lib module_res
+'Results analysis is the simulation results '
+'recovery facility for ESP-r. '
+' '
+'It always begins with the specification of a results'
+'library which may contain results for one or more '
+'simulations performed by the Simulator. '
+' '
+'The symbols >> in a menu denotes a toggle selection,'
+'the inclusion of a [?] in a prompt means that a'
+'default and explanation of the item is available.'
+' '
+'Current menu options are: '
+' 1 select result file - select this if the results'
+'   file needs to be changed. Not used very often'
+'   as res is usually started with a specified file'
+'   name.'
+' 2 select result set - if more than one assessment'
+'   is stored in the file (perhaps for a different'
+'   period) you can re-select using this facility.'
+' 3 define output period - allows you to `zoom in`'
+'   on a portion of an assessment.'
+' 4 select zones - allows you to select one or more'
+'   zones to include in a graph or report.'
+' a graphs - includes a range of graph types e.g.'
+'   variable(s) vs time, frequency binns.'
+' c timestep reports - tabular listings of data at'
+'   each timestep over the selected period.'
+' d enquire about - e.g. statistics, energy balances,'
+'   hours over/under, frequency binn tables'
+' e plant results - anything to do with detailed'
+'   system components and their performance metrics.'
+' f indoor environmental quality - comfort and air'
+'   quality issues'
+' g electrical results - if an electical domain is'
+'   included in the model all reports/graphs are here.'
+' h CFD - if there is a CFD domain, 2D and 3D graphs'
+'   and images at slices can be produced here.'
+*enditem
+
+*item lib module_vew
+' ? HELP     to list command options available'
+' Byebye     to exit'
+' /Input     to TYPE IN numerical values of E F or M '
+' Eye point  to pick the Eye-point with cursor'
+' Foc &Midp  to pick the Focus and Mid-points together'
+' Mid point  to pick the Mid-point alone'
+' Hidden     to remove hidden lines'
+' Dashed     to draw them dashed'
+' Visible    to draw them solid'
+' Lens mm    to specify Lens focal length (in mm)'
+' *Enlarg %  to specify Enlargement factor'
+' Angle vew  to specify viewcone angle (degrees)'
+'	(negative for biggest picture that will fit)'
+'  '
+' 4 Orthogr  to select orthogonal projection'
+' 3 Perspec  to select perspective projection'
+' 2 || horz  to select parallel proj. onto horiz. plane
+' 1 || vert  to select parallel proj. onto vert. plane'
+' Type all   to list all current view parameters'
+' Input all  to type in all view parameters'
+' Screen     to draw the picture'
+' Out file   to file it in a picture-file'
+' New file   to select a new input file'
+' +Def vews  to select default views'
+*enditem
+
+*item lib module_wire
+'This interface provides control of the wireframe image'
+'of the model geometry. There are several sections as'
+'follows: '
+' View orientation - allows you to defined the eye point'
+'   (where you are looking from), the view point (what'
+'   you are looking at). Both of these can be edited by'
+'   typing in new values or by using the up/down arrows'
+'   to the right of each number.'
+'   The view bounds can be toggled from optimum to use'
+'   a user specified angle of view. Reducing the angle'
+'   of view will act to zoom into the view.'
+' '
+' Display information toggles - this toggles off various'
+'   attributes (e.g. zone names, site grid).'
+' '
+' Display grid - controls whether a dotted grid is drawn'
+'   and the density of the grid.'
+' '
+' Zones to display - one box for each zone in the model'
+'   (unticking removes that zone from the view)'
+' '
+' Display options - three sets of options:'
+'   View type: pick one of these'
+'   Include: allows you to draw all or a subset of the'
+'     model geometry e.g. only surfaces facing outside.'
+'   Hilight: allows you to identify specific attributes'
+'     of entities by drawing them in a bold line.'
+' '
+'To apply one or more changes click on the Apply button.'
+' '
+'To apply one or more changes and close the wireframe '
+'control interface click on the OK button. '
+' '
+'Note: a few of the selections are not yet operational. '
+*enditem
+
+*item lib module_unknown
+'Did not find a matching ESP-r application name.'
+'So no one has linked this facility yet. '
+*enditem
+
+*item lib write_current_text
+'The text displayed in the feedback area is'
+'held in a buffer which can be written to'
+'file. As you are browsing the model, this'
+'file will be placed in you HOME folder.'
+*enditem
+
+*item lib invoke_proforma
+'This button invokes a 3rd party application (typically'
+'the [import] tool from ImageMagic) to capture a portion
+'of the screen. The application used is defined via the'
+'esprc file in the ESP-r distribution or in the .esprc'
+'file in your HOME folder.'
+' '
+'The extension in the file name sets the type of image'
+'as one of the following: gif, jpg or tiff. '
+*enditem
+
+*item lib phelpd
+'Placeholder'
+*enditem
+
+*item lib duphelp
+'Placeholder'
+*enditem
+
+*item lib askmultizone
+'Select from this list of zone names or if the model includes'
+'named groups of zones use that option.'
+*enditem
+
+*item spmisc spmisc_file_contents
+'The special materials file contains information'
+'relating to advanced materials within the existing'
+'building construction. Examples of such materials'
+'include; photovoltaics, electrochromics, phase-'
+'change etc .... If you have created such a file'
+'enter the name of the file; if not press ok and'
+'you will be returned to the main menu.'
+*enditem
+
+*item spmisc spmisc_changes
+'Special materials information has been defined'
+'but recent changes have not yet been saved!'
+*enditem
+
+*item spmisc spmisc_info
+'This file contains information about special materials'
+'associated with a problem. Examples of such materials'
+'include thermo-chromic glass, photovoltaic components'
+'and phase change material.'
+*enditem
+
+*item common3dv zones_for_inclusion
+'Pick one, several or all zones for consideration.'
+*enditem
+
+*item common3dv zones_scan_fault
+'While scanning the model`s zone geometry a problem was'
+'encountered. Perhaps a recent file update was interrupted.'
+*enditem
+
+*item common3dv include_ground_in_view
+'While scanning the model`s zone geometry a problem was'
+'encountered. Perhaps a recent file update was interrupted.'
+*enditem
+
+*item common3dv azalt_limits
+'There are some limits that should not be exceeded.'
+'If you say no, the program will terminate.'
+*enditem
+
+*item common3dv typical_week_scan
+'Typical weeks are found by scanning the weather data'
+'to locate a period in each season which has the least'
+'deviation in heating/cooling degree-days (DD) and'
+'solar irrradiation. '
+*enditem
+
+*item common3dv dd_weightings
+'Weightings for heating degree-days, cooling degree-days'
+'and solar radiation can be given. The default is equal'
+'weighting.'
+*enditem
+
+*item common3dv just_say_yes
+'Unless you have better information, select yes.'
+*enditem
+
+*item common3dv record_before_proceed
+'You may wish to record this information before'
+'proceeding to the next season.'
+*enditem
+
+*item ctlexp export_location
+'By default, the export file will be placed in the model'
+'configuration folder. Otherwise nominate a folder and'
+'file name for the export file.'
+*enditem
+
+*item ctlexp export_file_type
+'This file is a text file, which can be used in'
+'reports or sent to a third party.'
+*enditem
+
+*item ctlexp export_graph_title
+'Suggest a title for the 3rd party graph.'
+*enditem
+
+*item ctprob contam_overivew
+'A contaminant model is usually defined after an air flow'
+'network has been set up so that contaminant information'
+'may be linked to the flow network nodes.'
+' '
+'If you have modified an existing flow network for which'
+'a contaminant model had been defined then that'
+'contaminant model will need to be modified accordingly.'
+*enditem
+
+*item ctprob ct_file_not_found
+'The Project Manager could not find this file. Please'
+'ensure that the filename and path are entered correctly.'
+*enditem
+
+*item ctprob ct_list_file
+'Lists the contaminant model.'
+*enditem
+
+*item ctprob ct_file_setup
+'Begin the contaminant description by describing the'
+'number, names and ambient concentrations. Then define'
+'the initial concentrations of these contaminants at'
+'the airflow nodes. Contaminant source and sink models'
+'may be associated with nodes. After this, filter'
+'efficiencies may be defined for each component. First'
+'order chemical reactions can be modelled by describing'
+'rate constants between different contaminants'
+*enditem
+
+*item ctprob ct_sources_sinks
+'Sources and sinks are defined and then may be '
+'linked to contaminants and nodes to account'
+'for contaminant generation or removal.'
+' '
+'Source/Sink models include:'
+'(1) Constant coefficient: A fixed amount G (kg/s) of '
+'    contaminant is added/removed from the node'
+'    (mass added/removed = G).'
+'(2) Cut-off concentration: The contaminant mass added'
+'    to the node decreases until concentration (C)'
+'    reaches a cut-off value'
+'    (mass added = G*(1-C/C_cutoff)).'
+'(3) Exponential model: Mass decays/increases'
+'    exponentially in the node'
+'    (mass added/removed = G*exp(t/timeconstant))'
+'(4) Boundary layer diffusion: Mass emitted (kg/s)'
+'    from a surface is given by h*rho*A*(C-C_s/k) '
+'    where h = average film mass transfer coeff,'
+'    rho = film density of air, A = area of emitting'
+'    surface, C = air concentration, C_s = surface concentration'
+'    and k = Henry adsorption coefficient.'
+'(5) Time dependent: A fixed mass (kg/s) of contaminant'
+'    is added within a user-specified interval.'
+'(6) Personal CO2 emission: FrBased on information about'
+'    the number of people and their metabolic activity,'
+'    CO2 emissions to a node are determined.'
+*enditem
+
+*item ctprob ct_constraints
+'First order rate constants determine the amount of'
+'contaminant generated in a space due to reactions'
+'between contaminants. The amount of contaminant, cntmnt1,'
+'generated due to a reaction with contaminant cntmnt2'
+'is approximated by the relation:'
+'  increase of mass in cntmnt1 = mass of cntmnt2 * rate'
+'  constant of cntmnt1 formed by cntmnt2.'
+*enditem
+
+*item ctprob ct_filter
+'Filter efficiencies, zero by default, may be modified as required.'
+*enditem
+
+*item ctprob ct_timestep
+'The contaminant modelling time step is usually considerably'
+'shorter than the building-side time step. The former is an'
+'integer multiple of the latter.'
+*enditem
+
+*item ctprob ct_save
+'If you changed the contaminant data, this is your'
+'chance to save these changes.'
+*enditem
+
+*item ctprob ct_flow_changes
+'There is an intimate relationship between the contaminant'
+'and network flow descriptions. Changing one without reference'
+'to the other can cause problems at simulation time.'
+*enditem
+
+*item ctprob ct_editing
+'The first contaminant is the one that will be generated'
+'due to a reaction with the second contaminant. The reaction'
+'rate determines the amount of the first contaminant generated'
+'according to the equation:'
+'   increase of mass in cntmnt1 = mass of cntmnt2 * rate'
+'   constant of cntmnt1 formed by cntmnt2'
+*enditem
+
+*item ctprob sink_links
+'Sources/sinks may be linked independently to contaminants
+'and/or nodes in the airflow network. Therefore, a source/
+'sink model may be used to represent more than one contaminant'
+'and can be placed at more than one node. This menu supports'
+'the linkage of source/sink models already attrobuted with'
+'contaminants. Linking is best done after all contaminants'
+'have been defined and the airflow network established.'
+' '
+'Once linked, sources and sinks cannot be unlinked; the '
+'source/sink has to be deleted.'
+*enditem
+
+*item ctprob manage_sinks_sources
+'Sources and sinks may be defined for each contaminant.'
+'These can then be linked to each node to account for'
+'the removal or generation of the contaminant.'
+' '
+'Source/Sink models include:'
+'(1) Constant coefficient: A fixed amount G (kg/s) of '
+'    contaminant is added/removed from the node'
+'    (mass added/removed = G).'
+'(2) Cut-off concentration: The contaminant mass added'
+'    to the node decreases until concentration (C)'
+'    reaches a cut-off value'
+'    (mass added = G*(1-C/C_cutoff)).'
+'(3) Exponential model: Mass decays/increases'
+'    exponentially in the node'
+'    (mass added/removed = G*exp(t/timeconstant))'
+'(4) Boundary layer diffusion: Mass emitted (kg/s)'
+'    from a surface is given by h*rho*A*(C-C_s/k) '
+'    where h = average film mass transfer coeff,'
+'    rho = film density of air, A = area of emitting'
+'    surface, C = air concentration, C_s = surface concentration'
+'    and k = Henry adsorption coefficient.'
+'(5) Time dependent: A fixed mass (kg/s) of contaminant'
+'    is added within a user-specified interval.'
+'(6) Personal CO2 emission: FrBased on information about'
+'    the number of people and their metabolic activity,'
+'    CO2 emissions to a node are determined.'
+*enditem
+
+*item ctprob contam_co2_rate
+'CO2 rates can be input manually by choosing `NO` and'
+'defining mass input at various times in a simulation.'
+'Or they can be computed from the occupant casual gains'
+'given in the zone operations file. Note that this'
+'source would still need to be linked to the flow network node.'
+*enditem
+
+*item ctprob contam_co2_levels
+'The CO2 emission is calculated from the metabolic '
+'activity according to the following options:'
+'  Level1: 100W (sedentary);'
+'  Level2: 200W (light work);'
+'  Level3: 400W (moderate work);'
+'  Level4: 575W (heavy work);'
+'  Level5: 725W (very heavy work);'
+'  Level6: User defined Wattage.'
+*enditem
+
+*item ctprob contam_source_delete
+'Choose the source/sink to be deleted.'
+*enditem
+
+*item ctprob contam_source_copy
+'Choose the source/sink to be copied.'
+*enditem
+
+*item ctprob contam_CTIADC
+'Contaminant ambient concentration (kg/kg of air)'
+'values to be between 0 and 1'
+'Constant concentration assumes one value over 24'
+'hours, choose variable concentration to specify'
+'a different concentration for each hour of day'
+' '
+'Contaminant ambient concentration (kg/kg of air)'
+'values to be between 0 and 1'
+' '
+'A cancel request (integers) leaves the model unchanged'
+'for the item currently being edited. Not all items in '
+'a sequence of edits may have been restored so please'
+'check your model description. '
+' '
+'Contaminant names should be <= 12 characters and have '
+'no blanks. Use logical names for clarity.'
+' '
+'Contaminant descriptions should not include '
+'duplicate names for containments. '
+*enditem
+
+*item ecdbscb electrical_cmps_db
+'This facility manages the electrical components database.'
+' '
+'The database is located in the ESP-r distribution databases folder.'
+*enditem
+
+*item edatabase scan_mlcdb
+'The scanning of MLC databases fills a number of arrays of data.'
+' '
+'A set of assumptions on the R value of an air gap in'
+'case the composite construction is used in different'
+'orientations are requested.  This information supports'
+'the automatic creation of zone construction files.'
+*enditem
+*item edatabase scan_mlcdb2
+'The scanning of MLC databases fills a number of arrays of data.'
+' '
+'A set of assumptions on the R value of an air gap in'
+'case the composite construction is used in different'
+'orientations are requested.  This information supports'
+'the automatic creation of zone construction files.'
+*enditem
+
+*item edatabase select_mlcdb
+'This information will be written into a zone construc-'
+'tion file according to the types of multilayer'
+'construction used by each surface.'
+'If you want to unreference a construction and reset'
+'it to UNKNOWN select the initial item in the list.'
+' '
+'For Controls of bidirectional data only: '
+'Select the construction for which the controls and the '
+'switch between different datasets will be applied on.'
+'WARNING: Avoid assigning more than one control loop '
+'to the same construction, especially when these controls 
+'are attempting to assign different datasets. The first ' 
+'loop will be used if this mistake is made by the users. '
+*enditem
+
+*item edatabase select_optical
+'The following selections are based on data supplied '
+'by the Environmental Advisory Service of Pilkington '
+'Flat Glass Limited.  Other suppliers can be included'
+'by request.'
+'Selections with an internal blind assume it is at 45'
+'degrees, reflectance of 50%, absorptance 39% and'
+'transmittance 11%.'
+*enditem
+
+*item egeometry check_adjacency
+'The shape & edges of the two surfaces suggest'
+'that one is a subsurface.'
+' '
+'You may also be asked if the parent surface is in the current'
+'zone.'
+*enditem
+
+*item emfnetw scan_3d_flow
+'A 3D flow network description file holds information'
+'on network topology: the components, their connectivity,'
+'component spatial position, component data and connection'
+'routing.'
+' '
+'If you give a unique file name that does not yet exist this'
+'will becomre the new network file name.'
+*enditem
+
+*item emkcfg cfg_version_reminder
+'The version 3 format merges the contents of the zone'
+'utility files into the configuration file. Models'
+'created or updated after 1996 should use this format.'
+' '
+'The version 4 format includes within the cfg file'
+'some data previously held in separate files and also'
+'user an updated version of the zone geometry file.'
+' '
+'The zone topology is held in a similarly named connections file.'
+*enditem
+
+*item enetmisc elect_node_select
+'The list shows the currently available nodes in the '
+'electrical network. Please select one from the list'
+'displayed.'
+*enditem
+
+*item enetmisc hybrid_node_select
+'The list shows the available hybrid components '
+'in the electrical network. Please select one from the '
+'list displayed.'
+*enditem
+
+*item enetmisc power_node_select
+'The list shows the available power only components    '
+'in the electrical network. Please select one from the '
+'list displayed.'
+*enditem
+
+*item enetmisc power_connection_select
+'The list shows the current connecting components '
+'in the electrical network. Please select one from the '
+'list displayed.'
+*enditem
+
+*item enetmisc elec_connection_select
+'The list shows the currently defined connections'
+'in the electrical network. Please select one from the '
+'list displayed.'
+*enditem
+
+*item enetrewr elec_network_file
+'A power network description file holds information on'
+'the electrical network topography, the components'
+'which connect to the network and the electrical'
+'conductors between the nodes.'
+*enditem
+
+*item enetrewr elec_network_write
+'This file will contain all the information relating to the'
+'electrical network:					   '
+'  general electrical network details;  		   '
+'  electrical nodes;					   '
+'  connected hybrid components (i.e. PV, plant, etc.);     '
+'  connected power only components (i.e. wind turbines);   '
+'  connecting components (i.e. lines, cables);  	   '
+'  network topology.					   '
+*enditem
+
+*item eroper read_opr_schedules
+'After importing schedules from another file please'
+'review the contents of the updated zone operation file.'
+'The import and/ or conversion may have been incomplete'
+'or the units confused. '
+*enditem
+
+*item eroper list_schedules
+'Review the contents of the file. If the schedule is ok'
+'then proceed. If you say no the you will be returned to'
+'the menu for another selection. '
+' '
+'If the file has fewer day types than used by the model'
+'type in the value matching the file. If it has more day'
+'types the import may fail. '
+*enditem
+
+*item eroper update_schedule_daytype
+'Zone operations files that have been defined in this '
+'model need to be updated in order to reflect the new'
+'day type just added. You will be given the option to '
+'update (overwrite) the existing operations files.'
+'Choose to overwrite (default option) or save giving'
+'new names. If you choose to give new names then choose'
+'to remember the new file name, otherwise the model will'
+'be corrupted because operations files will not have the'
+'new day types.'
+*enditem
+
+*item esgrid struc_mesh_write
+'Input the name for the zone file in which'
+'the structured mesh configuration details are'
+'to be saved.'
+*enditem
+
+*item esru_misc cfg_discover
+'This facility reports on the various file names that are'
+'included in the model cfg file.'
+*enditem
+
+*item esru_misc cfg_button_press
+'The current model is named:'
+' '
+'The model is documented in: '
+' '
+'There are X linked images.'
+' '
+'There are no zones, networks or control defined yet.'
+*enditem
+
+*item esru_misc ask_for_geometry
+'The zone number is required only for reporting'
+'purposes but should match the numbering expected'
+'in the system configuration file.'
+' '
+'As with other entities a standard set of add/delete'
+'and copy functions is provided. Existing zones to'
+'be copied are transformed in space, given a new '
+'name and all partitions reset to external.'
+' '
+'You may also type in the file name if no cfg exists.'
+' '
+
+'A cancel instruction lets you start the zone '
+'creation process again.'
+*enditem
+
+*item esystem scan_cfg_file
+'An unknown tag or line was found in the configuration
+'file. The file might be corrupt or for a different'
+'version of ESP-r. '
+' '
+'Depending on the error, it might be possible to read'
+'the rest of the file - exercise caution! '
+*enditem
+
+*item esystem scan_cfg_ukncm
+'Additional models are built during the calculation '
+'process for the UK NCM. These should not be modified '
+'manually i.e. using the project manager (or any other)'
+'interface. These models are '
+' *_str.cfg stripped model'
+' *_not.cfg notional model'
+' *_typ.cfg typical model'
+' *_ref.cfg reference model'
+' '
+'Only proceed if you are sure of what you are doing'
+*enditem
+
+*item esystem scan_cfg_flow_link
+'The section of the system configuration file that'
+'defines the links between building zones and flow'
+'network nodes has an error.'
+*enditem
+
+*item esystem browse_file_list
+'The following files match the search criteria.'
+'Select one to use or, if none selected, it will'
+'revert to prior value. '
+*enditem
+
+*item esystem browse_file_list_mul
+'The following files match the search criteria.'
+'Select one to use or, if none selected, it will'
+'revert to prior value. '
+*enditem
+
+*item item scan_temporal_items
+Select from the list of temporal items.'
+*enditem
+
+*item mcdbscn scan_misc_database
+'The special materials database is typically the'
+'default that comes with ESP-r. If you want to'
+'modify entries or create your own version then'
+'you should work with a model-specific version.'
+' '
+'You can also focus on electrical components or'
+'power components.' 
+*enditem
+
+*item multi-year multi-year-weather
+The multi-year weather database (*.myclm) '
+defines the sequence in which climate files '
+should be read during a multi-year simulation.'
+Weather files can be added to a multi-year'
+database using the project manager (prj).'
+*enditem
+
+*item nwkrewr graphics_network
+'A network graphics description file holds information    '
+'on network topology: the components, their connectivity, '
+'component spatial position, component data and connection'
+'routing. '
+*enditem
+
+*item rcdblist request_weather_file
+'Enter an ESP-r weather file as located in the'
+'standard ESP-r folder (/opt/esp-r/climate) or'
+'another folder of your choice.'
+*enditem
+
+*item setup various_setup_inputs
+'This menu allows the display format for dates and'
+'times to be changed.  The active year can also be'
+'defined as required by controllers that require day'
+'of the week information.'
+' '
+'One option lists a specified ASCII file - sometimes'
+'useful if you have need to directly view the contents'
+'of a problem describing entity such as the system'
+'configuration file or a zone geometry file.  There'
+'is also an option to strip comments from files where'
+'that will make them compatible with older versions'
+'of the Project Manager.  Editing an ASCII file - such'
+'as the job notes file - requires a text editor which'
+'can be re-defined in your .esprc file.'
+' '
+'Note: The year is required to find the date of a given'
+'year day.'
+' '
+'A user specified ASCII file can be read and displayed'
+'in the text window page by page.'
+' '
+'Or an ASCII format file can be edited using the current'
+'defined text editor.'
+' '
+'Or an annotated file may be stripped of all comments'
+'so that it is compatible with older applications.'
+*enditem
+
+*item esru_misc ask_zone_single
+'Select the required zone from the menu.'
+*enditem
+
+*item esru_misc ask_zone_multi
+'Select the required zone(s) from the menu.'
+*enditem
+
+*item esru_misc ask_zone_mod-
+'Zones may be selected via the names in the list.'
+'If you have just updated a file it may not show up'
+'as defined until you exit and re-enter this menu. '
+*enditem
+
+*item esru_misc ask_zone_modc
+'The list of zone construction files includes an '
+'indicator of whether the file exists or not. There'
+'are some tasks which require a file to exist.'
+*enditem
+
+*item esru_misc ask_zone_modo
+'The list of zone operation files includes an '
+'indicator of whether the file exists or not. There'
+'are some tasks which require a file to exist.'
+*enditem
+
+*item esru_misc ask_zone_mods
+'The list of zone shading files includes an '
+'indicator of whether the file exists or not. You'
+'can update existing files or mark shading/insulatoin'
+'to be included in the analysis or dereferenced.'
+*enditem
+
+*item esru_misc ask_zone_modv
+'The list of zone viewfactor files includes an '
+'indicator of whether the file exists or not. You'
+'can update existing files or mark shading/insulatoin'
+'to be included in the analysis or dereferenced.'
+*enditem
+
+*item esru_misc ask_zone_modg
+'The list of zone casual gain control files includes an'
+'indicator of whether the file exists or not. You'
+'can select zones to include or derefernce as'
+'required.'
+*enditem
+
+*item esru_misc ask_zone_modd
+'The list of zone CFD domain files includes an'
+'indicator of whether the file exists or not. You'
+'can select zones to include or derefernce as'
+'required.'
+*enditem
+
+*item esru_misc ask_zone_modh
+'The list of zone hc regime files includes an'
+'indicator of whether the file exists or not. You'
+'can select zones to include or derefernce as'
+'required.'
+*enditem
+
+*item esru_misc ask_surface
+'Select a surface from the menu.'
+'For construction layer selection, first'
+'select the surface and then the layer.'
+*enditem
+
+*item esru_misc ask_m_surface
+'Surface(s) in the zone may be selected via its name'
+'in the list. Up to 8 surfaces can be deleted in one'
+'action.'
+*enditem
+
+*item esru_misc ask_constr_node
+'Choose a layer at which to situate a special'
+'materials node.'
+' '
+'Select a node within the layer (the value shown is'
+'at the centre of the layer). Nodes are indexed from'
+'the outside face to the inside face and the default'
+'nodal scheme uses 3 nodes per layer. '
+' '
+'A cancel leaves the model unchanged. '
+*enditem
+
+*item subroutine topic
+'Some help text.'
+*enditem
+
+*item X Y
+*enditem
+

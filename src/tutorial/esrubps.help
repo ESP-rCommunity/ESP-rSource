@@ -1,0 +1,541 @@
+*help_text bps
+
+*item bps model_cfg_scan_warning
+'A warning was issued while scanning the model configuration'
+'file. Please correct any errors and re-enter the file. If
+'the warning was minor, you may proceed with caution.'
+*enditem
+
+*item bps ask_for_climate_file
+'A weather file defines the model boundary condition.'
+'The ESP-r distribution contains many weather files and'
+'these can be viewed and analysed via the Project Manager.
+*enditem
+
+*item bps old_ask_for_year
+'Older model configuration files do not have a year record.'
+'If you want the year to be taken from the weather file'
+'select the default option.'
+*enditem
+
+*item bps not_have_errors_clm
+'At simulation time there should not be errors in'
+'the associated weather file. Check your model to'
+'ensure that this file or the reference to it has'
+'not been corrupted.'
+*enditem
+
+*item bps supress_warnings
+'Warning messages will be surpressed unless you answer'
+'`yes` to this question. If you experience unusual'
+'performance predictions, you should turn warnings'
+'messages on as an extra check.'
+*enditem
+
+*item input model_cfg_file_name
+'A model configuration file defines the problem for'
+'simulation. This can relate to a building (in whole'
+'or part), a plant network or a combined building and'
+'plant system with control imposed. The file is managed'
+'by the Project Manager.'
+' '
+'The ESP-r distribution contains example models'
+'corresponding to different problem types.'
+*enditem
+
+*item input model_cfg_warning
+'Model problems ar usually detected prior to starting'
+'the simulator. It is unclear what the nature of the'
+'problem is here so it is best to check the model'
+'and, in any event, proceed with caution.'
+*enditem
+
+*item input model_startup_period
+'The start-up period is a number of days preceding'
+'the user-defined simulation period. The results for'
+'the start-up period are not transferred to results'
+'files and are therefore not made available for'
+'subsequent analysis.
+' '
+'Note that a start-up period prior to the 1st of January'
+'will utilise weather data from the end of the same year.'
+*enditem
+
+*item input materials_db_not_found
+'The materials database holds the thermophysical'
+'properties of materials as required at simulation'
+'time. Please check the location of this database'
+'as referenced in the model configuration file.'
+*enditem
+
+*item input get_year_from_climate
+'Older model configuration files do not have a year'
+'record. If you want the year to be taken from the'
+'weather file, select the default option.'
+*enditem
+
+*item input problem_opening_climate
+'Please ensure that the location of the weather file'
+'is correct as stated in the model configuration file.'
+*enditem
+
+*item reslib deal_with_prev_results
+'Simulation result-sets are stored in this file and these'
+'should correspond to the same model configuration file'
+'(although the corresponding weather and control system'
+'files can differ).'
+*enditem
+
+*item reslib preserve_data_change
+'If the model configuration file has changed, a new'
+'results must be specified.'
+*enditem
+
+*item reslib preserve_previous_sets
+'Simulation result-sets are stored in this file and these'
+'should correspond to the same model configuration file'
+'(although the corresponding weather and control system'
+'files can differ).'
+*enditem
+
+*item reslib multiple_result_sets
+'Simulation result-sets are stored in this file and these'
+'should correspond to the same model configuration file'
+'(although the corresponding weather and control system'
+'files can differ).'
+*enditem
+
+*item reslib mass_flow_res_file
+'The results of fluid flow simulations are placed in a'
+'flow results file for later analysis.'
+*enditem
+
+*item reslib plant_res_file
+'The plant results file contains simulation result-sets'
+'each corresponding to the same model but with different'
+'imposed weather, control etc.'
+*enditem
+
+*item reslib moisture_res_file
+'The results of moisture simulations are placed in a'
+'moisture results file.'
+'module.'
+*enditem
+
+*item reslib electrical_res_file
+'The results of electrical network simulations are placed'
+'in an electrical results file.'
+*enditem
+
+*item reslib cfd_res_file
+'The results of a CFD simulation are placed in a CFD'
+'results file.'
+*enditem
+
+*item simcon say_yes_to_complete
+'To enable later performance assessments via the Results Analysis'
+'module, simulation results are saved in the building results file.'
+*enditem
+
+*item simcon main_sim_menu
+'This menu provides options to define and coordinate'
+'simulations.'
+*enditem
+
+*item simcon includes_non_standard
+'A model that includes an imposed surface convection'
+'regime must be run at save level 4 to allow subsequent'
+'results recovery.'
+*enditem
+
+*item simcon sim_toggle_warning
+'Use this option with care since it enables the adjustment'
+'of key numerical solution parameters.'
+*enditem
+
+*item simcon sim_toggles_menu
+'In general simulations do not require special settings. These'
+'toggles are made available to support research enquiry.'
+*enditem
+
+*item simcon toggle_clm_interpolation
+'Weather data is interpolated when the simulation time step'
+'is less than an hour. Turning off interpolation means that'
+'the boundary conditions will remain constant throughout the hour.'
+*enditem
+
+*item simcon toggle_plant_solver
+'This option allows setting of plant equation solver parameters:'
+' maximum number of iterations;'
+' number of iterations for control loops;'
+' relative error (-);'
+' absolute error, temperature (K);'
+' absolute error, heat flux (W);'
+' absolute error, mass flow (kg/s);'
+' absolute error, hydrogen mass flow (kg/s).'
+*enditem
+
+*item simcon toggle_special_materials
+'The performance of special materials, such as photovoltaic'
+'cells, phase change material and thermochromic glazing,'
+'is recorded in the file specified here.'
+*enditem
+
+*item simcon toggle_int_hc_methods
+'Alternative methods are offered to determine internal'
+'surface convection coefficients at simulation time.
+*enditem
+
+*item simcon toggle_ext_hc_methods
+'Alternative methods are offered to determine external'
+'surface convection coefficients at simulation time.
+*enditem
+
+*item simcon list_water_filled_zones
+'Define zones that are water filled (e.g. to represent'
+'a hot water storage tank). Zones not included in this'
+'list will be assumed to be air filled.'
+*enditem
+
+*item simcon zones_for_vert_solar
+'Measured vertical solar radiation values can be associated'
+'with specified model surfaces. These data are held in an'
+'ASCII file with one row per timestep over the simulation'
+'period (including the start-up period.'
+*enditem
+
+*item simcon solar_data_timing
+'In CWEC weather files, solar radiation data for a given'
+'hour are the values integrated over the previous hour. That'
+'is, the values corresponding to 9h00 represent the solar'
+'radiation received between 8h00 and 9h00. By default, ESP-r'
+'assumes that solar radiation data are instantaneous values
+'at the hour. This difference is accommodated by specifying'
+'that the data in the ESP-r weather file are half-hour centered.'
+*enditem
+
+*item simcon sky_temperature_options
+'Allows selection of the sky temperature calculation method'
+'from several options.'
+*enditem
+
+*item simcon moisture_solution_par
+'Allows definition of the moisture equation solution parameters.'
+*enditem
+
+*item simcon structured_mesh_options
+'Allows definition of the structured mesh equation solution'
+'parameters.'
+*enditem
+
+*item simcon cfd_coupling_toggles
+'This menu allows the definition of the approach to CFD.'
+' '
+'a: By default, an adaptive conflation controller (ACC) adapts'
+'   the turbulence model at near-wall regions to best reflect'
+'   the local conditions at that time step. If disabled then'
+'   the solver will use the air-to-surface handshaking procedure'
+'   defined in the CFD domain file.'
+' '
+'b: This option toggles between one-way and two-way coupling'
+'   between CFD domains and building zones. Surface temperatures'
+'   are passed from the building to the CFD, which are then used'
+'   to evaluate heat flux between the air and surfaces. By default,'
+'   these fluxes are only used by the CFD and are not passed back'
+'   to the building zones. If this option is activiated, the ACC'
+'   will evaluate the conditions for each surface at each time'
+'   step and, if appropriate, will the pass air-to-surface fluxes'
+'   back to the building zone equation.'
+' '
+'c: This option toggles between one-way and two-way coupling'
+'   between the CFD and fluid flow network. By default, the'
+'   CFD and fluid flow domains are simulated iteratively to'
+'   attain mutual convergence. If this option is disabled,'
+'   the flows calculated by the fluid flow network are imposed'
+'   on the CFD domain with no iteration.'
+' '
+'d: This option toggles the General Gradient Diffusion'
+'   Hypothesis model on/off.'
+' '
+'e: Residual flatline detection allows ESP-r to intervene in a CFD'
+'   simulation in which one or more residuals have flatlined. This'
+'   generally indicates that the current solution is the best that can'
+'   be found, and further simulation is a waste of time. If flatlined'
+'   residuals are detected the simulation will be halted, unless'
+'   automatic grid refinement is active.
+' '
+'f: Automatic grid refinement is an experimental procedure that'
+'   seeks to address stagnant simulations. When flatlined residuals are'
+'   detected, if this option is enabled the grid will be refined in the'
+'   location of the highest residual.'
+' '
+'   Please be aware this functionality is still under development,'
+'   and is not recommended for routine use. Testing indicates that'
+'   in its current form, it may help with simple domains, but will'
+'   often make things worse for complex domains.'
+*enditem
+
+*item simcon startup_period_dialog
+'The start-up period is one or more days preceding'
+'the user-defined simulation period. The results for'
+'this start-up period are not transferred to the'
+'results library and so cannot be analysed. '
+'  '
+'Note that during a single year simulation, a start-up'
+'period prior to January 1 will utilise climatic data'
+'from the end of the same year.'
+*enditem
+
+*item simcon timestep_freq_dialog
+'The building equations will be established and'
+'solved the specified times per hour. A 1/hour'
+'scheme is usually sufficient although smaller'
+'time-steps may be required for some control'
+'regimes to permit frequent control decision points.'
+' '
+'The plant equations will be established and'
+'solved the specified times per hour. A 4/hour'
+'scheme is usually sufficient although smaller'
+'time-steps may be required for some control'
+'regimes to permit frequent control decision points.'
+*enditem
+
+*item simcon timestep_avg_dialog
+'The simulator calculates the value of each model variable'
+'at each computational time step. The default action is to'
+'average these data prior to transfer to the results file.'
+'This option allows this averaging process to be disabled.'
+*enditem
+
+*item simcon cfd_setup_dialogs
+'If a CFD domain is included in the model, the period'
+'when it should be activated is specified here.'
+*enditem
+
+*item simcon sim_starting_report
+'A confirmaton that you want the simulation to proceed.'
+*enditem
+
+*item simcon trace_setup_dialogs
+'The trace facility outputs selected intermediate results'
+'from calculation routines as and when activated throughout'
+'defined simulation time periods.'
+' '
+'In addition to the normal results files for each model domain,'
+'the results from intermediate calculations can be written to'
+'the text feedback area or to file.'
+*enditem
+
+*item tdrecbps tdf_timestep_mismatch
+'The simulation time step is greater than that at which'
+'the measured data is recorded!'
+*enditem
+
+*item tdrecbps tdf_timestep_mismatch
+'The simulation time step is greater than that at which'
+'the measured data is recorded!'
+*enditem
+
+*item bcfunc bcl24_io_error
+'An error has occured in relation to building control law 24!'
+*enditem
+
+*item bctlf no_control_found
+'The name of the system control file is UNKNOWN and therefore'
+'it is assumed that control actions will not be imposed on the'
+'model. If a system control file has been defined, enter it here.'
+*enditem
+
+*item bctlf control_was_found
+'A system control file was found and if you want to associate'
+'this with the current model select`ok`'
+*enditem
+
+*item bctlf confirm_control_file
+'The system control file holds the definition of the'
+'control actions to be imposed on the model throughout'
+'a simulation.'
+*enditem
+
+*item bctlf timestep_boundary_file
+'This file can have one or more columns of space-separated data,'
+'with each row corresponding to a simulation timestep (including the'
+'start-up period. Any line beginning `#` is a comment.'
+*enditem
+
+*item bctlf function_generator_opt
+'The data items required for each function are:'
+' '
+'  Function          supp1    supp2    supp3   supp4'
+'  ================================================ '
+'  1. Step           start    finish   max     min  '
+'  2. Ramp           start    finish   max     min  '
+'  3. Square sine    max      min      freq    ---  '
+'  4. Square cosine  max      min      freq    ---  '
+'  5. Triangular     max      min      freq    ---  '
+'  6. Saw-tooth      max      min      freq    ---  '
+'  7. Sine           max      min      freq    shift'
+'  8. Cosine         max      min      freq    shift'
+'  9. Sensed propty  inc/dec  ---      ---     ---  '
+'  '
+'For type 9, the items are essentially the same as required'
+'for a control point sensor. In addition you are asked to'
+'provide a scaling factor and offset value to be applied to'
+'the sensed value as (SCALING_FACTOR*SENSED_VALUE)+OFFSET.'
+*enditem
+
+*item bctlf function_generator_opt
+'The data items required for each function are:'
+' '
+'  Function          supp1    supp2    supp3   supp4'
+'  ================================================ '
+'  1. Step           start    finish   max     min  '
+'  2. Ramp           start    finish   max     min  '
+'  3. Square sine    max      min      freq    ---  '
+'  4. Square cosine  max      min      freq    ---  '
+'  5: Triangular     max      min      freq    ---  '
+'  6: Saw-tooth      max      min      freq    ---  '
+'  7: Sine           max      min      freq    shift'
+'  8: Cosine         max      min      freq    shift'
+'  9: Sensed propty  inc/dec  ---      ---     ---  '
+'  '
+'For type 9, the items are essentially the same as required'
+'for a control point sensor. In addition you are asked to'
+'provide a scaling factor and offset value to be applied to'
+'the sensed value as (SCALING_FACTOR*SENSED_VALUE)+OFFSET.'
+*enditem
+
+*item bctlf function_generator_opt
+'The data items required for each function are:'
+' '
+'  Function          supp1    supp2    supp3   supp4'
+'  ================================================ '
+'  1. Step           start    finish   max     min  '
+'  2. Ramp           start    finish   max     min  '
+'  3. Square sine    max      min      freq    ---  '
+'  4. Square cosine  max      min      freq    ---  '
+'  5: Triangular     max      min      freq    ---  '
+'  6: Saw-tooth      max      min      freq    ---  '
+'  7: Sine           max      min      freq    shift'
+'  8: Cosine         max      min      freq    shift'
+'  9: Sensed propty  inc/dec  ---      ---     ---  '
+'  '
+'For type 9, the items are essentially the same as required'
+'for a control point sensor. In addition you are asked to'
+'provide a scaling factor and offset value to be applied to'
+'the sensed value as (SCALING_FACTOR*SENSED_VALUE)+OFFSET.'
+*enditem
+
+*item blibsv user_phrase
+'Enter a brief phrase that describes the result set.
+*enditem
+
+*item g3dfac re-order_3d_files
+'No help available.'
+*enditem
+
+*item g3dfac 3d_temp_file_name
+'In order to process a model with 3D conduction, a temporary'
+'file is required; please specify a name. This file will be'
+'removed at the end of the simulation.'
+*enditem
+
+*item g3dfac longwave_file_name
+'In order to process a model with 3D conduction, a temporary'
+'longwave radiation file is required; please specify a name.'
+'This file will be removed at the end of the simulation.'
+*enditem
+
+*item g3dfac nodes_distr_file_name
+'In order to process a model with 3D , a temporary nodes'
+'distribution file is required, please enter a name. This'
+'file will be removed at the end of the simulation.'
+*enditem
+
+*item g3dfac 3D_temporary_file
+'In order to process a model with 3D conduction, a temporary'
+'connections file is required. This file will be automatically'
+'removed at the end of the simulation.'
+*enditem
+
+*item g3dmtx option_to_free_float
+'If you answer `yes`, the zone(s) associated with this'
+'control loop will free-float for any days that are'
+'outwith the period of validity of the control regime.
+*enditem
+
+*item matsv option_to_free_float
+'If you answer `yes`, the zone(s) associated with this'
+'control loop will free-float for any days outwith'
+'the period of validity of the control.'
+*enditem
+
+*item montrb monitor_facility_menu
+'The monitor facility displays selected zone temperatures'
+'and/or plant inputs as the simulation proceeds. The requested'
+'axes minimum and maximum values are required to determine the'
+'graph scale prior to the simulation commencing. Select the'
+'zones to be monitored from this menu.'
+*enditem
+
+*item mzoutp save_zero_creation
+'Supply a file name to contain the summary performance report.'
+'The initial suggestion may be changed to differentiate it'
+'from the building results file.'
+*enditem
+
+*item sensit select_sensit_method
+'Pick the required analysis method. A Monte-Carlo analysis'
+'usually requires between 70 and 100 simulations. ESP-r may'
+'need to be re-compiled to increase the number of result-sets'
+'that can be held in a single building results file.'
+*enditem
+
+*item solar ignore_shading_warning
+'Ignoring shading warnings can alter performance predictions.'
+'It is probably best to confirm the model shading directives.'
+*enditem
+
+*item solar snow_depth_file
+'This file contains hourly values of snow depth. Data should'
+'be in a one-column ASCII file, containing snow depths (cm)'
+'for 8760 hours in a year.'
+*enditem
+
+*item tscon timestep_control_menu
+'The ESP-r simulator allows the simulation time step to be'
+'adjusted based on several criteria as follows.'
+' 0. time-step with no imposed control.'
+' 1. boundary condition look-ahead.'
+' 2. reduction by iteration.'
+' 3. user-specified time steps per hour.
+' 4. iteration with no time-step reduction'
+' 6. time rewind used with optimal start control.
+*enditem
+
+*item MZHCFV hc_coef_trace_dialog
+'This report is available if you answer `yes`.'
+*enditem
+
+*item utilf hc_coef_trace_dialog
+'This report is available if you answer `yes`.'
+*enditem
+
+*item utilf shading_trace_dialog
+'This report is available if you answer `yes`.'
+*enditem
+
+*item monitor plt_graphic_monitor
+'The monitor facility displays selected node temperatures'
+'as the simulation proceeds. The requested axis mimimum and'
+'maximum values are required to set the graph scale prior'
+'to simulation commencement.'
+*enditem
+
+*item tsconp plant_ts_control
+'Time step control, when applied to the plant domain requires,'
+'an initiation action as follows.'
+' 1. when the time step is less than the component time constant.'
+' 2. when the absolute change in a state variable is less than a'
+'    user-specified value.'
+*enditem

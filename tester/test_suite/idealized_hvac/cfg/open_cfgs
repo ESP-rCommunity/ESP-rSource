@@ -1,0 +1,8 @@
+#!/bin/csh
+foreach i ( `ls *.cfg` )
+  if ( -f $i ) then
+    echo "checking $i"
+    prj -file $i
+  endif
+end
+echo "finished."

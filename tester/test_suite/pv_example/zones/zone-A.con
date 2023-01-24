@@ -1,0 +1,27 @@
+*Constructions 2.1                              # thermophysical properties of zone-A
+*date Wed Sep  8 12:38:34 2021                  # latest file modification
+# layers|air | emissivity |absorptivity| tmc | surface|surface     |construction 
+#       |gaps|inside other|inside other|index| index  |name        |name 
+     1     0   0.22   0.22   0.20   0.20   0    #   1  Surf-1       alum-frame
+     1     0   0.22   0.22   0.20   0.20   0    #   2  Surf-2       alum-frame
+     1     0   0.22   0.22   0.20   0.20   0    #   3  Surf-3       alum-frame
+     1     0   0.22   0.22   0.20   0.20   0    #   4  Surf-4       alum-frame
+     2     0   0.90   0.83   0.90   0.05   1    #   5  ArrayA-Surf  PVmod_s
+     1     0   0.22   0.22   0.20   0.20   0    #   6  Surf-6       alum-frame
+# air gap layer positions and restances
+# layer thermophysical properties
+# conduc-  | density |specific | thick- |dpnd|ref.| temp. |moisture|surface|layer
+# tivity   |         |heat     |ness(m) |type|temp|factor | factor |       |  
+   210.0000    2700.0     880.0  0.1000   0   0.00 0.00000 0.00000  #   1   1 Aluminium
+   210.0000    2700.0     880.0  0.1000   0   0.00 0.00000 0.00000  #   2   1 Aluminium
+   210.0000    2700.0     880.0  0.1000   0   0.00 0.00000 0.00000  #   3   1 Aluminium
+   210.0000    2700.0     880.0  0.1000   0   0.00 0.00000 0.00000  #   4   1 Aluminium
+     1.0500    2500.0     750.0  0.0030   0   0.00 0.00000 0.00000  #   5   1 4mm clear float
+   210.0000    2700.0     880.0  0.0010   0   0.00 0.00000 0.00000  #       2 Silicium
+   210.0000    2700.0     880.0  0.1000   0   0.00 0.00000 0.00000  #   6   1 Aluminium
+*tmc YES                                        # optical properties:
+   2  PV_glasss                                 # layers in tmc type 1
+  0.000  0.000  0.000  0.000  0.000  0.000      # transmission @ 5 angles & visible tr.
+  0.113  0.124  0.134  0.148  0.154             # for each layer absorption @ 5 angles
+  0.789  0.775  0.738  0.589  0.355
+   0                                            # no alternative optics

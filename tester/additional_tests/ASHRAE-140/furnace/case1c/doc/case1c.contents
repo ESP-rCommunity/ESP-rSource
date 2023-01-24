@@ -1,0 +1,164 @@
+Synopsis
+ 
+Synopsis of the model Base case for IEA Task 22 defined in case1c.cfg
+generated on Tue Jan 14 17:28:38 2014. Notes associated with the model are in
+iea_task_22.log
+ 
+The model is located at latitude   50.00 with a longitude difference of   0.00
+from the local time meridian. The year used in simulations is 2000 and
+weekends occur on Saturday and Sunday.
+The site exposure is typical city centre and the ground reflectance is 0.20.
+ 
+ 
+Simulationist name: not yet defined
+Simulationist telephone: not yet defined
+Simulationist address: not yet defined
+Simulationist city: not yet defined
+Simulationist postcode: not yet defined
+ 
+An Integrated Performance View is incomplete or missing.
+ 
+Databases associated with the model:
+ standard pressure distr: pressc.db1
+ materials              : ../../dbases/furnace.materialdb
+ constructions          : ../../dbases/furnace.constrdb
+ standard plant comp    : plantc.db1
+ standard event profiles: profiles.db1
+ standard optical prop  : optics.db2
+ standard UK NCM data   : SBEM.db1
+ standard mould isopleth: mould.db1
+ 
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+proj cntrl
+ 
+Zones control includes  1 functions.
+no descrip
+Details of control loops referenced in the model:
+ 
+ The sensor for function  1 senses the temperature of the current zone.
+ The actuator for function  1 is air point of the current zone
+There have been  1 periods of validity defined during the year.
+ Control is valid Sat-01-Jan to Sun-31-Dec, 2000 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating
+setpoint 20.00C cooling setpoint 100.00C.
+ 
+ Zone to contol loop linkages:
+ zone ( 1) zone1        << control  1
+ 
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 zone1         129.6   6   171.6     0.0    48.0  zone1 describes a...
+   all           130.    6    172.      0.     48.
+ 
+ 
+ Zone zone1 ( 1) is composed of 6 surfaces and 8 vertices.
+ It encloses a volume of 130.m^3 of space, with a total surface
+ area of 172.m^2 & approx floor area of 48.0m^2
+ zone1 describes a...
+ There is 171.60m2 of exposed surface area, 75.600m2 of which is vertical.
+ Outside walls are 257.50 % of floor area & average U of 0.010 & UA of 1.2337
+ Flat roof is 100.00 % of floor area & average U of 3.561 & UA of 170.91
+ 
+ A summary of the surfaces in zone1( 1) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  21.6    180.   0. wall-1       OPAQUE   VERT -     wall         ||< external
+  2  16.2     90.   0. wall-2       OPAQUE   VERT -     wall         ||< external
+  3  21.6      0.   0. wall-3       OPAQUE   VERT -     wall         ||< external
+  4  16.2    270.   0. wall-4       OPAQUE   VERT -     wall         ||< external
+  5  48.0      0.  90. roof         OPAQUE   CEIL -     roof         ||< external
+  6  48.0      0. -90. floor        OPAQUE   FLOR -     floor        ||< external
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ Opened existing hc control file.
+ 
+ Number of control periods:  1
+ 
+ Period  1 start   0.00 finish  24.00
+ User specified convection coefficients
+ Imported legacy file with no regime docs.
+   Surface orinetation  Inside     Outside
+ 1 wall-1       (VERT)     0.100    0.100
+ 2 wall-2       (VERT)     0.100    0.100
+ 3 wall-3       (VERT)     0.100    0.100
+ 4 wall-4       (VERT)     0.100    0.100
+ 5 roof         (CEIL)    20.000   20.000
+ 6 floor        (FLOR)     0.100    0.100
+ 
+ 
+ Air schedule notes:
+nil_operations
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+ 
+Notes:
+nil_operations
+ 
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 Occupt     people    W    0-24      0.0      0.0       0.60       0.40
+saturday    1 Occupt     people    W    0-24      0.0      0.0       0.60       0.40
+sunday      1 Occupt     people    W    0-24      0.0      0.0       0.60       0.40
+ 
+ ____________________________________________________________
+ 
+ Project floor area is 48.000m2, wall area is 123.60m2, window area is 0.00m2.
+ Sloped roof area is 0.00m2, flat roof area is 48.000m2, skylight area is 0.00m2.
+ In contact with ground 0.00m2.
+ There is 171.60m2 of outside surface area, 75.600m2 of which is vertical.
+ 
+ Outside walls are 257.50 % of floor area & average U of 0.010 & UA of 1.2337 & max MLC thickness 1.000
+ Flat roof is 100.00 % of floor area & average U of 3.561 & UA of 170.91
+ 
+ ____________________________________________________________
+ Multi-layer constructions used:
+ 
+ Details of opaque construction: wall and overall thickness  1.000
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1 1000.0     0.010     0.     0. 0.01 0.01    30.100.00 wall_material : wall_material
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.010  0.010  0.010 (partition)  0.010
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.01
+ External surface admittance Y=  0.01  w=  0.00 decrement factor f=  1.00  phi=  0.00 surface factor f=  1.00  phi=  0.00
+ Partition admittance Y=  0.00  w= -5.99 surface factor f=  1.00  phi=  0.00
+ Total area of wall is     75.60
+ 
+ Details of opaque construction: roof and overall thickness  0.010
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1   10.0     0.071     0.     0. 0.01 0.01    30.  0.14 roof_material : roof_material
+ ISO 6946 U values (horiz/upward/downward heat flow)=  3.217  3.561  2.850 (partition)  2.495
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.12
+ External surface admittance Y=  3.12  w=  0.00 decrement factor f=  0.63  phi=  0.00 surface factor f=  0.63  phi=  0.00
+ Partition admittance Y=  0.00  w= -6.00 surface factor f=  1.00  phi=  0.00
+ Total area of roof is     48.00
+ 
+ Details of opaque construction: floor and overall thickness  1.000
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1 1000.0     0.010     0.     0. 0.01 0.01    30.100.00 floor_material : floor_material
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.010  0.010  0.010 (partition)  0.010
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.01
+ External surface admittance Y=  0.01  w=  0.00 decrement factor f=  1.00  phi=  0.00 surface factor f=  1.00  phi=  0.00
+ Partition admittance Y=  0.00  w= -5.99 surface factor f=  1.00  phi=  0.00
+ Total area of floor is     48.00

@@ -1,0 +1,1467 @@
+C This file is part of the ESP-r system.
+C Copyright Energy Systems Research Unit, University of
+C Strathclyde, Glasgow Scotland, 2001.
+
+C ESP-r is free software.  You can redistribute it and/or
+C modify it under the terms of the GNU General Public
+C License as published by the Free Software Foundation
+C (version 2 orlater).
+
+C ESP-r is distributed in the hope that it will be useful
+C but WITHOUT ANY WARRANTY; without even the implied
+C warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+C PURPOSE. See the GNU General Public License for more
+C details.
+
+
+C This file contains the folowing subroutines.
+C SIFOPS - allows editing/importing/exporting of zone shading &
+C          insolation db contents.
+C SIFRD  - reads the contents of a zone shading & insolation db for
+C          a given month.
+C SIFWRT - writes shading/insolation data to a zone shading &
+C          insolation db for a given month.
+C SIFEXP - exports the shading and insolation factors as held in a zone
+C          shading db to a mirror ascii file (but silently).
+C SIFIMPORT - imports the shading and insolation factors as held in an
+C             ASCII zone shading & insolation db to bimary file.
+
+C ******************** SIFOPS ********************
+C Allows the shading and insolation factors as held in a zone
+C shading & insolation db to be listed, edited or imported/exported
+C from/to a mirror ascii file. Uses SIFRD and SIFWRT to read/write
+C db contents. Routines SIFILE, SSAVE and ISAVE are used to interact
+C with the db at simulation time.
+
+      subroutine sifops(icomp)
+#include "building.h"
+#include "model.h"
+#include "geometry.h"
+#include "help.h"
+
+      integer lnblnk  ! function definition
+
+      common/outin/iuout,iuin,ieout
+      common/filep/ifil
+
+      integer izstocn
+      common/c24/izstocn(mcom,ms)
+      common/tmc/itmc(ms),nwins
+      common/data2/pso(ms,24),psof(ms,24)
+      common/data3/ishd(12),isadd(12),ntmc(ms),ioffs(ms)
+      common/data4/insst(mgt,24,misur),pinsst(mgt,24,misur)
+      common/data5/irecx,nsurs,msurs
+      common/filech/ixopen,ixunit,ixpunit
+      character ltrns*72
+      integer multic,mons,monf
+      common/mtfile/ltrns,multic,mons,monf
+
+      integer mon,isc,iyd   ! so insynp nows what month to report
+      common/contr/mon,isc(ms),iyd
+
+      character sn*12
+      character*12 sourcename(MS)   ! name of insolation source
+      dimension month(12),iavdec(12)
+      character month*3
+      character outs*124,louts*248,hold*74,expfil*96
+      character outl*248,outld*248,outstr*124,loutstr*248
+      character out1k*1000,out1kd*1000,lkoutstr*1000
+      character message*64
+      integer isourcecount  ! to help with sourcename list
+      integer nboftmc       ! number of insolation sources returned from findtmc
+      integer itu           ! for reporting
+      integer ipick         ! for radio button
+
+      logical ok
+      logical allsurf ! if true then do not ask user confirmation
+      logical verbose ! if to file another decimal place.
+
+      data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
+      DATA month/'Jan','Feb','Mar','Apr','May','Jun','Jul',
+     &           'Aug','Sep','Oct','Nov','Dec'/
+
+C Display contents of the zone shading & insolation file.
+      helpinsub='sifops'  ! set for subroutine
+      verbose=.false.
+      ifilsi=ifil+3
+      irec=1
+      read(ifilsi,rec=irec,iostat=istat,err=1000)(ishd(i),i=1,12),
+     &                                           (isadd(i),i=1,12)
+      write(outs,'(2a)')'Content of zone shading & insolation db ',
+     &                   lshad(icomp)
+      call edisp(iuout,' ')
+      call edisp(iuout,outs)
+      write(outs,'(5x,a)')' Month   Saved data'
+      call edisp(iuout,outs)
+      ims=0
+      mnth=1
+      ifirst=0
+      do 10 i=1,12
+         if(ishd(i).ne.0)then
+            ims=ims+1
+            if(ifirst.eq.0)then
+               mnth=i
+               ifirst=1
+            endif
+         endif
+         if(ishd(i).eq.1)then
+            write(outs,'(5x,i2,4a)')
+     &        i,' (',month(i),')',' Shading only'
+            call edisp(iuout,outs)
+         elseif(ishd(i).eq.2)then
+            write(outs,'(5x,i2,4a)')
+     &        i,' (',month(i),')',' Insolation only'
+            call edisp(iuout,outs)
+         elseif(ishd(i).eq.3)then
+            write(outs,'(5x,i2,4a)')
+     &        i,' (',month(i),')',' Shading & insolation'
+            call edisp(iuout,outs)
+         elseif(ishd(i).eq.0)then
+            write(outs,'(5x,i2,4a)')
+     &        i,' (',month(i),')',' No data'
+            call edisp(iuout,outs)
+         endif
+   10 continue
+
+C If there is nothing in the shading file then the user may wish to
+C import from ascii file to fill it.
+      if(ims.eq.0)then
+        helptopic='respond_to_empty_shd'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        call easkabc('Zone shading & insolation file is empty!',
+     &    'Options:','import ascii','return & calculate','cancel',
+     &    iw,nbhelp)
+        if(iw.eq.1)then
+
+C An empty shading file so setup some intial information. User is assumed
+C to know which months are included in the ASCII file. Identify a month.
+          mnth=1
+ 22       call easki(mnth,' ','Month number to start importing?',1,
+     &      'F',12,'F',1,'month number',ier,nbhelp)
+          if(ier.ne.0)goto 22
+          ipick=4                 ! this is the import option
+          if(irecx.eq.0)irecx=5   ! irecx probably not set so set for initial month
+          isadd(mnth)=irecx       ! so code knows where to write data
+          nsurs=nzsur(icomp)      ! needed for the header
+          msurs=misur
+          call findtmc(icomp,'s',nboftmc) ! establish insolation sources and copy to ntmc
+          do ij=1,nsurs
+            ntmc(ij)=itmc(ij)
+          enddo
+          goto 77                 ! jump to the point where the task is invoked
+        elseif(iw.eq.2)then
+          write(outs,'(9x,a)') '- Empty (returning to menu)'
+          call edisp(iuout,outs)
+          return
+        elseif(iw.eq.3)then
+          write(outs,'(9x,a)') '- Empty (returning to menu)'
+          call edisp(iuout,outs)
+          return
+        endif
+      endif
+
+C Identify a month.
+      helptopic='month_of_interest'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+    1 call easki(mnth,' ','Month number of interest?',1,'F',12,
+     &  'F',1,'month number',ier,nbhelp)
+      if(ier.ne.0)goto 1
+      if(ishd(mnth).eq.0)then
+         call edisp(iuout,' ')
+         write(outs,'(2A)')
+     &     'No data in Zone shading & insolation file for ',
+     &     month(mnth),'!'
+         call edisp(iuout,outs)
+         goto 1
+      endif
+
+C Read binary shading file and fill commons DATA2, DATA3, DATA4 and DATA5
+C for the specified month.
+      call sifrd(icomp,mnth,ier)
+
+C Present options menu and generate help text for these dialogs.
+      helptopic='ish_export_list_shading'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      ipick=1
+      call easkatog(' ','Options:','list','edit','export','import',
+     &              'cancel',' ',' ',ipick,nbhelp)
+
+C Listing requested. If to file then write higher resolution.
+  77  continue
+      if(ipick.eq.1)then
+         itu=iuout
+         if(ixopen.eq.1)then
+           itu=ixunit
+           verbose=.true.
+         endif
+         write(outs,'(3a)')'External surface shading for `',
+     &                      month(mnth),'`.'
+         call edisp(itu,' ')
+         call edisp(itu,outs)
+         if(verbose)then
+           write(outs,'(2a)')' Surface _______  Shading factors ',
+     &       '_______________________________________________________'
+         else
+           write(outs,'(2a)')' Surface ___  Shading factors ',
+     &       '___________________________________________________'
+         endif
+         call edisp(itu,outs)
+         do 20 i=1,nzsur(icomp)
+            icn=izstocn(icomp,i)
+            sn=sname(icomp,i)
+            if(verbose)then
+              write(outs,2)i,sn(1:11),(pso(i,j),j=1,12)
+    2         format(I3,' (',a,')  Direct,  01-12 hrs ',12(f5.2))
+            else
+              write(outs,222)i,sn(1:7),(pso(i,j),j=1,12)
+  222         format(I3,' (',a,')  Direct,  01-12 hrs ',12(f4.1))
+            endif
+            call edisp(itu,outs)
+            if(verbose)then
+              write(outs,3)(pso(i,j),j=13,24)
+    3         format(18x,'         13-24 hrs ',12(f5.2))
+            else
+              write(outs,33)(pso(i,j),j=13,24)
+   33         format(14x,'         13-24 hrs ',12(f4.1))
+            endif
+            call edisp(itu,outs)
+            if(verbose)then
+              write(outs,4)(psof(i,j),j=1,12)
+    4         format(18x,'Diffuse, 01-12 hrs ',12(f5.2))
+            else
+              write(outs,44)(psof(i,j),j=1,12)
+   44         format(14x,'Diffuse, 01-12 hrs ',12(f4.1))
+            endif
+            call edisp(itu,outs)
+            if(verbose)then
+              write(outs,5)(psof(i,j),j=13,24)
+    5         format(18x,'         13-24 hrs ',12(f5.2))
+            else
+              write(outs,55)(psof(i,j),j=13,24)
+   55         format(14x,'         13-24 hrs ',12(f4.1))
+            endif
+            call edisp(itu,outs)
+   20    continue
+
+C Insolation factors. Call insynp in silent mode.
+         if(nwins.eq.0.or.ishd(mnth).eq.1)goto 6
+         mon=mnth  ! ensure that insynp has the current month & DOY
+         call eday(iavdec(mon),mon,iyd)
+         allsurf=.false.  ! let the silent mode take precidence
+         call insynp(icomp,'s',allsurf)
+
+C Edit requested.
+      elseif(ipick.eq.2)then
+    9    call easki(isur,' ','Surface number for editing?',
+     &     1,'F',nzsur(icomp),'F',1,'surf number',ier,nbhelp)
+         IF(ier.ne.0)goto 9
+
+C Direct shading.
+         icn=izstocn(icomp,isur)
+         sn=sname(icomp,isur)
+   11    write(outs,'(3a)')'Direct shading factors for surface `',
+     &                         sn(1:lnblnk(sn)),'`,'
+         write(hold,'(12f5.2)') (pso(isur,i),i=1,12)
+         call easks(hold,outs,'01:00-12:00; edit as required:',
+     &      60,' 0 0 0 0 0 0 0 0 0 0 0 0 ','1-12 dir shading',
+     &      ier,nbhelp)
+         if(ier.ne.0)goto 11
+         ok=.true.
+         k=0
+         do 60 i=1,12
+            call egetwr(hold,k,pso(isur,i),0.,1.,'W','1h00',ier)
+            if(pso(isur,i).lt.0.0.or.pso(isur,i).gt.1.0)ok=.false.
+   60    continue
+         if(.not.ok)goto 11
+
+   12    write(outs,'(3a)')'Direct shading factors for surface `',
+     &                         sn(1:lnblnk(sn)),'`,'
+         write(hold,'(12f5.2)') (pso(isur,i),i=13,24)
+         call easks(hold,outs,'13:00-24:00; edit as required:',
+     &      60,' 0 0 0 0 0 0 0 0 0 0 0 0 ','13-24 dir shading',
+     &      ier,nbhelp)
+         if(ier.ne.0)goto 12
+         ok=.true.
+         k=0
+         do 70 i=13,24
+           call egetwr(hold,k,pso(isur,i),0.,1.,'W','1h00',ier)
+           if(pso(isur,i).lt.0.0.or.pso(isur,i).gt.1.0)ok=.false.
+   70    continue
+         if(.not.ok)goto 12
+
+C Diffuse shading.
+   13    write(outs,'(3a)')'Diffuse shading factors for surface `',
+     &                         sn(1:lnblnk(sn)),'`,'
+         write(hold,'(12f5.2)') (psof(isur,i),i=1,12)
+         call easks(hold,outs,'01:00-12:00; edit as required:',
+     &      60,' 0 0 0 0 0 0 0 0 0 0 0 0 ','1-12 dif shading',
+     &      ier,nbhelp)
+         if(ier.ne.0)goto 13
+         ok=.true.
+         k=0
+         do 80 i=1,12
+           call egetwr(hold,k,psof(isur,i),0.,1.,'W','1h00',ier)
+           if(psof(isur,i).lt.0.0.or.psof(isur,i).gt.1.0)ok=.false.
+   80    continue
+         if(.not.ok)goto 13
+
+   14    write(outs,'(3a)')'Diffuse shading factors for surface `',
+     &                         sn(1:lnblnk(sn)),'`,'
+         write(hold,'(12f5.2)') (psof(isur,i),i=13,24)
+         call easks(hold,outs,'13:00-24:00; edit as required:',
+     &     60,' 0 0 0 0 0 0 0 0 0 0 0 0 ','13-24 dif shading',
+     &     ier,nbhelp)
+         if(ier.ne.0)goto 14
+         ok=.true.
+         k=0
+         do 90 ik=13,24
+           call egetwr(hold,k,psof(isur,ik),0.,1.,'W','1h00',ier)
+           if(psof(isur,i).lt.0.0.or.psof(isur,i).gt.1.0)ok=.false.
+   90    continue
+         if(.not.ok)goto 14
+
+         call easkok(' ','Edit another surface?',ok,nbhelp)
+         if(ok)goto 9
+
+         call easkok(' ','Update shading & insolation file?',
+     &     ok,nbhelp)
+         if(ok)then
+           call sifwrt(icomp,mnth,lastrec)
+         endif
+
+C Export to ascii file requested.
+      elseif(ipick.eq.3)then
+         iuj=ifil+10
+         helptopic='shading_export_options'
+         call gethelptext(helpinsub,helptopic,nbhelp)
+         expfil='siexp.txt'
+         call easks(expfil,' ','Export file name?',96,'siexp.txt',
+     &     'shdins export',ier,nbhelp)
+         call efopseq(iuj,expfil,3,ier)
+         if(ier.lt.0)then
+           ier=1
+           goto 1002
+         endif
+         write(iuj,'(2a)',iostat=istat,err=1002)
+     &      '* Shading and insolation data in file ',lshad(icomp)
+         write(iuj,'(2i3,a)',iostat=istat,err=1002)icomp,nzsur(icomp),
+     &      ' # zone index & number of surfaces'
+   16    write(iuj,'(3a)',iostat=istat,err=1002) '* month: `',
+     &      month(mnth),'`'
+
+C Write direct and diffuse shading factors.
+         write(iuj,'(a)',iostat=istat,err=1002)
+     &    '24 hour external surface shading'
+         do 100 i = 1,nzsur(icomp)
+            icn=izstocn(icomp,i)
+            sn=sname(icomp,i)
+            write(outl,'(12f7.4)') (pso(i,j),j=1,12)
+            call sdelim(outl,outld,'S',iw)
+            write(iuj,'(a)',iostat=istat,err=1002)
+     &        outld(1:lnblnk(outld))
+            write(outl,'(12f7.4,2a)') (pso(i,j),j=13,24),
+     &        ' # direct - surface ',sn(1:lnblnk(sn))
+            call sdelim(outl,outld,'S',iw)
+            write(iuj,'(a)',iostat=istat,err=1002)
+     &        outld(1:lnblnk(outld))
+            write(outl,'(12f7.4)') (psof(i,j),j=1,12)
+            call sdelim(outl,outld,'S',iw)
+            write(iuj,'(a)',iostat=istat,err=1002)
+     &        outld(1:lnblnk(outld))
+            write(outl,'(12f7.4,2a)') (psof(i,j),j=13,24),
+     &        ' # diffuse - surface ',sn(1:lnblnk(sn))
+            call sdelim(outl,outld,'S',iw)
+            write(iuj,'(a)',iostat=istat,err=1002)
+     &        outld(1:lnblnk(outld))
+ 100     continue
+
+C Generate packed list of names of insolation sources.
+         isourcecount=0
+         do 101 i = 1,nzsur(icomp)
+           if(ioffs(i).ne.0)then
+             isourcecount=isourcecount+1
+             icn=izstocn(icomp,i)
+             sourcename(isourcecount)=sname(icomp,i)
+           endif
+ 101     continue
+
+C Write insolation factors: use 1K string buffer so all
+C record offsets can be written on a single line.
+         if(ishd(mnth).eq.2.or.ishd(mnth).eq.3)then
+            write(iuj,'(a)',iostat=istat,err=1002)
+     &        '24 hour internal surface insolation'
+            write(iuj,'(2a)',iostat=istat,err=1002) 'record offsets',
+     &        ' # to each insolation source (marked by non-zero)'
+            write(out1k,'(240i4)') (ioffs(i),i=1,nzsur(icomp))
+            call sdelim(out1k,out1kd,'S',iw)
+            write(iuj,'(a)',iostat=istat,err=1002)
+     &        out1kd(1:lnblnk(out1kd))
+            do 110 i=1,nwins
+              write(iuj,'(a,i3,3a)',iostat=istat,err=1002)
+     &          'surfaces insolated by source ',i,' ',sourcename(i),
+     &          ' # hourly columns, ranking via rows'
+              do 120 j=1,misur
+                write(outl,'(24i4)')(insst(i,k,j),k=1,24)
+                call sdelim(outl,outld,'S',iw)
+                write(iuj,'(a)',iostat=istat,err=1002)
+     &            outld(1:lnblnk(outld))
+  120         continue
+              write(iuj,'(2a)',iostat=istat,err=1002)
+     &          'matched surface insolation factors',
+     &          ' # hourly columns, ranking via rows'
+              do 130 j=1,misur
+                write(outl,'(24f6.3)')(pinsst(i,k,j),k=1,24)
+                call sdelim(outl,outld,'S',iw)
+                write(iuj,'(a)',iostat=istat,err=1002)
+     &            outld(1:lnblnk(outld))
+  130         continue
+  110       continue
+         endif
+
+         write(outs,'(3a)') 'Data for `',month(mnth),'` written.'
+         call edisp(iuout,' ')
+         call edisp(iuout,outs)
+   15    call easkok(' ','Continue with next month?',ok,nbhelp)
+         if(ok)then
+           mnth=mnth+1
+           if(mnth.gt.12)then
+              write(iuj,'(A)',iostat=istat,err=1002) '* end'
+              call erpfree(iuj,istat)
+              goto 6
+           endif
+           call sifrd(icomp,mnth,ier)
+           if(ier.ne.0)then
+              call edisp(iuout,' ')
+              write(outs,'(2a)') month(mnth),' has no data!'
+              call edisp(iuout,outs)
+              goto 15
+           endif
+           goto 16
+         else
+            write(iuj,'(A)',iostat=istat,err=1002) '* end'
+            call erpfree(iuj,istat)
+         endif  ! end of export menu item
+
+C Import from ascii file requested.  Note this code does not yet
+C update the value of irecx. The previous call to sifwrt returns a
+C value lastrec which is equivalent to irecx.
+      elseif(ipick.eq.4)then
+         iuj=ifil+10
+         helptopic='shading_export_options'
+         call gethelptext(helpinsub,helptopic,nbhelp)
+         write(expfil,'(2a)')
+     &     lshad(icomp)(1:lnblnk(lshad(icomp))),'a'
+   17    call easks(expfil,' ','Import file name?',96,'siimp.txt',
+     &     'shdins import',ier,nbhelp)
+         call efopseq(iuj,expfil,1,ier)
+         if(ier.ne.0)goto 1002
+         call stripc(iuj,outstr,0,nd,1,'header',ier)
+         if(ier.ne.0)goto 1002
+         if(outstr(1:24).ne.'* Shading and insolation')then
+            call usrmsg('Not an ascii zone shading & insolation file!',
+     &                  expfil,'W')
+            call erpfree(iuj,istat)
+            goto 17
+         endif
+
+         call stripc(iuj,outstr,0,nd,1,'zone & surf',ier)
+         if(ier.ne.0)goto 1002
+         k=0
+         call egetwi(outstr,k,iret,0,0,'-','zone index',ier)
+         if(ier.ne.0)goto 1002
+         if(iret.ne.icomp)then
+           call usrmsg(
+     &      'Number of surfaces in file does not match current model!',
+     &      expfil,'W')
+           call erpfree(iuj,istat)
+           goto 17
+         endif
+         call egetwi(outstr,k,iret,0,0,'-','surfaces',ier)
+         if(ier.ne.0)goto 1002
+         if(iret.ne.nzsur(icomp))then
+           call usrmsg(
+     &      'Number of surfaces in file does not match current model!',
+     &      expfil,'W')
+           call erpfree(iuj,istat)
+           goto 17
+         endif
+
+C Read data for a month. If we have a month that matches then
+C the code looks for either '24 hour external' in which case
+C the data is shading data. If '24 hour internal' found following
+C the * month tag then we have only insolation.
+         multic=2  ! signal data is known
+         call stripc(iuj,outstr,0,nd,1,'month',ier)
+ 172     if(outstr(1:5).eq.'* end')goto 18
+         if(ier.ne.0.or.outstr(1:7).ne.'* month')goto 1002
+         if(outstr(11:13).eq.month(mnth))then
+            call stripc(iuj,outstr,0,nd,1,'24 hour external',ier)
+            if(outstr(1:16).ne.'24 hour external')then
+              if(outstr(1:16).ne.'24 hour internal')then
+                ishd(mnth)=2   ! no shading only insolation
+                goto 173
+              endif
+              message='expecting 24 hours external'
+              goto 1002
+            endif
+            ishd(mnth)=1   ! at least shading
+            do 150 i=1,nzsur(icomp)
+               message='reading direct shading'
+               call lstripc(iuj,loutstr,0,nd,1,'dir shading 01-12',ier)
+               if(ier.ne.0)goto 1004
+               k=0
+               do 160 j=1,12
+                  call egetwr(loutstr,k,ret,0.,1.,'W',
+     &              'dir shading 01-12',ier)
+                  if(ier.ne.0)goto 1004
+                  pso(i,j)=ret
+  160          continue
+               call lstripc(iuj,loutstr,0,nd,1,'dir shading 12-24',ier)
+               if(ier.ne.0)goto 1004
+               k=0
+               do 170 j=13,24
+                  call egetwr(loutstr,k,ret,0.,1.,'W',
+     &              'dir shading 12-24',ier)
+                  if(ier.ne.0)goto 1004
+                  pso(i,j)=ret
+  170          continue
+
+               message='reading diffuse shading'
+               call lstripc(iuj,loutstr,0,nd,1,'dif shading 01-12',ier)
+               if(ier.ne.0)goto 1004
+               k=0
+               do 180 j=1,12
+                  call egetwr(loutstr,k,ret,0.,1.,'W',
+     &              'dif shading 01-12',ier)
+                  if(ier.ne.0)goto 1004
+                  psof(i,j)=ret
+  180          continue
+               call lstripc(iuj,loutstr,0,nd,1,'dif shading 12-24',ier)
+               if(ier.ne.0)goto 1004
+               k=0
+               do 190 j=13,24
+                  call egetwr(loutstr,k,ret,0.,1.,'W',
+     &              'dif shading 12-24',ier)
+                  if(ier.ne.0)goto 1004
+                  psof(i,j)=ret
+  190          continue
+  150       continue
+         else
+            if(mnth.gt.12) goto 18  ! have reached past december
+            call usrmsg('Data in file is not for the specified month!',
+     &        expfil,'W')
+            call erpfree(iuj,istat)
+            goto 17
+         endif
+
+C Read insolation factors. But the next line might also hold
+C a Month string or end marker.
+         call stripc(iuj,outstr,0,nd,1,'insolation header',ier)
+ 173     if(ier.ne.0.or.outstr(1:16).ne.'24 hour internal')then
+           if(outstr(1:7).eq.'* month')then
+             call easkok(' ','Update zone shading & insolation file?',
+     &         ok,nbhelp)
+             if(ok)then
+               call sifwrt(icomp,mnth,lastrec)
+               if(lastrec.gt.5)then
+                 if(isadd(mnth+1).eq.0) isadd(mnth+1)=lastrec
+               endif
+             endif
+             mnth=mnth+1   ! increment the month and jump back
+             goto 172
+           elseif(outstr(1:5).eq.'* end')then
+             goto 18
+           endif
+           message='expecting 24 hours internal'
+           goto 1002
+         endif
+
+         if(outstr(1:5).eq.'* end')goto 18
+         call stripc(iuj,outstr,0,nd,1,'offsets header',ier)
+         if(ier.ne.0.or.outstr(1:14).ne.'record offsets')then
+           message='expecting record offsets'
+           goto 1002
+         endif
+         if(ishd(mnth).eq.1) ishd(mnth)=3   ! set to shading + insul
+
+C Read the offsets line. Items with a zero are not insolation
+C sources, non-zero entries are offsets to use within the binary
+C file and the position in the list indicates with surface in
+C the zone is an insolation source.
+         call stripc1k(iuj,lkoutstr,0,nd,1,'offsets data',ier)
+         if(ier.ne.0)goto 1004
+         k=0
+         do 200 i=1,nzsur(icomp)
+            call egetwi(lkoutstr,k,iret,0,0,'-','offset',ier)
+            if(ier.ne.0)goto 1004
+            ioffs(i)=iret
+  200    continue
+
+C Reset the counter for insolation sources. Use the nwins
+C value for the first index of insst
+         nwins=0
+         do 210 i=1,nzsur(icomp)
+            if(ioffs(i).ne.0)then
+               nwins=nwins+1
+               call stripc(iuj,outstr,0,nd,1,'insst surf header',ier)
+               if(ier.ne.0.or.outstr(1:21).ne.
+     &           'surfaces insolated by')then
+                 message='expecting surfaces insolated by'
+                 goto 1002
+               endif
+               do 220 j=1,misur
+                  call stripc(iuj,outstr,0,nd,1,'insst data',ier)
+                  if(ier.ne.0)goto 1002
+                  kk=0
+                  do 230 k=1,24
+                     call egetwi(outstr,kk,iret,-1,ms,'-','insst',ier)
+                     if(ier.ne.0)then
+                       message='while reading insst data'
+                       goto 1002
+                     endif
+                     insst(nwins,k,j)=iret
+  230             continue
+  220          continue
+
+               call stripc(iuj,outstr,0,nd,1,'pinsst header',ier)
+               if(ier.ne.0)goto 1002
+
+               if(outstr(1:26).ne.'matched surface insolation')then
+                 message='expecting matched surface insolation'
+                 goto 1002
+               endif
+               do 240 j=1,misur
+                  call lstripc(iuj,loutstr,0,nd,1,'pinsst line',ier)
+                  if(ier.ne.0)goto 1004
+                  kk=0
+                  do 250 k=1,24
+                     call egetwr(loutstr,kk,ret,0.,1.,'W','pinsst',ier)
+                     if(ier.ne.0)then
+                       message='while reading pinsst data'
+                       goto 1004
+                     endif
+                     pinsst(nwins,k,j)=ret
+  250             continue
+  240          continue
+            endif
+  210    continue
+
+         call stripc(iuj,outstr,0,nd,1,'* end',ier)
+         if(ier.ne.0)goto 1002
+         if(outstr(1:5).ne.'* end')then
+           if(outstr(1:7).eq.'* month')then
+             call easkok(' ','Update zone shading & insolation file?',
+     &         ok,nbhelp)
+             if(ok)then
+               call sifwrt(icomp,mnth,lastrec)
+               if(lastrec.gt.5)then
+                 if(isadd(mnth+1).eq.0) isadd(mnth+1)=lastrec
+               endif
+             endif
+             mnth=mnth+1
+             goto 172
+           endif
+           message='Expecting * end'
+           goto 1002
+         endif
+
+  18     call erpfree(iuj,istat)
+         call edisp(iuout,' ')
+         call edisp(iuout,'Import file closed.')
+         call easkok(' ','Update zone shading & insolation file?',
+     &     ok,nbhelp)
+         if(ok)then
+           call sifwrt(icomp,mnth,lastrec)
+           if(lastrec.gt.5)then
+             if(isadd(mnth+1).eq.0) isadd(mnth+1)=lastrec
+           endif
+         endif
+
+C Cancel requested.
+      elseif(ipick.eq.5)then
+         return       ! End of `cancel` menu selection.
+
+      endif           ! End of menu selections.
+
+C Consider another month or output option?
+    6 call easkok(' ','Consider another month and/ or output option?',
+     &  ok,nbhelp)
+      if(ok)goto 1
+      return
+
+C Error handling.
+ 1000 write(outs,1001)
+ 1001 format('SIOPT: zone shading & insolation text file error!')
+      call edisp(iuout,' ')
+      call edisp(iuout,outs)
+      call edisp(iuout,outstr)
+      return
+
+C Error written out in several lines with message identifying the
+C type of data involved.
+ 1002 write(louts,'(3a)') 'sifops: zone shading & insolation ',
+     &   message(1:lnblnk(message)),' in the line '
+      call edisp248(iuout,louts,90)
+      call edisp(iuout,outstr)
+      return
+
+C Error written out in several lines with message identifying the
+C type of data involved.
+ 1004 write(louts,'(3a)') 'sifops: zone shading & insolation ',
+     &   message(1:lnblnk(message)),' in the line '
+      call edisp248(iuout,louts,90)
+      call edisp248(iuout,loutstr,90)
+      return
+
+      END
+
+C ******************** SIFRD ********************
+C Reads the contents of a zone shading & insolation file for the
+C given month.
+
+      subroutine sifrd(icomp,mnth,ier)
+#include "building.h"
+#include "geometry.h"
+
+      common/outin/iuout,iuin,ieout
+      common/filep/ifil
+      common/tmc/itmc(ms),nwins
+
+C isadd()  - start address of shading/insolation data for each
+C            month with data.
+C ishd()   - data type for month (0 no data, 1 shading only,
+C            2 insolation only, 3 shading and insolation).
+C pso()    - direct shading factor for each surface and hour.
+C psof()   - diffuse shading factor for each surface and hour.
+C ntmc()   - if 0 then surface is not an insolation source,
+C            if 1 then it is.
+C ioffs()  - the record offset to the insolation data for each
+C            insolated surface associated with each insolation
+C            source.
+C insst()  - the index of the surface being insolated from source i
+C            at hour j (0 indicates that no surface is shaded, -1
+C            that the sun is not up). The index k refers to
+C            the list of misur possibile insolated surfaces
+C pinsst(  - proportion received by each insolated surface from
+C            each insolation source at each hour.
+      common/data2/pso(ms,24),psof(ms,24)
+      common/data3/ishd(12),isadd(12),ntmc(ms),ioffs(ms)
+      common/data4/insst(mgt,24,misur),pinsst(mgt,24,misur)
+      common/data5/irecx,nsurs,msurs
+
+      character outs*124
+
+      ier=0
+      ifilsi=ifil+3
+      irec=1
+      read(ifilsi,rec=irec,iostat=istat,err=1000)(ishd(i),i=1,12),
+     &                                           (isadd(i),i=1,12)
+      irec=2
+      read(ifilsi,rec=irec,iostat=istat,err=1000)irecx,nsurs,msurs
+
+C Cosistency check.
+      if(nzsur(icomp).ne.nsurs.or.msurs.ne.misur)goto 1002
+
+C Record 3 reserved for future use, skip to 4.
+      irec=4
+      read(ifilsi,rec=irec,iostat=istat,err=1000)
+     &                           (ntmc(i),i=1,nzsur(icomp))
+
+C Number of insolation sources in zone.
+      nwins=0
+      irec=isadd(mnth)
+      if(irec.eq.0)then
+         ier=1
+         return
+      endif
+      do 10 i=1,nzsur(icomp)
+         nwins=nwins+ntmc(i)
+
+C Get shading factors.
+         read(ifilsi,rec=irec,iostat=istat,err=1000)(pso(i,j),j=1,24)
+         irec=irec+1
+         read(ifilsi,rec=irec,iostat=istat,err=1000)(psof(i,j),j=1,24)
+         irec=irec+1
+   10 continue
+
+C Get insolation factors.
+      if(ishd(mnth).eq.0.or.ishd(mnth).eq.1.or.nwins.eq.0)return
+      read(ifilsi,rec=irec,iostat=istat,err=1000)
+     &                              (ioffs(i),i=1,nzsur(icomp))
+      irec=irec+1
+      do 20 i=1,nwins
+         do 30 j=1,misur
+            read(ifilsi,rec=irec,iostat=istat,err=1000)
+     &        (insst(i,k,j),k=1,24)
+            irec=irec+1
+   30    continue
+         do 40 j=1,misur
+            read(ifilsi,rec=irec,iostat=istat,err=1000)
+     &        (pinsst(i,k,j),k=1,24)
+            irec=irec+1
+   40    continue
+   20 continue
+      return
+
+C Error handling.
+ 1000 write(outs,1001)irec
+ 1001 format('SIFLST: zone shading & insolation file error, record',I6)
+      call edisp(iuout,' ')
+      call edisp(iuout,outs)
+      return
+
+ 1002 call edisp (iuout,' ')
+      call edisp(iuout,'Geometry referenced in zone shading & ')
+      call edisp(iuout,'insolation file is different to that currently')
+      call edisp(iuout,'being used.')
+      return
+      end
+
+C ******************** SIFWRT ********************
+C Writes shading/insolation data to a zone shading & insolation file
+C for the given month. lastrecwritten is an integer to pass back in
+C case the calling code needs up update irecx.
+
+      subroutine sifwrt(icomp,mnth,lastrecwritten)
+#include "building.h"
+#include "geometry.h"
+
+      common/outin/iuout,iuin,ieout
+      common/filep/ifil
+      common/tmc/itmc(ms),nwins
+
+C isadd()  - start address of shading/insolation data for each
+C            month with data.
+C ishd()   - data type for month (0 no data, 1 shading only,
+C            2 insolation only, 3 shading and insolation).
+C pso()    - direct shading factor for each surface and hour.
+C psof()   - diffuse shading factor for each surface and hour.
+C ntmc()   - if 0 then surface is not an insolation source,
+C            if 1 then it is.
+C ioffs()  - the record offset to the insolation data for each
+C            insolated surface associated with each insolation
+C            source.
+C insst(i,j,k)  - the index of kth internal surface being insolated
+C                 from source i at hour j (0 indicates whole surface
+C                 shading, -1 that the sun is not up).
+C pinsst(i,j,k) - proportion of insolation associated with source i
+C                 at hour j that reaches the kth internal surface.
+      common/data2/pso(ms,24),psof(ms,24)
+      common/data3/ishd(12),isadd(12),ntmc(ms),ioffs(ms)
+      common/data4/insst(mgt,24,misur),pinsst(mgt,24,misur)
+      common/data5/irecx,nsurs,msurs
+
+      character outs*124
+
+C S/I file unit number.
+      ifilsi=ifil+3
+      if(isadd(mnth).eq.0)then
+         isadd(mnth)=irecx
+         ishd(mnth)=1
+      endif
+      irec=1
+      write(ifilsi,rec=irec,iostat=istat,err=1000)(ishd(i),i=1,12),
+     &                                            (isadd(i),i=1,12)
+      irec=2
+
+      write(ifilsi,rec=irec,iostat=istat,err=1000)irecx,nsurs,msurs
+
+C Record 3 reserved for future use, skip to 4.
+      irec=4
+      write(ifilsi,rec=irec,iostat=istat,err=1000)
+     & (ntmc(i),i=1,nzsur(icomp))
+
+C Number of insolation sources in zone.
+      nwins=0
+      irec=isadd(mnth)
+      do 10 i=1,nzsur(icomp)
+         nwins=nwins+ntmc(i)
+
+C Write shading factors.
+         write(ifilsi,rec=irec,iostat=istat,err=1000)(pso(i,j),j=1,24)
+         irec=irec+1
+         write(ifilsi,rec=irec,iostat=istat,err=1000)(psof(i,j),j=1,24)
+         irec=irec+1
+   10 continue
+
+C Write insolation factors.
+      if(ishd(mnth).eq.0.or.ishd(mnth).eq.1.or.nwins.eq.0) then
+         lastrecwritten=irec
+         return
+      endif
+      write(ifilsi,rec=irec,iostat=istat,err=1000)
+     &  (ioffs(i),i=1,nzsur(icomp))
+      irec=irec+1
+      do 20 i=1,nwins
+         do 30 j=1,misur
+            write(ifilsi,rec=irec,iostat=istat,err=1000)
+     &        (insst(i,k,j),k=1,24)
+            irec=irec+1
+   30    continue
+         do 40 j=1,misur
+            write(ifilsi,rec=irec,iostat=istat,err=1000)
+     &        (pinsst(i,k,j),k=1,24)
+            irec=irec+1
+   40    continue
+   20 continue
+      lastrecwritten=irec
+      return
+
+C Error handling.
+ 1000 write(outs,1001)irec
+ 1001 format('SIFWRT: zone shading & insolation file error, record',I6)
+      call edisp(iuout,' ')
+      call edisp(iuout,outs)
+      return
+      end
+
+
+C ******************** SIFEXP ********************
+C Exports the shading and insolation factors as held in a zone
+C shading & insolation file to a mirror ascii file. Uses SIFRD to read
+C file contents. Uses some of the same code blocks as sifops but is
+C written for silent operation. If the format changes in sifops then
+C sifexp should also be updated.
+C Input parameters:
+C  icomp      - the current zone index
+C  exportfile - the ascii file to generate (typically this would be a
+C               name derived from the zone shading file).
+C  ier        - is 0 if no problems, -3 if empty.
+
+      subroutine sifexp(icomp,exportfile,ier)
+#include "building.h"
+#include "model.h"
+#include "geometry.h"
+
+      integer lnblnk  ! function definition
+
+      common/outin/iuout,iuin,ieout
+      common/filep/ifil
+
+      integer izstocn
+      common/c24/izstocn(mcom,ms)
+      common/tmc/itmc(ms),nwins
+      common/data2/pso(ms,24),psof(ms,24)
+      common/data3/ishd(12),isadd(12),ntmc(ms),ioffs(ms)
+      common/data4/insst(mgt,24,misur),pinsst(mgt,24,misur)
+
+      character sn*12
+      character*12 sourcename(MS)   ! name of insolation source
+      character*3 month(12)
+      character outs*124,exportfile*96
+      character outl*248,outld*248
+      character out1k*1000,out1kd*1000,lkoutstr*1000
+      integer isourcecount  ! to help with sourcename list
+
+      DATA month/'Jan','Feb','Mar','Apr','May','Jun','Jul',
+     &           'Aug','Sep','Oct','Nov','Dec'/
+
+C Re-scan contents of the zone shading & insolation file.
+      ifilsi=ifil+3
+      irec=1
+      read(ifilsi,rec=irec,iostat=istat,err=1000)(ishd(i),i=1,12),
+     &                                           (isadd(i),i=1,12)
+
+C Identify the initial month with data.
+      ims=0
+      mnth=1
+      ifirst=0
+      do 10 i=1,12
+         if(ishd(i).ne.0)then
+            ims=ims+1
+            if(ifirst.eq.0)then
+               mnth=i
+               ifirst=1
+            endif
+         endif
+   10 continue
+      if(ims.eq.0)then
+         ier=-3
+         return
+      endif
+
+C Read file and fill commons DATA2, DATA3, DATA4 and DATA5 for
+C specified month.
+      call sifrd(icomp,mnth,ier)
+
+C Open the ascii file for export.
+      iuj=ifil+10
+      call efopseq(iuj,exportfile,3,ier)
+      if(ier.lt.0)then
+        ier=1
+        goto 1002
+      endif
+
+      write(iuj,'(2a)',iostat=istat,err=1002)
+     &   '* Shading and insolation data in file ',lshad(icomp)
+      write(iuj,'(2i3,a)',iostat=istat,err=1002)icomp,nzsur(icomp),
+     &   ' # zone index & number of surfaces'
+   16 write(iuj,'(3a)',iostat=istat,err=1002) '* month: `',
+     &   month(mnth),'`'
+
+C Write direct and diffuse shading factors.
+      write(iuj,'(a)',iostat=istat,err=1002)
+     &  '24 hour external surface shading'
+      do 100 i = 1,nzsur(icomp)
+         icn=izstocn(icomp,i)
+         sn=sname(icomp,i)
+         write(outl,'(12f7.4)') (pso(i,j),j=1,12)
+         call sdelim(outl,outld,'S',iw)
+         write(iuj,'(a)',iostat=istat,err=1002)
+     &     outld(1:lnblnk(outld))
+         write(outl,'(12f7.4,2a)') (pso(i,j),j=13,24),
+     &      ' # direct - surface ',sn(1:lnblnk(sn))
+         call sdelim(outl,outld,'S',iw)
+         write(iuj,'(a)',iostat=istat,err=1002)
+     &     outld(1:lnblnk(outld))
+         write(outl,'(12f7.4)') (psof(i,j),j=1,12)
+         call sdelim(outl,outld,'S',iw)
+         write(iuj,'(a)',iostat=istat,err=1002)
+     &     outld(1:lnblnk(outld))
+         write(outl,'(12f7.4,2a)') (psof(i,j),j=13,24),
+     &     ' # diffuse - surface ',sn(1:lnblnk(sn))
+         call sdelim(outl,outld,'S',iw)
+         write(iuj,'(a)',iostat=istat,err=1002)
+     &     outld(1:lnblnk(outld))
+ 100  continue
+
+C Generate packed list of names of insolation sources.
+      isourcecount=0
+      do 101 i = 1,nzsur(icomp)
+         if(ioffs(i).ne.0)then
+           isourcecount=isourcecount+1
+           icn=izstocn(icomp,i)
+           sourcename(isourcecount)=sname(icomp,i)
+         endif
+ 101  continue
+
+C Write insolation factors: the record offset line
+C is surface based so use a 1K string buffer.
+      if(ishd(mnth).eq.2.or.ishd(mnth).eq.3)then
+         write(iuj,'(a)',iostat=istat,err=1002)
+     &     '24 hour internal surface insolation'
+         write(iuj,'(2a)',iostat=istat,err=1002) 'record offsets',
+     &     ' # to each insolation source (marked by non-zero)'
+         write(out1k,'(240i4)') (ioffs(i),i=1,nzsur(icomp))
+         call sdelim(out1k,out1kd,'S',iw)
+         write(iuj,'(a)',iostat=istat,err=1002)
+     &     out1kd(1:lnblnk(out1kd))
+         do 110 i=1,nwins
+            write(iuj,'(a,i3,3a)',iostat=istat,err=1002)
+     &        'surfaces insolated by source ',i,' ',sourcename(i),
+     &        ' # hourly columns, ranking via rows'
+            do 120 j=1,misur
+               write(outl,'(24i4)')(insst(i,k,j),k=1,24)
+               call sdelim(outl,outld,'S',iw)
+               write(iuj,'(a)',iostat=istat,err=1002)
+     &           outld(1:lnblnk(outld))
+  120       continue
+            write(iuj,'(2a)',iostat=istat,err=1002)
+     &        'matched surface insolation factors',
+     &        ' # hourly columns, ranking via rows'
+            do 130 j=1,misur
+               write(outl,'(24f6.3)')(pinsst(i,k,j),k=1,24)
+               call sdelim(outl,outld,'S',iw)
+               write(iuj,'(a)',iostat=istat,err=1002)
+     &           outld(1:lnblnk(outld))
+  130       continue
+  110    continue
+      endif
+
+C Try incrementing the month, if have just written December then
+C write '* end', close file and return. If there is no data
+C for the next month loop again looking for more. If there is data
+C for the next month then jump back to the '* month' writing line.
+   15 mnth=mnth+1
+      if(mnth.gt.12)then
+         write(iuj,'(A)',iostat=istat,err=1002) '* end'
+         call erpfree(iuj,istat)
+         return
+      endif
+      call sifrd(icomp,mnth,ier)
+      if(ier.ne.0)then
+         call edisp(iuout,' ')
+         write(outs,'(2a)') month(mnth),' has no data!'
+         call edisp(iuout,outs)
+         goto 15  ! increment mnth to see if there is more data.
+      endif
+      goto 16  ! go back and write another months data.
+
+C Error handling.
+ 1000 write(outs,1001)
+ 1001 format('SIOPT: Zone Shading & Insolation text file error!')
+      call edisp(iuout,' ')
+      call edisp(iuout,outs)
+      return
+
+ 1002 write(outs,1003)irec
+ 1003 format('SIOPT: Zone Shading & Insolation file error, record ',I6)
+      call edisp(iuout,' ')
+      call edisp(iuout,outs)
+      return
+
+      END
+
+C ******************** SIFIMPORT ********************
+C Imports the shading and insolation factors as held in an
+C ASCII zone shading & insolation file to bimary file. Uses SIFWRT to
+C update file contents. Uses some of the same code blocks as sifops but is
+C written for silent operation. If the format changes in sifops then
+C sifexp should also be updated.
+C Input parameters:
+C  icomp      - the current zone index
+C  exportfile - ascii file to import (typically this would be a
+C               name derived from the zone shading file).
+C  ier        - is 0 if no problems, -3 if empty, -2 not found,
+C             -1 wrong file type, -4 wrong zone.
+
+      subroutine sifimport(icomp,exportfile,ier)
+#include "building.h"
+#include "model.h"
+#include "geometry.h"
+
+      integer lnblnk  ! function definition
+
+      common/outin/iuout,iuin,ieout
+      common/filep/ifil
+
+      common/tmc/itmc(ms),nwins
+      common/data2/pso(ms,24),psof(ms,24)
+      common/data3/ishd(12),isadd(12),ntmc(ms),ioffs(ms)
+      common/data4/insst(mgt,24,misur),pinsst(mgt,24,misur)
+      common/data5/irecx,nsurs,msurs
+      character ltrns*72
+      integer multic,mons,monf
+      common/mtfile/ltrns,multic,mons,monf
+
+      character*3 month(12)
+      character outs*124,louts*248,exportfile*96
+      character outstr*124,loutstr*248,lkoutstr*1000
+      character message*64
+      integer nboftmc       ! number of insolation sources returned from findtmc
+      logical ok
+
+      DATA month/'Jan','Feb','Mar','Apr','May','Jun','Jul',
+     &           'Aug','Sep','Oct','Nov','Dec'/
+
+C Scan header of the zone shading & insolation file.
+      ifilsi=ifil+3
+      irec=1
+      read(ifilsi,rec=irec,iostat=istat,err=1000)(ishd(i),i=1,12),
+     &                                           (isadd(i),i=1,12)
+C      write(outs,'(2a)')'Content of zone shading & insolation file ',
+C     &                   lshad(icomp)(1:lnblnk(lshad(icomp)))
+C      call edisp(iuout,' ')
+C      call edisp(iuout,outs)
+      ims=0
+      mnth=1
+      ifirst=0
+      do 10 i=1,12
+         if(ishd(i).ne.0)then
+            ims=ims+1
+            if(ifirst.eq.0)then
+               mnth=i
+               ifirst=1
+            endif
+         endif
+   10 continue
+
+C Assume there is nothing in the shading file and the
+C import from ascii file is used to fill it.
+
+C An empty shading file so setup some initial information. Find the
+C initial month in the import file and then close the file. Note:
+C the string for the month e.g. Jan is expected to be found
+C between positions 11 and 13 of the line.
+      iuj=ifil+10
+      mnth=1
+      call efopseq(iuj,exportfile,1,ier)
+      call stripc(iuj,outstr,0,nd,1,'month',ier)
+      if(outstr(1:7).eq.'* month')then
+        do 16 im=1,12
+          if(outstr(11:13).eq.month(im))mnth=im
+ 16     continue
+        call erpfree(iuj,istat)
+      elseif(outstr(1:5).eq.'* end')then
+        call erpfree(iuj,istat)
+      endif
+
+      if(irecx.eq.0)irecx=5   ! irecx probably was not set so do it for initial month
+      isadd(mnth)=irecx       ! so code knows where to write data
+      nsurs=nzsur(icomp)      ! needed for the header
+      msurs=misur
+      call findtmc(icomp,'s',nboftmc) ! establish insolation sources and copy to ntmc
+      do ij=1,nsurs
+        ntmc(ij)=itmc(ij)
+      enddo
+
+C Based on the file name being passed to this subroutine.
+      call efopseq(iuj,exportfile,1,ier)
+      if(ier.ne.0)goto 1002
+      call stripc(iuj,outstr,0,nd,1,'header',ier)
+      if(ier.ne.0)goto 1002
+      if(outstr(1:24).ne.'* Shading and insolation')then
+         call usrmsg('Not an ascii zone shading & insolation file!',
+     &               exportfile,'W')
+         call erpfree(iuj,istat)
+         ier=-1
+         return
+      endif
+
+      call stripc(iuj,outstr,0,nd,1,'zone & surf',ier)
+      if(ier.ne.0)goto 1002
+      k=0
+      call egetwi(outstr,k,iret,0,0,'-','zone index',ier)
+      if(ier.ne.0)goto 1002
+      if(iret.ne.icomp)then
+        call usrmsg('These data are for a different zone!',
+     &                                     exportfile,'W')
+        call erpfree(iuj,istat)
+        ier=-4
+        return
+      endif
+
+      call egetwi(outstr,k,iret,0,0,'-','surfaces',ier)
+      if(ier.ne.0)goto 1002
+      if(iret.ne.nzsur(icomp))then
+        call usrmsg(
+     &    'Number of surfaces in file does not match current model!',
+     &     exportfile,'W')
+        call erpfree(iuj,istat)
+        ier=-4
+        return
+      endif
+
+C Read data for a month. If we have a month that matches then
+C the code looks for either '24 hour external' in which case
+C the data is shading data. If '24 hour internal' found following
+C the * month tag then we have only insolation.
+      multic=2  ! signal data is known
+      call stripc(iuj,outstr,0,nd,1,'month',ier)
+ 172  if(outstr(1:5).eq.'* end')goto 18
+      if(ier.ne.0.or.outstr(1:7).ne.'* month')goto 1002
+
+C For MODISH embedded.
+C      if(ISIcalc==1)then
+        if(outstr(1:7).eq.'* month')then 
+          do 973 in=1,12
+            if(outstr(11:13).eq.month(in))then
+              mnth=in
+            endif
+ 973      continue
+        endif
+C      endif
+
+      if(outstr(11:13).eq.month(mnth))then
+         call stripc(iuj,outstr,0,nd,1,'24 hour external',ier)
+         if(outstr(1:16).ne.'24 hour external')then
+           if(outstr(1:16).ne.'24 hour internal')then
+             ishd(mnth)=2   ! no shading only insolation
+             goto 173
+           endif
+           message='expecting 24 hours external'
+           multic=0  ! signal data is not known
+           goto 1002
+         endif
+         ishd(mnth)=1   ! at least shading
+         do 150 i=1,nzsur(icomp)
+            message='reading direct shading'
+            call lstripc(iuj,loutstr,0,nd,1,'dir shading 01-12',ier)
+            if(ier.ne.0)goto 1004
+            k=0
+            do 160 j=1,12
+               call egetwr(loutstr,k,ret,0.,1.,'W',
+     &                                     'dir shading 01-12',ier)
+               if(ier.ne.0)goto 1004
+               pso(i,j)=ret
+  160       continue
+            call lstripc(iuj,loutstr,0,nd,1,'dir shading 12-24',ier)
+            if(ier.ne.0)goto 1004
+            k=0
+            do 170 j=13,24
+               call egetwr(loutstr,k,ret,0.,1.,'W',
+     &                                     'dir shading 12-24',ier)
+               if(ier.ne.0)goto 1004
+               pso(i,j)=ret
+  170       continue
+
+            message='reading diffuse shading'
+            call lstripc(iuj,loutstr,0,nd,1,'dif shading 01-12',ier)
+            if(ier.ne.0)goto 1004
+            k=0
+            do 180 j=1,12
+               call egetwr(loutstr,k,ret,0.,1.,'W',
+     &                                     'dif shading 01-12',ier)
+               if(ier.ne.0)goto 1004
+               psof(i,j)=ret
+  180       continue
+            call lstripc(iuj,loutstr,0,nd,1,'dif shading 12-24',ier)
+            if(ier.ne.0)goto 1004
+            k=0
+            do 190 j=13,24
+               call egetwr(loutstr,k,ret,0.,1.,'W',
+     &                                     'dif shading 12-24',ier)
+               if(ier.ne.0)goto 1004
+               psof(i,j)=ret
+  190       continue
+  150    continue
+      else
+         if(mnth.gt.12) goto 18  ! have reached past december
+         call usrmsg('Data in file is not for the specified month!',
+     &                               exportfile,'W')
+         call erpfree(iuj,istat)
+         ier=-3
+         return
+      endif
+
+C Read insolation factors. But the next line might also hold
+C a Month string or end marker.
+      call stripc(iuj,outstr,0,nd,1,'insolation header',ier)
+ 173  if(ier.ne.0.or.outstr(1:16).ne.'24 hour internal')then
+        if(outstr(1:7).eq.'* month')then
+          ok=.true.
+          if(ok)then
+            call sifwrt(icomp,mnth,lastrec)
+            if(lastrec.gt.5)then
+              if(isadd(mnth+1).eq.0) isadd(mnth+1)=lastrec
+            endif
+          endif
+          mnth=mnth+1   ! increment the month and jump back
+          goto 172
+        elseif(outstr(1:5).eq.'* end')then
+          goto 18   ! end of file reached
+        endif
+        message='expecting 24 hours internal'
+        multic=0  ! signal data is not known
+        goto 1002
+      endif
+
+      if(outstr(1:5).eq.'* end')goto 18
+      call stripc(iuj,outstr,0,nd,1,'offsets header',ier)
+      if(ier.ne.0.or.outstr(1:14).ne.'record offsets')then
+        message='expecting record offsets'
+        goto 1002
+      endif
+      if(ishd(mnth).eq.1) ishd(mnth)=3   ! set to shading + insul
+
+C Read the offsets line. Items with a zero are not insolation
+C sources, non-zero entries are offsets to use within the binary
+C file and the position in the list indicates with surface in
+C the zone is an insolation source.
+      call stripc1k(iuj,lkoutstr,0,nd,1,'offsets data',ier)
+      if(ier.ne.0)goto 1004
+      k=0
+      do 200 i=1,nzsur(icomp)
+         call egetwi(lkoutstr,k,iret,0,0,'-','offset',ier)
+         if(ier.ne.0)goto 1004
+         ioffs(i)=iret
+  200 continue
+
+C Reset the counter for insolation sources. Use the nwins
+C value for the first index of insst
+      nwins=0
+      do 210 i=1,nzsur(icomp)
+         if(ioffs(i).ne.0)then
+            nwins=nwins+1
+            call stripc(iuj,outstr,0,nd,1,'insst surf header',ier)
+            if(ier.ne.0.or.outstr(1:21).ne.
+     &        'surfaces insolated by')then
+               message='expecting surfaces insolated by'
+              goto 1002
+            endif
+            do 220 j=1,misur
+               call stripc(iuj,outstr,0,nd,1,'insst data',ier)
+               if(ier.ne.0)goto 1002
+               kk=0
+               do 230 k=1,24
+                  call egetwi(outstr,kk,iret,-1,ms,'-','insst',ier)
+                  if(ier.ne.0)then
+                    message='while reading insst data'
+                    goto 1002
+                  endif
+                  insst(nwins,k,j)=iret
+  230          continue
+  220       continue
+
+            call stripc(iuj,outstr,0,nd,1,'pinsst header',ier)
+            if(ier.ne.0)goto 1002
+
+            if(outstr(1:26).ne.'matched surface insolation')then
+              message='expecting matched surface insolation'
+              goto 1002
+            endif
+            do 240 j=1,misur
+               call lstripc(iuj,loutstr,0,nd,1,'pinsst line',ier)
+               if(ier.ne.0)goto 1004
+               kk=0
+               do 250 k=1,24
+                  call egetwr(loutstr,kk,ret,0.,1.,'W','pinsst',ier)
+                  if(ier.ne.0)then
+                    message='while reading pinsst data'
+                    goto 1004
+                  endif
+                  pinsst(nwins,k,j)=ret
+  250          continue
+  240       continue
+         endif
+  210 continue
+
+      call stripc(iuj,outstr,0,nd,1,'* end',ier)
+      if(ier.ne.0)goto 1002
+      if(outstr(1:5).ne.'* end')then
+        if(outstr(1:7).eq.'* month')then
+          ok=.true.
+          if(ok)then
+            call sifwrt(icomp,mnth,lastrec)
+            if(lastrec.gt.5)then
+              if(isadd(mnth+1).eq.0) isadd(mnth+1)=lastrec
+            endif
+          endif
+          mnth=mnth+1
+          goto 172
+        endif
+        message='Expecting * end'
+        goto 1002
+      endif
+
+C End marker of the file reached. Close it and update isadd
+C if not december.
+  18  call erpfree(iuj,istat)
+      call edisp(iuout,' ')
+      call edisp(iuout,'Import file closed.')
+      ok=.true.
+      if(ok)then
+        call sifwrt(icomp,mnth,lastrec)
+        if(lastrec.gt.5)then
+          if(mnth.le.11)then  ! this line is different from line 656
+            if(isadd(mnth+1).eq.0)isadd(mnth+1)=lastrec
+          endif
+        endif
+      endif
+
+      return
+
+C Error handling.
+ 1000 write(outs,1001)
+ 1001 format('SIFIMPORT: Zone shading & insolation ascii file error!')
+      call edisp(iuout,' ')
+      call edisp(iuout,outs)
+      call edisp(iuout,outstr)
+      return
+
+C Error written out in several lines with message identifying the
+C type of data involved.
+ 1002 write(louts,'(3a)') 'sifimport: zone shading & insolation ',
+     &   message(1:lnblnk(message)),' in the line '
+      call edisp248(iuout,louts,90)
+      call edisp(iuout,outstr)
+      return
+
+C Error written out in several lines with message identifying the
+C type of data involved.
+ 1004 write(louts,'(3a)') 'sifimport: zone shading & insolation ',
+     &   message(1:lnblnk(message)),' in the line '
+      call edisp248(iuout,louts,90)
+      call edisp248(iuout,loutstr,90)
+      return
+      end

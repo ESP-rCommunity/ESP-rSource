@@ -1,0 +1,37 @@
+*Operations 2.1                               # zone operation definiions for Main
+*date Fri Apr 30 11:21:39 2021                # latest file modification
+# infiltration and ventilation notes:
+ventilation from the foundation zone
+# infiltration and ventilation controls:
+   0      0.00      0.00      0.00            # control index (no control of air flow), low middle high setpoints
+    1                                         # number of flow periods during weekday
+   0, 24,    0.000    0.536    3     0.00     # start stop infil ach ( 0.0000m^3/s) vent ach ( 0.0352m^3/s) from Foundation
+    1                                         # number of flow periods during saturday
+   0, 24,    0.000    0.536    3     0.00     # start stop infil ach ( 0.0000m^3/s) vent ach ( 0.0352m^3/s) from Foundation
+    1                                         # number of flow periods during sunday
+   0, 24,    0.000    0.536    3     0.00     # start stop infil ach ( 0.0000m^3/s) vent ach ( 0.0352m^3/s) from Foundation
+# casual gain type definitions:
+*casual
+# notes on casual gains:
+static gains for all day types.
+# casual label     type-key-word   slot index & attributes
+*type Occupt       people             1   0   0
+*type Lights       lighting           2   0   0
+*type Equipt       equipment          3   0   0
+*end_type 
+# casual gain schedules:
+     3   # number of casual gains in day type: weekday     
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,  24,     94.3,     94.3,   0.00,   1.00
+   2,   0,  24,     96.3,      0.0,   0.00,   1.00
+   3,   0,  24,    470.3,      0.0,   0.00,   1.00
+     3   # number of casual gains in day type: saturday    
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,  24,     94.3,     94.3,   0.00,   1.00
+   2,   0,  24,     96.3,      0.0,   0.00,   1.00
+   3,   0,  24,    470.3,      0.0,   0.00,   1.00
+     3   # number of casual gains in day type: sunday      
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,  24,     94.3,     94.3,   0.00,   1.00
+   2,   0,  24,     96.3,      0.0,   0.00,   1.00
+   3,   0,  24,    470.3,      0.0,   0.00,   1.00

@@ -1,0 +1,95 @@
+* FileVersion
+      1.00
+* electrical network
+# ESP-r Electrical network file created with configuration file:
+  batt_test_school.cfg
+# Network description:
+  none
+* net type 
+  balanced
+* base power value (all nodes)
+     1000.00
+* phase angles (each phase)
+      0.00    120.00    240.00
+# List and details of nodes in the network
+* nodes
+    2
+# No.    Node name   Phase type   Phase Node type    Base volt
+    1  grid_inter    1-phase         1  fixed_V           120.00    0
+    2  house_batt    1-phase         1  variable          120.00    0
+** end nodes
+# List and details of load and generator connections to nodes
+* hybrid components
+    3
+# No. comp. type   comp. name      phase type  connects node(s)  location
+    1  plant         SE_el         1-phase         2    0    0     2    0    0
+# plt comp node connections   DC node id   AC node id
+    1    0    0
+# description:
+  effin SE
+# No. of additional data items:
+    0
+# No. comp. type   comp. name      phase type  connects node(s)  location
+    2  plant         blower_el     1-phase         2    0    0     4    0    0
+# plt comp node connections   DC node id   AC node id
+    1    0    0
+# description:
+  none
+# No. of additional data items:
+    0
+# No. comp. type   comp. name      phase type  connects node(s)  location
+    3  plant         pump_el       1-phase         2    0    0     1    0    0
+# plt comp node connections   DC node id   AC node id
+    1    0    0
+# description:
+  none
+# No. of additional data items:
+    0
+** end hybrid
+# List and details of power only components
+* power-only components
+    2
+# No.   i.d.  Comp. name   Phase type  links to nodes 
+    1   22  battery       d.c.            2    0    0
+# description:
+  its just a battery
+# no. of additional data items:
+   81    0
+    34.000        35.000        1.5000        25.000        4.3000        3.1500        25.000        4.3000
+    25.000        0.0000        27.300        42.64         582.86        1.0000        0.0000        60.000
+   -40.000       -5.8601        14.822       -15.053        6.9328       -2.2137        4.2221       0.11520
+  -0.25560       0.20070      -0.65100E-01   0.26500E-01   0.20200E-01   0.60500E-01    1.0000       0.12100
+    1.0000       0.24190        1.0000        1.2096       0.98500        6.0480       0.89500        12.096
+   0.77500        12.192       0.59300        999.00       0.59300       -40.000       0.90500       0.18700
+   -20.000       0.98500       0.36600E-01    0.0000        1.0000       0.12300E-01    10.000        1.0000
+   0.62000E-02    20.000        1.0000       0.24000E-02    30.000        1.0000      -0.15000E-04    40.000
+    1.0000      -0.12000E-02    60.000        1.0000      -0.12000E-02    0.0000        0.0000        1.0000
+    0.0000       0.19720      -0.47490       0.41180      -0.14720       0.38000E-01   0.15400E-01    16.000
+    3000.
+# No.   i.d.  Comp. name   Phase type  links to nodes 
+    1   12  data          d.c.            2    0    0
+# description:
+  Test of applying .fcl file as a power-only component
+# no. of additional data items:
+    1    1
+    0.1000
+  ../nets/input.fcl
+** end power-only 
+# Listing and Description of components connecting the nodes
+* connecting components
+    1
+# No.  i.d. Comp. name    Phase type
+    1    2  sing_ph_cbl   1-phase
+# description: 
+  none
+# No. of additional data items:
+    6
+   0.10000E-03   0.10000E-05   0.10000E-05   0.10000E-05    0.0000        15.000
+** end connecting components
+# connections between nodes in the network 
+* connections
+    1
+# No. Conn. type  Phase.   Conn. com.    Start nodes       End nodes
+    1  1-phase      1 0 0     1         1    0    0       2    0    0
+** end connections
+** electrical network end

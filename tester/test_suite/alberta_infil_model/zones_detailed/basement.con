@@ -1,0 +1,58 @@
+*Constructions 2.1                              # thermophysical properties of basement
+*date Wed Sep  8 15:52:49 2021                  # latest file modification
+# layers|air | emissivity |absorptivity| tmc | surface|surface     |construction 
+#       |gaps|inside other|inside other|index| index  |name        |name 
+     5     1   0.90   0.90   0.65   0.93   0    #   1  found_lft2   ccht_wall
+     2     0   0.91   0.90   0.50   0.65   0    #   2  found_frnt2  foundation_
+     2     0   0.91   0.90   0.50   0.65   0    #   3  found_lft1   foundation_
+     4     1   0.90   0.90   0.65   0.65   0    #   4  bsment_ceiln floors_r
+     1     0   0.90   0.90   0.65   0.65   0    #   5  bsment_floor slab_floor
+     3     1   0.91   0.91   0.50   0.50   0    #   6  stair_north  int_partitn
+     1     0   0.90   0.90   0.92   0.92   1    #   7  stair_east   fictitious
+     3     1   0.91   0.91   0.50   0.50   0    #   8  stair_south  int_partitn
+     2     0   0.91   0.90   0.50   0.65   0    #   9  found_rgt2   foundation_
+     2     0   0.91   0.90   0.50   0.65   0    #  10  found_rgt1   foundation_
+     2     0   0.91   0.90   0.50   0.65   0    #  11  found_frnt1  foundation_
+     2     0   0.91   0.90   0.50   0.65   0    #  12  found_back   foundation_
+# air gap layer positions and restances
+  2  0.170                                      # for found_lft2
+  2  0.170                                      # and for bsment_ceiln
+  2  0.170                                      # and for stair_north
+  2  0.170                                      # and for stair_south
+# layer thermophysical properties
+# conduc-  | density |specific | thick- |dpnd|ref.| temp. |moisture|surface|layer
+# tivity   |         |heat     |ness(m) |type|temp|factor | factor |       |  
+     0.9600    2000.0     650.0  0.1000   0   0.00 0.00000 0.00000  #   1   1 Outer leaf brk
+     0.0000       0.0       0.0  0.0250   0   0.00 0.00000 0.00000  #       2 AIR
+     0.1500     800.0    2093.0  0.0110   0   0.00 0.00000 0.00000  #       3 Chipboard
+     0.0400      12.0     840.0  0.1400   0   0.00 0.00000 0.00000  #       4 Glass Fibre Quilt
+     0.1500     700.0    1420.0  0.0120   0   0.00 0.00000 0.00000  #       5 Plywood 700d
+     0.3800    1200.0     653.0  0.2000   0   0.00 0.00000 0.00000  #   2   1 Light mix conc
+     0.1900     950.0     840.0  0.0135   0   0.00 0.00000 0.00000  #       2 Gypsum plasterboard
+     0.3800    1200.0     653.0  0.2000   0   0.00 0.00000 0.00000  #   3   1 Light mix conc
+     0.1900     950.0     840.0  0.0135   0   0.00 0.00000 0.00000  #       2 Gypsum plasterboard
+     0.1500     560.0    2500.0  0.0170   0   0.00 0.00000 0.00000  #   4   1 Plywood
+     0.0000       0.0       0.0  0.1000   0   0.00 0.00000 0.00000  #       2 AIR
+     0.1400     600.0    1210.0  0.0250   0   0.00 0.00000 0.00000  #       3 Flooring
+     0.0600     160.0    2500.0  0.0150   0   0.00 0.00000 0.00000  #       4 Synthetic carpet
+     0.3800    1200.0     653.0  0.2500   0   0.00 0.00000 0.00000  #   5   1 Light mix conc
+     0.1900     950.0     840.0  0.0125   0   0.00 0.00000 0.00000  #   6   1 Gypsum plasterboard
+     0.0000       0.0       0.0  0.0250   0   0.00 0.00000 0.00000  #       2 AIR
+     0.1900     950.0     840.0  0.0125   0   0.00 0.00000 0.00000  #       3 Gypsum plasterboard
+     0.1530     614.5    1630.0  0.0050   0   0.00 0.00000 0.00000  #   7   1 1.375in-Solid-Core
+     0.1900     950.0     840.0  0.0125   0   0.00 0.00000 0.00000  #   8   1 Gypsum plasterboard
+     0.0000       0.0       0.0  0.0250   0   0.00 0.00000 0.00000  #       2 AIR
+     0.1900     950.0     840.0  0.0125   0   0.00 0.00000 0.00000  #       3 Gypsum plasterboard
+     0.3800    1200.0     653.0  0.2000   0   0.00 0.00000 0.00000  #   9   1 Light mix conc
+     0.1900     950.0     840.0  0.0135   0   0.00 0.00000 0.00000  #       2 Gypsum plasterboard
+     0.3800    1200.0     653.0  0.2000   0   0.00 0.00000 0.00000  #  10   1 Light mix conc
+     0.1900     950.0     840.0  0.0135   0   0.00 0.00000 0.00000  #       2 Gypsum plasterboard
+     0.3800    1200.0     653.0  0.2000   0   0.00 0.00000 0.00000  #  11   1 Light mix conc
+     0.1900     950.0     840.0  0.0135   0   0.00 0.00000 0.00000  #       2 Gypsum plasterboard
+     0.3800    1200.0     653.0  0.2000   0   0.00 0.00000 0.00000  #  12   1 Light mix conc
+     0.1900     950.0     840.0  0.0135   0   0.00 0.00000 0.00000  #       2 Gypsum plasterboard
+*tmc YES                                        # optical properties:
+   1  SC_fictit                                 # layers in tmc type 1
+  0.998  0.987  0.986  0.985  0.984  0.990      # transmission @ 5 angles & visible tr.
+  0.001  0.001  0.001  0.001  0.001             # for each layer absorption @ 5 angles
+   0                                            # no alternative optics

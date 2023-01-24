@@ -1,0 +1,22 @@
+*Operations 2.1                               # zone operation definiions for roof
+*date Fri Apr 30 11:02:06 2021                # latest file modification
+# infiltration and ventilation notes:
+no infiltration or ventilation
+# infiltration and ventilation controls:
+   0      0.00      0.00      0.00            # control index (no control of air flow), low middle high setpoints
+    0                                         # number of flow periods during weekday
+    0                                         # number of flow periods during saturday
+    0                                         # number of flow periods during sunday
+# casual gain type definitions:
+*casual
+# notes on casual gains:
+no casual gains
+# casual label     type-key-word   slot index & attributes
+*type Occupt       people             1   0   0
+*type Lights       lighting           2   0   0
+*type Equipt       equipment          3   0   0
+*end_type 
+# casual gain schedules:
+     0   # number of casual gains in day type: weekday     
+     0   # number of casual gains in day type: saturday    
+     0   # number of casual gains in day type: sunday      

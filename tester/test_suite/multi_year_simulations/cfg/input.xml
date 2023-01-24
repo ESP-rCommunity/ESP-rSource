@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<hierarchy>tree</hierarchy>
+
+	<output_dictionary>false</output_dictionary>
+
+	<dump_all_data>false</dump_all_data>
+
+	<time_step_averaging>false</time_step_averaging>
+
+     	<enable_xml_wildcards>true</enable_xml_wildcards>
+	
+	<log_variable>building/day*</log_variable>
+	<log_variable>building/hour*</log_variable>
+	<log_variable>building/month*</log_variable>
+	<log_variable>building/year*</log_variable>
+	<log_variable>building/time*</log_variable>
+	<log_variable>climate*</log_variable>
+	
+	<log_variable>building/zone_*/air_point/temperature</log_variable>
+	<log_variable>building/zone_*/flux/net_flux</log_variable>
+	
+
+<!--	<step_variable>*</step_variable> -->
+	
+
+</configuration>

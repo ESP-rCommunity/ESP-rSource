@@ -1,0 +1,162 @@
+
+A syntax check noticed quite a few unused variables as well
+and undefined variables in edcfd.F
+
+   -- file: edcfd.F
+
+      - program unit: CFDCOMP
+
+      - program unit: CFDGGRD
+    590         write (ITEM(11),'(a,2i6)') 'f Ze ',NREG(4,ICFD),NTCZe
+  NTCZE
+(file: edcfd.F, line:     590)
+**[313 I] possibly no value assigned to this variable
+
+      - program unit: CFDSVAR
+
+      - program unit: CFDEDAT
+
+      - program unit: CFDEDATC
+
+      - program unit: CFDBVAR
+  CFTRFL
+(file: edcfd.F, line:    1897)
+**[681 I] not used
+  LPHI
+(file: edcfd.F, line:    1897)
+**[681 I] not used
+  TITLE
+(file: edcfd.F, line:    1897)
+**[681 I] not used
+
+      - program unit: DELCFDBC
+
+      - program unit: MKCFDBC
+
+      - program unit: GENCFDBC
+  ../include/model.h
+(file: edcfd.F, line:    2643)
+**[ 58 I] none of the entities, declared in the include file, is used
+  T12
+(file: edcfd.F, line:    2668)
+**[681 I] not used
+  UMIN
+(file: edcfd.F, line:    2739)
+**[323 I] variable unreferenced
+  VMIN
+(file: edcfd.F, line:    2739)
+**[323 I] variable unreferenced
+  WMIN
+(file: edcfd.F, line:    2671)
+**[323 I] variable unreferenced
+  /FILEP/
+(file: edcfd.F, line:    2650)
+**[676 I] none of the objects of the common block is used
+
+      - program unit: GENOSBC
+  999
+(file: edcfd.F, line:    3352)
+**[124 I] statement label unreferenced
+  OUTS
+(file: edcfd.F, line:    2861)
+**[681 I] not used
+  /OUTIN/
+(file: edcfd.F, line:    2853)
+**[676 I] none of the objects of the common block is used
+
+      - program unit: CFDPOINTC
+  APOL
+(file: edcfd.F, line:    3380)
+**[681 I] not used
+  EDGE
+(file: edcfd.F, line:    3381)
+**[681 I] not used
+  IAPNT
+(file: edcfd.F, line:    3380)
+**[681 I] not used
+  OK
+(file: edcfd.F, line:    3391)
+**[681 I] not used
+  X11
+(file: edcfd.F, line:    3400)
+**[323 I] variable unreferenced
+  X12
+(file: edcfd.F, line:    3400)
+**[323 I] variable unreferenced
+  X21
+(file: edcfd.F, line:    3400)
+**[323 I] variable unreferenced
+  X22
+(file: edcfd.F, line:    3400)
+**[323 I] variable unreferenced
+
+      - program unit: CFDSURFC
+  ../include/geometry.h
+(file: edcfd.F, line:    3546)
+**[ 58 I] none of the entities, declared in the include file, is used
+  CON
+(file: edcfd.F, line:    3563)
+**[681 I] not used
+
+      - program unit: GENVOBC
+   5142           ive=VOBJILIST(ICP,ivo,i)
+  IVO
+(file: edcfd.F, line:    5142)
+**[313 I] possibly no value assigned to this variable
+  IVO
+(file: edcfd.F, line:    5142)
+**[307 E] variable not defined
+  IVP
+(file: edcfd.F, line:    4677)
+**[307 E] variable not defined
+  JVE
+(file: edcfd.F, line:    5143)
+**[323 I] variable unreferenced
+
+      - program unit: GENEDGBC
+
+      - program unit: EDAIRO
+
+      - program unit: MFCONF
+
+      - program unit: EDSLDB
+  T20
+(file: edcfd.F, line:    8548)
+**[323 I] variable unreferenced
+
+      - program unit: EDSRC
+  T20
+(file: edcfd.F, line:    8830)
+**[323 I] variable unreferenced
+
+      - program unit: EDBLK
+  T20
+(file: edcfd.F, line:    9502)
+**[323 I] variable unreferenced
+
+      - program unit: HANDSHK
+
+      - program unit: PIKCELS
+
+      - program unit: PIKFACE
+  PIKFACE, dummy argument no  1 (BTYPE)
+(file: edcfd.F, line:    9990)
+**[557 I] dummy argument not used
+  PIKFACE, dummy argument no  2 (BNAME)
+(file: edcfd.F, line:    9990)
+**[557 I] dummy argument not used
+
+      - program unit: TOPBOT
+
+      - program unit: GRIDDEF
+  10331       ierr=0
+  IERR
+(file: edcfd.F, line:   10331)
+**[315 I] redefined before referenced
+
+      - program unit: ASKMFNOD
+  ASKMFNOD, dummy argument no  1 (IOPT)
+(file: edcfd.F, line:   10610)
+**[557 I] dummy argument not used
+
+      - program unit: ASKMFCON

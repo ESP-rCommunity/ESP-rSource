@@ -1,0 +1,73 @@
+*Constructions 2.1                              # thermophysical properties of coridor
+*date Wed Sep  8 12:29:26 2021                  # latest file modification
+# layers|air | emissivity |absorptivity| tmc | surface|surface     |construction 
+#       |gaps|inside other|inside other|index| index  |name        |name 
+     1     0   0.90   0.90   0.65   0.65   0    #   1  right        door
+     5     2   0.91   0.91   0.22   0.22   0    #   2  wall         gyp_blk_ptn
+     1     0   0.90   0.90   0.65   0.65   0    #   3  left         door
+     2     0   0.90   0.90   0.60   0.30   0    #   4  ceiling      ceiling
+     5     1   0.90   0.12   0.60   0.20   0    #   5  floor        susp_flr_re
+     1     0   0.90   0.90   0.65   0.65   0    #   6  door         door
+     3     1   0.91   0.91   0.22   0.22   0    #   7  ptn_corid    gyp_gyp_ptn
+     3     0   0.82   0.82   0.72   0.72   0    #   8  part_frame   insul_frame
+     3     1   0.83   0.83   0.05   0.05   1    #   9  part_glaz    dbl_glz
+     3     0   0.82   0.82   0.72   0.72   0    #  10  part_frameb  insul_frame
+     1     0   0.90   0.90   0.65   0.65   0    #  11  door_b       door
+     3     1   0.91   0.91   0.22   0.22   0    #  12  ptn_coridb   gyp_gyp_ptn
+     3     1   0.83   0.83   0.05   0.05   1    #  13  part_glazb   dbl_glz
+     3     1   0.91   0.91   0.22   0.22   0    #  14  filler       gyp_gyp_ptn
+# air gap layer positions and restances
+  2  0.170  4  0.170                            # for wall
+  3  0.170                                      # and for floor
+  2  0.170                                      # and for ptn_corid
+  2  0.170                                      # and for part_glaz
+  2  0.170                                      # and for ptn_coridb
+  2  0.170                                      # and for part_glazb
+  2  0.170                                      # and for filler
+# layer thermophysical properties
+# conduc-  | density |specific | thick- |dpnd|ref.| temp. |moisture|surface|layer
+# tivity   |         |heat     |ness(m) |type|temp|factor | factor |       |  
+     0.1900     700.0    2390.0  0.0250   0   0.00 0.00000 0.00000  #   1   1 oak
+     0.1900     950.0     840.0  0.0130   0   0.00 0.00000 0.00000  #   2   1 white gypboard
+     0.0000       0.0       0.0  0.0500   0   0.00 0.00000 0.00000  #       2 AIR
+     0.5100    1400.0    1000.0  0.1000   0   0.00 0.00000 0.00000  #       3 block inner
+     0.0000       0.0       0.0  0.0500   0   0.00 0.00000 0.00000  #       4 AIR
+     0.1900     950.0     840.0  0.0130   0   0.00 0.00000 0.00000  #       5 white gypboard
+     0.1900     700.0    2390.0  0.0250   0   0.00 0.00000 0.00000  #   3   1 oak
+     0.0400     250.0     840.0  0.1000   0   0.00 0.00000 0.00000  #   4   1 glasswool
+     0.0300     290.0    2000.0  0.0100   0   0.00 0.00000 0.00000  #       2 ceiling mineral
+    50.0000    7800.0     502.0  0.0040   0   0.00 0.00000 0.00000  #   5   1 steel
+     1.4000    2100.0     653.0  0.1400   0   0.00 0.00000 0.00000  #       2 heavy mix concrete
+     0.0000       0.0       0.0  0.0500   0   0.00 0.00000 0.00000  #       3 AIR
+     0.1500     800.0    2093.0  0.0190   0   0.00 0.00000 0.00000  #       4 chipboard
+     0.0600     186.0    1360.0  0.0060   0   0.00 0.00000 0.00000  #       5 Wilton
+     0.1900     700.0    2390.0  0.0250   0   0.00 0.00000 0.00000  #   6   1 oak
+     0.1900     950.0     840.0  0.0120   0   0.00 0.00000 0.00000  #   7   1 white gypboard
+     0.0000       0.0       0.0  0.0500   0   0.00 0.00000 0.00000  #       2 AIR
+     0.1900     950.0     840.0  0.0120   0   0.00 0.00000 0.00000  #       3 white gypboard
+   210.0000    2700.0     880.0  0.0040   0   0.00 0.00000 0.00000  #   8   1 grey cotd alum
+     0.0400      12.0     840.0  0.0800   0   0.00 0.00000 0.00000  #       2 glass fibre quilt
+   210.0000    2700.0     880.0  0.0040   0   0.00 0.00000 0.00000  #       3 grey cotd alum
+     0.7600    2710.0     837.0  0.0060   0   0.00 0.00000 0.00000  #   9   1 plate glass
+     0.0000       0.0       0.0  0.0120   0   0.00 0.00000 0.00000  #       2 AIR
+     0.7600    2710.0     837.0  0.0060   0   0.00 0.00000 0.00000  #       3 plate glass
+   210.0000    2700.0     880.0  0.0040   0   0.00 0.00000 0.00000  #  10   1 grey cotd alum
+     0.0400      12.0     840.0  0.0800   0   0.00 0.00000 0.00000  #       2 glass fibre quilt
+   210.0000    2700.0     880.0  0.0040   0   0.00 0.00000 0.00000  #       3 grey cotd alum
+     0.1900     700.0    2390.0  0.0250   0   0.00 0.00000 0.00000  #  11   1 oak
+     0.1900     950.0     840.0  0.0120   0   0.00 0.00000 0.00000  #  12   1 white gypboard
+     0.0000       0.0       0.0  0.0500   0   0.00 0.00000 0.00000  #       2 AIR
+     0.1900     950.0     840.0  0.0120   0   0.00 0.00000 0.00000  #       3 white gypboard
+     0.7600    2710.0     837.0  0.0060   0   0.00 0.00000 0.00000  #  13   1 plate glass
+     0.0000       0.0       0.0  0.0120   0   0.00 0.00000 0.00000  #       2 AIR
+     0.7600    2710.0     837.0  0.0060   0   0.00 0.00000 0.00000  #       3 plate glass
+     0.1900     950.0     840.0  0.0120   0   0.00 0.00000 0.00000  #  14   1 white gypboard
+     0.0000       0.0       0.0  0.0500   0   0.00 0.00000 0.00000  #       2 AIR
+     0.1900     950.0     840.0  0.0120   0   0.00 0.00000 0.00000  #       3 white gypboard
+*tmc YES                                        # optical properties:
+   3  DCF7671_06nb                              # layers in tmc type 1
+  0.611  0.583  0.534  0.384  0.170  0.760      # transmission @ 5 angles & visible tr.
+  0.157  0.172  0.185  0.201  0.202             # for each layer absorption @ 5 angles
+  0.001  0.002  0.003  0.004  0.005
+  0.117  0.124  0.127  0.112  0.077
+   0                                            # no alternative optics

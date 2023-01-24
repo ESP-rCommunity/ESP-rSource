@@ -1,0 +1,11 @@
+*HC_CTL                         # heat transfer control for zone-A
+*Date,Wed Sep  8 12:38:41 2021  # latest file modification
+*Days  1                        # number of control day types
+  1                             # number control intervals for all day types
+  6                             # number of surfaces
+# (Surf-1 Surf-2 Surf-3 Surf-4 ArrayA-Surf Surf-6)
+  0.00  24.00                   # start and end time of interval
+  1                             # fixed coefficients calculation control type
+*Doc,User supplied hc values
+ 50.000,50.000,50.000,50.000,-1.0000,50.000
+ 50.000,50.000,50.000,50.000,-1.0000,50.000

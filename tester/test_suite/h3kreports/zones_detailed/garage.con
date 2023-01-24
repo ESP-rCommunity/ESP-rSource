@@ -1,0 +1,50 @@
+*Constructions 2.1                              # thermophysical properties of garage
+*date Wed Sep  8 13:51:11 2021                  # latest file modification
+# layers|air | emissivity |absorptivity| tmc | surface|surface     |construction 
+#       |gaps|inside other|inside other|index| index  |name        |name 
+     5     1   0.90   0.90   0.93   0.65   0    #   1  main_share   ccht_wall_r
+     5     1   0.90   0.90   0.65   0.93   0    #   2  front_garage ccht_wall
+     5     1   0.90   0.90   0.65   0.93   0    #   3  side_wall    ccht_wall
+     5     1   0.90   0.90   0.93   0.65   0    #   4  garage_back  ccht_wall_r
+     5     1   0.90   0.90   0.65   0.65   0    #   5  garage_ceiln exp_flr
+     1     0   0.90   0.90   0.65   0.65   0    #   6  slab-on-grad slab_floor
+     3     0   0.90   0.90   0.50   0.50   0    #   7  garage_door  ext_doors
+# air gap layer positions and restances
+  4  0.170                                      # for main_share
+  2  0.170                                      # and for front_garage
+  2  0.170                                      # and for side_wall
+  4  0.170                                      # and for garage_back
+  4  0.170                                      # and for garage_ceiln
+# layer thermophysical properties
+# conduc-  | density |specific | thick- |dpnd|ref.| temp. |moisture|surface|layer
+# tivity   |         |heat     |ness(m) |type|temp|factor | factor |       |  
+     0.1500     700.0    1420.0  0.0120   0   0.00 0.00000 0.00000  #   1   1 Plywood 700d
+     0.0400      12.0     840.0  0.1400   0   0.00 0.00000 0.00000  #       2 Glass Fibre Quilt
+     0.1500     800.0    2093.0  0.0110   0   0.00 0.00000 0.00000  #       3 Chipboard
+     0.0000       0.0       0.0  0.0250   0   0.00 0.00000 0.00000  #       4 AIR
+     0.9600    2000.0     650.0  0.1000   0   0.00 0.00000 0.00000  #       5 Outer leaf brk
+     0.9600    2000.0     650.0  0.1000   0   0.00 0.00000 0.00000  #   2   1 Outer leaf brk
+     0.0000       0.0       0.0  0.0250   0   0.00 0.00000 0.00000  #       2 AIR
+     0.1500     800.0    2093.0  0.0110   0   0.00 0.00000 0.00000  #       3 Chipboard
+     0.0400      12.0     840.0  0.1400   0   0.00 0.00000 0.00000  #       4 Glass Fibre Quilt
+     0.1500     700.0    1420.0  0.0120   0   0.00 0.00000 0.00000  #       5 Plywood 700d
+     0.9600    2000.0     650.0  0.1000   0   0.00 0.00000 0.00000  #   3   1 Outer leaf brk
+     0.0000       0.0       0.0  0.0250   0   0.00 0.00000 0.00000  #       2 AIR
+     0.1500     800.0    2093.0  0.0110   0   0.00 0.00000 0.00000  #       3 Chipboard
+     0.0400      12.0     840.0  0.1400   0   0.00 0.00000 0.00000  #       4 Glass Fibre Quilt
+     0.1500     700.0    1420.0  0.0120   0   0.00 0.00000 0.00000  #       5 Plywood 700d
+     0.1500     700.0    1420.0  0.0120   0   0.00 0.00000 0.00000  #   4   1 Plywood 700d
+     0.0400      12.0     840.0  0.1400   0   0.00 0.00000 0.00000  #       2 Glass Fibre Quilt
+     0.1500     800.0    2093.0  0.0110   0   0.00 0.00000 0.00000  #       3 Chipboard
+     0.0000       0.0       0.0  0.0250   0   0.00 0.00000 0.00000  #       4 AIR
+     0.9600    2000.0     650.0  0.1000   0   0.00 0.00000 0.00000  #       5 Outer leaf brk
+     0.0600     160.0    2500.0  0.0150   0   0.00 0.00000 0.00000  #   5   1 Synthetic carpet
+     0.1400     600.0    1210.0  0.0250   0   0.00 0.00000 0.00000  #       2 Flooring
+     0.0400      12.0     840.0  0.1400   0   0.00 0.00000 0.00000  #       3 Glass Fibre Quilt
+     0.0000       0.0       0.0  0.1000   0   0.00 0.00000 0.00000  #       4 AIR
+     0.1500     560.0    2500.0  0.0170   0   0.00 0.00000 0.00000  #       5 Plywood
+     0.3800    1200.0     653.0  0.2500   0   0.00 0.00000 0.00000  #   6   1 Light mix conc
+     0.0430      91.3     836.8  0.0050   0   0.00 0.00000 0.00000  #   7   1 B5-1_IN_DENSE_INSULATION_0.025m
+     0.0300      30.0     837.0  0.0250   0   0.00 0.00000 0.00000  #       2 Polyurethane foam bd
+     0.0430      91.3     836.8  0.0050   0   0.00 0.00000 0.00000  #       3 B5-1_IN_DENSE_INSULATION_0.025m
+*tmc NONE                                       # all surfaces are opaque

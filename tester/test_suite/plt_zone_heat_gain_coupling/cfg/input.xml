@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<hierarchy>tree</hierarchy>
+	<dump_all_data>true</dump_all_data>
+	<time_step_averaging>false</time_step_averaging>
+	<report_startup_period_data>false</report_startup_period_data>
+	<output_dictionary>false</output_dictionary>
+	
+	<enable_xml_wildcards>true</enable_xml_wildcards>
+
+	<step_variable>*</step_variable>
+	<log_variable>building/zone_*/flux/*</log_variable>
+	<log_variable>building/zone_1/casual_gains/*</log_variable>
+	<log_variable>building/zone_*/surface_*/layer_*</log_variable>
+	<log_variable>building/zone_*/surface_*</log_variable>
+	<log_variable>*plant*</log_variable>
+
+</configuration>

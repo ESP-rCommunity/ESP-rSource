@@ -1,0 +1,97 @@
+*help_text aco
+
+*item aco aco_air_absorption
+'Air absorption has an influence for large volume.'
+'By default air absorption should always be take '
+'into account. This facility provides the possibility'
+'to assess the influence of the air absoption.'
+*enditem
+
+*item aco aco_air_properties
+'You can define a fixed air temperature and humidity'
+' or extract the information from a simulation results '
+*enditem
+
+*item aco air_temp_for_absorb
+'Defines the air temperature that will be used to'
+'calculate the air absorption. '
+*enditem
+
+*item aco air_rh_for_absorb
+'Defines the air relative humidity that will be used to'
+' calculate the air absorption. '
+*enditem
+
+*item aco air_file_for_temps
+'This permit to define which are the indoor climate '
+'conditions that will provide the lowest and higest '
+'air absorption, based on the scaning of a result file'
+'Currently the file must have the following format.'
+'Col 1: time    Col 2: air temperature    Col 3: RH'
+*enditem
+
+*item aco air_calc_high_or_low
+'You can calculate reveberation time based on the highest air'
+'absorption or the lowest absorption.'
+*enditem
+
+*item aco export_aco_predictions
+'Export current result in an ASCII file according '
+'to the format in the textual feedback. '
+
+*item aco model_cfg_file_name
+'The model configuration file holds the definition '
+'of the building/ plant to be simulated, including the'
+'names of all of the files required.'
+*enditem
+
+*item aco model_bcf_file_name
+'The building constructions file (BCF) holds the current'
+'description and data of all materials and construction.'
+'in the current project. For more information, please '
+' refer to the file EOS.bcf in the examplar of the   '
+'the EOS atrium the description of the structure'
+' '
+'If the file is not found then you will be asked for a new'
+'BCF file name.'
+*enditem
+
+*item aco include_occupants_dialog
+'To improve the accuracy of the reverberation time'
+'calculation you can include occupants and furniture in'
+'a zone. Currently the file has to be edited manually.'
+*enditem
+
+*item aco display_details_dialog
+'You can display the details of the zones surfaces'
+*enditem
+
+*item acoesp aco_zones_to_inclue
+'Pick one, several or All zones that must be included in'
+'the reverberation time calculation. The calculation will'
+'evaluated the performance over all the selected zones '
+'as it was corresponding to a single space. This allow to'
+'calculate the reverberation time of a space that is '
+'represented by several thermal zones (ex. atrium) '
+*enditem
+
+*item acoesp aco_constr_to_include
+'Pick one, several or All constructions for inclusion in'
+'the analysis from the list provided. '
+'You may choose them in any order. '
+*enditem
+
+*item readBCF aco_read_bcf_silent
+'As the BCF file is scanned the contents can be echoed to'
+'you so you can review the details.'
+*enditem
+
+*item readaco aco_read_aco_silent
+'As the acoustics file is scanned the contents can be echoed to'
+'you so you can review the details.'
+*enditem
+
+*item readaco aco_read_furn_silent
+'As the furniture file is scanned the contents can be echoed to'
+'you so you can review the details.'
+*enditem

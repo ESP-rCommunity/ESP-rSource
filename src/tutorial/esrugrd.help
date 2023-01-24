@@ -1,0 +1,770 @@
+*help_text grd
+
+*item bgrd1d 1D_node_def_menu
+'The node distribution menu allows the user to '
+'select the required discretisation scheme, and to '
+'detribute the nodes throughout the domain.'
+'  '
+'The available options are:'
+' 1   select the  discretisation scheme.'
+' a   (default) assign 2 nodes per each layer in the'
+'     building. '
+'  '
+' b   assign the number of nodes for a particular '
+'     layer in the building. (you must identify the'
+'     zone and the surface and then the layer)'
+'  '
+' c   automatic node distribution according to the'
+'     thickness and thermal diffusivity of each '
+'     layer.'
+'  '
+' d   replace a multi-layered construction with '
+'     a lumped construction.'
+' e   distribute the nodes throughout the building'
+'     according to the information given by a grid'
+'     distribution file (you will be asked for the'
+'     file name'
+' f   save the current grid distribution into a file'
+'     (you will be asked for the file name)'
+' g   delete an existing 1D gridding file
+'  '
+' !   list the nodes distribution throughout the '
+'     building.'
+' ?   display these help statements.'
+' -   return to the main simulator menu.'
+' Select the zone in which required layer is located. '
+' '
+*enditem
+
+*item bgrd1d nodes_per_layer
+' The number of nodes per layer should be at '
+' least (2). On the other hand, the the total '
+' number of nodes per surface should not '
+*enditem
+
+*item bgrd1d save_recent_changes
+'Recent changes to the model have not yet been saved'
+'to the configuration file. You should do this update'
+' '
+'AND you should ensure that no other ESP-r module is '
+'currently accessing this file. '
+*enditem
+
+*item bgrd1d variable_node_distr
+'The variable node distribution menu allows'
+'automatic distribution of grids throughout the'
+'building according to the values of layers  '
+'thickness and thermal diffusivity.'
+'  '
+'The user should, first, select the referance '
+'value for the Fourier number of the layers in '
+'the building. The acceptable range of Fourier'
+'numbers,and the expected time steps per hour '
+'should also be defined.'
+' '
+'The available options are:'
+' 2   set the dynamic gridding ON or OFF. This'
+'     option will be available only if the '
+'     automatic node distribution was invoked.'
+' a   set the minimum allowable Fourier number'
+'     below which a warning will be given (used
+'     to control the truncation error).'
+'  '
+' b   set the reference Fourier number for  '
+'     node distribution (used in the automatic node '
+'     distribution scheme so the nodes will be'
+'     distributed in such away that the Fourier'
+'     number for each layer will be approximately'
+'     equal to the reference Fourier number entered.'
+' '
+' c   set the maximum allowable Fourier number above    '
+'     which a warning will be given (used to control the '
+'     occurance of resonance during the simulation. '
+'     This limit is a function of the degree of'
+'     implicitness. The default value is calculated '
+'     based on the degree of implicitness.'
+'  '
+' d   set the required building time steps '
+'     per hour (equal to the real  building '
+'     time steps per hour, in order to asure the  '
+'     accuracy of the simulation.'
+'  '
+' e   invoke automatic node distribution '
+'     according to the layers thickness'
+'     and the values given by options (b & d).'
+' f   list the current Fourier number for all'
+'     the layers in the building.'
+' !   list the node distribution throughout'
+'     the building.'
+' ?   display these help statements.'
+' -   return to the nodes distribution menu.'
+' '
+' NB: If the thermo-physical properties of'
+'     any multi-layered construction were'
+'     modified by the control function (99),'
+'     then its node distribution will be '
+'     updated if the dynamic gridding was ON. '
+' '
+*enditem
+
+*item bgrd1d lumped_constr_menu
+' The lumped construction menu allows the'
+' replacement of a multi-layered construction by'
+' only three nodes, if the Biot number for that'
+' layer was <= 0.1.'
+' '
+' The available options are:'
+' a   assign the convective heat transfer coefficient'
+'     hc, value for a surface (you are asked to identify'
+'     the zone and surface)'
+'  '
+' b   assign common inside and outside (hc) value for all'
+'     surfaces in the building (you are asked to specify the'
+'     hc coefficient) 
+ '
+' c   assign the (hc) value for all surfaces in '
+'     the building according to the values given  '
+'     by a file (you are asked for the file name)'
+' '
+' d   save the current (hc) values in a file (you are asked'
+'     to specify a file name).
+'  '
+' e   replace all the multi-layered constructions '
+'     whose Biot number is <= 0.1 by only three'
+'     nodes.'
+'  '
+' f   list the current (hc) values for all '
+'     surfaces in the building.'
+'  '
+' h   list the last calculated Biot number values'
+'     for all surfaces in the building.'
+'  '
+' !   list the node distribution throughout the'
+'     building.'
+' ?   display these help statements. '
+' -   return to the nodes distribution menu. '
+' Select the zone in which required layer is located. '
+' '
+*enditem
+
+*item bgrd1d hc_distrib_not_found
+'Grd holds coefficients for heat distribution in'
+'in a file and there was a problem while trying to'
+'open the file that you supplied. '
+*enditem
+
+*item bgrd1m grd_hygric_menu
+'This menu can be used to define the hygric (moisture)'
+'nodal distribution and properties.'
+'  '
+'Options:'
+'  1:  Focus zone (1st step is to select a zone)'
+'  '
+'  a: assign number of nodes per layer in all surfaces'
+'     of the zone. Use at least 2 nodes per layer.'
+'  '
+'  b: assign number of nodes in a layer (you must select'
+'     a specific surface and then the number of nodes'
+'     per layer in that surface.'
+'  '
+'  c: detailed hygric properties are handled in a sub-menu'
+'  '
+'  x/y/z manage the 1D moisture file. You will be asked to'
+'     specify the file name before each of these operations.'
+'  '
+'  ! list node distribution (does what it says)'
+'  '
+'  ? help - this message'
+'  '
+'  - when exiting you will be asked whether the new data'
+'    files should be recorded in the model cfg file. Be'
+'    sure that no other application is using that file.'
+*enditem
+
+*item bgrd1m grd_hygric_detail_menu
+'  This menu can be used for defining the hygric'
+'  properties of construction layers.  It deals'
+'  with one layer at a time.'
+'  '
+'  1: Select a focus surface (from list)'
+'  2: Select a layer in the surface (from list)'
+'  '
+'  x: moisture permeability - index plus three coefficients'
+'  '
+'  y: moisture capacity - index plus three coefficients'
+'  '
+'  z: vapour diffusion - index plus one coefficient'
+'  '
+'  !  list properties'
+'  '
+'  ?  this help message'
+*enditem
+
+*item bgrd3d grd_3d_conduc_menu
+'This menu can be used to produce the required files'
+'by the simulator for multi-D simulation. It deals'
+'with a single zone at a time. The zone is divided'
+'into components (surfaces, edges, and corners)'
+'which are connected to each others via one or'
+'more of connection surfaces (surface-to-surface,'
+'surface-to-edge, edge-to-edge, and edge-to-corner).'
+'  '
+'Each surface can be defined to be lumped or '
+'discretised. However, only the discretised surfaces'
+'can be connected to other components. Edges and'
+'corners can be not defined, lumped, or discretised,'
+'as they do not exist in the zone model. Both lumped'
+'and discretised edges and corners can be connected'
+'to other components.'
+'     '
+'Connection surfaces can be activated (defined)'
+'or ignored (not defined). An activated connection'
+'surface should connect to components with the '
+'proper status.'
+'     '
+'The multi-gridding menu is the main menu for'
+'controlling the building constructions. In order to'
+'activate this menu the zone should be defined first.'
+'This will automaticaly produce a default 1D model '
+'(but in 3D configuration) for the selected zone. '
+'     '
+'By selecting option (5) a default 3D model will be'
+'produced for which all the gridding details of the'
+'edges and corners are related to the surfaces they'
+'are incontact with. To change the default 1D or 3D'
+'gridding options (2) and (3) can be used.'
+'     '
+'Instead of generating a model manually, the multi-D'
+'gridding details can be fed in via option (8).'
+'On the other hand the existing model can be '
+'saved for later use via option (7). Finally, the'
+'multi-gridding files (i.e., nodes coordinates,'
+'control volumes details, and connections '
+'infomations) can be produced (to be used later'
+'by BPS module) via option (6). Option (s) activates'
+'the menu for converting the multi-D gridding file'
+'from binary versions to ASCII and vice versa. This'
+'allows the manually edited, via any text editor,'
+'files to be used in producing the required multi-D'
+'gridding files.'
+*enditem
+
+*item bgrd3d grd_3d_conduc_warn
+'A check of the 3D description found no errors but'
+'did find some issues that generated warnings. Please'
+'review the warnings to see if you should continue.'
+*enditem
+
+*item bgrd3d grd_component_menu
+' The components menu allows the selection of the'
+' component type whose gridding details are to be'
+' modefied. Depending on your selection other menues'
+' will be activated.'
+' '
+*enditem
+
+*item bgrd3d grd_connect_menu
+' The connection surfaces menu allows the'
+' selection of the connection surface type '
+' whose gridding details are to be modified.'
+' Depending on your selection other menues'
+' will be activated.'
+*enditem
+
+*item bgrd3d surf_to_surf_menu
+' The surface-to-surface connection surfaces menu'
+' allows altering the status of the surface-to-'
+' surface connection surfaces'
+' '
+*enditem
+
+*item bgrd3d surf_to_edge_menu
+' The surface-to-edge connection surfaces menu'
+' allows altering the status of the surface-to-'
+' edge connection surfaces'
+*enditem
+
+*item bgrd3d edge_to_edge_menu
+' The edge-to-edge connection surfaces menu'
+' allows altering the status of the edge-to-'
+' edge connection surfaces'
+*enditem
+
+*item bgrd3d edge_to_corner_menu
+' The edge-to-corner connection surfaces menu'
+' allows altering the status of the edge-to-'
+' corner connection surfaces'
+*enditem
+
+*item bgrd3d grd_sel_zone_menu
+' Select the zone for which the multi-D gridding'
+' details are to be created/modified.'
+' '
+*enditem
+
+*item bgrd3d grd_3d_read_menu
+' Input the name for the zone file in which'
+' the multi-gridding configuration details exit.'
+' '
+*enditem
+
+*item bgrd3d grd_3d_cfg_file
+' Input the name for the zone file in which'
+' the multi-gridding configuration details are'
+' to be saved.'
+' '
+*enditem
+
+*item bgrdst grd_3d_mesh_menu
+' This menu can be used to produce the required files'
+' by BPS for 3D structured mesh SM) simulation. It'
+' deals with a single zone at a time (you will be asked'
+' to select the zone).'
+'  '
+' Only one structured mesh can be simulated at a time for '
+' the whole building.  Therefore, there can be only one'
+' imported component.'
+'  '
+' After selecting the zone, the local component indices'
+' are defined.  That is the 1D building constructions '
+' (local components) which will be represented by the'
+' SM scheme will should be cancled out (option 2).'
+' Then the SM is defined via option 3.'
+' Finally, the 3D SM configuration should be saved,'
+' via option 4, in a file (*.csm) which will called'
+' by the BPS.'
+' Alternatively, the SM configuration file can be'
+' imported directly via option 5.'
+'  '
+' When exiting this menu you will be asked to confirm an'
+' update to the model cfg file. If you say no the changes'
+' will not be registered.'
+*enditem
+
+*item bgrdst grd_component_status
+' The local components status menu allows altering'
+' the status of the local components between'
+' defined (D) and not defined (N)'
+*enditem
+
+*item bgrdst import_SM_menu
+' In order to define the imported component'
+' (structured mesh SM), the grid structure should'
+' be defined first via option 1.  Then the material'
+' properties and boundary surfaces can be defined'
+' via options 2 and 3, respectivily.'
+*enditem
+
+*item bgrdst grd_3D_mesh_defs
+' Steps in defining a mesh:'
+' 1: define the reference mesh width in meters'
+'    meters used as unit for the mesh widths.'
+' 2,3,4: the number of the last row, column, and layer.'
+' a,b,c: edit, divid, and delete mesh widths.'
+' '
+' Notes:'
+' 1. Rows, column, and layers have to be numbered in by'
+' odd numbers only.'
+' 2. The default coordinate system assumes the origin'
+' at the upper left corner of the screen. The row '
+' axes pointing down, the column axes pointing right,'
+' and the layer axes pointing inward.'
+' 3. The boundary and material interfaces need to'
+' correspond with grid lines.'
+' 4. The first and last (in all directions) grid lines'
+' should lie outside the object.'
+'                '
+' Notes:'
+' 5. It is easier to defined the problem based on '
+' minimum gridding required via option a, and after'
+' defining the material and boundary details, modify'
+' the gridding via options b and c which will '
+' automatically update the material and boundary'
+' details.'
+'  '
+'  Option 1:  This is the conversion factor for mesh width.'
+'    This factor will be multiplied by the mesh'
+'    width to get the real width in meters.'
+'  '
+'  Option 2: This is number of the last row.  The row number '
+'    should be odd.  Two extra row intervals should be'
+'    included, one between 1 to 3, and the other n-3 to n.'
+'    Where, n is the number entered.'
+'  '
+'  Option 3:  This is number of the last column (should be'
+'    an odd number.  Two extra column intervals should be'
+'    included, one between 1 to 3, and the other n-3 to n.'
+'    Where, n is the number entered.'
+'  '
+'  Option 4:  This is number of the last layer (should be'
+'    an odd number.  Two extra layer intervals should be'
+'    included, one between 1 to 3, and the other n-3 to n.'
+'    Where, n is the number entered.'
+'  '
+'  Option a: select which row column or layer to edit for'
+'    mesh widths.'
+'  '
+'  Option b: select which row column or layer to divide'
+'  ' 
+'  Option c: select which row column or layer to delete'
+'  ' 
+*enditem
+
+*item bgrdst 3d_mesh_width_edit
+'You are presented with the current widths of the mesh. Edit'
+'the numbers presented as required.'
+*enditem
+
+*item bgrdst 3d_mesh_divide
+'You are presented with the current divisions of the mesh. Edit'
+'the numbers presented as required.'
+*enditem
+
+*item bgrdst grd_3d_mesh_delete
+'You are presented with the current mesh. Select items to delete'
+'as required.'
+*enditem
+
+*item bgrdst grd_mesh_mat_geom
+' This menu should be used for defining the material'
+' geometry for the imported component.  This is done'
+' by defining homogeneous material boxes.  To define'
+' a box, the grid coordinates of two diagonally'
+' opposite corners of the box are required. The'
+' coordinates of the first corner should be smaller'
+' than those for the second corner.'
+' '
+' Notes:'
+' 1. new material boxes will superpose preceding ones.'
+' 2. a zero thermal conductivity can be used to'
+' indicate that there is no material in the box.'
+*enditem
+
+*item bgrdst manage_mat_geom
+' You should enter eight indices as follows:'
+' 1. surface number (within the current zone).'
+' 2. element number (within the above surface).'
+' 3, 4, and 5. row, column, and layer start.'
+' 6, 7, and 8. row, column, and layer end.'
+' '
+*enditem
+
+*item bgrdst grd_boundary_surf
+' This menu should be used for defining the boundary'
+' surfaces. To define a box, the grid coordinates'
+' of two diagonally opposite corners of the box are'
+' required. The coordinates of the first corner should'
+' be smaller than those for the second corner.  The'
+' general rule is that each portion of a surface'
+' lying either inside or on the surface of the'
+' defined box will get the specified condition.'
+' New boundary boxes will superpose preceding ones.'
+' '
+*enditem
+
+*item bgrdst grd_manage_boundary
+' You should enter eight indices as follows:'
+' 1. zone number.'
+' 2. surface number (-ve:external, +ve:internal).'
+' 3, 4, and 5. row, column, and layer start.'
+' 6, 7, and 8. row, column, and layer end.'
+' '
+*enditem
+
+*item bgrdst grd_multi_grid_zone
+' Select the zone for which the multi-D gridding'
+' details are to be created/modified.'
+' '
+*enditem
+ 
+*item bgrdst grd_draw_xsection
+' You should enter two indices as follows:'
+' 1. view axis (1: Row, 2: Column, and 3: Layer).'
+' 2. view level (even number).'
+' '
+*enditem
+
+*item g3dcmp grd_surf_grid_ctl
+'This menu controls the surface gridding. In order'
+'to activate this menu the surface should be selected'
+'first via option (1). Option (5) toggles the selected'
+'surface status (lumped/discretized). The minimum'
+'gridding lines are issued for a discretized surface.'
+' '
+' Additional horrizontal and vertical gridding lines'
+' can be produced via options (2) and (3), '
+' respectivily. The last created gridding line can'
+' be cancled by option (4). However, only the '
+'additional gridding lines can be cleared. To clear'
+'the default gridding lines change the status to '
+'lumped. Only the discretized surfaces are allowed'
+'to be connected to other components via connection'
+'surfaces and the lumped surfaces will be modeled'
+'as 1D.'
+'  '
+'  Option 1:  Select the surface whose multi-D gridding'
+'    details are to be edited or modified.'
+'  '
+'  Option 2:  Define the local x- and z-coordinates for '
+'    a point through which the horizontal gridding line is'
+'    required to be generated.' 
+'  '
+'  Option 3:  Define the local x- and z-coordinates for '
+'    a point through which a vertical gridding line is'
+'    required to be generated.' 
+*enditem
+
+*item g3dcmp grd_edge_gridding
+' This menu controls the edge gridding. In order'
+' to activate this menu the edge should be selected'
+' first via option (1). Option (2) allows the '
+' the definition of the gridding the z-direction.'
+' The construction details menu can be activated via'
+' option (3). Option (4) toggles the selected edge'
+' status (not defined/lumped/descritized). The status'
+' for all edges can be set to not defined, lupmed, or'
+' descritized via options (5), (6), or (7), '
+' respectivily. Both lumped and descritized edges '
+' can be connected to other components via connection'
+' surfaces.'
+'  '
+'  Option 1: select the edge whose multi-D gridding details'
+'    are to be edited or modified.'
+'  '
+'  Option 2: total z-length for the edge should not exceed
+'    the actual length.'
+*enditem
+
+*item g3dcmp grd_display_edges
+'The edge construction menu allows modefying the'
+'x- and y- gridding details via options (2) and (3),'
+'respectivily. Option (1) activates the required'
+'level (z- direction). Therefore, all the changes'
+'will be applied only to the activated level. The'
+'definition for the material types can be performed'
+'by selecting option (4) which allows defining the'
+'material number in the associated data base file.'
+' '
+' Option 2:  The total x-length for the edge should not exceed'
+'    the actual length.'
+'  '
+' Option 3: total y-length for the edge should not exceed
+'    the actual length.'
+'  '
+' Option 4: if you want to keep the current material answer NO'
+'    otherwise you can find one by browsing the database.'
+'    Enter the x- and y-coordinates for the lower left,'
+'    then upper right corners, assuming that the vertex'
+'    location is the origin, the horizontal axis'
+'    is the x-axis, and each gridding line is one unit.'
+'  '
+' Option 5: the source level should be within the current edge.'
+'    and the recieving (modified) level is the current'
+'    active level.'
+*enditem
+
+*item g3dcmp grd_corner_grdding
+'This menu controls the corner gridding. In order'
+'to activate this menu the corner should be selected'
+'first via the list in option (1).'
+'  '
+'  Option 2 allows the the definition of the gridding the '
+'    z-direction. The total length must not exceed the actual'
+'    length.'
+'  '
+'  Option 3 defines the construction details via a separate'
+'    menu/list.'
+'  '
+'  Option 4 toggles the selected corner status between '
+'    (not defined/lumped/descritized). '
+'  '
+'  Options 5/6/7 manage the status for all corners in the zone'
+'     Both lumped and descritized corners can be connected to'
+'     other components via connection'
+' '
+*enditem
+
+*item g3dcmp grd_corner_constr
+'The corner construction menu allows modefying the'
+'x- and y- gridding details via options (2) and (3),'
+'respectivily (following the standard rules).'
+'  '
+'  Option 1 activates the required level (z- direction).'
+'    Therefore, all the changes will be applied only to'
+'    the activated level.'
+'  '
+'  Option 4 definest for the material types can be performed'
+'    by material index in the associated data base file ( if'
+'    you want to keep the current material answer no.'
+' '
+*enditem
+
+*item g3dcmp grd_corner_constr
+' Enter the x- and y-coordinates for the lower left,'
+' then upper right corners, assuming that the vertex'
+' location is the origin, the horizontal axis'
+' is the x-axis, and each gridding line is one unit.'
+'  '
+' Option 1 changes to the next mesh level. This should be'
+'   within the current corner and the recieving (modified)'
+'   level is the current active level.'
+'  '
+' Option 2/3 grid length in X and Y lengths (standard rules)'
+'  '
+' Option 4  material selection (say no to keep the current'
+'   material otherwise select from the list. This is followed'
+'   by setting the rectangular limits the x and y coordinates'
+'   for the lower left, the upper right corners as mentioned'
+'   above.'
+'  '
+' Option 5: the source level should be within the current corner'
+'    and the recieving (modified) level is the current'
+'    active level.'
+*enditem
+
+*item g3dmsc multi_bin_ascii_conv
+' Support facilities menu allow the transformation'
+' of the multi-D files (nodes coordinates, control'
+' volumes, and connections) from binary format to'
+' ASCII and vice versa.'
+' '
+' For each of the options 1-8 you will be asked for the name'
+' of the original file and the converted file.'
+' '
+*enditem
+
+*item g3dmsh grd_CZCNVS_menu
+' Enter the name for the file in which the associated'
+' control volumes details to be saved. '
+' '
+' Options: '
+' 1. all boundary nodes will have convective,'
+'    and radiative boundary conditions.'
+' 2. all boundary nodes will have convective'
+'    boundary conditions. And only the surfaces'
+'    boundary nodes will have radtiative and'
+'    convective boundary conditions.'
+*enditem
+
+*item grd grd_model_cfg_file
+'The system configuration file holds the definition of'
+'the building/plant to be simulated, including the'
+'names of all of the files required. If the name given'
+'matches an existing file it will be read in.'
+' '
+*enditem
+
+*item grd_misc view_mesh_cord
+'If you want a detailed report on the MESH generated '
+'answer yes to the question. '
+*enditem
+
+*item grnd3d grd_3d_ground_menu
+'3D ground models can be created via this menu.'
+'First, the ground configuration should be defined.'
+'This can be achieved by two methods. Firstly, menu'
+'driven by (options x,y,z,b, and m). Secondly, by '
+'loading a ground configuration file (option 5).'
+'After that, the 3D ground files can be created by'
+'selecting (option 2). To dis-activate the 3D ground'
+'molling select (option 3).'
+'  '
+'The name of the 3D ground files are saved in the'
+'system configuration file. For that, each time the'
+'status or the files name is changed the '
+'configuration file should be updated.'
+'  '
+' X gridding - this is expecting up to six numbers which'
+'   represent the distance (m) for each interval.' 
+'  '
+' Y gridding - this is expecting up to six numbers which'
+'   represent the distance (m) for each interval.'
+'  '
+' Z gridding - this is expecting up to six numbers which'
+'   represent the distance (m) for each interval.'
+'  '
+' Surface boundary - the bounds of the domain are defined by'
+'   identifying 6 surfaces in the zone.'
+'  '
+' Material rectangle - you have the option to select a material'
+'   from the current materials database. You then provide 4'
+'   integers (see the wireframe) defining border for left down'
+'   right and up edges.'
+'  '
+' Manage 3D gridding files:'
+*enditem
+
+*item grnd3d write_data_reminder
+'Recent changes to the model might be lost if the '
+'data is not written to the configuration file. '
+'First check that no other ESP-r module is using '
+'this file. '
+*enditem
+
+*item grnd3d boundary_type_defs
+'By this menu the boundary types are defined for the'
+'six surfaces of the ground 3D model. First, the'
+'required boundary types should be created. Then,'
+'they should be assigned to the required surfaces.'
+'The default boundry is adiabatic. Hence, there is '
+'no need to define these boundaries.'
+'  '
+'Within any surface, the boundary is defined per'
+'increment. Therefore, different boundary types can'
+'be defined for a single surface.'
+' '
+'The available connection types are:'
+' 11  IZ  IN   with 3D node IN in zone IZ.'
+' 21  IZ  IS   convective and radiative boundary '
+'              similar to exterior boundary for surface'
+'              IS in zone IZ.'
+' 22  IZ  IS   convective only boundary similar to '
+'              exterier boundary for surface IS in '
+'              zone IZ.'
+' 31  IZ  IS   convective and radiative boundary '
+'              similar to interior boundary for '
+'              surface IS in zone IZ.'
+' 32  IZ  IS   convective only boundary similar to '
+'              interier boundary for surface IS in '
+'              zone IZ.'
+'>100 IS  IN   connected to 1D node in zone number'
+'              (type-100) surface IS and node IN.'
+' NB for connection type (11), if IZ=-1, then '
+'    connection is with a node in the 3D ground model.'
+' NB for connection type (31), the zone number must'
+'    be equal to the active zone.'
+'  '
+'The associated data for the boundary type is 3 numbers'
+'  '
+'Take care if you decide to delete an existing boundary type.'
+*enditem
+
+*item grnd3d grnd_boundary_surface
+'There are 6 boundary surfaces for the ground'
+'  '
+'Select one of the surfaces and then type in 4 numbers to represent'
+'the boundary type and borders...'
+'  '
+'There needs to be help written for this dialog....'
+*enditem
+
+*item grnd3d control_volumes_file
+'Enter the name for the file in which the associated'
+'control volumes details to be saved. '
+' '
+' connections details to be saved. '
+' nodes global coordintes to be saved. '
+' nodes initial temperature to be saved. '
+*enditem
+
+*item grnd3d 3d_ground_config_file
+'The ground configuration file << ... >> '
+'  '
+' << we really need some help text written for this >>'
+*enditem
+
+*item grnd3d
+'The 3D ground configuration file << ... >> '
+'  '
+' << we really need some help text written for this >>'
+*enditem

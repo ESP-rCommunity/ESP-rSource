@@ -1,0 +1,13 @@
+This directory contains test cases that exercise the co-simulator's ability to simulate a Hydronic system.
+
+This test case is based upon BESTEST case 600 and uses a minimal plant network consisting of a sending and receiving HCC (Hydronic Coupling Component) and a radiator in ESPr.
+
+The HVAC system in TRNSYS comprises: a boiler and pump activated by a controller trying to maintain a constant room temperature. 
+
+The three co-simulation variants are:
+
+B_1  an on/off controller is used to control the flow rate of a 	 	constant temperature stream of water
+      
+B_2  an on/off controller to control the temperature of a 	 	 	constant flow rate of water 
+
+B_4  a PID controller used to control the flow rate of water at a 	constant temperature 

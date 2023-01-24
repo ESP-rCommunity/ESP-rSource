@@ -1,0 +1,25 @@
+*Operations 2.1                               # zone operation definiions for basement
+*date Sun May  2 07:55:46 2021                # latest file modification
+# infiltration and ventilation notes:
+constant low infiltration all days
+# infiltration and ventilation controls:
+   0      0.00      0.00      0.00            # control index (no control of air flow), low middle high setpoints
+    1                                         # number of flow periods during weekday
+   0, 24,    0.300    0.000    0     0.00     # start, stop, infil ach ( 0.0235m^3/s)
+    1                                         # number of flow periods during saturday
+   0, 24,    0.300    0.000    0     0.00     # start, stop, infil ach ( 0.0235m^3/s)
+    1                                         # number of flow periods during sunday
+   0, 24,    0.300    0.000    0     0.00     # start, stop, infil ach ( 0.0235m^3/s)
+# casual gain type definitions:
+*casual
+# notes on casual gains:
+no casual gains
+# casual label     type-key-word   slot index & attributes
+*type Occupt       people             1   0   0
+*type Lights       lighting           2   0   0
+*type Equipt       equipment          3   0   0
+*end_type 
+# casual gain schedules:
+     0   # number of casual gains in day type: weekday     
+     0   # number of casual gains in day type: saturday    
+     0   # number of casual gains in day type: sunday      

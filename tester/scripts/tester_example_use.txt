@@ -1,0 +1,10 @@
+
+Examples of running tester.
+
+1. Use meld to present differences between /opt/esp-r/bin/bps and /opt/esp-r_test/bin/bps
+   and keep result in folder 'results_output'.
+
+./tester.pl -v --no_h3k --diff_data --diff_tool meld --databases /opt/esp-r/ /opt/esp-r_test/bin/bps /opt/esp-r/bin/bps --ref_loc /opt/esp-r_test/bin --test_loc /opt/esp-r/bin --save_results
+
+2. Do not invoke meld and run only the test models within 'ccht_benchmark'.
+./tester.pl -v --no_h3k --databases /opt/esp-r/ /opt/esp-r_test/bin/bps /opt/esp-r/bin/bps --ref_loc /opt/esp-r_test/bin --test_loc /opt/esp-r/bin --path ../test_suite/ccht_benchmark

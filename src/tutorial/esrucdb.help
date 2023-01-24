@@ -1,0 +1,28 @@
+*help_text ecdb
+
+*item cdb cdb_overview
+'The component database file holds the'
+'description of available components. If the name'
+'given matches an existing file, it will be read in'
+'and the components data will be available for'
+'listing and editing. If there is no such file then'
+'a new one will be created to hold data for new'
+'components.'
+*enditem
+
+*item cdb component_db_location
+'The components database file is typically held in'
+'/opt/esp-r/databases/components.db1'
+' '
+'Check that this folder exists in your ESP-r '
+'installation.'
+*enditem
+
+*item cdb component_db_missing
+'The components database file is typically held in'
+'/opt/esp-r/databases/components.db1'
+' '
+'Please check that this file or the file '
+'you have specified actually exist.'
+*enditem
+

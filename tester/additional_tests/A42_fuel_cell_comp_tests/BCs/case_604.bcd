@@ -1,0 +1,45 @@
+# boundary condition data file
+*bc_data_file 
+*version 0.1
+#-------------------------------------
+# period start date (DD/MM/YYYY)
+*period_start 9 1 2000
+#-------------------------------------
+# period frequency (seconds/sample)
+*frequency 3600
+#-------------------------------------
+# Boundary condition data.
+#
+# - data can be space/comma/tab separated
+# - First row contains column headers 
+# - Second row contains column units 
+# - Subsequent rows contail column data.
+#
+*data_header    Supply_temp	Supply_flow Auxburn_control
+*data_units     oC	         kg/s        (-)
+*data_start
+                50.         0.01        1.0
+                50.         0.01        1.0
+                50.         0.01        1.0
+                50.         0.01        1.0
+                50.         0.01        1.0
+                50.         0.01        1.0
+                50.         0.01        0.
+                50.         0.01        0.
+                30.         0.01        0.
+                30.         0.0028      0.
+                30.         0.0028      0.
+                30.         0.0028      0.
+                30.         0.0028      0.75
+                30.         0.0028      0.75
+                30.         0.0028      0.75
+                30.         0.0028      0.75
+                10.         0.0028      0.75
+                10.         0.0028      0.75
+                10.         0.0028      0.50
+                10.         0.0028      0.50
+                10.         0.0028      0.50
+                10.         0.0028      0.50
+                10.         0.0028      0.50
+                10.         0.0028      0.50
+*data_end

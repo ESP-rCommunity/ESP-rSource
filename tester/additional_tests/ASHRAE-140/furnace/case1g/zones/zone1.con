@@ -1,0 +1,25 @@
+# thermophysical properties of zone1 defined in ../zones/zone1.con
+# no of |air |surface(from geo)| multilayer construction
+# layers|gaps|  no.  name      | database name 
+     1,     0  #  1 wall-1       wall        
+     1,     0  #  2 wall-2       wall        
+     1,     0  #  3 wall-3       wall        
+     1,     0  #  4 wall-4       wall        
+     1,     0  #  5 roof         roof        
+     1,     0  #  6 floor        floor       
+# conduc-  |  density | specific | thick- |dpnd|  ref. |  temp. |moisture| surf|lyr
+# tivity   |          | heat     |ness(m) |type|  temp | factor | factor |     |  
+     0.0100,       0.1,       0.1,  1.0000,   0,   0.00, 0.00000, 0.00000  #  1   1
+     0.0100,       0.1,       0.1,  1.0000,   0,   0.00, 0.00000, 0.00000  #  2   1
+     0.0100,       0.1,       0.1,  1.0000,   0,   0.00, 0.00000, 0.00000  #  3   1
+     0.0100,       0.1,       0.1,  1.0000,   0,   0.00, 0.00000, 0.00000  #  4   1
+     0.0710,       0.1,       0.1,  0.0100,   0,   0.00, 0.00000, 0.00000  #  5   1
+     0.0100,       0.1,       0.1,  1.0000,   0,   0.00, 0.00000, 0.00000  #  6   1
+# for each surface: inside face emissivity
+ 0.0100000,0.0100000,0.0100000,0.0100000,0.0100000,0.0100000
+# for each surface: outside face emissivity
+ 0.0100000,0.0100000,0.0100000,0.0100000,0.0100000,0.0100000
+# for each surface: inside face solar absorptivity
+ 0.0100000,0.0100000,0.0100000,0.0100000,0.0100000,0.0100000
+# for each surface: outside face solar absorptivity
+ 0.0100000,0.0100000,0.0100000,0.0100000,0.0100000,0.0100000

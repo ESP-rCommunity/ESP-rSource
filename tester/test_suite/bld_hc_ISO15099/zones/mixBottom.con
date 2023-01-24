@@ -1,0 +1,21 @@
+*Constructions 2.1                              # thermophysical properties of mixBottom
+*date Wed Sep  8 12:40:38 2021                  # latest file modification
+# layers|air | emissivity |absorptivity| tmc | surface|surface     |construction 
+#       |gaps|inside other|inside other|index| index  |name        |name 
+     1     0   0.90   0.90   0.65   0.65   0    #   1  Wall-1       door
+     1     0   0.90   0.90   0.65   0.65   0    #   2  Wall-2       door
+     1     0   0.90   0.90   0.65   0.65   0    #   3  Wall-3       door
+     1     0   0.90   0.90   0.65   0.65   0    #   4  Wall-4       door
+     1     0   0.90   0.90   0.65   0.65   0    #   5  Top-5        door
+     1     0   0.90   0.90   0.65   0.65   0    #   6  Base-6       door
+# air gap layer positions and restances
+# layer thermophysical properties
+# conduc-  | density |specific | thick- |dpnd|ref.| temp. |moisture|surface|layer
+# tivity   |         |heat     |ness(m) |type|temp|factor | factor |       |  
+     0.1900     700.0    2390.0  0.0250   0   0.00 0.00000 0.00000  #   1   1 Oak (radial)
+     0.1900     700.0    2390.0  0.0250   0   0.00 0.00000 0.00000  #   2   1 Oak (radial)
+     0.1900     700.0    2390.0  0.0250   0   0.00 0.00000 0.00000  #   3   1 Oak (radial)
+     0.1900     700.0    2390.0  0.0250   0   0.00 0.00000 0.00000  #   4   1 Oak (radial)
+     0.1900     700.0    2390.0  0.0250   0   0.00 0.00000 0.00000  #   5   1 Oak (radial)
+     0.1900     700.0    2390.0  0.0250   0   0.00 0.00000 0.00000  #   6   1 Oak (radial)
+*tmc NONE                                       # all surfaces are opaque

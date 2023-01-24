@@ -1,0 +1,147 @@
+*help_text ish
+
+*item ashrae ashrae_window_calcs
+'The ASHRAE window shading calculator is a simplified'
+'method applicable to rectangular windows with overhangs'
+'and/or side fins.'
+*enditem
+
+*item ashrae ashrae_window_orien
+'The azimuth angle is measured clockwise from North'
+'in degrees.'
+*enditem
+
+*item graph ish_graphing_hour
+'The hour is specified as an integer between 1 and 24.'
+*enditem
+
+*item inscon inscon_actions
+'The insolation calculations require a number of directives.'
+'If these have not been embedded in the zone geometry file'
+'you will be asked to supply them here.'
+*enditem
+
+*item ish ish_model_cfg_file
+'The model configuration file holds the definition'
+'of the building and/or plant to be simulated.'
+*enditem
+
+*item ish view_from_sun_or_plan
+'The site plan shows building zones (marked `target`) and'
+'obstructions (marked `Bn`. where `n` is the block number).'
+'The view from the sun places the viewer at a distance'
+'so that what cannot be seen is in shadow.'
+*enditem
+
+*item ish what_kind_of_sky
+'Two sky conditions are offered: an isotropic sky with'
+'uniform diffuse radiation and an anisotropic skys where'
+'the diffuse radiation varies with sky posiion.'
+*enditem
+
+*item ish request_to_overwrite
+'The zone shading & insolation file already contains'
+'data. New computations can overwrite these data or'
+'another file can be created. If a shading calculation'
+'has been completed and an insolation calculation has'
+'just completed, select the `update` option.'
+*enditem
+
+*item ish synopsis_period_options
+'The month is specified as an integer with'
+'January = 1, February = 2 etc.'
+*enditem
+
+*item ish graph_period_options
+'The month is specified as an integer with'
+'January = 1, February = 2 etc.'
+*enditem
+
+*item ish export_import_choice
+'The zone shading & insolation data is also held'
+'in a ASCII file for transfer between different'
+'computer operating systems.'
+*enditem
+
+*item ish request_to_delete_trans
+'Zone transitional shading files are used to'
+'store intermediate shading results for use in'
+'subsequent insolation analysis. These are not'
+'subsequently required and may be deleted.'
+*enditem
+
+*item ish obs_not_associated
+'Where obstructions are not associated with a zone,'
+'external surface shading cannot be calculated. Note'
+'that it is still possible to calculate internal'
+'surface insolation for such a zone.'
+*enditem
+
+*item ish warning_about_bin_mat
+'It is likely that the materials db associated with'
+'this model is for use under a different operating'
+'system. ESP-r will attempt to locate an ASCII version'
+'of this database and, if successful, convert it to'
+'the required binary format if you agree.'
+*enditem
+
+*item miscel diffuse_shading_request
+'Shading of diffuse radiation is included by default.'
+'In some cases (e.g. validation tests), it may be'
+'necessary to exclude this effect.'
+*enditem
+
+*item miscel surface_selection_notes
+'A shading analysis computes the time varying patterns'
+'of shading on external model surfaces, while an insolation'
+'analysis tracks the solar radiation entering a zone'
+'to determine the distribution between internal surfaces'
+'When selecting the surfaces to include, note that:'
+' + for shading, the surface must be external and belong'
+'   to a zone that has an associated obstructions file;'
+' + for insolation, the source surface must be transparent.'
+*enditem
+
+*item miscel specify_day_of_year
+'The date is either specified as a day and month number or'
+'as a year day (Jan 1 = 1, Dec 31 = 365).'
+*enditem
+
+*item shdcon shdcon_actions
+'As shading calculations are undertake, directives will be'
+'required if these are not recorded in the zone geometry file).'
+*enditem
+
+*item sifile data_already_exists
+'This month has previously been processed. You may wish to'
+'overwrite the shading data with the new calculation results.'
+'Alternatively, it is possible to replace the zone shading &'
+'insolation file with a new one.'
+*enditem
+
+*item sifile data_already_exists
+'This month has previously been processed. You may wish to'
+'overwrite the insolation data with the new calculation results.'
+'Alternatively, it is possible to replace the zone shading &'
+'insolation file with a new one.'
+*enditem
+
+*item sifops respond_to_empty_shd
+'The current zone shading & insolation file is empty. Data can'
+'be imported from an ascii version of the file (if one exists),'
+'otherwise select the `cancel` option.'
+*enditem
+
+*item sifops month_of_interest
+'Specify the month as an integer, where Jan=1, Dec=12 etc.'
+*enditem
+
+*item sifops ish_export_list_shading
+'This menu presents shading data manipulation options.'
+*enditem
+
+*item sifops shading_export_options
+'Transfers shading data to a text file to allow editing'
+'or transfer to a computer with a different operating'
+'system. The data may be subsequently re-imported.'
+*enditem

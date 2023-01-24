@@ -1,0 +1,1636 @@
+Building/Ground_Reflectivity:
+
+     Reflectivity of the ground for solar radiation dimensionless
+
+Climate/SnowDepth:
+
+     Depth of the snow on the ground cm
+
+boundry_conditions/h2_dryer/linear_interpolation:
+
+     Boundary condition data: linearly-interpolated values (W)
+
+boundry_conditions/h2_dryer/step_interpolation:
+
+     Boundary condition data: step-interpolated values (W)
+
+boundry_conditions/h2_stove/linear_interpolation:
+
+     Boundary condition data: linearly-interpolated values (W)
+
+boundry_conditions/h2_stove/step_interpolation:
+
+     Boundary condition data: step-interpolated values (W)
+
+building/all_zones/energy_balance/net:
+
+     Energy balance in building (Gains + Plant interaction - Loads; all zones). (W)
+
+building/all_zones/envelope/all_components/heat_loss:
+
+     Heat lost through all components of envelope (all zones) (W)
+
+building/all_zones/envelope/all_components/net_flux:
+
+     Net heat lost through all components of envelope (all zones) (W)
+
+building/all_zones/envelope/ceilings/heat_gain:
+
+     Heat gain from surroundings through ceilings (all zones)  (W)
+
+building/all_zones/envelope/ceilings/heat_loss:
+
+     Heat loss to surroundings through ceilings (all zones)  (W)
+
+building/all_zones/envelope/ceilings/net_flux:
+
+     Net heat loss to surroundings through ceilings (all zones)  (W)
+
+building/all_zones/envelope/floors/heat_gain:
+
+     Heat gain from surroundings through overhanging floors (all zones)  (W)
+
+building/all_zones/envelope/floors/heat_loss:
+
+     Heat loss to surroundings through overhanging floors (all zones)  (W)
+
+building/all_zones/envelope/floors/net_flux:
+
+     Net heat loss to surroundings through overhanging floors (all zones)  (W)
+
+building/all_zones/envelope/foundation/heat_gain:
+
+     Heat gain from ground through below-grade elements (all zones)   (W)
+
+building/all_zones/envelope/foundation/heat_loss:
+
+     Heat loss to ground through below-grade elements (all zones)   (W)
+
+building/all_zones/envelope/foundation/net_flux:
+
+     Net heat loss to ground through below-grade elements (all zones)   (W)
+
+building/all_zones/envelope/infiltration/heat_gain:
+
+     Heat gain from surroundings via infiltration (all zones)   (W)
+
+building/all_zones/envelope/infiltration/heat_loss:
+
+     Heat loss to surroundings via infiltration (all zones)   (W)
+
+building/all_zones/envelope/infiltration/net_flux:
+
+     Net heat loss to surroundings via infiltration (all zones)   (W)
+
+building/all_zones/envelope/walls/heat_gain:
+
+     Heat gain from surroundings through walls (all zones)  (W)
+
+building/all_zones/envelope/walls/heat_loss:
+
+     Heat loss to surroundings through walls (all zones) (W)
+
+building/all_zones/envelope/walls/net_flux:
+
+     Net heat loss to surroundings through walls (all zones) (W)
+
+building/all_zones/envelope/windows/heat_gain:
+
+     Heat gain from surroundings through windows (all zones, excluding insolation)  (W)
+
+building/all_zones/envelope/windows/heat_loss:
+
+     Heat loss to surroundings through windows  (all zones)  (W)
+
+building/all_zones/envelope/windows/net_flux:
+
+     Net heat loss to surroundings through windows  (all zones)  (W)
+
+building/all_zones/insolation/adverse:
+
+     Solar gains admitted through glazing that increase cooling loads (all zones). (W)
+
+building/all_zones/insolation/total:
+
+     Total solar gains admitted through glazing (all zones). (W)
+
+building/all_zones/insolation/useful:
+
+     Solar gains admitted through glazing that supplant heating loads (all zones). (W)
+
+building/all_zones/internal_gains/adverse:
+
+     Sensible heat transfer from occupants, lights and equipment that increase cooling loads (all zones). (W)
+
+building/all_zones/internal_gains/total:
+
+     Sensible heat transfer from occupants, lights and equipment (all zones). (W)
+
+building/all_zones/internal_gains/useful:
+
+     Sensible heat transfer from occupants, lights and equipment that supplant heating loads (all zones). (W)
+
+building/all_zones/supplied_energy/cooling:
+
+     Total amount of cooling supplied to the building (all zones). (W)
+
+building/all_zones/supplied_energy/heating:
+
+     Total amount of heat supplied to the building (all zones). (W)
+
+building/all_zones/supplied_energy/net_flux:
+
+     Net heat/cooling supplied to the building (all zones). (W)
+
+building/all_zones/thermal_loads/cooling/total:
+
+     Total cooling load ( heat gain through envelope +  ventilation and infiltration loads; all zones ) (W)
+
+building/all_zones/thermal_loads/heating/total:
+
+     Total heating load ( heat loss through envelope +  ventilation and infiltration loads; all zones) (W)
+
+building/all_zones/thermal_loads/net:
+
+     Total net load ( heat gain through envelope +  ventilation and infiltration loads; all zones ) (W)
+
+building/day/future:
+
+     Day corresponding to future simulation time row (day)
+
+building/day/present:
+
+     Day corresponding to current simulation time row (days)
+
+building/day_number/future:
+
+     Day # corresponding to future simulation day (day)
+
+building/day_number/present:
+
+     Day # corresponding to current simulation day (days)
+
+building/hour/future:
+
+     Hour corresponding to future simulation hour (hours)
+
+building/hour/present:
+
+     Hour corresponding to current simulation hour (hours)
+
+building/month:
+
+     Month corresponding to current simulation time row  (-)
+
+building/spmatl/WATSUN-PV_multic/misc_data/diffuse_incident_irradiance/unit_area:
+
+     Diffuse incident irradiance on PV module (per square-meter) (W/m2)
+
+building/spmatl/WATSUN-PV_multic/misc_data/direct_incident_irradiance/unit_area:
+
+     Direct incident irradiance on PV module (per square-meter) (W/m2)
+
+building/spmatl/WATSUN-PV_multic/misc_data/eff_irradiance/unit_area:
+
+     Effective irradiance on PV module (per square meter) W/m2
+
+building/spmatl/WATSUN-PV_multic/misc_data/incidence_angle:
+
+     Angle of incidence -
+
+building/spmatl/WATSUN-PV_multic/misc_data/pv_power:
+
+     Power produced PV module (W)
+
+building/spmatl/WATSUN-PV_multic/misc_data/total_incident_irradiance/total:
+
+     Total incident irradiance on PV module (W)
+
+building/spmatl/WATSUN-PV_multic/misc_data/total_incident_irradiance/unit_area:
+
+     Total incident irradiance on PV module (per square-meter) (W/m2)
+
+building/spmatl/WATSUN-PV_multic/misc_data/transmittance_0:
+
+     Transmittance at 0 degrees -
+
+building/spmatl/WATSUN-PV_multic/misc_data/transmittance_60:
+
+     Transmittance at 60 degrees (-)
+
+building/spmatl/WATSUN-PV_multic/misc_data/transmittance_inc_angle:
+
+     Transmittance at angle of incidence -
+
+building/time/future:
+
+     Time corresponding to future simulation time row (hours)
+
+building/time/present:
+
+     Time corresponding to current simulation time row (hours)
+
+building/time_step:
+
+     Time step # (-)
+
+building/zone_01/air_point/temperature:
+
+     Zone air-point temperature (oC)
+
+building/zone_01/envelope/all_components/heat_gain:
+
+     Heat gained through all components of envelope (W)
+
+building/zone_01/envelope/all_components/heat_loss:
+
+     Heat lost through all components of envelope (W)
+
+building/zone_01/envelope/all_components/net_flux:
+
+     Net flux through all components of envelope (W)
+
+building/zone_01/envelope/ceilings/heat_gain:
+
+     Contribution of ceilings to cooling load (W)
+
+building/zone_01/envelope/ceilings/heat_loss:
+
+     Contribution of Ceilings to heating load (W)
+
+building/zone_01/envelope/ceilings/net_flux:
+
+     Contribution of ceilings to net heat flux (W)
+
+building/zone_01/envelope/floors/heat_gain:
+
+     Contribution of overhanging floors to cooling load (W)
+
+building/zone_01/envelope/floors/heat_loss:
+
+     Contribution of overhanging floors to heating load (W)
+
+building/zone_01/envelope/floors/net_flux:
+
+     Contribution of overhanging floors to net heat flux (W)
+
+building/zone_01/envelope/foundation/heat_gain:
+
+     Contribution of foundation to cooling load (W)
+
+building/zone_01/envelope/foundation/heat_loss:
+
+     Contribution of foundation to heating load (W)
+
+building/zone_01/envelope/foundation/net_flux:
+
+     Contribution of foundation to net heat flux (W)
+
+building/zone_01/envelope/infiltration/air_changes_per_hour:
+
+     Zone infiltration (air changes per hour) (ACH)
+
+building/zone_01/envelope/infiltration/heat_gain:
+
+     Contribution of infiltration to cooling load (W)
+
+building/zone_01/envelope/infiltration/heat_loss:
+
+     Contribution of infiltration to heating load (W)
+
+building/zone_01/envelope/infiltration/net_flux:
+
+     Contribution of infiltration to net heat flux (W)
+
+building/zone_01/envelope/walls/heat_gain:
+
+     Contribution of walls to cooling load (W)
+
+building/zone_01/envelope/walls/heat_loss:
+
+     Contribution of walls to heating load (W)
+
+building/zone_01/envelope/walls/net_flux:
+
+     Contribution of walls to net heat flux (W)
+
+building/zone_01/envelope/windows/heat_gain:
+
+     Contribution of windows to cooling load (W)
+
+building/zone_01/envelope/windows/heat_loss:
+
+     Contribution of windows to heating load (W)
+
+building/zone_01/envelope/windows/net_flux:
+
+     Contribution of windows to net heat flux (W)
+
+building/zone_01/insolation/adverse:
+
+     Solar gains admitted through glazing that increase cooling loads (W)
+
+building/zone_01/insolation/total:
+
+     Solar gains admitted through glazing  (W)
+
+building/zone_01/insolation/useful:
+
+     Solar gains admitted through glazing that supplant heating loads (W)
+
+building/zone_01/internal_gains/adverse:
+
+     Internal heat gains(convective + radiant) that increase cooling loads (W)
+
+building/zone_01/internal_gains/total:
+
+     Internal heat gains(convective + radiant) (W)
+
+building/zone_01/internal_gains/useful:
+
+     Internal heat gains(convective + radiant) that supplant heating loads (W)
+
+building/zone_01/supplied_energy/cooling:
+
+     Zone net heat extraction  (W)
+
+building/zone_01/supplied_energy/heating:
+
+     Zone net heat injection  (W)
+
+building/zone_01/supplied_energy/net:
+
+     Zone net heat injection/extraction  (W)
+
+building/zone_01/surface_01/AmbRT:
+
+     Ambient radiant temperature for exterior surface (oC)
+
+building/zone_01/surface_01/HCe:
+
+     External side convective coefficient (W/(m2 K))
+
+building/zone_01/surface_01/HCi:
+
+     Internal side convective coefficient (W/(m2 K))
+
+building/zone_01/surface_01/ext_surf_temperature:
+
+     Temperature on exterior face (oC)
+
+building/zone_01/surface_01/heat_flux/above_grade/net:
+
+     Heat transfer through building envelope (above-grade) (W)
+
+building/zone_01/surface_01/node_01/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_01/node_02/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_01/node_03/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_01/node_04/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_01/node_05/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_01/node_06/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_01/node_07/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_01/node_08/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_01/plant_containment_flux:
+
+     Plant containment radiant heat flux at surface (W)
+
+building/zone_01/surface_01/temperature:
+
+     Temperature on zone inside face (oC)
+
+building/zone_01/surface_02/AmbRT:
+
+     Ambient radiant temperature for exterior surface (oC)
+
+building/zone_01/surface_02/HCe:
+
+     External side convective coefficient (W/(m2 K))
+
+building/zone_01/surface_02/HCi:
+
+     Internal side convective coefficient (W/(m2 K))
+
+building/zone_01/surface_02/ext_surf_temperature:
+
+     Temperature on exterior face (oC)
+
+building/zone_01/surface_02/heat_flux/above_grade/net:
+
+     Heat transfer through building envelope (above-grade) (W)
+
+building/zone_01/surface_02/node_01/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_02/node_02/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_02/node_03/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_02/node_04/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_02/node_05/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_02/node_06/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_02/node_07/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_02/node_08/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_02/plant_containment_flux:
+
+     Plant containment radiant heat flux at surface (W)
+
+building/zone_01/surface_02/temperature:
+
+     Temperature on zone inside face (oC)
+
+building/zone_01/surface_03/AmbRT:
+
+     Ambient radiant temperature for exterior surface (oC)
+
+building/zone_01/surface_03/HCe:
+
+     External side convective coefficient (W/(m2 K))
+
+building/zone_01/surface_03/HCi:
+
+     Internal side convective coefficient (W/(m2 K))
+
+building/zone_01/surface_03/ext_surf_temperature:
+
+     Temperature on exterior face (oC)
+
+building/zone_01/surface_03/heat_flux/above_grade/net:
+
+     Heat transfer through building envelope (above-grade) (W)
+
+building/zone_01/surface_03/node_01/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_03/node_02/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_03/node_03/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_03/node_04/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_03/node_05/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_03/node_06/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_03/node_07/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_03/node_08/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_03/plant_containment_flux:
+
+     Plant containment radiant heat flux at surface (W)
+
+building/zone_01/surface_03/temperature:
+
+     Temperature on zone inside face (oC)
+
+building/zone_01/surface_04/AmbRT:
+
+     Ambient radiant temperature for exterior surface (oC)
+
+building/zone_01/surface_04/HCe:
+
+     External side convective coefficient (W/(m2 K))
+
+building/zone_01/surface_04/HCi:
+
+     Internal side convective coefficient (W/(m2 K))
+
+building/zone_01/surface_04/ext_surf_temperature:
+
+     Temperature on exterior face (oC)
+
+building/zone_01/surface_04/heat_flux/above_grade/net:
+
+     Heat transfer through building envelope (above-grade) (W)
+
+building/zone_01/surface_04/node_01/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_04/node_02/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_04/node_03/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_04/node_04/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_04/node_05/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_04/node_06/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_04/node_07/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_04/node_08/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_04/plant_containment_flux:
+
+     Plant containment radiant heat flux at surface (W)
+
+building/zone_01/surface_04/temperature:
+
+     Temperature on zone inside face (oC)
+
+building/zone_01/surface_05/AmbRT:
+
+     Ambient radiant temperature for exterior surface (oC)
+
+building/zone_01/surface_05/HCe:
+
+     External side convective coefficient (W/(m2 K))
+
+building/zone_01/surface_05/HCi:
+
+     Internal side convective coefficient (W/(m2 K))
+
+building/zone_01/surface_05/ext_surf_temperature:
+
+     Temperature on exterior face (oC)
+
+building/zone_01/surface_05/heat_flux/above_grade/net:
+
+     Heat transfer through building envelope (above-grade) (W)
+
+building/zone_01/surface_05/node_01/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_05/node_02/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_05/node_03/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_05/node_04/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_05/node_05/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_05/node_06/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_05/plant_containment_flux:
+
+     Plant containment radiant heat flux at surface (W)
+
+building/zone_01/surface_05/temperature:
+
+     Temperature on zone inside face (oC)
+
+building/zone_01/surface_06/AmbRT:
+
+     Ambient radiant temperature for exterior surface (oC)
+
+building/zone_01/surface_06/HCe:
+
+     External side convective coefficient (W/(m2 K))
+
+building/zone_01/surface_06/HCi:
+
+     Internal side convective coefficient (W/(m2 K))
+
+building/zone_01/surface_06/ext_surf_temperature:
+
+     Temperature on exterior face (oC)
+
+building/zone_01/surface_06/heat_flux/above_grade/net:
+
+     Heat transfer through building envelope (above-grade) (W)
+
+building/zone_01/surface_06/node_01/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_06/node_02/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_06/node_03/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_06/node_04/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_06/node_05/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_06/node_06/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_06/node_07/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_06/node_08/temperature:
+
+     Temperature at node within multilayer construction (oC)
+
+building/zone_01/surface_06/plant_containment_flux:
+
+     Plant containment radiant heat flux at surface (W)
+
+building/zone_01/surface_06/temperature:
+
+     Temperature on zone inside face (oC)
+
+building/zone_01/thermal_loads/cooling/total:
+
+     Total cooling load ( heat gain trough envelope +  ventilation and infiltration loads ) (W)
+
+building/zone_01/thermal_loads/heating/total:
+
+     Total heating load ( heat loss trough envelope +  ventilation and infiltration loads ) (W)
+
+building/zone_01/thermal_loads/net_load:
+
+     Net load ( heat gain/loss trough envelope +  ventilation and infiltration loads ) (W)
+
+climate/ambient_air_tsat:
+
+     ambient air saturation temperature (oC)
+
+climate/cloud_cover:
+
+     Climate cloud cover (fraction)
+
+climate/dry_bulb_temperature:
+
+     Climate dry-bulb temperature (oC)
+
+climate/relative_humidity:
+
+     Climate relative humidity (%)
+
+climate/sky_temperature:
+
+     Climate sky temperature (oC)
+
+climate/sky_temperature_depression:
+
+     Climate sky temperature depression (K)
+
+climate/solar/diffuse_horizontal_radiation:
+
+     Climate diffuse horizontal solar radiation (W/m2)
+
+climate/solar/direct_normal_radiation:
+
+     Climate direct normal solar radiation (W/m2)
+
+climate/wind/direction:
+
+     Climate wind direction (degrees)
+
+climate/wind/velocity:
+
+     Climate wind velocity (m/s)
+
+control/re_h2_ctl/net_power_balance/PEMFC_active:
+
+     Balance on AC bus when PEMFC is responding to loads (W)
+
+control/re_h2_ctl/net_power_balance/battery_charge:
+
+     Balance on AC bus when PV power is used to charge battery (W)
+
+control/re_h2_ctl/net_power_balance/battery_discharge:
+
+     Balance on AC bus when battery is responding to loads (W)
+
+control/re_h2_ctl/net_power_balance/electrolyzer_active:
+
+     Balance on AC bus when PV power is used to produce H2  (W)
+
+electrical_net/generation/offsite_coincident:
+
+     Total offsite generation coincident with occupant load (W)
+
+electrical_net/generation/offsite_generation:
+
+     Total offsite electrical generation (W)
+
+electrical_net/generation/onsite_generation:
+
+     Total onsite electrical generation (W)
+
+electrical_net/generation/total_generation:
+
+     Total onsite+offsite electrical generation (W)
+
+electrical_net/grid/export:
+
+     Surplus electricity exported go grid (W)
+
+electrical_net/grid/import:
+
+     Net balance on electrical grid (W)
+
+electrical_net/grid/net_balance:
+
+     Net electricity balance (W)
+
+electrical_net/hybrid_components/PEMFC/flux:
+
+     Electrical network hybrid component net electrical power  (W)
+
+electrical_net/hybrid_components/compressor/flux:
+
+     Electrical network hybrid component net electrical power  (W)
+
+electrical_net/hybrid_components/electrolyzer/flux:
+
+     Electrical network hybrid component net electrical power  (W)
+
+electrical_net/hybrid_components/pump-1-ac/flux:
+
+     Electrical network hybrid component net electrical power  (W)
+
+electrical_net/hybrid_components/pump-2-ac/flux:
+
+     Electrical network hybrid component net electrical power  (W)
+
+electrical_net/hybrid_components/pv-source/flux:
+
+     Electrical network hybrid component net electrical power  (W)
+
+electrical_net/loads/HVAC_load:
+
+     HVAC load on electrical network (W)
+
+electrical_net/loads/external_load:
+
+     Load on electrical network from off-site sources (W)
+
+electrical_net/loads/occupant_load:
+
+     Occupant-driven load on electrical network (W)
+
+electrical_net/loads/total_load:
+
+     Total load on electrical network (W)
+
+electrical_net/nodes/node_001/generation/reactive:
+
+     Electrical network node: reactive generation (W)
+
+electrical_net/nodes/node_001/generation/real:
+
+     Electrical network node: real generation (W)
+
+electrical_net/nodes/node_001/load/reactive:
+
+     Electrical network node: reactive load (W)
+
+electrical_net/nodes/node_001/load/real:
+
+     Electrical network node: real load (W)
+
+electrical_net/nodes/node_001/transmission/reactive:
+
+     Electrical network node: reactive transmission (W)
+
+electrical_net/nodes/node_001/transmission/real:
+
+     Electrical network node: real transmission (W)
+
+electrical_net/nodes/node_001/voltage/angle:
+
+     Electrical network node: V angle (radians)
+
+electrical_net/nodes/node_001/voltage/magnitude:
+
+     Electrical network node: V magnitude (Volts)
+
+electrical_net/nodes/node_002/generation/reactive:
+
+     Electrical network node: reactive generation (W)
+
+electrical_net/nodes/node_002/generation/real:
+
+     Electrical network node: real generation (W)
+
+electrical_net/nodes/node_002/load/reactive:
+
+     Electrical network node: reactive load (W)
+
+electrical_net/nodes/node_002/load/real:
+
+     Electrical network node: real load (W)
+
+electrical_net/nodes/node_002/transmission/reactive:
+
+     Electrical network node: reactive transmission (W)
+
+electrical_net/nodes/node_002/transmission/real:
+
+     Electrical network node: real transmission (W)
+
+electrical_net/nodes/node_002/voltage/angle:
+
+     Electrical network node: V angle (radians)
+
+electrical_net/nodes/node_002/voltage/magnitude:
+
+     Electrical network node: V magnitude (Volts)
+
+electrical_net/nodes/node_003/generation/reactive:
+
+     Electrical network node: reactive generation (W)
+
+electrical_net/nodes/node_003/generation/real:
+
+     Electrical network node: real generation (W)
+
+electrical_net/nodes/node_003/load/reactive:
+
+     Electrical network node: reactive load (W)
+
+electrical_net/nodes/node_003/load/real:
+
+     Electrical network node: real load (W)
+
+electrical_net/nodes/node_003/transmission/reactive:
+
+     Electrical network node: reactive transmission (W)
+
+electrical_net/nodes/node_003/transmission/real:
+
+     Electrical network node: real transmission (W)
+
+electrical_net/nodes/node_003/voltage/angle:
+
+     Electrical network node: V angle (radians)
+
+electrical_net/nodes/node_003/voltage/magnitude:
+
+     Electrical network node: V magnitude (Volts)
+
+electrical_net/nodes/node_004/generation/reactive:
+
+     Electrical network node: reactive generation (W)
+
+electrical_net/nodes/node_004/generation/real:
+
+     Electrical network node: real generation (W)
+
+electrical_net/nodes/node_004/load/reactive:
+
+     Electrical network node: reactive load (W)
+
+electrical_net/nodes/node_004/load/real:
+
+     Electrical network node: real load (W)
+
+electrical_net/nodes/node_004/transmission/reactive:
+
+     Electrical network node: reactive transmission (W)
+
+electrical_net/nodes/node_004/transmission/real:
+
+     Electrical network node: real transmission (W)
+
+electrical_net/nodes/node_004/voltage/angle:
+
+     Electrical network node: V angle (radians)
+
+electrical_net/nodes/node_004/voltage/magnitude:
+
+     Electrical network node: V magnitude (Volts)
+
+electrical_net/nodes/node_005/generation/reactive:
+
+     Electrical network node: reactive generation (W)
+
+electrical_net/nodes/node_005/generation/real:
+
+     Electrical network node: real generation (W)
+
+electrical_net/nodes/node_005/load/reactive:
+
+     Electrical network node: reactive load (W)
+
+electrical_net/nodes/node_005/load/real:
+
+     Electrical network node: real load (W)
+
+electrical_net/nodes/node_005/transmission/reactive:
+
+     Electrical network node: reactive transmission (W)
+
+electrical_net/nodes/node_005/transmission/real:
+
+     Electrical network node: real transmission (W)
+
+electrical_net/nodes/node_005/voltage/angle:
+
+     Electrical network node: V angle (radians)
+
+electrical_net/nodes/node_005/voltage/magnitude:
+
+     Electrical network node: V magnitude (Volts)
+
+electrical_net/power_only_components/DC-AC-inv/flux:
+
+     Electrical network power only component: electrical power (W)
+
+electrical_net/power_only_components/DC-AC-inv/misc_data/PCU_efficiency:
+
+     Efficiency of PCU (-)
+
+electrical_net/power_only_components/DC-AC-inv/misc_data/PCU_power_input:
+
+     Power input to PCU (W)
+
+electrical_net/power_only_components/DC-AC-inv/misc_data/PCU_power_loss:
+
+     Power loss from PCU (W)
+
+electrical_net/power_only_components/DC-AC-inv/misc_data/PCU_power_output:
+
+     Power output from PCU (W)
+
+electrical_net/power_only_components/PV-DC-DC/flux:
+
+     Electrical network power only component: electrical power (W)
+
+electrical_net/power_only_components/PV-DC-DC/misc_data/PCU_efficiency:
+
+     Efficiency of PCU (-)
+
+electrical_net/power_only_components/PV-DC-DC/misc_data/PCU_power_input:
+
+     Power input to PCU (W)
+
+electrical_net/power_only_components/PV-DC-DC/misc_data/PCU_power_loss:
+
+     Power loss from PCU (W)
+
+electrical_net/power_only_components/PV-DC-DC/misc_data/PCU_power_output:
+
+     Power output from PCU (W)
+
+electrical_net/power_only_components/battery/flux:
+
+     Electrical network power only component: electrical power (W)
+
+electrical_net/power_only_components/battery/misc_data/battery_DOD:
+
+     Battery depth of discharge (-)
+
+electrical_net/power_only_components/battery/misc_data/battery_SOC:
+
+     Battery state of charge (%)
+
+electrical_net/power_only_components/battery/misc_data/battery_bad_treatment_flag:
+
+     Battery abuse flag (-)
+
+electrical_net/power_only_components/battery/misc_data/battery_control_scenario:
+
+     Battery control scenario (-)
+
+electrical_net/power_only_components/battery/misc_data/battery_current:
+
+     Battery current (A)
+
+electrical_net/power_only_components/battery/misc_data/battery_heater_power:
+
+     Battery heater power (W)
+
+electrical_net/power_only_components/battery/misc_data/battery_internal_heat:
+
+     Battery internal heat (W)
+
+electrical_net/power_only_components/battery/misc_data/battery_life_use_factor:
+
+     Battery life use factor (-)
+
+electrical_net/power_only_components/battery/misc_data/battery_life_used:
+
+     Battery life used (years)
+
+electrical_net/power_only_components/battery/misc_data/battery_life_used_cum:
+
+     Cumulative battery life used (years)
+
+electrical_net/power_only_components/battery/misc_data/battery_load:
+
+     Load on the battery (W)
+
+electrical_net/power_only_components/battery/misc_data/battery_mand_charge_cycle:
+
+     Battery mandatory charge cycle (-)
+
+electrical_net/power_only_components/battery/misc_data/battery_mand_charge_phase:
+
+     Battery mandatory charge phase (-)
+
+electrical_net/power_only_components/battery/misc_data/battery_mand_charge_phase_increase:
+
+     Battery mandatory charge phase increase (-)
+
+electrical_net/power_only_components/battery/misc_data/battery_max_charge_power:
+
+     Battery max charge power (W)
+
+electrical_net/power_only_components/battery/misc_data/battery_max_discharge_power:
+
+     Battery max discharge power (W)
+
+electrical_net/power_only_components/battery/misc_data/battery_max_heater_power:
+
+     Battery max heater power (W)
+
+electrical_net/power_only_components/battery/misc_data/battery_max_power:
+
+     Battery max power (W)
+
+electrical_net/power_only_components/battery/misc_data/battery_mode:
+
+     Battery mode of operation (-)
+
+electrical_net/power_only_components/battery/misc_data/battery_power_balance:
+
+     Battery power balance (W)
+
+electrical_net/power_only_components/battery/misc_data/battery_system_charge_load:
+
+     Charge load on battery system (W)
+
+electrical_net/power_only_components/battery/misc_data/battery_system_demand:
+
+     Demand on battery system (W)
+
+electrical_net/power_only_components/battery/misc_data/battery_system_discharge_load:
+
+     Discharge load on battery system (W)
+
+electrical_net/power_only_components/battery/misc_data/battery_system_load:
+
+     Load on battery system (W)
+
+electrical_net/power_only_components/battery/misc_data/battery_temp:
+
+     Battery temperature (oC)
+
+electrical_net/power_only_components/battery/misc_data/battery_time_since_last_full_charge:
+
+     Battery time since last full charge (hours)
+
+electrical_net/power_only_components/battery/misc_data/battery_voltage:
+
+     Battery operating voltage (V)
+
+electrical_net/power_only_components/elec-DC-DC/flux:
+
+     Electrical network power only component: electrical power (W)
+
+electrical_net/power_only_components/elec-DC-DC/misc_data/PCU_power_input:
+
+     Power input to PCU (W)
+
+electrical_net/power_only_components/elec-DC-DC/misc_data/PCU_power_loss:
+
+     Power loss from PCU (W)
+
+electrical_net/power_only_components/elec-DC-DC/misc_data/PCU_power_output:
+
+     Power output from PCU (W)
+
+electrical_net/power_only_components/elec-load/flux:
+
+     Electrical network power only component: electrical power (W)
+
+electrical_net/power_only_components/elec_load/elec_H2_loads:
+
+     Total H2 loads (W)
+
+electrical_net/power_only_components/elec_load/elec_load_adjusted:
+
+     Adjusted E-load (W)
+
+electrical_net/power_only_components/elec_load/elec_load_profile:
+
+     Original E-load (W)
+
+electrical_net/power_only_components/pem-dc-dc/flux:
+
+     Electrical network power only component: electrical power (W)
+
+electrical_net/power_only_components/pem-dc-dc/misc_data/PCU_power_input:
+
+     Power input to PCU (W)
+
+electrical_net/power_only_components/pem-dc-dc/misc_data/PCU_power_loss:
+
+     Power loss from PCU (W)
+
+electrical_net/power_only_components/pem-dc-dc/misc_data/PCU_power_output:
+
+     Power output from PCU (W)
+
+plant/PEMFC/misc_data/average/heat_output:
+
+     Hydrogen PEMFC: thermal output, averaged over time step (W)
+
+plant/PEMFC/misc_data/average/power/AC:
+
+     Hydrogen PEMFC: AC power generation, averaged over time step (W)
+
+plant/PEMFC/misc_data/average/power/DC:
+
+     Hydrogen PEMFC: DC power generation, averaged over time step (W)
+
+plant/PEMFC/misc_data/average/skin_losses:
+
+     Hydrogen PEMFC: skin losses, averaged over timestep (W)
+
+plant/PEMFC/misc_data/control/scheme:
+
+     Hydrogen PEMFC: control scheme (-)
+
+plant/PEMFC/misc_data/control/signal:
+
+     Hydrogen PEMFC: signal from external controller (-)
+
+plant/PEMFC/misc_data/hydrogen/demand/LHV_flow_rate:
+
+     Hydrogen PEMFC: LHV flow rate hydrogen requested  by unit (W)
+
+plant/PEMFC/misc_data/hydrogen/demand/mass_flow_rate:
+
+     Hydrogen PEMFC: hydrogen mass flow rate requested by unit (kg/s)
+
+plant/PEMFC/misc_data/hydrogen/supply/LHV_flow_rate:
+
+     Hydrogen PEMFC: LHV flow rate of supplied hydrogen  (W)
+
+plant/PEMFC/misc_data/hydrogen/supply/mass_flow_rate:
+
+     Hydrogen PEMFC: mass flow rate of supplied hydrogen  (kg/s)
+
+plant/PEMFC/misc_data/operating_mode/cool_down:
+
+     Hydrogen PEMFC: time spent in cool down (s)
+
+plant/PEMFC/misc_data/operating_mode/normal_operation:
+
+     Hydrogen PEMFC: time spent in normal operation (s)
+
+plant/PEMFC/misc_data/operating_mode/standby:
+
+     Hydrogen PEMFC: time spent in standby (s)
+
+plant/PEMFC/misc_data/operating_mode/startup:
+
+     Hydrogen PEMFC: time spent in startup (s)
+
+plant/PEMFC/misc_data/stack/current:
+
+     Hydrogen PEMFC: Stack current, averaged over time step (amps)
+
+plant/PEMFC/misc_data/stack/voltage:
+
+     Hydrogen PEMFC: Stack operating voltage (V)
+
+plant/PEMFC/node_1/connection_1/hydrogen_flow:
+
+     Plant component node connection Hydrogen flow (kg/s)
+
+plant/PEMFC/node_1/connection_1/temperature:
+
+     Plant component node connection temperature (oC)
+
+plant/PEMFC/node_1/hydrogen_flow:
+
+     Plant component node first-phase flow (kg/s)
+
+plant/PEMFC/node_1/temperature:
+
+     Plant component node temperature (oC)
+
+plant/PEMFC/node_2/connection_1/temperature:
+
+     Plant component node connection temperature (oC)
+
+plant/PEMFC/node_2/connection_1/water_flow:
+
+     Plant component node connection water flow (kg/s)
+
+plant/PEMFC/node_2/temperature:
+
+     Plant component node temperature (oC)
+
+plant/PEMFC/node_2/water_flow:
+
+     Plant component node first-phase flow (kg/s)
+
+plant/compressor/misc_data/electricalWork:
+
+     Compressor power consumption (W)
+
+plant/compressor/misc_data/heatFlow:
+
+     Compressor heat generation (W)
+
+plant/compressor/misc_data/mechanicalWork:
+
+     Compressor work requirement (W)
+
+plant/compressor/node_1/connection_1/hydrogen_flow:
+
+     Plant component node connection Hydrogen flow (kg/s)
+
+plant/compressor/node_1/connection_1/temperature:
+
+     Plant component node connection temperature (oC)
+
+plant/compressor/node_1/hydrogen_flow:
+
+     Plant component node first-phase flow (kg/s)
+
+plant/compressor/node_1/temperature:
+
+     Plant component node temperature (oC)
+
+plant/electrolyzer/misc_data/AC_aux_power:
+
+     AC power consumed by auxiliary equipment (W)
+
+plant/electrolyzer/misc_data/AC_power_demand:
+
+     AC power demand of electrolyzer (W)
+
+plant/electrolyzer/misc_data/DC_aux_power:
+
+     DC power consumed by auxiliary equipment (W)
+
+plant/electrolyzer/misc_data/DC_power_demand:
+
+     DC power demand of electrolyzer (W)
+
+plant/electrolyzer/misc_data/H2O_flow_kgs:
+
+     Net consumption rate of H2O (kg/s)
+
+plant/electrolyzer/misc_data/H2_flow_kgs:
+
+     Net production rate of H2 (kg/s)
+
+plant/electrolyzer/misc_data/O2_flow_kgs:
+
+     Net production rate of O2 (kg/s)
+
+plant/electrolyzer/misc_data/Qcool_present:
+
+     Heat transfer to cooling water (W)
+
+plant/electrolyzer/misc_data/Qinlet_water_htg:
+
+     Energy required to heat inlet water (W)
+
+plant/electrolyzer/misc_data/Qinternal_present:
+
+     Internal heat generated by electrolyser (W)
+
+plant/electrolyzer/misc_data/Qloss_present:
+
+     Ambient heat loss (W)
+
+plant/electrolyzer/misc_data/Tinlet_water:
+
+     Temperature of inlet water (C)
+
+plant/electrolyzer/misc_data/control_signal:
+
+     Power available for input to electrolyzer  (W)
+
+plant/electrolyzer/misc_data/elec_efficiency:
+
+     Electrical efficiency of electrolyzer (-)
+
+plant/electrolyzer/misc_data/max_stack_power:
+
+     Maximum power input to electrolyzer stack (W)
+
+plant/electrolyzer/misc_data/op_mode:
+
+     Operating mode of electrolyzer (-)
+
+plant/electrolyzer/misc_data/operating_signal:
+
+     Electrolyzer operating signal (on/off) (-)
+
+plant/electrolyzer/misc_data/stack_power:
+
+     Power consumed by electrolyzer stack (W)
+
+plant/electrolyzer/misc_data/standby_signal:
+
+     Electrolyzer standby signal (on/off) (-)
+
+plant/electrolyzer/misc_data/total_aux_power:
+
+     Total power consumed by auxiliary equipment (W)
+
+plant/electrolyzer/node_1/hydrogen_flow:
+
+     Plant component node first-phase flow (kg/s)
+
+plant/electrolyzer/node_1/temperature:
+
+     Plant component node temperature (oC)
+
+plant/electrolyzer/node_2/connection_1/temperature:
+
+     Plant component node connection temperature (oC)
+
+plant/electrolyzer/node_2/connection_1/water_flow:
+
+     Plant component node connection water flow (kg/s)
+
+plant/electrolyzer/node_2/temperature:
+
+     Plant component node temperature (oC)
+
+plant/electrolyzer/node_2/water_flow:
+
+     Plant component node first-phase flow (kg/s)
+
+plant/electrolyzer/node_3/temperature:
+
+     Plant component node temperature (oC)
+
+plant/electrolyzer/node_3/water_flow:
+
+     Plant component node first-phase flow (kg/s)
+
+plant/h2-storage/misc_data/hydrogen_charge_rate:
+
+     Compressed gas cylinder: rate of charge (kg/s)
+
+plant/h2-storage/misc_data/hydrogen_deficit_EXP:
+
+     Compressed gas cylinder: H2 deficit (EXP) (kg/s)
+
+plant/h2-storage/misc_data/hydrogen_deficit_IMP:
+
+     Compressed gas cylinder: H2 deficit (IMP) (kg/s)
+
+plant/h2-storage/misc_data/hydrogen_discharge_rate:
+
+     Compressed gas cylinder: rate of discharge (kg/s)
+
+plant/h2-storage/misc_data/mass/future:
+
+     Compressed gas cylinder: hydrogen mass at future time-row (kg)
+
+plant/h2-storage/misc_data/mass/present:
+
+     Compressed gas cylinder: hydrogen mass at present time-row (kg)
+
+plant/h2-storage/misc_data/pressure/future:
+
+     Compressed gas cylinder: gas pressure at future time-row  (kPa)
+
+plant/h2-storage/misc_data/pressure/present:
+
+     Compressed gas cylinder: gas pressure at present time-row  (kPa)
+
+plant/h2-storage/misc_data/vent_H2_rate:
+
+     Compressed gas cylinder: rate at which excess hydrogen is vented (kg/s)
+
+plant/h2-storage/node_1/connection_1/hydrogen_flow:
+
+     Plant component node connection Hydrogen flow (kg/s)
+
+plant/h2-storage/node_1/connection_1/temperature:
+
+     Plant component node connection temperature (oC)
+
+plant/h2-storage/node_1/hydrogen_flow:
+
+     Plant component node first-phase flow (kg/s)
+
+plant/h2-storage/node_1/temperature:
+
+     Plant component node temperature (oC)
+
+plant/h2_dryer/misc_data/H2_app_demand:
+
+     Hydrogen demand of appliance (kg/s)
+
+plant/h2_dryer/misc_data/H2_app_load:
+
+     Hydrogen appliance electric load (W)
+
+plant/h2_dryer/node_1/hydrogen_flow:
+
+     Plant component node first-phase flow (kg/s)
+
+plant/h2_dryer/node_1/temperature:
+
+     Plant component node temperature (oC)
+
+plant/h2_stove/misc_data/H2_app_demand:
+
+     Hydrogen demand of appliance (kg/s)
+
+plant/h2_stove/misc_data/H2_app_load:
+
+     Hydrogen appliance electric load (W)
+
+plant/h2_stove/node_1/hydrogen_flow:
+
+     Plant component node first-phase flow (kg/s)
+
+plant/h2_stove/node_1/temperature:
+
+     Plant component node temperature (oC)
+
+plant/pipe-1/node_1/connection_1/temperature:
+
+     Plant component node connection temperature (oC)
+
+plant/pipe-1/node_1/connection_1/water_flow:
+
+     Plant component node connection water flow (kg/s)
+
+plant/pipe-1/node_1/temperature:
+
+     Plant component node temperature (oC)
+
+plant/pipe-1/node_1/water_flow:
+
+     Plant component node first-phase flow (kg/s)
+
+plant/pipe-2/node_1/connection_1/temperature:
+
+     Plant component node connection temperature (oC)
+
+plant/pipe-2/node_1/connection_1/water_flow:
+
+     Plant component node connection water flow (kg/s)
+
+plant/pipe-2/node_1/temperature:
+
+     Plant component node temperature (oC)
+
+plant/pipe-2/node_1/water_flow:
+
+     Plant component node first-phase flow (kg/s)
+
+plant/pump-1/misc_data/energy_input:
+
+     WCH pump: Energy input (W)
+
+plant/pump-1/node_1/connection_1/temperature:
+
+     Plant component node connection temperature (oC)
+
+plant/pump-1/node_1/connection_1/water_flow:
+
+     Plant component node connection water flow (kg/s)
+
+plant/pump-1/node_1/temperature:
+
+     Plant component node temperature (oC)
+
+plant/pump-1/node_1/water_flow:
+
+     Plant component node first-phase flow (kg/s)
+
+plant/pump-2/misc_data/energy_input:
+
+     WCH pump: Energy input (W)
+
+plant/pump-2/node_1/connection_1/temperature:
+
+     Plant component node connection temperature (oC)
+
+plant/pump-2/node_1/connection_1/water_flow:
+
+     Plant component node connection water flow (kg/s)
+
+plant/pump-2/node_1/temperature:
+
+     Plant component node temperature (oC)
+
+plant/pump-2/node_1/water_flow:
+
+     Plant component node first-phase flow (kg/s)
+
+total_fuel_use/electricity/all_end_uses/quantity:
+
+     Total amount of electricity used on site. (kWh/s)
+
+total_fuel_use/hard_wood/all_end_uses/quantity:
+
+     Total amount of hard wood used on site. (tonne/s)
+
+total_fuel_use/mixed_wood/all_end_uses/quantity:
+
+     Total amount of mixed wood used on site. (tonne/s)
+
+total_fuel_use/natural_gas/all_end_uses/quantity:
+
+     Total amount of natural gas used on site. (m3/s)
+
+total_fuel_use/oil/all_end_uses/quantity:
+
+     Total amount of oil used on site. (l/s)
+
+total_fuel_use/propane/all_end_uses/quantity:
+
+     Total amount of propane used on site. (m3/s)
+
+total_fuel_use/soft_wood/all_end_uses/quantity:
+
+     Total amount of soft wood used on site. (tonne/s)
+
+total_fuel_use/wood_pellets/all_end_uses/quantity:
+
+     Total amount of wood pellets used on site. (tonne/s)
+

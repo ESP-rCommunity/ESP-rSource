@@ -1,0 +1,352 @@
+*help_text pdb
+
+*item pc_manip pdb_list_options_menu
+'The plant components database can be listed: '
+' Sequential      : by code number'
+' Alphabetical    : by plant descriptions'
+' Defined         : user supplied list'
+' Unordered:      : as in the library'
+' '
+'To create an ASCII version of the current (binary)'
+'plant component database: '
+'  Choose [a To file], supply a file name then '
+'  select the unordered listing option.'
+'The ACII file will hold plant component entries'
+'when a sorted list option is selected from the menu.'
+*enditem
+
+*item pc_manip pdb_list_ascii_fail
+'It was not possible to write the ASCII file. Please'
+'check whether you have permission to write in that '
+'folder and whether you have sufficient disk space.'
+*enditem
+
+*item pc_manip pdb_list_ascii_overwrite
+'The current contents of the ASCII file will be '
+'overwittten if you say yes.  '
+*enditem
+
+*item pc_manip pdb_ascii_write_pause
+'A pause to look at the report... '
+*enditem
+
+*item pc_manip pdb_is_confused
+'Pdb is confused. The component search failed. If you'
+'want to try again say no to this question. '
+*enditem
+
+*item pc_manip pdb_ok_to_delete
+'Chance to not delete the component. '
+*enditem
+
+*item pc_manip pdb_is_confused
+'Pdb is confused. It could not finish writing the file'
+'and this is an option to exit the application. '
+*enditem
+
+*item pcedit pdb_generic_type_descr
+'The generic type describes the group under which a '
+'component comes under. For instance, a water pump '
+'generic type is used for both centrifugal and '
+'reciprocating water pumps.'
+'A maximum of 40 characters may be used.'
+*enditem
+
+*item pcedit pdb_new_component_descr
+'The component description gives an explanation of a '
+'component such as a name and any relevant information'
+'to uniquely identify a component.'
+'A maximum of 80 characters may be used.'
+*enditem
+
+*item pcedit pdb_new_component_code
+'The compnent code is an integer value which is used'
+'in ESRUbps to point to corresponding coefficient'
+*enditem
+
+*item pcedit pdb_matrix_change_ok
+'Note: only an expert will want to change the matrix'
+'so you probably want to say no. '
+*enditem
+
+*item pcedit pdb_matrix_change_which
+'Please provide an index of the coefficient you want to change.'
+*enditem
+
+*item pcedit pdb_matrix_change_list'
+'Give a list of integer values which represent the'
+'position of non-zero matrix coefficients. '
+'For example the following matrix contains 2 non-'
+'zero coefficients:'
+'     |  X  0  | '
+'     |  0  X  | '
+'the positions of the non-zero corfficients are'
+' 1 and 4.'
+*enditem
+
+*item pcedit matrix_change_connect
+'Note: only an expert will want to change the matrix'
+'connectivity so you probably want to say no. '
+'If you say yes then you will be asked for the index of the'
+'node you wish to change.'
+' '
+'Then you will be asked about the connectivity of that node:'
+'  The connectivity value indicates how many'
+'  connections are expected by a node. '
+'  For example if a node expects to recieve 2 connec-'
+'  tions then a value of 2 is specified for it.'
+*enditem
+
+*item pcedit pdb_matrix_var_index
+'Note: only an expert will want to change the matrix'
+'variable indices so you probably want to say no. '
+'If you say yes then you will be asked for the index of the'
+'node to change.'
+*enditem
+
+*item pcedit pdb_state_variable_index
+'The state variable index indicates the function-'
+'ality of a plant component model and the nature'
+'of a node.  The following are supported: '
+' '
+'       Energy     Energy&1st phase     Energy&2 phase'
+'        only        mass balance        mass balances'
+'water    0              10                   20'
+'air      1              11                   21'
+'solid    9              19                   29'
+*enditem
+
+*item pcedit pdb_meta_component_index
+'Note: only an expert will want to change the matrix'
+'variable indices so you probably want to say no. '
+' '
+'If you say yes then you will be asked for a component code'
+'number (a meta component comprises a number of components'
+'which exist in database). In order to identify'
+'these components, their code numbers must be'
+*enditem
+
+*item pcedit pdb_meta_connect_change
+'Note: only experts want to change the component'
+'inter-connections so you probably want to say no.'
+' '
+'If you say yes then you will be asked which connection to'
+'change followed by a formatted description using:'
+'C1  N1  CT  C2  N2  MDR  MISC1  MISC2'
+' C1   : Sending component'
+' N1   : Sending node'
+' CT   : Connection type'
+' C2   : Receiving component'
+' N2   : Receiving node'
+' MDR  : Mass diversion ratio'
+' MISC1: First miscellaneous data'
+' MISC2: Second miscellaneous data'
+*enditem
+
+*item pcedit ADATA_changes_editing
+'Note: only experts want to change the component'
+'ADATA so you probably want to say no. '
+'  '
+'If you say yes then you will be asked which data item to'
+'change followed by its description and lastly the value'
+'of the data item.'
+*enditem
+
+*item pcedit  BDATA_changes_editing
+'Note: only experts want to change the component'
+'BDATA so you probably want to say no. '
+'  '
+'If you say yes then you will be asked which data item to'
+'change followed by its description and lastly the value'
+'of the data item.'
+*enditem
+
+*item pcedit CDATA_changes_editing
+'Note: only experts want to change the component'
+'CDATA so you probably want to say no. '
+' '
+'If you say yes then you will be asked to identify which'
+'control data item to edit and its description.'
+*enditem
+
+*item pcedit pdb_DATA_changes_pause
+'Pause before data is written or if there is a selection error'
+'to give you a chance to re-consider.'
+*enditem
+
+*item pcentr pdb_input_file_choices
+'The input file should be identical in format to that  '
+'exported from pdb.'
+'If you select read from file:'
+'  The ACII file holds plant component entries.'
+'  If found, components data is read in and inserted'
+'  in plant component database.'
+' '
+'  Note that the format of components data description'
+'  is identical to that obtained from ESRUpdb (list).'
+*enditem
+
+*item pcentr pdb_input_review_pause
+'Pause to review data. No returns to editing.'
+*enditem
+
+*item pcompi pdb_generic_type
+'The generic type describes the group under which a '
+'component comes under. For instance, a water pump '
+'generic type is used for both centrifugal and '
+'reciprocating water pumps.'
+'A maximum of 40 characters may be used.'
+*enditem
+
+*item pcompi pdb_component_descr
+'The component description gives an explanation of a '
+'component such as a name and any relevant information'
+'to uniquely identify a component.'
+'A maximum of 80 characters may be used.'
+*enditem
+
+*item pcompi pdb_component_index
+'The component index indicates which type of component'
+'is required. At present two types are available.'
+'A single component and a meta component. A meta '
+'component comprises a number of single components'
+'already entered in the database. An example of a meta'
+'component is a VAV terminal reheat consisting of'
+'a heating coil, dampers and duct arrangement.'
+*enditem
+
+*item pcompi pdb_model_code
+'The component code is an integer value which is used'
+'in ESRUbps to point to corresponding coefficient'
+*enditem
+
+*item pcompi pdb_nb_of_nodes
+'Each component has a number of nodes (finite volumes)'
+*enditem
+
+*item pcompi pdb_nb_of_nonzero
+'Please indicte the number of non-zero matrix coeffients'
+'which describe the component.'
+*enditem
+
+*item pcompi pdb_position_of_non_zero
+'Give a list of integer values which represent the'
+'position of non-zero matrix coefficients. '
+'For example the following matrix contains 2 non-'
+'zero coefficients:'
+'     |  X  0  | '
+'     |  0  X  | '
+'the positions of the non-zero corfficients are'
+' 1 and 4.'
+*enditem
+
+*item pcompi pdb_connectivity_list
+'Give a list of integer values which represent the'
+'connectivity value of each node. '
+'For example if a node expects to recieve 2 connec-'
+'tions then a value of 2 is specified for it.'
+*enditem
+
+*item pcompi pdb_state_variable_index
+'The state variable index indicates the functionality'
+'of a plant component model and the nature of a node.'
+'The following index values are supported: '
+' '
+'       Energy     Energy&1st phase     Energy&2 phase'
+'        only        mass balance        mass balances'
+'water    0              10                   20'
+'air      1              11                   21'
+'solid    9              19                   29'
+*enditem
+
+*item pcompi pdb_nb_of_meta_comps
+'You are asked to specify the number of standard components which'
+'will form this meta component.'
+*enditem
+
+*item pcompi pdb_meta_comp_indexs
+'A meta component comprises a number of components'
+'which exist in database. In order to identify'
+'these components, their code numbers must be'
+*enditem
+
+*item pcompi pdb_meta_connections
+'Each meta component will have a number of component inter-connections'
+'and you are now asked to say how many inter-connections.'
+*enditem
+
+*item pcompi pdb_meta_connection_data
+' Describe each connection using the following format'
+' C1  N1  CT  C2  N2  MDR  MISC1  MISC2'
+' Where:'
+' C1   : Sending component'
+' N1   : Sending node'
+' CT   : Connection type'
+' C2   : Receiving component'
+' N2   : Receiving node'
+' MDR  : Mass diversion ratio'
+' MISC1: First miscellaneous data'
+' MISC2: Second miscellaneous data'
+*enditem
+
+*item pcompi component_ADATA_array
+'The ADATA array holds static data for a component and'
+'their values are assumed to be fixed throughout the'
+'simulation. The BDATA on the other hand holds dynamic'
+'data which is expected to change in a simulation.'
+'The CDATA values are specified in ESRUbps configuration'
+'file and are used for control on heat flux, mass flow '
+'rates, humidity ratio ..etc.'
+*enditem
+
+*item pcompi component_ADATA_descr
+'Provide a user friendly description of the ADATA variable!'
+'You will then be asked to supply an initial ADATA value and a minimum'
+'and maximum range for this ADATA variable.'
+*enditem
+
+*item pcompi component_BDATA_descr
+'Provide a user friendly description of the BDATA variable!'
+'You will then be asked to supply an initial BDATA value and a minimum'
+'and maximum range for this BDATA variable.'
+*enditem
+
+*item pcompi component_CDATA_descr
+'Provide a user friendly description of the CDATA (control) variable!'
+*enditem
+
+*item pcompi comp_additional_outputs
+'Plant components performance is recorded via one or more additional'
+'outputs e.g. heat injection.  You will be asked for a brief '
+'description an index (?) which defines the type of each output.'
+*enditem
+
+*item pdb pdb_file_name_select
+'The plant component database binary file holds the'
+'description of available components. If the name'
+'given matches an existing file, it will be read in'
+'and the components data will be available for'
+'listing and editing. If there is no such file then'
+'a new one will be created to hold data for new'
+*enditem
+
+*item pdb pdb_modification_warning
+'**WARNING**: In order to modify plant data base,'
+'you must have write permission.'
+'This means that if your data base file is '
+'linked, then you must have write permission '
+'to the file it is linked to.'
+'Otherwise you need to copy plant '
+'data base to your home folder before you'
+'can modify it.'
+*enditem
+
+*item pdb pdb_confusion_warning
+'Pdb is confused, it could not scan the database. This'
+'is an option to exit the application. '
+*enditem
+
+*item pdb pdb_could_not_scan
+'Pdb is confused, it could not scan the database. This'
+'is an option to exit the application. '
+*enditem

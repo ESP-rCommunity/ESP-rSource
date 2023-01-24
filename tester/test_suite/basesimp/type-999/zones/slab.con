@@ -1,0 +1,21 @@
+*Constructions 2.1                              # thermophysical properties of slab
+*date Wed Sep  8 12:48:14 2021                  # latest file modification
+# layers|air | emissivity |absorptivity| tmc | surface|surface     |construction 
+#       |gaps|inside other|inside other|index| index  |name        |name 
+     1     0   0.01   0.01   0.01   0.01   0    #   1  first        EIA_Slab
+     1     0   0.01   0.01   0.01   0.01   0    #   2  Surf-2       EIA_Wall
+     1     0   0.01   0.01   0.01   0.01   0    #   3  Surf-3       EIA_Wall
+     1     0   0.01   0.01   0.01   0.01   0    #   4  Surf-4       EIA_Wall
+     1     0   0.01   0.01   0.01   0.01   0    #   5  Surf-5       EIA_Wall
+     1     0   0.01   0.01   0.01   0.01   0    #   6  Surf-6       EIA_Wall
+# air gap layer positions and restances
+# layer thermophysical properties
+# conduc-  | density |specific | thick- |dpnd|ref.| temp. |moisture|surface|layer
+# tivity   |         |heat     |ness(m) |type|temp|factor | factor |       |  
+     1.9000    1490.0    1800.0  0.2400   0   0.00 0.00000 0.00000  #   1   1 EIA_Concrete
+     0.0010    1490.0    1800.0  0.2400   0   0.00 0.00000 0.00000  #   2   1 EIA_Concrete_walls
+     0.0010    1490.0    1800.0  0.2400   0   0.00 0.00000 0.00000  #   3   1 EIA_Concrete_walls
+     0.0010    1490.0    1800.0  0.2400   0   0.00 0.00000 0.00000  #   4   1 EIA_Concrete_walls
+     0.0010    1490.0    1800.0  0.2400   0   0.00 0.00000 0.00000  #   5   1 EIA_Concrete_walls
+     0.0010    1490.0    1800.0  0.2400   0   0.00 0.00000 0.00000  #   6   1 EIA_Concrete_walls
+*tmc NONE                                       # all surfaces are opaque

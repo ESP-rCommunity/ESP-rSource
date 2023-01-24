@@ -1,0 +1,159 @@
+Synopsis
+ 
+Synopsis of the model plt stratified tank test 2 solar_radiant defined in
+Test2.cfg generated on Wed Nov 27 12:47:03 2019. Associated notes are in
+ccht_detailed.log
+ 
+The model is located at latitude   45.32 with a longitude difference of  -0.67
+from the local time meridian (east +ve). The year used in simulations is 1999
+and weekends occur on Saturday and Sunday.
+ 
+The site exposure is isolated rural site site and the ground reflectance is
+0.20.
+ 
+ 
+The climate is: Ottawa Intl ON CAN 1966 and is held in: can_ottawa with hour
+centred solar data.
+ standard annual weather: can_ottawa
+Calculated ground temperature at depth                                                                                      
+  0.5 m: 0.56203 0.31313 0.75458 1.4454 3.2523 4.6467 5.5872 5.8734 5.3858 4.3032 2.8564 1.5140                                                                                                                                                                                                                                                                                                                                                                                                                 
+  1.0 m: 0.90217 0.56113 0.85895 1.4243 3.0132 4.3098 5.2449 5.6191 5.2901 4.3869 3.1021 1.8517                                                                                                                                                                                                                                                                                                                                                                                                                 
+  1.5 m: 1.2077 0.80365 0.98568 1.4435 2.8325 4.0273 4.9384 5.3718 5.1707 4.4234 3.2891 2.1352                                                                                                                                                                                                                                                                                                                                                                                                                  
+  2.0 m: 1.4779 1.0344 1.1250 1.4919 2.7009 3.7939 4.6682 5.1374 5.0374 4.4236 3.4267 2.3698                                                                                                                                                                                                                                                                                                                                                                                                                    
+  2.5 m: 1.7136 1.2493 1.2691 1.5603 2.6096 3.6041 4.4332 4.9201 4.8981 4.3971 3.5236 2.5608                                                                                                                                                                                                                                                                                                                                                                                                                    
+  3.0 m: 1.9168 1.4459 1.4125 1.6413 2.5508 3.4522 4.2312 4.7218 4.7587 4.3517 3.5876 2.7139                                                                                                                                                                                                                                                                                                                                                                                                                    
+  3.5 m: 2.0899 1.6233 1.5510 1.7292 2.5174 3.3326 4.0595 4.5435 4.6233 4.2939 3.6256 2.8348                                                                                                                                                                                                                                                                                                                                                                                                                    
+  4.0 m: 2.2360 1.7812 1.6818 1.8194 2.5037 3.2401 3.9151 4.3850 4.4949 4.2288 3.6434 2.9284                                                                                                                                                                                                                                                                                                                                                                                                                    
+  4.5 m: 2.3582 1.9205 1.8031 1.9086 2.5046 3.1699 3.7947 4.2457 4.3754 4.1602 3.6461 2.9995                                                                                                                                                                                                                                                                                                                                                                                                                    
+  5.0 m: 2.4597 2.0423 1.9141 1.9946 2.5160 3.1180 3.6950 4.1241 4.2657 4.0912 3.6378 3.0524                                                                                                                                                                                                                                                                                                                                                                                                                    
+  5.5 m: 2.5432 2.1480 2.0145 2.0757 2.5346 3.0806 3.6132 4.0188 4.1663 4.0239 3.6219 3.0906                                                                                                                                                                                                                                                                                                                                                                                                                    
+  6.0 m: 2.6118 2.2392 2.1044 2.1511 2.5579 3.0547 3.5463 3.9282 4.0770 3.9596 3.6010 3.1174                                                                                                                                                                                                                                                                                                                                                                                                                    
+  6.5 m: 2.6677 2.3176 2.1845 2.2202 2.5837 3.0375 3.4920 3.8504 3.9974 3.8994 3.5772 3.1353                                                                                                                                                                                                                                                                                                                                                                                                                    
+  7.0 m: 2.7132 2.3848 2.2553 2.2830 2.6105 3.0269 3.4479 3.7838 3.9269 3.8437 3.5521 3.1464                                                                                                                                                                                                                                                                                                                                                                                                                    
+  7.5 m: 2.7502 2.4423 2.3177 2.3397 2.6374 3.0212 3.4122 3.7270 3.8647 3.7928 3.5267 3.1526                                                                                                                                                                                                                                                                                                                                                                                                                    
+  8.0 m: 2.7803 2.4916 2.3725 2.3904 2.6634 3.0191 3.3833 3.6783 3.8099 3.7466 3.5020 3.1553                                                                                                                                                                                                                                                                                                                                                                                                                    
+  8.5 m: 2.8050 2.5338 2.4207 2.4358 2.6881 3.0193 3.3597 3.6367 3.7617 3.7049 3.4783 3.1554                                                                                                                                                                                                                                                                                                                                                                                                                    
+  9.0 m: 2.8252 2.5702 2.4630 2.4762 2.7112 3.0212 3.3404 3.6009 3.7194 3.6674 3.4561 3.1540                                                                                                                                                                                                                                                                                                                                                                                                                    
+  9.5 m: 2.8421 2.6017 2.5002 2.5122 2.7326 3.0240 3.3244 3.5699 3.6821 3.6339 3.4356 3.1515                                                                                                                                                                                                                                                                                                                                                                                                                    
+ 10.0 m: 2.8562 2.6290 2.5330 2.5442 2.7521 3.0273 3.3111 3.5431 3.6491 3.6038 3.4167 3.1484                                                                                                                                                                                                                                                                                                                                                                                                                    
+ 
+An Integrated Performance View is incomplete or missing.
+ 
+Databases associated with the model:
+ standard pressure distr: pressc.db1
+ standard materials     : material.db
+ standard constructions : multicon.db
+ standard plant comp    : plantc.db1
+ standard event profiles: profiles.db2.a
+ standard optical prop  : optics.db
+ standard UK NCM data   : SBEM.db1
+ predefined objects     : predefined.db1
+ standard mould isopleth: mould.db1
+ 
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+no overall control description supplied
+                                                                                
+                                                                                
+                                                                                
+        
+ 
+ Plant control includes  1 loops.
+no plant control description supplied
+ 
+ The sensor for function  1 senses var in compt.  1:StratTank @ node no.  1
+ The actuator for function  1 is plant component   4:HX2Pump @ node no.  1
+ >  1 periods of validity during the year have been defined.
+ Control is valid Fri-01-Jan to Fri-31-Dec, 1999 with  1 periods.
+ 
+ Per|Start|Sensing  |Actuating  | weekday control laws
+   1  0.00 dry bulb   > flow     OnOff std mode 1.0 on setpt -40.00C off setpt -10.00C output @ hi
+0.000 output @ lo 0.000 sensor lag 0.0s actuator lag 0.0s.
+ 
+The model includes a plant network.
+ 
+ The plant network contains  4 components from plantc.db1
+ 
+ Component: StratTank ( 1) code  1, db reference 104
+ No Control data
+ Modified parameters for StratTank
+ Tank volume (m3)                                   :  0.26500
+ Tank height (m)                                    :   1.4030
+ Tank perimeter (m; -1 if cylindrical)              :  -1.0000
+ Height of flow inlet (m)                           :   0.0000
+ Height of flow outlet (m)                          :   1.4030
+ Tank heat loss coefficient (W/m2-K)                :  0.10000
+ Additional destratification conductivity (W/m-K)   :   0.0000
+ Number of nodes                                    :   20.000
+ Internal time steps per simulation time step       :   5.0000
+ Initial temperature of tank (C)                    :   20.000
+ Boiling temperature of fluid (C)                   :   100.00
+ Height of first immersed HX inlet (m)              :  0.64800
+ Height of first immersed HX outlet (m)             :  0.86000E-01
+ Inside diameter of first immersed HX coil (m)      :  0.34000E-01
+ Outside diameter of first immersed HX coil (m)     :  0.38000E-01
+ Diameter of first immersed HX coil (m)             :  0.35100
+ Pitch of first immersed HX coil (distance from one :  0.56000E-01
+ Thermal conductivity of first immersed HX coil mat :   43.000
+ eight of second immersed HX inlet (m)              :  0.64800
+ Height of second immersed HX outlet (m)            :  0.86000E-01
+ Inside diameter of second immersed HX coil (m)     :  0.34000E-01
+ Outside diameter of second immersed HX coil (m)    :  0.38000E-01
+ Diameter of second immersed HX coil (m)            :  0.35100
+ Pitch of second immersed HX coil (distance from on :  0.56000E-01
+ Thermal conductivity of second immersed HX coil ma :   43.000
+ 
+ Component: TankPump ( 2) code  2, db reference  15
+ Control data:    0.000
+ Modified parameters for TankPump
+ Component total mass (kg)                          :  0.10000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :  0.10000E-01
+ Rated total absorbed power (W)                     :   0.0000
+ Rated volume flow rate (m^3/s)                     :  0.30000E-03
+ Overall efficiency (-)                             :  0.70000
+ 
+ Component: HX1Pump ( 3) code  3, db reference  15
+ Control data:    0.000
+ Modified parameters for HX1Pump
+ Component total mass (kg)                          :  0.10000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :  0.10000E-01
+ Rated total absorbed power (W)                     :   0.0000
+ Rated volume flow rate (m^3/s)                     :  0.30000E-03
+ Overall efficiency (-)                             :  0.70000
+ 
+ Component: HX2Pump ( 4) code  4, db reference  15
+ Control data:    0.000
+ Modified parameters for HX2Pump
+ Component total mass (kg)                          :  0.10000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :  0.10000E-01
+ Rated total absorbed power (W)                     :   0.0000
+ Rated volume flow rate (m^3/s)                     :  0.30000E-03
+ Overall efficiency (-)                             :  0.70000
+ 
+ Nb of plant component connections:  6
+ Con receiving component node type sending component node
+ 
+  1 StratTank node 1 (known T + hum ratio.) TankPump node 1 details:     1.00   50.00    0.00
+ 
+  2 StratTank node 2 (known T + hum ratio.) HX1Pump node 1 details:     1.00   50.00    0.00
+ 
+  3 StratTank node 3 (known T + hum ratio.) HX2Pump node 1 details:     1.00   50.00    0.00
+ 
+  4 TankPump node 1 (from another component.) StratTank node 1 details:     1.00    0.00    0.00
+ 
+  5 HX1Pump node 1 (from another component.) StratTank node 2 details:     1.00    0.00    0.00
+ 
+  6 HX2Pump node 1 (from another component.) StratTank node 3 details:     1.00    0.00    0.00
+ 
+ No of component containments =  1
+  Component      | Containment descr. | Type
+ 
+ 1  StratTank       fix temp:   5.000      2 details:     5.00    0.00    0.00
+ 
+ ____________________________________________________________
+ Multi-layer constructions used:

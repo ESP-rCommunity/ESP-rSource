@@ -1,0 +1,16 @@
+*FileVersion99.0
+2.05                      # height
+0.05                      # depth
+12.48                     # length
+12.48                     # width
+0.0                       # overlap (only important for BCCN_1 and BCCN_2)
+0.0                       # rsi
+0.85                      # soilk
+15                        # wtable
+10.0                      # Tg,avg
+6.0                       # Tg,amp
+0.25823                   # Ps
+1.211764                  # Above-grade heat-loss factor (Sag)
+49.28892                  # Below-grade average heat-loss factor (Sbg,avg)
+18.03844                  # Below-grade variable heat-loss factor (Sbg,var)
+2.84609                   # phase angle (phase)

@@ -1,0 +1,334 @@
+*help_text net
+
+*item icndbscn scan_of_icon_db
+'Icons for this application are held in a file which is'
+'typically named icons.db1 in the ESP-r distribution'
+'databases folder suc as /usr/esru/esp-r/databases or'
+'/opt/esru/esp-r/databases or C:\Esru\databases.'
+' '
+'A no will set this file name to UNKNOWN. And then it'
+'will be very difficult to do any work.'
+*enditem
+
+*item netwedit component_data_edit
+'This menu displays data which can be edited for'
+'this component. The name of of the component can'
+'also be changed to a UNIQUE NAME no blanks (be sure'
+'to check other entries which might reverence the name).
+'  '
+'To view the documentation for the component, choose the '
+'view notes option.'
+'  '
+'To edit the component data select the relevant menu entry.'
+'You will be ask for minimum and maximum values and a default.'
+'  '
+'To move a compoent button1 click to highlight and then use'
+'button3 to move it and then release.'
+'  '
+'To zoom in and out edit the scale (in the menu) or use button2'
+'within the graphic area and select the option.'
+*enditem
+
+*item netwedit network_mismatch_detect
+'As the model is updated in terms of its form or the'
+'network is adjusted a mismatch was detected between'
+'the zone volume and the volume of the network node'
+'or the height of the network node and the associated'
+'zone or its position. '
+'  '
+'If you say yes the zone attributes will be used. '
+*enditem
+
+*item netwedit network_mismatch_detect
+'As the model is updated in terms of its form or the'
+'network is adjusted a mismatch was detected between'
+'the zone volume and the volume of the network node'
+'or the height of the network node and the associated'
+'zone or its position. '
+'  '
+'If you say yes the zone attributes will be used. '
+*enditem
+
+*item netwedit connection_attributes
+'This menu displays the connection attribute which'
+'can be edited.'
+'  '
+'Items in the menu which begin with a letter a-z'
+'can be edited.'
+'  '
+'If you edit an item you are asked for a minimum and maximum'
+'value as well as a default value.  Some items have text'
+'attributes as well.'
+'  '
+'To move a way-mark use button1 to highlight the way-mark'
+'and then use button3 to move it.'
+*enditem
+
+*item netwedit component_cat_edits
+'This menu displays the categoties of data which'
+'can be edited for this component.'
+'  '
+'The name of the component can also be changed to a'
+'unique name with no spaces.'
+'  '
+'To view the documentation for the component, choose the '
+'view notes option.'
+'  '
+'To edit the component data select a category to contine'
+'or exit to the previous menu.'
+'The data you can change follows the standard item pattern.'
+*enditem
+
+*item netwedit network_mismatch_detect
+'As the model is updated in terms of its form or the'
+'network is adjusted a mismatch was detected between'
+'the zone volume and the volume of the network node'
+'or the height of the network node and the associated'
+'zone or its position. '
+'If you say yes the zone attributes will be used. '
+*enditem
+
+*item netwedit connection_attributes
+'This menu displays the categoties of data which'
+'can be edited for this connection.'
+'  '
+'Please select a category to contine or exit to the previous menu.'
+'  '
+'Once you select a category you are presented with items which can'
+'be selected and their attributes edited.
+*enditem
+
+*item network net_summary_file
+'This summary file is written by the project manager'
+'before invoking net. It is used by net to access the'
+'context of the model (where zones and surfaces are'
+'located.'
+*enditem
+
+*item network have_new_connection
+'Recently a new connection was added to the network.'
+'Before doing anything else you should define its '
+'attributes. You can also edit attributes by clicking'
+'on the connecting line. '
+'  '
+'To move a way-mark use button1 to highlight the way-mark'
+'and then use button3 to move it.'
+*enditem
+
+*item network net_overview
+'The graphic network module produces graphic descriptions'
+'of networks related to simulation. It accesses a database'
+'of icons and supports both the linking and attribution of 
+'icons. As with text-based networks PLAN YOUR NETWORK AND'
+'SKETCH YOUR NETWORK to save time and reduce errors. '
+' '
+'Network descriptions can be exported as legacy flow'
+'network files for comparison as required.'
+' '
+'The current version should be considered work in progress'
+'and the format of the icons database and the graphic '
+'network file is subject to revision. '
+' '
+'Use of the enet module: '
+' option a defines the network file which will be loaded if'
+'          it exists.'
+' option b description of the file contents and/or use up'
+'          to 72 characters.'
+' option c the domain of the network (currently mixed'
+'          domains are not supported). You should define'
+'          this before adding components by selecting'
+'          from the list provided.'
+' option d the icons database used by network files. You'
+'          are asked to confirm the name and it is normally'
+'          found in the ESP-r distribution databases folder.'
+' option e switches focus between nodes, components and'
+'          the connections between nodes & components.'
+' '
+' If the focus is nodes or components then the menu options for'
+' add delete copy are used to manage entities. Identify'
+' via mouse click with left mouse button (on some machines you'
+' asked to type in a coordinate near the entity).
+' To copy a component select via left mouse button and then'
+' click again to place the copy. To edit first select the icon'
+' via left mouse button (or supply a coordinate).'
+' '
+' If the focus is connections then the menu options for add'
+' delete copoy apply to connections. You then select the'
+' connection (va left mouse button on a way-point. Way-points'
+' can then be adjusted via left button highlight and'
+' right button on way-point to move it. There is a select by'
+' menu option (some users prefer this) for adding connections.
+' '
+' Component icons can be rotated or flipped by selecting'
+' via left button and then middle button brings up options.'
+' The rotation angle to be applied can be reset in the menu.'
+' '
+'Changes to the gridding or to zoom are accomplished via the'
+'middle mouse button on a point not close to an existing icon'
+'or connection.'
+' '
+'The scroll bars can move around the network. If you click'
+'at the far end of the bar the position will increment. If'
+'you click and drag within the bar then the graph is moved.'
+'A -5m is the maximum negative axis value.'
+*enditem
+
+*item network grid_spacing
+'The graphical display can be scaled by defining the spacing of'
+'the grid. You have optioins to alter the XY spacing as well as'
+'the Z spacing. (middle button not-near-any-icon gives you some'
+'options for zooming +- and grid +- or snap on/off.  '
+'  '
+'You may also zoom the view by setting a scale factor.'
+'  '
+'There is a rotation option (but it does not work very well'
+'so avoid it for now. And the scroll bars on the bottom and'
+'left do not work well if in negative X or Y.'
+*enditem
+
+*item network convert_to_text_network
+'The icon based network file can be used by the simulator if'
+'all the components are fully attributed and the connection heights'
+'are correct. For safety, use the export facility to create an'
+'equivalent text-based flow network and confirm its details prior'
+'to running an assessment.
+' '
+'Testing indicates that it is possible to create a graphic flow'
+'network which yields the same performance as a text-based flow'
+'network. This can be tested via an export and then creating an'
+'alternative model cfg file which uses the export file. Run both'
+'models to confirm performance.
+'  '
+'There is also a test option to read in a standard text'
+'based flow network and attempt to fill the graphic network'
+'data structures.  Note that if you choose this test option'
+'the description of the current network will be replaced'
+'by any new network defined or read in. If you want to'
+'keep any recent changes, say no and save the file before'
+'using the test option.'
+*enditem
+
+*item network unique_name_required
+'Requires components to have a unique name, which contains'
+'no blank spaces.'
+*enditem
+
+*item network icon_categories
+'The menu options relate to different categories'
+'of icons which may be selected for use with the'
+'current domain in the network tool.'
+*enditem
+
+*item network icon_cat_components
+'Select a component from the list, which will '
+'then be drawn into the network. '
+'  '
+'Switch the "component info" toggle to ON to view'
+'any more information associated with the '
+'component; this appears in the text window.'
+*enditem
+
+*item network pause_to_consider
+'Pause in case you decide not to delete connections.'
+*enditem
+
+*item network pause_to_consider
+'Pause, in case you made a selection error. '
+*enditem
+
+*item network position_manual
+'As an alternative to mouse click identification you'
+'can type in an X Y Z coordinate near )~0.25m) the entity.'
+' '
+*enditem
+
+*item network check_mouse_menu
+'For defining mass flow connections you can also use menu'
+'selections from lists of nodes and components to create'
+'both legs of a connection. This approach generates a single'
+'way point for each leg (which can later be edited). If you'
+'want connection with multiple way points use the mouse-click'
+'method.'
+*enditem
+
+*item network net_global_data
+'This menu displays the categoties of global data which'
+'can be edited for this domain/network.'
+'  '
+'Local WIND speed REDUCTION factor : '
+'  (= ratio of local wind speed at roof height'
+'     and measured wind speed) '
+'  '
+'For stack pressure calculations you can use (1) fluid density from '
+'sending node or (2) the average fluid density of the connected nodes.'
+'  '
+'You have the choice of Gaussian elimination with back-'
+'substitution and no pivoting or LU decomposition with implicit'
+'pivoting (Crout)'
+'  '
+' Currently supported trace output options are:'
+'  -1: no trace output at (for use with bps) '
+'   0: no trace, only indicate no of iterations'
+'   1: pressure, residual & relative error at '
+'      worst (relative) node'
+'   2: as 1 + pressure & residual at all nodes '
+'           + pointer(s) at worst relative and '
+'             absolute node(s)'
+'   3: as 2 + network matrix solving info'
+'  '
+'Please select an item or  exit to the previous menu.'
+*enditem
+
+*item network net_category_attrib
+'This list displays the attributes for this category.'
+'Click on the data item to edit its attributes.'
+'You will be asked for minimum and maximum values'
+'as well as a current value and a default value.'
+'  '
+'Some items also have text attributes to edit.'
+*enditem
+
+*item network net_pressure_coef
+'To enable the calculation of wind-induced surface'
+'pressures (as required by ESP-r-s fluid flow'
+'simulators), a database of angle dependent'
+'pressure coefficients is provided.'
+' '
+'The default ESP-r set contains wind pressure coeffi-'
+'cients for surfaces in typical positions and within '
+'several different exposure categories.'
+'They can be used (with care) for low-rise buildings.'
+'See the ESP manual for additional info.'
+' '
+'It is also possible to calculate pressure coeffi-'
+'cients using CpCalc (see database maintenance).'
+' '
+'Select the pressure coefficient from this list, '
+'which is most appropriate for the location of the '
+'external node.'
+*enditem
+
+*item network external_overview
+'Each thermal zone has attributes such as name,'
+'volume and a centre of gravity which can be used'
+'by a flow network component.'
+*enditem
+
+*item network external_overview
+'The zone attributes are volume and location (centre)'
+'and these can be taken from the model rather than '
+'typing them in manually. '
+'  '
+'Each surface has attributes such as name, area'
+'orientation and a centre of gravity which can be used'
+'by a flow network component. You can use the attributes'
+'and adjust values by overiding the initial values.'
+*enditem
+
+*item network place_at_lowest_point
+'The options listed would place the component at the'
+'lowest point of the surface, the COG or the top point'
+'of the surface. You can also manually supply a value.'
+'  '
+'Note that the component height is in model coordinates.'
+*enditem
