@@ -1049,9 +1049,9 @@ C line 1044 of insert.F of the subroutine ADDSUR.
           SUSE(ICOMP,nsur,1)='FURNI'  ! predefined mass
           SUSE(ICOMP,nsur,2)='- '
 
-C Set each pair to be back-to-back. Logic for up to 10 mass surfaces.
+C Set each pair to be back-to-back.
           SOTHER(ICOMP,NSUR,1)='ANOTHER'
-          if(ix.eq.1.or.ix.eq.3.or.ix.eq.5.or.ix.eq.7.or.ix.eq.9)then
+          if (MOD(ix,2).eq.1) then
             write(SOTHER(ICOMP,NSUR,2),'(i2.2)')INT(icomp)
             write(SOTHER(ICOMP,NSUR,3),'(i3.3)')INT(NSUR+1)
           else

@@ -68,7 +68,8 @@ Construction:
 3mm low-iron glass                      1.05   2500    750
 
 *ENDTEXT
-*END*SPECMATL
+*END
+*SPECMATL
 *IDDATA
 # Category | Assoc. special 
 #            material model no 

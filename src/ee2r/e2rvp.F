@@ -151,6 +151,7 @@ C ******* Default views formation.
       character doit*146,ltmp*72,lview*124
       character L144*144,lltmp*144,dtmp96*96
       character trvewsh*10,mrvewsh*30
+      character rifwave*72
       integer NITEMS,INO  ! max items and current menu item
       integer iglib
       integer ISTRW
@@ -736,7 +737,7 @@ C Present list of views.
           tYMN=YMN; tYMX=YMX
           tZMN=ZMN; tZMX=ZMX
         endif
-	
+
       elseif(INO.EQ.3)then
         CALL EASKABCD(' View choices: ',' ','plan',
      &    'south elevation','east elevation','perspective?',IW,nbhelp)
@@ -1125,10 +1126,14 @@ C Set up view bounds (for fisheye view).
           endif
           WRITE(vewcmds(ipckvew),'(a)') doit  ! current cmd
         endif
+
+C Write both standard and wavefront versions of rif file.
         IFC=3
-        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+        call mkrif(ITA2,RIFNAME(ISCENE),IFC,0,'-',IER)
+        rifwave='obj.rif'
+        call mkrif(ITA2,rifwave,IFC,0,'w',IER)
         if (NBSRIF(ISCENE).eq.1) then
-          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,'-',ier)
         endif
         vewdone=.true.
 

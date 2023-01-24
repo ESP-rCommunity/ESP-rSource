@@ -1427,10 +1427,6 @@ C ***** Dummy display of images.
       return
       end
 
-      subroutine Find_season_parameters()
-      return
-      end
-
       SUBROUTINE BASESIMP_INPUTS(ICOMP,IER)
       integer icomp,ier
       return
@@ -1476,8 +1472,8 @@ C Parameters passed.
       COMMON/OUTIN/IUOUT,IUIN,IEOUT
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       DIMENSION  item(36)
-      real COG1,COG2,COG3  ! position to check against
-      DIMENSION  COG1(3),COG2(3),COG3(3),IVLST(MTV)
+      real COG1,COG2  ! position to check against
+      DIMENSION  COG1(3),COG2(3),IVLST(MTV)
       CHARACTER item*33,outs*124,KEY*1
       logical greyok,found
       integer MVERT,IVERT ! max items and current menu item
@@ -1589,9 +1585,8 @@ C In this code block trackview is correctly using iixx and iiyy.
           found=.false.
           do 45 i=1,NTV
             COG1(1)=X(I); COG1(2)=Y(I); COG1(3)=Z(I)
-            CALL VECTRN(COG1,TEMAT,COG2,IER)
-            CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            CALL VECTRN(COG1,TSMAT,COG2,IER)
+            call u2pixel(COG2(1),COG2(2),iix,iiy)
             ixd=iix-iixx
             iyd=iiy-iiyy
 C Debug

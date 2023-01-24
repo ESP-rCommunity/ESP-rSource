@@ -6053,7 +6053,7 @@ C geometry files are updated, this code shouild be updated accordingly.
         elseif (t12(1:5).eq.'CRACK') then
           ibctyp=4
         elseif (t12(1:4).eq.'OPEN') then
-          CALL ZSURLEHI(ICP,ISUR,XYDIS,ZDIS,i1,i2,i3,i4)
+          CALL ZSURLEHI(ICP,ISUR,XYDIS,ZDIS,i1,i2,i3,i4,DZLLFF)
           if (XYDIS/ZDIS.gt.1.0) then
             ibctyp=6
           else
@@ -10863,7 +10863,7 @@ C Curvilinear boundary vertex numbers.
 
       logical clkok,found
 
-      DIMENSION COG1(3),COG2(3),COG3(3),JJVN(MV)
+      DIMENSION COG1(3),COG2(3),JJVN(MV)
       integer ISTRW
 
       CHARACTER HOLD*96,outs*124
@@ -10914,9 +10914,8 @@ C the individual vertex numbers from the list.
           found=.false.
           do 45 i=1,NTV
             COG1(1)=X(I); COG1(2)=Y(I); COG1(3)=Z(I)
-            CALL VECTRN(COG1,TEMAT,COG2,IER)
-            CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            CALL VECTRN(COG1,TSMAT,COG2,IER)
+            call u2pixel(COG2(1),COG2(2),iix,iiy)
             ixd=iix-iixx; iyd=iiy-iiyy
             if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
               if(found)then
@@ -10974,9 +10973,8 @@ C Ask for and display the bottom defining vertices (west to east).
           found=.false.
           do 55 i=1,NTV
             COG1(1)=X(I); COG1(2)=Y(I); COG1(3)=Z(I)
-            CALL VECTRN(COG1,TEMAT,COG2,IER)
-            CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            CALL VECTRN(COG1,TSMAT,COG2,IER)
+            call u2pixel(COG2(1),COG2(2),iix,iiy)
             ixd=iix-iixx; iyd=iiy-iiyy
             if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
               if(found)then

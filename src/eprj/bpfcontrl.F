@@ -1722,10 +1722,8 @@ C starting up the menu based control period definition.
         if(iclaw.ne.0)then
           write(outs,'(a,a)') 'Current control law: ',SALT(iclaw)
           call edisp(iuout,outs)
-          IX=1
-        else
-          IX=iclaw
         endif
+        IX=1
         helptopic='sys_bctl_types'
         call gethelptext(helpinsub,helptopic,nbhelp)
   63    CALL EPICKS(IX,IVALS,' ','Control law:',
@@ -6796,10 +6794,8 @@ C control law to trap changes.
             write(outs,'(2a)') ' Current control law: ',
      &        SALT(iclawcurrent)
             call edisp(iuout,outs)
-            IX=1
-          else
-            IX=iclawcurrent
           endif
+          IX=1
 
 C Re-instantiate help specifically for summary of control laws.
           helptopic='bld_ctl_period_data'

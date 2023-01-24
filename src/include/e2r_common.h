@@ -27,8 +27,8 @@ C Radiance model descriptive files:
       common/rad1m/matfil,rmmfil,iesfil
 
 C File unit numbers for radiance model files
-      integer irofil,irzfil,imatfil,iglzfil,iiesfil
-      common/radif/irofil,irzfil,imatfil,iglzfil,iiesfil
+      integer irofil,irzfil,imatfil,iglzfil,iiesfil,iwmatfil
+      common/radif/irofil,irzfil,imatfil,iglzfil,iiesfil,iwmatfil
 
 C Logical states for model task completion. Set to fales if the
 C task is not complete.

@@ -1102,7 +1102,7 @@ C Where validation tests are kept.
       character vldlbl*20,vldfl*96
       common/vldlst/vldlbl,vldfl
 
-      logical localdot,unixok,dll
+      logical localdot,unixok
 
       character*(*) LFDEF
       CHARACTER OUTSTR*124,WORD*20
@@ -1123,62 +1123,33 @@ C the installation folder.
       character altdot*144
 #include "espinstalldir.h"
 
-C Check if running in dll mode, if so clear most of the
-C initial values because they will not be used.
-      call isadll(dll)
-      if(dll)then
-        teditor=' '
-        tedlbl='no word processor'
-        tpreview=' '
-        tprevlbl='no document preview'
-        figlbl='diagram editor'
-        figexe=' '
-        grflbl='no graphing tool'
-        grfexe=' '
-        foldlbl='no folder browser'
-        foldexe=' '
-        cadlbl='no CAD package'
-        cadexe=' '
-        cadfmt='DXF'
-        replbl='No report generator'
-        repexe='UNKNOWN'
-        gprcmd='UNKNOWN'
-        journcmd=' '
-        jfile=' '
-        imgtyp=1
-        fmttag(1)='GIF'
-        fmtexe(1)='display '
-        gxwdlbl='no graphic dump'
-      else
-
 C Assume initial values for interactive use. Default to putting
 C temporary files in the users home folder.
-        teditor='nano'
-        tedlbl='word processor'
-        tpreview='GROFF -p '
-        tprevlbl='document previewer'
-        figlbl='diagram editor'
-        figexe='xfig'
-        grflbl='graphing tool'
-        grfexe='xvgr'
-        foldlbl='folder browser'
-        foldexe='xfs '
-        cadlbl='CAD package'
-        cadexe='gtool'
-        cadfmt='UNKN'
-        replbl='No report generator'
-        repexe='UNKNOWN'
-        gprcmd='UNKNOWN'
-        journcmd=' '
-        jfile=' '
+      teditor='nano'
+      tedlbl='word processor'
+      tpreview='GROFF -p '
+      tprevlbl='document previewer'
+      figlbl='diagram editor'
+      figexe='xfig'
+      grflbl='graphing tool'
+      grfexe='xvgr'
+      foldlbl='folder browser'
+      foldexe='xfs '
+      cadlbl='CAD package'
+      cadexe='gtool'
+      cadfmt='UNKN'
+      replbl='No report generator'
+      repexe='UNKNOWN'
+      gprcmd='UNKNOWN'
+      journcmd=' '
+      jfile=' '
 
 C Assume two basic image types and that the application window dump
 C will use xwud.
-        imgtyp=1
-        fmttag(1)='GIF'
-        fmtexe(1)='display '
-        gxwdlbl='Appl window dump'
-      endif
+      imgtyp=1
+      fmttag(1)='GIF'
+      fmtexe(1)='display '
+      gxwdlbl='Appl window dump'
 
 C Set defaults and exemplars depending on whether Unix or NT.
       call isunix(unixok)
@@ -1214,11 +1185,6 @@ C Set defaults and exemplars depending on whether Unix or NT.
         write(altdot,'(2a)') instpath(1:ln),'/esprc'
         write(standarddbpath,'(2a)') instpath(1:ln),'/databases'
         write(standardclmpath,'(2a)') instpath(1:ln),'/climate'
-      endif
-
-C If running in dll mode skip reading .esprc file.
-      if(dll)then
-        return
       endif
 
 C Open the esprc file, return if not found.
@@ -1462,7 +1428,7 @@ C << consider increasing size of these strings >>
       character*72 DFCFD
       character*72 DECMPDBFL,DICONDBFL
       character dinstpath*60,di*60
-      logical unixok,dll
+      logical unixok
 #include "espinstalldir.h"
 
 C Assume default database names.
@@ -1541,12 +1507,6 @@ C Windows OS (dinstpath = 'c:/esru/esp-r')
 
 C << Should there be default values for constructions? >>
       icdtypes = 0
-
-C Check if running in dll mode, if so skip reading defaults file.
-      call isadll(dll)
-      if(dll)then
-        return
-      endif
 
 C Open the defaults file, return if not found.
       IER=0

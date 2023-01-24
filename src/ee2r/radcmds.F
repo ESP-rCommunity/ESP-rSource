@@ -49,6 +49,7 @@ C  coefficients (can take a very long time).
       COMMON/FILEP/IFIL
 
       character outs*124,tfile*72,smode*1
+      character rifwave*72
 
       LOGICAL fict,XST,OK
 
@@ -185,9 +186,11 @@ C << to be done >>
       endif
 
       IFC=3
-      call mkrif(ita2,RIFNAME(ISCENE),IFC,0,ier)
+      call mkrif(ita2,RIFNAME(ISCENE),IFC,0,'-',ier)
+      rifwave='obj.rif'
+      call mkrif(ITA2,rifwave,IFC,0,'w',IER)
       if (NBSRIF(ISCENE).eq.1) then
-        call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+        call mkrif(ita2,LBSRIF(ISCENE),IFC,1,'-',ier)
       endif
 
 C Update rcf file and configuration file.
@@ -679,6 +682,7 @@ C defview generates a new default view.
       integer ita2 ! file unit for use with mkrif
       logical short ! briefer format
       logical okfore,okaft ! for near zero cuts
+      character rifwave*72
 
       ITA2=IFIL+7
 
@@ -757,9 +761,11 @@ C Default internal view at max X average Y and Z, looking in -x dir.
 C Update rif file. No use yet made of ier.
       IFC=3
       IER=0
-      call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+      call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,'-',IER)
+      rifwave='obj.rif'
+      call mkrif(ITA2,rifwave,IFC,0,'w',IER)
       if (NBSRIF(ISCENE).eq.1) then
-        call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+        call mkrif(ita2,LBSRIF(ISCENE),IFC,1,'-',ier)
       endif
 
       return
@@ -794,6 +800,7 @@ C Radiance processor cores.
       character ttif*72,ttifd*72,tjpg*72,tjpgd*72
       character pf*72,outs*124,ltmp*72
       character doit*256
+      character rifwave*72
       integer IWT,IWP   ! for radio buttons
 
       logical XST,anim,unixok
@@ -1072,9 +1079,11 @@ C file should be removed.
 
 C Save changes to RIF file
             IFC=3
-            call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+            call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,'-',IER)
+            rifwave='obj.rif'
+            call mkrif(ITA2,rifwave,IFC,0,'w',IER)
             if (NBSRIF(ISCENE).eq.1) then
-              call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+              call mkrif(ita2,LBSRIF(ISCENE),IFC,1,'-',ier)
             endif
 
 C call rad to create image(s) based on current setting of ipckvew.
@@ -1202,9 +1211,11 @@ C See if there is an existing hdr file by this name.
                 goto 1111
               endif
               IFC=3
-              call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+              call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,'-',IER)
+              rifwave='obj.rif'
+              call mkrif(ITA2,rifwave,IFC,0,'w',IER)
               if (NBSRIF(ISCENE).eq.1) then
-                call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+                call mkrif(ita2,LBSRIF(ISCENE),IFC,1,'-',ier)
               endif
             elseif(IWR.eq.1)then
 
@@ -1565,6 +1576,7 @@ C getdf runs daylight factor calculation and then displays them.
       CHARACTER df*72,outs*124,ltmp*72,doit*256
       character QT*1,OUTSTR*124
       character tfile*72,outsl*160
+      character rifwave*72
 
       logical XST,RECALC
 
@@ -1639,7 +1651,9 @@ C Ask if the parameters should be reset.
      &                         ' -ab 1 -ad 1024 -as 512 -av 0 0 0'
           write (crenrp,'(a)') outsl
           IFC=3
-          call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+          call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,'-',IER)
+          rifwave='obj.rif'
+          call mkrif(ITA2,rifwave,IFC,0,'w',IER)
           call touchrif(RIFNAME(ISCENE))
         endif
       endif
@@ -1822,10 +1836,12 @@ C Save RIF file and update options file.
       if (RECALC) then
         call edisp(iuout,'Recalculating with different resolution...')
         IFC=3
-        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,'-',IER)
+        rifwave='obj.rif'
+        call mkrif(ITA2,rifwave,IFC,0,'w',IER)
         call touchrif(RIFNAME(ISCENE))
         if (NBSRIF(ISCENE).eq.1) then
-          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,'-',ier)
           call touchrif(LBSRIF(ISCENE))
         endif
 
@@ -2103,6 +2119,7 @@ C using logic similar to getdf.
       CHARACTER df*72,outs*124,ltmp*72,doit*256
       character QT*1,OUTSTR*124
       character tfile*72,outsl*160
+      character rifwave*72
 
       logical XST,RECALC
 
@@ -2178,7 +2195,9 @@ C Ask if the parameters should be reset.
      &                         ' -ab 1 -ad 1024 -as 512 -av 0 0 0'
           write (crenrp,'(a)') outsl
           IFC=3
-          call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+          call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,'-',IER)
+          rifwave='obj.rif'
+          call mkrif(ITA2,rifwave,IFC,0,'w',IER)
           call touchrif(RIFNAME(ISCENE))
         endif
       endif
@@ -2363,10 +2382,12 @@ C Save RIF file and update options file.
         call edisp(iuout,'Recalculating with different resolution...')
         call edisp(iuout,'feedback is displayed in xterm.')
         IFC=3
-        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,'-',IER)
+        rifwave='obj.rif'
+        call mkrif(ITA2,rifwave,IFC,0,'w',IER)
         call touchrif(RIFNAME(ISCENE))
         if (NBSRIF(ISCENE).eq.1) then
-          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,'-',ier)
           call touchrif(LBSRIF(ISCENE))
         endif
 

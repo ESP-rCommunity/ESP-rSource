@@ -970,7 +970,7 @@ Open face to the south.
 *origin,0.0,0.0,0.0
 *bounding_box,1.360,2.000,0.900
 *Text
-Double bed with solid wood head foot base 1.36x1.9x0.9m. With mass for base and matress.
+Double bed with solid wood head foot base 1.36x2.0x0.9m. With mass for base and matress.
 Head is at the North. Origin at left edge of foot of bed.
 *End_text
 #
@@ -1076,6 +1076,72 @@ materials and the seat back reclines slightly. Occupant faces south.
 *vobject,kit-chair,padded wooden chair,13,seat,r_arm,l_arm,seat_bk,cross_a,cross_b,cross_c,r_arm_rest,l_arm_rest,leg_a,leg_b,leg_c,leg_d
 *end_item
 # 
+*item,kit-chair2,wooden chair without arms# tag name menu entry
+*incat,house_furn
+*includes,visual,mass
+*sourced,Based on measurements of a chair. Guess at composition.
+*origin,0.0,0.0,0.0              # local origin
+*bounding_box,0.50,0.64,1.060  # extents of object
+*Text
+A typical wooden chair with fabric covered seat and back, mass for
+the seat and seat back. Visual entities are a mix of
+materials and the seat back reclines slightly. Occupant faces south.
+*End_text
+# 
+*vertex,0.01000,0.10000,0.50500  #   1
+*vertex,0.48000,0.10000,0.50500  #   2
+*vertex,0.48000,0.54000,0.50500  #   3
+*vertex,0.01000,0.54000,0.50500  #   4
+*vertex,0.01000,0.55500,0.56500  #   5
+*vertex,0.48000,0.55500,0.56500  #   6
+*vertex,0.48000,0.60500,1.05500  #   7
+*vertex,0.01000,0.60500,1.05500  #   8
+# 
+*mass,seat,upholstery,OPAQUE,4,1,2,3,4  #  1
+*mass,seat_,upholstery,OPAQUE,4,2,1,4,3  #  2
+*mass,stback,upholstery,OPAQUE,4,5,6,7,8  #  3
+*mass,stback_,upholstery,OPAQUE,4,6,5,8,7  #  4
+# 
+*vis,0.0050,0.0950,0.5000,0.4800,0.4500,0.0300,0.0000,1.00,seat,upholstery  # visual   1
+*visp,8,6,0.00,seat_bk,upholstery  # visual   4 coords follow:
+0.0050,0.5550,0.5600,0.4850,0.5550,0.5600,0.4850,0.5850,0.5600,0.0050,0.5850,0.5600  # 1-4 
+0.0030,0.6000,1.0600,0.4830,0.6000,1.0600,0.4830,0.6350,1.0600,0.0030,0.6350,1.0600  # 5-8 
+*vis,0.4700,0.0900,0.0800,0.4500,0.0300,0.0300,90.0000,1.00,cross_a,furn_wd10mm  # visual   5
+*vis,0.0400,0.0900,0.0800,0.4500,0.0300,0.0300,90.0000,1.00,cross_b,furn_wd10mm  # visual   6
+*vis,0.0150,0.3050,0.0800,0.4500,0.0300,0.0300,0.0000,1.00,cross_c,furn_wd10mm  # visual   7
+*vis,0.0150,0.0950,0.0000,0.0300,0.0300,0.5200,0.0000,1.00,leg_a,furn_wd10mm  # visual  10
+*vis,0.4400,0.0950,0.0000,0.0300,0.0300,0.5200,0.0000,1.00,leg_b,furn_wd10mm  # visual  11
+*vis,0.0150,0.5350,0.0000,0.0300,0.0400,0.5650,0.0000,1.00,leg_c,furn_wd10mm  # visual  12
+*vis,0.4400,0.5350,0.0000,0.0300,0.0400,0.5650,0.0000,1.00,leg_d,furn_wd10mm  # visual  13
+*vobject,kit-chair,padded wooden chair,9,seat,seat_bk,cross_a,cross_b,cross_c,leg_a,leg_b,leg_c,leg_d
+*end_item
+#
+*item,din-table,wooden dining table# tag name menu entry
+*incat,house_furn
+*includes,visual,mass
+*sourced,Designed to match kitchen chair object. Guess at composition.
+*origin,0.0,0.0,0.0              # local origin
+*bounding_box,1.70,1.00,0.810  # extents of object
+*Text
+A rectangular wooden dining table. Long axis is E-W (X axis).
+*End_text
+# 
+*vertex,0.00000,0.00000,0.80000  #   1
+*vertex,0.00000,1.00000,0.80000  #   2
+*vertex,1.70000,1.00000,0.80000  #   3
+*vertex,1.70000,0.00000,0.80000  #   4
+# 
+*mass,table,door,OPAQUE,4,1,2,3,4  #  1
+*mass,table_,door,OPAQUE,4,2,1,4,3  #  2
+# 
+*vis,0.0000,0.0000,0.7900,1.7000,1.0000,0.0200,0.0000,1.00,tbl_top,door  # visual   1
+*vis,0.1000,0.1000,0.0000,0.1000,0.1000,0.7900,0.0000,1.00,tbl_leg_a,furn_wd10mm  # visual   2
+*vis,0.1000,0.8000,0.0000,0.1000,0.1000,0.7900,0.0000,1.00,tbl_leg_b,furn_wd10mm  # visual   3
+*vis,1.5000,0.8000,0.0000,0.1000,0.1000,0.7900,0.0000,1.00,tbl_leg_c,furn_wd10mm  # visual   4
+*vis,1.5000,0.1000,0.0000,0.1000,0.1000,0.7900,0.0000,1.00,tbl_leg_d,furn_wd10mm  # visual   5
+*vobject,din-table,wooden dining table,5,tbl_top,tbl_leg1,tbl_leg2,tbl_leg3,tbl_leg4
+*end_item
+#
 *item,armchair,arm chair with fabric cover# tag name menu entry
 *incat,house_furn
 *includes,visual,mass
@@ -1512,9 +1578,9 @@ Glass walls are on south and east faces with 0 rotation.
 *vobject,shower,walk-in shower, 3,shwr_tray,shwr_wal1_shwr_wal2
 *end_item
 #
-*item,below_stair,space under a 13 step stair # tag name menu entry
-*incat,stairs    
-*includes,visual,boundary
+*item,blw_str_cv_r,under stairs angled to right # tag name menu entry
+*incat,stairs
+*includes,boundary
 *sourced,Derived from an ESP-r geometry file.
 *origin,0.0,0.0,0.0  # local origin
 *bounding_box,  1.000  3.300  2.600  # extents of object
@@ -1522,7 +1588,7 @@ Glass walls are on south and east faces with 0 rotation.
 Describes ZONE under a typical post-war residential stair with a
 straight run of 10 steps (going north) and a right diagonal landing 
 for a total of 13 steps and rise of 2.6m and 1m wide. Can be used
-with the above_stair object in a two level residence. Remember to 
+with the abv_str_cv_r object in a two level residence. Remember to 
 re-run surface topology check.
 *End_text
 # 
@@ -1610,25 +1676,10 @@ re-run surface topology check.
 *surf,left_under,gyp_gyp_ptn,OPAQUE,25, 55  1  4 51 52 47 48 43 44 39 40 35 36 31 32 27 28 23 24 19 20 16 17 13  5  #  26
 *surf,right_under,gyp_gyp_ptn,OPAQUE,27,  2 54  6  7 11 10 12 15 21 18 25 22 29 26 33 30 37 34 41 38 45 42 49 46 53 50  3  #  27
 *surf,floor_under,grnd_floor,OPAQUE, 6,  6 54  2  1 55  5  #  28
-# 
-*vis3,1.0000,0.0000,0.2000,0.0600,0.0600,1.0000,90.0000,0.0000,0.0000,1.00,post_a,door  # visual block   1
-*vis3,1.0000,0.2500,0.4000,0.0600,0.0600,1.0000,90.0000,0.0000,0.0000,1.00,post_b,door  # visual block   2
-*vis3,1.0000,0.5000,0.6000,0.0600,0.0600,1.0000,90.0000,0.0000,0.0000,1.00,post_c,door  # visual block   3
-*vis3,1.0000,0.7500,0.8000,0.0600,0.0600,1.0000,90.0000,0.0000,0.0000,1.00,post_d,door  # visual block   4
-*vis3,1.0000,1.0000,1.0000,0.0600,0.0600,1.0000,90.0000,0.0000,0.0000,1.00,post_e,door  # visual block   5
-*vis3,1.0000,1.2500,1.2000,0.0600,0.0600,1.0000,90.0000,0.0000,0.0000,1.00,post_f,door  # visual block   6
-*vis3,1.0000,1.5000,1.4000,0.0600,0.0600,1.0000,90.0000,0.0000,0.0000,1.00,post_g,door  # visual block   7
-*vis3,1.0000,1.7500,1.6000,0.0600,0.0600,1.0000,90.0000,0.0000,0.0000,1.00,post_h,door  # visual block   8
-*vis3,1.0000,2.0000,1.8000,0.0600,0.0600,1.0000,90.0000,0.0000,0.0000,1.00,post_i,door  # visual block   9
-*vis3,1.0000,2.2500,2.0000,0.0600,0.0600,1.0000,90.0000,0.0000,0.0000,1.00,post_j,door  # visual block  10
-*vis3,1.0000,2.5000,2.2000,0.0600,0.0600,1.0000,90.0000,0.0000,0.0000,1.00,post_k,door  # visual block  11
-*visp,8,6,0.00,rail_a,door  # visual  12 coords follow:
-0.9400,0.0000,1.1800,1.0000,0.0000,1.1800,1.0000,2.5000,3.1800,0.9400,2.5000,3.1800  # 1-4 
-0.9400,0.0000,1.2400,1.0000,0.0000,1.2400,1.0000,2.5000,3.2400,0.9400,2.5000,3.2400  # 5-8 
 *end_item
 # 
-*item,above_stair,above_stair works with below_stair # tag name menu entry
-*incat,stairs     
+*item,abv_str_cv_r,above stairs angled to right # tag name menu entry
+*incat,stairs
 *includes,visual,boundary
 *sourced,Derived from an ESP-r geometry file.
 *origin,0.0,0.0,0.0  # local origin
@@ -1637,7 +1688,7 @@ re-run surface topology check.
 Described ZONE with a run of 13 stairs with a diagonal landing leading
 to a simple hall at 2.6m (assumes a 200mm floor structure) and a
 ceiling at 4.9m. The stair and hall are both 1m wide. It matches 
-the below_stair object. No Z transform from the below_stair is
+the blw_str_cv_r object. No Z transform from the blw_str_cv_r is
 needed if used together.  Remember to re-run a topology check.                        
 *End_text
 # 
@@ -1768,6 +1819,350 @@ needed if used together.  Remember to re-run a topology check.
 *vis3,1.0400,0.3000,3.5800,0.0600,2.2500,0.0600,0.0000,0.0000,0.0000,1.00,up_rail,door  # visual block  23
 *end_item
 # 
+*item,blw_str_st,under straight stairs # tag name menu entry
+*incat,stairs
+*includes,boundary
+*sourced,Derived from an ESP-r geometry file.
+*origin,0.0,0.0,0.0  # local origin
+*bounding_box,  1.000  3.000  2.600  # extents of object
+*Text
+Describes ZONE under a typical residential stair with a straight
+run of 13 steps (going north), a rise of 2.6m and 1m width. Can be
+used with either of the abv_str_st_X objects in two level residence.
+Remember to re-run surface topology check.                                
+*End_text
+# 
+*vertex,0.00000,0.00000,0.00000  #   1
+*vertex,1.00000,0.00000,0.00000  #   2
+*vertex,1.00000,0.00000,0.20000  #   3
+*vertex,0.00000,0.00000,0.20000  #   4
+*vertex,0.00000,3.00000,0.00000  #   5
+*vertex,1.00000,3.00000,0.00000  #   6
+*vertex,1.00000,3.00000,2.20000  #   7
+*vertex,1.00000,3.00000,2.60000  #   8
+*vertex,1.00000,2.75000,2.40000  #   9
+*vertex,1.00000,3.00000,2.40000  #  10
+*vertex,1.00000,2.50000,2.20000  #  11
+*vertex,0.00000,3.00000,2.20000  #  12
+*vertex,0.00000,2.75000,2.40000  #  13
+*vertex,1.00000,2.50000,2.00000  #  14
+*vertex,0.00000,2.50000,2.00000  #  15
+*vertex,0.00000,2.50000,2.20000  #  16
+*vertex,1.00000,2.25000,1.80000  #  17
+*vertex,0.00000,2.25000,1.80000  #  18
+*vertex,0.00000,2.25000,2.00000  #  19
+*vertex,1.00000,2.25000,2.00000  #  20
+*vertex,1.00000,2.00000,1.60000  #  21
+*vertex,0.00000,2.00000,1.60000  #  22
+*vertex,0.00000,2.00000,1.80000  #  23
+*vertex,1.00000,2.00000,1.80000  #  24
+*vertex,1.00000,1.75000,1.40000  #  25
+*vertex,0.00000,1.75000,1.40000  #  26
+*vertex,0.00000,1.75000,1.60000  #  27
+*vertex,1.00000,1.75000,1.60000  #  28
+*vertex,1.00000,1.50000,1.20000  #  29
+*vertex,0.00000,1.50000,1.20000  #  30
+*vertex,0.00000,1.50000,1.40000  #  31
+*vertex,1.00000,1.50000,1.40000  #  32
+*vertex,1.00000,1.25000,1.00000  #  33
+*vertex,0.00000,1.25000,1.00000  #  34
+*vertex,0.00000,1.25000,1.20000  #  35
+*vertex,1.00000,1.25000,1.20000  #  36
+*vertex,1.00000,1.00000,0.80000  #  37
+*vertex,0.00000,1.00000,0.80000  #  38
+*vertex,0.00000,1.00000,1.00000  #  39
+*vertex,1.00000,1.00000,1.00000  #  40
+*vertex,1.00000,0.75000,0.60000  #  41
+*vertex,0.00000,0.75000,0.60000  #  42
+*vertex,0.00000,0.75000,0.80000  #  43
+*vertex,1.00000,0.75000,0.80000  #  44
+*vertex,1.00000,0.50000,0.40000  #  45
+*vertex,0.00000,0.50000,0.40000  #  46
+*vertex,0.00000,0.50000,0.60000  #  47
+*vertex,1.00000,0.50000,0.60000  #  48
+*vertex,1.00000,0.25000,0.20000  #  49
+*vertex,0.00000,0.25000,0.20000  #  50
+*vertex,0.00000,0.25000,0.40000  #  51
+*vertex,1.00000,0.25000,0.40000  #  52
+*vertex,1.00000,2.50000,0.00000  #  53
+*vertex,0.00000,2.50000,0.00000  #  54
+*vertex,1.00000,2.75000,2.20000  #  55
+*vertex,0.00000,2.75000,2.20000  #  56
+*vertex,0.00000,3.00000,2.40000  #  57
+*vertex,0.00000,3.00000,2.60000  #  58
+# 
+*surf,1st_riser,door,OPAQUE, 4,  1  2  3  4  #   1
+*surf,ptn_other,gyp_gyp_ptn,OPAQUE, 6,  6  5 12 57 10  7  #   2
+*surf,rise_y,door,OPAQUE, 4, 56 55  9 13  #   3
+*surf,rise_x,door,OPAQUE, 4, 15 14 11 16  #   4
+*surf,tread_z,door,OPAQUE, 4, 13  9 10 57  #   5
+*surf,tread_y,door,OPAQUE, 4, 16 11 55 56  #   6
+*surf,rise_w,door,OPAQUE, 4, 18 17 20 19  #   7
+*surf,rise_v,door,OPAQUE, 4, 22 21 24 23  #   8
+*surf,rise_u,door,OPAQUE, 4, 26 25 28 27  #   9
+*surf,rise_t,door,OPAQUE, 4, 30 29 32 31  #  10
+*surf,rise_s,door,OPAQUE, 4, 34 33 36 35  #  11
+*surf,rise_r,door,OPAQUE, 4, 38 37 40 39  #  12
+*surf,rise_q,door,OPAQUE, 4, 42 41 44 43  #  13
+*surf,rise_p,door,OPAQUE, 4, 46 45 48 47  #  14
+*surf,rise_o,door,OPAQUE, 4, 50 49 52 51  #  15
+*surf,tread_n,door,OPAQUE, 4,  4  3 49 50  #  16
+*surf,tread_o,door,OPAQUE, 4, 51 52 45 46  #  17
+*surf,tread_p,door,OPAQUE, 4, 47 48 41 42  #  18
+*surf,tread_q,door,OPAQUE, 4, 43 44 37 38  #  19
+*surf,tread_r,door,OPAQUE, 4, 39 40 33 34  #  20
+*surf,tread_s,door,OPAQUE, 4, 35 36 29 30  #  21
+*surf,tread_t,door,OPAQUE, 4, 31 32 25 26  #  22
+*surf,tread_u,door,OPAQUE, 4, 27 28 21 22  #  23
+*surf,tread_v,door,OPAQUE, 4, 23 24 17 18  #  24
+*surf,tread_w,door,OPAQUE, 4, 19 20 14 15  #  25
+*surf,left_under,gyp_gyp_ptn,OPAQUE,28, 54  1  4 50 51 46 47 42 43 38 39 34 35 30 31 26 27 22 23 18 19 15 16 56 13 57 12  5  #  26
+*surf,right_under,gyp_gyp_ptn,OPAQUE,28,  2 53  6  7 10  9 55 11 14 20 17 24 21 28 25 32 29 36 33 40 37 44 41 48 45 52 49 3  #  27
+*surf,floor_under,grnd_floor,OPAQUE, 6,  6 53  2  1 54  5  #  28
+#
+*end_item
+# 
+*item,abv_str_st_l,abv straight stairs w left rail # tag name menu entry
+*incat,stairs
+*includes,visual,boundary
+*sourced,Derived from an ESP-r geometry file.
+*origin,0.0,0.0,0.0  # local origin
+*bounding_box,  1.000  3.000  2.400  # extents of object
+*Text
+Describes ZONE under a typical residential stair with a straight
+run of 13 steps (going north), a rise of 2.6m and 1m width. The 
+stair rail is on the left. Matches the blw_str_st object (use the 
+same origin). Remember to re-run surface topology check.                                              
+*End_text
+# 
+*vertex,1.00000,3.00000,2.60000  #   1
+*vertex,0.00000,1.00000,2.60000  #   2
+*vertex,1.00000,2.50000,2.60000  #   3
+*vertex,0.00000,2.50000,2.00000  #   4
+*vertex,0.00000,2.50000,2.20000  #   5
+*vertex,0.00000,2.75000,2.20000  #   6
+*vertex,1.00000,3.00000,2.40000  #   7
+*vertex,1.00000,2.75000,2.40000  #   8
+*vertex,1.00000,2.50000,2.20000  #   9
+*vertex,0.00000,2.75000,2.40000  #  10
+*vertex,1.00000,2.50000,2.00000  #  11
+*vertex,1.00000,2.25000,1.80000  #  12
+*vertex,0.00000,2.25000,1.80000  #  13
+*vertex,0.00000,2.25000,2.00000  #  14
+*vertex,1.00000,2.25000,2.00000  #  15
+*vertex,1.00000,2.00000,1.60000  #  16
+*vertex,0.00000,2.00000,1.60000  #  17
+*vertex,0.00000,2.00000,1.80000  #  18
+*vertex,1.00000,2.00000,1.80000  #  19
+*vertex,1.00000,1.75000,1.40000  #  20
+*vertex,0.00000,1.75000,1.40000  #  21
+*vertex,0.00000,1.75000,1.60000  #  22
+*vertex,1.00000,1.75000,1.60000  #  23
+*vertex,1.00000,1.50000,1.20000  #  24
+*vertex,0.00000,1.50000,1.20000  #  25
+*vertex,0.00000,1.50000,1.40000  #  26
+*vertex,1.00000,1.50000,1.40000  #  27
+*vertex,1.00000,1.25000,1.00000  #  28
+*vertex,0.00000,1.25000,1.00000  #  29
+*vertex,0.00000,1.25000,1.20000  #  30
+*vertex,1.00000,1.25000,1.20000  #  31
+*vertex,1.00000,1.00000,0.80000  #  32
+*vertex,0.00000,1.00000,0.80000  #  33
+*vertex,0.00000,1.00000,1.00000  #  34
+*vertex,1.00000,1.00000,1.00000  #  35
+*vertex,1.00000,0.75000,0.60000  #  36
+*vertex,0.00000,0.75000,0.60000  #  37
+*vertex,0.00000,0.75000,0.80000  #  38
+*vertex,1.00000,0.75000,0.80000  #  39
+*vertex,1.00000,0.50000,0.40000  #  40
+*vertex,0.00000,0.50000,0.40000  #  41
+*vertex,0.00000,0.50000,0.60000  #  42
+*vertex,1.00000,0.50000,0.60000  #  43
+*vertex,1.00000,0.25000,0.20000  #  44
+*vertex,0.00000,0.25000,0.20000  #  45
+*vertex,0.00000,0.25000,0.40000  #  46
+*vertex,1.00000,0.25000,0.40000  #  47
+*vertex,0.00000,0.00000,0.20000  #  48
+*vertex,1.00000,0.00000,0.20000  #  49
+*vertex,1.00000,0.00000,2.20000  #  50
+*vertex,0.00000,0.00000,2.20000  #  51
+*vertex,1.00000,0.00000,1.20000  #  52
+*vertex,1.00000,0.28000,2.60000  #  53
+*vertex,0.00000,0.28000,2.60000  #  54
+*vertex,1.00000,2.75000,2.20000  #  55
+*vertex,0.00000,3.00000,2.40000  #  56
+*vertex,0.00000,3.00000,2.60000  #  57
+# 
+*surf,rise_y,door,OPAQUE, 4, 55  6 10  8  #   1
+*surf,rise_x,door,OPAQUE, 4, 11  4  5  9  #   2
+*surf,tread_z,door,OPAQUE, 4,  8 10 56  7  #   3
+*surf,tread_y,door,OPAQUE, 4,  9  5  6 55  #   4
+*surf,rise_w,door,OPAQUE, 4, 12 13 14 15  #   5
+*surf,rise_v,door,OPAQUE, 4, 16 17 18 19  #   6
+*surf,rise_u,door,OPAQUE, 4, 20 21 22 23  #   7
+*surf,rise_t,door,OPAQUE, 4, 24 25 26 27  #   8
+*surf,rise_s,door,OPAQUE, 4, 28 29 30 31  #   9
+*surf,rise_r,door,OPAQUE, 4, 32 33 34 35  #  10
+*surf,rise_q,door,OPAQUE, 4, 36 37 38 39  #  11
+*surf,rise_p,door,OPAQUE, 4, 40 41 42 43  #  12
+*surf,rise_o,door,OPAQUE, 4, 44 45 46 47  #  13
+*surf,tread_n,door,OPAQUE, 4, 49 48 45 44  #  14
+*surf,tread_o,door,OPAQUE, 4, 47 46 41 40  #  15
+*surf,tread_p,door,OPAQUE, 4, 43 42 37 36  #  16
+*surf,tread_q,door,OPAQUE, 4, 39 38 33 32  #  17
+*surf,tread_r,door,OPAQUE, 4, 35 34 29 28  #  18
+*surf,tread_s,door,OPAQUE, 4, 31 30 25 24  #  19
+*surf,tread_t,door,OPAQUE, 4, 27 26 21 20  #  20
+*surf,tread_u,door,OPAQUE, 4, 23 22 17 16  #  21
+*surf,tread_v,door,OPAQUE, 4, 19 18 13 12  #  22
+*surf,tread_w,door,OPAQUE, 4, 15 14  4 11  #  23
+*surf,lower_right,gyp_gyp_ptn,OPAQUE,29, 49 44 47 40 43 36 39 32 35 28 31 24 27 20 23 16 19 12 15 11  9 55  8  7  1  3 53 50 52  #  24
+*surf,to_lower,fictitious,SC_fictit, 5, 48 49 52 50 51  #  25
+*surf,sloped,gyp_gyp_ptn,OPAQUE, 4, 51 50 53 54  #  26
+*surf,lower_left,gyp_gyp_ptn,OPAQUE,22, 45 48 51  5  4 14 13 18 17 22 21 26 25 30 29 34 33 38 37 42 41 46  #  27
+*surf,rise_z,UNKNOWN,OPAQUE, 4,  7 56 57  1  #  28
+*surf,strc_left,UNKNOWN,OPAQUE, 8,  5 51 54  2 57 56 10  6  #  29
+*surf,to_upper,fictitious,SC_fictit, 6, 57  2 54 53  3  1  #  30
+# 
+*vis3,0.0000,0.0000,0.2000,0.0600,0.0600,1.0000,0.0000,0.0000,0.0000,1.00,bpost_a,door  # visual block   1
+*vis3,0.0000,0.2500,0.4000,0.0600,0.0600,1.0000,0.0000,0.0000,0.0000,1.00,bpost_b,door  # visual block   2
+*vis3,0.0000,0.5000,0.6000,0.0600,0.0600,1.0000,0.0000,0.0000,0.0000,1.00,bpost_c,door  # visual block   3
+*vis3,0.0000,0.7500,0.8000,0.0600,0.0600,1.0000,0.0000,0.0000,0.0000,1.00,bpost_d,door  # visual block   4
+*vis3,0.0000,1.0000,1.0000,0.0600,0.0600,1.0000,0.0000,0.0000,0.0000,1.00,bpost_e,door  # visual block   5
+*vis3,0.0000,1.2500,1.2000,0.0600,0.0600,1.0000,0.0000,0.0000,0.0000,1.00,bpost_f,door  # visual block   6
+*vis3,0.0000,1.5000,1.4000,0.0600,0.0600,1.0000,0.0000,0.0000,0.0000,1.00,bpost_g,door  # visual block   7
+*vis3,0.0000,1.7500,1.6000,0.0600,0.0600,1.0000,0.0000,0.0000,0.0000,1.00,bpost_h,door  # visual block   8
+*vis3,0.0000,2.0000,1.8000,0.0600,0.0600,1.0000,0.0000,0.0000,0.0000,1.00,bpost_i,door  # visual block   9
+*vis3,0.0000,2.2500,2.0000,0.0600,0.0600,1.0000,0.0000,0.0000,0.0000,1.00,bpost_j,door  # visual block  10
+*vis3,0.0000,2.5000,2.2000,0.0600,0.0600,1.0000,0.0000,0.0000,0.0000,1.00,bpost_k,door  # visual block  11
+*visp,8,6,1.00,brail_a,door  # visual  12 coords follow:
+0.0000,0.0000,1.1800,0.0600,0.0000,1.1800,0.0600,2.7500,3.3800,0.0000,2.7500,3.3800  # 1-4 
+0.0000,0.0000,1.2400,0.0600,0.0000,1.2400,0.0600,2.7500,3.4400,0.0000,2.7500,3.4400  # 5-8 
+*vis3,0.0000,2.7500,2.4000,0.0600,0.0600,1.0000,0.0000,0.0000,0.0000,1.00,bpost_l,door  # visual block  13
+#
+*end_item
+#
+*item,abv_str_st_r,abv straight stairs w right rail # tag name menu entry
+*incat,stairs
+*includes,visual,boundary
+*sourced,Derived from an ESP-r geometry file.
+*origin,0.0,0.0,0.0  # local origin
+*bounding_box,  1.000  3.000  2.400  # extents of object
+*Text
+Describes ZONE under a typical residential stair with a straight
+run of 13 steps (going north), a rise of 2.6m and 1m width. The
+stair rail is on the right. Matches the blw_str_st object (use the
+same origin). Remember to re-run surface topology check.
+*End_text
+# 
+*vertex,1.00000,3.00000,2.60000  #   1
+*vertex,0.00000,1.00000,2.60000  #   2
+*vertex,1.00000,2.50000,2.60000  #   3
+*vertex,0.00000,2.50000,2.00000  #   4
+*vertex,0.00000,2.50000,2.20000  #   5
+*vertex,0.00000,2.75000,2.20000  #   6
+*vertex,1.00000,3.00000,2.40000  #   7
+*vertex,1.00000,2.75000,2.40000  #   8
+*vertex,1.00000,2.50000,2.20000  #   9
+*vertex,0.00000,2.75000,2.40000  #  10
+*vertex,1.00000,2.50000,2.00000  #  11
+*vertex,1.00000,2.25000,1.80000  #  12
+*vertex,0.00000,2.25000,1.80000  #  13
+*vertex,0.00000,2.25000,2.00000  #  14
+*vertex,1.00000,2.25000,2.00000  #  15
+*vertex,1.00000,2.00000,1.60000  #  16
+*vertex,0.00000,2.00000,1.60000  #  17
+*vertex,0.00000,2.00000,1.80000  #  18
+*vertex,1.00000,2.00000,1.80000  #  19
+*vertex,1.00000,1.75000,1.40000  #  20
+*vertex,0.00000,1.75000,1.40000  #  21
+*vertex,0.00000,1.75000,1.60000  #  22
+*vertex,1.00000,1.75000,1.60000  #  23
+*vertex,1.00000,1.50000,1.20000  #  24
+*vertex,0.00000,1.50000,1.20000  #  25
+*vertex,0.00000,1.50000,1.40000  #  26
+*vertex,1.00000,1.50000,1.40000  #  27
+*vertex,1.00000,1.25000,1.00000  #  28
+*vertex,0.00000,1.25000,1.00000  #  29
+*vertex,0.00000,1.25000,1.20000  #  30
+*vertex,1.00000,1.25000,1.20000  #  31
+*vertex,1.00000,1.00000,0.80000  #  32
+*vertex,0.00000,1.00000,0.80000  #  33
+*vertex,0.00000,1.00000,1.00000  #  34
+*vertex,1.00000,1.00000,1.00000  #  35
+*vertex,1.00000,0.75000,0.60000  #  36
+*vertex,0.00000,0.75000,0.60000  #  37
+*vertex,0.00000,0.75000,0.80000  #  38
+*vertex,1.00000,0.75000,0.80000  #  39
+*vertex,1.00000,0.50000,0.40000  #  40
+*vertex,0.00000,0.50000,0.40000  #  41
+*vertex,0.00000,0.50000,0.60000  #  42
+*vertex,1.00000,0.50000,0.60000  #  43
+*vertex,1.00000,0.25000,0.20000  #  44
+*vertex,0.00000,0.25000,0.20000  #  45
+*vertex,0.00000,0.25000,0.40000  #  46
+*vertex,1.00000,0.25000,0.40000  #  47
+*vertex,0.00000,0.00000,0.20000  #  48
+*vertex,1.00000,0.00000,0.20000  #  49
+*vertex,1.00000,1.25000,2.20000  #  50
+*vertex,1.00000,0.00000,2.20000  #  51
+*vertex,0.00000,0.00000,2.20000  #  52
+*vertex,1.00000,0.00000,1.20000  #  53
+*vertex,1.00000,0.28000,2.60000  #  54
+*vertex,0.00000,0.28000,2.60000  #  55
+*vertex,1.00000,2.75000,2.20000  #  56
+*vertex,0.00000,3.00000,2.40000  #  57
+*vertex,0.00000,3.00000,2.60000  #  58
+# 
+*surf,rise_y,door,OPAQUE, 4, 56  6 10  8  #   1
+*surf,rise_x,door,OPAQUE, 4, 11  4  5  9  #   2
+*surf,tread_z,door,OPAQUE, 4,  8 10 57  7  #   3
+*surf,tread_y,door,OPAQUE, 4,  9  5  6 56  #   4
+*surf,rise_w,door,OPAQUE, 4, 12 13 14 15  #   5
+*surf,rise_v,door,OPAQUE, 4, 16 17 18 19  #   6
+*surf,rise_u,door,OPAQUE, 4, 20 21 22 23  #   7
+*surf,rise_t,door,OPAQUE, 4, 24 25 26 27  #   8
+*surf,rise_s,door,OPAQUE, 4, 28 29 30 31  #   9
+*surf,rise_r,door,OPAQUE, 4, 32 33 34 35  #  10
+*surf,rise_q,door,OPAQUE, 4, 36 37 38 39  #  11
+*surf,rise_p,door,OPAQUE, 4, 40 41 42 43  #  12
+*surf,rise_o,door,OPAQUE, 4, 44 45 46 47  #  13
+*surf,tread_n,door,OPAQUE, 4, 49 48 45 44  #  14
+*surf,tread_o,door,OPAQUE, 4, 47 46 41 40  #  15
+*surf,tread_p,door,OPAQUE, 4, 43 42 37 36  #  16
+*surf,tread_q,door,OPAQUE, 4, 39 38 33 32  #  17
+*surf,tread_r,door,OPAQUE, 4, 35 34 29 28  #  18
+*surf,tread_s,door,OPAQUE, 4, 31 30 25 24  #  19
+*surf,tread_t,door,OPAQUE, 4, 27 26 21 20  #  20
+*surf,tread_u,door,OPAQUE, 4, 23 22 17 16  #  21
+*surf,tread_v,door,OPAQUE, 4, 19 18 13 12  #  22
+*surf,tread_w,door,OPAQUE, 4, 15 14  4 11  #  23
+*surf,struc_a,gyp_gyp_ptn,OPAQUE, 9, 51 50  9 56  8  7  1  3 54  #  24
+*surf,lower_right,gyp_gyp_ptn,OPAQUE,24, 49 44 47 40 43 36 39 32 35 28 31 24 27 20 23 16 19 12 15 11  9 50 51 53  #  25
+*surf,to_lower,fictitious,SC_fictit, 5, 48 49 53 51 52  #  26
+*surf,sloped,gyp_gyp_ptn,OPAQUE, 4, 52 51 54 55  #  27
+*surf,lower_left,gyp_gyp_ptn,OPAQUE,28, 45 48 52 55  2 58 57 10  6  5  4 14 13 18 17 22 21 26 25 30 29 34 33 38 37 42 41 46  #  28
+*surf,rise_z,UNKNOWN,OPAQUE, 4,  7 57 58  1  #  29
+*surf,to_upper,fictitious,SC_fictit, 6, 58  2 55 54  3  1  #  30
+# 
+*vis3,1.0000,0.0000,0.2000,0.0600,0.0600,1.0000,90.0000,0.0000,0.0000,1.00,bpost_a,door  # visual block   1
+*vis3,1.0000,0.2500,0.4000,0.0600,0.0600,1.0000,90.0000,0.0000,0.0000,1.00,bpost_b,door  # visual block   2
+*vis3,1.0000,0.5000,0.6000,0.0600,0.0600,1.0000,90.0000,0.0000,0.0000,1.00,bpost_c,door  # visual block   3
+*vis3,1.0000,0.7500,0.8000,0.0600,0.0600,1.0000,90.0000,0.0000,0.0000,1.00,bpost_d,door  # visual block   4
+*vis3,1.0000,1.0000,1.0000,0.0600,0.0600,1.0000,90.0000,0.0000,0.0000,1.00,bpost_e,door  # visual block   5
+*vis3,1.0000,1.2500,1.2000,0.0600,0.0600,1.0000,90.0000,0.0000,0.0000,1.00,bpost_f,door  # visual block   6
+*vis3,1.0000,1.5000,1.4000,0.0600,0.0600,1.0000,90.0000,0.0000,0.0000,1.00,bpost_g,door  # visual block   7
+*vis3,1.0000,1.7500,1.6000,0.0600,0.0600,1.0000,90.0000,0.0000,0.0000,1.00,bpost_h,door  # visual block   8
+*vis3,1.0000,2.0000,1.8000,0.0600,0.0600,1.0000,90.0000,0.0000,0.0000,1.00,bpost_i,door  # visual block   9
+*vis3,1.0000,2.2500,2.0000,0.0600,0.0600,1.0000,90.0000,0.0000,0.0000,1.00,bpost_j,door  # visual block  10
+*vis3,1.0000,2.5000,2.2000,0.0600,0.0600,1.0000,90.0000,0.0000,0.0000,1.00,bpost_k,door  # visual block  11
+*visp,8,6,1.00,brail_a,door  # visual  12 coords follow:
+0.9400,0.0000,1.1800,1.0000,0.0000,1.1800,1.0000,2.7500,3.3800,0.9400,2.7500,3.3800  # 1-4 
+0.9400,0.0000,1.2400,1.0000,0.0000,1.2400,1.0000,2.7500,3.4400,0.9400,2.7500,3.4400  # 5-8 
+*vis3,1.0000,2.7500,2.4000,0.0600,0.0600,1.0000,90.0000,0.0000,0.0000,1.00,bpost_l,door  # visual block  13
+#
+*end_item
+#
 *item,thermostat,standard honeywell CM707 thermostat # tag name menu entry
 *incat,system_comp
 *includes,visual,mass,boundary

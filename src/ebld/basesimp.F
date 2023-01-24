@@ -49,9 +49,7 @@ c common block for ground temperature profiles.
       COMMON/BSvn/bsVrsnNmbr(MCOM)
       COMMON/BSwth/bsTGavg(MCOM),bsTGamp(MCOM),bsTGps(MCOM)
 
-C Current file (for use by low level I/O calls). Error subroutine
-C and error details for dll mode.
-      common/dllerr/dllsubr,dllmesg
+C Current file (for use by low level I/O calls).
 
 C This common block holds input variables for basement type 999.
 C This type takes the BASECALC results as inputs for the heat loss factors,
@@ -63,8 +61,7 @@ C (20 x 20 meters).
      &                Bphase999(MCOM)
 
       character*72 LBSIMP
-      character outs*124,OUTSTR*124,dllsubr*12,dllmesg*124,t60*60
-      logical dll
+      character outs*124,OUTSTR*124,t60*60
 
       REAL fBASESIMPVersionNumber  ! version number of BASESIMP input file
 C Limits for parameter values to be read in
@@ -90,8 +87,6 @@ C    bsTGps(i)  Phase lag of ground-temperature's annual sine wave
 C NOTE: the references to the zone numbers have been removed, as these values are not
 c       zone-dependent.
 C**********************************************************************************
-C Check if running in dll mode.
-      call isadll(dll)
 
 C Set the version number
       fBASESIMPVersionNumber = 0.
@@ -104,16 +99,9 @@ C Open BASESIMP input data file.
         write(outs,'(3a)') 'BASESIMP file ',
      &     LBSIMP(ICOMP)(1:lnblnk(LBSIMP(ICOMP))),
      &     ' could not be opened.'
-        if(dll)then
-          dllsubr='BASEREAD'
-          dllmesg=outs
-          ier=2
-          return
-        else
-          call edisp(IUOUT,outs)
-          IER=1
-          RETURN
-        endif
+        call edisp(IUOUT,outs)
+        IER=1
+        RETURN
       endif
       write(currentfile,'(a)') LBSIMP(ICOMP)(1:lnblnk(LBSIMP(ICOMP)))
 
@@ -421,21 +409,14 @@ C Error handling.
  1000 continue
       write(outs,'(2a,i3,a)') t60(1:lnblnk(t60)),' in zone',ICOMP,
      &  ' BASESIMP file.'
-      if(dll)then
-        dllsubr='BASEREAD'
-        dllmesg=outs
-        ier=2
-        return
-      else
-        call edisp(iuout,outs)
-        IER=1
-        CALL ERPFREE(IUNIT,ISTAT)
+      call edisp(iuout,outs)
+      IER=1
+      CALL ERPFREE(IUNIT,ISTAT)
 
 C modified Feb 4, 2004 SPH
 C Exit instead of returning
-        call pauses(3)  ! time for user to see message
-        CALL EXIT(1)
-      endif
+      call pauses(3)  ! time for user to see message
+      CALL EXIT(1)
 
       END
 

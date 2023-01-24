@@ -163,11 +163,15 @@ C Initialisation
       SurfTot = 0.0
       DO 10 I=1,MNbAbs
         SNAeff(I)= 0.0
-        do 11 J=1,MS
+        do J=1,MS
           SurfEquM(J,I) = 0.0
+        enddo
+        do J=1,MaxPub
           SurfEquP(J,I) = 0.0
+        enddo
+        do J=1,MaxFur
           SurfEquF(J,I) = 0.0
- 11     CONTINUE
+        enddo          
  10   Continue
 
 C Read the ACO file to determine if they are some public and furniture

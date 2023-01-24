@@ -694,7 +694,7 @@ C     &        icount,' is not near the floor (so inverting it).'
               izz=NVER(iSurface)+3-iyy
               JVN(iSurface,iyy)=jvn1(izz)
             enddo
-            write(louts,'(a,102i4)') 'inverted list is ',
+            write(louts,'(a,124i4)') 'inverted list is ',
      &        (JVN(iSurface,ii),ii=1,NVER(iSurface))
 C            call edisp248(iuout,louts,100)
             SVFC(icomp,iSurface)='CEIL'
@@ -730,7 +730,7 @@ C     &        icount,' is not near the ceiling (inverting it).'
               izz=NVER(iSurface)+3-iyy
               JVN(iSurface,iyy)=jvn1(izz)
             enddo
-            write(louts,'(a,102i4)') 'inverted list is ',
+            write(louts,'(a,124i4)') 'inverted list is ',
      &        (JVN(iSurface,ii),ii=1,NVER(iSurface))
 C            call edisp248(iuout,louts,100)
             SVFC(icomp,iSurface)='FLOR'
@@ -974,9 +974,6 @@ C SNFNAM - *72 Name of the file containing hourly snow depth information
 
 C Obstruction blocks via geometry.h.
 
-      common/dllerr/dllsubr,dllmesg
-      character dllsubr*12,dllmesg*124  ! messages if errors in dll
-
 C Simulation parameter sets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
@@ -1079,7 +1076,7 @@ C For passing to silentxmlmodel.
 C Same as local variable actions which is passed back to calling code.
       character silentreturndirec*8
 
-      logical dll,unixok,isunique
+      logical unixok,isunique
 
       character szhasconstr*32
       dimension szhasconstr(MSZ,MS)  ! construction to use for each surface
@@ -1264,25 +1261,15 @@ C For each of the gbxml specific arrays, clear values.
       weather='none'
       OUTSTR=' '
 
-C Check if running in dll mode.
-      call isadll(dll)
-
 C Initialise gbXML file. and set currentfile.
       CALL EFOPSEQ(IUNIT,LFILE,1,IER)
       IF(IER.LT.0)THEN
         write(outs,'(3a)') 'gbXML file ',LFILE(1:lnblnk(LFILE)),
      &      ' could not be opened.'
-        if(dll)then
-          dllsubr='SILENTREAD'
-          dllmesg=outs
-          ier=2
-          return
-        else
-          call edisp(iuout,outs)
-          IER=1
-          RETURN
-        endif
-      ENDIF
+        call edisp(iuout,outs)
+        IER=1
+        RETURN
+      endif
       write(currentfile,'(a)') LFILE(1:lnblnk(LFILE))
 
  442  call lstripc(IUNIT,loutstr,99,ND,1,'geo line 1',IER)
@@ -1525,7 +1512,7 @@ C and then jump back and try again.
             enddo  ! of loop3
             if(decr)then
               if(idebg.ge.1)then
-                write(6,'(a,3i4,2x,102i4)') 'xml decr surf jvn ',
+                write(6,'(a,3i4,2x,124i4)') 'xml decr surf jvn ',
      &            loop,loop2,isznver(loop,loop2),
      &            (iszjvn(loop,loop2,j),J=1,isznver(loop,loop2))
               endif
@@ -1539,8 +1526,8 @@ C Debug.
      &    (zn(J),J=1,nbz)
         write(6,'(a,i2,a,99a)') 'nb spaces ',nbz,' their names ',
      &    (spname(J),J=1,nbz)
-        write(6,'(a,102i4)') ' surfs in each ',(nzsur(J),J=1,nbz)
-        write(6,'(a,102i4)') ' verts in each ',(nztv(J),J=1,nbz)
+        write(6,'(a,124i4)') ' surfs in each ',(nzsur(J),J=1,nbz)
+        write(6,'(a,124i4)') ' verts in each ',(nztv(J),J=1,nbz)
         do loop=1,nbz
 
 C Strip any blanks from zone name.
@@ -1555,7 +1542,7 @@ C            write(6,*) szcoords(loop,loop4,1),szcoords(loop,loop4,2),
 C     &        szcoords(loop,loop4,3),loop4
 C          enddo
           if(idebg.ge.1)then
-            write(6,'(a,102i4)') 'xml surf edges ary',
+            write(6,'(a,124i4)') 'xml surf edges ary',
      &        (isznver(loop,J),J=1,nzsur(loop))
           endif
           do loop3=1,nzsur(loop)
@@ -1571,7 +1558,7 @@ C          enddo
               write(sname(loop,loop3),'(a)') suggest(1:12) ! use alternative
             endif
             if(idebg.ge.1)then
-              write(6,'(a,i4,2x,102i4)') 'xml surf jvn ',
+              write(6,'(a,i4,2x,124i4)') 'xml surf jvn ',
      &          isznver(loop,loop3),
      &          (iszjvn(loop,loop3,j),J=1,isznver(loop,loop3))
             endif
@@ -1862,7 +1849,7 @@ C << How to ensure inversion is only done once? >>
           else
             n=isznver(iothzone,iothsurf)
             if(idebg.ge.1)then
-              write(6,'(a,i3,102i4)') 'other ptn edges&list ',
+              write(6,'(a,i3,124i4)') 'other ptn edges&list ',
      &          n,(iszjvn(iothzone,iothsurf,loop3),loop3=1,n)
             endif
             do iyy = 1,n   ! invert this list
@@ -1875,7 +1862,7 @@ C << How to ensure inversion is only done once? >>
               iszjvn(iothzone,iothsurf,iyy)=jvn1(izz)
             enddo
             if(idebg.ge.1)then
-              write(6,'(a,i3,102i4)') 'reversed other ptn edges&list ',
+              write(6,'(a,i3,124i4)') 'reversed other ptn edges&list ',
      &          n,(iszjvn(iothzone,iothsurf,loop3),loop3=1,n)
             endif
             ptnflip=.true.  ! set so no repeat
@@ -1889,7 +1876,7 @@ C also be inverted.
             else
               if(nbxmlchild.ge.1.and.nbxmlchild.lt.21)then
                 n=isznver(iothzone,iothopsurf(nbxmlchild))
-                write(6,'(a,i3,102i4)') 'other ptn open edges&list',
+                write(6,'(a,i3,124i4)') 'other ptn open edges&list',
      &            n,(iszjvn(iothzone,iothopsurf(nbxmlchild),loop3),
      &            loop3=1,n)
                 do iyy = 1,n   ! invert this list
@@ -1901,7 +1888,7 @@ C also be inverted.
                   izz=n+3-iyy
                   iszjvn(iothzone,iothopsurf(nbxmlchild),iyy)=jvn1(izz)
                 enddo
-                write(6,'(a,i3,102i4)') 
+                write(6,'(a,i3,124i4)') 
      &            'reversed other ptn open edges&list ',
      &            n,(iszjvn(iothzone,iothopsurf(nbxmlchild),loop3),
      &            loop3=1,n)
@@ -2205,7 +2192,7 @@ C Debug
 
 C Debug - write out the current edge list.
               if(idebg.eq.2)then
-                write(6,'(a,3i4,a,102i4)') 
+                write(6,'(a,3i4,a,124i4)')
      &           'surf jvn a icurzone icursurf isznver',
      &           icurzone,icursurf,isznver(icurzone,icursurf),' list ',
      &           (iszjvn(icurzone,icursurf,j),J=1,
@@ -2268,7 +2255,7 @@ C Debug.
                 endif
 
 C Debug - write out the edge list for iopensurf.
-C               write(6,'(a,2i4,102i4)') 'opening jvn b ',
+C               write(6,'(a,2i4,124i4)') 'opening jvn b ',
 C     &           icurzone,iopensurf,
 C     &           (iszjvn(icurzone,iopensurf,j),J=1,
 C     &            isznver(icurzone,iopensurf))
@@ -2330,7 +2317,7 @@ C Debug.
 
 C Debug - write out the other zone partition edge list.
                 if(idebg.ge.1)then
-                  write(6,'(a,2i4,102i4)') 'other ptn jvn ',
+                  write(6,'(a,2i4,124i4)') 'other ptn jvn ',
      &             iothzone,iothsurf,
      &             (iszjvn(iothzone,iothsurf,j),J=1,
      &             isznver(iothzone,iothsurf))
@@ -2403,7 +2390,7 @@ C Debug.
 
 C Debug - write out the edge list for iopensurf.
                   if(nbxmlchild.ge.1.and.nbxmlchild.lt.21)then
-                    write(6,'(a,2i4,102i4)') 
+                    write(6,'(a,2i4,124i4)') 
      &                'other opening jvn equiv',
      &                iothzone,iothopsurf(nbxmlchild),
      &                (iszjvn(iothzone,iothopsurf(nbxmlchild),j),J=1,
@@ -2872,7 +2859,7 @@ C << Place to decrement surface list >>
             goto 442  ! get another line
           endif
 C Debug.
-C          write(6,'(a,104i4)') 'a surfs in each ',(nzsur(J),J=1,nbz)
+C          write(6,'(a,124i4)') 'a surfs in each ',(nzsur(J),J=1,nbz)
 
           havenearside=.true.
 
@@ -3942,7 +3929,7 @@ C through all of the child vertices and see if they are
 C on one of the parent edges.
 C Debug.
       write(6,'(a,3i4)') 'gbxisadoor focused on iz ips ics ',IZ,IPS,ICS
-      write(6,'(a,102i4)') 'gbxisadoor parent surf jvn ',
+      write(6,'(a,124i4)') 'gbxisadoor parent surf jvn ',
      &  (iszjvn(IZ,IPS,j),J=1,n)
       do loop=1,n
         loop2=iszjvn(IZ,IPS,loop)
@@ -3960,7 +3947,7 @@ C Debug.
 
       if(act.eq.'i')then
 C Debug.
-        write(6,'(a,i3,102i4)') 'gbxisadoor door iszjvn edges & list ',
+        write(6,'(a,i3,124i4)') 'gbxisadoor door iszjvn edges & list ',
      &    isznver(IZ,ICS),
      &    (iszjvn(iz,ics,loop3),loop3=1,isznver(IZ,ICS))
         do loop=1,isznver(IZ,ICS)
@@ -3976,7 +3963,7 @@ C Debug.
         write(6,'(a,2i4)') 'lrdooris v & pos',lrdooris,lrdpos
       elseif(act.eq.'o')then
 C Debug.
-        write(6,'(a,i3,102i4)') 'gbxisadoor other open isz equiv jvn ',
+        write(6,'(a,i3,124i4)') 'gbxisadoor other open isz equiv jvn ',
      &    isznver(IZ,ICS),(iszjvn(IZ,ICS,j),J=1,isznver(IZ,ICS))
         call gbxSURLEHI(IZ,ICS,XYMAX,ZMAX,lldpos,lrdpos,uldpos,urdpos)
         lldooris=iszjvn(IZ,ICS,lldpos)  ! door lower left
@@ -4110,7 +4097,7 @@ C through all of the child vertices and see if they are
 C on one of the parent edges.
 C Debug.
       write(6,'(a,3i4)') 'gbxdoor focused on iz ips ics ',IZ,IPS,ICS
-      write(6,'(a,102i4)') 'gbxdoor parent surf jvn ',
+      write(6,'(a,124i4)') 'gbxdoor parent surf jvn ',
      &  (iszjvn(IZ,IPS,j),J=1,isznver(IZ,IPS))
       do loop=1,isznver(IZ,IPS)
         loop2=iszjvn(IZ,IPS,loop)
@@ -4128,7 +4115,7 @@ C Debug.
 
       if(act.eq.'i')then
 C Debug.
-        write(6,'(a,i3,102i4)') 'gbxdoor door iszjvn edges & list ',
+        write(6,'(a,i3,124i4)') 'gbxdoor door iszjvn edges & list ',
      &    isznver(IZ,ICS),
      &    (iszjvn(iz,ics,loop3),loop3=1,isznver(IZ,ICS))
         do loop=1,isznver(IZ,ICS)
@@ -4144,7 +4131,7 @@ C Debug.
         write(6,'(a,2i4)') 'lrdooris v & pos',lrdooris,lrdpos
       elseif(act.eq.'o')then
 C Debug.
-        write(6,'(a,i3,102i4)') 'gbxdoor other open isz equiv jvn ',
+        write(6,'(a,i3,124i4)') 'gbxdoor other open isz equiv jvn ',
      &    isznver(IZ,ICS),(iszjvn(IZ,ICS,j),J=1,isznver(IZ,ICS))
         call gbxSURLEHI(IZ,ICS,XYMAX,ZMAX,lldpos,lrdpos,uldpos,urdpos)
         lldooris=iszjvn(IZ,ICS,lldpos)  ! door lower left
@@ -4251,7 +4238,7 @@ C Debug.
       endif
       ivll=ipvwhich1a  ! remember parent insertion point
 C Debug.
-      write(6,'(a,i3,102i4)') 'ivll parent surf jvn ',
+      write(6,'(a,i3,124i4)') 'ivll parent surf jvn ',
      &  ivll,(iszjvn(IZ,IPS,j),J=1,isznver(IZ,IPS))
 
       n=isznver(IZ,IPS)
@@ -4332,7 +4319,7 @@ C the door (which got into the list via earlier steps).
       isznver(IZ,IPS)=n
 
       write(6,'(a,3i4)') 'gbxchild focused on iz ips ics ',IZ,IPS,ICS
-        write(6,'(a,102i4)') 'gbxchild parent surf jvn ',
+        write(6,'(a,124i4)') 'gbxchild parent surf jvn ',
      &    (iszjvn(IZ,IPS,j),J=1,n)
       do loop=1,isznver(IZ,IPS)
         loop2=iszjvn(IZ,IPS,loop)
@@ -4352,7 +4339,7 @@ C Logic for a window assumed to be within the parent surface.
       if(act.eq.'i')then
 
 C The following section variant of logic in insert.F
-        write(6,'(a,i3,102i4)') 'gbxchild open window edges jvn ',
+        write(6,'(a,i3,124i4)') 'gbxchild open window edges jvn ',
      &    (iszjvn(IZ,ICS,j),J=1,isznver(IZ,ICS))
         call gbxSURLEHI(IZ,ICS,XYMAX,ZMAX,lldpos,lrdpos,uldpos,urdpos)
         lldooris=iszjvn(IZ,ICS,lldpos)
@@ -4360,7 +4347,7 @@ C The following section variant of logic in insert.F
         write(6,*) 'LL LR UL UR position for child...',lldooris,
      &    lrdooris,lldpos,lrdpos,uldpos,urdpos
       elseif(act.eq.'o')then
-        write(6,'(a,i3,102i4)') 'gbxchild other open window edges jvn ',
+        write(6,'(a,i3,124i4)') 'gbxchild other open window edges jvn ',
      &    (iszjvn(IZ,ICS,j),J=1,isznver(IZ,ICS))
         call gbxSURLEHI(IZ,ICS,XYMAX,ZMAX,lldpos,lrdpos,uldpos,urdpos)
         lldooris=iszjvn(IZ,ICS,lldpos)
@@ -4493,7 +4480,7 @@ C icvert and then looping down each of the vertices in
 C the child followed by jvn(IPS,ipwhich).
       ivll=ipwhich  ! remember it
 C Debug.
-C      write(6,'(a,i3,102i4)') 'ivll parent surf jvn ',
+C      write(6,'(a,i3,124i4)') 'ivll parent surf jvn ',
 C     &  ivll,(iszjvn(IZ,IPS,j),J=1,isznver(IZ,IPS))
 
 C Expand the list by looping down (from one more than the current
@@ -4523,7 +4510,7 @@ C Add iszjvn(IZ,IPS,ipwhich) so as to rejoin the parent. << might not be necessa
         isznver(IZ,IPS)=isznver(IZ,IPS)+1  ! increment parent
         n=isznver(IZ,IPS)       
         iszjvn(IZ,IPS,n)=iszjvn(IZ,IPS,ipwhich) ! assign
-        write(6,'(a,102i4)') 'parent surf after ',
+        write(6,'(a,124i4)') 'parent surf after ',
      &    (iszjvn(IZ,IPS,j),J=1,isznver(IZ,IPS))
       else
 
@@ -4553,7 +4540,7 @@ C child and at -1 we reconnect to the parent.
         enddo
 
 C Debug.
-        write(6,'(a,i3,102i4)') 'parent surf after opening ',iyy,
+        write(6,'(a,i3,124i4)') 'parent surf after opening ',iyy,
      &    (iszjvn(IZ,IPS,j),J=1,isznver(IZ,IPS))
       endif
 
@@ -4602,7 +4589,7 @@ C through all of the child vertices and see if they are
 C on one of the parent edges.
 C Debug.
       write(6,'(a,3i4)') 'gbxadjdoor focused on iz ips ics ',IZ,IPS,ICS
-      write(6,'(a,102i4)') 'gbxadjdoor parent surf jvn ',
+      write(6,'(a,124i4)') 'gbxadjdoor parent surf jvn ',
      &  (iszjvn(IZ,IPS,j),J=1,isznver(IZ,IPS))
       do loop=1,isznver(IZ,IPS)
         loop2=iszjvn(IZ,IPS,loop)
@@ -4620,7 +4607,7 @@ C Debug.
 
       if(act.eq.'i')then
 C Debug.
-        write(6,'(a,i3,102i4)') 'gbxadjdoor door iszjvn edges & list ',
+        write(6,'(a,i3,124i4)') 'gbxadjdoor door iszjvn edges & list ',
      &    isznver(IZ,ICS),
      &    (iszjvn(iz,ics,loop3),loop3=1,isznver(IZ,ICS))
         call gbxSURLEHI(IZ,ICS,XYMAX,ZMAX,lldpos,lrdpos,uldpos,urdpos)
@@ -4629,7 +4616,7 @@ C Debug.
         write(6,'(a,2i4)') 'lldooris v & pos',lldooris,lldpos
       elseif(act.eq.'o')then
 C Debug.
-        write(6,'(a,i3,102i4)') 'gbxdoor other open isz equiv jvn ',
+        write(6,'(a,i3,124i4)') 'gbxdoor other open isz equiv jvn ',
      &    isznver(IZ,ICS),(iszjvn(IZ,ICS,j),J=1,isznver(IZ,ICS))
         call gbxSURLEHI(IZ,ICS,XYMAX,ZMAX,lldpos,lrdpos,uldpos,urdpos)
         lldooris=iszjvn(IZ,ICS,lldpos)  ! door lower left
@@ -4700,7 +4687,7 @@ C If a shared corner then logic needed to adapt the parent
 C surface. Until that is sorted do not adapt the parent.
 
 C Debug.
-      write(6,'(a,i3,102i4)') 
+      write(6,'(a,i3,124i4)') 
      &  'parent surf with adj door ',iyy,
      &  (iszjvn(IZ,IPS,j),J=1,isznver(IZ,IPS))
 

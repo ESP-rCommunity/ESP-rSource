@@ -1248,6 +1248,46 @@ Winter season is Mon-05-Nov - Mon-31-Dec
 Typical winter week begins Mon-26-Nov
 *help_end
 *item
+*name	UK,Leeds.Wea.Ctr, 1994
+*aide	GBR_ENG_Leeds.Wea.Ctr.033470_TMYx.epw
+*dbfl	/opt/esp-r/climate/GBR_Leeds
+*avail	ONLINE
+*winter_s  1  1 13  3  1 11 31 12 # seasons Sat-01-Jan--Sun-13-Mar & Tue-01-Nov--Sat-31-Dec
+*spring_s 14  3  5  6 29  8 31 10 # seasons Mon-14-Mar--Sun-05-Jun & Mon-29-Aug--Mon-31-Oct
+*summer_s  6  6 28  8 # summer season Mon-06-Jun--Sun-28-Aug
+*winter_t 12  2 18  2 15 11 21 11 # typical Sat-12-Feb--Fri-18-Feb & Tue-15-Nov--Mon-21-Nov
+*spring_t  2  5  8  5  3 10  9 10 # typical Mon-02-May--Sun-08-May & Mon-03-Oct--Sun-09-Oct
+*summer_t 22  8 28  8 # typical summer Mon-22-Aug--Sun-28-Aug
+*help_start
+Weather is Leeds.Wea.Ctr ENG GBR
+ Location: 53.80N -1.55W : 1994
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan     -2.0 @ 7h00 Sat-08       11.1 @12h00 Wed-12     5.1
+ Feb     -1.5 @ 9h00 Wed-09       12.6 @12h00 Fri-04     5.7
+ Mar     -1.0 @ 8h00 Sat-05       14.4 @23h00 Wed-09     7.7
+ Apr     -1.7 @ 6h00 Mon-04       23.6 @15h00 Sat-30     8.4
+ May      0.5 @ 5h00 Sat-07       25.3 @15h00 Mon-30    11.6
+ Jun      7.2 @ 3h00 Wed-01       28.2 @15h00 Tue-28    14.7
+ Jul      8.3 @ 5h00 Mon-18       29.7 @16h00 Sat-23    16.4
+ Aug      9.1 @ 4h00 Tue-23       25.2 @15h00 Fri-26    16.8
+ Sep      2.8 @ 7h00 Wed-28       21.3 @13h00 Sat-10    13.3
+ Oct     -1.0 @ 4h00 Mon-31       16.5 @ 2h00 Fri-28    10.3
+ Nov     -1.5 @ 9h00 Sun-27       13.9 @22h00 Thu-10     6.9
+ Dec     -0.7 @ 8h00 Wed-14       13.5 @ 5h00 Mon-19     5.0
+ Annual  -2.0 @ 7h00 Sat-08-Jan   29.7 @16h00 Sat-23-Jul    10.2
+ ---Seasons & typical periods---
+Winter season is Sat-01-Jan - Sun-13-Mar
+Typical winter week begins Sat-12-Feb
+Spring season is Mon-14-Mar - Sun-05-Jun
+Typical spring week begins Mon-02-May
+Summer season is Mon-06-Jun - Sun-28-Aug
+Typical summer week begins Mon-22-Aug
+Autumn season is Mon-29-Aug - Mon-31-Oct
+Typical autumn week begins Mon-03-Oct
+Winter season is Tue-01-Nov - Sat-31-Dec
+Typical winter week begins Tue-15-Nov
+*help_end
+*item
 *name	UK,Lerwick Shetland Islands, 2008
 *aide	GBR_SCT_Lerwick-Shetland.Islands.030050_TMYx.2004-2018.epw
 *dbfl	/opt/esp-r/climate/GBR_SCT_Lerwick-Shetland2

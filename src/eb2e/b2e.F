@@ -326,7 +326,7 @@ C Dummy routines from common3dv.F
      &   JITOBS,JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,JITHLZ,
      &   JITPPSW)
 
-C Passed paramters.
+C Passed parameters.
       real EVX,EVY,EVZ,VX,VY,VZ,EAN,DIS
 #ifdef OSI
       integer JITZNM,JITSNM,JITVNO,JITOBS,JITVIS,JITVOBJ,JITSNR,JITGRD
@@ -446,10 +446,6 @@ C Look for index for MLCN in the current constructions file.
       end
 
 C Dummy routines.
-      subroutine Find_season_parameters()
-      return
-      end
-
       SUBROUTINE BASESIMP_INPUTS(ICOMP,IER)
       integer icomp,ier
       return

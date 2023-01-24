@@ -527,16 +527,21 @@ C Split time into hours and minutes.
       END
 
 C ******************** SJTIME ********************
-C SJTIME takes an integer timestep and returns a string DESCR
+C Takes an integer timestep and returns a string DESCR,
 C which takes the form '12:28:30'. SJTIME takes into account IDAVER
 C and NTS in its calculations.
+C If NEXTDAY returns true, the hour value is 24, which means that by
+C most timestamp conventions this is actually the first time step of the
+C next day.
 
-      SUBROUTINE SJTIME(ITIME,DESCR)
+      SUBROUTINE SJTIME(ITIME,DESCR,NEXTDAY)
       COMMON/AVRAGE/IDAVER
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       CHARACTER*8 DESCR
       DOUBLE PRECISION TIME
+
+      NEXTDAY=.false.
 
 C Calculate decimal time of day.
       call DDTIME(ITIME,TIME)
@@ -544,8 +549,11 @@ C Calculate decimal time of day.
 C Split time into hours and minutes.
       MINH=INT(TIME)
       MIN=NINT((TIME-DBLE(MINH))*60d0)
-      if (MINH.eq.24) MINH=0
-      WRITE(DESCR,'(i2.2,a1,i2.2,a)')MINH,':',MIN,':30'
+      if (MINH.eq.24) then
+        MINH=0
+        NEXTDAY=.true.
+      endif
+      WRITE(DESCR,'(i2.2,a1,i2.2,a)')MINH,':',MIN,':00'
       RETURN
       END
 

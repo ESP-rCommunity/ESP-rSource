@@ -194,7 +194,7 @@ C Dynamic person model.
      &     ttsk(MCOM)
       real headflux1,trunkflux1,larmflux1,rarmflux1,llegflux1
       real rlegflux1,H2Oexp1,H2Oswt1,Qoccsens1,Qocclat1
-      ! real COflux,Tsko_av1,Tco_av1,Tsk_av1
+C       real COflux,Tsko_av1,Tco_av1,Tsk_av1
       COMMON/ocflux1/headflux1(MNZ),trunkflux1(MNZ),larmflux1(MNZ),
      &  rarmflux1(MNZ),llegflux1(MNZ),rlegflux1(MNZ),H2Oexp1(MNZ),
      &  H2Oswt1(MNZ),Qoccsens1(MCOM),Qocclat1(MCOM)

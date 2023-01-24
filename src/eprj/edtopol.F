@@ -1602,7 +1602,7 @@ C << what about using CALL ESCZONE(ICOMP) and then CALL ERCZONE(ICOMP)? >>
           do 323 IJ=1,NSUR
             SOTHER(IZ,IJ,1)=TOTHER(IJ,1)
             SOTHER(IZ,IJ,2)=TOTHER(IJ,2)
-            SOTHER(IZ,IJ,2)=TOTHER(IJ,3)
+            SOTHER(IZ,IJ,3)=TOTHER(IJ,3)
   323     continue
   
 C Debug.

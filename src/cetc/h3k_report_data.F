@@ -35,9 +35,9 @@ C h3k_connect_property:      Function returning data for plant connections.
 C
 C h3k_transport_mfn_data:     Transports flow network data
 C
-C *********************************************************************************************
+C **********************************************************************
 
-C ******************************* H3K Transport Building Data *********************************
+C ******************************* H3K Transport Building Data **********
 C
 C Created by: Alex Ferguson
 C Created on: March 28, 2004
@@ -56,7 +56,7 @@ C D.M. Sandars and S.W. Barakat (1983), "A method for estimating the
 C   utilization of solar gain through windows", ASHRAE Transactions
 C   Vol 89, Part 1A, pg 12--22.
 C
-C**********************************************************************************************
+C*************************************************************************
 
       SUBROUTINE H3K_transport_build_data(iZone)
       USE h3kmodule
@@ -73,7 +73,6 @@ C*******************************************************************************
       include "net_flow.h"
       include "blc25_open_windows.h"
       include "h3k_report_data.h"
-      include "qrun.h"
       include "CFC_common.h"
       include "esprdbfile.h"
       include "material.h"
@@ -1902,24 +1901,6 @@ C.....Adverse internal gains
      &         fZoneAdverseInternalGains,
      &         cZone_Chars)
 
-      if(bH3KExtentionsActive() .and. iQuick_run == 1)then
-C       Set flag allowing h3kreports to scale this data fro seasonal
-C       reporting purposes. 3 = scale_gen
-        if ( bFirst_call_bld  )
-     &     call SetAdditionalValues(
-     &      rvBldZnLightPow%Identifier,
-     &      3,
-     &      .true.)
-
-C.......Set for Quickrun 3 = scale_gen
-        if ( bFirst_call_bld  )
-     &     call SetAdditionalValues(
-     &      rvBldZnEquipPow%Identifier,
-     &      3,
-     &      .true.)
-
-      end if
-
 C.....Lighting power (from casual gains)
       call AddToReport(
      &     rvBldZnLightPow%Identifier,
@@ -1942,29 +1923,11 @@ C-----------------------------------------------------------------------
 
 C.......Total heating
 
-        ! Set flag allowing h3kreports to scale this data fro seasonal 
-        ! reporting purposes.
-        if ( bH3KExtentionsActive() .and. iQuick_run == 1 
-     &                              .and. bFirst_call_bld  )
-     &      call SetAdditionalValues(
-     &         rvBuildingAllZonesSuppliedEnergyHeating%Identifier,
-     &         1,
-     &         .true.)
-
       call AddToReport(
      &         rvBuildingAllZonesSuppliedEnergyHeating%Identifier,
      &         fSUMHeatInjection)
 
 C.......Total cooling
-
-        ! Set flag allowing h3kreports to scale this data fro seasonal 
-        ! reporting purposes.
-        if ( bH3KExtentionsActive() .and. iQuick_run == 1 
-     &                              .and. bFirst_call_bld  )        
-     &      call SetAdditionalValues(
-     &         rvBuildingAllZonesSuppliedEnergyCooling%Identifier,
-     &         2,
-     &         .true.)
      
       call AddToReport(
      &         rvBuildingAllZonesSuppliedEnergyCooling%Identifier,
@@ -2112,27 +2075,9 @@ C.....Net flux disaggregated by envelope components
 
 C.....Total heating and cooling loads
 
-        ! Set flag allowing h3kreports to scale this data fro seasonal 
-        ! reporting purposes.
-        if ( bH3KExtentionsActive() .and. iQuick_run == 1 
-     &                              .and. bFirst_call_bld  )
-     &      call SetAdditionalValues(
-     &         rvBuildingAllZonesThermalLoadsHeatingTotal%Identifier,
-     &         1,
-     &         .true.)
-
       call AddToReport(
      &      rvBuildingAllZonesThermalLoadsHeatingTotal%Identifier,
      &      fSUMHeatLoss)
-     
-        ! Set flag allowing h3kreports to scale this data fro seasonal 
-        ! reporting purposes.
-        if ( bH3KExtentionsActive() .and. iQuick_run == 1 
-     &                              .and. bFirst_call_bld  )
-     &      call SetAdditionalValues(
-     &         rvBuildingAllZonesThermalLoadsCoolingTotal%Identifier,
-     &         2,
-     &         .true.)
      
       call AddToReport(
      &      rvBuildingAllZonesThermalLoadsCoolingTotal%Identifier,
@@ -2146,19 +2091,6 @@ C.....Internal gains
       call AddToReport(
      &      rvBuildingAllZonesInternalGainsTotal%Identifier,
      &      fSUMInternalGains)
-
-C.....Set for quickrun 3 = scale_gen
-        if ( bH3KExtentionsActive() .and. iQuick_run == 1 
-     &                              .and. bFirst_call_bld  )then
-          call SetAdditionalValues(
-     &      rvBldAllZonesLightPowTtl%Identifier,
-     &      3,
-     &      .true.)
-
-          call AddToReport(
-     &      rvBldAllZonesLightPowTtl%Identifier,
-     &      fSUMLightingPower)
-        end if
     
       call AddToReport(
      &      rvBuildingAllZonesInternalGainsUseful%Identifier,
@@ -2167,19 +2099,6 @@ C.....Set for quickrun 3 = scale_gen
       call AddToReport(
      &      rvBuildingAllZonesInternalGainsAdverse%Identifier,
      &      fSUMAdverseInternalGains)    
-
-C.....Set for quickrun 3 = scale_gen
-      if ( bH3KExtentionsActive() .and. iQuick_run == 1 
-     &                              .and. bFirst_call_bld  )then
-          call SetAdditionalValues(
-     &      rvBldAllZonesEquipPowTtl%Identifier,
-     &      3,
-     &      .true.)
-
-          call AddToReport(
-     &      rvBldAllZonesEquipPowTtl%Identifier,
-     &      fSUMEquipmentPower)
-      end if
      
 
 C.....Net energy balance
@@ -2189,9 +2108,6 @@ C.....Net energy balance
      &      + fSUMInternalGains
      &      + fSUMNetFlux
      &      - fSUMNetLoad)
-
-      if ( bH3KExtentionsActive() .and. iQuick_run == 1) 
-     &  bFirst_call_bld  = .false.
 
       endif report_whole_building
 
@@ -2662,7 +2578,6 @@ C*******************************************************************************
 
       include "building.h"
       include "MultiYear_simulations.h"
-      include "qrun.h"
       
 C Function determining if HOT3000 features enabled?
       logical bH3KExtentionsActive
@@ -2784,13 +2699,6 @@ C.....Building simulation timestep
      &    real(nsinc))
 
 C.....H3Kreports.(time).end.................
-
-C.....Season
-C.....-> set name
-      if ( bH3KExtentionsActive() .and. iQuick_run == 1) then
-        call AddToReport(rvBldSeason%Identifier,
-     &      real(iThisSeason))
-      endif
 
       return
       end

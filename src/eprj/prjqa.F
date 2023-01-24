@@ -228,11 +228,14 @@ C For reporting day types.
 
 C bridgelen was calculated in subroutine suredgeadj
       real bridgelen ! Length of potential thermal bridges in each zone.
-      common/gbridge/bridgelen(MCOM,10)
+      common/gbridge/bridgelen(MCOM,16)
 
 C High level control scope key words.
       character hcffpattern*12    ! heat, cool, or heat+cool plus detail
       common/hlcontrol/hcffpattern(2)     
+
+      integer IHCT,ICOREXHCT
+      common/hcthry/ihct,icorexhct  ! surface heat transfer methods inside & outside
 
       real plen  ! combined length of standard and metal facade perimeter
 
@@ -241,8 +244,10 @@ C High level control scope key words.
 C Remember if each zone is fully attributed.
       logical attribok(MCOM)
       logical allattribok,changedit,ok,concat,unixok,showother
-      dimension areamlc(MCOM)
-      real areamlc
+      dimension areamlc(MCOM),areamlcamb(MCOM),areamlcoth(MCOM)
+      dimension areamlcb2b(MCOM),areamlcgrnd(MCOM),areamlcsimil(MCOM)
+      real areamlc,areamlcamb,areamlcoth,areamlcb2b,areamlcgrnd
+      real areamlcsimil,tmlc
       character items*33
       dimension items(27)
 
@@ -258,7 +263,7 @@ C Remember if each zone is fully attributed.
       character outs248*496,outs2*148
       character dstmp*24,mlc_name*32
       CHARACTER LAPROB*72,LPNF*72
-      CHARACTER TOPTIC*12,msg*28,doit*248
+      CHARACTER TOPTIC*12,doit*248
       character t16a*16,t16b*16,t16c*16,t16d*16
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       character figlbl*20,figexe*48
@@ -270,7 +275,7 @@ C Remember if each zone is fully attributed.
       character lworking*144
 
 C For thermal bridge reporting
-      character TBRIDGE*58
+      character TBRIDGE*60
       dimension phrasemenu(16),phraselen(16)
       character phrasemenu*34,phraselen*42
       character fs*1
@@ -318,7 +323,7 @@ C in the current model. A -1 means not applicable
       character louts*496,loutsd*496,louts600*600
       character lltmp*144,lguess*144,lldef*144  ! for working with EASKXORGTKF
       character lpath*72,fname*72 ! for use with fdroot
-      character llclmdb*144,miscinf*72
+      character llclmdb*144,miscinf*72,msg*42
       character boundmsg*72
       character outscal*248  ! for calendar day types report
       integer llt,lndbp,jj,lnsn
@@ -337,17 +342,20 @@ C in the current model. A -1 means not applicable
       integer iitrc   ! for passing verbosity
       integer imlc    ! loop for MLC reporting
       integer lnsmlcn,lnl,lnlist ! char lengths
+      integer llpos,lrpos,ulpos,urpos     ! closest to BB corners for parent
       
       INTEGER :: i,icc,icoth,ie,ieripv,irec,iprb,inv
       INTEGER :: ins4,ino,imerr,ilcot,ijk,ij,ii,igrdp
       INTEGER :: ictlf,iuo,iunit1,iunit,iuf,iub,itu,itru,itrc,itbmenu
       INTEGER :: itb,istat,isc,is,ic,ins1,isel,iz,izo,izc,izz
       INTEGER :: kk,j,l,lnb,lnc,lna,lnd,lsn10,lto,lzn10,m,igraphiclib
-      INTEGER :: iw
+      INTEGER :: iw,isz
       INTEGER :: lsna,lk,lnk,lnkn  ! counters for string lengths
       REAL :: opq,totalarea,topq,tmp,tfla
       REAL :: tareamlc,trn,ttrn,tvol,tvtr,tvtr2
+      INTEGER :: NASURF
       REAL :: UVD,UVI,UVU,vtranper
+      real :: XYMAX,ZMAX,dzllff
 
       helpinsub='prjqa'  ! set for subroutine
       
@@ -572,23 +580,39 @@ C Setup the selection menu.
         items(16)='h                           '
       elseif(zonecolumns.eq.0)then
         items(16)='h zone columns >>  summary  '
+        call edisp(iuout,
+     &  'Zone summary: name volume floor area description')
       elseif(zonecolumns.eq.1)then
         items(16)='h zone columns >>  sub-set A'
+        call edisp(iuout,
+     &  'Zone subset A: name surfs opaque tansp floor area description')
       elseif(zonecolumns.eq.2)then
         items(16)='h zone columns >>  sub-set B'
+        call edisp(iuout,
+     &  'Zone subset B: name volume surfaces opaque tansp description')
       elseif(zonecolumns.eq.3)then
         items(16)='h zone columns >>  all      '
+        call edisp(iuout,
+     &  'Zone all: name volume surfaces opaque tansp floor description')
       endif
       if(surfcolumns.eq.-1)then
         items(17)='i                           '
       elseif(surfcolumns.eq.0)then
         items(17)='i surf columns >>  summary  '
+        call edisp(iuout,
+     &  'Surf summary: area azim elev name use constr boundary')
       elseif(surfcolumns.eq.1)then
         items(17)='i surf columns >>  sub-set A'
+        call edisp(iuout,
+     &  'Surf subset A: area azim elev name use constr boundary')
       elseif(surfcolumns.eq.2)then
         items(17)='i surf columns >>  sub-set B'
+        call edisp(iuout,
+     & 'Surf subset B: area azim elev name optical use constr boundary')
       elseif(surfcolumns.eq.3)then
         items(17)='i surf columns >>  all      '
+        call edisp(iuout,
+     & 'Surf all: area azim elev name optical use location const bndry')
       endif
       if(schedinfo.eq.-1)then
         items(18)='j operations >> none'
@@ -1247,6 +1271,37 @@ C Site information.
   53      FORMAT('Site exposure is sky=',F4.2,' ground=',F4.2,
      &      ' other buildings=',F4.2)
         endif
+        call edisp(itu,outs)
+        call edisp(itu,'  ')
+
+C If surface heat transfer directives report.
+        if(icorexhct.eq.0) msg='no current exterior hc method'
+        if(icorexhct.eq.1) msg='default McAdams exterior hc method'
+        if(icorexhct.eq.2) msg='MoWiTT  exterior hc method'
+        if(icorexhct.eq.3) msg='Aya Hagishima correlation exterior hc'
+        if(icorexhct.eq.4) msg='Ya Liu (roof wind speed) exterior hc'
+        if(icorexhct.eq.5) msg='Ya Lui (raw wind speed) exterior hc'
+        if(icorexhct.eq.6) msg='Loveday (roof wind speed) exterior hc'
+        if(icorexhct.eq.7) msg='Loveday (raw wind speed) exterior hc'
+        if(icorexhct.eq.8) msg='CIBSE guide exterior hc'
+        if(icorexhct.eq.9) msg='ASHRAE Task Group  exterior hc'
+        if(icorexhct.eq.10)msg='Sturrock exterior hc'
+        if(icorexhct.eq.11)msg='Keith Nicol exterior hc'
+        if(icorexhct.eq.12)msg='S.E .G.Jayamaha exterior hc'
+        call edisp(itu,'Exterior surface heat transfer method:')
+        call edisp(itu,msg)
+        call edisp(itu,' ')
+        if(ihct.eq.0) msg='No interior HTC default method '
+        if(ihct.eq.1) msg='Alamdari and Hammond (default) '
+        if(ihct.eq.2) msg='Khalifa & Marshall, radiator under window'
+        if(ihct.eq.3) msg='Khalifa & Marshall, no rad under window'
+        if(ihct.eq.4) msg='Halcrow, time invariant low    '
+        if(ihct.eq.5) msg='Halcrow, time invariant high   '
+        if(ihct.eq.6) msg='CIBSE guide, time invariant    '
+        if(ihct.eq.7) msg='CEN simplified calc method     '
+        call edisp(itu,'Interior surface heat transfer method:')
+        call edisp(itu,msg)
+        call edisp(itu,' ')
 
 C Ground reflection model.
         if (groundreflmodel.eq.1) then
@@ -1391,7 +1446,7 @@ C Tell about climate taking note of timing of solar data.
      &        LCLIM(1:lnblnk(LCLIM)),'  '
             call edispxtr(itu,outs2)          
           else
-            WRITE(outs248,'(2A)')' standard annual weather: ',
+            WRITE(outs248,'(2A)')'Standard annual weather: ',
      &        LCLIM(1:lnblnk(LCLIM))
             call edisp248(itu,outs248,100)
           endif
@@ -1688,16 +1743,7 @@ C Set Default season definitions.
             endif
           endif
         else
-          if(markdown)then
-            call edisp(itu,' ')
-            call edispxtr(itu,
-     &        '## Integrated Performance View  ')
-            call edispxtr(itu,
-     &     'An Integrated Performance View is incomplete or missing.  ')
-          else
-            call edisp(itu,
-     &       'An Integrated Performance View is incomplete or missing.')
-          endif
+          continue
         endif
 
 C If temporal data associated with the model report it.
@@ -2310,11 +2356,11 @@ C Jump if no zones.
 
       call edisp(itu,' ')
       if(markdown)then
-        call edisp(itu,'## Zones')
+        call edisp(itu,'## Zones') 
         call edisp(itu,' ')
         call edisp(itu,': Zone summary')
         call edisp(itu,' ')
-        if(zonecolumns.eq.3)then
+        if(zonecolumns.eq.3)then   ! All columns
           write(outs,'(3a)') 
      &    'ID  Zone name     Volume (m^3^)  Surfaces   ',
      &    'Opaque (m^2^)    Transparent (m^2^)   Floor (m^2^) ',
@@ -2325,7 +2371,7 @@ C Jump if no zones.
      &    '--------------   ------------------   -------------',
      &    '   -------------------------------------------' 
           call edisp(itu,outs2)
-        elseif(zonecolumns.eq.2)then
+        elseif(zonecolumns.eq.2)then  ! Subset B
           write(outs,'(3a)') 
      &    'ID  Zone name     Volume (m^3^)  Surfaces  ',
      &    'Opaque (m^2^)  Transparent (m^2^)   ',
@@ -2336,7 +2382,7 @@ C Jump if no zones.
      &    '-------------  ------------------   ',
      &    '-------------------------------------------' 
           call edisp(itu,outs2)
-        elseif(zonecolumns.eq.1)then
+        elseif(zonecolumns.eq.1)then  ! Subset A
           write(outs,'(3a)') 
      &    'ID  Zone name     Surfaces  ',
      &    'Opaque (m^2^)   Transparent (m^2^)  Floor (m^2^) ',
@@ -2347,7 +2393,7 @@ C Jump if no zones.
      &    '--------------  ------------------  -------------',
      &    '  -------------------------------------------' 
           call edisp(itu,outs2)
-        elseif(zonecolumns.eq.0)then
+        elseif(zonecolumns.eq.0)then  ! Summary
           write(outs,'(2a)') 
      &    'ID  Zone name     Volume (m^3^)  ',
      &    'Floor (m^2^)  Description'
@@ -2387,6 +2433,7 @@ C Jump if no zones.
       TFLA=0.
       TOPQ=0.
       TTRN=0.
+      NASURF=0
       do 97 IZ=1,INPIC
         if(IVALS(IZ).GT.0)then
           LTMP=LGEOM(IVALS(IZ))
@@ -2428,9 +2475,11 @@ C              call edisp248(itu,outs248,140)
      &            OPQ,TRN,zdesc(IVALS(IZ))(1:lnzdesc(IVALS(IZ)))
                 call edisp(itu,outs248)
               elseif(zonecolumns.eq.1)then
-                write(outs248,'(i2,2x,a,i10,8x,f8.1,12x,f8.1,2x,a)') 
+                write(outs248,
+     &            '(i2,2x,a,i10,8x,f8.1,12x,f8.1,6x,f9.1,2x,a)') 
      &            IVALS(IZ),zname(IVALS(IZ)),NZSUR(ivals(iz)),
-     &            OPQ,TRN,zdesc(IVALS(IZ))(1:lnzdesc(IVALS(IZ)))
+     &            OPQ,TRN,ZBASEA(IVALS(IZ)),
+     &            zdesc(IVALS(IZ))(1:lnzdesc(IVALS(IZ)))
                 call edisp(itu,outs248)
               elseif(zonecolumns.eq.0)then
                 write(outs248,
@@ -2452,9 +2501,10 @@ C              call edisp248(itu,outs248,140)
      &            OPQ,TRN,zdesc(IVALS(IZ))(1:lnzdesc(IVALS(IZ)))
                 call edisp(itu,outs)
               elseif(zonecolumns.eq.1)then
-                write(outs,'(i2,1x,a,i4,2f8.1,2x,a)') IVALS(IZ),
+                write(outs,'(i2,1x,a,i4,2f8.1,6x,f9.1,2x,a)')IVALS(IZ),
      &            zname(IVALS(IZ)),NZSUR(ivals(iz)),
-     &            OPQ,TRN,zdesc(IVALS(IZ))(1:lnzdesc(IVALS(IZ)))
+     &            OPQ,TRN,ZBASEA(IVALS(IZ)),
+     &            zdesc(IVALS(IZ))(1:lnzdesc(IVALS(IZ)))
                 call edisp(itu,outs)
               elseif(zonecolumns.eq.0)then
                 write(outs,'(i2,1x,a,f7.1,f8.1,2x,a)') IVALS(IZ),
@@ -2479,6 +2529,7 @@ C              call edisp248(itu,outs248,140)
               call edisp(itu,outs)
             endif
           endif
+          NASURF=NASURF+NZSUR(ivals(iz))
           TVOL=TVOL+VOL(IVALS(IZ))
           TFLA=TFLA+ZBASEA(IVALS(IZ))
           TOPQ=TOPQ+OPQ
@@ -2486,11 +2537,33 @@ C              call edisp248(itu,outs248,140)
         endif
   97  continue
       if(markdown)then
-        write(outs,'(a,f9.0,i14,11x,f8.1,13x,f8.1,9x,f8.1,6x,a)')
+        if(zonecolumns.eq.3)then
+          write(outs,'(a,f9.0,i14,11x,f8.1,13x,f8.1,9x,f8.1,6x,a)')
      &    ' -  all       ',TVOL,NCON,TOPQ,TTRN,TFLA,'       -'
+        elseif(zonecolumns.eq.2)then
+          write(outs,'(a,f9.0,i14,11x,f8.1,13x,f8.1,6x,a)')
+     &    ' -  all       ',TVOL,NCON,TOPQ,TTRN,'       -'
+        elseif(zonecolumns.eq.1)then
+          write(outs,'(a,i12,8x,f8.1,12x,f8.1,7x,f8.1,6x,a)')
+     &    ' -  all       ',NASURF,TOPQ,TTRN,TFLA,'       -'
+        elseif(zonecolumns.eq.0)then
+          write(outs,'(a,f9.0,9x,f8.1,6x,a)')
+     &    ' -  all       ',TVOL,TFLA,'       -'
+        endif
       else
-        write(outs,'(a,f9.0,i5,3f8.0)') '   all      ',TVOL,NCON,
+        if(zonecolumns.eq.3)then
+          write(outs,'(a,f9.0,i5,3f8.0)') '   all      ',TVOL,NCON,
      &    TOPQ,TTRN,TFLA
+        elseif(zonecolumns.eq.2)then
+          write(outs,'(a,f9.0,i14,11x,f8.1,13x,f8.1,6x,a)')
+     &    ' -  all       ',TVOL,NCON,TOPQ,TTRN,'       -'
+        elseif(zonecolumns.eq.1)then
+          write(outs,'(a,i12,8x,f8.1,12x,f8.1,9x,f8.1,6x,a)')
+     &    ' -  all       ',NASURF,TOPQ,TTRN,TFLA,'       -'
+        elseif(zonecolumns.eq.0)then
+          write(outs,'(a,f9.0,9x,f8.1,6x,a)')
+     &    ' -  all       ',TVOL,TFLA,'       -'
+        endif
       endif
       call edisp(itu,outs)
 
@@ -2799,6 +2872,44 @@ C Note: surinfo not dependant on recent geometry scan.
         if(geominfo.ge.2)then
           context=.true.
           CALL SURINFO(IVALS(IZ),itu,context)
+
+C Bounding box for frames & doors here.
+          if(markdown)then
+            call edisp(itu,
+     &     'The width & height & height above the floor for surfaces ')
+            call edisp(itu,
+     &     'marked as frames or doors or glazing is shown below.')
+            call edisp(itu,'  ')
+            call edisp(itu,': A summary of frames')
+            call edisp(itu,'  ')
+            write(outs,'(a)')
+     &      'Surface      Width(m)   Height(m)  Above ff  USE    '
+            call edisp(itu,outs)
+            write(outs,'(a)')
+     &      '------------ ---------  ---------  --------- -------'
+            call edisp(itu,outs)
+          else
+            call edisp(itu,
+     &      'Surface      Width(m)   Height(m)  Above ffl...')
+          endif
+          do isz = 1,NZSUR(izz)
+            if(SUSE(izz,isz,1)(1:7).eq.'F-FRAME'.or.
+     &         SUSE(izz,isz,1)(1:5).eq.'FRAME'.or.
+     &         SUSE(izz,isz,1)(1:4).eq.'DOOR'.or.
+     &         SUSE(izz,isz,1)(1:6).eq.'P-DOOR'.or.
+     &         SUSE(izz,isz,1)(1:6).eq.'WINDOW'.or.
+     &         SUSE(izz,isz,1)(1:8).eq.'D-WINDOW'.or.
+     &         SUSE(izz,isz,1)(1:8).eq.'S-WINDOW'.or.
+     &         SUSE(izz,isz,1)(1:8).eq.'C-WINDOW')then
+              CALL ZSURLEHI(izz,isz,XYMAX,ZMAX,llpos,lrpos,
+     &          ulpos,urpos,dzllff)
+              write(outs,'(a,a,f6.2,a,f7.2,f10.2,2a)') 
+     &          SNAME(izz,isz),'  ',XYMAX,'    ',ZMAX,dzllff,
+     &          '    ',SUSE(izz,isz,1) 
+              call edisp(itu,outs)
+            endif
+          enddo
+
           call eclose(gversion(IZZ),1.1,0.01,newgeo)
           if(newgeo)then
             if(losspercent(izz).gt.0.0)then
@@ -2809,7 +2920,7 @@ C Note: surinfo not dependant on recent geometry scan.
             if(nbrdg(izz).gt.0.or.havebrdge)then
 
 C Setup phrases for the menu and for editing length and psi values.
-              phrasemenu(1) ='a roof-wall                    :'
+              phrasemenu(1) ='a roof-wall (eave)             :'
               phraselen(1)  ='roof-wall ' 
               phrasemenu(2) ='b wall-ground floor            :'
               phraselen(2)  ='wall-ground floor '
@@ -2817,63 +2928,60 @@ C Setup phrases for the menu and for editing length and psi values.
               phraselen(3)  ='wall-wall (convex corner) '
               phrasemenu(4) ='d wall-wall (concave corner)   :'
               phraselen(4)  ='wall-wall (concave corner) '
-              phrasemenu(5) ='e wall-floor (not ground floor):'
-              phraselen(5)  ='wall-floor (not ground floor) '
+              phrasemenu(5) ='e wall-floor (exposed floor)   :'
+              phraselen(5)  ='wall-floor (exposed floor) '
               phrasemenu(6) ='f lintel above window or door  :'
               phraselen(6)  ='lintel above window or door '
               phrasemenu(7) ='g Sill below window            :'
               phraselen(7)  ='Sill below window '
               phrasemenu(8) ='h jamb at window or door       :'
               phraselen(8)  ='jamb at window or door '
-              phrasemenu(9) ='i roof-wall                    :'
-              phraselen(9)  ='roof-wall-mc'
-              phrasemenu(10)='j wall-ground floor            :'
-              phraselen(10) ='wall-ground floor-mc'
-              phrasemenu(11)='k wall-wall (corner)-          :'
-              phraselen(11) ='wall-wall (corner)-mc'
-              phrasemenu(12)='l wall-floor (not ground floor):'
-              phraselen(12) ='wall-floor (not ground floor)-mc'
-              phrasemenu(13)='m lintel above window or door  :'
-              phraselen(13) ='lintel above window or door-mc'
-              phrasemenu(14)='n Sill below window            :'
-              phraselen(14) ='Sill below window-mc'
-              phrasemenu(15)='o jamb at window or door       :'
-              phraselen(15) ='jamb at window or door-mc'
-              phrasemenu(16)='p user-defined                 :'
-              phraselen(16) ='user-defined '
-              call edisp(itu,'Thermal bridges have been defined.')
-              if(nbrdg(izz).gt.0)then   
-                call edisp(itu,
-     &      'Junctions without metal cladding   psi (W/mK) length (m)')
+              phrasemenu(9) ='i wall-gable                   :'
+              phraselen(9)  ='wall-gable '
+              phrasemenu(10)='j wall-parapet                 :'
+              phraselen(10) ='wall-parapet '
+              phrasemenu(11)='k wall-intermediate-floor      :'
+              phraselen(11) ='wall-intermediate-floor '
+              phrasemenu(12)='l wall-partition               :'
+              phraselen(12) ='wall-partition '
+              phrasemenu(13)='m glass-frame                  :'
+              phraselen(13) ='glass-frame '
+              phrasemenu(14)='n balcony                      :'
+              phraselen(14) ='balcony'
+              phrasemenu(15)='o user defined a               :'
+              phraselen(15) ='user-defined-a '
+              phrasemenu(16)='p user-defined b               :'
+              phraselen(16) ='user-defined-b '
+              if(markdown)then
+                call edisp(itu,'  ')
+                call edisp(itu,': Thermal bridges have been defined.')
+                call edisp(itu,'  ')
+                write(outs,'(a)')
+     &          'Junctions                       psi (W/mK)  length (m)'
+                call edisp(itu,outs)
+                write(outs,'(a)')
+     &          '------------------------------  ----------  ----------'
+                call edisp(itu,outs)
+              else
+                call edisp(itu,'Thermal bridges have been defined.')
+                call edisp(itu,'Junctions      psi (W/mK) length (m)')
               endif
-              do 89 itbmenu=1,8
+              do 89 itbmenu=1,16
                 if(nbrdg(izz).gt.0)then
                   do itb=1,nbrdg(izz)
                     if(itbmenu.eq.ibrdg(izz,itb))then
-                      WRITE(TBRIDGE,'(a,2F10.4)') 
-     &                  phrasemenu(itbmenu),
+                      WRITE(TBRIDGE,'(a,2F11.4)') 
+     &                  phrasemenu(itbmenu)(3:32),
      &                  psi(izz,itb),lngth(izz,itb)
                       call edisp(itu,TBRIDGE)
                     endif
                   enddo  ! of itb
                 endif
   89          continue
-              if(nbrdg(izz).gt.0)then   
-                call edisp(itu,
-     &      'Junctions with metal cladding      psi (W/mK) length (m)')
-              endif
-              do 189 itbmenu=9,16
-                if(nbrdg(izz).gt.0)then   
-                  do itb=1,nbrdg(izz)
-                    if(itbmenu.eq.ibrdg(izz,itb))then
-                      WRITE(TBRIDGE,'(a,2F10.4)') 
-     &                  phrasemenu(itbmenu),
-     &                  psi(izz,itb),lngth(izz,itb)
-                      call edisp(itu,TBRIDGE)
-                    endif
-                  enddo  ! of itb
-                endif
- 189          continue
+              write(outs,*) 'Sum of psi * length: ',
+     &          totheatloss(izz),' W/K'
+              call edisp(itu,' ')
+              call edisp(itu,outs)
               if(losspercent(izz).gt.0.0) then
                 WRITE(TBRIDGE,'(a,F7.4)') 'Themal bridge %',thbrpercent
                 call edisp(itu,TBRIDGE)
@@ -2981,7 +3089,7 @@ C Put odd vertex in right column.
           enddo  ! of I
 
 C If thermal bridges are associated with a surface then report this.
-C Loop each surface in zone, and for each surface each edged and if
+C Loop each surface in zone, and for each surface each edge and if
 C ibridgeshr(connection,edge) is non-zero add to howmanytbedges array.
           if(nbrdg(izz).gt.0)then
             do 971 I = 1,NZSUR(izz)
@@ -3035,6 +3143,53 @@ C Check if the edges are proprly bounded. Uses G1 common.
         endif
 
         if(zoneextrainfo.ge.1)then
+
+C Additional information about the zone. Provide a summary of each MLC
+C used in the zone. Scan all MLC, if used somewhere fill areamlc array
+C and then report instances for current zone.
+          if(markdown)then
+            call edisp(itu,'  ')
+            call edisp(itu,': A summary of the MLC areas m^2^')
+            call edisp(itu,'  ')
+            write(itu,'(2a)')
+     &  'MLC name           total     to ambient to other z back-back',
+     &  ' to ground to similar'
+            write(itu,'(2a)')
+     &  '------------------ --------- ---------- ---------- ---------',
+     &  ' --------- ----------'
+          else
+            write(itu,'(a)') '  '
+            write(itu,'(3a)') 'In ',zname(izz)(1:12),
+     &      '    m^2     m^2 to   m^2 to  m^2 back  m^2 to  m^2 to'
+            write(itu,'(2a)') 'MLC name       ',
+     &      '    total  ambient  other z -to-back   ground  similar'
+          endif
+          do imlc=1,nmlc
+            found=.false.
+            write(mlc_name,'(a)') mlcname(imlc)(1:lnmlcname(imlc))
+            call mlcrefs(mlc_name,areamlc,areamlcamb,areamlcoth,
+     &        areamlcb2b,areamlcgrnd,areamlcsimil,tareamlc,found)
+            if(found)then
+              if(areamlc(izz).gt.0.0)then
+
+C Sum the sub-totals (so partitions fully counted but b-to-b is half.
+                tmlc=areamlcamb(izz)+areamlcoth(izz)+areamlcb2b(izz)+
+     &            areamlcgrnd(izz)+areamlcsimil(izz)
+                if(markdown)then
+                  write(itu,'(a,f10.1,f10.1,f9.1,f9.1,f10.1,f10.1)') 
+     &              mlc_name(1:18),tmlc,
+     &              areamlcamb(izz),areamlcoth(izz),areamlcb2b(izz),
+     &              areamlcgrnd(izz),areamlcsimil(izz)
+                else
+                  write(itu,'(2a,6f9.1)') mlc_name(1:18),' ',tmlc,
+     &              areamlcamb(izz),areamlcoth(izz),areamlcb2b(izz),
+     &              areamlcgrnd(izz),areamlcsimil(izz)
+                endif
+              endif
+            endif
+          enddo
+
+C Also display insolation directives.
           CALL INSINFO(IVALS(IZ),itu)
 
 C Note any optical controls. First read zone constructions and
@@ -3116,6 +3271,7 @@ C then rescan that zone file with verbose setting.
           endif
           if(IOBS(ivz).gt.0.and.nbobs(ivz).gt.0)then
             if(markdown)then
+              call edisp(itu,' ')
               call edisp(itu,': Blocks associated with zone')
               call edisp(itu,'  ')
               write(outs,'(2a)')
@@ -3142,7 +3298,7 @@ C then rescan that zone file with verbose setting.
      &            XOB(ivz,I),YOB(ivz,I),ZOB(ivz,I),
      &            DXOB(ivz,I),DYOB(ivz,I),DZOB(ivz,I),
      &            BANGOB(ivz,I,1),BANGOB(ivz,I,2),OPOB(ivz,I),'   ',
-     &            BLOCKNAME(ivz,I)(1:llbn),' ',BLOCKMAT(ivz,I)(1:llbm)
+     &            BLOCKNAME(ivz,I)(1:8),' ',BLOCKMAT(ivz,I)(1:llbm)
                 else
                   WRITE(OUTS,'(I3,8F8.1,F5.2,4a)') I,
      &            XOB(ivz,I),YOB(ivz,I),ZOB(ivz,I),
@@ -3167,29 +3323,64 @@ C Pad the reporting as required.
             odd=.false.
             if(im.eq.1) odd=.true.
             if(nbvis(ivz).lt.8)then   ! Write as a single column
-              call edisp(itu,'visual type name    composition')
+              if(markdown)then
+                call edisp(itu,' ')
+                call edisp(itu,': Visual entities:')
+                call edisp(itu,'  ')
+                call edisp(itu,'visual type name       composition')
+                call edisp(itu,'------ ---- ---------- -----------')
+              else
+                call edisp(itu,'visual type name    composition')
+              endif
               do i=1,nbvis(ivz)
                 llbm=LNVISMAT(ivz,i)
                 if(llbm.lt.10) llbm=10
                 llbn=LNVISNAME(ivz,i)
                 if(llbn.lt.10) llbm=10
-                if(VISTYP(ivz,i)(1:4).eq.'vis ')then
-                  WRITE(outs,'(4A)')' vis 1rot  ',
-     &            VISNAME(ivz,i)(1:llbn),' ',VISMAT(ivz,i)(1:llbm)
-                elseif(VISTYP(ivz,i)(1:4).eq.'vis3')then
-                  WRITE(outs,'(4A)')' vis 3rot  ',
-     &            VISNAME(ivz,i)(1:llbn),' ',VISMAT(ivz,i)(1:llbm)
-                elseif(VISTYP(ivz,i)(1:4).eq.'visp')then
-                  WRITE(outs,'(4A)')' vis poly  ',
-     &            VISNAME(ivz,i)(1:llbn),' ',VISMAT(ivz,i)(1:llbm)
+                if(markdown)then
+                  if(VISTYP(ivz,i)(1:4).eq.'vis ')then
+                   WRITE(outs,'(4A)')' vis   1rot ',
+     &              VISNAME(ivz,i)(1:10),' ',VISMAT(ivz,i)(1:10)
+                  elseif(VISTYP(ivz,i)(1:4).eq.'vis3')then
+                    WRITE(outs,'(4A)')' vis  3rot ',
+     &              VISNAME(ivz,i)(1:10),' ',VISMAT(ivz,i)(1:10)
+                  elseif(VISTYP(ivz,i)(1:4).eq.'visp')then
+                    WRITE(outs,'(4A)')' vis  poly ',
+     &              VISNAME(ivz,i)(1:10),' ',VISMAT(ivz,i)(1:10)
+                  endif
+                else
+                  if(VISTYP(ivz,i)(1:4).eq.'vis ')then
+                    WRITE(outs,'(4A)')' vis 1rot  ',
+     &              VISNAME(ivz,i)(1:llbn),' ',VISMAT(ivz,i)(1:llbm)
+                  elseif(VISTYP(ivz,i)(1:4).eq.'vis3')then
+                    WRITE(outs,'(4A)')' vis 3rot  ',
+     &              VISNAME(ivz,i)(1:llbn),' ',VISMAT(ivz,i)(1:llbm)
+                  elseif(VISTYP(ivz,i)(1:4).eq.'visp')then
+                    WRITE(outs,'(4A)')' vis poly  ',
+     &              VISNAME(ivz,i)(1:llbn),' ',VISMAT(ivz,i)(1:llbm)
+                  endif
                 endif
                 call edisp(itu,outs)
               enddo  ! of iv
             else
-              write(outs,'(2a)') 
-     &          'visual type name    composition        ',
-     &          'visual type name    composition'
-              call edisp(itu,outs)
+              if(markdown)then
+                call edisp(itu,' ')
+                call edisp(itu,': Visual entities:')
+                call edisp(itu,'  ')
+                write(outs,'(2a)')
+     &            'visual type name       composition  ',
+     &            'visual type name       composition'
+                call edisp(itu,outs)
+                write(outs,'(2a)')
+     &            '------ ---- ---------- -----------  ',
+     &            '------ ---- ---------- -----------'
+                call edisp(itu,outs)
+              else
+                write(outs,'(2a)') 
+     &            'visual type name    composition        ',
+     &            'visual type name    composition'
+                call edisp(itu,outs)
+              endif
               MNU=(nbvis(ivz)/2)
               DO 193 J=1,MNU
                 llbm=LNVISMAT(ivz,J)
@@ -3198,24 +3389,43 @@ C Pad the reporting as required.
                 if(llbn.lt.10) llbn=10
                 llbm2=LNVISMAT(ivz,J+MNU)
                 llbn2=LNVISNAME(ivz,J+MNU)
-                if(VISTYP(ivz,J)(1:4).eq.'vis ')then
-                  WRITE(outs,'(4A)')' vis 1rot  ',
-     &              VISNAME(ivz,J)(1:llbn),' ',VISMAT(ivz,J)(1:llbm)
-                  WRITE(outs2a,'(4A)')' vis 1rot  ',
-     &              VISNAME(ivz,J+MNU)(1:llbn2),' ',
-     &              VISMAT(ivz,J+MNU)(1:llbm2)
-                elseif(VISTYP(ivz,i)(1:4).eq.'vis3')then
-                  WRITE(outs,'(4A)')' vis 3rot  ',
-     &              VISNAME(ivz,J)(1:llbn),' ',VISMAT(ivz,J)(1:llbm)
-                  WRITE(outs2a,'(4A)')' vis 3rot  ',
-     &              VISNAME(ivz,J+MNU)(1:llbn2),' ',
-     &              VISMAT(ivz,J+MNU)(1:llbm2)
-                elseif(VISTYP(ivz,i)(1:4).eq.'visp')then
-                  WRITE(outs,'(4A)')' vis poly  ',
-     &              VISNAME(ivz,J)(1:llbn),' ',VISMAT(ivz,J)(1:llbm)
-                  WRITE(outs2a,'(4A)')' vis poly  ',
-     &              VISNAME(ivz,J+MNU)(1:llbn2),' ',
-     &              VISMAT(ivz,J+MNU)(1:llbm2)
+                if(markdown)then
+                  if(VISTYP(ivz,J)(1:4).eq.'vis ')then
+                   WRITE(outs,'(4A)')' vis   1rot ',
+     &               VISNAME(ivz,J)(1:10),' ',VISMAT(ivz,J)(1:10)
+                   WRITE(outs2a,'(4A)')'vis  1rot ',
+     &             VISNAME(ivz,J+MNU)(1:10),' ',VISMAT(ivz,J+MNU)(1:10)
+                  elseif(VISTYP(ivz,i)(1:4).eq.'vis3')then
+                    WRITE(outs,'(4A)')' vis  3rot ',
+     &                VISNAME(ivz,J)(1:10),' ',VISMAT(ivz,J)(1:10)
+                    WRITE(outs2a,'(4A)')'vis  3rot ',
+     &              VISNAME(ivz,J+MNU)(1:10),' ',VISMAT(ivz,J+MNU)(1:10)
+                  elseif(VISTYP(ivz,i)(1:4).eq.'visp')then
+                    WRITE(outs,'(4A)')' vis  poly ',
+     &                VISNAME(ivz,J)(1:10),' ',VISMAT(ivz,J)(1:10)
+                    WRITE(outs2a,'(4A)')'vis  poly ',
+     &              VISNAME(ivz,J+MNU)(1:10),' ',VISMAT(ivz,J+MNU)(1:10)
+                  endif
+                else
+                  if(VISTYP(ivz,J)(1:4).eq.'vis ')then
+                    WRITE(outs,'(4A)')' vis 1rot  ',
+     &                VISNAME(ivz,J)(1:llbn),' ',VISMAT(ivz,J)(1:llbm)
+                    WRITE(outs2a,'(4A)')' vis 1rot  ',
+     &                VISNAME(ivz,J+MNU)(1:llbn2),' ',
+     &                VISMAT(ivz,J+MNU)(1:llbm2)
+                  elseif(VISTYP(ivz,i)(1:4).eq.'vis3')then
+                    WRITE(outs,'(4A)')' vis 3rot  ',
+     &                VISNAME(ivz,J)(1:llbn),' ',VISMAT(ivz,J)(1:llbm)
+                    WRITE(outs2a,'(4A)')' vis 3rot  ',
+     &                VISNAME(ivz,J+MNU)(1:llbn2),' ',
+     &                VISMAT(ivz,J+MNU)(1:llbm2)
+                  elseif(VISTYP(ivz,i)(1:4).eq.'visp')then
+                    WRITE(outs,'(4A)')' vis poly  ',
+     &                VISNAME(ivz,J)(1:llbn),' ',VISMAT(ivz,J)(1:llbm)
+                    WRITE(outs2a,'(4A)')' vis poly  ',
+     &                VISNAME(ivz,J+MNU)(1:llbn2),' ',
+     &                VISMAT(ivz,J+MNU)(1:llbm2)
+                  endif
                 endif
                 llo=lnblnk(outs)
                 if(llo.lt.36) llo=36
@@ -3612,7 +3822,8 @@ C        write(6,*) 'nmlc is ',nmlc,databaseinfo
         do imlc=1,nmlc
           found=.false.
           write(mlc_name,'(a)') mlcname(imlc)(1:lnmlcname(imlc))
-          call mlcrefs(mlc_name,areamlc,tareamlc,found)
+          call mlcrefs(mlc_name,areamlc,areamlcamb,areamlcoth,
+     &    areamlcb2b,areamlcgrnd,areamlcsimil,tareamlc,found)
           if(found)then
             if(databaseinfo.eq.2)then
               iitrc=2
@@ -4341,7 +4552,7 @@ C and if there is a control file scan it and write it back out again.
       endif
 
 C Check to see if version of configuration file requires updating.
-      if(icfgv.lt.4)then
+      if(icfgv.le.4)then
         helptopic='model_upgrade_v3'
         call gethelptext(helpinsub,helptopic,nbhelp)
         call easkok('Configuration file has out-of-date format!',
@@ -4362,7 +4573,7 @@ C be a black string or as 'internal'.
             ipvaction='ipv'
             call ripvdat(IUO,lipvdatf,ipvaction,ier)
           endif
-          icfgv=4   ! set to current version.
+          icfgv=5   ! set to current version.
 
 C If there are any images associated with the model create a filler
 C string for the image documentation.
@@ -4474,7 +4685,7 @@ C Parameters passed in
 
 C bridgelen was calculated in subroutine suredgeadj
       real bridgelen ! Length of potential thermal bridges in each zone.
-      common/gbridge/bridgelen(MCOM,10)
+      common/gbridge/bridgelen(MCOM,16)
 
       real mlcthick
 

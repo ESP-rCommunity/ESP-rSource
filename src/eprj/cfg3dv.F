@@ -41,11 +41,20 @@ C Passed parameter.
       COMMON/OUTIN/IUOUT,IUIN,IEOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/HOLDVW/iglhld,igbhld,Xaddhld,Yaddhld,scahld
 
 #ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer igwid,igheight          ! for use with axiscale
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 numberofzones
+      integer*8 igwid,igheight          ! for use with axiscale
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       SMALL=0.01
@@ -65,7 +74,7 @@ C If altered then do a bound check on the current zone and update display.
           MODLEN=.TRUE.
         ENDIF
 
-C If viewpoint or bounds different then initialise viewing paramters.
+C If viewpoint or bounds different then initialise viewing parameters.
         IF(MODLEN)THEN
           DIS = (VIEWM(1)-EYEM(1))**2 + (VIEWM(2)-EYEM(2))**2 +
      &          (VIEWM(3)-EYEM(3))**2
@@ -79,6 +88,42 @@ C If viewpoint or bounds different then initialise viewing paramters.
           ENDIF
           CALL LENS(IER)
         ENDIF
+
+C Clear current viewing box.
+        CALL startbuffer()
+
+C Setup and pass in parameters to win3d.
+C Add small margins on all sides of the graphic window.
+        iiw1=4; iiw2=4; iiw3=2; iiw4=1; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        if(mmod.eq.8)then
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+        else
+          CALL win3dwwc(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+        endif
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
+        igwid=igw; igheight=igwh
+
+C If optimal view bounds, reset scaling ratios.
+        IF(ITBND.EQ.1)THEN
+          CALL SITE2D(SXMX,SXMN,SYMX,SYMN,ier)
+          CALL axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
+     &      Xadd,Yadd)
+          call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
+          iglhld=igl; Xaddhld=Xadd; igbhld=igb; Yaddhld=Yadd; scahld=sca ! remember values
+
+C If static bounds, reset linescale in case we have returned from
+C something else that changed it.
+        ELSE
+          iigl=igl; iigb=igb
+          call linescale(iigl,Xaddhld,scahld,iigb,Yaddhld,scahld)
+        ENDIF
+
+C If view or scaling has changed, reset clipping planes.
+        if (MODLEN .or. ITBND.EQ.1) call INICLP(ier)
 
 C Draw the selected bodies.
         CALL CDRAWESP(IER)
@@ -129,7 +174,7 @@ C iszjvn : topology of vertices (via geometry.h).
 
       DIMENSION  AX(MPL),AY(MPL),AZ(MPL),IANXT(MPL)
       DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
-      DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
+      DIMENSION  SBBOX(3,2),COG1(3),COG2(3)
       DIMENSION  CG(3),VN(3),ipoints(6,2)
 
       CHARACTER temp*16,DESCRC*25,stemp*13,temp20*21
@@ -138,17 +183,11 @@ C iszjvn : topology of vertices (via geometry.h).
 
 C Local variables to pass to edline and axiscale.
 #ifdef OSI
-      integer igwid,igheight  ! for use with axiscale
       integer iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2
       integer iicol,ipixw,ipixh
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
-      integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2
       integer*8 iicol,ipixw,ipixh
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C If not in graphic mode return.
@@ -167,37 +206,6 @@ C surface names etc. Iixc,iiyc keep track of surface/pixel COG.
 C The right offset for the graphic box is the character width of the
 C menu. Also allow 2 text lines at the bottom for future dialogue.
       IER=0
-
-C Clear current viewing box and re-establish image bounds.
-      CALL startbuffer()
-
-C Setup and pass in parameters to win3d.
-      iiw1=4; iiw2=1; iiw3=0; iiw4=1; iimenu=menuchw
-      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &  iigl,iigr,iigt,iigb,iigw,iigwh)
-      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-      igw=int(iigw); igwh=int(iigwh)
-      igwid=igw
-      igheight=igwh
-
-C Determine scaling ratios for the drawing and axis.  If static
-C assume 1000 -1000 etc, if optimum then use SXMX,SYMX + 2% etc.
-
-C << why different assumption for static?? >>
-
-      IF(ITBND.EQ.0)THEN
-        CALL axiscale(igwid,igheight,-1000.,1000.,-1000.,1000.,xsc,ysc,
-     &                sca,Xadd,Yadd)
-        call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
-      ELSEIF(ITBND.EQ.1)THEN
-
-C Determine the 2D coords of the site extremes.
-        CALL SITE2D(SXMX,SXMN,SYMX,SYMN,ier)
-        CALL axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
-     &                Xadd,Yadd)
-        call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
-      ENDIF
 
 C Refresh the dialogue box if terminal type 8.
       IF(MMOD.EQ.8)CALL USRMSG(' ',' ','-')
@@ -245,9 +253,8 @@ C Note: temp character t13 is 1 char wider than zname().
         COG1(1)=ZCOG(nznog(IZ),1)
         COG1(2)=ZCOG(nznog(IZ),2)
         COG1(3)=ZCOG(nznog(IZ),3)
-        CALL VECTRN(COG1,TEMAT,COG2,IER)
-        CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),iix,iiy)
+        CALL VECTRN(COG1,TSMAT,COG2,IER)
+        call u2pixel(COG2(1),COG2(2),iix,iiy)
 
 C Note call to textpixwidth corrupts t13 so need to
 C re-create t13 after textpixwidth call.
@@ -257,8 +264,11 @@ C re-create t13 after textpixwidth call.
         call textpixwidth(t13,ipixw,ipixh)
         write(t13,'(A)')zname(nznog(IZ))(1:lnzname(nznog(IZ)))
         iixc = iix - (ipixw/2)
-        call textatxy(iixc,iiy,t13,'-',iicol)
-        call forceflush()
+        call CLIPST(t13,iixc,iiy,COG2(3),iclp)
+        if (iclp.eq.0) then
+          call textatxy(iixc,iiy,t13,'-',iicol)
+          call forceflush()
+        endif          
         CALL winfnt(IMFS)
       ENDIF
       IF(ier.NE.0)RETURN
@@ -270,12 +280,14 @@ C label and loop back to the next body.
           COG1(1)=szcoords(nznog(IZ),IV,1)
           COG1(2)=szcoords(nznog(IZ),IV,2)
           COG1(3)=szcoords(nznog(IZ),IV,3)
-          CALL VECTRN(COG1,TEMAT,COG2,IER)
-          CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),iix,iiy)
-          CALL ecirc(iix,iiy,3,1)
-          CALL VERTLBL(iix,iiy,IV,ier)
-          call forceflush()
+          CALL VECTRN(COG1,TSMAT,COG2,IER)
+          call CLIPPT(COG2(1),COG2(2),COG2(3),iclp)
+          if (iclp.eq.0) then
+            call u2pixel(COG2(1),COG2(2),iix,iiy)
+            CALL ecirc(iix,iiy,3,1)
+            CALL VERTLBL(iix,iiy,COG2(3),IV,ier)
+            call forceflush()
+          endif
   202   CONTINUE
         GOTO 100
       ELSEIF(NZSUR(nznog(IZ)).GE.1.AND.NZTV(nznog(IZ)).GT.1)THEN
@@ -283,6 +295,7 @@ C label and loop back to the next body.
 C Check to see if there are any unlinked vertices, if so then draw them
 C before proceeding to draw the surfaces. For each vertex, loop through
 C each surface and its vertex list and see how many hits.
+        found=.false.
         DO 204 IZV=1,NZTV(nznog(IZ))
           IHIT=0
           DO 8792 IS=1,NZSUR(nznog(IZ))
@@ -299,32 +312,37 @@ C draw it as a solid circle.
             COG1(1)=szcoords(nznog(IZ),IZV,1)
             COG1(2)=szcoords(nznog(IZ),IZV,2)
             COG1(3)=szcoords(nznog(IZ),IZV,3)
-            CALL VECTRN(COG1,TEMAT,COG2,IER)
-            CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),iix,iiy)
-            IF(IHIT.EQ.0)THEN
-              CALL ecirc(iix,iiy,3,1)
-            ELSEIF(IHIT.GT.0.AND.IHIT.LT.2)THEN
-              CALL ecirc(iix,iiy,3,0)
-            ENDIF
-            CALL VERTLBL(iix,iiy,IZV,ier)
-
-C If less than 2 hits then draw a legend for the meaning
-C of the vertex symbols.
-            CALL winfnt(issize)
-            iid1=igl+10; iid2=igb+5;
-            CALL ecirc(iid1,iid2,3,1)
-            write(temp,'(A)')'Unlinked vertex'
-            iid1=igl+20; iid2=igb+10;
-            call textatxy(iid1,iid2,temp,'-',iicol)
-            iid1=igl+130; iid2=igb+5;
-            CALL ecirc(iid1,iid2,3,0)
-            write(temp20,'(A)')'Single-linked vertex'
-            iid1=igl+140; iid2=igb+10;
-            call textatxy(iid1,iid2,temp20,'-',iicol)
-            CALL winfnt(IMFS)
+            CALL VECTRN(COG1,TSMAT,COG2,IER)
+            call CLIPPT(COG2(1),COG2(2),COG2(3),iclp)
+            if (iclp.eq.0) then
+              found=.true.
+              call u2pixel(COG2(1),COG2(2),iix,iiy)
+              IF(IHIT.EQ.0)THEN
+                CALL ecirc(iix,iiy,3,1)
+              ELSEIF(IHIT.GT.0.AND.IHIT.LT.2)THEN
+                CALL ecirc(iix,iiy,3,0)
+              ENDIF
+              CALL VERTLBL(iix,iiy,COG2(3),IZV,ier)
+            endif
           ENDIF
   204   CONTINUE
+
+C If any have been drawn then draw a legend for the meaning
+C of the vertex symbols.
+        if (found) then
+          CALL winfnt(issize)
+          iid1=igl+10; iid2=igb+5;
+          CALL ecirc(iid1,iid2,3,1)
+          write(temp,'(A)')'Unlinked vertex'
+          iid1=igl+20; iid2=igb+10;
+          call textatxy(iid1,iid2,temp,'-',iicol)
+          iid1=igl+130; iid2=igb+5;
+          CALL ecirc(iid1,iid2,3,0)
+          write(temp20,'(A)')'Single-linked vertex'
+          iid1=igl+140; iid2=igb+10;
+          call textatxy(iid1,iid2,temp20,'-',iicol)
+          CALL winfnt(IMFS)
+        endif
         call forceflush()
       ENDIF
 
@@ -366,7 +384,7 @@ C-----------------------------------------------------------------------
 C Transform surface polygon to EYE co-ordinates
 C Take structure A multiply by TEMAT return structure B
 C TEMAT = Model to Eye Matrix
-        CALL MATPOL(NAP,IAPNT,AX,AY,AZ,IANXT,TEMAT,
+        CALL MATPOL(NAP,IAPNT,AX,AY,AZ,IANXT,TSMAT,
      &              SBBOX,NBP,IBPNT,BX,BY,BZ,IBNXT,IERR)
 
 C Generate clipping flags and clip geometry in eye coords.
@@ -378,6 +396,8 @@ C If ISTAT = -1 : straddles frustrum
           GOTO  1000
         ELSEIF (ISTAT .EQ. -1) THEN
           CALL CUTPOL(NB,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+        else
+          NB=1
         ENDIF
 
         iixc=0
@@ -436,8 +456,7 @@ C Count the edges in case enhanced edge drawing required.
 C Multiply each vertex by ETSMAT to transform to screen coords
 C ETSMAT = Eye to Screen Matrix. First move to the beginning.
           IP = IABS(IBPNT)
-          CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(BX(IP),BY(IP),iix,iiy)
 
 C If vertex are to be labeled do it in the smallest font, also place
 C a 2pixel square dot at the vertex so if it is embedded in a line
@@ -449,7 +468,7 @@ C it can be seen. Then move cursor to vertex and remember position.
             else
               call esymbolwwc(iix,iiy,8,1)
             endif
-            CALL VERTLBL(iix,iiy,IV,ier)
+            CALL VERTLBL(iix,iiy,BZ(IP),IV,ier)
           ENDIF
           iixlast=iix   ! cast for edline call
           iiylast=iiy
@@ -458,8 +477,7 @@ C it can be seen. Then move cursor to vertex and remember position.
 
  351      CONTINUE
           iedge=iedge+1
-          CALL  ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(BX(IP1),BY(IP1),iix,iiy)
           if(IPEN.eq.1)then
 
 C Normal (not highlighted) edge being drawn, if NAP = NBP then check
@@ -548,7 +566,7 @@ C move cursor back to vertex and remember position.
             else
               call esymbolwwc(iix,iiy,8,1)
             endif
-            CALL VERTLBL(iix,iiy,IV,ier)
+            CALL VERTLBL(iix,iiy,BZ(IP1),IV,ier)
             iixlast=iix   ! cast for edline call
             iiylast=iiy
           ENDIF
@@ -561,8 +579,7 @@ C Repeat until next point is the first, remember position.
 
 C Complete the polygon.
           iedge=iedge+1
-          CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(BX(IP),BY(IP),iix,iiy)
           if(IPEN.eq.1)then
 
 C Normal (not highlighted) edge being drawn, if NAP = NBP then check
@@ -654,28 +671,19 @@ C Patch for cfg is to only label highlighted surfaces.
                 VN(1)=SURVN(nznog(IZ),I,1)
                 VN(2)=SURVN(nznog(IZ),I,2)
                 VN(3)=SURVN(nznog(IZ),I,3)
-                CALL VECTRN(VN,TEMAT,COG2,IER)
-                CALL VECTRN(COG2,ETSMAT,COG3,IER)
-                call u2pixel(COG3(1),COG3(2),iixc,iiyc)
-                write(stemp,'(A)')SNAME(nznog(IZ),I)
+                CALL VECTRN(VN,TSMAT,COG2,IER)
                 call arrow(CG,VN,0.3,0.1,ipoints,'a',2)
-
+                call u2pixel(COG2(1),COG2(2),iixc,iiyc)
+                write(stemp,'(A)')SNAME(nznog(IZ),I)
                 CALL winfnt(issize)
+                iixc=iixc+5
 
-C Offset the surface name depending on orientation.
-                IF(SVFC(nznog(IZ),I).EQ.'VERT')THEN
-                  iixc=iixc+5
-                ELSEIF(SVFC(nznog(IZ),I).EQ.'CEIL')THEN
-                  iixc=iixc+5
-                ELSEIF(SVFC(nznog(IZ),I).EQ.'FLOR')THEN
-                  iixc=iixc+5
-                ELSE
-                  iixc=iixc+5
-                ENDIF
-
-C Make some concession to the size of the font.
-                iicol=0
-                call textatxy(iixc,iiyc,stemp,'-',iicol)
+C Check clipping.
+                call CLIPST(stemp,iixc,iiyc,COG2(3),iclp)
+                if (iclp.eq.0) then
+                  iicol=0
+                  call textatxy(iixc,iiyc,stemp,'-',iicol)
+                endif
                 CALL winfnt(IMFS)
               endif
             endif

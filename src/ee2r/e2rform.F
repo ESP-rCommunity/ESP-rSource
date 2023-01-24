@@ -499,20 +499,23 @@ C << and probably also for obs3 ? >>
       DIMENSION ZSN(MS),iskip(MMLC),VP(3),EQN(4)
       DIMENSION SVALS(3),TVALS(3),TFORM(3)
       DIMENSION XX(MV),YY(MV),ZZ(MV),XT(MV),YT(MV),ZT(MV),TRNS(3)
+      dimension areamlc(MCOM),areamlcamb(MCOM),areamlcoth(MCOM)
+      dimension areamlcb2b(MCOM),areamlcgrnd(MCOM),areamlcsimil(MCOM)
 
       character ZSN*28
       character ZN*12,outs*124,material*32,QT*1
       character GDESCR*36,DESCRC*25
       CHARACTER OPT*12  ! for optical name of the MLC
       CHARACTER ACT*1,doit*144
-      character outsn*124,outsd*124, tfile*72
+      character outsn*124,outsd*124,tfile*72,wmatfile*72
       character pfile*72,atfile*72,ltmp72*72,dtmp72*72,ObsMatName*32
+      character mlc_name*32,tmlcname*32,ttmlcname*32
       integer lnbm  ! length of block material
       integer nobs  ! number of obstructions
       integer nvis  ! number of visual entities
 
       LOGICAL OK,fict,extern,XST,similar
-      logical havediffusesources,founddiffuse
+      logical havediffusesources,founddiffuse,found
 
       helpinsub='e2rform'  ! set for subroutine
 
@@ -544,6 +547,7 @@ C Create a glazing file, default type is 'glass' with user choice
 C to treat as 'mkillum'.
       call edisp(iuout,' creating glazing file. ')
       CALL ERPFREE(iglzfil,ISTAT)
+      CALL ERPFREE(iwmatfil,ISTAT)
       CALL ERPFREE(ita2,ISTAT)
       if(ACT.eq.'i')then
  10     ltmp72=glzfil
@@ -588,6 +592,10 @@ C Ask for alternative glazing file.
         return
       ENDIF
 
+C Create obj.mat for use with Wavefront files via obj2mesh commands.
+      write(wmatfile,'(a,a)')runpath(1:lnrp),'obj.mat'
+      call FPOPEN(iwmatfil,ISTAT,1,3,wmatfile)
+
       WRITE(iglzfil,'(a)') '# Radiance glazing definitions'
       WRITE(iglzfil,'(a)') '# (first line of file must not be edited)'
       WRITE(iglzfil,'(a)') '  '
@@ -597,6 +605,17 @@ C Ask for alternative glazing file.
       WRITE(iglzfil,'(a)') '0 '
       WRITE(iglzfil,'(a)') '3    0.87    0.87    0.87'
       WRITE(iglzfil,'(a)') '  '
+
+      WRITE(iwmatfil,'(a)') '# Radiance glazing definitions'
+      WRITE(iwmatfil,'(a)') '# (first line of file must not be edited)'
+      WRITE(iwmatfil,'(a)') '# For wavefront entries'
+      WRITE(iwmatfil,'(a)') '  '
+
+      WRITE(iwmatfil,'(a)') 'void  glass  unknown_glz'
+      WRITE(iwmatfil,'(a)') '0 '
+      WRITE(iwmatfil,'(a)') '0 '
+      WRITE(iwmatfil,'(a)') '3    0.87    0.87    0.87'
+      WRITE(iwmatfil,'(a)') '  '
 
 C Aternative glazing descriptions file.
       if (NABS.gt.0) then
@@ -637,6 +656,11 @@ C the existing mlc db and create a set of properties.
       WRITE(imatfil,'(a)') '# (first line of file must not be edited)'
       WRITE(imatfil,'(a)') '  '
 
+      WRITE(iwmatfil,'(a)') '# Radiance opaque material definitions.'
+      WRITE(iwmatfil,'(a)') '# (first line of file must not be edited)'
+      WRITE(iwmatfil,'(a)') '# Variant for use with obj2mesh Wavefront'
+      WRITE(iwmatfil,'(a)') '  '
+
 C Define rough medium and fine finish effects for surfaces.
       WRITE(imatfil,'(a)') '# use this for fine surface finish '
       WRITE(imatfil,'(a)') 'void brightfunc fin_in'
@@ -645,6 +669,11 @@ C Define rough medium and fine finish effects for surfaces.
       WRITE(imatfil,'(a)') '1 0.05'
       WRITE(imatfil,'(a)') '  '
       WRITE(imatfil,'(a)') 'void texfunc fin_ex'
+      WRITE(imatfil,'(a)') '6 cdx cdy cdz adobe.cal -s 0.02'
+      WRITE(imatfil,'(a)') '0 '
+      WRITE(imatfil,'(a)') '1 0.01'
+      WRITE(imatfil,'(a)') '  '
+      WRITE(imatfil,'(a)') 'void texfunc fin'
       WRITE(imatfil,'(a)') '6 cdx cdy cdz adobe.cal -s 0.02'
       WRITE(imatfil,'(a)') '0 '
       WRITE(imatfil,'(a)') '1 0.01'
@@ -672,7 +701,47 @@ C Define rough medium and fine finish effects for surfaces.
       WRITE(imatfil,'(a)') '1 0.05'
       WRITE(imatfil,'(a)') '  '
 
-C Always include a colour for external UNKNOWN mlc.
+C And repeat for wavefront file.
+      WRITE(iwmatfil,'(a)') '# use this for fine surface finish '
+      WRITE(iwmatfil,'(a)') 'void brightfunc fin_in'
+      WRITE(iwmatfil,'(a)') '4 dirt dirt.cal -s 0.005'
+      WRITE(iwmatfil,'(a)') '0 '
+      WRITE(iwmatfil,'(a)') '1 0.05'
+      WRITE(iwmatfil,'(a)') '  '
+      WRITE(iwmatfil,'(a)') 'void texfunc fin_ex'
+      WRITE(iwmatfil,'(a)') '6 cdx cdy cdz adobe.cal -s 0.02'
+      WRITE(iwmatfil,'(a)') '0 '
+      WRITE(iwmatfil,'(a)') '1 0.01'
+      WRITE(iwmatfil,'(a)') '  '
+      WRITE(iwmatfil,'(a)') 'void texfunc fin'
+      WRITE(iwmatfil,'(a)') '6 cdx cdy cdz adobe.cal -s 0.02'
+      WRITE(iwmatfil,'(a)') '0 '
+      WRITE(iwmatfil,'(a)') '1 0.01'
+      WRITE(iwmatfil,'(a)') '  '
+      WRITE(iwmatfil,'(a)') '# use this for medium surface finish '
+      WRITE(iwmatfil,'(a)') 'void brightfunc min_in'
+      WRITE(iwmatfil,'(a)') '4 dirt dirt.cal -s 0.01'
+      WRITE(iwmatfil,'(a)') '0 '
+      WRITE(iwmatfil,'(a)') '1 0.05'
+      WRITE(iwmatfil,'(a)') '  '
+      WRITE(iwmatfil,'(a)') 'void texfunc min_ex'
+      WRITE(iwmatfil,'(a)') '6 cdx cdy cdz adobe.cal -s 0.03'
+      WRITE(iwmatfil,'(a)') '0 '
+      WRITE(iwmatfil,'(a)') '1 0.015'
+      WRITE(iwmatfil,'(a)') '  '
+      WRITE(iwmatfil,'(a)') '# use this for rough surface finish '
+      WRITE(iwmatfil,'(a)') 'void brightfunc rin_in'
+      WRITE(iwmatfil,'(a)') '4 dirt dirt.cal -s 0.05'
+      WRITE(iwmatfil,'(a)') '0 '
+      WRITE(iwmatfil,'(a)') '1 0.05'
+      WRITE(iwmatfil,'(a)') '  '
+      WRITE(iwmatfil,'(a)') 'void texfunc rin_ex'
+      WRITE(iwmatfil,'(a)') '6 cdx cdy cdz adobe.cal -s 0.05'
+      WRITE(iwmatfil,'(a)') '0 '
+      WRITE(iwmatfil,'(a)') '1 0.05'
+      WRITE(iwmatfil,'(a)') '  '
+
+C Always include a colour for external and internal UNKNOWN mlc.
       WRITE(imatfil,'(a)') 'void plastic rc_ex_unknown'
       WRITE(imatfil,'(a)') '0 '
       WRITE(imatfil,'(a)') '0 '
@@ -680,13 +749,64 @@ C Always include a colour for external UNKNOWN mlc.
       WRITE(imatfil,'(a,3F5.2,a)') '5 ',srefl,srefl,srefl,' 0 0 '
       WRITE(imatfil,'(a)') '  '
 
-C Always include a colour for internal UNKNOWN mlc.
       WRITE(imatfil,'(a)') 'void plastic rc_in_unknown'
       WRITE(imatfil,'(a)') '0 '
       WRITE(imatfil,'(a)') '0 '
       srefl=0.5
       WRITE(imatfil,'(a,3F5.2,a)') '5 ',srefl,srefl,srefl,' 0 0 '
       WRITE(imatfil,'(a)') '  '
+
+C And for Wavefront UNKNOWN mlc. variants.
+      WRITE(imatfil,'(a)') 'void plastic rc_in_unknown'
+      WRITE(imatfil,'(a)') '0 '
+      WRITE(imatfil,'(a)') '0 '
+      srefl=0.5
+      WRITE(imatfil,'(a,3F5.2,a)') '5 ',srefl,srefl,srefl,' 0 0 '
+      WRITE(imatfil,'(a)') '  '
+      WRITE(imatfil,'(a)') 'void plastic unknown'
+      WRITE(imatfil,'(a)') '0 '
+      WRITE(imatfil,'(a)') '0 '
+      srefl=0.5
+      WRITE(imatfil,'(a,3F5.2,a)') '5 ',srefl,srefl,srefl,' 0 0 '
+      WRITE(imatfil,'(a)') '  '
+      WRITE(imatfil,'(a)') 'void plastic ex_unknown'
+      WRITE(imatfil,'(a)') '0 '
+      WRITE(imatfil,'(a)') '0 '
+      srefl=0.5
+      WRITE(imatfil,'(a,3F5.2,a)') '5 ',srefl,srefl,srefl,' 0 0 '
+      WRITE(imatfil,'(a)') '  '
+      WRITE(imatfil,'(a)') 'void plastic in_unknown'
+      WRITE(imatfil,'(a)') '0 '
+      WRITE(imatfil,'(a)') '0 '
+      srefl=0.5
+      WRITE(imatfil,'(a,3F5.2,a)') '5 ',srefl,srefl,srefl,' 0 0 '
+      WRITE(imatfil,'(a)') '  '
+
+C Repeat for obj.mat.
+      WRITE(iwmatfil,'(a)') 'void plastic rc_in_unknown'
+      WRITE(iwmatfil,'(a)') '0 '
+      WRITE(iwmatfil,'(a)') '0 '
+      srefl=0.5
+      WRITE(iwmatfil,'(a,3F5.2,a)') '5 ',srefl,srefl,srefl,' 0 0 '
+      WRITE(iwmatfil,'(a)') '  '
+      WRITE(iwmatfil,'(a)') 'void plastic unknown'
+      WRITE(iwmatfil,'(a)') '0 '
+      WRITE(iwmatfil,'(a)') '0 '
+      srefl=0.5
+      WRITE(iwmatfil,'(a,3F5.2,a)') '5 ',srefl,srefl,srefl,' 0 0 '
+      WRITE(iwmatfil,'(a)') '  '
+      WRITE(iwmatfil,'(a)') 'void plastic ex_unknown'
+      WRITE(iwmatfil,'(a)') '0 '
+      WRITE(iwmatfil,'(a)') '0 '
+      srefl=0.5
+      WRITE(iwmatfil,'(a,3F5.2,a)') '5 ',srefl,srefl,srefl,' 0 0 '
+      WRITE(iwmatfil,'(a)') '  '
+      WRITE(iwmatfil,'(a)') 'void plastic in_unknown'
+      WRITE(iwmatfil,'(a)') '0 '
+      WRITE(iwmatfil,'(a)') '0 '
+      srefl=0.5
+      WRITE(iwmatfil,'(a,3F5.2,a)') '5 ',srefl,srefl,srefl,' 0 0 '
+      WRITE(iwmatfil,'(a)') '  '
 
 C Open the inside geometry/composition file.
       call edisp(iuout,' creating inside composition. ')
@@ -714,8 +834,14 @@ C Write inside composition header.
       WRITE(irzfil,'(a)') '# (first line of file must not be edited)'
       WRITE(irzfil,'(a)') '  '
 
-C List database.
-      do 45 IM=1,NMLC
+C List database and if used in the model process and include in
+C the material file.
+      do IM=1,NMLC
+        found=.false.
+        write(mlc_name,'(a)') mlcname(im)(1:lnmlcname(im))
+        call mlcrefs(mlc_name,areamlc,areamlcamb,areamlcoth,
+     &        areamlcb2b,areamlcgrnd,areamlcsimil,tareamlc,found)
+        if(.NOT.found) CYCLE
 
 C Initial assumption is that material is not ficticious and should
 C not be skipped.
@@ -767,21 +893,31 @@ C If TMC has an opaque layer then set gvt to a small number.
             if(VTRN.gt.ftr)iskip(im)=1
           endif
 
-C Setup equivalent for default use. 
+C Setup equivalent for default use. Radiance and Wavefront do 
+C not like construction names with blanks. Filter mlcname(IM) via st2name.
+          call st2name(mlcname(IM),tmlcname)
           WRITE(iglzfil,'(a,a)') 'void glass ',
-     &      mlcname(IM)(1:lnmlcname(IM))
+     &      tmlcname(1:lnblnk(tmlcname))
           WRITE(iglzfil,'(a)') '0 '
           WRITE(iglzfil,'(a)') '0 '
           WRITE(iglzfil,'(a,3F6.2)') '3  ',gvt,gvt,gvt
           WRITE(iglzfil,'(a)') '  '
 
+C Also include transparent entries in obj.mat
+          WRITE(iwmatfil,'(a,a)') 'void glass ',
+     &      tmlcname(1:lnblnk(tmlcname))
+          WRITE(iwmatfil,'(a)') '0 '
+          WRITE(iwmatfil,'(a)') '0 '
+          WRITE(iwmatfil,'(a,3F6.2)') '3  ',gvt,gvt,gvt
+          WRITE(iwmatfil,'(a)') '  '
+
 C Aternative glazing descriptions file.
           if (NABS.gt.0) then
 
 C Check for blind shutter control.
-            do 100 newfoc=1,ncomp
+            do newfoc=1,ncomp
               call georead(ita3,LGEOM(newfoc),newfoc,1,ITRU,IER)
-              do 111 isf=1,nsur
+              do isf=1,nsur
                ICN=IZSTOCN(newfoc,isf)
                if(ITMCFL(newfoc,isf).gt.0.AND.
      &            SMLCN(newfoc,isf)(1:lnblnk(SMLCN(newfoc,isf))).eq.
@@ -795,10 +931,10 @@ C Check for blind shutter control.
                   gvt1=0.02
                   gvt=0.02
                  endif
+                endif
                endif
-              endif
- 111         continue
- 100        continue
+              enddo
+            enddo
             WRITE(ita2,'(3a)')'void glass ',
      &        mlcname(IM)(1:lnmlcname(IM)),'_sw'
             WRITE(ita2,'(a)') '0 '
@@ -808,23 +944,26 @@ C Check for blind shutter control.
           endif
 
         else
-          WRITE(imatfil,'(a)') '# External MLC Colours... '
+
+C Radiance and Wavefront do not like construction names with blanks.
+C Filter mlcname(IM) via st2name.
+          call st2name(mlcname(IM),tmlcname)
           if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
      &        SCENEPURP(ISCENE)(1:9).eq.'Night_ext'.or.
      &        SCENEPURP(ISCENE)(1:8).eq.'Internal') then
             if(iadobe.eq.3)then
               WRITE(imatfil,'(2a)') 'fin_ex plastic rc_ex_',
-     &          mlcname(IM)(1:lnmlcname(IM))
+     &          tmlcname(1:lnblnk(tmlcname))
             elseif(iadobe.eq.2)then
               WRITE(imatfil,'(2a)') 'min_ex plastic rc_ex_',
-     &          mlcname(IM)(1:lnmlcname(IM))
+     &          tmlcname(1:lnblnk(tmlcname))
             elseif(iadobe.eq.1)then
               WRITE(imatfil,'(2a)') 'rin_ex plastic rc_ex_',
-     &          mlcname(IM)(1:lnmlcname(IM))
+     &          tmlcname(1:lnblnk(tmlcname))
             endif
           else
             WRITE(imatfil,'(a,a)') 'void plastic rc_ex_',
-     &        mlcname(IM)(1:lnmlcname(IM))
+     &        tmlcname(1:lnblnk(tmlcname))
           endif
           WRITE(imatfil,'(a)') '0 '
           WRITE(imatfil,'(a)') '0 '
@@ -832,33 +971,220 @@ C Check for blind shutter control.
           WRITE(imatfil,'(a,3F5.2,a)') '5 ',srefl,srefl,srefl,' 0 0 '
           WRITE(imatfil,'(a)') '  '
 
-          WRITE(imatfil,'(a)') '# Internal MLC Colours... '
+C And entries to support Wavefront.
+C          WRITE(imatfil,'(a)') '# Wavefront external Colours... '
+          WRITE(iwmatfil,'(a)') '# Wavefront external Colours... '
+          if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
+     &        SCENEPURP(ISCENE)(1:9).eq.'Night_ext'.or.
+     &        SCENEPURP(ISCENE)(1:8).eq.'Internal') then
+            if(iadobe.eq.3)then
+              WRITE(iwmatfil,'(2a)') 'fin plastic ',
+     &          tmlcname(1:lnblnk(tmlcname))
+            elseif(iadobe.eq.2)then
+              WRITE(iwmatfil,'(2a)') 'fin plastic ',
+     &          tmlcname(1:lnblnk(tmlcname))
+            elseif(iadobe.eq.1)then
+              WRITE(iwmatfil,'(2a)') 'fin plastic ',
+     &          tmlcname(1:lnblnk(tmlcname))
+            endif
+          else
+            WRITE(iwmatfil,'(a,a)') 'void plastic ',
+     &        tmlcname(1:lnblnk(tmlcname))
+          endif
+
+          WRITE(iwmatfil,'(a)') '0 '
+          WRITE(iwmatfil,'(a)') '0 '
+          srefl=1.0-AE
+          WRITE(iwmatfil,'(a,3F5.2,a)') '5 ',srefl,srefl,srefl,' 0 0 '
+          WRITE(iwmatfil,'(a)') '  '
+
+          if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
+     &        SCENEPURP(ISCENE)(1:9).eq.'Night_ext'.or.
+     &        SCENEPURP(ISCENE)(1:8).eq.'Internal') then
+            if(iadobe.eq.3)then
+              WRITE(iwmatfil,'(2a)') 'fin_ex plastic ex_',
+     &          tmlcname(1:lnblnk(tmlcname))
+            elseif(iadobe.eq.2)then
+              WRITE(iwmatfil,'(2a)') 'fin_ex plastic ex_',
+     &          tmlcname(1:lnblnk(tmlcname))
+            elseif(iadobe.eq.1)then
+              WRITE(iwmatfil,'(2a)') 'fin_ex plastic ex_',
+     &          tmlcname(1:lnblnk(tmlcname))
+            endif
+          else
+            WRITE(iwmatfil,'(a,a)') 'void plastic ex_',
+     &        tmlcname(1:lnblnk(tmlcname))
+          endif
+
+          WRITE(iwmatfil,'(a)') '0 '
+          WRITE(iwmatfil,'(a)') '0 '
+          srefl=1.0-AE
+          WRITE(iwmatfil,'(a,3F5.2,a)') '5 ',srefl,srefl,srefl,' 0 0 '
+          WRITE(iwmatfil,'(a)') '  '
+
           if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
      &        SCENEPURP(ISCENE)(1:9).eq.'Night_ext'.or.
      &        SCENEPURP(ISCENE)(1:8).eq.'Internal') then
             if(iadobe.eq.3)then
               WRITE(imatfil,'(a,a)') 'fin_in plastic rc_in_',
-     &          mlcname(IM)(1:lnmlcname(IM))
+     &          tmlcname(1:lnblnk(tmlcname))
             elseif(iadobe.eq.2)then
               WRITE(imatfil,'(a,a)') 'min_in plastic rc_in_',
-     &          mlcname(IM)(1:lnmlcname(IM))
+     &          tmlcname(1:lnblnk(tmlcname))
             elseif(iadobe.eq.1)then
               WRITE(imatfil,'(a,a)') 'rin_in plastic rc_in_',
-     &          mlcname(IM)(1:lnmlcname(IM))
+     &          tmlcname(1:lnblnk(tmlcname))
             endif
           else
             WRITE(imatfil,'(a,a)') 'void plastic rc_in_',
-     &        mlcname(IM)(1:lnmlcname(IM))
+     &        tmlcname(1:lnblnk(tmlcname))
           endif
           WRITE(imatfil,'(a)') '0 '
           WRITE(imatfil,'(a)') '0 '
           srefl=1.0-AI
           WRITE(imatfil,'(a,3F5.2,a)') '5 ',srefl,srefl,srefl,' 0 0 '
           WRITE(imatfil,'(a)') '  '
-        endif
-   45 continue
 
-C Open the outsite geometry/composition file.
+          WRITE(iwmatfil,'(a)') '# Wavefront internal Colours... '
+          if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
+     &        SCENEPURP(ISCENE)(1:9).eq.'Night_ext'.or.
+     &        SCENEPURP(ISCENE)(1:8).eq.'Internal') then
+            if(iadobe.eq.3)then
+              WRITE(iwmatfil,'(a,a)') 'fin_in plastic in_',
+     &          tmlcname(1:lnblnk(tmlcname))
+            elseif(iadobe.eq.2)then
+              WRITE(iwmatfil,'(a,a)') 'fin_in plastic in_',
+     &          tmlcname(1:lnblnk(tmlcname))
+            elseif(iadobe.eq.1)then
+              WRITE(iwmatfil,'(a,a)') 'fin_in plastic in_',
+     &          tmlcname(1:lnblnk(tmlcname))
+            endif
+          else
+            WRITE(iwmatfil,'(a,a)') 'void plastic in_',
+     &        tmlcname(1:lnblnk(tmlcname))
+          endif
+          WRITE(iwmatfil,'(a)') '0 '
+          WRITE(iwmatfil,'(a)') '0 '
+          srefl=1.0-AI
+          WRITE(iwmatfil,'(a,3F5.2,a)') '5 ',srefl,srefl,srefl,' 0 0 '
+          WRITE(iwmatfil,'(a)') '  '
+        endif
+      enddo
+
+C Create a obj.rad file for use with Wavefront files. Use the
+C irofile unit temporarily.
+      call edisp(iuout,' creating site for Wavefront. ')
+      CALL ERPFREE(irofil,ISTAT)
+      write(tfile,'(a,a)')runpath(1:lnrp),'obj.rad'
+      call FPOPEN(irofil,ISTAT,1,3,tfile)
+      WRITE(irofil,'(a)') '# Radiance exterior composition file '
+      WRITE(irofil,'(a)') '# (first line of file must not be edited)'
+      WRITE(irofil,'(a)') '  '
+      WRITE(irofil,'(a)') '# standard sky and ground for use with '
+      WRITE(irofil,'(a)') '# Blender and wavefront files.'
+
+C All other scene types use this standard approach.
+      WRITE(irofil,'(a)') '# define sky... '
+      WRITE(irofil,'(a)') '  '
+      WRITE(irofil,'(a)') 'skyfunc glow sky_glow'
+      WRITE(irofil,'(a)') '0  '
+      WRITE(irofil,'(a)') '0  '
+      WRITE(irofil,'(a)') '4 .986 .986 1.202  0 '
+      WRITE(irofil,'(a)') '  '
+      WRITE(irofil,'(a)') 'sky_glow source sky'
+      WRITE(irofil,'(a)') '0  '
+      WRITE(irofil,'(a)') '0  '
+      WRITE(irofil,'(a)') '4 0 0 1 180  '
+      WRITE(irofil,'(a)') '  '
+      WRITE(irofil,'(a)') '# define ground... '
+      WRITE(irofil,'(a)') 'skyfunc glow ground_glow'
+      WRITE(irofil,'(a)') '0  '
+      WRITE(irofil,'(a)') '0  '
+      WRITE(irofil,'(a)') '4 1.276 .957 .319  0 '
+      WRITE(irofil,'(a)') '  '
+      WRITE(irofil,'(a)') 'ground_glow source ground'
+      WRITE(irofil,'(a)') '0  '
+      WRITE(irofil,'(a)') '0  '
+      WRITE(irofil,'(a)') '4 0 0 -1 180  '
+      WRITE(irofil,'(a)') '  '
+
+C The ground ring material is the RGD values for the ground glow modified 
+C by the ground reflectivity (thus the ground is a shade of brown).
+      WRITE(irofil,'(a)') 'void brightfunc mud'
+      WRITE(irofil,'(a)') '4 dirt dirt.cal -s 0.5'
+      WRITE(irofil,'(a)') '0 '
+      WRITE(irofil,'(a)') '1 0.3'
+      WRITE(irofil,'(a)') ' '
+      WRITE(irofil,'(a)') 'mud plastic ground_mat  '
+      WRITE(irofil,'(a)') '0  '
+      WRITE(irofil,'(a)') '0  '
+      WRITE(irofil,'(a,3F5.2,a)') '5 ',
+     &                      1.276*rgrfl,0.957*rgrfl,0.319*rgrfl,' 0 0 '
+      WRITE(irofil,'(a)') '  '
+      WRITE(irofil,'(a)') 'ground_mat ring groundplane '
+      WRITE(irofil,'(a)') '0  '
+      WRITE(irofil,'(a)') '0  '
+
+C User confirmation of Z value for ground plane.
+      groundz= -0.01
+      CALL EASKR(groundz,' ','Z value of wavefront groundplane? ',
+     &    -89.0,'W',89.,'W',0.1,'latitude',IER,nbhelp)
+
+C Make sure the ground ring is at least 30m radius.
+      if(grdd.lt.15.)grdd=15.0
+      WRITE(irofil,'(a,2F7.1,f7.2,a,F7.1)') '8 ',grcx,grcy,groundz,
+     &  '  0. 0. 1. 0. ',grdd*2.
+      WRITE(irofil,'(a)') ' '
+      if(ngt.gt.0)then
+
+C If there is a ground topology defined then write this out
+C to the outside file.
+        WRITE(irofil,'(a)') '# Outside ground topology defs... '
+        WRITE(irofil,'(a)') '  '
+        do isf=1,ngt
+
+C Find the matching mlc index.
+          ICF=-1
+          call matchmlcdesc(GMLCN(isf),icf)
+
+C If not found then it is probably unknown.
+          if(GMLCN(isf)(1:4).eq.'UNKN')then
+            WRITE(irofil,'(a,a)')'rc_ex_unknown  polygon ',
+     &        GSNAME(isf)(1:lnblnk(GSNAME(isf)))
+            WRITE(irofil,'(a)') '0 '
+            WRITE(irofil,'(a)') '0 '
+            WRITE(irofil,'(I3)')NGVER(isf)*3
+          else
+            WRITE(irofil,'(a,a,a,a)')'rc_ex_',
+     &        GMLCN(isf)(1:lnblnk(GMLCN(isf))),'  polygon ',
+     &        GSNAME(isf)(1:lnblnk(GSNAME(isf)))
+            WRITE(irofil,'(a)') '0 '
+            WRITE(irofil,'(a)') '0 '
+            WRITE(irofil,'(I3)')NGVER(isf)*3
+          endif
+
+C Write the surface.
+          do iv=1,NGVER(isf)
+            K = JGVN(isf,iv)
+            WRITE(irofil,'(3F11.5)')XGT(K),YGT(K),ZGT(K)
+          enddo
+          WRITE(irofil,'(a)') '  '
+        enddo
+      endif
+
+C And finish the site.rad file with entry to be filled in with
+C the mesh file.
+      WRITE(irofil,'(a)') '# For wavefront users must run'
+      WRITE(irofil,'(a)') '# obj2mesh -a obj.mat ??.obj ??.rtm'
+      WRITE(irofil,'(a)') '# where obj.mat holds wavefront equivalents'
+      WRITE(irofil,'(a)') '  '
+      WRITE(irofil,'(a)') 'void mesh site '
+      WRITE(irofil,'(a)') '1  ??.rtm  '
+      WRITE(irofil,'(a)') '0  '
+      WRITE(irofil,'(a)') '0  '
+      WRITE(irofil,'(a)') '  '
+
+C Close obj.rad file, open the outsite geometry/composition file.
       call edisp(iuout,' creating outside composition. ')
       CALL ERPFREE(irofil,ISTAT)
       if(ACT.eq.'i')then
@@ -1343,7 +1669,6 @@ C   All connections: create one surface (no shift).
           endif
 
 C Find the matching mlc index and set the material name.
-C << use call to matchmlcdesc >>
           ICF=-1
           ifict=0
           call matchmlcdesc(SMLCN(newfoc,isf),icf) ! get which MLC (icf)
@@ -1354,8 +1679,8 @@ C << use call to matchmlcdesc >>
               material='unknown'
             endif
           else
-            lnsm=lnblnk(SMLCN(newfoc,isf))
-            write(material,'(a)') SMLCN(newfoc,isf)(1:lnsm)
+            call st2name(SMLCN(newfoc,isf),material)
+            lnsm=lnblnk(material)
             if(icf.gt.0)then
               if(iskip(icf).eq.1)ifict=1
             endif
@@ -1402,7 +1727,7 @@ C  Partition - create if not already created or focus zone.
             WRITE(iglzfil,'(a)') '  '
             if (NABS.gt.0) WRITE(ita2,'(a)') '  '
             if (extern.or.similar.or.(newfoc.eq.ifocz).or.
-     &                   .not.((IZC.eq.ifocz).or.(IZC.lt.newfoc))) then
+     &          .not.((IZC.eq.ifocz).or.(IZC.lt.newfoc))) then
               IANS=1
 C Logic - only allow precalc of illum in focus zone.
 C              if ((newfoc.eq.ifocz).and. 
@@ -1646,6 +1971,7 @@ C Find transformation matrices that normalise face.
       CALL ERPFREE(irofil,ISTAT)
       CALL ERPFREE(irzfil,ISTAT)
       CALL ERPFREE(imatfil,ISTAT)
+      CALL ERPFREE(iwmatfil,ISTAT)
       CALL ERPFREE(iglzfil,ISTAT)
       CALL ERPFREE(ita2,ISTAT)
 

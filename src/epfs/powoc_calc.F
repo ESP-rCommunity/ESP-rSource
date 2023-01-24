@@ -295,12 +295,6 @@ C-------------------------------------------------------------------------------
       common/Fcell/iFClds,LFClds
 
 C---------------------------------------------------------------------------------
-C Common for passing error messages to calling routine (only used when running
-C in dll mode).
-C---------------------------------------------------------------------------------
-      common/dllerr/dllsubr, dllmesg
-
-C---------------------------------------------------------------------------------
 C Declarations for common block variables.
 C---------------------------------------------------------------------------------
 
@@ -308,13 +302,12 @@ C-------------------------------------------------------------------------------
       REAL         btimep, btimef, ptimep, ptimef
       CHARACTER    LFClds*72
       INTEGER      iFClds
-      character    dllsubr*12,dllmesg*124
 
 C---------------------------------------------------------------------------------
 C Declarations for local variables.
 C---------------------------------------------------------------------------------
       REAL      q_nonHVAC_elec, q_HVAC_elec
-      LOGICAL   XST,dll
+      LOGICAL   XST
       CHARACTER OUTS*124
       LOGICAL   FCL_converted
 
@@ -368,15 +361,8 @@ C-------------------------------------------------------------------------------
          else
            write(outs,'(3a)') 'FC loads file ',LFClds(1:lnblnk(LFClds)),
      &                        ' was referenced but not found.'
-            call isadll(dll)  ! Move this to within loop below.
-            if(dll)then
-               dllsubr='ersys'
-               dllmesg=outs
-               return
-            else
-               call edisp(iuout,outs)
-               STOP ' Need elec loads data: unresolvable error.'
-            endif
+           call edisp(iuout,outs)
+           STOP ' Need elec loads data: unresolvable error.'
          endif
          CALL FC_eloads_convert
       END IF
@@ -514,10 +500,6 @@ C-------------------------------------------------------------------------------
       REAL      q_HVAC_elec
       LOGICAL   Debug_me
 
-C      LOGICAL   XST,dll
-C      CHARACTER OUTS*124
-C      LOGICAL   FCL_converted
-
 C--------------------------------------------------------------------------------
 C     Calculate total HVAC electrical loads (W)
 C--------------------------------------------------------------------------------
@@ -621,12 +603,6 @@ C-------------------------------------------------------------------------------
       common/Fcell/iFClds,LFClds
 
 C---------------------------------------------------------------------------------
-C Common for passing error messages to calling routine (only used when running
-C in dll mode).
-C---------------------------------------------------------------------------------
-      common/dllerr/dllsubr, dllmesg
-
-C---------------------------------------------------------------------------------
 C Common created by Neil Saldanha for customized controller with SE and lithium
 C ion battery (see his thesis for more info)
 C---------------------------------------------------------------------------------
@@ -641,7 +617,6 @@ C-------------------------------------------------------------------------------
       REAL         btimep, btimef, ptimep, ptimef
       CHARACTER    LFClds*72
       INTEGER      iFClds
-      character    dllsubr*12,dllmesg*124
 
 C---------------------------------------------------------------------------------
 C Declarations for variables passed in calling statement.
@@ -653,7 +628,7 @@ C Declarations for local variables.
 C---------------------------------------------------------------------------------
       INTEGER   ier
       REAL      q_nonHVAC_elec, q_HVAC_elec
-      LOGICAL   XST,dll
+      LOGICAL   XST
       CHARACTER OUTS*124
       LOGICAL   FCL_converted
 
@@ -672,16 +647,8 @@ C-------------------------------------------------------------------------------
            write(outs,'(3a)') 'Electric network loads file ',
      &                         LFClds(1:lnblnk(LFClds)),
      &                        ' was referenced but not found.'
-            call isadll(dll)  ! Move this to within loop below.
-            if(dll)then
-               dllsubr='ersys'
-               dllmesg=outs
-               ier=2
-               return
-            else
-               call edisp(iuout,outs)
-               STOP ' Need elec loads data: unresolvable error.'
-            endif
+            call edisp(iuout,outs)
+            STOP ' Need elec loads data: unresolvable error.'
          endif
          CALL FC_eloads_convert
       END IF
@@ -1017,12 +984,6 @@ C-------------------------------------------------------------------------------
       INTEGER   iDataPoints
 
 C---------------------------------------------------------------------------------
-C Common for passing error messages to calling routine (only used when running
-C in dll mode).
-C---------------------------------------------------------------------------------
-      common/dllerr/dllsubr, dllmesg
-
-C---------------------------------------------------------------------------------
 C Declarations for common block variables.
 C---------------------------------------------------------------------------------
       INTEGER      IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS,idynow
@@ -1030,7 +991,6 @@ C-------------------------------------------------------------------------------
       REAL         btimep, btimef, ptimep, ptimef
       CHARACTER    LWndSupp*72
       INTEGER      iWndSupp
-      character    dllsubr*12,dllmesg*124
       REAL         QElecT
 
 C---------------------------------------------------------------------------------
@@ -1042,7 +1002,7 @@ C-------------------------------------------------------------------------------
 C Declarations for local variables.
 C---------------------------------------------------------------------------------
       INTEGER   ier
-      LOGICAL   XST,dll
+      LOGICAL   XST
       CHARACTER OUTS*124
 
 
@@ -1061,16 +1021,8 @@ C POWCDATS(IPWC,1) holds the .wnd. file name (additional data string).
          else
            write(outs,'(3a)') 'WND supply file ',LWndSupp
      &       (1:lnblnk(LWndSupp)),' was referenced but not found.'
-            call isadll(dll)  ! Move this to within loop below.
-            if(dll)then
-               dllsubr='ersys'
-               dllmesg=outs
-               ier=2
-               return
-            else
-               call edisp(iuout,outs)
-               STOP ' Need elec supply data: unresolvable error.'
-            endif
+           call edisp(iuout,outs)
+           STOP ' Need elec supply data: unresolvable error.'
          endif
          CALL H2_wind_convert
       END IF

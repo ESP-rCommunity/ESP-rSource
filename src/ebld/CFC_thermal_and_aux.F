@@ -3097,11 +3097,6 @@ C ********************************************************************
       common/trc/itrc
       integer itrc
 
-      common/dllerr/dllsubr,dllmesg
-      character dllsubr*12,dllmesg*124
-
-      logical dll
-
       CHARACTER outs*124
       
 C Working variables to temporarily store slat angle for daytype and hour
@@ -3149,9 +3144,6 @@ C      real slat_angleX
       integer istat
 
       DIMENSION VAL(MBITS+2)
-
-C Check if running in dll mode.
-      call isadll(dll)
 
       PI = 4.0 * ATAN(1.0)
       R=PI/180.
@@ -3325,19 +3317,12 @@ C            Error ... !!
              write(outs,'(a,a,i2,a,i2,a)')
      &       'CFC_control: ICFCCTL does not point to a valid temporal',
      &       ' item for zone ',iact2,', CFC type',iact3,'.'
-             if(dll)then
-               dllsubr='CFC_control'
-               dllmesg=outs
-               ier=2
-               return
-             else
-               call edisp(iuout,outs)
-               close(ieout)
-               CALL ERPFREE(ieout,ISTAT)
-               call epwait
-               call epagend
-               STOP
-             endif
+             call edisp(iuout,outs)
+             close(ieout)
+             CALL ERPFREE(ieout,ISTAT)
+             call epwait
+             call epagend
+             STOP
             endif
 
           endif ! check iact1

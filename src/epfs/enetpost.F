@@ -178,7 +178,7 @@ C Calculate nodal power factors
         ENDIF
 
 
-C Calculate the node-based network paramters 
+C Calculate the node-based network parameters.
 C Total imported power 
       PENETIMPPU=PENETIMPPU+PENODIMPU(INOD)
       QENETIMPPU=QENETIMPPU+QENODIMPU(INOD)

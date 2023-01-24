@@ -15,22 +15,20 @@ C details.
 
 
 C This file contains the following routines:
-C      MOSTAT
-C      MOSREG
-C      MOSINF
-C      MOSETS
-C      MORPER
-C      MOSGET
-C      MOREGR
-C      MORSTU
-C      MOSMSD
+C  MOSTAT High level control of statistical analysis.
+C  MOSMSD Generic menu & get routines to retrieve basic statistical data. 
+C  MOSMSDCEN As MOSMSD with comparison to CEN standard.
+C  MOSQHR Find number of hours above or below a given value. 
+C  MOEDMDS Energy demands integrated over the assessment period. 
+C  CASDIST Reports casual gains distributions.
 
 C ******************** MOSTAT ********************
-C Allows statistical analysis of the simulation
+C High level control of statistical analysis of the simulation
 C results.
 
       SUBROUTINE MOSTAT
 #include "building.h"
+#include "geometry.h"
 #include "help.h"
       
       integer lnblnk  ! function definition
@@ -66,6 +64,7 @@ C results.
 C Markdown flag.
       logical markdown
       common/markdownflag/markdown
+      COMMON/GRTOOL/IHFLAG,IDHFLG,ilflag
 
       logical libheading ! have we printed report heading (library name etc).
       logical headingcontext ! has set or period changed so heading needs reprint
@@ -83,7 +82,7 @@ C SNAPSH is a logical flag to request variation in header.
       COMMON/SNAP/SNAPSH
       logical SNAPSH,close
       DIMENSION ATI(8),RTI(8),TATI(8),TRTI(8),NDYMTH(12)
-      dimension ITEM(25),ITEMONTH(7)
+      dimension ITEM(26),ITEMONTH(7)
       character ITEM*23,ITEMONTH*32
       character tg*1,delim*1,xfile*144
       character PDESCR*64,SDESCR*44
@@ -150,10 +149,17 @@ C      ITEM(10)='e CEN statistics     '
       elseif(delim.eq.'X')then
         ITEM(23)='^ delim >> tagged      '
       endif
-      ITEM(24)='? help               '
-      ITEM(25)='- exit               '
+      if(ILFLAG.eq.0)then
+        ITEM(24)='& labels >> multiline  '
+      elseif(ILFLAG.eq.1)then
+        ITEM(24)='& labels >> on one line'
+      elseif(ILFLAG.eq.2)then
+        ITEM(24)='& labels >> one ln no #'
+      endif
+       ITEM(25)='? help               '
+      ITEM(26)='- exit               '
 
- 2    NITMS=25
+ 2    NITMS=26
       if(MMOD.eq.8)then
         INO=-1
       else
@@ -610,21 +616,48 @@ C Monthly db temperature and resultant temperature stats.
         if(ixopen.eq.1)then
           itru = ixunit
         endif
-        write(outs,'(a,8x,a,8x,a)')' Zone','Internal air temperature',
-     &    'Internal resultant temp.'
-        call edisp(itru,outs)
-        write(outs,'(4x,2a)') 'Period  Max.   at   Min.   at   Mean ',
-     &    ' Max.   at   Min.   at   Mean'
-        call edisp(itru,outs)
-        call edisp(itru,' ')
+        if(markdown)then
+          call edisp(itru,'  ')
+          call edisp(itru,
+     &    '## Monthly zone temperature stats')
+          call edisp(itru,
+     &    ': Monthly zone temperature stats.')
+          call edisp(itru,'  ')
+          write(outs,'(2a)')
+     &    '------------- -----  ------- ------- ------- ------- ',
+     &    '------- ------- --------- ------- --------- ---------' 
+          call edisp(itru,outs)
+          write(outs,'(2a)')
+     &    ' Zone         Month  db T    dbT Max db T    dbT Min ',
+     &    'db T    Result  Res T Max Result  Res T Min Resultant'
+          call edisp(itru,outs)
+          write(outs,'(2a)')
+     &    '                     Max.    day:hr  Min.    day:hr  ',
+     &    'Mean    T Max.  day:hr    T Min.  day:hr     Mean'
+          call edisp(itru,outs)
+        else
+          call edisp(itru,
+     &    ' Monthly zone temperature stats.')
+          if(ILFLAG.eq.0)then
+            write(outs,'(a,8x,a,8x,a)')' Zone',
+     &      'Internal air temperature','Internal resultant temp.'
+            call edisp(itru,outs)
+            write(outs,'(4x,2a)') 
+     &      'Period  Max.   at   Min.   at   Mean ',
+     &      ' Max.   at   Min.   at   Mean'
+            call edisp(itru,outs)
+            call edisp(itru,' ')
+          else
+            write(outs,'(2a)')
+     &        'Zone Period dbT-max DOM:hour dbT-min DOM:hour ',
+     &        'dbT-mean ResT-max DOM:hour ResT-min DOM:hour ResT-mean'
+            call eddisp(itru,outs)
+          endif
+        endif
 
 C Per zone for each day in period.
         DO 860 I=1,NZ
-          IZN=NZNO(I)
-          IMNTH=IOM1
-          ATI(8)=0.0
-          INITL=0
-          ISET=ISIM
+          IZN=NZNO(I); IMNTH=IOM1; ATI(8)=0.0; INITL=0; ISET=ISIM
 
 C Get statistics for the day.
           DO 850 J=IODS,IODF
@@ -651,33 +684,20 @@ C Get zone resultant temp into XDUM1.
   822         ATI(7)=ATI(7)+GVAL(KT)
               ATI(8)=ATI(8)+1.0
               IF(XDUM1(KT).LE.RTI(1))GOTO 826
-              RTI(1)=XDUM1(KT)
-              RTI(2)=JD
-              RTI(3)=KT
+              RTI(1)=XDUM1(KT); RTI(2)=JD; RTI(3)=KT
               goto 827
   826         IF(XDUM1(KT).GE.RTI(4))GOTO 827
-              RTI(4)=XDUM1(KT)
-              RTI(5)=JD
-              RTI(6)=KT
+              RTI(4)=XDUM1(KT); RTI(5)=JD; RTI(6)=KT
   827         RTI(7)=RTI(7)+XDUM1(KT)
               RTI(8)=RTI(8)+1.0
              goto  830
-  828         RTI(1)=XDUM1(KT)
-              RTI(2)=JD
-              RTI(3)=KT
-              RTI(4)=XDUM1(KT)
-              RTI(5)=JD
-              RTI(6)=KT
-              RTI(7)=XDUM1(KT)
-              RTI(8)=1.0
-              ATI(1)=GVAL(KT)
-              ATI(2)=JD
-              ATI(3)=KT
-              ATI(4)=GVAL(KT)
-              ATI(5)=JD
-              ATI(6)=KT
-              ATI(7)=GVAL(KT)
-              ATI(8)=1.0
+  828         RTI(1)=XDUM1(KT) 
+              RTI(2)=JD; RTI(3)=KT
+              RTI(4)=XDUM1(KT); RTI(5)=JD; RTI(6)=KT
+              RTI(7)=XDUM1(KT); RTI(8)=1.0 
+              ATI(1)=GVAL(KT); ATI(2)=JD; ATI(3)=KT
+              ATI(4)=GVAL(KT); ATI(5)=JD; ATI(6)=KT
+              ATI(7)=GVAL(KT); ATI(8)=1.0
   830       CONTINUE
 
 C Check if month finished.
@@ -699,17 +719,59 @@ C Dump this month's statistics.
             NT4=INT(RTI(6))/NTS
             RTI7=RTI(7)/RTI(8)
             IF(IMNTH.EQ.IOM1)THEN
-              WRITE(outs,904)IZN,NMTHNM(IMNTH),
-     &          ATI(1),ND1,NT1,ATI(4),ND2,NT2,ATI7,
-     &          RTI(1),ND3,NT3,RTI(4),ND4,NT4,RTI7
-  904         FORMAT(I4,A5,' ',2(2(F6.2,I3,':',I2),F6.2))
-              call eddisp(itru,outs)
+              if(markdown)then
+                write(outs,'(4a,F10.2,a,I2.2,a,I2.2,F9.2,a,I2.2,a,
+     &            I2.2,F9.2,F9.2,a,I2.2,a,I2.2,F9.2,a,I2.2,a,I2.2,
+     &            F11.2)') ' ',zname(IZN)(1:12),' ',NMTHNM(IMNTH),
+     &            ATI(1),'  ',ND1,':',NT1,ATI(4),'  ',ND2,':',NT2,
+     &            ATI7,RTI(1),'   ',ND3,':',NT3,RTI(4),'  ',
+     &            ND4,':',NT4,RTI7
+                call edisp(itru,outs)
+              else
+                if(ILFLAG.eq.0)then
+                  WRITE(outs,904) zname(IZN)(1:12),' ',NMTHNM(IMNTH),
+     &              ATI(1),ND1,NT1,ATI(4),ND2,NT2,ATI7,
+     &              RTI(1),ND3,NT3,RTI(4),ND4,NT4,RTI7
+  904             FORMAT(3a,2(2(F6.2,I3,':',I2),F6.2))
+                  call eddisp(itru,outs)
+                else
+                  WRITE(outs,'(3a,F10.2,a,I2.2,a,I2.2,F9.2,a,I2.2,a,
+     &              I2.2,F9.2,F9.2,a,I2.2,a,I2.2,F9.2,a,I2.2,a,I2.2,
+     &              F11.2)') zname(IZN)(1:12),' ',NMTHNM(IMNTH),
+     &              ATI(1),' ',ND1,':',NT1,ATI(4),' ',ND2,':',NT2,
+     &              ATI7,RTI(1),' ',ND3,':',NT3,RTI(4),' ',
+     &              ND4,':',NT4,RTI7
+                  call eddisp(itru,outs)
+                endif
+              endif
             ELSE
-              WRITE(outs,903)NMTHNM(IMNTH),
-     &          ATI(1),ND1,NT1,ATI(4),ND2,NT2,ATI7,
-     &          RTI(1),ND3,NT3,RTI(4),ND4,NT4,RTI7
-  903         FORMAT(4X,A5,' ',2(2(F6.2,I3,':',I2),F6.2))
-              call eddisp(itru,outs)
+              if(markdown)then
+                write(outs,'(14x,a,F10.2,a,I2.2,a,I2.2,F9.2,a,I2.2,a,
+     &            I2.2,F9.2,F9.2,a,I2.2,a,I2.2,F9.2,a,I2.2,a,I2.2,
+     &            F11.2)') NMTHNM(IMNTH),
+     &            ATI(1),'  ',ND1,':',NT1,ATI(4),'  ',ND2,':',NT2,
+     &            ATI7,RTI(1),'   ',ND3,':',NT3,RTI(4),'  ',
+     &            ND4,':',NT4,RTI7
+                call edisp(itru,outs)
+              else
+                if(ILFLAG.eq.0)then
+                  WRITE(outs,'(14x,a,F10.2,a,I2.2,a,I2.2,F9.2,a,I2.2,a,
+     &              I2.2,F9.2,F9.2,a,I2.2,a,I2.2,F9.2,a,I2.2,a,I2.2,
+     &              F11.2)') NMTHNM(IMNTH),
+     &              ATI(1),'  ',ND1,':',NT1,ATI(4),'  ',ND2,':',NT2,
+     &              ATI7,RTI(1),'   ',ND3,':',NT3,RTI(4),'  ',
+     &              ND4,':',NT4,RTI7
+                  call eddisp(itru,outs)
+                else
+                  WRITE(outs,'(2a,F10.2,a,I2.2,a,I2.2,F9.2,a,I2.2,a,
+     &              I2.2,F9.2,F9.2,a,I2.2,a,I2.2,F9.2,a,I2.2,a,I2.2,
+     &              F11.2)') '-- ',NMTHNM(IMNTH),
+     &            ATI(1),' ',ND1,':',NT1,ATI(4),' ',ND2,':',NT2,
+     &            ATI7,RTI(1),' ',ND3,':',NT3,RTI(4),' ',
+     &            ND4,':',NT4,RTI7
+                  call eddisp(itru,outs)
+                endif
+              endif
             ENDIF
 
             IF(INITL.GE.1)goto 841
@@ -722,20 +784,15 @@ C Dump this month's statistics.
             TATI(1)=ATI(1); TATI(2)=ATI(2); TATI(3)=ATI(3)
             goto 843
   842       IF(ATI(4).GE.TATI(4))goto 843
-            TATI(4)=ATI(4)
-            TATI(5)=ATI(5)
+            TATI(4)=ATI(4); TATI(5)=ATI(5)
             TATI(6)=ATI(6)
   843       TATI(7)=TATI(7)+ATI(7)
             TATI(8)=TATI(8)+ATI(8)
             IF(RTI(1).LE.TRTI(1))goto 844
-            TRTI(1)=RTI(1)
-            TRTI(2)=RTI(2)
-            TRTI(3)=RTI(3)
+            TRTI(1)=RTI(1); TRTI(2)=RTI(2); TRTI(3)=RTI(3)
             goto 845
   844       IF(RTI(4).GE.TRTI(4))goto 845
-            TRTI(4)=RTI(4)
-            TRTI(5)=RTI(5)
-            TRTI(6)=RTI(6)
+            TRTI(4)=RTI(4); TRTI(5)=RTI(5); TRTI(6)=RTI(6)
   845       TRTI(7)=TRTI(7)+RTI(7)
             TRTI(8)=TRTI(8)+RTI(8)
   849       ATI(8)=0.0
@@ -755,17 +812,44 @@ C Dump annual statistics.
           IYD=INT(TRTI(5))
           CALL EDAYR(IYD,ND4,NM4)
           TRTI7=TRTI(7)/TRTI(8)
-          write(outs,9015)TATI(1),ND1,NM1,TATI(4),ND2,NM2,TATI7,
-     &      TRTI(1),ND3,NM3,TRTI(4),ND4,NM4,TRTI7
- 9015     format(5X,'Ann ',' ',2(2(F6.2,I3,':',I2),F6.2))
-          call eddisp(itru,outs)
-          call edisp(itru,' ')
+          if(markdown)then
+            write(outs,'(14x,a,F10.2,a,I2.2,a,I2.2,F9.2,a,I2.2,a,
+     &        I2.2,F9.2,F9.2,a,I2.2,a,I2.2,F9.2,a,I2.2,a,I2.2,
+     &        F11.2)') 'All',TATI(1),'  ',ND1,':',NM1,TATI(4),'  ',
+     &        ND2,':',NM2,TATI7,TRTI(1),'   ',
+     &        ND3,':',NM3,TRTI(4),'  ',ND4,':',NM4,TRTI7
+            call edisp(itru,outs)
+          else
+            if(ILFLAG.eq.0)then
+              write(outs,9015)TATI(1),ND1,NM1,TATI(4),ND2,NM2,TATI7,
+     &          TRTI(1),ND3,NM3,TRTI(4),ND4,NM4,TRTI7
+ 9015         format(6X,'All',' ',2(2(F6.2,I3,':',I2),F6.2))
+              call eddisp(itru,outs)
+              call edisp(itru,' ')
+            else
+              write(outs,'(a,F10.2,a,I2.2,a,I2.2,F9.2,a,I2.2,a,
+     &          I2.2,F9.2,F9.2,a,I2.2,a,I2.2,F9.2,a,I2.2,a,I2.2,
+     &          F11.2)') '-- ,All ',
+     &          TATI(1),' ',ND1,':',NM1,TATI(4),' ',
+     &          ND2,':',NM2,TATI7,TRTI(1),' ',
+     &          ND3,':',NM3,TRTI(4),' ',ND4,':',NM4,TRTI7
+              call eddisp(itru,outs)
+              call edisp(itru,' ')
+            endif
+          endif
   860   CONTINUE
-      elseif(INO.EQ.(NITMS-4)) then
+        if(markdown)then
+          write(outs,'(2a)')
+     &    '------------- -----  ------- ------- ------- ------- ',
+     &    '------- ------- --------- ------- --------- ---------' 
+          call edisp(itru,outs)
+          call edisp(itru,' ')
+        endif
+      elseif(INO.EQ.(NITMS-5)) then
 
         call ctlexp(xfile,ixopen,ixunit,ixpunit,'X','Tabular',IER)
 
-      elseif(INO.EQ.(NITMS-3)) then
+      elseif(INO.EQ.(NITMS-4)) then
 
 C Toggle markdown mode.
         if(markdown)then
@@ -777,7 +861,7 @@ C Set markdown and if output is to a file reset heading logicals
           libheading=.false.; headingcontext=.false. ! reset heading logicals
         endif
 
-      elseif(INO.EQ.(NITMS-2)) then
+      elseif(INO.EQ.(NITMS-3)) then
 
 C Toggle delimeter.
         helptopic='res_stats_delimiter'
@@ -797,7 +881,22 @@ C Toggle delimeter.
         elseif(iwm.eq.5)then
           delim = 'X'
         endif
+      elseif(INO.EQ.(NITMS-2)) then
 
+C Toggle single or multiple line headings.
+        ILFLAG=ILFLAG+1
+        if(ILFLAG.GT.2)ILFLAG=0
+        if(ILFLAG.eq.0)then
+          call edisp(iuout,' ')
+          call edisp(iuout,'column labels on multi-lines ')
+        elseif(ILFLAG.eq.1)then
+          call edisp(iuout,' ')
+          call edisp(iuout,'column labels on one line (spreadsheets)')
+        elseif(ILFLAG.eq.2)then
+          call edisp(iuout,' ')
+          call edisp(iuout,
+     &      'column labels on one line & no # header lines in files')
+        endif
       elseif(INO.EQ.(NITMS-1)) then
 
 C Display help messages. Menu help text.
@@ -850,7 +949,7 @@ C Display help messages. Menu help text.
       END
 
 C ******************** MOSMSD ********************
-C MOSMSD uses the generic menu and get routines to retrieve max, min and
+C Uses the generic menu and get routines to retrieve max, min and
 C other basic statistical data. 
 C Returns the following on the command line (used for IPV reporting).
 C VMX,VMN,VAVE The max, min and average value for the selected metric for 
@@ -1626,7 +1725,7 @@ C Create string description for time of minimum occurrance.
      &            '  ',XT,' ',DIVMN,'  ',NT,'     --           --     '
                 else
                   write (outs,'(2a,f10.3,3a,f10.3,3a)') 
-     &            'All                 ',fill(1:lf),DIVMX,
+     &            'All                ',fill(1:lf),DIVMX,
      &            '  ',XT,' ',DIVMN,'  ',NT,'     --           --     '
                 endif
                 call edisp(itru,outs)
@@ -2026,7 +2125,7 @@ C If heading has not yet been written do so now.
       END
 
 C ******************** MOSQHR ********************
-C MOSQHR: find number of hours above or below a given value using generic 
+C Find number of hours above or below a given value using generic 
 C         routines.
 C  iabove >1 find hours above value
 C  iabove <1 find hours below value
@@ -3001,7 +3100,7 @@ C Energy requirements.
         endif
 
         if(markdown)then
-          call edisp(itru,outs)
+          call edisp(itru,' ')
           if(hcffpattern(1)(1:8).eq.'HEATONLY')then
             write(outs,'(2A)')
      &'--- -------------  -------- --------- --------   ',
@@ -3348,10 +3447,10 @@ C Clear the day array.
       ENDDO    ! of I loop of days.
       write(outs,'(f8.1,a)') AGRHTSTEPS*TFACT,
      &  ' hours when heating required in at least one zone.'
-      call eddisp(itru,outs)
+      call edisp(itru,outs)
       write(outs,'(f8.1,a)') AGRCLSTEPS*TFACT,
      &  ' hours when cooling required in at least one zone.'
-      call eddisp(itru,outs)
+      call edisp(itru,outs)
       if(markdown) call edisp(itru,'  ')
 
       call usrmsg(prompte,'  ','P')

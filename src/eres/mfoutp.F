@@ -673,9 +673,12 @@ C and setup bounds. Setup viewing parameters as done in subroutine adjview.
           call startbuffer
           igwid=igw
           igheight=igwh
-          call axiscale(igwid,igheight,-1000.,1000.,-1000.,1000.,
+          CALL SITE2D(sxmn,sxmx,symx,symn,ier)
+          sxmn=sxmn*0.9; sxmx=sxmx*1.1; symn=symn*0.9; symx=symx*1.1 ! add a bit of space for boundary nodes
+          call axiscale(igwid,igheight,sxmn,sxmx,symn,symx,
      &      xxsc,yysc,xsca,XXadd,YYadd)
           call linescale(iigl,XXadd,xsca,iigb,YYadd,xsca)
+          call INICLP(ier)
           if(NNOD.gt.50.or.NCMP.gt.50)then
             call MFWFDRAWNC('g',0,0)  ! Draw flow nodes & components in grey.
           else
@@ -1380,9 +1383,11 @@ C and bounds as in BNDOBJ.
                   call startbuffer
                   igwid=igw
                   igheight=igwh
-                  call axiscale(igwid,igheight,-1000.,1000.,-1000.,
-     &              1000.,xxsc,yysc,xsca,XXadd,YYadd)
+                  call SITE2D(sxmx,sxmn,symx,symn,ier)
+                  call axiscale(igwid,igheight,sxmn,sxmx,symn,symx,
+     &              xxsc,yysc,xsca,XXadd,YYadd)
                   call linescale(iigl,XXadd,xsca,iigb,YYadd,xsca)
+                  call INICLP(ier)
 
 C If there are few active nodes and components consider including names.
                   if(NNOD.gt.50.or.NCMP.gt.50)then

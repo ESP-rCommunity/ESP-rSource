@@ -272,7 +272,7 @@ C type='bw' boundary wind, 'bk' boundary known
 
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
-      DIMENSION  COG1(3),COG2(3),COG3(3)
+      DIMENSION  COG1(3),COG2(3)
       character t13*13
       integer izsize,issize
 #ifdef OSI
@@ -286,9 +286,10 @@ C type='bw' boundary wind, 'bk' boundary known
 
 C Get pixel position to draw at.
       COG1(1)=xw; COG1(2)=yw; COG1(3)=zw
-      CALL VECTRN(COG1,TEMAT,COG2,IER)
-      CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),iix,iiy)
+      CALL VECTRN(COG1,TSMAT,COG2,IER)
+      call CLIPPT(COG2(1),COG2(2),COG2(3),iclp)
+      if (iclp.ne.0) return
+      call u2pixel(COG2(1),COG2(2),iix,iiy)
 
 C Draw circles depending on type. (powderblue is 27) (navy blue is 34)
       if(col.eq.'r') iicol=0   ! red
@@ -303,7 +304,7 @@ C Draw circles depending on type. (powderblue is 27) (navy blue is 34)
         CALL ecirc(iix,iiy,4,0)
         CALL ecirc(iix,iiy,3,0)
       elseif(type.eq.'iu')then
-        CALL ecirc(iix,iiy+8,4,1)
+        CALL ecirc(iix,iiy,4,1)
       elseif(type.eq.'ik')then
         CALL ecirc(iix,iiy,5,0)
         CALL ecirc(iix,iiy,3,1)
@@ -314,18 +315,24 @@ C Write name for other than 'iu'.
         write(t13,'(A)')name(1:lnblnk(name))
         CALL winfnt(issize)
         iid4 = iix +8  ! offset to right of circle
-        if(col.eq.'r') iicol=0   ! red
-        if(col.eq.'g') iicol=32  ! grey50
-        call textatxy(iid4,iiy+8,t13,'z',iicol)
+        call CLIPST(t13,iid4,iiy,COG2(3),iclp)
+        if (iclp.eq.0) then
+          if(col.eq.'r') iicol=0   ! red
+          if(col.eq.'g') iicol=32  ! grey50
+          call textatxy(iid4,iiy,t13,'z',iicol)
+        endif
         CALL winfnt(IFS)
         call forceflush()
       else
         write(t13,'(A)')name(1:lnblnk(name))
         CALL winfnt(issize)
         iid4 = iix +8  ! offset to right of circle
-        if(col.eq.'r') iicol=0   ! red
-        if(col.eq.'g') iicol=32  ! grey50
-        call textatxy(iid4,iiy+5,t13,'z',iicol)
+        call CLIPST(t13,iid4,iiy+5,COG2(3),iclp)
+        if (iclp.eq.0) then
+          if(col.eq.'r') iicol=0   ! red
+          if(col.eq.'g') iicol=32  ! grey50
+          call textatxy(iid4,iiy+5,t13,'z',iicol)
+        endif
         CALL winfnt(IFS)
         call forceflush()
       endif
@@ -349,7 +356,7 @@ C col is 'r' red  'b' blue  'g' grey
 
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
-      DIMENSION  COG1(3),COG2(3),COG3(3)
+      DIMENSION  COG1(3),COG2(3)
       character t13*13
       integer izsize,issize
 #ifdef OSI
@@ -363,9 +370,10 @@ C col is 'r' red  'b' blue  'g' grey
 
 C Get pixel position to draw at.
       COG1(1)=xw; COG1(2)=yw; COG1(3)=zw
-      CALL VECTRN(COG1,TEMAT,COG2,IER)
-      CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),iix,iiy)
+      CALL VECTRN(COG1,TSMAT,COG2,IER)
+      call CLIPPT(COG2(1),COG2(2),COG2(3),iclp)
+      if (iclp.ne.0) return
+      call u2pixel(COG2(1),COG2(2),iix,iiy)
 
 C Draw symbol depending on type.
       if(col.eq.'r') iicol=0   ! red
@@ -381,61 +389,68 @@ C Draw symbol depending on type.
       elseif(type.eq.'or')then
         call esymbol(iix,iiy,36,1) ! orifice symbol
       elseif(type.eq.'bi')then
-        call esymbol(iix,iiy+5,35,1) ! bidir symbol
+        call esymbol(iix,iiy,35,1) ! bidir symbol
       endif
 
 C Write name to the right of the symbol.
       t13=' '
+      write(t13,'(A)')name(1:lnblnk(name))
+      CALL winfnt(issize)
       if(type.eq.'bx')then
-        write(t13,'(A)')name(1:lnblnk(name))
-        CALL winfnt(issize)
         iid4 = iix +8
-        if(col.eq.'r') iicol=0   ! red
-        if(col.eq.'b') iicol=13  ! royal blue
-        if(col.eq.'g') iicol=32  ! grey50
-        call textatxy(iid4,iiy+5,t13,'z',iicol)
+        call CLIPST(t13,iid4,iiy+5,COG2(3),iclp)
+        if (iclp.eq.0) then
+          if(col.eq.'r') iicol=0   ! red
+          if(col.eq.'b') iicol=13  ! royal blue
+          if(col.eq.'g') iicol=32  ! grey50
+          call textatxy(iid4,iiy+5,t13,'z',iicol)
+          call forceflush()
+        endif
         CALL winfnt(IFS)
-        call forceflush()
       elseif(type.eq.'cr')then
-        write(t13,'(A)')name(1:lnblnk(name))
-        CALL winfnt(issize)
         iid4 = iix +10
-        if(col.eq.'r') iicol=0   ! red
-        if(col.eq.'b') iicol=13  ! royal blue
-        if(col.eq.'g') iicol=32  ! grey50
-        call textatxy(iid4,iiy+5,t13,'z',iicol)
+        call CLIPST(t13,iid4,iiy+5,COG2(3),iclp)
+        if (iclp.eq.0) then
+          if(col.eq.'r') iicol=0   ! red
+          if(col.eq.'b') iicol=13  ! royal blue
+          if(col.eq.'g') iicol=32  ! grey50
+          call textatxy(iid4,iiy+5,t13,'z',iicol)
+          call forceflush()
+        endif
         CALL winfnt(IFS)
-        call forceflush()
       elseif(type.eq.'cd')then
-        write(t13,'(A)')name(1:lnblnk(name))
-        CALL winfnt(issize)
         iid4 = iix +10
-        if(col.eq.'r') iicol=0   ! red
-        if(col.eq.'b') iicol=13  ! royal blue
-        if(col.eq.'g') iicol=32  ! grey50
-        call textatxy(iid4,iiy+5,t13,'z',iicol)
+        call CLIPST(t13,iid4,iiy+5,COG2(3),iclp)
+        if (iclp.eq.0) then
+          if(col.eq.'r') iicol=0   ! red
+          if(col.eq.'b') iicol=13  ! royal blue
+          if(col.eq.'g') iicol=32  ! grey50
+          call textatxy(iid4,iiy+5,t13,'z',iicol)
+          call forceflush()
+        endif
         CALL winfnt(IFS)
-        call forceflush()
       elseif(type.eq.'or')then
-        write(t13,'(A)')name(1:lnblnk(name))
-        CALL winfnt(issize)
         iid4 = iix +8
-        if(col.eq.'r') iicol=0   ! red
-        if(col.eq.'b') iicol=13  ! royal blue
-        if(col.eq.'g') iicol=32  ! grey50
-        call textatxy(iid4,iiy+5,t13,'z',iicol)
+        call CLIPST(t13,iid4,iiy+5,COG2(3),iclp)
+        if (iclp.eq.0) then
+          if(col.eq.'r') iicol=0   ! red
+          if(col.eq.'b') iicol=13  ! royal blue
+          if(col.eq.'g') iicol=32  ! grey50
+          call textatxy(iid4,iiy+5,t13,'z',iicol)
+          call forceflush()
+        endif
         CALL winfnt(IFS)
-        call forceflush()
       elseif(type.eq.'bi')then
-        write(t13,'(A)')name(1:lnblnk(name))
-        CALL winfnt(issize)
         iid4 = iix +8
-        if(col.eq.'r') iicol=0   ! red
-        if(col.eq.'b') iicol=13  ! royal blue
-        if(col.eq.'g') iicol=32  ! grey50
-        call textatxy(iid4,iiy+5,t13,'z',iicol)
+        call CLIPST(t13,iid4,iiy+5,COG2(3),iclp)
+        if (iclp.eq.0) then
+          if(col.eq.'r') iicol=0   ! red
+          if(col.eq.'b') iicol=13  ! royal blue
+          if(col.eq.'g') iicol=32  ! grey50
+          call textatxy(iid4,iiy+5,t13,'z',iicol)
+          call forceflush()
+        endif
         CALL winfnt(IFS)
-        call forceflush()
       endif
       iicol=0
       call winscl('-',iicol)
@@ -456,7 +471,7 @@ C      COMMON/OUTIN/IUOUT,IUIN,IEOUT
       character col*1
       real tdis
 C      character outs*124
-      DIMENSION COG1(3),COG2(3),COG3(3)
+      dimension ax(2),ay(2),az(2)
 #ifdef OSI
       integer iix1,iiy1,iix2,iiy2,iicol
 #else
@@ -484,10 +499,7 @@ C Use ratio calculation.
       x3 = ((r2 * xs) + (r1 * xe))/tdis
       y3 = ((r2 * ys) + (r1 * ye))/tdis
       z3 = ((r2 * zs) + (r1 * ze))/tdis
-      COG1(1)=x3; COG1(2)=y3; COG1(3)=z3
-      CALL VECTRN(COG1,TEMAT,COG2,IER)
-      CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),iix1,iiy1)
+      call ORTTRN(x3,y3,z3,TSMAT,ax(1),ay(1),az(1),ier)
 
 C Now do the other end.
       r2 = tdis - vdis
@@ -495,10 +507,18 @@ C Now do the other end.
       x3 = ((r2 * xe) + (r1 * xs))/tdis
       y3 = ((r2 * ye) + (r1 * ys))/tdis
       z3 = ((r2 * ze) + (r1 * zs))/tdis
-      COG1(1)=x3; COG1(2)=y3; COG1(3)=z3
-      CALL VECTRN(COG1,TEMAT,COG2,IER)
-      CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),iix2,iiy2)
+      call ORTTRN(x3,y3,z3,TSMAT,ax(2),ay(2),az(2),ier)
+
+      call CLIPLIN(ax,ay,az,iclp)
+      if (iclp.eq.1) then
+        return
+      elseif (iclp.eq.-1) then
+        call CUTLIN(ax,ay,az,iclp)
+        if (iclp.eq.-1) return
+      endif
+      
+      call u2pixel(ax(1),ay(1),iix1,iiy1)
+      call u2pixel(ax(2),ay(2),iix2,iiy2)
 
 C Draw a dotted line (in red=0) (powderblue 27) (navy blue 34) (midnight blue 1).
       if(col.eq.'r') iicol=0   ! red
@@ -513,6 +533,7 @@ C      iicol=0  ! red
       return
       end
 
+C ------------------------
 C Based on the surface USE attributes draw relevant symbol
 C on the wire-frame. If act 'v' show names.
       subroutine draw_surf_flow_symbol(loop,act)
@@ -610,7 +631,8 @@ C and truncated name. Jump out when inthenetwork becomes true.
 
 C Note: llpos, lrpos etc are the position in the iszjvn list at each
 C of the corners of the surface.
-      CALL ZSURLEHI(IZ,IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)
+      CALL ZSURLEHI(IZ,IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos,
+     &  DZLLFF)
       if(llpos.gt.0.and.ulpos.gt.0)then
         if(iszjvn(iz,is,llpos).ne.0.and.iszjvn(iz,is,ulpos).ne.0)then
           edgelower=szcoords(iz,iszjvn(iz,is,llpos),3)
@@ -620,9 +642,7 @@ C of the corners of the surface.
 
 C For DOOR variants.
       if(SUSE(iz,is,1)(1:4).eq.'DOOR'.or.
-     &   SUSE(iz,is,1)(1:6).eq.'P-DOOR'.or.
-     &   SUSE(iz,is,1)(1:6).eq.'H-DOOR'.or.
-     &   SUSE(iz,is,1)(1:6).eq.'V-DOOR')then
+     &   SUSE(iz,is,1)(1:6).eq.'P-DOOR')then
         if(SUSE(iz,is,2)(1:6).eq.'CLOSED')then
 
 C Door crack - crack component, assume width = 2mm,
@@ -1685,7 +1705,8 @@ C Reset all surface lines to standard width and display the zone.
 C Note: llpos, lrpos etc are the position in the iszjvn list at each
 C of the corners of the surface.
           call zsurfprm(iz,iso,dupedges,perim)
-          CALL ZSURLEHI(IZ,ISO,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)
+          CALL ZSURLEHI(IZ,ISO,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos,
+     &      DZLLFF)
           if(llpos.gt.0.and.ulpos.gt.0)then
             if(iszjvn(iz,iso,llpos).ne.0.and.
      &         iszjvn(iz,iso,ulpos).ne.0)then
@@ -1925,7 +1946,8 @@ C Calculate offset.
 C Note: llpos, lrpos etc are the position in the iszjvn list at each
 C of the corners of the surface.
           call zsurfprm(iz,iso,dupedges,perim)
-          CALL ZSURLEHI(IZ,ISO,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)
+          CALL ZSURLEHI(IZ,ISO,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos,
+     &      DZLLFF)
           if(llpos.gt.0.and.ulpos.gt.0)then
             if(iszjvn(iz,iso,llpos).ne.0.and.
      &         iszjvn(iz,iso,ulpos).ne.0)then
@@ -2578,7 +2600,8 @@ C If so we do not need to create this component.
 
 C Note: llpos, lrpos etc are the position in the iszjvn list at each
 C of the corners of the surface.
-      CALL ZSURLEHI(IZ,IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)
+      CALL ZSURLEHI(IZ,IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos,
+     &  DZLLFF)
       if(llpos.gt.0.and.ulpos.gt.0)then
         if(iszjvn(izone,isurf,llpos).ne.0.and.
      &     iszjvn(izone,isurf,ulpos).ne.0)then
@@ -2637,9 +2660,7 @@ C     &    '-',2.0,'crack width',IER,nbhelp)
 
 C For DOOR variants.
       if(SUSE(iz,is,1)(1:4).eq.'DOOR'.or.
-     &   SUSE(iz,is,1)(1:6).eq.'P-DOOR'.or.
-     &   SUSE(iz,is,1)(1:6).eq.'H-DOOR'.or.
-     &   SUSE(iz,is,1)(1:6).eq.'V-DOOR')then
+     &   SUSE(iz,is,1)(1:6).eq.'P-DOOR')then
         if(SUSE(iz,is,2)(1:6).eq.'CLOSED')then
 
 C Door crack - crack component, assume width = 2mm,
@@ -4023,7 +4044,8 @@ C Create a flow crack from surface attributes via passed parameters.
 
 C Note: llpos, lrpos etc are the position in the iszjvn list at each
 C of the corners of the surface.
-      CALL ZSURLEHI(IZ,IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)
+      CALL ZSURLEHI(IZ,IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos,
+     &  DZLLFF)
       if(llpos.gt.0.and.ulpos.gt.0)then
         if(iszjvn(iz,is,llpos).ne.0.and.iszjvn(iz,is,ulpos).ne.0)then
           edgelower=szcoords(iz,iszjvn(iz,is,llpos),3)
@@ -4255,7 +4277,8 @@ C Note: llpos, lrpos etc are the position in the iszjvn list at each
 C of the corners of the surface.
       helptopic='bidirectional_attributes'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      CALL ZSURLEHI(IZ,IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)
+      CALL ZSURLEHI(IZ,IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos,
+     &  DZLLFF)
       if(llpos.gt.0.and.ulpos.gt.0)then
         if(iszjvn(iz,is,llpos).ne.0)then
           edgelower=szcoords(iz,iszjvn(iz,is,llpos),3)
@@ -4580,7 +4603,8 @@ C Note: llpos, lrpos etc are the position in the iszjvn list at each
 C of the corners of the surface.
       helptopic='orifice_a'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      CALL ZSURLEHI(IZ,IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)
+      CALL ZSURLEHI(IZ,IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos,
+     &  DZLLFF)
       if(llpos.gt.0.and.ulpos.gt.0)then
         if(iszjvn(iz,is,llpos).ne.0.and.iszjvn(iz,is,ulpos).ne.0)then
           edgelower=szcoords(iz,iszjvn(iz,is,llpos),3)
@@ -4819,6 +4843,8 @@ C Reality checks here...
         endif
       else   ! Similar or adiabatic, ask for other node to connect with.
         IC=0
+        call edisp(iuout,
+     &    'Similar connection, select node in another ZONE.')
         call ASKRNOD(' available nodes','-',IC,IER)
         found=.false.; issoz=0
         do loop2=1,NCOMP      ! find matching zone index
@@ -4951,7 +4977,8 @@ C If so we do not need to create this component.
 
 C Note: llpos, lrpos etc are the position in the iszjvn list at each
 C of the corners of the surface.
-      CALL ZSURLEHI(IZ,IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)
+      CALL ZSURLEHI(IZ,IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos,
+     &  DZLLFF)
       if(llpos.gt.0.and.ulpos.gt.0)then
         if(iszjvn(izone,isurf,llpos).ne.0.and.
      &     iszjvn(izone,isurf,ulpos).ne.0)then
@@ -4981,9 +5008,7 @@ C Cases to ignore.
 
 C For DOOR variants.
       if(SUSE(iz,is,1)(1:4).eq.'DOOR'.or.
-     &   SUSE(iz,is,1)(1:6).eq.'P-DOOR'.or.
-     &   SUSE(iz,is,1)(1:6).eq.'H-DOOR'.or.
-     &   SUSE(iz,is,1)(1:6).eq.'V-DOOR')then
+     &   SUSE(iz,is,1)(1:6).eq.'P-DOOR')then
         if(SUSE(iz,is,2)(1:6).eq.'CLOSED')then
 
 C Door crack - crack component, assume width = 1mm,
@@ -5421,9 +5446,7 @@ C Cases to ignore.
 
 C For DOOR variants.
       if(SUSE(izone,isurf,1)(1:4).eq.'DOOR'.or.
-     &   SUSE(izone,isurf,1)(1:6).eq.'P-DOOR'.or.
-     &   SUSE(izone,isurf,1)(1:6).eq.'H-DOOR'.or.
-     &   SUSE(izone,isurf,1)(1:6).eq.'V-DOOR')then
+     &   SUSE(izone,isurf,1)(1:6).eq.'P-DOOR')then
         if(SUSE(izone,isurf,2)(1:6).eq.'CLOSED')then
           isrelated=.true.
         elseif(SUSE(izone,isurf,2)(1:8).eq.'UNDERCUT')then

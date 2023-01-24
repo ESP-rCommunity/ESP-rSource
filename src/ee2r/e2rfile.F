@@ -478,13 +478,15 @@ C Echo and save render settings.
 C ********************* MKRIF *********************
 C Write Radiance RIF file.
 C IFC=4 ask before overwriting, IFC=3 overwrite.
+C IGL>0 blind control. act='-' standard ='w' wavefront variant.
 
-      SUBROUTINE MKRIF(ITA2,file,IFC,IGL,IER)
+      SUBROUTINE MKRIF(ITA2,file,IFC,IGL,act,IER)
 #include "building.h"
 #include "e2r_common.h"
 
       integer lnblnk  ! function definition
       character file*72,tfile*72
+      character act*1
       logical XST
 
 C Open rif file.
@@ -503,6 +505,9 @@ C This root and folder are scanned when read in.
       WRITE(ITA2,'(a,a)')'# Radiance RIF file: ',file(1:lnblnk(file))
       WRITE(ITA2,'(a,3i3)')'#e2r_gen_view ',intext,ifocz
       WRITE(ITA2,'(a,i3)') '#e2r_glaz_type ',iglzty
+      if(act(1:1).eq.'w'.or.act(1:1).eq.'W')then
+        WRITE(ITA2,'(a)')'# configured to use wavefront files'
+      endif
 
 C Update the view descriptors.
       if(vewcmds(1)(1:2).ne.'  ')then
@@ -565,34 +570,46 @@ C shutter control).
       endif
 
 C Remaining scene files - only if found is anything written to the rif file(s).
-C Materials file.
-      write (tfile,'(2a)') runpath(1:lnrp),matfil(1:lnblnk(matfil))
-      INQUIRE(FILE=tfile,EXIST=XST)
-      if (XST) then
+C Materials file. If wavefront vairant scene is obj.mat.
+      if(act(1:1).eq.'w'.or.act(1:1).eq.'W')then
+        write(ITA2,'(a,a)')'scene= ','obj.mat'
         indxscn = indxscn + 1
-        write(rscedes(indxscn),'(a)') matfil(1:lnblnk(matfil))
-        write(ITA2,'(a,a)')'scene= ',matfil(1:lnblnk(matfil))
+      else
+        write (tfile,'(2a)') runpath(1:lnrp),matfil(1:lnblnk(matfil))
+        INQUIRE(FILE=tfile,EXIST=XST)
+        if (XST) then
+          indxscn = indxscn + 1
+          write(rscedes(indxscn),'(a)') matfil(1:lnblnk(matfil))
+          write(ITA2,'(a,a)')'scene= ',matfil(1:lnblnk(matfil))
+        endif
       endif
 
 C Shell command for modish.pl.
       call system("perl /opt/esp-r/bin/modish/perlfix.pl")
 
-C Outside description file.
-      write (tfile,'(2a)') runpath(1:lnrp),rofil(1:lnblnk(rofil))
-      INQUIRE(FILE=tfile,EXIST=XST)
-      if (XST) then
+C If creating wavefront variant the scene is obj.rad
+      if(act(1:1).eq.'w'.or.act(1:1).eq.'W')then
+        write(ITA2,'(a,a)')'scene= ','obj.rad'
         indxscn = indxscn + 1
-        write(rscedes(indxscn),'(a)') rofil(1:lnblnk(rofil))
-        write(ITA2,'(a,a)')'scene= ',rofil(1:lnblnk(rofil))
-      endif
+      else
+
+C Outside description file.
+        write (tfile,'(2a)') runpath(1:lnrp),rofil(1:lnblnk(rofil))
+        INQUIRE(FILE=tfile,EXIST=XST)
+        if (XST) then
+          indxscn = indxscn + 1
+          write(rscedes(indxscn),'(a)') rofil(1:lnblnk(rofil))
+          write(ITA2,'(a,a)')'scene= ',rofil(1:lnblnk(rofil))
+        endif
 
 C Inside description file.
-      write (tfile,'(2a)') runpath(1:lnrp),rzfil(1:lnblnk(rzfil))
-      INQUIRE(FILE=tfile,EXIST=XST)
-      if (XST) then
-        indxscn = indxscn + 1
-        write(rscedes(indxscn),'(a)') rzfil(1:lnblnk(rzfil))
-        write(ITA2,'(a,a)')'scene= ',rzfil(1:lnblnk(rzfil))
+        write (tfile,'(2a)') runpath(1:lnrp),rzfil(1:lnblnk(rzfil))
+        INQUIRE(FILE=tfile,EXIST=XST)
+        if (XST) then
+          indxscn = indxscn + 1
+          write(rscedes(indxscn),'(a)') rzfil(1:lnblnk(rzfil))
+          write(ITA2,'(a,a)')'scene= ',rzfil(1:lnblnk(rzfil))
+        endif
       endif
 
 C Misc materials description file.
@@ -653,7 +670,11 @@ C Ambient file.
 
 C Rendering options file.
       if(optnfil(1:7).ne.'UNKNOWN')then
-        write(ITA2,'(a,a)')'OPTFILE= ',optnfil(1:lnblnk(optnfil))
+        if(act(1:1).eq.'w'.or.act(1:1).eq.'W')then
+          write(ITA2,'(a,a)')'OPTFILE= ','obj.opt'
+        else
+          write(ITA2,'(a,a)')'OPTFILE= ',optnfil(1:lnblnk(optnfil))
+        endif
       endif
 
 C Octree.
@@ -661,16 +682,25 @@ C Octree.
         if (IGL.gt.0) then
           write(ITA2,'(a,a,a)')'OCTREE= ',octfil(1:lnblnk(octfil)),'_a'
         else
-          write(ITA2,'(a,a)')'OCTREE= ',octfil(1:lnblnk(octfil))
+          if(act(1:1).eq.'w'.or.act(1:1).eq.'W')then
+            write(ITA2,'(a,a)')'OCTREE= ','obj.oct'
+          else
+            write(ITA2,'(a,a)')'OCTREE= ',octfil(1:lnblnk(octfil))
+          endif
         endif
       endif
 
 C Picture file.
       if(picfil(1:7).ne.'UNKNOWN')then
         if (IGL.gt.0) then
-          write(ITA2,'(a,a,a)')'PICTURE= ',picfil(1:lnblnk(picfil)),'_a'
+          write(ITA2,'(3a)')'PICTURE= ',picfil(1:lnblnk(picfil)),'_a'
         else
-          write(ITA2,'(a,a)')'PICTURE= ',picfil(1:lnblnk(picfil))
+          if(act(1:1).eq.'w'.or.act(1:1).eq.'W')then
+C            write(ITA2,'(2a)')'PICTURE= obj_',picfil(1:lnblnk(picfil))
+            write(ITA2,'(2a)')'PICTURE= ',picfil(1:lnblnk(picfil))
+          else
+            write(ITA2,'(2a)')'PICTURE= ',picfil(1:lnblnk(picfil))
+          endif
         endif
       endif
 

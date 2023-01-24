@@ -97,16 +97,13 @@ C Version of construction file. If not specified set at 21 (2.1)
       COMMON/VTHP02/IVKON(MCOM,MS,ME)
       COMMON/VTHP30/ILTHPS,ILTHPZ(MCOM)
 
-C Error subroutine and error details for dll mode.
-      common/dllerr/dllsubr,dllmesg
-
       DIMENSION RVC(MS)
 
       CHARACTER OUTSTR*124,LCONS*72,outs248*248,WORD*20
       CHARACTER LUA*72,TOPTIC*12
-      character dllsubr*12,dllmesg*124,outs*124,outs2*124
+      character outs*124,outs2*124
       character dstmp*24
-      LOGICAL CLOSE,ILTHPS,ILTHPZ,dll
+      LOGICAL CLOSE,ILTHPS,ILTHPZ
       logical TFOUND,readtmc
       integer lsn  ! length of currentfile
 
@@ -115,25 +112,15 @@ C Thermal property checking values follow.
 
       IER=0
 
-C Check if running in dll mode.
-      call isadll(dll)
-
 C Open existing ASCII construction data file as unit IUNIT.
       CALL EFOPSEQ(IUNIT,LCONS,1,IER)
       IF(IER.LT.0)THEN
         write(outs,'(3a)') 'Constructions file ',LCONS(1:lnblnk(LCONS)),
      &    ' could not be opened.'
-        if(dll)then
-          dllsubr='ECONST'
-          dllmesg=outs
-          ier=2
-          return
-        else
-          call edisp(ITRU,outs)
-          IER=1
-          RETURN
-        endif
-      ENDIF
+        call edisp(ITRU,outs)
+        IER=1
+        RETURN
+      endif
       write(currentfile,'(a)') LCONS(1:lnblnk(LCONS))
 
 C Attempt to read the first line and Isee if it is '*Constructions 2.1'
@@ -220,18 +207,10 @@ C Move across gap position and U value one item at a time.
               write(outs,'(a,i3,a,i3,a,i3,a)')
      &          ' Air gap resistance too small in zone',icomp,
      &          ' surface',i,' gap ',j,' please increase!'
-              if(dll)then
-                dllsubr='ECONSTR'
-                dllmesg=outs
-                ier=2
-                CALL ERPFREE(IUNIT,ios)
-                return
-              else
-                call usrmsg(' ',outs,'W')
-                IER=1
-                CALL ERPFREE(IUNIT,ios)
-                RETURN
-              endif
+              call usrmsg(' ',outs,'W')
+              IER=1
+              CALL ERPFREE(IUNIT,ios)
+              RETURN
             endif
   165     CONTINUE
         ENDIF
@@ -309,19 +288,11 @@ C conductivity.
      &        outstr(1:72)
             CALL EDISP248(iuout,outs248,92)
             outs=' incorrect number of thermophysical data'
-            if(dll)then
-              dllsubr='ECONSTR'
-              dllmesg=outs
-              ier=2
-              CALL ERPFREE(IUNIT,ios)
-              return
-            else
-              call usrmsg(' ',outs,'W')
-              IER=1
-              CALL ERPFREE(IUNIT,ios)
-              RETURN
-            endif
-          ENDIF
+            call usrmsg(' ',outs,'W')
+            IER=1
+            CALL ERPFREE(IUNIT,ios)
+            RETURN
+          endif
    40   CONTINUE
    30 CONTINUE
       IF(ILTHPZ(ICOMP))ILTHPS=.TRUE.
@@ -624,19 +595,11 @@ c Trace output ?
      &  OUTSTR(1:50),'...'
       lsn=MIN0(lnblnk(currentfile),110)
       write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
-      if(dll)then
-        dllsubr='ECONSTR'
-        dllmesg=outs
-        ier=2
-        CALL ERPFREE(IUNIT,ISTAT)
-        return
-      else
-        call edisp(itru,outs)
-        call edisp(itru,outs2)
-        IER=1
-        CALL ERPFREE(IUNIT,ISTAT)
-        RETURN
-      endif
+      call edisp(itru,outs)
+      call edisp(itru,outs2)
+      IER=1
+      CALL ERPFREE(IUNIT,ISTAT)
+      RETURN
 
       END
 

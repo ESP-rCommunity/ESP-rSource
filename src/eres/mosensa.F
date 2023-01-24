@@ -167,8 +167,8 @@ C          ilflag = 2 do not include # header lines in file.
       character dg*1,dq*1
       character LTIME*5,LJTIME*8
       integer ln19,ln18,ln16  ! to manage single line "d header.
-
-      logical display, TOTALS
+      logical display, TOTALS, nextday
+      double precision atime
 
       helpinsub='mosensa'  ! set for subroutine
 
@@ -570,8 +570,8 @@ C Clear the 2nd heading line start.
 C For each timestep make up the string to show and/or export.
           do 521 J = 1,NDTS,NOUT
             IHRD=(IDAY-IODS)*24
-            call DATIME(J,ATIME)
-            TIME=float(IHRD)+ATIME
+            call DDTIME(J,ATIME)
+            TIME=real(dble(IHRD)+ATIME)
 
 C Display data. Create both data strings for this timestep and
 C include users time preferences.
@@ -585,7 +585,7 @@ C include users time preferences.
               write (louts2k,'(a)') LTIME
               K=6
             elseif (IHFLAG.eq.1) then
-              RDOTY=REAL(IDAY)+(ATIME/24.)
+              RDOTY=REAL(dble(IDAY)+(ATIME/24d0))
               write (louts,'(f11.6)') RDOTY
               write (louts1k,'(f11.6)') RDOTY
               write (louts2k,'(f11.6)') RDOTY
@@ -593,8 +593,12 @@ C include users time preferences.
             elseif (IHFLAG.eq.2) then
 
 C Write in format that spreadsheets understand as time.
-              call edayr(IDAY,ID,IM)
-              call SJTIME(J,LJTIME)
+              call SJTIME(J,LJTIME,nextday)
+              if (nextday) then
+                call edayr(IDAY+1,ID,IM)
+              else
+                call edayr(IDAY,ID,IM)
+              endif
               write (louts,'(i4,a,i2.2,a,i2.2,2a)') 
      &          IYEAR,'-',IM,'-',ID,' ',LJTIME
               write (louts1k,'(i4,a,i2.2,a,i2.2,2a)') 

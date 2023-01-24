@@ -4936,9 +4936,6 @@ C For each grand child.
                   IF(XKCCU(1:6).EQ.'P-DOOR')THEN
                     XPDAREA(ICC)=XPDAREA(ICC)+SNA(igcz,igcs)
                     XREAREA(ICC)=XREAREA(ICC)+SNA(igcz,igcs)
-                  ELSEIF(XKCCU(1:6).EQ.'V-DOOR')THEN
-                    XVDAREA(ICC)=XVDAREA(ICC)+SNA(igcz,igcs)
-                    XREAREA(ICC)=XREAREA(ICC)+SNA(igcz,igcs)
                   ELSEIF(XKCCU(1:8).EQ.'D-WINDOW')THEN
                     XDWAREA(ICC)=XDWAREA(ICC)+SNA(igcz,igcs)
                     XREAREA(ICC)=XREAREA(ICC)+SNA(igcz,igcs)
@@ -4967,9 +4964,6 @@ C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
                   TARSURF(ICC)=TARSURF(ICC)+SNA(IC1(JCC),IE1(JCC))
                   IF(XJCCU(1:6).EQ.'P-DOOR')THEN
                     XPDAREA(ICC)=XPDAREA(ICC)+SNA(IC1(JCC),IE1(JCC))
-                    XREAREA(ICC)=XREAREA(ICC)+SNA(IC1(JCC),IE1(JCC))
-                  ELSEIF(XJCCU(1:6).EQ.'V-DOOR')THEN
-                    XVDAREA(ICC)=XVDAREA(ICC)+SNA(IC1(JCC),IE1(JCC))
                     XREAREA(ICC)=XREAREA(ICC)+SNA(IC1(JCC),IE1(JCC))
                   ELSEIF(XJCCU(1:8).EQ.'D-WINDOW')THEN
                     XDWAREA(ICC)=XDWAREA(ICC)+SNA(IC1(JCC),IE1(JCC))
@@ -5011,9 +5005,6 @@ C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
                     TARSURF(ICC)=TARSURF(ICC)+SNA(IC1(JCC),IE1(JCC))
                     IF(XJCCU(1:6).EQ.'P-DOOR')THEN
                       XPDAREA(ICC)=XPDAREA(ICC)+SNA(IC1(JCC),IE1(JCC))
-                      XREAREA(ICC)=XREAREA(ICC)+SNA(IC1(JCC),IE1(JCC))
-                    ELSEIF(XJCCU(1:6).EQ.'V-DOOR')THEN
-                      XVDAREA(ICC)=XVDAREA(ICC)+SNA(IC1(JCC),IE1(JCC))
                       XREAREA(ICC)=XREAREA(ICC)+SNA(IC1(JCC),IE1(JCC))
                     ELSEIF(XJCCU(1:8).EQ.'D-WINDOW')THEN
                       XDWAREA(ICC)=XDWAREA(ICC)+SNA(IC1(JCC),IE1(JCC))
@@ -5072,9 +5063,6 @@ C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
                     TARSURF(ICC)=TARSURF(ICC)+SNA(IC1(JCC),IE1(JCC))
                     IF(XJCCU(1:6).EQ.'P-DOOR')THEN
                       XPDAREA(ICC)=XPDAREA(ICC)+SNA(IC1(JCC),IE1(JCC))
-                      XREAREA(ICC)=XREAREA(ICC)+SNA(IC1(JCC),IE1(JCC))
-                    ELSEIF(XJCCU(1:6).EQ.'V-DOOR')THEN
-                      XVDAREA(ICC)=XVDAREA(ICC)+SNA(IC1(JCC),IE1(JCC))
                       XREAREA(ICC)=XREAREA(ICC)+SNA(IC1(JCC),IE1(JCC))
                     ELSEIF(XJCCU(1:8).EQ.'D-WINDOW')THEN
                       XDWAREA(ICC)=XDWAREA(ICC)+SNA(IC1(JCC),IE1(JCC))
@@ -5355,84 +5343,6 @@ C Add surfaces attribution parameters
               SPARENT(ICOMP,IS)=SNAME(icomp,isur)
               SOTF(ICOMP,IS)='OPAQUE'  ! OTF type
               SUSE(ICOMP,IS,1)='P-DOOR'   ! USE
-              SUSE(ICOMP,IS,2)='-'
-
-C Update connections list before displaying notional model zone
-              call emkcfg('-',IER)
-              MODIFYVIEW=.TRUE.
-              NZSUR(ICOMP)=NSUR
-              call zgupdate(itrc,icomp,ier)
-              call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
-              call emkcfg('-',IER)
-
-C Precondition variables IS and TOTAREA to set them up for other child
-C surfaces that may need to be put into this original surface. E.g. if a
-C door and a window are to be added to original surface, the window is
-C added as child of door and not child of original surface.
-              is=nsur
-              TOTAREA=REQDAREA
-
-            ENDIF
-
-C Now put vehicle door in if there was one in the original model
-C and the new surface will be within complexity limits.
-            REQDAREA=XVDAREA(ICC)+
-     &               XDWAREA(ICC)+XNWAREA(ICC)
-            SCALEFACTORVD=SQRT(REQDAREA/TOTAREA)
-
-C Debug.
-C            write(6,*) 'V-door ',ICC,REQDAREA,SCALEFACTORVD,
-C     &        XVDAREA(ICC)
-
-            CALL ECLOSE(XVDAREA(ICC),0.0,0.1,NEAR)
-            if(2*NVER(IS)+2.lt.42.and.(.NOT.NEAR).and.
-     &        (NSUR+1.lt.MS)) then
-              IELF=IELF+1
-              ICON=ICON+1
-              NSUR=NSUR+1
-              NZTV(ICOMP)=NTV
-              WRITE(SNAME(ICOMP,NSUR),'(i2,2A)')
-     &          is,CHAR(96+IELF),'_Vdoor'  ! Name
-              WRITE(SN,'(i2,2A)')
-     &          is,CHAR(96+IELF),'_Vdoor'  ! Name
-              write(outs,'(2a)') 'Adding new V-door ',SN(1:lnblnk(SN))
-              call edisp(iuout,outs)
-              ISUR2=NSUR
-              DO 7312 NV=1,NVER(IS)
-                POINT(1)=X(JVN(IS,NV))
-                POINT(2)=Y(JVN(IS,NV))
-                POINT(3)=Z(JVN(IS,NV))
-                CALL ENLARGE(POINT,TRANS,COE,SCALEFACTORVD)
-                X(NTV+NV)=TRANS(1)
-                Y(NTV+NV)=TRANS(2)
-                Z(NTV+NV)=TRANS(3)
-                JVN(ISUR2,NV)=NTV+NV
-                JVN(IS,2*NVER(IS)-NV+2)=NTV+NV
- 7312         CONTINUE
-              JVN(IS,NVER(IS)+1)=JVN(IS,1)
-              JVN(IS,2*NVER(IS)+2)=JVN(IS,NVER(IS)+2)
-              NTV=NTV+NVER(IS)
-              NZTV(ICOMP)=NTV
-              NZSUR(ICOMP)=NSUR
-              NVER(ISUR2)=NVER(IS)
-              NVER(IS)=2*NVER(IS)+2
-
-C Update the connection list. Move all others up and then insert with
-C default values.
-              call addedsurf(icomp,icon,itrc,ier)
-
-C Add surfaces attribution parameters
-              ICT(ICON)=0
-              IC2(ICON)=0
-              IE2(ICON)=0
-              SOTHER(ICOMP,IS,1)='EXTERIOR'
-              SOTHER(ICOMP,IS,2)='0'
-              SOTHER(ICOMP,IS,3)='0'
-              SMLCN(ICOMP,IS)='Vehicle_door' ! MLC type
-              if(haveVehicle) smlcindex(ICOMP,IS)=mlciVehicle
-              SPARENT(ICOMP,IS)=SNAME(icomp,isur)
-              SOTF(ICOMP,IS)='OPAQUE'  ! OTF type
-              SUSE(ICOMP,IS,1)='V-DOOR'  ! USE
               SUSE(ICOMP,IS,2)='-'
 
 C Update connections list before displaying notional model zone
@@ -6513,9 +6423,6 @@ C For each grand child.
                 IF(XKCCU(1:6).EQ.'P-DOOR')THEN
                   XPDAREA(ICC)=XPDAREA(ICC)+SNA(IC1(kCC),IE1(kCC))
                   XREAREA(ICC)=XREAREA(ICC)+SNA(IC1(kCC),IE1(kCC))
-                ELSEIF(XKCCU(1:6).EQ.'V-DOOR')THEN
-                  XVDAREA(ICC)=XVDAREA(ICC)+SNA(IC1(kCC),IE1(kCC))
-                  XREAREA(ICC)=XREAREA(ICC)+SNA(IC1(kCC),IE1(kCC))
                 ELSEIF(XKCCU(1:8).EQ.'D-WINDOW')THEN
                   XDWAREA(ICC)=XDWAREA(ICC)+SNA(IC1(kCC),IE1(kCC))
                   XREAREA(ICC)=XREAREA(ICC)+SNA(IC1(kCC),IE1(kCC))
@@ -6551,9 +6458,6 @@ C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
                 TARSURF(ICC)=TARSURF(ICC)+SNA(IC1(jCC),IE1(jCC))
                 IF(XJCCU(1:6).EQ.'P-DOOR')THEN
                   XPDAREA(ICC)=XPDAREA(ICC)+SNA(IC1(jCC),IE1(jCC))
-                  XREAREA(ICC)=XREAREA(ICC)+SNA(IC1(jCC),IE1(jCC))
-                ELSEIF(XJCCU(1:6).EQ.'V-DOOR')THEN
-                  XVDAREA(ICC)=XVDAREA(ICC)+SNA(IC1(jCC),IE1(jCC))
                   XREAREA(ICC)=XREAREA(ICC)+SNA(IC1(jCC),IE1(jCC))
                 ELSEIF(XJCCU(1:8).EQ.'D-WINDOW')THEN
                   XDWAREA(ICC)=XDWAREA(ICC)+SNA(IC1(jCC),IE1(jCC))
@@ -6600,9 +6504,6 @@ C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
                   TARSURF(ICC)=TARSURF(ICC)+SNA(IC1(jCC),IE1(jCC))
                   IF(XJCCU(1:6).EQ.'P-DOOR')THEN
                     XPDAREA(ICC)=XPDAREA(ICC)+SNA(IC1(jCC),IE1(jCC))
-                    XREAREA(ICC)=XREAREA(ICC)+SNA(IC1(jCC),IE1(jCC))
-                  ELSEIF(XJCCU(1:6).EQ.'V-DOOR')THEN
-                    XVDAREA(ICC)=XVDAREA(ICC)+SNA(IC1(jCC),IE1(jCC))
                     XREAREA(ICC)=XREAREA(ICC)+SNA(IC1(jCC),IE1(jCC))
                   ELSEIF(XJCCU(1:8).EQ.'D-WINDOW')THEN
                     XDWAREA(ICC)=XDWAREA(ICC)+SNA(IC1(jCC),IE1(jCC))
@@ -6666,9 +6567,6 @@ C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
                   TARSURF(ICC)=TARSURF(ICC)+SNA(IC1(jCC),IE1(jCC))
                   IF(XJCCU(1:6).EQ.'P-DOOR')THEN
                     XPDAREA(ICC)=XPDAREA(ICC)+SNA(IC1(jCC),IE1(jCC))
-                    XREAREA(ICC)=XREAREA(ICC)+SNA(IC1(jCC),IE1(jCC))
-                  ELSEIF(XJCCU(1:6).EQ.'V-DOOR')THEN
-                    XVDAREA(ICC)=XVDAREA(ICC)+SNA(IC1(jCC),IE1(jCC))
                     XREAREA(ICC)=XREAREA(ICC)+SNA(IC1(jCC),IE1(jCC))
                   ELSEIF(XJCCU(1:8).EQ.'D-WINDOW')THEN
                     XDWAREA(ICC)=XDWAREA(ICC)+SNA(IC1(jCC),IE1(jCC))
@@ -6936,87 +6834,6 @@ C Add surfaces attribution parameters
             SPARENT(ICOMP,IS)=SNAME(icomp,isur)
             SOTF(ICOMP,IS)='OPAQUE'  ! OTF type
             SUSE(ICOMP,IS,1)='P-DOOR'   ! USE
-            SUSE(ICOMP,IS,2)='-'
-
-C Update connections list before displaying notional model zone
-            call emkcfg('-',IER)
-            MODIFYVIEW=.TRUE.
-            NZSUR(ICOMP)=NSUR
-            call zgupdate(itrc,icomp,ier)
-            call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
-            call emkcfg('-',IER)
-
-C Precondition variables IS and TOTAREA to set them up for other child
-C surfaces that may need to be put into this original surface. E.g. if a
-C door and a window are to be added to original surface, the window is
-C added as child of door and not child of original surface.
-            is=nsur
-            TOTAREA=REQDAREA
-
-          ENDIF
-
-C Now put vehicle door in if there was one in the original model
-C and the new surface will be within complexity limits.
-          REQDAREA=XVDAREA(ICC)+
-     &             XDWAREA(ICC)+XNWAREA(ICC)
-          SCALEFACTORVD=SQRT(REQDAREA/TOTAREA)
-
-C Debug.
-C          write(6,*) 'V-door ',ICC,REQDAREA,SCALEFACTORVD,
-C     &      XVDAREA(ICC)
-
-          CALL ECLOSE(XVDAREA(ICC),0.0,0.1,NEAR)
-          if(2*NVER(IS)+2.lt.42.and.(.NOT.NEAR).and.
-     &      (NSUR+1.lt.MS)) then
-            IELF=IELF+1
-            ICON=ICON+1
-            NSUR=NSUR+1
-            NZTV(ICOMP)=NTV
-            WRITE(SNAME(ICOMP,NSUR),'(i2,2A)')
-     &        is,CHAR(96+IELF),'_Vdoor'  ! Name
-            WRITE(SN,'(i2,2A)')
-     &        is,CHAR(96+IELF),'_Vdoor'  ! Name
-            write(outs,'(4a)') 'Adding new V-door ',SN(1:lnblnk(SN)),
-     &        ' into ',SPN(1:lnblnk(SPN))
-            call edisp(iuout,outs)
-            ISUR2=NSUR
-            DO 7312 NV=1,NVER(IS)
-              POINT(1)=X(JVN(IS,NV))
-              POINT(2)=Y(JVN(IS,NV))
-              POINT(3)=Z(JVN(IS,NV))
-              CALL ENLARGE(POINT,TRANS,COE,SCALEFACTORVD)
-              X(NTV+NV)=TRANS(1)
-              Y(NTV+NV)=TRANS(2)
-              Z(NTV+NV)=TRANS(3)
-              JVN(ISUR2,NV)=NTV+NV
-              JVN(IS,2*NVER(IS)-NV+2)=NTV+NV
- 7312       CONTINUE
-            JVN(IS,NVER(IS)+1)=JVN(IS,1)
-            JVN(IS,2*NVER(IS)+2)=JVN(IS,NVER(IS)+2)
-            NTV=NTV+NVER(IS)
-            NZTV(ICOMP)=NTV
-            NZSUR(ICOMP)=NSUR
-            NVER(ISUR2)=NVER(IS)
-            NVER(IS)=2*NVER(IS)+2
-
-C Update the connection list. Move all others up and then insert with
-C default values.
-C            write(6,*) 'before adddedsurf b ',icon,NZSUR(icomp)
-            call addedsurf(icomp,icon,itrc,ier)
-C            write(6,*) 'after adddedsurf b ',icon,NZSUR(icomp),ier
-
-C Add surfaces attribution parameters
-            ICT(ICON)=0
-            IC2(ICON)=0
-            IE2(ICON)=0
-            SOTHER(ICOMP,IS,1)='EXTERIOR'
-            SOTHER(ICOMP,IS,2)='0'
-            SOTHER(ICOMP,IS,3)='0'
-            SMLCN(ICOMP,IS)='Vehicle_door' ! MLC type
-            if(haveVehicle) smlcindex(icomp,is)=mlciVehicle
-            SPARENT(ICOMP,IS)=SNAME(icomp,isur)
-            SOTF(ICOMP,IS)='OPAQUE'  ! OTF type
-            SUSE(ICOMP,IS,1)='V-DOOR'  ! USE
             SUSE(ICOMP,IS,2)='-'
 
 C Update connections list before displaying notional model zone
@@ -10026,26 +9843,6 @@ C only for exterior surfaces).
               N_P_DR=N_P_DR+1
               EXP_AREA=EXP_AREA+SNA(ICOMP,IS)
 c              EXP_COND=EXP_COND+SNA(ICOMP,IS)*UVH
-            ELSEIF(TMPSTR2(1:6).EQ.'H-DOOR')THEN
-              IF(H_DR_MAX_U.LT.UVH)THEN
-                H_DR_MAX_U=UVH
-                H_DR_MAX_N=SNAME(ICOMP,IS)
-                I_H_DR=1
-              ENDIF
-              H_DR_AVG_U=H_DR_AVG_U+UVH
-              N_H_DR=N_H_DR+1
-              EXP_AREA=EXP_AREA+SNA(ICOMP,IS)
-c              EXP_COND=EXP_COND+SNA(ICOMP,IS)*UVH
-            ELSEIF(TMPSTR2(1:6).EQ.'V-DOOR')THEN
-              IF(V_DR_MAX_U.LT.UVH)THEN
-                V_DR_MAX_U=UVH
-                V_DR_MAX_N=SNAME(ICOMP,IS)
-                I_V_DR=1
-              ENDIF
-              V_DR_AVG_U=V_DR_AVG_U+UVH
-              N_V_DR=N_V_DR+1
-              EXP_AREA=EXP_AREA+SNA(ICOMP,IS)
-c              EXP_COND=EXP_COND+SNA(ICOMP,I)*UVH
             ELSEIF(TMPSTR2(1:7).EQ.'F-FRAME'.OR.TMPSTR2(1:5).EQ.
      &      'FRAME')THEN
               ! No checks on window frames are made
@@ -10208,32 +10005,6 @@ C write out information for personnel doors
       else
         WRITE(IUF,'(2a)',iostat=ios)    '  P-DOOR-MAX         = ',
      &    '"No Personnel doors in project"'
-      endif
-
-C write out information for vehicle doors
-      WRITE(IUF,'(a,f6.3)',iostat=ios)  '  V-DOOR-U-AVE       = ',
-     &  V_DR_AVG_U
-      WRITE(IUF,'(a,f6.3)',iostat=ios)  '  V-DOOR-U-MAX       = ',
-     &  V_DR_MAX_U
-      if(I_V_DR.gt.0)then
-        WRITE(IUF,'(2a)',iostat=ios)    '  V-DOOR-MAX         = ',
-     &    V_DR_MAX_N
-      else
-        WRITE(IUF,'(2a)',iostat=ios)    '  V-DOOR-MAX         = ',
-     &    '"No vehicle doors in project"'
-      endif
-
-C write out information for high usage doors
-      WRITE(IUF,'(a,f6.3)',iostat=ios)  '  H-DOOR-U-AVE       = ',
-     &  H_DR_AVG_U
-      WRITE(IUF,'(a,f6.3)',iostat=ios)  '  H-DOOR-U-MAX       = ',
-     &  H_DR_MAX_U
-      if(I_H_DR.gt.0)then
-        WRITE(IUF,'(2a)',iostat=ios)    '  H-DOOR-MAX         = ',
-     &  H_DR_MAX_N
-      else
-        WRITE(IUF,'(2a)',iostat=ios)    '  H-DOOR-MAX         = ',
-     &    '"No High usage entrance doors in project"'
       endif
 
 C Following is no longer in use

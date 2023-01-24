@@ -1521,7 +1521,13 @@ int  len;         /* len is length passed from fortran */
  return;
 }
 
-/* ********* textatxy_() write a string at pixel x y in colour act & n. ******* */
+/* ********* textatxy_() write a string at pixel x y in colour act & n. *******
+This version, as opposed to textsizeatxy, should be used when the string needs
+to be clipped. The font size should be set first using winfnt, then the fortran
+soubroutine CLIPST should be called, then if required this subroutine will draw
+the string. This process is appropriate where clipping is likely to be required
+e.g. interactive 3D graphcs displays. */
+
 void textatxy_(x,y,buff,act,n,len)
 long int *x, *y;  /* x y is the position of the string */
 char *buff;
@@ -1611,8 +1617,12 @@ int  len;        /* len is length passed from fortran */
  return;
 }
 
-/* ********* textsizeatxy_() write a string at pixel x y in size colour act & n. ******* */
+/* ********* textsizeatxy_() write a string at pixel x y in size colour act & n. *******
+This version, as opposed to texteatxy, should be used when the string does not need to be
+clipped. No preceding call to winfnt is required. This is appropriate where clipping is not
+likely to be required e.g. drawing graphs. */
 /* NOTE: different parameter list from X version */
+
 void textsizeatxy_(x,y,buff,size,act,n,len)
 long int *x, *y; /* x y is the position of the string */
 char *buff;
@@ -6316,14 +6326,16 @@ void controlview_()
                   case MotionNotify: /* while mouse is moving track position  */
                     x = event.xmotion.x; y = event.xmotion.y;
                     idx=x-x_old; idy=y-y_old;
+                    ifrlk=1;
                     if (abs(idx)>10 || abs(idy)>10) {
-                      chgpan_(&idx,&idy);
+                      chgpan_(&idx,&idy,&ifrlk);
                       x_old=x; y_old=y;
                     }
                     break;
                   case ButtonRelease:   /* button released so jump out of loop  */
                     idx=0; idy=0;
-                    chgpan_(&idx,&idy);
+                    ifrlk=0;
+                    chgpan_(&idx,&idy,&ifrlk);
                     no_valid_event = FALSE;
                     break;
                   default:
@@ -9246,14 +9258,16 @@ point*/
                 case MotionNotify: /* while mouse is moving track position  */
                   x = event->xmotion.x; y = event->xmotion.y;
                   idx=x-x_old; idy=y-y_old;
+                  ifrlk=1;
                   if (abs(idx)>10 || abs(idy)>10) {
-                    chgpan_(&idx,&idy);
+                    chgpan_(&idx,&idy,&ifrlk);
                     x_old=x; y_old=y;
                   }
                   break;
                 case ButtonRelease:   /* button released so jump out of loop  */
                   idx=0; idy=0;
-                  chgpan_(&idx,&idy);
+                  ifrlk=0;
+                  chgpan_(&idx,&idy,&ifrlk);
                   no_valid_event = FALSE;
                   break;
                 default:

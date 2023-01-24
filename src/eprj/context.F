@@ -87,23 +87,28 @@ C iSlr_half_hr_flg =0 = hour-centred; 1 = half-hour centred.
       common/shad0/ISIcalc,icalcD,icalcM
       integer ISIcalc,icalcD,icalcM
 
+      common/hcthry/ihct,icorexhct
+
       logical MODSIT,browse,XST,modish,OK,unixok
       logical FOUND
-      dimension SALT(8),IVALS(8)
+      dimension SALT(8),IVALS(8),SICALT(7)
       dimension SALTM(31),IVALSM(31)
       character*10 wkd1, wkd2
       character*10 wkday(7)
       character SEXP*31,SALT*31,hold*72
       character SEXPM*31,SALTM*31,holdM*72
+      character SICALT*51
 
 C ITEMS is menu for site/context items.
-      character*35 ITEMS(31)
+      character*35 ITEMS(32)
       character*72 GTGEOM
       character outs*124,ltmp*72
-      character act*1,GTNAME*15,fs*1
+      character act*1,GTNAME*15,fs*1,msg*42
       character ipvact*3  ! to denote whether in cfd file or external
       CHARACTER doit*256
       character ipvaction*3
+      dimension HCALT(15),IHCVAL(15)
+      character HCALT*42
 
       integer idwe1T,idwe2T,iyearT   ! local values for editing.
       integer icreport  ! to signal that calendar has been updated.
@@ -223,10 +228,17 @@ c      ITEMS(26)=                'v transient orientation         '
       ITEMS(26)=                'v update shading for reflections '
       ITEMS(27)=                ' _____________________________   '
       ITEMS(28)=                'w random perturbations           '
-      ITEMS(29)=                ' _____________________________   '
-      ITEMS(30)=                '? help                           '
-      ITEMS(31)=                '- exit menu                      '
-      nitms=31
+      if(ihct.eq.0.and.icorexhct.eq.0)then
+        ITEMS(29)=              'x surface htc methods (unset)    '
+      elseif(ihct.eq.1.and.icorexhct.eq.1)then
+        ITEMS(29)=              'x surface htc methods (defaults) '
+      elseif(ihct.gt.1.or.icorexhct.gt.1)then
+        ITEMS(29)=              'x surface htc methods (user set) '
+      endif
+      ITEMS(30)=                ' _____________________________   '
+      ITEMS(31)=                '? help                           '
+      ITEMS(32)=                '- exit menu                      '
+      nitms=32
 
 C Help text for this menu.
       helptopic='context_overview_menu'
@@ -859,7 +871,66 @@ C Random perturbations (aka gremlins).
       elseif (ino.eq.28) then
         itmp=0
         call GRM_MNG(itmp,IER)
-      ENDIF
+
+C Nominate inside and outside default heat transfer method.
+      elseif (ino.eq.29) then
+
+C External hc correlations:
+        if(icorexhct.eq.0) msg='no current exterior hc method'
+        if(icorexhct.eq.1) msg='default McAdams exterior hc method'
+        if(icorexhct.eq.2) msg='MoWiTT  exterior hc method'
+        if(icorexhct.eq.3) msg='Aya Hagishima correlation exterior hc'
+        if(icorexhct.eq.4) msg='Ya Liu (roof wind speed) exterior hc'
+        if(icorexhct.eq.5) msg='Ya Lui (raw wind speed) exterior hc'
+        if(icorexhct.eq.6) msg='Loveday (roof wind speed) exterior hc'
+        if(icorexhct.eq.7) msg='Loveday (raw wind speed) exterior hc'
+        if(icorexhct.eq.8) msg='CIBSE guide exterior hc'
+        if(icorexhct.eq.9) msg='ASHRAE Task Group  exterior hc'
+        if(icorexhct.eq.10)msg='Sturrock exterior hc'
+        if(icorexhct.eq.11)msg='Keith Nicol exterior hc'
+        if(icorexhct.eq.12)msg='S.E .G.Jayamaha exterior hc'
+        call edisp(iuout,' ')
+        call edisp(iuout,'Current method for external surf HTC ')
+        call edisp(iuout,msg)
+        helptopic='toggle_ext_hc_methods'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        HCALT(1)='the default ESP-r method'
+        HCALT(2)='MoWiTT low rise hc '
+        HCALT(3)='Aya Hagishima hc '
+        HCALT(4)='Ya Liu (roof wind speed) hc'
+        HCALT(5)='Ya Lui (raw wind speed) hc'
+        HCALT(6)='Ya Lui (weather station wind speed) hc'
+        HCALT(7)='Loveday (roof wind speed) hc'
+        HCALT(8)='Loveday (raw wind speed) hc'
+        HCALT(9)='CIBSE guide hc'
+        HCALT(10)='Loveday (mixed) hc'
+        HCALT(11)='British Standard'
+        HCALT(12)='ASHRAE Task Group hc'
+        HCALT(13)='Sturrock hc'
+        HCALT(14)='Keith Nicol hc'
+        HCALT(15)='S.E.G. Jayamaha hc'
+        IX=1
+        CALL EPICKS(IX,IHCVAL,' ','External surface convection model:',
+     &         42,15,HCALT,'ext hc model',IER,nbhelp)
+        icorexhct=IHCVAL(1)
+
+C If undefined set the default inside treatment.
+        helptopic='toggle_int_hc_methods'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+
+        SICALT(1)='Alamdari and Hammond (default) '
+        SICALT(2)='Khalifa & Marshall, radiator located under window '
+        SICALT(3)='Khalifa & Marshall, no radiator under window  '
+        SICALT(4)='Halcrow, time invariant low    '
+        SICALT(5)='Halcrow, time invariant high   '
+        SICALT(6)='CIBSE guide, time invariant    '
+        SICALT(7)='CEN simplified calc method     '
+        IX=1
+        CALL EPICKS(IX,IVALS,' ','Internal surface convection model:',
+     &    51,7,SICALT,'hc model',IER,nbhelp)
+        ihct=IVALS(1)
+        if(ihct.eq.0) ihct=1
+      endif
       GOTO 3
 
       END

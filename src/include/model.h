@@ -13,6 +13,7 @@ C Configuration file information.
       integer icfgv         ! version of configuration file which determines
                             ! the format and contents of the file:
                             ! version 3 circa 1996, version 4 from May 2008
+                            ! version 5 current version from May 2022
       integer usecurcfg     ! preference for current (1) or legacy (-1) version
       common/CFGV/icfgv,usecurcfg
 

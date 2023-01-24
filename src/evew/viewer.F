@@ -298,7 +298,7 @@ C init =0 INITIALISE INPUT, 1 ADD MORE DATA.
      &   JITOBS,JITVIS,JITVOBJ,JITSNR,JITGRD,JITORG,GDIS,JITBND,JITDSP,
      &   JITHLS,JITHLZ,JITPPSW)
 
-C Passed paramters.
+C Passed parameters.
       real EVX,EVY,EVZ,VX,VY,VZ,EAN,DIS
 
 C Depending on computer type set integer size of passed parameters.

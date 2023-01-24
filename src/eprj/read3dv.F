@@ -55,31 +55,25 @@ C Passed parameter.
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       LOGICAL  ISTOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical greyok,found
-      integer ier1,ier2,ier3,ier4,ier5,ier6,ier7  ! traps
+      integer ier2,ier3,ier4,ier5,ier6  ! traps
 
       DIMENSION  AX(MPL),AY(MPL),AZ(MPL),IANXT(MPL)
       DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
-      DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
+      DIMENSION  SBBOX(3,2),COG1(3),COG2(3)
       DIMENSION  CG(3),VN(3),ipoints(6,2)
 
       CHARACTER ETEXT*82
-      CHARACTER temp*16,DESCRC*25,stemp*13,OUTSTR*124,temp20*21
+      CHARACTER temp*16,DESCRC*25,stemp*13,temp20*21
       CHARACTER MLCN*32,t13*13
       integer izsize,issize
 #ifdef OSI
-      integer igwid,igheight          ! for use with axiscale
       integer iside,isize,ifont       ! passed to viewtext
       integer iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2,iid3,iid4
       integer iicol,ipixw,ipixh       ! passed to textsizeatxy
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
-      integer*8 igwid,igheight        ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2,iid3,iid4
       integer*8 iicol,ipixw,ipixh     ! passed to textsizeatxy
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C If libraries and monitor support greyscale remember this.
@@ -90,34 +84,9 @@ C If libraries and monitor support greyscale remember this.
 
 C Set font for displaying zone & surface names etc.
 C      write(6,'(a,3i2)') 'DRAWESP IFS,ITFS,IMFS',IFS,ITFS,IMFS
-      NAMEFT=IFS
       issize=4; izsize=5  ! for surfaces and zone name
 
-C The right offset for the graphic box is the character width of the
-C menu. Also allow 2 text lines at the bottom for future dialogue.
-      IER=0; ier1=0; ier2=0; ier3=0; ier4=0; ier5=0; ier6=0; ier7=0; 
-
-C Clear current viewing box and re-establish image bounds.
-      if(mmod.eq.8)CALL startbuffer()
-
-C Setup and pass in parameters to win3d.
-      iiw1=4; iiw2=1; iiw3=0; iiw4=1; iimenu=menuchw
-      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-      if(mmod.eq.8)then
-        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &    iigl,iigr,iigt,iigb,iigw,iigwh)
-      else
-        CALL win3dwwc(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &    iigl,iigr,iigt,iigb,iigw,iigwh)
-      endif
-      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-      igw=int(iigw); igwh=int(iigwh)
-      igwid=igw; igheight=igwh
-
-C Set 1000 to -1000 scaling ratios for the drawing and axis.
-      call axiscale(igwid,igheight,-1000.,1000.,-1000.,1000.,xsc,ysc,
-     &              sca,Xadd,Yadd)
-      call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
+      IER=0; ier2=0; ier3=0; ier4=0; ier5=0; ier6=0; ier7=0; 
 
 C Refresh the dialogue box if terminal type 8.
       IF(MMOD.EQ.8)CALL USRMSG(' ',' ','-')
@@ -213,33 +182,41 @@ C Note: temp character t13 is 1 char wider than zname().
         COG1(1)=ZCOG(nznog(IZ),1)
         COG1(2)=ZCOG(nznog(IZ),2)
         COG1(3)=ZCOG(nznog(IZ),3)
-        CALL VECTRN(COG1,TEMAT,COG2,IER6)
-        CALL VECTRN(COG2,ETSMAT,COG3,IER7)
-        if(ier6.ne.0.or.ier7.ne.0)then
+        CALL VECTRN(COG1,TSMAT,COG2,IER6)
+        if(ier6.ne.0)then
           call edisp(ieout,'DRAWESP: Error in name coord transforms.')
           ier=-6
         endif
-        call u2pixel(COG3(1),COG3(2),iix,iiy)
+        call u2pixel(COG2(1),COG2(2),iix,iiy)
 
 C Note call to textpixwidth corrupts t13 so need to
 C re-create t13 after textpixwidth call.
         t13=' '
         write(t13,'(A)')zname(nznog(IZ))(1:lnzname(nznog(IZ)))
         if(mmod.eq.8)then
+          call winfnt(izsize)
           call textpixwidth(t13,ipixw,ipixh)
         else
           ipixw=lnblnk(t13)*7  ! assume 7 pixels wide
+          ipixh=7              ! assume 7 pixels high
         endif
         write(t13,'(A)')zname(nznog(IZ))(1:lnzname(nznog(IZ)))
         iid4 = iix - (ipixw/2)
-        if(mmod.eq.8)CALL winfnt(izsize)
-        iicol=0
-        if(mmod.eq.8)then
-          call textatxy(iid4,iiy,t13,'-',iicol)
-          CALL winfnt(IMFS)
-        else
-          call textatxywwc(iid4,iiy,t13,'-',iicol)
+
+C Check for clipping.
+        call pixel2u(iid4,iiy,xx,xy)
+        call CLIPPT(xx,xy,COG2(3),iclp1)
+        call pixel2u(iix+(ipixw/2),iiy-ipixh,xx,xy)
+        call CLIPPT(xx,xy,COG2(3),iclp2)
+        if (iclp1.eq.0 .and. iclp2.eq.0) then
+          iicol=0
+          if(mmod.eq.8)then
+            call textatxy(iid4,iiy,t13,'-',iicol)
+          else
+            call textatxywwc(iid4,iiy,t13,'-',iicol)
+          endif
         endif
+        if (mmod.eq.8) CALL winfnt(IMFS)
       ENDIF
 
 C << how to treat errors? >>
@@ -251,19 +228,21 @@ C label and loop back to the next body.
       IF(NSUR.EQ.0.AND.NTV.GT.1)THEN
         DO 202 IV=1,NTV
           COG1(1)=X(IV); COG1(2)=Y(IV); COG1(3)=Z(IV)
-          CALL VECTRN(COG1,TEMAT,COG2,IER)
-          CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),iix,iiy)
+          CALL VECTRN(COG1,TSMAT,COG2,IER)
+          CALL CLIPPT(COG2(1),COG2(2),COG2(3),iclp) ! check clipping
+          if (iclp.gt.0) goto 202
+          call u2pixel(COG2(1),COG2(2),iix,iiy)
           if(mmod.eq.8) call ecirc(iix,iiy,3,1)
-          CALL VERTLBL(iix,iiy,IV,ier)
+          CALL VERTLBL(iix,iiy,COG2(3),IV,ier)
   202   CONTINUE
-       if(mmod.eq.8) call forceflush()
+        if(mmod.eq.8) call forceflush()
         GOTO 100
       ELSEIF(NSUR.GE.1.AND.NTV.GT.1)THEN
 
 C Check to see if there are any unlinked vertices, if so then draw them
 C before proceeding to draw the surfaces. For each vertex, loop through
 C each surface and its vertex list and see how many hits.
+        found=.false.
         DO 204 IZV=1,NTV
           IHIT=0
           DO 8792 IS=1,NSUR
@@ -276,35 +255,37 @@ C If less than 2 hits draw the vertex as an open circle, if no hits
 C draw it as a solid circle.
           IF(IHIT.LT.2)THEN
             COG1(1)=X(IZV); COG1(2)=Y(IZV); COG1(3)=Z(IZV)
-            CALL VECTRN(COG1,TEMAT,COG2,IER)
-            CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            CALL VECTRN(COG1,TSMAT,COG2,IER)
+            CALL CLIPPT(COG2(1),COG2(2),COG2(3),iclp) ! check clipping
+            if (iclp.gt.0) goto 204
+            found=.true.
+            call u2pixel(COG2(1),COG2(2),iix,iiy)
             IF(IHIT.EQ.0)THEN
               if(mmod.eq.8) CALL ecirc(iix,iiy,3,1)
             ELSEIF(IHIT.GT.0.AND.IHIT.LT.2)THEN
               if(mmod.eq.8) CALL ecirc(iix,iiy,3,0)
             ENDIF
-            CALL VERTLBL(iix,iiy,IZV,ier)
-
-C If less than 2 hits then draw a legend for the meaning
-C of the vertex symbols if in graphic mode.
-            if(mmod.eq.8)then
-              CALL winfnt(issize)
-              iid1=igl+10; iid2=igb+5;
-              CALL ecirc(iid1,iid2,3,1)
-              write(temp,'(A)')'Unlinked vertex'
-              iid1=igl+20; iid2=igb+10;
-              iicol=0
-              call textatxy(iid1,iid2,temp,'-',iicol)
-              iid1=igl+130; iid2=igb+5;
-              if(mmod.eq.8) CALL ecirc(iid1,iid2,3,0)
-              write(temp20,'(A)')'Single-linked vertex'
-              iid1=igl+140; iid2=igb+10;
-              call textatxy(iid1,iid2,temp20,'-',iicol)
-              CALL winfnt(IMFS)
-            endif
+            CALL VERTLBL(iix,iiy,COG2(3),IZV,ier)
           ENDIF
   204   CONTINUE
+  
+C If any were found then draw a legend for the meaning of the vertex
+C symbols if in graphic mode.
+        if(found .and. mmod.eq.8)then
+          CALL winfnt(issize)
+          iid1=igl+10; iid2=igb+5;
+          CALL ecirc(iid1,iid2,3,1)
+          write(temp,'(A)')'Unlinked vertex'
+          iid1=igl+20; iid2=igb+10;
+          iicol=0
+          call textatxy(iid1,iid2,temp,'-',iicol)
+          iid1=igl+130; iid2=igb+5;
+          if(mmod.eq.8) CALL ecirc(iid1,iid2,3,0)
+          write(temp20,'(A)')'Single-linked vertex'
+          iid1=igl+140; iid2=igb+10;
+          call textatxy(iid1,iid2,temp20,'-',iicol)
+          CALL winfnt(IMFS)
+        endif
         if(mmod.eq.8) call forceflush()
       ENDIF
 
@@ -351,10 +332,10 @@ C IAPNT = Pointer to first vertex of polygon
 
         IANXT(NVER(I)) = IAPNT
 
-C Transform surface polygon to EYE co-ordinates
-C Take structure A multiply by TEMAT return structure B
-C TEMAT = Model to Eye Matrix
-        CALL MATPOL(NAP,IAPNT,AX,AY,AZ,IANXT,TEMAT,
+C Transform surface polygon to screen co-ordinates
+C Take structure A multiply by TSMAT return structure B
+C TSMAT = Model to Screen Matrix
+        CALL MATPOL(NAP,IAPNT,AX,AY,AZ,IANXT,TSMAT,
      &              SBBOX,NBP,IBPNT,BX,BY,BZ,IBNXT,IERR)
 
 C Generate clipping flags and clip geometry in eye coords.
@@ -366,6 +347,8 @@ C If ISTAT = -1 : straddles frustrum
           GOTO  1000
         ELSEIF (ISTAT .EQ. -1) THEN
           CALL CUTPOL(NB,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+        else
+          NB=1
         ENDIF
 
 C Set line style for this surface. linsty=2 is double width line. 
@@ -430,11 +413,9 @@ C Count the edges in case enhanced edge drawing required.
         iedge=0
         DO 300 J = 1,NB
 
-C Multiply each vertex by ETSMAT to transform to screen coords
-C ETSMAT = Eye to Screen Matrix.  First move to the beginning.
+C Move to the beginning and transform screen to pixel coords.
           IP = IABS(IBPNT)
-          CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(BX(IP),BY(IP),iix,iiy)
 
 C If vertex are to be labeled do it in the smallest font, also place
 C a 2pixel square dot at the vertex so if it is embedded in a line
@@ -446,7 +427,7 @@ C it can be seen. Then move cursor to vertex and remember position.
             else
               call esymbolwwc(iix,iiy,8,1)
             endif
-            CALL VERTLBL(iix,iiy,IV,ier)
+            CALL VERTLBL(iix,iiy,BZ(IP),IV,ier)
           ENDIF
           iixlast=iix   ! cast for edline call
           iiylast=iiy
@@ -459,8 +440,7 @@ C it can be seen. Then move cursor to vertex and remember position.
 C Ensure edge is less than MV.
           if(iedge.gt.MV) goto 300
 
-          CALL  ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(BX(IP1),BY(IP1),iix,iiy)
           if(IPEN.eq.1)then
 
 C Normal (not highlighted) edge being drawn, if NAP = NBP then check
@@ -553,7 +533,7 @@ C move cursor back to vertex and remember position.
             else
               call esymbolwwc(iix,iiy,8,1)
             endif
-            CALL VERTLBL(iix,iiy,IV,ier)
+            CALL VERTLBL(iix,iiy,BZ(IP1),IV,ier)
             iixlast=iix   ! cast for edline call
             iiylast=iiy
           ENDIF
@@ -566,8 +546,7 @@ C Repeat until next point is the first, remember position.
 
 C Complete the polygon.
           iedge=iedge+1
-          CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(BX(IP),BY(IP),iix,iiy)
           if(IPEN.eq.1)then
 
 C Normal (not highlighted) edge being drawn, if NAP = NBP then check
@@ -656,6 +635,8 @@ C to normal size.
             if(icc.ne.0)then
               if(mmod.eq.8)CALL winfnt(issize)
               write(stemp,'(A)')SNAME(nznog(IZ),isur)
+              call textpixwidth(stemp,ipixw,ipixh)    ! corrupts stemp
+              write(stemp,'(A)')SNAME(nznog(IZ),isur)
 
 C If surface normals to be displayed draw an arrow and
 C offset the surface name depending on orientation.
@@ -666,118 +647,168 @@ C offset the surface name depending on orientation.
                 VN(1)=SURVN(nznog(IZ),isur,1)
                 VN(2)=SURVN(nznog(IZ),isur,2)
                 VN(3)=SURVN(nznog(IZ),isur,3)
-                CALL VECTRN(VN,TEMAT,COG2,IER)
-                CALL VECTRN(COG2,ETSMAT,COG3,IER)
-                call u2pixel(COG3(1),COG3(2),iixc,iiyc)
-                call arrow(CG,VN,0.3,0.1,ipoints,'a',2)
-                IF(SVFC(nznog(IZ),isur).EQ.'VERT'.or.
-     &             SVFC(nznog(IZ),isur).EQ.'CEIL'.or.
-     &             SVFC(nznog(IZ),isur).EQ.'FLOR')THEN
-                  iixc=iixc+5
-                ELSE
-                  iixc=iixc+5
-                ENDIF
-                iicol=0
-                if(mmod.eq.8)then
-                  call textatxy(iixc,iiyc,stemp,'-',iicol)
-                  CALL winfnt(IMFS)
-                else
-                  call textatxywwc(iixc,iiyc,stemp,'-',iicol)
+                CALL VECTRN(VN,TSMAT,COG2,IER)
+                call u2pixel(COG2(1),COG2(2),iixc,iiyc)
+
+C Check for clipping.
+                call CLIPPT(COG2(1),COG2(2),COG2(3),iclp1)
+                call pixel2u(iixc+ipixw+5,iiyc-ipixh,xx,xy)
+                call CLIPPT(xx,xy,COG2(3),iclp2)
+
+                if (iclp1.eq.0 .and. iclp2.eq.0) then
+                  call arrow(CG,VN,0.3,0.1,ipoints,'a',2)
+                  IF(SVFC(nznog(IZ),isur).EQ.'VERT'.or.
+     &              SVFC(nznog(IZ),isur).EQ.'CEIL'.or.
+     &              SVFC(nznog(IZ),isur).EQ.'FLOR')THEN
+                    iixc=iixc+5
+                  ELSE
+                    iixc=iixc+5
+                  ENDIF
+                  iicol=0
+                  if(mmod.eq.8)then
+                    call textatxy(iixc,iiyc,stemp,'-',iicol)
+                  else
+                    call textatxywwc(iixc,iiyc,stemp,'-',iicol)
+                  endif
                 endif
               else
                 CG(1)=SURCOG(nznog(IZ),isur,1)
                 CG(2)=SURCOG(nznog(IZ),isur,2)
                 CG(3)=SURCOG(nznog(IZ),isur,3)
-                CALL VECTRN(CG,TEMAT,COG2,IER)
-                CALL VECTRN(COG2,ETSMAT,COG3,IER)
-                call u2pixel(COG3(1),COG3(2),iixc,iiyc)
+                CALL VECTRN(CG,TSMAT,COG2,IER)
+                call u2pixel(COG2(1),COG2(2),iixc,iiyc)                
                 IF(SVFC(nznog(IZ),isur).EQ.'VERT')THEN
 
+C Check for clipping.
+                  call pixel2u(iixc,iiyc+3,xx,xy)
+                  call CLIPPT(xx,xy,COG2(3),iclp1)
+                  call pixel2u(iixc+ipixw+7,iiyc+3-ipixh,xx,xy)
+                  call CLIPPT(xx,xy,COG2(3),iclp2)
+
 C Draw arrow and horizontal line.
-                  iid1=iixc+3; iid2=iiyc-3
-                  if(mmod.eq.8)then
-                    call eswline(iixc,iiyc,iid1,iid2)
+                  if (iclp1.eq.0 .and. iclp2.eq.0) then
+                    iid1=iixc+3; iid2=iiyc-3
+                    if(mmod.eq.8)then
+                      call eswline(iixc,iiyc,iid1,iid2)
+                    else
+                      call eswlinewwc(iixc,iiyc,iid1,iid2)
+                    endif
+                    iid1=iixc+3; iid2=iiyc+3
+                    if(mmod.eq.8)then
+                      call eswline(iixc,iiyc,iid1,iid2)
+                    else
+                      call eswlinewwc(iixc,iiyc,iid1,iid2)
+                    endif
+                    iid1=iixc+7
+                    if(mmod.eq.8)then
+                      call eswline(iixc,iiyc,iid1,iiyc)
+                    else
+                      call eswlinewwc(iixc,iiyc,iid1,iiyc)
+                    endif
+                    iixc=iixc+7; iiyc=iiyc+3
+                    found=.true.
                   else
-                    call eswlinewwc(iixc,iiyc,iid1,iid2)
+                    found=.false.
                   endif
-                  iid1=iixc+3; iid2=iiyc+3
-                  if(mmod.eq.8)then
-                    call eswline(iixc,iiyc,iid1,iid2)
-                  else
-                    call eswlinewwc(iixc,iiyc,iid1,iid2)
-                  endif
-                  iid1=iixc+7
-                  if(mmod.eq.8)then
-                    call eswline(iixc,iiyc,iid1,iiyc)
-                  else
-                    call eswlinewwc(iixc,iiyc,iid1,iiyc)
-                  endif
-                  iixc=iixc+7
                 ELSEIF(SVFC(nznog(IZ),isur).EQ.'CEIL')THEN
+                  
+C Check for clipping.
+                  call pixel2u(iixc-3,iiyc,xx,xy)
+                  call CLIPPT(xx,xy,COG2(3),iclp1)
+                  call pixel2u(iixc+ipixw+7,iiyc-ipixh,xx,xy)
+                  call CLIPPT(xx,xy,COG2(3),iclp2)
 
 C Draw arrow to surface then up and horizontal to the text.
-                  iid1=iixc+3; iid2=iiyc-3
-                  if(mmod.eq.8)then
-                    call eswline(iixc,iiyc,iid1,iid2)
+                  if (iclp1.eq.0 .and. iclp2.eq.0) then
+                    iid1=iixc+3; iid2=iiyc-3
+                    if(mmod.eq.8)then
+                      call eswline(iixc,iiyc,iid1,iid2)
+                    else
+                      call eswlinewwc(iixc,iiyc,iid1,iid2)
+                    endif
+                    iid1=iixc-3; iid2=iiyc-3
+                    if(mmod.eq.8)then
+                      call eswline(iixc,iiyc,iid1,iid2)
+                    else
+                      call eswlinewwc(iixc,iiyc,iid1,iid2)
+                    endif
+                    iid1=iiyc-5
+                    if(mmod.eq.8)then
+                      call eswline(iixc,iiyc,iixc,iid1)
+                    else
+                      call eswlinewwc(iixc,iiyc,iixc,iid1)
+                    endif
+                    iid1=iiyc-5; iid2=iixc+7; iid3=iiyc-5
+                    if(mmod.eq.8)then
+                      call eswline(iixc,iid1,iid2,iid3)
+                    else
+                      call eswlinewwc(iixc,iid1,iid2,iid3)
+                    endif
+                    iixc=iixc+7
+                    found=.true.
                   else
-                    call eswlinewwc(iixc,iiyc,iid1,iid2)
+                    found=.false.
                   endif
-                  iid1=iixc-3; iid2=iiyc-3
-                  if(mmod.eq.8)then
-                    call eswline(iixc,iiyc,iid1,iid2)
-                  else
-                    call eswlinewwc(iixc,iiyc,iid1,iid2)
-                  endif
-                  iid1=iiyc-5
-                  if(mmod.eq.8)then
-                    call eswline(iixc,iiyc,iixc,iid1)
-                  else
-                    call eswlinewwc(iixc,iiyc,iixc,iid1)
-                  endif
-                  iid1=iiyc-5; iid2=iixc+7; iid3=iiyc-5
-                  if(mmod.eq.8)then
-                    call eswline(iixc,iid1,iid2,iid3)
-                  else
-                    call eswlinewwc(iixc,iid1,iid2,iid3)
-                  endif
-                  iiyc=iiyc-5; iixc=iixc+7
                 ELSEIF(SVFC(nznog(IZ),isur).EQ.'FLOR')THEN
 
+C Check for clipping.
+                  call pixel2u(iixc-3,iiyc+8,xx,xy)
+                  call CLIPPT(xx,xy,COG2(3),iclp1)
+                  call pixel2u(iixc+ipixw+7,iiyc+8-ipixh,xx,xy)
+                  call CLIPPT(xx,xy,COG2(3),iclp2)
+
 C Draw arrow to surface then down and horizontal to the text.
-                  iid1=iixc+3; iid2=iiyc+3
-                  if(mmod.eq.8)then
-                    call eswline(iixc,iiyc,iid1,iid2)
+                  if (iclp1.eq.0 .and. iclp2.eq.0) then
+                    iid1=iixc+3; iid2=iiyc+3
+                    if(mmod.eq.8)then
+                      call eswline(iixc,iiyc,iid1,iid2)
+                    else
+                      call eswlinewwc(iixc,iiyc,iid1,iid2)
+                    endif
+                    iid1=iixc-3; iid2=iiyc+3
+                    if(mmod.eq.8)then
+                      call eswline(iixc,iiyc,iid1,iid2)
+                    else
+                      call eswlinewwc(iixc,iiyc,iid1,iid2)
+                    endif
+                    iid1=iiyc+5
+                    if(mmod.eq.8)then
+                      call eswline(iixc,iiyc,iixc,iid1)
+                    else
+                      call eswlinewwc(iixc,iiyc,iixc,iid1)
+                    endif
+                    iid1=iiyc+5; iid2=iixc+7; iid3=iiyc+5
+                    if(mmod.eq.8)then
+                      call eswline(iixc,iid1,iid2,iid3)
+                    else
+                      call eswlinewwc(iixc,iid1,iid2,iid3)
+                    endif
+                    iixc=iixc+7; iiyc=iiyc+8
+                    found=.true.
                   else
-                    call eswlinewwc(iixc,iiyc,iid1,iid2)
+                    found=.false.
                   endif
-                  iid1=iixc-3; iid2=iiyc+3
-                  if(mmod.eq.8)then
-                    call eswline(iixc,iiyc,iid1,iid2)
+                ELSE
+
+C Check for clipping.
+                  call CLIPPT(COG2(1),COG2(2),COG2(3),iclp1)
+                  call pixel2u(iixc+ipixw,iiyc-ipixh,xx,xy)
+                  call CLIPPT(xx,xy,COG2(3),iclp2)
+                  if (iclp1.eq.0 .and. iclp2.eq.0) then
+                    found=.true.
                   else
-                    call eswlinewwc(iixc,iiyc,iid1,iid2)
+                    found=.false.
                   endif
-                  iid1=iiyc+5
-                  if(mmod.eq.8)then
-                    call eswline(iixc,iiyc,iixc,iid1)
-                  else
-                    call eswlinewwc(iixc,iiyc,iixc,iid1)
-                  endif
-                  iid1=iiyc+5; iid2=iixc+7; iid3=iiyc+5
-                  if(mmod.eq.8)then
-                    call eswline(iixc,iid1,iid2,iid3)
-                  else
-                    call eswlinewwc(iixc,iid1,iid2,iid3)
-                  endif
-                  iiyc=iiyc+5; iixc=iixc+7
                 ENDIF
-                iid4=iiyc+3
-                iicol=0
-                if(mmod.eq.8)then
-                  call textatxy(iixc,iid4,stemp,'-',iicol)
-                  CALL winfnt(IMFS)
-                else
-                  call textatxywwc(iixc,iid4,stemp,'-',iicol)
+                if (found) then
+                  iicol=0
+                  if(mmod.eq.8)then
+                    call textatxy(iixc,iiyc,stemp,'-',iicol)
+                  else
+                    call textatxywwc(iixc,iiyc,stemp,'-',iicol)
+                  endif
                 endif
+                if (mmod.eq.8) CALL winfnt(IMFS)
               endif
             endif
           ENDIF

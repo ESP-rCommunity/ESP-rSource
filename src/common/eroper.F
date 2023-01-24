@@ -210,14 +210,11 @@ C 3 = two-node model
 C 4 = segmented model
       common/dynamico/isdynamicocup(MCOM)
 
-C Error subroutine and error details for dll mode.
-      common/dllerr/dllsubr,dllmesg
-
       CHARACTER outstr*124,outs*124,outs2*124
-      character dllsubr*12,dllmesg*124,WORD*20,loutstr*248
+      character WORD*20,loutstr*248
       character dstmp*24
       character vctlstr*24,comment*76
-      logical havehi,dll
+      logical havehi
       logical doupgrade       ! Flag that upgrade to v21 is needed.
       integer idaytype        ! Incremented for each new *day entry.
       integer ijk,ireader
@@ -230,11 +227,7 @@ C Error subroutine and error details for dll mode.
       ireader=0
       reader=0.0
       iH3K_Base_Loads(icomp) = 0
-      implieddaytype = 0
-
-C Check if running in dll mode.
-      call isadll(dll)
-      
+      implieddaytype = 0      
       isdynamicocup(icomp)=0
 
 C Initialise project data file.
@@ -243,17 +236,10 @@ C Initialise project data file.
         write(outs,'(3a)') 'Operations file ',
      &    LPROJ(ICOMP)(1:lnblnk(LPROJ(ICOMP))),
      &    ' could not be opened.'
-        if(dll)then
-          dllsubr='EROPER'
-          dllmesg=outs
-          ier=2
-          return
-        else
-          call edisp(iuout,outs)
-          IER=1
-          RETURN
-        endif
-      ENDIF
+        call edisp(iuout,outs)
+        IER=1
+        RETURN
+      endif
       write(currentfile,'(a)') LPROJ(ICOMP)(1:lnblnk(LPROJ(ICOMP)))
       ip3ver(icomp)=0   ! reset prior to detect
 
@@ -887,18 +873,10 @@ C Now free project data file.
       RETURN
 
 C Error messages.
- 1000 if(dll)then
-        dllsubr='EROPER'
-        dllmesg=outs
-        ier=2
-        CALL ERPFREE(IUO,ISTAT)
-        return
-      else
-        call edisp(iuout,outs)
-        IER=1
-        CALL ERPFREE(IUO,ISTAT)
-        RETURN
-      endif
+ 1000 call edisp(iuout,outs)
+      IER=1
+      CALL ERPFREE(IUO,ISTAT)
+      RETURN
 
  1001 call usrmsg(' ',
      &  ' No casual gains labels found ...supplying defaults.','-')
@@ -915,19 +893,11 @@ C Error messages.
      &  OUTSTR(1:50),'...'
       lsn=MIN0(lnblnk(currentfile),110)
       write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
-      if(dll)then
-        dllsubr='EROPER'
-        dllmesg=outs
-        ier=2
-        CALL ERPFREE(IUNIT,ios)
-        return
-      else
-        call edisp(iuout,outs)
-        call edisp(iuout,outs2)
-        IER=1
-        CALL ERPFREE(IUNIT,ios)
-        RETURN
-      endif
+      call edisp(iuout,outs)
+      call edisp(iuout,outs2)
+      IER=1
+      CALL ERPFREE(IUNIT,ios)
+      RETURN
 
  1022 write(outs,'(2a)')' Scheduled infiltration control unknown in',
      &  outstr(1:50)
@@ -1070,16 +1040,13 @@ C Electrical data flag and elctrical data.
       INTEGER NELC,IPFC,IPHASC
       REAL PFC,PWRC,BVOLTC
 
-C Error subroutine and error details for dll mode.
-      common/dllerr/dllsubr,dllmesg
-
       CHARACTER outstr*124,outs*124
       CHARACTER*(*) FILE
-      character dllsubr*12,dllmesg*124,WORD*20,loutstr*248,outs2*124
+      character WORD*20,loutstr*248,outs2*124
       character dstmp*24
       character louts*248
       character actflatfile*1  ! action requested.
-      logical havehi,dll,ok,dok
+      logical havehi,ok,dok
       logical needtoaddone     ! in case short on calendar day types
       INTEGER IDTY,IR,ndty
       REAL R
@@ -1103,25 +1070,15 @@ C Compose help message
       endif
       if(.not.ok)return
 
-C Check if running in dll mode.
-      call isadll(dll)
-
 C Initialise project data file.
  43   CALL EFOPSEQ(IUO,FILE,1,IER)
       IF(IER.NE.0)THEN
         write(louts,'(3a)') 'Operations file ',
      &    FILE(1:lnblnk(FILE)),' could not be opened.'
-        if(dll)then
-          dllsubr='ERZSCHED'
-          write(dllmesg,'(a)') louts(1:124)
-          ier=2
-          return
-        else
-          call edisp248(iuout,louts,100)
-          IER=1
-          RETURN
-        endif
-      ENDIF
+        call edisp248(iuout,louts,100)
+        IER=1
+        RETURN
+      endif
       write(currentfile,'(a)') FILE(1:lnblnk(FILE))
       ip3verc=0
 
@@ -1520,18 +1477,10 @@ C Now free project data file.
       RETURN
 
 C Error messages.
- 1000 if(dll)then
-        dllsubr='ERZSCHED'
-        write(dllmesg,'(a)') louts(1:124)
-        ier=2
-        CALL ERPFREE(IUO,ISTAT)
-        return
-      else
-        call edisp248(iuout,louts,100)
-        IER=1
-        CALL ERPFREE(IUO,ISTAT)
-        RETURN
-      endif
+ 1000 call edisp248(iuout,louts,100)
+      IER=1
+      CALL ERPFREE(IUO,ISTAT)
+      RETURN
 
  1001 call usrmsg(' ',
      &  ' No casual gains labels found ...supplying defaults.','-')
@@ -1555,19 +1504,11 @@ C Error messages.
      &  OUTSTR(1:50),'...'
       lsn=MIN0(lnblnk(currentfile),110)
       write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
-      if(dll)then
-        dllsubr='ERZSCHED'
-        dllmesg=outs
-        ier=2
-        CALL ERPFREE(IUNIT,ios)
-        return
-      else
-        call edisp(iuout,outs)
-        call edisp(iuout,outs2)
-        IER=1
-        CALL ERPFREE(IUNIT,ios)
-        RETURN
-      endif
+      call edisp(iuout,outs)
+      call edisp(iuout,outs2)
+      IER=1
+      CALL ERPFREE(IUNIT,ios)
+      RETURN
 
  1022 write(outs,'(2a)')' Scheduled infiltration control unknown in',
      &  outstr(1:50)
@@ -1592,15 +1533,11 @@ C FILE (variable width char) is the name of the file to scan.
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
-C Error subroutine and error details for dll mode.
-      common/dllerr/dllsubr,dllmesg
-
 C Local variables (to protect info in common blovks)
       CHARACTER outs*124
       CHARACTER*(*) FILE
-      character dllsubr*12,dllmesg*124
       character louts*248
-      logical dll,ok,dok
+      logical ok,dok
       integer ndty
       character longtfile*144
 
@@ -1610,25 +1547,15 @@ C Local variables (to protect info in common blovks)
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C List out the file contents and then ask the user for agreement
-C and for the number of day types. First check if running in dll mode.
-      call isadll(dll)
-
-C Initialise project data file.
+C and for the number of day types. Initialise project data file.
       CALL EFOPSEQ(IUO,FILE,1,IER)
       IF(IER.NE.0)THEN
         write(louts,'(3a)') 'Operations file ',
      &    FILE(1:lnblnk(FILE)),' could not be opened.'
-        if(dll)then
-          dllsubr='ERZSCHED'
-          write(dllmesg,'(a)') louts(1:124)
-          ier=2
-          return
-        else
-          call edisp248(iuout,louts,100)
-          IER=1
-          RETURN
-        endif
-      ENDIF
+        call edisp248(iuout,louts,100)
+        IER=1
+        RETURN
+      endif
 
 C Display the contents of the file to the text feedback.
       call edisp(iuout,

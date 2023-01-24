@@ -181,7 +181,13 @@ int  len;           /* len is length passed from fortran */
  return;
 }
 
-/* ********* textatxy_() write a string at pixel x y in colour act & n. ******* */
+/* ********* textatxy_() write a string at pixel x y in colour act & n. *******
+This version, as opposed to textsizeatxy, should be used when the string needs
+to be clipped. The font size should be set first using winfnt, then the fortran
+soubroutine CLIPST should be called, then if required this subroutine will draw
+the string. This process is appropriate where clipping is likely to be required
+e.g. interactive 3D graphcs displays. */
+
 void textatxy_(x,y,buff,act,n,len)
 long int *x, *y;       /* x y is the position of the string */
 char *buff;
@@ -328,7 +334,11 @@ int  len;        /* len is length passed from fortran */
 }
 
 
-/* ********* textsizeatxy_() write a string of size at pixel x y in colour act & n. ******* */
+/* ********* textsizeatxy_() write a string of size at pixel x y in colour act & n. *******
+This version, as opposed to texteatxy, should be used when the string does not need to be
+clipped. No preceding call to winfnt is required. This is appropriate where clipping is not
+likely to be required e.g. drawing graphs. */
+
 void textsizeatxy_(x,y,buff,size,act,n,len)
 long int *x, *y;       /* x y is the position of the string */
 char *buff;

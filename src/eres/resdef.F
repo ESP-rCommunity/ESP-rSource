@@ -1483,10 +1483,14 @@ C but if using GTK then we need the full length to avoid truncation.
       endif
 
 C Also recover the solar radiation flag from the climate file.
+C ICYEAR is set with call to CLMMDN2O and set IYEAR from it if
+C IYEAR is zero.
 
-C << Note this sets the year from the climate file scan!  What
-C << if the model uses a different year?  Which one is used?
+C Note: this sets the year from the climate file scan if not otherwise set.
       CALL CLMRDBMD(IER)
+      if(IER.eq.0)then
+        if(IYEAR.lt.1) IYEAR=ICYEAR
+      endif
 
     2 RETURN
 

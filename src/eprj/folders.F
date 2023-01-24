@@ -166,8 +166,8 @@ C some common blocks which should not be cleared.)
       endif
 
 C User did not cancel so instantiate data for new model. Current default
-C version is v4.
-      icfgv=4
+C version is v5.
+      icfgv=5
       INDCFG=0
       if(act(1:2).eq.'sn'.or.act(1:2).eq.'sw')then
         continue      ! META or gbXML file will already have set sitelat etc.
@@ -757,7 +757,7 @@ C initial set of days.
         call gethelptext(helpinsub,helptopic,nbhelp)
         iyeart=iyear
         CALL EASKI(IYEART,' ','Assessment year?',
-     &    1900,'W',3000,'W',2021,'assessment year',IERI,nbhelp)
+     &    1900,'W',3000,'W',2022,'assessment year',IERI,nbhelp)
         if(ieri.eq.-3) then
           call calenmanage('i',ier)
         else

@@ -1107,7 +1107,7 @@ C Should be the same logic as in esru_x.c.
       end
 
 C Local variant of command line parsing.
-C parcnv parse command line paramters for dfv.
+C parcnv parse command line parameters for dfv.
       subroutine parsedfv(termtype,iappw,iappx,iappy,inf,cfd3dasci,
      &  itmin,itmax)
       
@@ -1575,7 +1575,7 @@ C      subroutine chgeye(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,
 C     &   JITOBS,JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,JITHLZ,
 C     &   JITPPSW)
 
-C Passed paramters.
+C Passed parameters.
 C      real EVX,EVY,EVZ,VX,VY,VZ,EAN,DIS
 
 C Depending on computer type set integer size of passed parameters.

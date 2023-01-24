@@ -46,9 +46,6 @@ C logstats  - the main controlling routine.
 C partfa    - allows terminal, file and action arguments to be passed.
 
 C << TODO: 
-
-C **********************
-C Pending tasks
 C a) allow for other-than-five-minute output - partly working!
 C b) support working with data at 30s or 1m+ intervals..
 

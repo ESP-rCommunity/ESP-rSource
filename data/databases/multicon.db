@@ -13,7 +13,7 @@ Tags are:
 - *layer layer data... mat ref, thickness,mat name: mat description
 - *Text ... *End_text  markers for database documentation
 *End_text
-*date,Mon Mar  2 09:33:02 2020
+*date,Wed Aug 17 17:03:59 2022
 *Category,walls,opaque facade constructions,opaque facades representing different ages and performance (mostly UK based)
 *Category,partitions,internal partitions,partitions between zones (some have matching mirror versions)
 *Category,doors,inside and outside doors,doors of different ages types and performance characteristics
@@ -38,13 +38,57 @@ Tags are:
 *end_item
 *item,brk_aer_block_wall,cavity insulated brick-aerated-b # tag name menu entry
 *itemdoc,typical UK insulated cavity brick-aerated-block wall with 50mm air gap & 150mm insulation
-*incat,general constructions
+*incat,walls
 *type,OPAQ,OPAQUE,NONSYMMETRIC
 *layer,6,0.1000,lt brown brick : Light brown brick
 *layer,211,0.1500,glasswool : Glasswool (generic)
 *layer,0,0.0500,air  0.170 0.170 0.170
 *layer,22,0.1000,aerated conc block : Aerated concrete block
 *layer,108,0.0120,white gypboard : White painted Gypboard
+*end_item
+*item,brk_100ins_mortar_blk_U0.25,brk_100ins_mortar_block_U0.25 # tag name menu entry
+*itemdoc,To match PartL Guide Masonry with 100 mm mineral wool with aerated block and 6.7pc mortar and plaster on dabs
+*incat,walls
+*type,OPAQ,OPAQUE,NONSYMMETRIC
+*layer,10,0.1000,Brick outer leaf : Brick (UK code) (inorganic-porous)
+*layer,334,0.1100,mineral_wool_k0.036 : mineral_wool_k0.036 (copy of mineral_wool_k0.032)
+*layer,358,0.1000,aeratd_block_6.7pc_mortar : aeratd_block_6.7pc_mortar derived from aera
+*layer,329,0.0125,plaster_dabs_in_12mmair_gap : plaster_dabs_in_12mmair_gap derived from
+*layer,108,0.0150,white gypboard : White painted Gypboard (inorganic-porous)
+*end_item
+*item,brk_140_stud_servd_U0.19,brk 140mm stud servoid U0.19 # tag name menu entry
+*itemdoc,Brick skin over 140mm studs with 25mm service void. 2021 Part L U=0.19 insulation mineral wool k=0.032 with 15% timber fraction.
+*incat,walls
+*type,OPAQ,OPAQUE,NONSYMMETRIC
+*layer,10,0.1000,Brick outer leaf : Brick (UK code) (inorganic-porous)
+*layer,0,0.0500,gap  0.30 0.30 0.30
+*layer,79,0.0120,OSB : OSB wood based on the SBEM database
+*layer,338,0.1400,15pc_frame_in_mineral_wool0.32 : 15pc_frame_in_mineral_wool0.32 derived
+*layer,169,0.0010,lamin_bldg_paper : laminated paper (ASHRAE Handbook 1985) (organic hygr
+*layer,354,0.0250,gap  0.30 0.30 0.30
+*layer,110,0.0150,Plasterboard (wallboard) : Internal finish (UK code) (inorganic-porous)
+*end_item
+*item,brk_140_refl_serv_U0.19,brk_140mm_refl_serv_U0.19 # tag name menu entry
+*itemdoc,Brick skin over 140mm studs with 25mm reflective service void. 2021 Part L U=0.19 insulation mineral wool k=0.032 with 15% timber fraction.
+*incat,walls
+*type,OPAQ,OPAQUE,NONSYMMETRIC
+*layer,10,0.1000,Brick outer leaf : Brick (UK code) (inorganic-porous)
+*layer,355,0.0500,air (k) 50mm foil : air (k) 50mm one side foil horizontal heat flow PHP
+*layer,79,0.0120,OSB : OSB wood based on the SBEM database
+*layer,322,0.1400,mineral_wool_k0.032 : mineral_wool_k0.032 as assumed by UK PartL guidan
+*layer,169,0.0010,lamin_bldg_paper : laminated paper (ASHRAE Handbook 1985) (organic hygr
+*layer,354,0.0250,air (k) 25mm foil : air (k) 25mm foil one side horizontal heat flow via
+*layer,110,0.0150,Plasterboard (wallboard) : Internal finish (UK code) (inorganic-porous)
+*end_item
+*item,brk_185ins_aerat_blk_U0.15,brk_185ins_aerat_block_U0.15 # tag name menu entry
+*itemdoc,Masonry wall to match UK future home standard U=0.15 185mm mineral wool aerated c block with mortar bridge and plaster on dabs.
+*incat,walls
+*type,OPAQ,OPAQUE,NONSYMMETRIC
+*layer,10,0.1000,Brick outer leaf : Brick (UK code) (inorganic-porous)
+*layer,295,0.2250,Min wool quilt 1030spht : Insulation (Min wool quilt with 1030 sp. ht.)
+*layer,358,0.1000,aeratd_block_6.7pc_mortar : aeratd_block_6.7pc_mortar derived from aera
+*layer,329,0.0125,plaster_dabs_in_12mmair_gap : plaster_dabs_in_12mmair_gap derived from
+*layer,108,0.0150,white gypboard : White painted Gypboard (inorganic-porous)
 *end_item
 *item,insul_mtl_p,insulated metal wall panel # tag name menu entry
 *itemdoc,insulated grey aluminium panel wall with 80mm insulation (legacy construction used in some training models)
@@ -67,7 +111,7 @@ Tags are:
 *incat,UK_code
 *type,OPAQ,OPAQUE,NONSYMMETRIC
 *layer,10,0.1020,Brick outer leaf : Brick (UK code) (inorganic-porous)
-*layer,294,0.0900,Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygrosco
+*layer,294,0.0900,Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygro)
 *layer,40,0.1000,Concrete med density (1800) : Blockwork (UK code)
 *layer,0,0.0220,gap  0.180 0.180 0.180
 *layer,112,0.0130,Plasterboard (UK code) : Plasterboard (UK code)
@@ -77,7 +121,7 @@ Tags are:
 *incat,UK_code
 *type,OPAQ,OPAQUE,NONSYMMETRIC
 *layer,10,0.1020,Brick outer leaf : Brick (UK code) (inorganic-porous)
-*layer,294,0.0900,Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygrosco
+*layer,294,0.0900,Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygro)
 *layer,40,0.1000,Concrete med density (1800) : Blockwork (UK code)
 *layer,0,0.0220,gap  0.180 0.180 0.180
 *layer,112,0.0130,Plasterboard (UK code) : Plasterboard (UK code)
@@ -100,7 +144,7 @@ Tags are:
 *incat,UK_code
 *type,OPAQ,OPAQUE,NONSYMMETRIC
 *layer,10,0.1020,Brick outer leaf : Brick (UK code) (inorganic-porous)
-*layer,294,0.0635,Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygrosco
+*layer,294,0.0635,Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygro)
 *layer,40,0.1000,Concrete med density (1800) : Blockwork (UK code)
 *layer,0,0.0250,gap  0.180 0.180 0.180
 *layer,112,0.0130,Plasterboard (UK code) : Plasterboard (UK code)
@@ -165,6 +209,16 @@ Tags are:
 *layer,0,0.0500,gap  0.050 0.050 0.050
 *layer,68,0.0250,weatherboard : Weatherboard (source does not clarify what it is)
 *end_item
+*item,solid_brk_wall_u2.0,solid_dblleaf_brick_wall_u2.0 # tag name menu entry
+*itemdoc,uninsulated solid brick wall 240mm with hard plaster circa 1900 with U=2.0
+*incat,project specific
+*type,OPAQ,OPAQUE,NONSYMMETRIC
+*layer,10,0.1000,Brick outer leaf : Brick (UK code) (inorganic-porous)
+*layer,134,0.0200,cement_sand_mortar : cement_sand_mortar mix 1:7 BEPAC 1991 from Leeds U
+*layer,3,0.1000,inner leaf brick : Inner leaf brick (inorganic-porous)
+*layer,101,0.0150,dense plaster : Dense plaster (inorganic-porous)
+*layer,113,0.0050,lime plaster : lime plaster from IBO PassivHaus (inorganic-porous)
+*end_item
 *item,cavity_brick,UK uninsulated cavity brick 1930 # tag name menu entry
 *itemdoc,typical UK uninsulated cavity brick wall with 40mm air gap circa 1930.
 *incat,walls
@@ -219,6 +273,35 @@ Tags are:
 *layer,0,0.0200,gap  0.170 0.170 0.170
 *layer,108,0.0120,white gypboard : White painted Gypboard (inorganic-porous)
 *end_item
+*item,Vict_brick_330mm,Vict solid 1.5 brick fac 330mm # tag name menu entry
+*itemdoc,Vict solid masonry wall 330mm one and a half Flemish bond with traditional plaster
+*incat,walls
+*type,OPAQ,OPAQUE,NONSYMMETRIC
+*layer,10,0.1650,Brick outer leaf : Brick (UK code) (inorganic-porous)
+*layer,10,0.1650,Brick outer leaf : Brick (UK code) (inorganic-porous)
+*layer,0,0.020,gap  0.170 0.170 0.170
+*layer,117,0.0240,White_RK38_baumat_lime_plaster : White_RK38_baumat_lime_plaster same as
+*end_item
+*item,Vict_brick_w_skirt_409,Vict solid brk facade skrt 409mm # tag name menu entry
+*itemdoc,Vict solid masonry wall 330mm one and a half Flemish bond with traditional plaster and skirting
+*incat,walls
+*type,OPAQ,OPAQUE,NONSYMMETRIC
+*layer,10,0.1650,Brick outer leaf : Brick (UK code) (inorganic-porous)
+*layer,10,0.1650,Brick outer leaf : Brick (UK code) (inorganic-porous)
+*layer,0,0.020,gap  0.170 0.170 0.170
+*layer,117,0.0240,White_RK38_baumat_lime_plaster : White_RK38_baumat_lime_plaster same as
+*layer,0,0.020,gap  0.170 0.170 0.170
+*layer,71,0.0150,softwood : Softwood (generic)
+*end_item
+*item,Vict_brick_230mm,Victorian solid brick fac 230mm # tag name menu entry
+*itemdoc,Victorian solid masonry wall 230mm single brick Flemish bond with traditional plaster
+*incat,walls
+*type,OPAQ,OPAQUE,NONSYMMETRIC
+*layer,10,0.1150,Brick outer leaf : Brick (UK code) (inorganic-porous)
+*layer,10,0.1150,Brick outer leaf : Brick (UK code) (inorganic-porous)
+*layer,0,0.020,gap  0.170 0.170 0.170
+*layer,117,0.0240,White_RK38_baumat_lime_plaster : White_RK38_baumat_lime_plaster same as
+*end_item
 *item,TimberU0.23,timber rainscreen over stud wall # tag name menu entry
 *itemdoc,weatherboard rainscreen over stud wall with 140mm mineral wool and inner gypboard.
 *incat,walls
@@ -226,7 +309,7 @@ Tags are:
 *layer,68,0.0210,weatherboard : Weatherboard (source does not clarify what it is)
 *layer,0,0.0500,gap  0.170 0.170 0.170
 *layer,76,0.0095,plywood sheathing : Plywood sheathing (UK code)
-*layer,294,0.1400,Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygrosco
+*layer,294,0.1400,Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygr)
 *layer,0,0.0250,gap  0.170 0.170 0.170
 *layer,112,0.0125,Plasterboard (UK code) : Plasterboard (UK code)
 *end_item
@@ -371,7 +454,7 @@ Tags are:
 *layer,104,0.0120,gypsum plaster : Gypsum based plaster (inorganic-porous)
 *end_item
 *item,blkfirewall,acoustic conc block firewall # tag name menu entry
-*itemdoc,blkfirewall - for use between terrace houses acoustic fill between 100mm block with gypboard on dabs adjusted gap resistance
+*itemdoc,blkfirewall - for use between terrace houses acoustic fill between. No mortar bridge included.
 *incat,partitions
 *type,OPAQ,OPAQUE,SYMMETRIC
 *layer,104,0.0120,gypsum plaster : Gypsum based plaster (inorganic-porous)
@@ -382,6 +465,48 @@ Tags are:
 *layer,0,0.0400,gap  0.100 0.100 0.100
 *layer,104,0.0120,gypsum plaster : Gypsum based plaster (inorganic-porous)
 *end_item
+*item,med_block_firewall,medium wt block firewall # tag name menu entry
+*itemdoc,For use between terrace houses or apartments. Medium weight block. Acoustic fill between. Mortar bridge included.
+*incat,partitions
+*type,OPAQ,OPAQUE,SYMMETRIC
+*layer,108,0.0150,white gypboard : White painted Gypboard (inorganic-porous)
+*layer,329,0.0120,plaster_dabs_in_12mmair_gap : plaster_dabs_in_12mmair_gap derived from
+*layer,357,0.1000,med_block_with_6pc_mortar : med_block_with_6pc_mortar derived from bloc
+*layer,216,0.0500,mineral fibre : Mineral fibre (non-hygroscopic)
+*layer,357,0.1000,med_block_with_6pc_mortar : med_block_with_6pc_mortar derived from bloc
+*layer,329,0.0120,plaster_dabs_in_12mmair_gap : plaster_dabs_in_12mmair_gap derived from
+*layer,108,0.0150,white gypboard : White painted Gypboard (inorganic-porous)
+*end_item
+*item,aerat_block_firewall,aerat_block_firewall # tag name menu entry
+*itemdoc,For use between terrace houses or apartments. Lightweight block. Acoustic fill between. Mortar bridge included.
+*incat,partitions
+*type,OPAQ,OPAQUE,SYMMETRIC
+*layer,104,0.0120,gypsum plaster : Gypsum based plaster (inorganic-porous)
+*layer,329,0.0125,plaster_dabs_in_12mmair_gap : plaster_dabs_in_12mmair_gap dabs 10pc.
+*layer,339,0.1000,aerated_block_with_mortar : aerated_block_with mortar 6.7pc
+*layer,216,0.1000,mineral fibre : Mineral fibre (non-hygroscopic)
+*layer,339,0.1000,aerated_block_with_mortar : aerated_block_with mortar 6.7pc
+*layer,329,0.0125,plaster_dabs_in_12mmair_gap : plaster_dabs_in_12mmair_gap dabs 10pc
+*layer,104,0.0120,gypsum plaster : Gypsum based plaster (inorganic-porous)
+*end_item
+*item,Vict_brick_ptn,Vict brick plast ptn 160mm # tag name menu entry
+*itemdoc,Victorian imperial 115mm brick with traditional plaster each face hard on the brick
+*incat,partitions
+*type,OPAQ,OPAQUE,SYMMETRIC
+*layer,117,0.0240,White_RK38_baumat_lime_plaster : White_RK38_baumat_lime_plaster same as
+*layer,3,0.1150,inner leaf brick : Inner leaf brick (inorganic-porous)
+*layer,117,0.0240,White_RK38_baumat_lime_plaster : White_RK38_baumat_lime_plaster same as
+*end_item
+*item,Vict_brick_ptn_skirt,Vict brick ptn 193mm skirt # tag name menu entry
+*itemdoc,Victorian brick partition with traditional plaster and wood skirting overall 193mm imperial brick thickness 115mm
+*incat,partitions
+*type,OPAQ,OPAQUE,SYMMETRIC
+*layer,71,0.0150,softwood : Softwood (generic)
+*layer,117,0.024,White_RK38_baumat_lime_plaster : White_RK38_baumat_lime_plaster same as
+*layer,3,0.1150,inner leaf brick : Inner leaf brick (inorganic-porous)
+*layer,117,0.024,White_RK38_baumat_lime_plaster : White_RK38_baumat_lime_plaster same as
+*layer,71,0.0150,softwood : Softwood (generic)
+*end_item
 *item,pla_pla_ptn,plaster-air-plaster ptn # tag name menu entry
 *itemdoc,pla_pla_ptn is found in some historic properties of the 1800s
 *incat,partitions
@@ -389,6 +514,16 @@ Tags are:
 *layer,101,0.0240,dense plaster : Dense plaster
 *layer,0,0.0500,air  0.170 0.170 0.170
 *layer,101,0.0240,dense plaster : Dense plaster
+*end_item
+*item,med_block_ptn_dabs,medium block ptn wdabs # tag name menu entry
+*itemdoc,100mm block with 6pc mortar and plasterboard on dabs each side.
+*incat,partitions
+*type,OPAQ,OPAQUE,SYMMETRIC
+*layer,108,0.0150,white gypboard : White painted Gypboard (inorganic-porous)
+*layer,329,0.0120,plaster_dabs_in_12mmair_gap : plaster_dabs_in_12mmair_gap derived from
+*layer,357,0.1000,med_block_with_6pc_mortar : med_block_with_6pc_mortar derived from bloc
+*layer,329,0.0120,plaster_dabs_in_12mmair_gap : plaster_dabs_in_12mmair_gap derived from
+*layer,108,0.0150,white gypboard : White painted Gypboard (inorganic-porous)
 *end_item
 *item,party_wall_n,UK NIreland code party-wall # tag name menu entry
 *itemdoc,partition - UK Northern Ireland code acoustic stud party wall.
@@ -404,12 +539,36 @@ Tags are:
 *type,OPAQ,OPAQUE,SYMMETRIC
 *layer,69,0.0250,oak : Oak (radial cut)
 *end_item
+*item,door_u1.8,door_u1.8 # tag name menu entry
+*itemdoc,oak insulated (PIR U1.8) wood door 31mm.
+*incat,doors
+*type,OPAQ,OPAQUE,SYMMETRIC
+*layer,69,0.0125,oak : Oak (radial cut)
+*layer,307,0.0060,rigid phenolic 35kgm3 : rigid phenolic foam 35-40 kg/m^3 CFC and HCFC f
+*layer,69,0.0125,oak : Oak (radial cut)
+*end_item
 *item,door_u1.5,insulated (U1.5) wood door 60mm # tag name menu entry
 *itemdoc,insulated (woodwool U1.5) wood door 60mm.
 *incat,doors
 *type,OPAQ,OPAQUE,SYMMETRIC
 *layer,69,0.0125,oak : Oak (radial cut)
 *layer,202,0.0365,woodwool : Woodwool (organic-hygroscopic)
+*layer,69,0.0125,oak : Oak (radial cut)
+*end_item
+*item,door_u1.0,door_u1.0 # tag name menu entry
+*itemdoc,door_u1.0  insulated (PIR U1.0) wood door 40mm.
+*incat,doors
+*type,OPAQ,OPAQUE,SYMMETRIC
+*layer,69,0.0125,oak : Oak (radial cut)
+*layer,307,0.0150,rigid phenolic 35kgm3 : rigid phenolic foam 35-40 kg/m^3 CFC and HCFC f
+*layer,69,0.0125,oak : Oak (radial cut)
+*end_item
+*item,door_u0.8,door_insul_u0.8 # tag name menu entry
+*itemdoc,oak insulated (PIR U0.8) wood door 47mm.
+*incat,project specific
+*type,OPAQ,OPAQUE,SYMMETRIC
+*layer,69,0.0125,oak : Oak (radial cut)
+*layer,307,0.0220,rigid phenolic 35kgm3 : rigid phenolic foam 35-40 kg/m^3 CFC and HCFC f
 *layer,69,0.0125,oak : Oak (radial cut)
 *end_item
 *item,door_PH,Passive House wood door 115mm # tag name menu entry
@@ -448,6 +607,14 @@ Tags are:
 *type,TRAN,DCF7671_06nb,SYMMETRIC
 *layer,242,0.0060,plate glass : Plate glass with placeholder single layer optics
 *layer,0,0.0120,gap  0.170 0.170 0.170
+*layer,242,0.0060,plate glass : Plate glass with placeholder single layer optics
+*end_item
+*item,dbl_glz_U1.3,dbl_glz_U1.3 # tag name menu entry
+*itemdoc,dbl_glz_U1.3 double glazing 6mm glass with 12mm argon gap and low-e (same as d_glz).
+*incat,glazing
+*type,TRAN,Double_g0.73,SYMMETRIC
+*layer,242,0.0060,plate glass : Plate glass with placeholder single layer optics
+*layer,340,0.0192,Air (k) 12mm lowe : Air (as k value) in 12mm lowe space
 *layer,242,0.0060,plate glass : Plate glass with placeholder single layer optics
 *end_item
 *item,Not_DisplayG,UK notional retail display glaz # tag name menu entry
@@ -532,6 +699,16 @@ Tags are:
 *layer,0,0.0120,gap  0.508 0.508 0.508
 *layer,243,0.0060,clear float : clear float glass with optics from UK national method dat
 *end_item
+*item,tripglz_U0.7,tripglz_U0.7 # tag name menu entry
+*itemdoc,tripglz_U0.7 tripple glazing 6mm clear float glass with 12mm argon and lowe coatings to reach U=0.7. Suitable for PassiveHouse. Optics aprox
+*incat,glazing
+*type,TRAN,trip_glz_g.5,NONSYMMETRIC
+*layer,243,0.0060,clear float : clear float glass with optics from UK national method dat
+*layer,0,0.0120,gap  0.62 0.62 0.62
+*layer,243,0.0040,clear float : clear float glass with optics from UK national method dat
+*layer,0,0.0120,gap  0.61 0.61 0.61
+*layer,243,0.0060,clear float : clear float glass with optics from UK national method dat
+*end_item
 *item,PV_constr,glazing in frame w embedded PV # tag name menu entry
 *itemdoc,low-iron-glass with PV embedded with air space and insulated 80mm metal back plate.
 *incat,glazing
@@ -602,6 +779,18 @@ Tags are:
 *layer,170,0.0030,PVC_pipe : Polyvinylchloride pipe estimated from CIBSE data (impermeabl
 *layer,0,0.0080,gap  0.170 0.170 0.170
 *layer,174,0.0040,EDPM membrane : EDPM membrane roofing or foundations data from Aquaflex
+*layer,0,0.0080,gap  0.170 0.170 0.170
+*layer,170,0.0030,PVC_pipe : Polyvinylchloride pipe estimated from CIBSE data (impermeabl
+*end_item
+*item,PVC_fr_1.3u,PVC_fr_1.3u # tag name menu entry
+*itemdoc,PVC_fr_1.3u is a PVC window frame with multiple cells and a thin EDPM thermal break yielding a Uvalue of 1.3 for use with PartL 2021.
+*incat,project specific
+*type,OPAQ,OPAQUE,NONSYMMETRIC
+*layer,170,0.0030,PVC_pipe : Polyvinylchloride pipe estimated from CIBSE data (impermeabl
+*layer,0,0.0080,gap  0.170 0.170 0.170
+*layer,174,0.0047,EDPM membrane : EDPM membrane roofing or foundations data from Aquaflex
+*layer,0,0.0080,gap  0.170 0.170 0.170
+*layer,170,0.0030,PVC_pipe : Polyvinylchloride pipe estimated from CIBSE data (impermeabl
 *layer,0,0.0080,gap  0.170 0.170 0.170
 *layer,170,0.0030,PVC_pipe : Polyvinylchloride pipe estimated from CIBSE data (impermeabl
 *end_item
@@ -902,6 +1091,26 @@ Tags are:
 *layer,0,0.1500,gap  0.170 0.170 0.170
 *layer,69,0.0220,oak : Oak (radial cut)
 *end_item
+*item,wood_cel2flr,intermediate wood_cel2flr # tag name menu entry
+*itemdoc,Residential oak floor structure for interior use. To be referenced from the lower room.
+*incat,ceil_floor
+*type,OPAQ,OPAQUE,wood_flr2cel
+*layer,69,0.0120,oak : Oak (radial cut)
+*layer,72,0.0180,plywood 700d : Plywood (700 density)
+*layer,0,0.0250,gap  0.17 0.17 0.17
+*layer,319,0.1000,glass fibre quilt CCHT : glass fibre quilt CCHT variant of glass fibre
+*layer,108,0.0240,white gypboard : White painted Gypboard (inorganic-porous)
+*end_item
+*item,wood_flr2cel,intermediate wood_flr->ceil # tag name menu entry
+*itemdoc,Residential intermeiate oak floor structure for interior use. To be referenced from the upper room.
+*incat,ceil_floor
+*type,OPAQ,OPAQUE,wood_cel2flr
+*layer,108,0.0240,white gypboard : White painted Gypboard (inorganic-porous)
+*layer,319,0.1000,glass fibre quilt CCHT : glass fibre quilt CCHT variant of glass fibre
+*layer,0,0.0250,gap  0.17 0.17 0.17
+*layer,72,0.0180,plywood 700d : Plywood (700 density)
+*layer,69,0.0120,oak : Oak (radial cut)
+*end_item
 *item,lntg_cel2flr,linoleum over oak T&G mid-floor # tag name menu entry
 *itemdoc,A residential oak floor structure for interior use. To be referenced from the lower room. Reversed version is lntg_flr2cel
 *incat,ceil_floor
@@ -954,6 +1163,38 @@ Tags are:
 *layer,150,0.0100,ceiling mineral : Ceiling acoustic tile (mineral fibre based)
 *layer,211,0.2600,glasswool : Glasswool (generic) (non-hygroscopic)
 *end_item
+*item,ceil_below_attic_U0.45,ceil below attic_U0.45 # tag name menu entry
+*itemdoc,100mm mineral wool insul with 9pc joists over double layer plasterboard.
+*incat,ceil_floor
+*type,OPAQ,OPAQUE,NONSYMMETRIC
+*layer,356,0.1000,mineral_wool_9pc_joist : mineral_wool_9pc_joist derived from mineral wo
+*layer,108,0.0240,white gypboard : White painted Gypboard (inorganic-porous)
+*end_item
+*item,ceil_below_attic_U0.11,ceil below attic_U0.11 # tag name menu entry
+*itemdoc,250 mineral wool k=0.044 over 110mm insul with 9pc joists over double layer plasterboard.
+*incat,ceil_floor
+*type,OPAQ,OPAQUE,ceiling_attic_U0.11
+*layer,295,0.2500,Min wool quilt 1030spht : Insulation (Min wool quilt with 1030 sp. ht.)
+*layer,356,0.1100,mineral_wool_9pc_joist : mineral_wool_9pc_joist derived from mineral wo
+*layer,108,0.0240,white gypboard : White painted Gypboard (inorganic-porous)
+*end_item
+*item,ceiling_attic_U0.11,ceiling_attic2room_U0.11 # tag name menu entry
+*itemdoc,Attic to room 250 mineral wool k=0.044 over 110mm insul with 9pcc joists over double layer plasterboard.
+*incat,ceil_floor
+*type,OPAQ,OPAQUE,ceil_below_attic_U0.11
+*layer,108,0.0240,white gypboard : White painted Gypboard (inorganic-porous)
+*layer,356,0.1100,mineral_wool_9pc_joist : mineral_wool_9pc_joist derived from mineral wo
+*layer,295,0.2500,Min wool quilt 1030spht : Insulation (Min wool quilt with 1030 sp. ht.)
+*end_item
+*item,ceil_below_attic_U0.09,ceil below attic U0.09 # tag name menu entry
+*itemdoc,Ceiling below cold roof with 400 mineral wool above joists and 9pc joists over double layer plasterboard.
+*incat,ceil_floor
+*type,OPAQ,OPAQUE,NONSYMMETRIC
+*layer,333,0.2000,mineral wool k=0.044 : mineral wool k=0.044 for use with 2436 PartLGuid
+*layer,333,0.2000,mineral wool k=0.044 : mineral wool k=0.044 for use with 2436 PartLGuid
+*layer,356,0.1000,mineral_wool_9pc_joist : mineral_wool_9pc_joist derived from mineral wo
+*layer,108,0.0240,white gypboard : White painted Gypboard (inorganic-porous)
+*end_item
 *item,susp_floor,carpeted intermed void->room # tag name menu entry
 *itemdoc,A commercial concrete floor structure with carpet cast on steel shuttering. For use over a ceiling void.
 *incat,ceil_floor
@@ -995,6 +1236,26 @@ Tags are:
 *layer,86,0.1500,gravel : Gravel
 *layer,0,0.1000,air  0.170 0.170 0.170
 *layer,101,0.0300,dense plaster : Dense plaster
+*end_item
+*item,parquet_conc_void_ceil,parquet conc void ceiling (below) # tag name menu entry
+*itemdoc,parquet over concrete mid-floor structure seen from below
+*incat,ceil_floor
+*type,OPAQ,OPAQUE,parquet_conc_void_floor
+*layer,89,0.0200,parquet : Parquet (ready to install) from IBO PassivHaus
+*layer,121,0.0750,ltwt_conc_screed : Lightweight conc screed (inorganic-porous)
+*layer,57,0.1500,Cast_concrete_dense_reinfor : Cast_concrete_dense_reinforced BEPAC 1991
+*layer,0,0.2000,gap  0.10 0.10 0.10
+*layer,108,0.0240,white gypboard : White painted Gypboard (inorganic-porous)
+*end_item
+*item,parquet_conc_void_floor,parquet conc void floor (above) # tag name menu entry
+*itemdoc,parquet over concrete and void mid-floor structure seen from above.
+*incat,ceil_floor
+*type,OPAQ,OPAQUE,parquet_conc_void_ceil
+*layer,108,0.0240,white gypboard : White painted Gypboard (inorganic-porous)
+*layer,0,0.2000,gap  0.10 0.10 0.10
+*layer,57,0.1500,Cast_concrete_dense_reinfor : Cast_concrete_dense_reinforced BEPAC 1991
+*layer,121,0.0750,ltwt_conc_screed : Lightweight conc screed (inorganic-porous)
+*layer,89,0.0200,parquet : Parquet (ready to install) from IBO PassivHaus
 *end_item
 *item,grnd_floor,carpet conc floor hardcore-earth # tag name menu entry
 *itemdoc,An uninsulated slab on grade foundation over hardcore and 600mm of earth with a built-up of chipboard and carpet above.
@@ -1224,7 +1485,7 @@ Tags are:
 *layer,221,0.0060,Wilton : Wilton weave wool carpet (organic-hygroscopic)
 *end_item
 *item,floor_cur,carptd slab-on-grade 75mmXPS # tag name menu entry
-*itemdoc,floor_cur carpeted lightly-insulated concrete slab-on-grade floor (2000 epoc) over hardcore and earth.
+*itemdoc,Carpeted lightly-insulated concrete slab-on-grade floor (2000 epoc) over hardcore and earth.
 *incat,ground
 *type,OPAQ,OPAQUE,NONSYMMETRIC
 *layer,263,0.2500,earth std : Common_earth
@@ -1251,7 +1512,7 @@ Tags are:
 *layer,231,0.0050,wool_underlay : wool felt underlay (UK assumptions) (organic-hygroscopi
 *layer,221,0.0060,Wilton : Wilton weave wool carpet (organic-hygroscopic)
 *end_item
-*item,til_flr20133,tiled insul slab-on-grade 2013 # tag name menu entry
+*item,til_flr2013,tiled insul slab-on-grade 2013 # tag name menu entry
 *itemdoc,clay tile insulated concrete slab-on-grade floor (2013 epoc) over hardcore and earth.
 *incat,ground
 *type,OPAQ,OPAQUE,NONSYMMETRIC
@@ -1264,6 +1525,27 @@ Tags are:
 *layer,32,0.1000,heavy mix concrete : Heavy mix concrete
 *layer,121,0.0250,ltwt_conc_screed : Lightweight conc screed (inorganic-porous)
 *layer,141,0.0120,clay tile : Clay tile (inorganic-porous)
+*end_item
+*item,slab_on_1m_earth_U0.13,slab-on-grade-1m-earth_U0.13 # tag name menu entry
+*itemdoc,Slab on grade with 200mm hardcore 800mm earth to approx PartL Guide 2021 version Masonry Type 1.
+*incat,ground
+*type,OPAQ,OPAQUE,NONSYMMETRIC
+*layer,264,0.2000,earth (MK) : earth (milton keynes)
+*layer,264,0.2000,earth (MK) : earth (milton keynes)
+*layer,264,0.2000,earth (MK) : earth (milton keynes)
+*layer,264,0.2000,earth (MK) : earth (milton keynes)
+*layer,262,0.2000,gravel based : Gravel based (non-hygroscopic)
+*layer,236,0.2500,XPS+k0.036 : XPS+k0.036 (copy of XPS CO2 foamed)
+*layer,21,0.1500,light mix concrete : Light mix concrete (inorganic-porous)
+*layer,121,0.0750,ltwt_conc_screed : Lightweight conc screed (inorganic-porous)
+*end_item
+*item,slab_on_noearth_U0.13,slab-on-grade no earth U0.13 # tag name menu entry
+*itemdoc,Slab on grade to approximate PartL Guide 2021 no earth Masonry type 1 ground floor tpe 1 wo ground.
+*incat,project specific
+*type,OPAQ,OPAQUE,NONSYMMETRIC
+*layer,236,0.2500,XPS+k0.036 : XPS+k0.036 (copy of XPS CO2 foamed)
+*layer,21,0.1500,light mix concrete : Light mix concrete (inorganic-porous)
+*layer,121,0.0750,ltwt_conc_screed : Lightweight conc screed (inorganic-porous)
 *end_item
 *item,ground_1.6m,1.6m of earth (base crawl space) # tag name menu entry
 *itemdoc,layers of earth totaling 1.6m for use as the base surface of an explicit crawl space.
@@ -1610,11 +1892,11 @@ Tags are:
 *layer,235,0.0120,aerogel : aerogel is a synthetic porous ultralight material typically s
 *layer,47,0.0040,wt cotd alum : White coated aluminium
 *end_item
-*item,placeholder,placeholder # tag name menu entry
-*itemdoc,no documentation yet for placeholder inproject specific
-*incat,project specific
+*item,mass_conc_200mm,struct_200mm # tag name menu entry
+*itemdoc,struct_200mm  structure is structural floor of 100mm concrete
+*incat,fittings
 *type,OPAQ,OPAQUE,SYMMETRIC
-*layer,1,0.1000,Paviour brick : Paviour brick (inorganic-porous)
+*layer,38,0.2000,concrete hi-den : Concrete high density (UK code)
 *end_item
 *item,no-fines-1940,no-fines rendered conc 1940ss # tag name menu entry
 *itemdoc,no-fines-1940 in walls by UK commercial residential in late 1940s.
@@ -1635,11 +1917,11 @@ Tags are:
 *itemdoc,conc_pla_ptn is plaster over 150mm concrete partition
 *incat,partitions
 *type,OPAQ,OPAQUE,SYMMETRIC
-*layer,101,0.0200,dense plaster : Dense plaster (inorganic-porous)
-*layer,0,0.0100,gap  0.17 0.17 0.17
+*layer,104,0.0120,gypsum plaster : Gypsum based plaster (inorganic-porous)
+*layer,329,0.0125,plaster_dabs_in_12mmair_gap : plaster_dabs_in_12mmair_gap dabs 10pc.
 *layer,32,0.1500,heavy mix concrete : Heavy mix concrete
-*layer,0,0.0100,gap  0.17 0.17 0.17
-*layer,101,0.0200,dense plaster : Dense plaster (inorganic-porous)
+*layer,329,0.0125,plaster_dabs_in_12mmair_gap : plaster_dabs_in_12mmair_gap dabs 10pc.
+*layer,104,0.0120,gypsum plaster : Gypsum based plaster (inorganic-porous)
 *end_item
 *item,acu_gyp_ptn,accoustic gyp partition # tag name menu entry
 *itemdoc,acu_gyp_ptn is an acoustic gypboard partitions
@@ -1685,6 +1967,12 @@ Tags are:
 *layer,32,0.0200,heavy mix concrete : Heavy mix concrete
 *layer,143,0.0200,Slate tile : Slate tile
 *end_item
+*item,conc_slab_250mm,exposed conc slab 250mm # tag name menu entry
+*itemdoc,a structural concrete slab 250mm thick
+*incat,ceil_floor
+*type,OPAQ,OPAQUE,SYMMETRIC
+*layer,34,0.2500,white ptd concrete : White painted heavy mix concrete
+*end_item
 *item,structure100mm,100mm concrete structure # tag name menu entry
 *itemdoc,structure is structural floor of 100mm concrete
 *incat,ceil_floor
@@ -1695,7 +1983,7 @@ Tags are:
 *itemdoc,upper_scrd is 30mm layer above heating pipes
 *incat,ceil_floor
 *type,OPAQ,OPAQUE,SYMMETRIC
-*layer,32,0.0300,heavy mix concrete : Heavy mix concrete
+*layer,121,0.030,ltwt_conc_screed : Lightweight conc screed (inorganic-porous)
 *end_item
 *item,raised_flr_ovr_pln,raised floor over plenum # tag name menu entry
 *itemdoc,raised_flr_ovr_pln carpeted raised floor over a plenum.
@@ -1714,11 +2002,5 @@ Tags are:
 *layer,91,0.0280,HighDensityParticleBd : HDF based on info in Handbook of Heat Transfer
 *layer,42,0.0020,steel : Steel
 *layer,228,0.0050,grey loop pile : Grey loop pile synthetic carpet (non-hygroscopic)
-*end_item
-*item,conc_slab_250mm,exposed conc slab 250mm # tag name menu entry
-*itemdoc,conc_250     is a ...
-*incat,general constructions
-*type,OPAQ,OPAQUE,SYMMETRIC
-*layer,34,0.2500,white ptd concrete : White painted heavy mix concrete
 *end_item
 *db_end

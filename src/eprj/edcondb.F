@@ -6872,11 +6872,19 @@ C           Issue warning!
 
 C ******* mlcrefs
 C mlcrefs returns true/false if a construction name is referenced within
-C the current zone scope. areamlc(MCOM) is the area of this construction
-C in each zone, tareamlc is the total area of thie construction (weighted
+C the current zone scope.
+C areamlc(MCOM) is the total area of this construction in each zone,
+C areamlcamb(MCOM) is the area facing ambient for each zone,
+C areamlcoth(MCOM) is the area facing other zones,
+C areamlcb2b(MCOM) is half area of back to back within the zone,
+C areamlcgrnd(MCOM) is the area facing the ground,
+C areamlcsimil(MCOM) is the area facing SIMILAR or ADIAB.
+C tareamlc is the total area of thie construction (weighted
 C so that partitions are counted as half area).
-      subroutine mlcrefs(mlcname,areamlc,tareamlc,found)
+      subroutine mlcrefs(mlcname,areamlc,areamlcamb,areamlcoth,
+     &  areamlcb2b,areamlcgrnd,areamlcsimil,tareamlc,found)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -6888,7 +6896,8 @@ C so that partitions are counted as half area).
 
       character mlcname*32
       logical found
-      dimension areamlc(MCOM)
+      dimension areamlc(MCOM),areamlcamb(MCOM),areamlcoth(MCOM)
+      dimension areamlcb2b(MCOM),areamlcgrnd(MCOM),areamlcsimil(MCOM)
 
 C For each of the selected zones check each surface mlc attribute
 C for a match against mlcname.
@@ -6898,7 +6907,9 @@ C for a match against mlcname.
         tareamlc=0.0
         do 42 i=1,nzg
           iz=nznog(i)
-          areamlc(iz)=0.0
+          areamlc(iz)=0.0; areamlcamb(iz)=0.0; areamlcoth(iz)=0.0
+          areamlcb2b(iz)=0.0; areamlcgrnd(iz)=0.0
+          areamlcsimil(iz)=0.0
           do 43 j=1,NZSUR(iz)
             ic=IZSTOCN(iz,j)
             lnsmlcn=lnblnk(SMLCN(iz,j))
@@ -6909,15 +6920,52 @@ C Depending on the connection type, add the full or half area of surface.
               if(ICT(ic).eq.0.or.ICT(ic).eq.1.or.ICT(ic).eq.2)then
                 areamlc(iz)=areamlc(iz)+SNA(iz,j)
                 tareamlc=tareamlc+SNA(iz,j)
-              elseif(ICT(ic).eq.4.or.ICT(ic).eq.5.or.ICT(ic).eq.3)then
+              elseif(ICT(ic).eq.4.or.ICT(ic).eq.5.or.ICT(ic).eq.6)then
                 areamlc(iz)=areamlc(iz)+SNA(iz,j)
                 tareamlc=tareamlc+SNA(iz,j)
-              else
+              elseif(ICT(ic).eq.3)then
                 areamlc(iz)=areamlc(iz)+(SNA(iz,j)*0.5)
                 tareamlc=tareamlc+(SNA(iz,j)*0.5)
               endif
+              if(ICT(ic).eq.0)then         ! Ambient
+                areamlcamb(iz)= areamlcamb(iz)+SNA(iz,j)
+              elseif(ICT(ic).eq.1)then     ! Similar
+                areamlcsimil(iz)=areamlcsimil(iz)+SNA(iz,j)
+              elseif(ICT(ic).eq.2)then     ! Constant
+                areamlcsimil(iz)=areamlcsimil(iz)+SNA(iz,j)
+              elseif(ICT(ic).eq.3)then     ! Partition
+                if(IC1(ic).eq.IC2(ic))then ! back-to-back
+                  areamlcb2b(iz)=areamlcb2b(iz)+(SNA(iz,j)*0.5)
+                else
+                  areamlcoth(iz)=areamlcoth(iz)+SNA(iz,j)
+                endif
+              elseif(ICT(ic).eq.4)then     ! Ground
+                areamlcgrnd(iz)=areamlcgrnd(iz)+SNA(iz,j)
+              elseif(ICT(ic).eq.5)then     ! Adiabetic
+                areamlcsimil(iz)=areamlcsimil(iz)+SNA(iz,j)
+              endif
             endif
   43      continue
+
+          if(iobs(iz).eq.2)then   ! Also check obstructions.
+            if(nbobs(iz).gt.0)then
+              do nbo=1,nbobs(iz)
+                lnsmlcn=lnblnk(BLOCKMAT(iz,nbo))
+                if(mlcname(1:lm).eq.BLOCKMAT(iz,nbo)(1:lnsmlcn))then
+                  found=.true.
+                endif
+              enddo
+            endif
+          endif
+          if(nbvis(iz).gt.0)then  ! And visual entities.
+            do nbv = 1,nbvis(iz)
+              lnsmlcn=lnblnk(VISMAT(iz,nbv))
+              if(mlcname(1:lm).eq.VISMAT(iz,nbv)(1:lnsmlcn))then
+                found=.true.
+              endif
+            enddo
+          endif
+
   42    continue
       endif
 

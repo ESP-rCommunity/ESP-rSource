@@ -657,7 +657,7 @@ C Clear the connection list.
         IC2(ICC)=0
         IE2(ICC)=0
       ENDDO  ! of ICC
-      icfgv=4  ! set cfg file version to latest type
+      icfgv=5  ! set cfg file version to latest type
       NCON=0
       ncomp=0
       siteexposureindex=1
@@ -1179,36 +1179,22 @@ C 12 characters) may be included as an option and is returned via BLOCKNAME.
 #include "espriou.h"
 
       integer lnblnk  ! function definition
-
-C Error messages (for use by low level I/O calls)
-      common/dllerr/dllsubr,dllmesg
-
       CHARACTER LOBS*72,OUTSTR*124,WORD*32
-      character dllsubr*12,dllmesg*124,outs*124
-      logical dll
+      character outs*124
       integer NGXD,NGZD  ! dummy values for depreciated NGX & NGZ
       real VX,VY,VZ   ! local values for XOB YOB ZOB
       integer llbm    ! length of block material
 
-C Check if running in dll mode.
-      call isadll(dll)
       IER=0
 
       CALL EFOPSEQ(IUNIT,LOBS,1,IER)
       IF(IER.LT.0)THEN
         write(outs,'(3a)') 'Obstructions file ',LOBS(1:lnblnk(LOBS)),
      &    ' could not be opened.'
-        if(dll)then
-          dllsubr='EGOMST'
-          dllmesg=outs
-          ier=2
-          return
-        else
-          call edisp(itru,outs)
-          IER=1
-          RETURN
-        endif
-      ENDIF
+        call edisp(itru,outs)
+        IER=1
+        RETURN
+      endif
       write(currentfile,'(a)') LOBS(1:lnblnk(LOBS))
 
 C Read past site information from the file and check for range errors.
@@ -1439,34 +1425,19 @@ C (for use in mrt). IER=0 OK, IER=1 problem, IER=3 surface mismatch.
       common/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
       common /cube5/fstgrp,fstsur,lstsur,strtgr
 
-C Error subroutine and error details for dll mode.
-      common/dllerr/dllsubr,dllmesg
-
       DIMENSION VA(MSM)
 
       CHARACTER LMRT*72,LGEO*72,OUTSTR*124,WORD*20,outs*124
-      character dllsubr*12,dllmesg*124
       integer fstgrp,fstsur,lstsur,strtgr
-      logical dll
-
-C Check if running in dll mode.
-      call isadll(dll)
 
       CALL EFOPSEQ(IUF,LMRT,1,IER)
       IF(IER.LT.0)THEN
         write(outs,'(3a)') 'Viewfactor file ',LMRT(1:lnblnk(LMRT)),
      &    ' could not be opened.'
-        if(dll)then
-          dllsubr='ERMRT'
-          dllmesg=outs
-          ier=2
-          return
-        else
-          call edisp(itru,outs)
-          IER=1
-          RETURN
-        endif
-      ENDIF
+        call edisp(itru,outs)
+        IER=1
+        RETURN
+      endif
       write(currentfile,'(a)') LMRT(1:lnblnk(LMRT))
 
 C Read first line which must be *VIEWFACTORS or *viewfactors
@@ -1478,16 +1449,9 @@ C Read first line which must be *VIEWFACTORS or *viewfactors
       else
         write(outs,'(3a)') LMRT(1:lnblnk(LMRT)),
      &    ' is not a view factor file.'
-        if(dll)then
-          dllsubr='ERMRT'
-          dllmesg=outs
-          ier=2
-          return
-        else
-          call edisp(itru,outs)
-          IER=1
-          RETURN
-        endif
+        call edisp(itru,outs)
+        IER=1
+        RETURN
       endif
 
 C Read name of geometry file this file matches.  Information
@@ -1516,36 +1480,20 @@ C << re-establish mrt blocks if they exist in geo file.
       if(IZINDX.ne.IC)then
         write(outs,'(3a)') LMRT(1:lnblnk(LMRT)),
      &    ' linked to wrong zone index.'
-        if(dll)then
-          dllsubr='ERMRT'
-          dllmesg=outs
-          ier=2
-          CALL ERPFREE(iuf,ISTAT)
-          return
-        else
-          call edisp(itru,outs)
-          IER=1
-          CALL ERPFREE(iuf,ISTAT)
-          return
-        endif
+        call edisp(itru,outs)
+        IER=1
+        CALL ERPFREE(iuf,ISTAT)
+        return
       endif
 
       if(NZS.ne.NZSUR(ic))then
 
         write(outs,'(3a)') LMRT(1:lnblnk(LMRT)),
      &    ' has different surface count to zone geometry.'
-        if(dll)then
-          dllsubr='ERMRT'
-          dllmesg=outs
-          ier=2
-          CALL ERPFREE(iuf,ISTAT)
-          return
-        else
-          call edisp(itru,outs)
-          IER=3  ! signal mismatch
-          CALL ERPFREE(iuf,ISTAT)
-          return
-        endif
+        call edisp(itru,outs)
+        IER=3  ! signal mismatch
+        CALL ERPFREE(iuf,ISTAT)
+        return
       endif
 
 C Test for number of MRT sensors. If zero in this file but NCUB(IC) is
@@ -1884,18 +1832,10 @@ C If next line is *MRT_SENSOR or *mrt_sensor:
       else
         write(outs,'(3a)') LMRT(1:lnblnk(LMRT)),
      &    ' is missing a MRT sensor definition.'
-        if(dll)then
-          dllsubr='ERMRT'
-          dllmesg=outs
-          ier=2
-          CALL ERPFREE(iuf,ISTAT)
-          return
-        else
-          call edisp(itru,outs)
-          IER=1
-          CALL ERPFREE(iuf,ISTAT)
-          return
-        endif
+        call edisp(itru,outs)
+        IER=1
+        CALL ERPFREE(iuf,ISTAT)
+        return
       endif
 
 

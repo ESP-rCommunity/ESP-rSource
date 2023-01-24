@@ -202,9 +202,9 @@ C Check we have at least the required metrics.
           CALL CLMCHKMET(IER)
           if (IER.ne.0) goto 1003
 
-C Assume period is for a full year.
-          IDS=1
-          IDF=365
+C Period set elsewhere.
+C          IDS=1
+C          IDF=365
         endif
 
       elseif (ND.eq.2 .and. OUTSTR(1:9).eq.'*CLIMATE ') then

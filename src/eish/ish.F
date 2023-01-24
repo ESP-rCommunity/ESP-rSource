@@ -270,7 +270,7 @@ C Set folder separator (fs) to \ or / as required.
 
       ifday=2
       iftime=0
-      iyear=2021
+      iyear=2022
       ibdoy=1
       iedoy=1
       itc=0
@@ -2347,10 +2347,6 @@ C        call edisp248(iuout,outs,100)
       end
 
 C Dummy routines.
-      subroutine Find_season_parameters()
-      return
-      end
-
       SUBROUTINE BASESIMP_INPUTS(ICOMP,IER)
       integer icomp,ier
       return

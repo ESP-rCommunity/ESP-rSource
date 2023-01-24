@@ -18,8 +18,10 @@ C  CGD - domain grid visualization.
 C  VGRID1D - draws the CFD domain gridding in 1d.
 C  VGRID2D - draws the CFD domain gridding in 2d.
 C  VGRID3D - draws the CFD domain gridding in 3d.
-C  VSB3D - draws the solid boundaries - highlighting the chosen one.
-C  VAO3D - draws the air openings - highlighting the chosen one.
+C  VSB3D   - draws the solid boundaries - highlighting the chosen one.
+C  VAO3D   - draws the air openings - highlighting the chosen one.
+C  VSBL3D  - draws blockages - highlighting the chosen one.
+C  VSRC3D  - draws sources - highlighting the chosen one.
 C  INIT_CFDTRANS - initialises data structures for CFD <-> geometry
 C                  domain transformations.
 C  INIT_CFDTRANS_NOGEOM - as above, but works without gemoetry.
@@ -45,7 +47,6 @@ C IC = zone number (if in dfs set to 1)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/MFTRA/IMFTU
       COMMON/SHOUT/ICOUT
-      COMMON/ICFNOD/ICFD,ICP
       COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
      1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
      2            DZHP(ntcelz),DZPL(ntcelz),
@@ -338,7 +339,7 @@ C x-z plane grid.
       call startbuffer()
 
 C Cast values for linescale.
-      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+      iigl=igl;iigr=igr;iigb=igb
       Xmin=xoff
       Xmax=amax1(TOTDIS,CTDIS)
       Xmax=Xmax+xoff
@@ -546,6 +547,7 @@ C Only used if iz<0
 
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/HOLDVW/iglhld,igbhld,Xaddhld,Yaddhld,scahld
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
@@ -556,15 +558,16 @@ C Only used if iz<0
      4            XU(ntcelx),YV(ntcely),ZW(ntcelz)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
-      DIMENSION  AX(MPL),AY(MPL),AZ(MPL),IANXT(MPL)
-      DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
+      DIMENSION  AX(MV),AY(MV),AZ(MV),IANXT(MV)
+      DIMENSION  BX(MV),BY(MV),BZ(MV),IBNXT(MV)
       DIMENSION  SBBOX(3,2)
+      DIMENSION  CX(2),CY(2),CZ(2)
 
-      logical greyok,odd
+      logical greyok
       integer im
       character btemp*6
       real XPP,YPP,ZPP  ! points taking into account zone minimum
-      real X0,Y0,Z0
+      real X0,Y0,Z0,X1,Y1,Z1
       real DX,DY,DHX,DHY ! for intermediate label points 
 
 #ifdef OSI
@@ -593,22 +596,6 @@ C to 50% grey when drawing dots.
         greyok=.true.
       endif
 
-C Clear current viewing box and re-establish image bounds.
-      CALL startbuffer
-
-C Setup and pass in parameters to win3d.
-      if (nzg.gt.0) then
-        iiw1=4; iiw2=4; iiw3=3; iiw4=3; iimenu=menuchw
-      else
-        iiw1=2; iiw2=2; iiw3=3; iiw4=1; iimenu=menuchw
-      endif
-      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &  iigl,iigr,iigt,iigb,iigw,iigwh)
-      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-      igw=int(iigw); igwh=int(iigwh)
-      igwid=igw; igheight=igwh
-
 C Get bounds for image.
       if (nzg.gt.0) then
         call bndobj(0,IER)
@@ -616,10 +603,35 @@ C Get bounds for image.
       HITH=1.0; YON=1300.0
       CALL LENS(IER)
 
-C Set scaling ratios for the drawing and axis.
-      CALL axiscale(igwid,igheight,-1000.,1000.,-1000.,1000.,xsc,ysc,
-     &  sca,Xadd,Yadd)
-      call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
+C Clear current viewing box and re-establish image bounds.
+      CALL startbuffer
+
+C Setup and pass in parameters to win3d.
+      iiw1=4; iiw2=4; iiw3=2; iiw4=1; iimenu=menuchw
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
+      igwid=igw; igheight=igwh
+
+C If optimal view bounds, reset scaling ratios.
+      IF(ITBND.EQ.1)THEN
+        CALL SITE2D(SXMX,SXMN,SYMX,SYMN,ier)
+        CALL axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
+     &    Xadd,Yadd)
+        call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
+        iglhld=igl; Xaddhld=Xadd; igbhld=igb; Yaddhld=Yadd; scahld=sca ! remember values
+
+C If static bounds, reset linescale in case we have returned from
+C something else that changed it.
+      ELSE
+        iigl=igl; iigb=igb
+        call linescale(iigl,Xaddhld,scahld,iigb,Yaddhld,scahld)
+      ENDIF
+
+C Reset clipping planes.
+      call INICLP(ier)
 
       if (izin.lt.0) then
         iz=ICP
@@ -627,9 +639,6 @@ C Set scaling ratios for the drawing and axis.
       else
         iz=izin
       endif
-
-C Debug.
-C      write(6,*) 'iz ig ',iz,ig
 
 C Reset to smallest font for drawing i j k labels.
       IF(IFS.GT.0)CALL winfnt(0)
@@ -639,76 +648,100 @@ C Loop through all X-Y plane grid lines.
         do 10 I=2,NI    ! I traverses along south X axis cells
           do 20 J=2,NJ  ! J traverses along west Y axis cells
 
-C Transform first point to screen coords.
-            CALL CFDTRANS(1,XU(i),YV(j),0.,XPP,YPP,ZPP,IER)
-            CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-            CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-            call u2pixel(X1,Y1,iixs,iiys)
-
 C Get half way point for west face cells.
             DY=YV(j+1)-YV(j); DHY= DY*0.5
             CALL CFDTRANS(1,XU(i),YV(j)+DHY,0.,XPP,YPP,ZPP,IER)
-            CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-            CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-            call u2pixel(X1,Y1,iixhs,iiyhs)
+            CALL ORTTRN(XPP,YPP,ZPP,TSMAT,X0,Y0,Z0,IERR)
+            call u2pixel(X0,Y0,iixhs,iiyhs)
 
 C Get half way point for south face cells.
             DX=XU(i+1)-XU(i); DHX= DX*0.5
             CALL CFDTRANS(1,XU(i)+DHX,YV(j),0.,XPP,YPP,ZPP,IER)
-            CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-            CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
+            CALL ORTTRN(XPP,YPP,ZPP,TSMAT,X1,Y1,Z1,IERR)
             call u2pixel(X1,Y1,iixxhs,iixyhs)
-
-C Transform end point to screen coords.
-            CALL CFDTRANS(1,XU(i),YV(j),ZW(NK),XPP,YPP,ZPP,IER)
-            CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-            CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-            call u2pixel(X1,Y1,iix,iiy)
 
             if(J.eq.2.and.I.eq.2)then  ! label the lower left corner
               btemp='   '; iicol=0
               write(btemp,'(a,i2.2)') 'i',i-1
-              call textatxy(iixxhs,iixyhs+10,btemp,'-',iicol)
-              btemp='   '
+              call CLIPST(btemp,iixxhs,iixyhs+10,Z1,iclp)  ! check clipping
+              if (iclp.eq.0) then
+                call textatxy(iixxhs,iixyhs+10,btemp,'-',iicol)
+                btemp='   '
+              endif
               write(btemp,'(a,i2.2)') 'j',j-1
-              call textatxy(iixhs-20,iiyhs+10,btemp,'-',iicol)
+              call CLIPST(btemp,iixhs-20,iiyhs+10,Z0,iclp)
+              if (iclp.eq.0) then
+                call textatxy(iixhs-20,iiyhs+10,btemp,'-',iicol)
+              endif
             elseif(I.eq.2.and.J.lt.NJ)then
 
 C If more than 20 cells only do every other one.
-              btemp='   '; iicol=0  ! along lower Y
+              btemp='   '; iicol=0
               write(btemp,'(a,i2.2)') 'j',j-1
               if(NJ.le.20)then
-                call textatxy(iixhs-20,iiyhs+10,btemp,'-',iicol)
+                call CLIPST(btemp,iixhs-20,iiyhs+10,Z0,iclp)
+                if (iclp.eq.0) then
+                  call textatxy(iixhs-20,iiyhs+10,btemp,'-',iicol)
+                endif
               else
                 im=MOD(j,2)
                 if(im.eq.1)then
                   continue
                 else
-                  call textatxy(iixhs-20,iiyhs+10,btemp,'-',iicol)
+                  call CLIPST(btemp,iixhs-20,iiyhs+10,Z0,iclp)
+                  if (iclp.eq.0) then
+                    call textatxy(iixhs-20,iiyhs+10,btemp,'-',iicol)
+                  endif
                 endif
               endif
             elseif(J.eq.2.and.I.lt.NI)then
               btemp='   '; iicol=0
               write(btemp,'(a,i2.2)') 'i',i-1
               if(NI.le.20)then
-                call textatxy(iixxhs,iixyhs+10,btemp,'-',iicol)
+                call CLIPST(btemp,iixxhs,iixyhs+10,Z1,iclp)
+                if (iclp.eq.0) then
+                  call textatxy(iixxhs,iixyhs+10,btemp,'-',iicol)
+                endif
               else
                 im=MOD(i,2)
                 if(im.eq.1)then
                   continue
                 else
-                  call textatxy(iixxhs,iixyhs+10,btemp,'-',iicol)
+                  call CLIPST(btemp,iixxhs,iixyhs+10,Z1,iclp)
+                  if (iclp.eq.0) then
+                    call textatxy(iixxhs,iixyhs+10,btemp,'-',iicol)
+                  endif
                 endif
               endif
-            endif
+            endif       
 
 C Draw dotted or solid line.
             if (I.eq.2.or.I.eq.NI.or.J.eq.2.or.J.eq.NJ) then
+
+C Transform first point to screen coords.
+              CALL CFDTRANS(1,XU(i),YV(j),0.,XPP,YPP,ZPP,IER)
+              CALL ORTTRN(XPP,YPP,ZPP,TSMAT,CX(1),CY(1),CZ(1),IERR)
+            
+C Transform end point to screen coords.
+              CALL CFDTRANS(1,XU(i),YV(j),ZW(NK),XPP,YPP,ZPP,IER)
+              CALL ORTTRN(XPP,YPP,ZPP,TSMAT,CX(2),CY(2),CZ(2),IERR)
+
+C Clip the line.
+              call CLIPLIN(CX,CY,CZ,iclp)
+              if (iclp.eq.1) goto 20
+              if (iclp.eq.-1) then
+                call CUTLIN(CX,CY,CZ,iclp)
+                if (iclp.eq.-1) goto 20
+              endif
+
+C Transform to pixel coords.
+              call u2pixel(CX(1),CY(1),iixs,iiys)
+              call u2pixel(CX(2),CY(2),iix,iiy)
+
               if ((I.eq.2.and.J.eq.2).or.(I.eq.NI.and.J.eq.NJ).or.
      &            (I.eq.2.and.J.eq.NJ).or.(I.eq.NI.and.J.eq.2)) then
                 call eline(iixs,iiys,1)  ! solid line
                 call eline(iix,iiy,0)
-                call forceflush()
               else
                 if(greyok)then
                   iicol=nifgrey-3
@@ -725,7 +758,6 @@ C Draw the dotted line after casting to local variable.
                   iicol=0
                   call winscl('-',iicol)
                 endif
-                call forceflush()
               endif
             endif
  20       continue
@@ -739,28 +771,32 @@ C Loop through all Z-Y plane grid lines.
 
 C Transform first point to screen coords.
             CALL CFDTRANS(1,0.,YV(j),ZW(k),XPP,YPP,ZPP,IER)
-            CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-            CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-            call u2pixel(X1,Y1,iixs,iiys)
+            CALL ORTTRN(XPP,YPP,ZPP,TSMAT,X0,Y0,Z0,IERR)
+            call u2pixel(X0,Y0,iixs,iiys)
 
 C Get half way point for west face cells.
             DY=YV(j+1)-YV(j); DHY= DY*0.5
             CALL CFDTRANS(1,0.,YV(j)+DHY,ZW(k),XPP,YPP,ZPP,IER)
-            CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-            CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
+            CALL ORTTRN(XPP,YPP,ZPP,TSMAT,X1,Y1,Z1,IERR)
             call u2pixel(X1,Y1,iixhs,iiyhs)
 
             if(J.eq.NJ.and.K.lt.NK)then
               btemp='   '; iicol=0  ! along the left vertical
               write(btemp,'(a,i2.2)') 'k',k-1
               if(NK.le.20)then
-                call textatxy(iixs-20,iiys-5,btemp,'-',iicol)
+                call CLIPST(btemp,iixs-20,iiys-5,Z0,iclp)
+                if (iclp.eq.0) then
+                  call textatxy(iixs-20,iiys-5,btemp,'-',iicol)
+                endif
               else
                 im=MOD(k,2)
                 if(im.eq.1)then
                   continue
                 else
-                  call textatxy(iixs-20,iiys-5,btemp,'-',iicol)
+                  call CLIPST(btemp,iixs-20,iiys-5,Z0,iclp)
+                  if (iclp.eq.0) then
+                    call textatxy(iixs-20,iiys-5,btemp,'-',iicol)
+                  endif
                 endif
               endif
             endif
@@ -769,31 +805,47 @@ C Get half way point for west face cells.
                 btemp='   '; iicol=0  ! along the left lower Y
                 write(btemp,'(a,i2.2)') 'j',j-1
                 if(NJ.le.20)then
-                  call textatxy(iixhs-20,iiyhs+10,btemp,'-',iicol)
+                  call CLIPST(btemp,iixhs-20,iiyhs+10,Z1,iclp)
+                  if (iclp.eq.0) then
+                    call textatxy(iixhs-20,iiyhs+10,btemp,'-',iicol)
+                  endif
                 else
                   im=MOD(j,2)
                   if(im.eq.1)then
                     continue
                   else
-                    call textatxy(iixhs-20,iiyhs+10,btemp,'-',iicol)
+                    call CLIPST(btemp,iixhs-20,iiyhs+10,Z1,iclp)
+                    if (iclp.eq.0) then
+                      call textatxy(iixhs-20,iiyhs+10,btemp,'-',iicol)
+                    endif
                   endif
                 endif
               endif
             endif
 
-C Transform 2nd point to screen coords.
-            CALL CFDTRANS(1,XU(NI),YV(j),ZW(k),XPP,YPP,ZPP,IER)
-            CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-            CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-            call u2pixel(X1,Y1,iix,iiy)
-
 C Draw line to end point.
             if (K.eq.2.or.K.eq.NK.or.J.eq.2.or.J.eq.NJ) then
+
+              CX(1)=X0; CY(1)=Y0; CZ(1)=Z0
+
+C Transform 2nd point to screen coords.
+              CALL CFDTRANS(1,XU(NI),YV(j),ZW(k),XPP,YPP,ZPP,IER)
+              CALL ORTTRN(XPP,YPP,ZPP,TSMAT,CX(2),CY(2),CZ(2),IERR)
+
+              call CLIPLIN(CX,CY,CZ,iclp)
+              if (iclp.eq.1) goto 40
+              if (iclp.eq.-1) then
+                call CUTLIN(CX,CY,CZ,iclp)
+                if (iclp.eq.-1) goto 40
+              endif
+
+              call u2pixel(CX(1),CY(1),iixs,iiys)
+              call u2pixel(CX(2),CY(2),iix,iiy)
+
               if ((K.eq.2.and.J.eq.2).or.(K.eq.NK.and.J.eq.NJ).or.
      &            (K.eq.2.and.J.eq.NJ).or.(K.eq.NK.and.J.eq.2)) then
                 call eline(iixs,iiys,1)
                 call eline(iix,iiy,0)
-                call forceflush()
               else
                 if(greyok)then
                   iicol=nifgrey-3
@@ -808,7 +860,6 @@ C Draw line to end point.
                   iicol=0
                   call winscl('-',iicol)
                 endif
-                call forceflush()
               endif
             endif
  40       continue
@@ -820,31 +871,30 @@ C Loop through all Z-X plane grid lines.
         do 50 K=2,NK    ! along South face X axis
           do 60 I=2,NI  ! along South face Z axis
 
-C Transform first point to screen coords.
-            CALL CFDTRANS(1,XU(i),0.,ZW(k),XPP,YPP,ZPP,IER)
-            CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-            CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-            call u2pixel(X1,Y1,iixs,iiys)
-
 C Get half way point for south face cells.
             DX=XU(i+1)-XU(i); DHX= DX*0.5
             CALL CFDTRANS(1,XU(i)+DHX,0.,ZW(k),XPP,YPP,ZPP,IER)
-            CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-            CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-            call u2pixel(X1,Y1,iixxhs,iixyhs)
+            CALL ORTTRN(XPP,YPP,ZPP,TSMAT,X0,Y0,Z0,IERR)
+            call u2pixel(X0,Y0,iixxhs,iixyhs)
 
             if(ig.eq.2)then
               if(k.eq.2.and.I.lt.NI)then
                 btemp='   '; iicol=0   ! labels along lower X axis
                 write(btemp,'(a,i2.2)') 'i',i-1
                 if(NI.le.20)then
-                call textatxy(iixxhs,iixyhs+10,btemp,'-',iicol)
+                  call CLIPST(btemp,iixxhs,iixyhs+10,Z0,iclp)
+                  if (iclp.eq.0) then
+                    call textatxy(iixxhs,iixyhs+10,btemp,'-',iicol)
+                  endif
                 else
                   im=MOD(i,2)
                   if(im.eq.1)then
                     continue
                   else
-                    call textatxy(iixxhs,iixyhs+10,btemp,'-',iicol)
+                    call CLIPST(btemp,iixxhs,iixyhs+10,Z0,iclp)
+                    if (iclp.eq.0) then
+                      call textatxy(iixxhs,iixyhs+10,btemp,'-',iicol)
+                    endif
                   endif
                 endif
               endif
@@ -852,8 +902,7 @@ C Get half way point for south face cells.
 
 C Transform end point to screen coords.
             CALL CFDTRANS(1,XU(i),YV(NJ),ZW(k),XPP,YPP,ZPP,IER)
-            CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-            CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
+            CALL ORTTRN(XPP,YPP,ZPP,TSMAT,X1,Y1,Z1,IERR)
             call u2pixel(X1,Y1,iix,iiy)
 
             if(ig.eq.2)then
@@ -861,13 +910,19 @@ C Transform end point to screen coords.
                 btemp='   '; iicol=0   ! labels along left vertical
                 write(btemp,'(a,i2.2)') 'k',k-1
                 if(NK.le.20)then
-                  call textatxy(iix-20,iiy-5,btemp,'-',iicol)
+                  call CLIPST(btemp,iix-20,iiy-5,Z1,iclp)
+                  if (iclp.eq.1) then
+                    call textatxy(iix-20,iiy-5,btemp,'-',iicol)
+                  endif
                 else
                   im=MOD(j,2)
                   if(im.eq.1)then
                     continue
                   else
-                    call textatxy(iix-20,iiy-5,btemp,'-',iicol)
+                    call CLIPST(btemp,iix-20,iiy-5,Z1,iclp)
+                    if (iclp.eq.1) then
+                      call textatxy(iix-20,iiy-5,btemp,'-',iicol)
+                    endif
                   endif
                 endif
               endif
@@ -875,11 +930,28 @@ C Transform end point to screen coords.
 
 C Draw line to end point.
             if (K.eq.2.or.K.eq.NK.or.I.eq.2.or.I.eq.NI) then
+
+C Transform first point to screen coords.
+              CALL CFDTRANS(1,XU(i),0.,ZW(k),XPP,YPP,ZPP,IER)
+              CALL ORTTRN(XPP,YPP,ZPP,TSMAT,CX(1),CY(1),CZ(1),IERR)
+              call u2pixel(CX(1),CY(1),iixs,iiys)
+
+              CX(2)=X1; CY(2)=Y1; CZ(2)=Z1
+              
+              call CLIPLIN(CX,CY,CZ,iclp)
+              if (iclp.eq.1) goto 60
+              if (iclp.eq.-1) then
+                call CUTLIN(CX,CY,CZ,iclp)
+                if (iclp.eq.-1) goto 60
+              endif
+
+              call u2pixel(CX(1),CY(1),iixs,iiys)
+              call u2pixel(CX(2),CY(2),iix,iiy)
+
               if ((K.eq.2.and.I.eq.2).or.(K.eq.NK.and.I.eq.NI).or.
      &            (K.eq.2.and.I.eq.NI).or.(K.eq.NK.and.I.eq.2)) then
                 call eline(iixs,iiys,1)
                 call eline(iix,iiy,0)
-                call forceflush()
               else
                 if(greyok)then
                   iicol=nifgrey-3
@@ -894,12 +966,13 @@ C Draw line to end point.
                   iicol=0
                   call winscl('-',iicol)
                 endif
-                call forceflush()
               endif
             endif
  60       continue
  50     continue
       endif
+
+      call forceflush()
 
 C Restore the original font size.
       IF(IFS.GT.0)CALL winfnt(IFS)
@@ -910,14 +983,12 @@ C cread3dv.F to draw the surfaces of the zone in bold lines.
       if(iz.gt.0)then
 
 C Continue on with any surfaces in the zone.
-  205   DO 1000 I=1,NZSUR(iz)
+        DO 1000 I=1,NZSUR(iz)
 
 C Copy polygon for Surface I into structure A for compatibility with
 C viewer format 'holes' in surfaces.
 C NAP   = Number of vertex points on surface
 C IANXT = Index of 'next' point
-C IAPNT = Pointer to first vertex of polygon
-          IAPNT = 1
           NAP = isznver(iz,I)
           DO 1100 J = 1,isznver(iz,I)
             K = iszjvn(iz,I,J)
@@ -927,36 +998,34 @@ C IAPNT = Pointer to first vertex of polygon
             IANXT(J) = J + 1
  1100     CONTINUE
 
-          IANXT(isznver(iz,I)) = IAPNT
+          IANXT(isznver(iz,I)) = 1
 
 C-----------------------------------------------------------------------
-C Transform surface polygon to EYE co-ordinates
-C Take structure A multiply by TEMAT return structure B
-C TEMAT = Model to Eye Matrix
-          CALL MATPOL(NAP,IAPNT,AX,AY,AZ,IANXT,TEMAT,
-     &              SBBOX,NBP,IBPNT,BX,BY,BZ,IBNXT,IERR)
+C Transform surface polygon to screen co-ordinates
+C Take structure A multiply by TSMAT return structure B
+C TSMAT = Model to Screen Matrix
+          CALL MATPOLS(NAP,AX,AY,AZ,IANXT,TSMAT,
+     &      SBBOX,NBP,BX,BY,BZ,IBNXT,IERR)
+          IBPNT=1
 
 C Generate clipping flags and clip geometry in eye coords.
 C If ISTAT =  0 : totally inside frustrum
 C If ISTAT =  1 : totally outside frustrum
 C If ISTAT = -1 : straddles frustrum
-          CALL CLIPFL(NBP,BX,BY,BZ,ISTAT)
+          CALL CLIPSUR(NBP,BX,BY,BZ,ISTAT)
           IF (ISTAT .EQ. 1) THEN
             GOTO  1000
           ELSEIF (ISTAT .EQ. -1) THEN
-            CALL CUTPOL(NB,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+            CALL CUTSUR(NB,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+          else
+            NB=1
           ENDIF
-
-C Debug.
-C          write(6,*)'nap nbp nb',nap,nbp,nb,
-C     &      ISTOK,AX(1),AY(1),AZ(1),AX(2),AY(2),AZ(2)
 
 C Count the edges in case enhanced edge drawing required.
           iedge=0
           DO 300 J = 1,NB
             IP = IABS(IBPNT)
-            CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-            call u2pixel(AAX,AAY,iix,iiy)
+            call u2pixel(BX(IP),BY(IP),iix,iiy)
             iixlast=iix
             iiylast=iiy
 
@@ -964,30 +1033,16 @@ C Count the edges in case enhanced edge drawing required.
 
  351        CONTINUE
             iedge=iedge+1
-            CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-            call u2pixel(AAX,AAY,iix,iiy)
+            call u2pixel(BX(IP1),BY(IP1),iix,iiy)
             if (izin.lt.0) then
               if (I.eq.isurhlt) then
-                if(mmod.eq.8)then
-                  call edwline(iixlast,iiylast,iix,iiy)
-                else
-                  call edwlinewwc(iixlast,iiylast,iix,iiy)
-                endif
-              else
-                if(mmod.eq.8)then
-                  call eswline(iixlast,iiylast,iix,iiy)
-                else
-                  call eswlinewwc(iixlast,iiylast,iix,iiy)
-                endif
-              endif
-            else
-              if(mmod.eq.8)then
                 call edwline(iixlast,iiylast,iix,iiy)
               else
-                call edwlinewwc(iixlast,iiylast,iix,iiy)
+                call eswline(iixlast,iiylast,iix,iiy)
               endif
+            else
+              call edwline(iixlast,iiylast,iix,iiy)
             endif
-            call forceflush()
 
 C Repeat until next point is the first, remember position.
             IP1 = IBNXT(IP1)
@@ -997,33 +1052,19 @@ C Repeat until next point is the first, remember position.
 
 C Complete the polygon.
             iedge=iedge+1
-            CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-            call u2pixel(AAX,AAY,iix,iiy)
+            call u2pixel(BX(IP),BY(IP),iix,iiy)
             if (izin.lt.0) then
               if (I.eq.isurhlt) then
-                if(mmod.eq.8)then
-                  call edwline(iixlast,iiylast,iix,iiy)
-                else
-                  call edwlinewwc(iixlast,iiylast,iix,iiy)
-                endif
-              else
-                if(mmod.eq.8)then
-                  call eswline(iixlast,iiylast,iix,iiy)
-                else
-                  call eswline(iixlast,iiylast,iix,iiy)
-                endif
-              endif
-            else
-              if(mmod.eq.8)then
                 call edwline(iixlast,iiylast,iix,iiy)
               else
-                call edwlinewwc(iixlast,iiylast,iix,iiy)
+                call eswline(iixlast,iiylast,iix,iiy)
               endif
+            else
+              call edwline(iixlast,iiylast,iix,iiy)
             endif
-            call forceflush()
   300     CONTINUE
-          call forceflush()
  1000   CONTINUE
+        call forceflush()
       endif
 
       return
@@ -1034,7 +1075,6 @@ C ********************* VSB3D *********************
 C VSB3D - draws the solid boundaries - highlighting the chosen one.
       SUBROUTINE VSB3D(ISBHL)
 #include "building.h"
-#include "geometry.h"
 #include "cfd.h"
 #include "prj3dv.h"
       
@@ -1064,10 +1104,11 @@ C VSB3D - draws the solid boundaries - highlighting the chosen one.
 #else
       integer*8 iixs,iiys,iix,iiy,iicol
 #endif
-      real XPP,YPP,ZPP  ! points taking into account zone minimum
       real XX,YY,ZZ
-
       character VOLNAME*12, VCsurf*12, BLKSURF*12
+      dimension AX(MV),AY(MV),AZ(MV),IANXT(MV)
+      dimension BX(MV),BY(MV),BZ(MV),IBNXT(MV)
+      dimension sbbox(3,2)
 
 C Check in graphics mode.
       IF(MMOD.ne.8) return
@@ -1089,115 +1130,57 @@ C Draw round solid boundaries and last character of label.
           endif
 
 C In YZ plane.
-C Transform local coords to screen coords and draw box around boundary.
+C Transform local coords to screen coords.
           CALL CFDTRANS(1,XU(MNOD),YV(JSBi(Isbn,ICFD)),
-     &                  ZW(KSBi(Isbn,ICFD)),XPP,YPP,ZPP,IER)
-          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iixs,iiys)
-
+     &                  ZW(KSBi(Isbn,ICFD)),AX(1),AY(1),AZ(1),IER)
           CALL CFDTRANS(1,XU(MNOD),YV(JSBf(Isbn,ICFD)+1),
-     &                  ZW(KSBi(Isbn,ICFD)),XPP,YPP,ZPP,IER)
-          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-          if(mmod.eq.8)then
-            if (Isbn.eq.ISBHL) then
-              call edwline(iixs,iiys,iix,iiy)
-            else
-              call eswline(iixs,iiys,iix,iiy)
-            endif
-          else
-            if (Isbn.eq.ISBHL) then
-              call edwlinewwc(iixs,iiys,iix,iiy)
-            else
-              call eswlinewwc(iixs,iiys,iix,iiy)
-            endif
-          endif
-          call forceflush()
-
-          iixs=iix
-          iiys=iiy
+     &                  ZW(KSBi(Isbn,ICFD)),AX(2),AY(2),AZ(2),IER)
           CALL CFDTRANS(1,XU(MNOD),YV(JSBf(Isbn,ICFD)+1),
-     &                  ZW(KSBf(Isbn,ICFD)+1),XPP,YPP,ZPP,IER)
-          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-          if(mmod.eq.8)then
-            if (Isbn.eq.ISBHL) then
-              call edwline(iixs,iiys,iix,iiy)
-            else
-              call eswline(iixs,iiys,iix,iiy)
-            endif
-          else
-            if (Isbn.eq.ISBHL) then
-              call edwlinewwc(iixs,iiys,iix,iiy)
-            else
-              call eswlinewwc(iixs,iiys,iix,iiy)
-            endif
-          endif
-          call forceflush()
-
-          iixs=iix
-          iiys=iiy
+     &                  ZW(KSBf(Isbn,ICFD)+1),AX(3),AY(3),AZ(3),IER)
           CALL CFDTRANS(1,XU(MNOD),YV(JSBi(Isbn,ICFD)),
-     &                  ZW(KSBf(Isbn,ICFD)+1),XPP,YPP,ZPP,IER)
-          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-          if(mmod.eq.8)then
-            if (Isbn.eq.ISBHL) then
-              call edwline(iixs,iiys,iix,iiy)
-            else
-              call eswline(iixs,iiys,iix,iiy)
-            endif
-          else
-            if (Isbn.eq.ISBHL) then
-              call edwlinewwc(iixs,iiys,iix,iiy)
-            else
-              call eswlinewwc(iixs,iiys,iix,iiy)
-            endif
-          endif
-          call forceflush()
+     &                  ZW(KSBf(Isbn,ICFD)+1),AX(4),AY(4),AZ(4),IER)
+          NAP=4; IANXT(1)=2; IANXT(2)=3; IANXT(3)=4; IANXT(4)=1
+          CALL MATPOLS(NAP,AX,AY,AZ,IANXT,TSMAT,
+     &              SBBOX,NBP,BX,BY,BZ,IBNXT,IERR)
+          
+C Clip the polygon.
+          CALL CLIPSUR(NBP,BX,BY,BZ,iclp)
+          IBPNT=1
+          IF (iclp.EQ.1) THEN
+            goto 70
+          ELSEIF (iclp.EQ.-1) THEN
+            CALL CUTSUR(NB,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+          ENDIF
 
-          iixs=iix
-          iiys=iiy
-          CALL CFDTRANS(1,XU(MNOD),YV(JSBi(Isbn,ICFD)),
-     &                  ZW(KSBi(Isbn,ICFD)),XPP,YPP,ZPP,IER)
-          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-          if(mmod.eq.8)then
+C Draw polygon.
+          is=IBPNT
+          do i=1,NBP
+            ie=IBNXT(is)
+            call u2pixel(BX(is),BY(is),iixs,iiys)
+            call u2pixel(BX(ie),BY(ie),iix,iiy)
+            
             if (Isbn.eq.ISBHL) then
               call edwline(iixs,iiys,iix,iiy)
             else
               call eswline(iixs,iiys,iix,iiy)
             endif
-          else
-            if (Isbn.eq.ISBHL) then
-              call edwlinewwc(iixs,iiys,iix,iiy)
-            else
-              call eswlinewwc(iixs,iiys,iix,iiy)
-            endif
-          endif
-          call forceflush()
+
+            is=ie
+          enddo
 
 C Label in center of boundary.
           CALL CFDTRANS(1,XU(MNOD),
      &                  (YV(JSBi(Isbn,ICFD))+YV(JSBf(Isbn,ICFD)))/2.,
      &                  (ZW(KSBi(Isbn,ICFD))+ZW(KSBf(Isbn,ICFD)))/2.,
      &                  XX,YY,ZZ,IER)
-          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-
+          CALL ORTTRN(XX,YY,ZZ,TSMAT,X0,Y0,Z0,IERR)
+          call u2pixel(X0,Y0,iix,iiy)
           write (temp,'(a)')VOLNAME(IVOLNSB(Isbn,ICFD),ICFD)
      &                     (1:LNBLNK(VOLNAME(IVOLNSB(Isbn,ICFD),ICFD)))
-
-c          write (temp,'(a,i2)') 'SB',Isbn
+          call CLIPST(temp,iix,iiy,Z0,iclp)  ! check clipping
+          if (iclp.ne.0) goto 70
           iicol=0
           call textatxy(iix,iiy,temp,'-',iicol)
-          call forceflush()
 
         elseif (ILOCAT.eq.3.or.ILOCAT.eq.4) then
           if (ILOCAT.eq.4) then
@@ -1207,112 +1190,56 @@ c          write (temp,'(a,i2)') 'SB',Isbn
           endif
 
 C In XZ plane.
-C Transform local coords to screen coords and draw box around boundary.
+C Transform local coords to screen coords.
           CALL CFDTRANS(1,XU(ISBi(Isbn,ICFD)),YV(MNOD),
-     &                  ZW(KSBi(Isbn,ICFD)),XPP,YPP,ZPP,IER)
-          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iixs,iiys)
-
+     &                  ZW(KSBi(Isbn,ICFD)),AX(1),AY(1),AZ(1),IER)
           CALL CFDTRANS(1,XU(ISBf(Isbn,ICFD)+1),YV(MNOD),
-     &                  ZW(KSBi(Isbn,ICFD)),XPP,YPP,ZPP,IER)
-          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-          if(mmod.eq.8)then
-            if (Isbn.eq.ISBHL) then
-              call edwline(iixs,iiys,iix,iiy)
-            else
-              call eswline(iixs,iiys,iix,iiy)
-            endif
-          else
-            if (Isbn.eq.ISBHL) then
-              call edwlinewwc(iixs,iiys,iix,iiy)
-            else
-              call eswlinewwc(iixs,iiys,iix,iiy)
-            endif
-          endif
-          call forceflush()
-
-          iixs=iix
-          iiys=iiy
+     &                  ZW(KSBi(Isbn,ICFD)),AX(2),AY(2),AZ(2),IER)
           CALL CFDTRANS(1,XU(ISBf(Isbn,ICFD)+1),YV(MNOD),
-     &                  ZW(KSBf(Isbn,ICFD)+1),XPP,YPP,ZPP,IER)
-          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-          if(mmod.eq.8)then
-            if (Isbn.eq.ISBHL) then
-              call edwline(iixs,iiys,iix,iiy)
-            else
-              call eswline(iixs,iiys,iix,iiy)
-            endif
-          else
-            if (Isbn.eq.ISBHL) then
-              call edwlinewwc(iixs,iiys,iix,iiy)
-            else
-              call eswlinewwc(iixs,iiys,iix,iiy)
-            endif
-          endif
-          call forceflush()
-
-          iixs=iix
-          iiys=iiy
+     &                  ZW(KSBf(Isbn,ICFD)+1),AX(3),AY(3),AZ(3),IER)
           CALL CFDTRANS(1,XU(ISBi(Isbn,ICFD)),YV(MNOD),
-     &                  ZW(KSBf(Isbn,ICFD)+1),XPP,YPP,ZPP,IER)
-          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-          if(mmod.eq.8)then
-            if (Isbn.eq.ISBHL) then
-              call edwline(iixs,iiys,iix,iiy)
-            else
-              call eswline(iixs,iiys,iix,iiy)
-            endif
-          else
-            if (Isbn.eq.ISBHL) then
-              call edwlinewwc(iixs,iiys,iix,iiy)
-            else
-              call eswlinewwc(iixs,iiys,iix,iiy)
-            endif
-          endif
-          call forceflush()
+     &                  ZW(KSBf(Isbn,ICFD)+1),AX(4),AY(4),AZ(4),IER)
+          NAP=4; IANXT(1)=2; IANXT(2)=3; IANXT(3)=4; IANXT(4)=1
+          CALL MATPOLS(NAP,AX,AY,AZ,IANXT,TSMAT,
+     &              SBBOX,NBP,BX,BY,BZ,IBNXT,IERR)
+          
+C Clip the polygon.
+          CALL CLIPSUR(NBP,BX,BY,BZ,iclp)
+          IBPNT=1
+          IF (iclp.EQ.1) THEN
+            goto 70
+          ELSEIF (iclp.EQ.-1) THEN
+            CALL CUTSUR(NB,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+          ENDIF
 
-          iixs=iix
-          iiys=iiy
-          CALL CFDTRANS(1,XU(ISBi(Isbn,ICFD)),YV(MNOD),
-     &                  ZW(KSBi(Isbn,ICFD)),XPP,YPP,ZPP,IER)
-          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-          if(mmod.eq.8)then
+C Draw polygon.
+          is=IBPNT
+          do i=1,NBP
+            ie=IBNXT(is)
+            call u2pixel(BX(is),BY(is),iixs,iiys)
+            call u2pixel(BX(ie),BY(ie),iix,iiy)
+            
             if (Isbn.eq.ISBHL) then
               call edwline(iixs,iiys,iix,iiy)
             else
               call eswline(iixs,iiys,iix,iiy)
             endif
-          else
-            if (Isbn.eq.ISBHL) then
-              call edwlinewwc(iixs,iiys,iix,iiy)
-            else
-              call eswlinewwc(iixs,iiys,iix,iiy)
-            endif
-          endif
-          call forceflush()
+
+            is=ie
+          enddo
 
 C Label in center of boundary.
           CALL CFDTRANS(1,(XU(ISBi(Isbn,ICFD))+XU(ISBf(Isbn,ICFD)))/2.,
      &           YV(MNOD),(ZW(KSBi(Isbn,ICFD))+ZW(KSBf(Isbn,ICFD)))/2.,
      &                  XX,YY,ZZ,IER)
-          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-C          write (temp,'(a,i2)') 'SB',Isbn
+          CALL ORTTRN(XX,YY,ZZ,TSMAT,X0,Y0,Z0,IERR)
+          call u2pixel(X0,Y0,iix,iiy)
           write (temp,'(a)')VOLNAME(IVOLNSB(Isbn,ICFD),ICFD)
      &                     (1:LNBLNK(VOLNAME(IVOLNSB(Isbn,ICFD),ICFD)))
+          call CLIPST(temp,iix,iiy,Z0,iclp)  ! check clipping
+          if (iclp.ne.0) goto 70
           iicol=0
           call textatxy(iix,iiy,temp,'-',iicol)
-          call forceflush()
         elseif (ILOCAT.eq.5.or.ILOCAT.eq.6) then
           if (ILOCAT.eq.6) then
             MNOD=NK
@@ -1323,112 +1250,57 @@ C          write (temp,'(a,i2)') 'SB',Isbn
 C In XY plane.
 C Transform local coords to screen coords and draw box around boundary.
           CALL CFDTRANS(1,XU(ISBi(Isbn,ICFD)),YV(JSBi(Isbn,ICFD)),
-     &                  ZW(MNOD),XPP,YPP,ZPP,IER)
-          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iixs,iiys)
-
+     &                  ZW(MNOD),AX(1),AY(1),AZ(1),IER)
           CALL CFDTRANS(1,XU(ISBf(Isbn,ICFD)+1),YV(JSBi(Isbn,ICFD)),
-     &                  ZW(MNOD),XPP,YPP,ZPP,IER)
-          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-          if(mmod.eq.8)then
-            if (Isbn.eq.ISBHL) then
-              call edwline(iixs,iiys,iix,iiy)
-            else
-              call eswline(iixs,iiys,iix,iiy)
-            endif
-          else
-            if (Isbn.eq.ISBHL) then
-              call edwlinewwc(iixs,iiys,iix,iiy)
-            else
-              call eswlinewwc(iixs,iiys,iix,iiy)
-            endif
-          endif
-          call forceflush()
-
-          iixs=iix
-          iiys=iiy
+     &                  ZW(MNOD),AX(2),AY(2),AZ(2),IER)
           CALL CFDTRANS(1,XU(ISBf(Isbn,ICFD)+1),YV(JSBf(Isbn,ICFD)+1),
-     &                  ZW(MNOD),XPP,YPP,ZPP,IER)
-          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-          if(mmod.eq.8)then
-            if (Isbn.eq.ISBHL) then
-              call edwline(iixs,iiys,iix,iiy)
-            else
-              call eswline(iixs,iiys,iix,iiy)
-            endif
-          else
-            if (Isbn.eq.ISBHL) then
-              call edwlinewwc(iixs,iiys,iix,iiy)
-            else
-              call eswlinewwc(iixs,iiys,iix,iiy)
-            endif
-          endif
-          call forceflush()
-
-          iixs=iix
-          iiys=iiy
+     &                  ZW(MNOD),AX(3),AY(3),AZ(3),IER)
           CALL CFDTRANS(1,XU(ISBi(Isbn,ICFD)),YV(JSBf(Isbn,ICFD)+1),
-     &                  ZW(MNOD),XPP,YPP,ZPP,IER)
-          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-          if(mmod.eq.8)then
-            if (Isbn.eq.ISBHL) then
-              call edwline(iixs,iiys,iix,iiy)
-            else
-              call eswline(iixs,iiys,iix,iiy)
-            endif
-          else
-            if (Isbn.eq.ISBHL) then
-              call edwlinewwc(iixs,iiys,iix,iiy)
-            else
-              call eswlinewwc(iixs,iiys,iix,iiy)
-            endif
-          endif
-          call forceflush()
+     &                  ZW(MNOD),AX(4),AY(4),AZ(4),IER)
+          NAP=4; IANXT(1)=2; IANXT(2)=3; IANXT(3)=4; IANXT(4)=1
+          CALL MATPOLS(NAP,AX,AY,AZ,IANXT,TSMAT,
+     &              SBBOX,NBP,BX,BY,BZ,IBNXT,IERR)
+          
+C Clip the polygon.
+          CALL CLIPSUR(NBP,BX,BY,BZ,iclp)
+          IBPNT=1
+          IF (iclp.EQ.1) THEN
+            goto 70
+          ELSEIF (iclp.EQ.-1) THEN
+            CALL CUTSUR(NB,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+          ENDIF
 
-          iixs=iix
-          iiys=iiy
-          CALL CFDTRANS(1,XU(ISBi(Isbn,ICFD)),YV(JSBi(Isbn,ICFD)),
-     &                  ZW(MNOD),XPP,YPP,ZPP,IER)
-          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-          if(mmod.eq.8)then
+C Draw polygon.
+          is=IBPNT
+          do i=1,NBP
+            ie=IBNXT(is)
+            call u2pixel(BX(is),BY(is),iixs,iiys)
+            call u2pixel(BX(ie),BY(ie),iix,iiy)
+            
             if (Isbn.eq.ISBHL) then
               call edwline(iixs,iiys,iix,iiy)
             else
               call eswline(iixs,iiys,iix,iiy)
             endif
-          else
-            if (Isbn.eq.ISBHL) then
-              call edwlinewwc(iixs,iiys,iix,iiy)
-            else
-              call eswlinewwc(iixs,iiys,iix,iiy)
-            endif
-          endif
-          call forceflush()
+
+            is=ie
+          enddo
 
 C Label in center of boundary.
           CALL CFDTRANS(1,(XU(ISBi(Isbn,ICFD))+XU(ISBf(Isbn,ICFD)))/2.,
      &                  (YV(JSBi(Isbn,ICFD))+YV(JSBf(Isbn,ICFD)))/2.,
      &                  ZW(MNOD),XX,YY,ZZ,IER)
-          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
+          CALL ORTTRN(XX,YY,ZZ,TSMAT,X0,Y0,Z0,IERR)
+          call u2pixel(X0,Y0,iix,iiy)
           write (temp,'(a)')VOLNAME(IVOLNSB(Isbn,ICFD),ICFD)
      &                     (1:LNBLNK(VOLNAME(IVOLNSB(Isbn,ICFD),ICFD)))
-c          write (temp,'(a,i2)') 'SB',Isbn
+          call CLIPST(temp,iix,iiy,Z0,iclp)  ! check clipping
+          if (iclp.ne.0) goto 70
           iicol=0
           call textatxy(iix,iiy,temp,'-',iicol)
-          call forceflush()
         endif
  70   continue
+      call forceflush()
 
       return
       end
@@ -1469,6 +1341,9 @@ C VAO3D - draws the air openings - highlighting the chosen one.
 
       character LLOCAT*4,outs*124,temp*12
       logical colok
+      dimension AX(MV),AY(MV),AZ(MV),IANXT(MV)
+      dimension BX(MV),BY(MV),BZ(MV),IBNXT(MV)
+      dimension sbbox(3,2)
 #ifdef OSI
       integer iixs,iiys,iix,iiy,iicol
 #else
@@ -1509,110 +1384,55 @@ C Set colour to red.
 C In YZ plane.
 C Transform local coords to screen coords and draw box around boundary.
           CALL CFDTRANS(1,XU(MNOD),YV(JOPENi(Iaop,ICFD)),
-     &                  ZW(KOPENi(Iaop,ICFD)),XX,YY,ZZ,IER)
-          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iixs,iiys)
-
+     &      ZW(KOPENi(Iaop,ICFD)),AX(1),AY(1),AZ(1),IER)
           CALL CFDTRANS(1,XU(MNOD),YV(JOPENf(Iaop,ICFD)+1),
-     &                  ZW(KOPENi(Iaop,ICFD)),XX,YY,ZZ,IER)
-          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-          if(mmod.eq.8)then
-            if (Iaop.eq.IOPENHL) then
-              call edwline(iixs,iiys,iix,iiy)
-            else
-              call eswline(iixs,iiys,iix,iiy)
-            endif
-          else
-            if (Iaop.eq.IOPENHL) then
-              call edwlinewwc(iixs,iiys,iix,iiy)
-            else
-              call eswlinewwc(iixs,iiys,iix,iiy)
-            endif
-          endif
-          call forceflush()
-
-          iixs=iix
-          iiys=iiy
+     &      ZW(KOPENi(Iaop,ICFD)),AX(2),AY(2),AZ(2),IER)
           CALL CFDTRANS(1,XU(MNOD),YV(JOPENf(Iaop,ICFD)+1),
-     &                  ZW(KOPENf(Iaop,ICFD)+1),XX,YY,ZZ,IER)
-          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-          if(mmod.eq.8)then
-            if (Iaop.eq.IOPENHL) then
-              call edwline(iixs,iiys,iix,iiy)
-            else
-              call eswline(iixs,iiys,iix,iiy)
-            endif
-          else
-            if (Iaop.eq.IOPENHL) then
-              call edwlinewwc(iixs,iiys,iix,iiy)
-            else
-              call eswlinewwc(iixs,iiys,iix,iiy)
-            endif
-          endif
-          call forceflush()
-
-          iixs=iix
-          iiys=iiy
+     &      ZW(KOPENf(Iaop,ICFD)+1),AX(3),AY(3),AZ(3),IER)
           CALL CFDTRANS(1,XU(MNOD),YV(JOPENi(Iaop,ICFD)),
-     &                  ZW(KOPENf(Iaop,ICFD)+1),XX,YY,ZZ,IER)
-          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-          if(mmod.eq.8)then
-            if (Iaop.eq.IOPENHL) then
-              call edwline(iixs,iiys,iix,iiy)
-            else
-              call eswline(iixs,iiys,iix,iiy)
-            endif
-            call forceflush()
-          else
-            if (Iaop.eq.IOPENHL) then
-              call edwlinewwc(iixs,iiys,iix,iiy)
-            else
-              call eswlinewwc(iixs,iiys,iix,iiy)
-            endif
-          endif
+     &      ZW(KOPENf(Iaop,ICFD)+1),AX(4),AY(4),AZ(4),IER)
+          NAP=4; IANXT(1)=2; IANXT(2)=3; IANXT(3)=4; IANXT(4)=1
+          CALL MATPOLS(NAP,AX,AY,AZ,IANXT,TSMAT,
+     &              SBBOX,NBP,BX,BY,BZ,IBNXT,IERR)
+          
+C Clip the polygon.
+          CALL CLIPSUR(NBP,BX,BY,BZ,iclp)
+          IBPNT=1
+          IF (iclp.EQ.1) THEN
+            goto 70
+          ELSEIF (iclp.EQ.-1) THEN
+            CALL CUTSUR(NB,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+          ENDIF
 
-          iixs=iix
-          iiys=iiy
-          CALL CFDTRANS(1,XU(MNOD),YV(JOPENi(Iaop,ICFD)),
-     &                  ZW(KOPENi(Iaop,ICFD)),XX,YY,ZZ,IER)
-          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-          if(mmod.eq.8)then
+C Draw polygon.
+          is=IBPNT
+          do i=1,NBP
+            ie=IBNXT(is)
+            call u2pixel(BX(is),BY(is),iixs,iiys)
+            call u2pixel(BX(ie),BY(ie),iix,iiy)
+            
             if (Iaop.eq.IOPENHL) then
               call edwline(iixs,iiys,iix,iiy)
             else
               call eswline(iixs,iiys,iix,iiy)
             endif
-            call forceflush()
-          else
-            if (Iaop.eq.IOPENHL) then
-              call edwlinewwc(iixs,iiys,iix,iiy)
-            else
-              call eswlinewwc(iixs,iiys,iix,iiy)
-            endif
-          endif
+
+            is=ie
+          enddo
 
 C Label in center of boundary.
           CALL CFDTRANS(1,XU(MNOD),
      &                 (YV(JOPENi(Iaop,ICFD))+YV(JOPENf(Iaop,ICFD)))/2.,
      &                 (ZW(KOPENi(Iaop,ICFD))+ZW(KOPENf(Iaop,ICFD)))/2.,
      &                  XX,YY,ZZ,IER)
-          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
+          CALL ORTTRN(XX,YY,ZZ,TSMAT,X0,Y0,Z0,IERR)
+          call u2pixel(X0,Y0,iix,iiy)
           write (temp,'(a)')VOLNAME(IVOLNOP(Iaop,ICFD),ICFD)
      &      (1:LNBLNK(VOLNAME(IVOLNOP(Iaop,ICFD),ICFD)))
+          call CLIPST(temp,iix,iiy,Z0,iclp)  ! check clipping
+          if (iclp.ne.0) goto 70
           iicol=0
           call textatxy(iix,iiy,temp,'z',iicol)
-          call forceflush()
 
         elseif (ILOCAT.eq.3.or.ILOCAT.eq.4) then
           if (ILOCAT.eq.4) then
@@ -1624,110 +1444,55 @@ C Label in center of boundary.
 C In XZ plane.
 C Transform local coords to screen coords and draw box around boundary.
           CALL CFDTRANS(1,XU(IOPENi(Iaop,ICFD)),YV(MNOD),
-     &                  ZW(KOPENi(Iaop,ICFD)),XX,YY,ZZ,IER)
-          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iixs,iiys)
-
+     &      ZW(KOPENi(Iaop,ICFD)),AX(1),AY(1),AZ(1),IER)
           CALL CFDTRANS(1,XU(IOPENf(Iaop,ICFD)+1),YV(MNOD),
-     &                  ZW(KOPENi(Iaop,ICFD)),XX,YY,ZZ,IER)
-          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-          if(mmod.eq.8)then
-            if (Iaop.eq.IOPENHL) then
-              call edwline(iixs,iiys,iix,iiy)
-            else
-              call eswline(iixs,iiys,iix,iiy)
-            endif
-            call forceflush()
-          else
-            if (Iaop.eq.IOPENHL) then
-              call edwlinewwc(iixs,iiys,iix,iiy)
-            else
-              call eswlinewwc(iixs,iiys,iix,iiy)
-            endif
-          endif
-
-          iixs=iix
-          iiys=iiy
+     &      ZW(KOPENi(Iaop,ICFD)),AX(2),AY(2),AZ(2),IER)
           CALL CFDTRANS(1,XU(IOPENf(Iaop,ICFD)+1),YV(MNOD),
-     &                  ZW(KOPENf(Iaop,ICFD)+1),XX,YY,ZZ,IER)
-          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-          if(mmod.eq.8)then
-            if (Iaop.eq.IOPENHL) then
-              call edwline(iixs,iiys,iix,iiy)
-            else
-              call eswline(iixs,iiys,iix,iiy)
-            endif
-            call forceflush()
-          else
-            if (Iaop.eq.IOPENHL) then
-              call edwlinewwc(iixs,iiys,iix,iiy)
-            else
-              call eswlinewwc(iixs,iiys,iix,iiy)
-            endif
-          endif
-
-          iixs=iix
-          iiys=iiy
+     &      ZW(KOPENf(Iaop,ICFD)+1),AX(3),AY(3),AZ(3),IER)
           CALL CFDTRANS(1,XU(IOPENi(Iaop,ICFD)),YV(MNOD),
-     &                  ZW(KOPENf(Iaop,ICFD)+1),XX,YY,ZZ,IER)
-          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-          if(mmod.eq.8)then
-            if (Iaop.eq.IOPENHL) then
-              call edwline(iixs,iiys,iix,iiy)
-            else
-              call eswline(iixs,iiys,iix,iiy)
-            endif
-            call forceflush()
-          else
-            if (Iaop.eq.IOPENHL) then
-              call edwlinewwc(iixs,iiys,iix,iiy)
-            else
-              call eswlinewwc(iixs,iiys,iix,iiy)
-            endif
-          endif
+     &      ZW(KOPENf(Iaop,ICFD)+1),AX(4),AY(4),AZ(4),IER)
+          NAP=4; IANXT(1)=2; IANXT(2)=3; IANXT(3)=4; IANXT(4)=1
+          CALL MATPOLS(NAP,AX,AY,AZ,IANXT,TSMAT,
+     &      SBBOX,NBP,BX,BY,BZ,IBNXT,IERR)
+          
+C Clip the polygon.
+          CALL CLIPSUR(NBP,BX,BY,BZ,iclp)
+          IBPNT=1
+          IF (iclp.EQ.1) THEN
+            goto 70
+          ELSEIF (iclp.EQ.-1) THEN
+            CALL CUTSUR(NB,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+          ENDIF
 
-          iixs=iix
-          iiys=iiy
-          CALL CFDTRANS(1,XU(IOPENi(Iaop,ICFD)),YV(MNOD),
-     &                  ZW(KOPENi(Iaop,ICFD)),XX,YY,ZZ,IER)
-          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-          if(mmod.eq.8)then
+C Draw polygon.
+          is=IBPNT
+          do i=1,NBP
+            ie=IBNXT(is)
+            call u2pixel(BX(is),BY(is),iixs,iiys)
+            call u2pixel(BX(ie),BY(ie),iix,iiy)
+            
             if (Iaop.eq.IOPENHL) then
               call edwline(iixs,iiys,iix,iiy)
             else
               call eswline(iixs,iiys,iix,iiy)
             endif
-            call forceflush()
-          else
-            if (Iaop.eq.IOPENHL) then
-              call edwlinewwc(iixs,iiys,iix,iiy)
-            else
-              call eswlinewwc(iixs,iiys,iix,iiy)
-            endif
-          endif
+
+            is=ie
+          enddo
 
 C Label in center of boundary.
           CALL CFDTRANS(1,
      &                 (XU(IOPENi(Iaop,ICFD))+XU(IOPENf(Iaop,ICFD)))/2.,
      &        YV(MNOD),(ZW(KOPENi(Iaop,ICFD))+ZW(KOPENf(Iaop,ICFD)))/2.,
      &                  XX,YY,ZZ,IER)
-          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
+          CALL ORTTRN(XX,YY,ZZ,TSMAT,X0,Y0,Z0,IERR)
+          call u2pixel(X0,Y0,iix,iiy)
           write (temp,'(a)')VOLNAME(IVOLNOP(Iaop,ICFD),ICFD)
      &      (1:LNBLNK(VOLNAME(IVOLNOP(Iaop,ICFD),ICFD)))
+          call CLIPST(temp,iix,iiy,Z0,iclp)  ! check clipping
+          if (iclp.ne.0) goto 70
           iicol=0
           call textatxy(iix,iiy,temp,'z',iicol)
-          call forceflush()
         elseif (ILOCAT.eq.5.or.ILOCAT.eq.6) then
           if (ILOCAT.eq.6) then
             MNOD=NK
@@ -1738,112 +1503,59 @@ C Label in center of boundary.
 C In XY plane.
 C Transform local coords to screen coords and draw box around boundary.
           CALL CFDTRANS(1,XU(IOPENi(Iaop,ICFD)),YV(JOPENi(Iaop,ICFD)),
-     &                  ZW(MNOD),XX,YY,ZZ,IER)
-          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iixs,iiys)
-
+     &      ZW(MNOD),AX(1),AY(1),AZ(1),IER)
           CALL CFDTRANS(1,XU(IOPENf(Iaop,ICFD)+1),YV(JOPENi(Iaop,ICFD)),
-     &                  ZW(MNOD),XX,YY,ZZ,IER)
-          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-          if(mmod.eq.8)then
-            if (Iaop.eq.IOPENHL) then
-              call edwline(iixs,iiys,iix,iiy)
-            else
-              call eswline(iixs,iiys,iix,iiy)
-            endif
-            call forceflush()
-          else
-            if (Iaop.eq.IOPENHL) then
-              call edwlinewwc(iixs,iiys,iix,iiy)
-            else
-              call eswlinewwc(iixs,iiys,iix,iiy)
-            endif
-          endif
-
-          iixs=iix
-          iiys=iiy
+     &      ZW(MNOD),AX(2),AY(2),AZ(2),IER)
           CALL CFDTRANS(1,XU(IOPENf(Iaop,ICFD)+1),
-     &                  YV(JOPENf(Iaop,ICFD)+1),ZW(MNOD),XX,YY,ZZ,IER)
-          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-          if(mmod.eq.8)then
-            if (Iaop.eq.IOPENHL) then
-              call edwline(iixs,iiys,iix,iiy)
-            else
-              call eswline(iixs,iiys,iix,iiy)
-            endif
-            call forceflush()
-          else
-            if (Iaop.eq.IOPENHL) then
-              call edwlinewwc(iixs,iiys,iix,iiy)
-            else
-              call eswlinewwc(iixs,iiys,iix,iiy)
-            endif
-          endif
-
-          iixs=iix
-          iiys=iiy
+     &      YV(JOPENf(Iaop,ICFD)+1),ZW(MNOD),AX(3),AY(3),AZ(3),IER)
           CALL CFDTRANS(1,XU(IOPENi(Iaop,ICFD)),YV(JOPENf(Iaop,ICFD)+1),
-     &                  ZW(MNOD),XX,YY,ZZ,IER)
-          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-          if(mmod.eq.8)then
-            if (Iaop.eq.IOPENHL) then
-              call edwline(iixs,iiys,iix,iiy)
-            else
-              call eswline(iixs,iiys,iix,iiy)
-            endif
-            call forceflush()
-          else
-            if (Iaop.eq.IOPENHL) then
-              call edwlinewwc(iixs,iiys,iix,iiy)
-            else
-              call eswlinewwc(iixs,iiys,iix,iiy)
-            endif
-          endif
+     &      ZW(MNOD),AX(4),AY(4),AZ(4),IER)
+          NAP=4; IANXT(1)=2; IANXT(2)=3; IANXT(3)=4; IANXT(4)=1
+          CALL MATPOLS(NAP,AX,AY,AZ,IANXT,TSMAT,
+     &      SBBOX,NBP,BX,BY,BZ,IBNXT,IERR)
+          
+C Clip the polygon.
+          CALL CLIPSUR(NBP,BX,BY,BZ,iclp)
+          IBPNT=1
+          IF (iclp.EQ.1) THEN
+            goto 70
+          ELSEIF (iclp.EQ.-1) THEN
+            CALL CUTSUR(NB,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+          ENDIF
 
-          iixs=iix
-          iiys=iiy
-          CALL CFDTRANS(1,XU(IOPENi(Iaop,ICFD)),YV(JOPENi(Iaop,ICFD)),
-     &                  ZW(MNOD),XX,YY,ZZ,IER)
-          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
-          if(mmod.eq.8)then
+C Draw polygon.
+          is=IBPNT
+          do i=1,NBP
+            ie=IBNXT(is)
+            call u2pixel(BX(is),BY(is),iixs,iiys)
+            call u2pixel(BX(ie),BY(ie),iix,iiy)
+            
             if (Iaop.eq.IOPENHL) then
               call edwline(iixs,iiys,iix,iiy)
             else
               call eswline(iixs,iiys,iix,iiy)
             endif
-            call forceflush()
-          else
-            if (Iaop.eq.IOPENHL) then
-              call edwlinewwc(iixs,iiys,iix,iiy)
-            else
-              call eswlinewwc(iixs,iiys,iix,iiy)
-            endif
-          endif
+
+            is=ie
+          enddo
 
 C Label in center of boundary.
           CALL CFDTRANS(1,
      &                 (XU(IOPENi(Iaop,ICFD))+XU(IOPENf(Iaop,ICFD)))/2.,
      &                 (YV(JOPENi(Iaop,ICFD))+YV(JOPENf(Iaop,ICFD)))/2.,
      &                 ZW(MNOD),XX,YY,ZZ,IER)
-          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,iix,iiy)
+          CALL ORTTRN(XX,YY,ZZ,TSMAT,X0,Y0,Z0,IERR)
+          call u2pixel(X0,Y0,iix,iiy)
           write (temp,'(a)')VOLNAME(IVOLNOP(Iaop,ICFD),ICFD)
      &      (1:LNBLNK(VOLNAME(IVOLNOP(Iaop,ICFD),ICFD)))
+          call CLIPST(temp,iix,iiy,Z0,iclp)  ! check clipping
+          if (iclp.ne.0) goto 70
           iicol=0
           call textatxy(iix,iiy,temp,'z',iicol)
-          call forceflush()
         endif
  70   continue
+
+      call forceflush()
 
       if(colok)then
         iicol=0
@@ -1858,7 +1570,6 @@ C VSBL3D - draws blockages - highlighting the chosen one.
 C << currently only draws in the 3D view not individual sections >>
       SUBROUTINE VSBL3D(ISBL)
 #include "building.h"
-#include "geometry.h"
 #include "cfd.h"
 #include "prj3dv.h"
       
@@ -1888,14 +1599,14 @@ C integer INSSO() point to the volume which defines the small supply shape
 
       character temp*12
 
-C Arrays iixv iiyv iizz are the 8 coords of a box in the usual order.
 #ifdef OSI
-      integer iicol,iixs,iiys,iix,iiy,iixv(8),iiyv(8)
+      integer iicol,iixs,iiys,iix,iiy
 #else
-      integer*8 iicol,iixs,iiys,iix,iiy,iixv(8),iiyv(8)
+      integer*8 iicol,iixs,iiys,iix,iiy
 #endif
-      real XPP,YPP,ZPP  ! points taking into account zone minimum
-      real XX,YY,ZZ
+      dimension ax(MV),ay(MV),az(MV),ianxt(MV)
+      dimension bx(MV),by(MV),bz(MV),ibnxt(MV)
+      dimension sbbox(3,2)
 
 C Check in graphics mode.
       IF(MMOD.ne.8) return
@@ -1923,105 +1634,206 @@ C        zd=ZW(Kf+1)-ZW(Ki)
 C        write(6,*) 'cords Z are:',ZW(Ki),ZW(Kf+1),zd
 
 C Transform local coords to screen coords and remember.
-C Lower front left hand corner of blockage.
-        CALL CFDTRANS(1,XU(Ii),YV(Ji),ZW(Ki),XPP,YPP,ZPP,IER)
-        CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-        call u2pixel(X1,Y1,iixs,iiys)
-        iixv(1)=iixs; iiyv(1)=iiys
+        CALL CFDTRANS(1,XU(Ii),YV(Ji),ZW(Ki),ax(1),ay(1),az(1),IER)      ! lower front left
+        CALL CFDTRANS(1,XU(If+1),YV(Ji),ZW(Ki),ax(2),ay(2),az(2),IER)    ! lower front right
+        CALL CFDTRANS(1,XU(If+1),YV(Jf+1),ZW(Ki),ax(3),ay(3),az(3),IER)  ! lower back right
+        CALL CFDTRANS(1,XU(Ii),YV(Jf+1),ZW(Ki),ax(4),ay(4),az(4),IER)    ! lower back left
+        CALL CFDTRANS(1,XU(Ii),YV(Ji),ZW(Kf+1),ax(5),ay(5),az(5),IER)    ! upper front left
+        CALL CFDTRANS(1,XU(If+1),YV(Ji),ZW(Kf+1),ax(6),ay(6),az(6),IER)  ! upper front right
+        CALL CFDTRANS(1,XU(If+1),YV(Jf+1),ZW(Kf+1),ax(7),ay(7),az(7),    ! upper back right
+     &    IER)
+        CALL CFDTRANS(1,XU(Ii),YV(Jf+1),ZW(Kf+1),ax(8),ay(8),az(8),IER)  ! upper back left
+        nap=8
+        ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=5
+        ianxt(5)=6; ianxt(6)=7; ianxt(7)=8; ianxt(8)=1
+        CALL MATPOLS(nap,ax,ay,az,ianxt,TSMAT,
+     &    sbbox,nbp,bx,by,bz,ibnxt,ier)
 
-C Lower front right hand corner of blockage.
-        CALL CFDTRANS(1,XU(If+1),YV(Ji),ZW(Ki),XPP,YPP,ZPP,IER)
-        CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-        call u2pixel(X1,Y1,iix,iiy)
-        iixv(2)=iix; iiyv(2)=iiy
+C Clip and draw a polygon for each face.
+C Lower face.
+        ax(1)=bx(1); ay(1)=by(1); az(1)=bz(1)
+        ax(2)=bx(2); ay(2)=by(2); az(2)=bz(2)
+        ax(3)=bx(3); ay(3)=by(3); az(3)=bz(3)
+        ax(4)=bx(4); ay(4)=by(4); az(4)=bz(4)
+        ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=1
+          
+C Check clipping.
+        CALL CLIPSUR(nap,ax,ay,az,iclp)
+        iapnt=1
+        IF (iclp.EQ.1) THEN
+          goto 71
+        ELSEIF (iclp.EQ.-1) THEN
+          CALL CUTSUR(na,nap,iapnt,ax,ay,az,ianxt,ier)
+        ENDIF
 
-C Lower back right hand corner of blockage.
-        CALL CFDTRANS(1,XU(If+1),YV(Jf+1),ZW(Ki),XPP,YPP,ZPP,IER)
-        CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-        call u2pixel(X1,Y1,iix,iiy)
-        iixv(3)=iix; iiyv(3)=iiy
+C Draw polygon.
+        is=iapnt
+        do i=1,nap
+          ie=ianxt(is)
+          call u2pixel(ax(is),ay(is),iixs,iiys)
+          call u2pixel(ax(ie),ay(ie),iix,iiy)
+          
+          if (iblk.eq.ISBL) then
+            call edwline(iixs,iiys,iix,iiy)
+          else
+            call eswline(iixs,iiys,iix,iiy)
+          endif
 
-C Lower back left hand corner of blockage.
-        CALL CFDTRANS(1,XU(Ii),YV(Jf+1),ZW(Ki),XPP,YPP,ZPP,IER)
-        CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-        call u2pixel(X1,Y1,iixs,iiys)
-        iixv(4)=iixs; iiyv(4)=iiys
+          is=ie
+        enddo
+        
+C Front face.
+C For comments see lower face above.
+  71    continue
+        ax(1)=bx(1); ay(1)=by(1); az(1)=bz(1)
+        ax(2)=bx(2); ay(2)=by(2); az(2)=bz(2)
+        ax(3)=bx(6); ay(3)=by(6); az(3)=bz(6)
+        ax(4)=bx(5); ay(4)=by(5); az(4)=bz(5)
+        ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=1
+        CALL CLIPSUR(nap,ax,ay,az,iclp)
+        iapnt=1
+        IF (iclp.EQ.1) THEN
+          goto 72
+        ELSEIF (iclp.EQ.-1) THEN
+          CALL CUTSUR(na,nap,iapnt,ax,ay,az,ianxt,ier)
+        ENDIF
+        is=iapnt
+        do i=1,nap
+          ie=ianxt(is)
+          call u2pixel(ax(is),ay(is),iixs,iiys)
+          call u2pixel(ax(ie),ay(ie),iix,iiy)          
+          if (iblk.eq.ISBL) then
+            call edwline(iixs,iiys,iix,iiy)
+          else
+            call eswline(iixs,iiys,iix,iiy)
+          endif
+          is=ie
+        enddo
+        
+C Left face.
+C For comments see lower face above.
+  72    continue
+        ax(1)=bx(1); ay(1)=by(1); az(1)=bz(1)
+        ax(2)=bx(4); ay(2)=by(4); az(2)=bz(4)
+        ax(3)=bx(8); ay(3)=by(8); az(3)=bz(8)
+        ax(4)=bx(5); ay(4)=by(5); az(4)=bz(5)
+        ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=1
+        CALL CLIPSUR(nap,ax,ay,az,iclp)
+        iapnt=1
+        IF (iclp.EQ.1) THEN
+          goto 73
+        ELSEIF (iclp.EQ.-1) THEN
+          CALL CUTSUR(na,nap,iapnt,ax,ay,az,ianxt,ier)
+        ENDIF
+        is=iapnt
+        do i=1,nap
+          ie=ianxt(is)
+          call u2pixel(ax(is),ay(is),iixs,iiys)
+          call u2pixel(ax(ie),ay(ie),iix,iiy)          
+          if (iblk.eq.ISBL) then
+            call edwline(iixs,iiys,iix,iiy)
+          else
+            call eswline(iixs,iiys,iix,iiy)
+          endif
+          is=ie
+        enddo
+        
+C Back face.
+C For comments see lower face above.
+  73    continue
+        ax(1)=bx(3); ay(1)=by(3); az(1)=bz(3)
+        ax(2)=bx(4); ay(2)=by(4); az(2)=bz(4)
+        ax(3)=bx(8); ay(3)=by(8); az(3)=bz(8)
+        ax(4)=bx(7); ay(4)=by(7); az(4)=bz(7)
+        ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=1
+        CALL CLIPSUR(nap,ax,ay,az,iclp)
+        iapnt=1
+        IF (iclp.EQ.1) THEN
+          goto 74
+        ELSEIF (iclp.EQ.-1) THEN
+          CALL CUTSUR(na,nap,iapnt,ax,ay,az,ianxt,ier)
+        ENDIF
+        is=iapnt
+        do i=1,nap
+          ie=ianxt(is)
+          call u2pixel(ax(is),ay(is),iixs,iiys)
+          call u2pixel(ax(ie),ay(ie),iix,iiy)          
+          if (iblk.eq.ISBL) then
+            call edwline(iixs,iiys,iix,iiy)
+          else
+            call eswline(iixs,iiys,iix,iiy)
+          endif
+          is=ie
+        enddo
 
-C Upper back left corner of blockage.
-        CALL CFDTRANS(1,XU(Ii),YV(Jf+1),ZW(Kf+1),XPP,YPP,ZPP,IER)
-        CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-        call u2pixel(X1,Y1,iix,iiy)
-        iixv(5)=iix; iiyv(5)=iiy
+C Right face.
+C For comments see lower face above.
+  74    continue
+        ax(1)=bx(2); ay(1)=by(2); az(1)=bz(2)
+        ax(2)=bx(3); ay(2)=by(3); az(2)=bz(3)
+        ax(3)=bx(7); ay(3)=by(7); az(3)=bz(7)
+        ax(4)=bx(6); ay(4)=by(6); az(4)=bz(6)
+        ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=1
+        CALL CLIPSUR(nap,ax,ay,az,iclp)
+        iapnt=1
+        IF (iclp.EQ.1) THEN
+          goto 75
+        ELSEIF (iclp.EQ.-1) THEN
+          CALL CUTSUR(na,nap,iapnt,ax,ay,az,ianxt,ier)
+        ENDIF
+        is=iapnt
+        do i=1,nap
+          ie=ianxt(is)
+          call u2pixel(ax(is),ay(is),iixs,iiys)
+          call u2pixel(ax(ie),ay(ie),iix,iiy)          
+          if (iblk.eq.ISBL) then
+            call edwline(iixs,iiys,iix,iiy)
+          else
+            call eswline(iixs,iiys,iix,iiy)
+          endif
+          is=ie
+        enddo
 
-C Upper front left corner of blockage
-        CALL CFDTRANS(1,XU(Ii),YV(Ji),ZW(Kf+1),XPP,YPP,ZPP,IER)
-        CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-        call u2pixel(X1,Y1,iix,iiy)
-        iixv(6)=iix; iiyv(6)=iiy
-
-C Upper front right corner of blockage.
-        CALL CFDTRANS(1,XU(If+1),YV(Ji),ZW(Kf+1),XPP,YPP,ZPP,IER)
-        CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-        call u2pixel(X1,Y1,iix,iiy)
-        iixv(7)=iix; iiyv(7)=iiy
-
-C Upper back right corner of blockage.
-        CALL CFDTRANS(1,XU(If+1),YV(Jf+1),ZW(Kf+1),XPP,YPP,ZPP,IER)
-        CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-        call u2pixel(X1,Y1,iix,iiy)
-        iixv(8)=iix; iiyv(8)=iiy
-        call forceflush()
+C Top face.
+C For comments see lower face above.
+  75    continue
+        ax(1)=bx(5); ay(1)=by(5); az(1)=bz(5)
+        ax(2)=bx(6); ay(2)=by(6); az(2)=bz(6)
+        ax(3)=bx(7); ay(3)=by(7); az(3)=bz(7)
+        ax(4)=bx(8); ay(4)=by(8); az(4)=bz(8)
+        ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=1
+        CALL CLIPSUR(nap,ax,ay,az,iclp)
+        iapnt=1
+        IF (iclp.EQ.1) THEN
+          goto 76
+        ELSEIF (iclp.EQ.-1) THEN
+          CALL CUTSUR(na,nap,iapnt,ax,ay,az,ianxt,ier)
+        ENDIF
+        is=iapnt
+        do i=1,nap
+          ie=ianxt(is)
+          call u2pixel(ax(is),ay(is),iixs,iiys)
+          call u2pixel(ax(ie),ay(ie),iix,iiy)          
+          if (iblk.eq.ISBL) then
+            call edwline(iixs,iiys,iix,iiy)
+          else
+            call eswline(iixs,iiys,iix,iiy)
+          endif
+          is=ie
+        enddo
 
 C Label in center of blockage.
-        CALL CFDTRANS(1,XU(If+1),YV(Ji),ZW(Kf+1),XX,YY,ZZ,IER)
-        CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
-        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-        call u2pixel(X1,Y1,iix,iiy)
+  76    call u2pixel(bx(6),by(6),iix,iiy)
           write (temp,'(a)')VOLNAME(indxvol,ICFD)
      &      (1:LNBLNK(VOLNAME(indxvol,ICFD)))
+        call CLIPST(temp,iix,iiy,bz(6),iclp)  ! check clipping
+        if (iclp.ne.0) goto 70
         iicol=0
         call textatxy(iix,iiy,temp,'-',iicol)
-        call forceflush()
-
-C Draw around blockage in single or double lines in the usual order.
-        if (iblk.eq.ISBL) then
-          call edwline(iixv(1),iiyv(1),iixv(2),iiyv(2))
-          call edwline(iixv(2),iiyv(2),iixv(3),iiyv(3))
-          call edwline(iixv(3),iiyv(3),iixv(4),iiyv(4))
-          call edwline(iixv(4),iiyv(4),iixv(1),iiyv(1))
-          call edwline(iixv(5),iiyv(5),iixv(6),iiyv(6))
-          call edwline(iixv(6),iiyv(6),iixv(7),iiyv(7))
-          call edwline(iixv(7),iiyv(7),iixv(8),iiyv(8))
-          call edwline(iixv(8),iiyv(8),iixv(5),iiyv(5))
-          call edwline(iixv(1),iiyv(1),iixv(6),iiyv(6))
-          call edwline(iixv(2),iiyv(2),iixv(7),iiyv(7))
-          call edwline(iixv(3),iiyv(3),iixv(8),iiyv(8))
-          call edwline(iixv(4),iiyv(4),iixv(5),iiyv(5))
-        else
-          call eswline(iixv(1),iiyv(1),iixv(2),iiyv(2))
-          call eswline(iixv(2),iiyv(2),iixv(3),iiyv(3))
-          call eswline(iixv(3),iiyv(3),iixv(4),iiyv(4))
-          call eswline(iixv(4),iiyv(4),iixv(1),iiyv(1))
-          call eswline(iixv(5),iiyv(5),iixv(6),iiyv(6))
-          call eswline(iixv(6),iiyv(6),iixv(7),iiyv(7))
-          call eswline(iixv(7),iiyv(7),iixv(8),iiyv(8))
-          call eswline(iixv(8),iiyv(8),iixv(5),iiyv(5))
-          call eswline(iixv(1),iiyv(1),iixv(6),iiyv(6))
-          call eswline(iixv(2),iiyv(2),iixv(7),iiyv(7))
-          call eswline(iixv(3),iiyv(3),iixv(8),iiyv(8))
-          call eswline(iixv(4),iiyv(4),iixv(5),iiyv(5))
-        endif
-        call forceflush()
 
  70   continue
+
+      call forceflush()
 
       return
       end
@@ -2031,7 +1843,6 @@ C VSRC3D - draws sources - highlighting the chosen one.
 C << currently only draws in the 3D view not individual sections >>
       SUBROUTINE VSRC3D(ISRC)
 #include "building.h"
-C #include "geometry.h"
 #include "cfd.h"
 #include "prj3dv.h"
       
@@ -2061,21 +1872,27 @@ C      COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
       character temp*12
       logical colok
 
-C Arrays iixv iiyv iizz are the 8 coords of a box in the usual order.
 #ifdef OSI
-      integer iicol,iixs,iiys,iix,iiy,iixv(8),iiyv(8)
+      integer iicol,iixs,iiys,iix,iiy
 #else
-      integer*8 iicol,iixs,iiys,iix,iiy,iixv(8),iiyv(8)
+      integer*8 iicol,iixs,iiys,iix,iiy
 #endif
-      real XPP,YPP,ZPP  ! points taking into account zone minimum
-      real XX,YY,ZZ
+      dimension ax(MV),ay(MV),az(MV),ianxt(MV)
+      dimension bx(MV),by(MV),bz(MV),ibnxt(MV)
+      dimension sbbox(3,2)
 
 C Check in graphics mode.
       IF(MMOD.ne.8) return
 
-C Check if we have colour.
-      colok=.false.
-      if(nzonec.ge.6)colok=.true.
+C If we have colour, set to blue.
+      if (nzonec.ge.6) then
+        iicol=1
+        call winscl('z',iicol)
+        colok=.true.
+      else
+        colok=.false.
+      endif
+
       iisrc=0
 
 C Loop through volumes.
@@ -2101,112 +1918,213 @@ C        write(6,*) 'cords Y are:',YV(Ji),YV(Jf+1),yd
 C        zd=ZW(Kf+1)-ZW(Ki)
 C        write(6,*) 'cords Z are:',ZW(Ki),ZW(Kf+1),zd
 
-C Transform local coords to screen coords and remember.
-C Lower front left hand corner of blockage.
-        CALL CFDTRANS(1,XU(Ii),YV(Ji),ZW(Ki),XPP,YPP,ZPP,IER)
-        CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-        call u2pixel(X1,Y1,iixs,iiys)
-        iixv(1)=iixs; iiyv(1)=iiys
+C Transform local coords to screen coords and remember.C Transform local coords to screen coords and remember.
+        CALL CFDTRANS(1,XU(Ii),YV(Ji),ZW(Ki),ax(1),ay(1),az(1),IER)      ! lower front left
+        CALL CFDTRANS(1,XU(If+1),YV(Ji),ZW(Ki),ax(2),ay(2),az(2),IER)    ! lower front right
+        CALL CFDTRANS(1,XU(If+1),YV(Jf+1),ZW(Ki),ax(3),ay(3),az(3),IER)  ! lower back right
+        CALL CFDTRANS(1,XU(Ii),YV(Jf+1),ZW(Ki),ax(4),ay(4),az(4),IER)    ! lower back left
+        CALL CFDTRANS(1,XU(Ii),YV(Ji),ZW(Kf+1),ax(5),ay(5),az(5),IER)    ! upper front left
+        CALL CFDTRANS(1,XU(If+1),YV(Ji),ZW(Kf+1),ax(6),ay(6),az(6),IER)  ! upper front right
+        CALL CFDTRANS(1,XU(If+1),YV(Jf+1),ZW(Kf+1),ax(7),ay(7),az(7),    ! upper back right
+     &    IER)
+        CALL CFDTRANS(1,XU(Ii),YV(Jf+1),ZW(Kf+1),ax(8),ay(8),az(8),IER)  ! upper back left
+        nap=8
+        ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=5
+        ianxt(5)=6; ianxt(6)=7; ianxt(7)=8; ianxt(8)=1
+        CALL MATPOLS(nap,ax,ay,az,ianxt,TSMAT,
+     &    sbbox,nbp,bx,by,bz,ibnxt,ier)
 
-C Lower front right hand corner of blockage.
-        CALL CFDTRANS(1,XU(If+1),YV(Ji),ZW(Ki),XPP,YPP,ZPP,IER)
-        CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-        call u2pixel(X1,Y1,iix,iiy)
-        iixv(2)=iix; iiyv(2)=iiy
+C Clip and draw a polygon for each face.
+C Lower face.
+        ax(1)=bx(1); ay(1)=by(1); az(1)=bz(1)
+        ax(2)=bx(2); ay(2)=by(2); az(2)=bz(2)
+        ax(3)=bx(3); ay(3)=by(3); az(3)=bz(3)
+        ax(4)=bx(4); ay(4)=by(4); az(4)=bz(4)
+        ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=1
+          
+C Check clipping.
+        CALL CLIPSUR(nap,ax,ay,az,iclp)
+        iapnt=1
+        IF (iclp.EQ.1) THEN
+          goto 71
+        ELSEIF (iclp.EQ.-1) THEN
+          CALL CUTSUR(na,nap,iapnt,ax,ay,az,ianxt,ier)
+        ENDIF
 
-C Lower back right hand corner of blockage.
-        CALL CFDTRANS(1,XU(If+1),YV(Jf+1),ZW(Ki),XPP,YPP,ZPP,IER)
-        CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-        call u2pixel(X1,Y1,iix,iiy)
-        iixv(3)=iix; iiyv(3)=iiy
+C Draw polygon.
+        is=iapnt
+        do i=1,nap
+          ie=ianxt(is)
+          call u2pixel(ax(is),ay(is),iixs,iiys)
+          call u2pixel(ax(ie),ay(ie),iix,iiy)
+          
+          if (iisrc.eq.ISRC) then
+            call edwline(iixs,iiys,iix,iiy)
+          else
+            call eswline(iixs,iiys,iix,iiy)
+          endif
 
-C Lower back left hand corner of blockage.
-        CALL CFDTRANS(1,XU(Ii),YV(Jf+1),ZW(Ki),XPP,YPP,ZPP,IER)
-        CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-        call u2pixel(X1,Y1,iixs,iiys)
-        iixv(4)=iixs; iiyv(4)=iiys
+          is=ie
+        enddo
+        
+C Front face.
+C For comments see lower face above.
+  71    continue
+        ax(1)=bx(1); ay(1)=by(1); az(1)=bz(1)
+        ax(2)=bx(2); ay(2)=by(2); az(2)=bz(2)
+        ax(3)=bx(6); ay(3)=by(6); az(3)=bz(6)
+        ax(4)=bx(5); ay(4)=by(5); az(4)=bz(5)
+        ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=1
+        CALL CLIPSUR(nap,ax,ay,az,iclp)
+        iapnt=1
+        IF (iclp.EQ.1) THEN
+          goto 72
+        ELSEIF (iclp.EQ.-1) THEN
+          CALL CUTSUR(na,nap,iapnt,ax,ay,az,ianxt,ier)
+        ENDIF
+        is=iapnt
+        do i=1,nap
+          ie=ianxt(is)
+          call u2pixel(ax(is),ay(is),iixs,iiys)
+          call u2pixel(ax(ie),ay(ie),iix,iiy)          
+          if (iisrc.eq.ISRC) then
+            call edwline(iixs,iiys,iix,iiy)
+          else
+            call eswline(iixs,iiys,iix,iiy)
+          endif
+          is=ie
+        enddo
+        
+C Left face.
+C For comments see lower face above.
+  72    continue
+        ax(1)=bx(1); ay(1)=by(1); az(1)=bz(1)
+        ax(2)=bx(4); ay(2)=by(4); az(2)=bz(4)
+        ax(3)=bx(8); ay(3)=by(8); az(3)=bz(8)
+        ax(4)=bx(5); ay(4)=by(5); az(4)=bz(5)
+        ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=1
+        CALL CLIPSUR(nap,ax,ay,az,iclp)
+        iapnt=1
+        IF (iclp.EQ.1) THEN
+          goto 73
+        ELSEIF (iclp.EQ.-1) THEN
+          CALL CUTSUR(na,nap,iapnt,ax,ay,az,ianxt,ier)
+        ENDIF
+        is=iapnt
+        do i=1,nap
+          ie=ianxt(is)
+          call u2pixel(ax(is),ay(is),iixs,iiys)
+          call u2pixel(ax(ie),ay(ie),iix,iiy)          
+          if (iisrc.eq.ISRC) then
+            call edwline(iixs,iiys,iix,iiy)
+          else
+            call eswline(iixs,iiys,iix,iiy)
+          endif
+          is=ie
+        enddo
+        
+C Back face.
+C For comments see lower face above.
+  73    continue
+        ax(1)=bx(3); ay(1)=by(3); az(1)=bz(3)
+        ax(2)=bx(4); ay(2)=by(4); az(2)=bz(4)
+        ax(3)=bx(8); ay(3)=by(8); az(3)=bz(8)
+        ax(4)=bx(7); ay(4)=by(7); az(4)=bz(7)
+        ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=1
+        CALL CLIPSUR(nap,ax,ay,az,iclp)
+        iapnt=1
+        IF (iclp.EQ.1) THEN
+          goto 74
+        ELSEIF (iclp.EQ.-1) THEN
+          CALL CUTSUR(na,nap,iapnt,ax,ay,az,ianxt,ier)
+        ENDIF
+        is=iapnt
+        do i=1,nap
+          ie=ianxt(is)
+          call u2pixel(ax(is),ay(is),iixs,iiys)
+          call u2pixel(ax(ie),ay(ie),iix,iiy)          
+          if (iisrc.eq.ISRC) then
+            call edwline(iixs,iiys,iix,iiy)
+          else
+            call eswline(iixs,iiys,iix,iiy)
+          endif
+          is=ie
+        enddo
 
-C Upper back left corner of blockage.
-        CALL CFDTRANS(1,XU(Ii),YV(Jf+1),ZW(Kf+1),XPP,YPP,ZPP,IER)
-        CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-        call u2pixel(X1,Y1,iix,iiy)
-        iixv(5)=iix; iiyv(5)=iiy
+C Right face.
+C For comments see lower face above.
+  74    continue
+        ax(1)=bx(2); ay(1)=by(2); az(1)=bz(2)
+        ax(2)=bx(3); ay(2)=by(3); az(2)=bz(3)
+        ax(3)=bx(7); ay(3)=by(7); az(3)=bz(7)
+        ax(4)=bx(6); ay(4)=by(6); az(4)=bz(6)
+        ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=1
+        CALL CLIPSUR(nap,ax,ay,az,iclp)
+        iapnt=1
+        IF (iclp.EQ.1) THEN
+          goto 75
+        ELSEIF (iclp.EQ.-1) THEN
+          CALL CUTSUR(na,nap,iapnt,ax,ay,az,ianxt,ier)
+        ENDIF
+        is=iapnt
+        do i=1,nap
+          ie=ianxt(is)
+          call u2pixel(ax(is),ay(is),iixs,iiys)
+          call u2pixel(ax(ie),ay(ie),iix,iiy)          
+          if (iisrc.eq.ISRC) then
+            call edwline(iixs,iiys,iix,iiy)
+          else
+            call eswline(iixs,iiys,iix,iiy)
+          endif
+          is=ie
+        enddo
 
-C Upper front left corner of blockage
-        CALL CFDTRANS(1,XU(Ii),YV(Ji),ZW(Kf+1),XPP,YPP,ZPP,IER)
-        CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-        call u2pixel(X1,Y1,iix,iiy)
-        iixv(6)=iix; iiyv(6)=iiy
-
-C Upper front right corner of blockage.
-        CALL CFDTRANS(1,XU(If+1),YV(Ji),ZW(Kf+1),XPP,YPP,ZPP,IER)
-        CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-        call u2pixel(X1,Y1,iix,iiy)
-        iixv(7)=iix; iiyv(7)=iiy
-
-C Upper back right corner of blockage.
-        CALL CFDTRANS(1,XU(If+1),YV(Jf+1),ZW(Kf+1),XPP,YPP,ZPP,IER)
-        CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-        call u2pixel(X1,Y1,iix,iiy)
-        iixv(8)=iix; iiyv(8)=iiy
-        call forceflush()
+C Top face.
+C For comments see lower face above.
+  75    continue
+        ax(1)=bx(5); ay(1)=by(5); az(1)=bz(5)
+        ax(2)=bx(6); ay(2)=by(6); az(2)=bz(6)
+        ax(3)=bx(7); ay(3)=by(7); az(3)=bz(7)
+        ax(4)=bx(8); ay(4)=by(8); az(4)=bz(8)
+        ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=1
+        CALL CLIPSUR(nap,ax,ay,az,iclp)
+        iapnt=1
+        IF (iclp.EQ.1) THEN
+          goto 70
+        ELSEIF (iclp.EQ.-1) THEN
+          CALL CUTSUR(na,nap,iapnt,ax,ay,az,ianxt,ier)
+        ENDIF
+        is=iapnt
+        do i=1,nap
+          ie=ianxt(is)
+          call u2pixel(ax(is),ay(is),iixs,iiys)
+          call u2pixel(ax(ie),ay(ie),iix,iiy)          
+          if (iisrc.eq.ISRC) then
+            call edwline(iixs,iiys,iix,iiy)
+          else
+            call eswline(iixs,iiys,iix,iiy)
+          endif
+          is=ie
+        enddo
 
 C Label in center of blockage.
-        CALL CFDTRANS(1,XU(If+1),YV(Ji),ZW(Kf+1),XX,YY,ZZ,IER)
-        CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
-        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-        call u2pixel(X1,Y1,iix,iiy)
+        call u2pixel(bx(6),by(6),iix,iiy)
           write (temp,'(a)')VOLNAME(iv,ICFD)
      &      (1:LNBLNK(VOLNAME(iv,ICFD)))
+        call CLIPST(temp,iix,iiy,bz(6),iclp)  ! check clipping
+        if (iclp.ne.0) goto 70
         iicol=1
         call textatxy(iix,iiy,temp,'z',iicol)
-        call forceflush()
-
-C Set colour to ??.
-        if (colok) then
-          iicol=1
-          call winscl('z',iicol)
-        endif
-
-C Draw around blockage in single or double lines in the usual order.
-        if (iisrc.eq.ISRC) then
-          call edwline(iixv(1),iiyv(1),iixv(2),iiyv(2))
-          call edwline(iixv(2),iiyv(2),iixv(3),iiyv(3))
-          call edwline(iixv(3),iiyv(3),iixv(4),iiyv(4))
-          call edwline(iixv(4),iiyv(4),iixv(1),iiyv(1))
-          call edwline(iixv(5),iiyv(5),iixv(6),iiyv(6))
-          call edwline(iixv(6),iiyv(6),iixv(7),iiyv(7))
-          call edwline(iixv(7),iiyv(7),iixv(8),iiyv(8))
-          call edwline(iixv(8),iiyv(8),iixv(5),iiyv(5))
-          call edwline(iixv(1),iiyv(1),iixv(6),iiyv(6))
-          call edwline(iixv(2),iiyv(2),iixv(7),iiyv(7))
-          call edwline(iixv(3),iiyv(3),iixv(8),iiyv(8))
-          call edwline(iixv(4),iiyv(4),iixv(5),iiyv(5))
-        else
-          call eswline(iixv(1),iiyv(1),iixv(2),iiyv(2))
-          call eswline(iixv(2),iiyv(2),iixv(3),iiyv(3))
-          call eswline(iixv(3),iiyv(3),iixv(4),iiyv(4))
-          call eswline(iixv(4),iiyv(4),iixv(1),iiyv(1))
-          call eswline(iixv(5),iiyv(5),iixv(6),iiyv(6))
-          call eswline(iixv(6),iiyv(6),iixv(7),iiyv(7))
-          call eswline(iixv(7),iiyv(7),iixv(8),iiyv(8))
-          call eswline(iixv(8),iiyv(8),iixv(5),iiyv(5))
-          call eswline(iixv(1),iiyv(1),iixv(6),iiyv(6))
-          call eswline(iixv(2),iiyv(2),iixv(7),iiyv(7))
-          call eswline(iixv(3),iiyv(3),iixv(8),iiyv(8))
-          call eswline(iixv(4),iiyv(4),iixv(5),iiyv(5))
-        endif
-        call forceflush()
 
  70   continue
+
+      call forceflush()
+ 
+C Reset colour.
+      if(colok)then
+        iicol=0
+        call winscl('-',iicol)
+      endif
 
       return
       end
@@ -2327,7 +2245,7 @@ C Similarly for k axis.
         call edisp(iuout,
      &    'INIT_CFDTRANS: transformation initialisation failed')
       endif
-  999 return
+      return
       end
 
 C ************* INIT_CFDTRANS_NOGEOM
@@ -2337,7 +2255,6 @@ C not associated with a building zone.
 
       SUBROUTINE INIT_CFDTRANS_NOGEOM(IER)
 
-      COMMON/OUTIN/IUOUT,IUIN,IEOUT
       common/CFD2GEOM/Ox,Oy,Oz,Uxu,Uxv,Uxw,Uyu,Uyv,Uyw,Uzu,Uzv,Uzw
       real Ox,Oy,Oz,Uxu,Uxv,Uxw,Uyu,Uyv,Uyw,Uzu,Uzv,Uzw
 
@@ -2383,7 +2300,7 @@ C this subroutine.
         IER=1
       endif
 
-  999 return
+      return
       end
 
       
@@ -2443,22 +2360,14 @@ C visible from other cgd.F subroutines.
 C Arrays iixv iixv iiyv are the 8 coords of a box in the usual order.
 C Other arrays iix? and iiy? are projections on the 6 faces.
 #ifdef OSI
-      integer iix,iiy,iixv(8),iiyv(8)
-      integer iixw(4),iiyw(4)
-      integer iixe(4),iiye(4)
-      integer iixs(4),iiys(4)
-      integer iixn(4),iiyn(4)
-      integer iixl(4),iiyl(4)
-      integer iixh(4),iiyh(4)
+      integer iix,iiy,iixs,iiys
 #else
-      integer*8 iix,iiy,iixv(8),iiyv(8)
-      integer*8 iixw(4),iiyw(4)
-      integer*8 iixe(4),iiye(4)
-      integer*8 iixs(4),iiys(4)
-      integer*8 iixn(4),iiyn(4)
-      integer*8 iixl(4),iiyl(4)
-      integer*8 iixh(4),iiyh(4)
+      integer*8 iix,iiy,iixs,iiys
 #endif
+      dimension ax(MV),ay(MV),az(MV),ianxt(MV)
+      dimension bx(MV),by(MV),bz(MV),ibnxt(MV)
+      dimension sbbox(3,2)
+      dimension cx(2),cy(2),cz(2)
 
 C Check in graphics mode.
       IF(MMOD.ne.8) return
@@ -2466,294 +2375,666 @@ C Check in graphics mode.
       i=II+1; j=IJ+1; k=IK+1
 
 C Transform local coords to screen coords and remember.
-C Lower front left hand corner of blockage.
-      CALL CFDTRANS(1,XU(i),YV(j),ZW(k),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixv(1)=iix; iiyv(1)=iiy
+      CALL CFDTRANS(1,XU(i),YV(j),ZW(k),ax(1),ay(1),az(1),IER)         ! lower front left
+      CALL CFDTRANS(1,XU(i+1),YV(j),ZW(k),ax(2),ay(2),az(2),IER)       ! lower front right
+      CALL CFDTRANS(1,XU(i+1),YV(j+1),ZW(k),ax(3),ay(3),az(3),IER)     ! lower back right
+      CALL CFDTRANS(1,XU(i),YV(j+1),ZW(k),ax(4),ay(4),az(4),IER)       ! lower back left
+      CALL CFDTRANS(1,XU(i),YV(j),ZW(k+1),ax(5),ay(5),az(5),IER)       ! upper front left
+      CALL CFDTRANS(1,XU(i+1),YV(j),ZW(k+1),ax(6),ay(6),az(6),IER)     ! upper front right
+      CALL CFDTRANS(1,XU(i+1),YV(j+1),ZW(k+1),ax(7),ay(7),az(7),IER)   ! upper back right
+      CALL CFDTRANS(1,XU(i),YV(j+1),ZW(k+1),ax(8),ay(8),az(8),IER)     ! upper back left
+      CALL CFDTRANS(1,XU(2),YV(j),ZW(k),ax(9),ay(9),az(9),IER)         ! west projection lower front
+      CALL CFDTRANS(1,XU(2),YV(j+1),ZW(k),ax(10),ay(10),az(10),IER)    ! west projection lower back
+      CALL CFDTRANS(1,XU(2),YV(j+1),ZW(k+1),ax(11),ay(11),az(11),IER)  ! west projection upper back
+      CALL CFDTRANS(1,XU(2),YV(j),ZW(k+1),ax(12),ay(12),az(12),IER)    ! west projection upper front
+      CALL CFDTRANS(1,XU(NI),YV(j),ZW(k),ax(13),ay(13),az(13),IER)     ! east projection lower front
+      CALL CFDTRANS(1,XU(NI),YV(j+1),ZW(k),ax(14),ay(14),az(14),IER)   ! east projection lower back
+      CALL CFDTRANS(1,XU(NI),YV(j+1),ZW(k+1),ax(15),ay(15),az(15),IER) ! east projection upper back
+      CALL CFDTRANS(1,XU(NI),YV(j),ZW(k+1),ax(16),ay(16),az(16),IER)   ! east projection upper front
+      CALL CFDTRANS(1,XU(i),YV(2),ZW(k),ax(17),ay(17),az(17),IER)      ! south projection lower left
+      CALL CFDTRANS(1,XU(i+1),YV(2),ZW(k),ax(18),ay(18),az(18),IER)    ! south projection lower right
+      CALL CFDTRANS(1,XU(i+1),YV(2),ZW(k+1),ax(19),ay(19),az(19),IER)  ! south projection upper right
+      CALL CFDTRANS(1,XU(i),YV(2),ZW(k+1),ax(20),ay(20),az(20),IER)    ! south projection upper left
+      CALL CFDTRANS(1,XU(i),YV(NJ),ZW(k),ax(21),ay(21),az(21),IER)     ! north projection lower left
+      CALL CFDTRANS(1,XU(i+1),YV(NJ),ZW(k),ax(22),ay(22),az(22),IER)   ! north projection lower right
+      CALL CFDTRANS(1,XU(i+1),YV(NJ),ZW(k+1),ax(23),ay(23),az(23),IER) ! north projection upper right
+      CALL CFDTRANS(1,XU(i),YV(NJ),ZW(k+1),ax(24),ay(24),az(24),IER)   ! north projection upper left
+      CALL CFDTRANS(1,XU(i),YV(j),ZW(2),ax(25),ay(25),az(25),IER)      ! low projection front left
+      CALL CFDTRANS(1,XU(i+1),YV(j),ZW(2),ax(26),ay(26),az(26),IER)    ! low projection front right
+      CALL CFDTRANS(1,XU(i+1),YV(j+1),ZW(2),ax(27),ay(27),az(27),IER)  ! low projection back right
+      CALL CFDTRANS(1,XU(i),YV(j+1),ZW(2),ax(28),ay(28),az(28),IER)    ! low projection back left
+      CALL CFDTRANS(1,XU(i),YV(j),ZW(NK),ax(29),ay(29),az(29),IER)     ! high projection front left
+      CALL CFDTRANS(1,XU(i+1),YV(j),ZW(NK),ax(30),ay(30),az(30),IER)   ! high projection front right
+      CALL CFDTRANS(1,XU(i+1),YV(j+1),ZW(NK),ax(31),ay(31),az(31),IER) ! high projection back right
+      CALL CFDTRANS(1,XU(i),YV(j+1),ZW(NK),ax(32),ay(32),az(32),IER)   ! high projection back left
+      nap=32
+      ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=5; ianxt(5)=6
+      ianxt(6)=7; ianxt(7)=8; ianxt(8)=9; ianxt(9)=10; ianxt(10)=11
+      ianxt(11)=12; ianxt(12)=13; ianxt(13)=14; ianxt(14)=15
+      ianxt(15)=16; ianxt(16)=17; ianxt(17)=18; ianxt(18)=19
+      ianxt(19)=20; ianxt(20)=21; ianxt(21)=22; ianxt(22)=23
+      ianxt(23)=24; ianxt(24)=25; ianxt(25)=26; ianxt(26)=27
+      ianxt(27)=28; ianxt(28)=29; ianxt(29)=30; ianxt(30)=31
+      ianxt(31)=32; ianxt(32)=1
+      CALL MATPOLS(nap,ax,ay,az,ianxt,TSMAT,
+     &  sbbox,nbp,bx,by,bz,ibnxt,ier)
 
-C Lower front right hand corner of blockage.
-      CALL CFDTRANS(1,XU(i+1),YV(j),ZW(k),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixv(2)=iix; iiyv(2)=iiy
+C Clip and draw a polygon for each face.
+C Lower face.
+      ax(1)=bx(1); ay(1)=by(1); az(1)=bz(1)
+      ax(2)=bx(2); ay(2)=by(2); az(2)=bz(2)
+      ax(3)=bx(3); ay(3)=by(3); az(3)=bz(3)
+      ax(4)=bx(4); ay(4)=by(4); az(4)=bz(4)
+      ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=1
+          
+C Check clipping.
+      CALL CLIPSUR(nap,ax,ay,az,iclp)
+      iapnt=1
+      IF (iclp.EQ.1) THEN
+        goto 71
+      ELSEIF (iclp.EQ.-1) THEN
+        CALL CUTSUR(na,nap,iapnt,ax,ay,az,ianxt,ier)
+      ENDIF
 
-C Lower back right hand corner of blockage.
-      CALL CFDTRANS(1,XU(i+1),YV(j+1),ZW(k),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixv(3)=iix; iiyv(3)=iiy
+C Draw polygon.
+      is=iapnt
+      do i=1,nap
+        ie=ianxt(is)
+        call u2pixel(ax(is),ay(is),iixs,iiys)
+        call u2pixel(ax(ie),ay(ie),iix,iiy)
+        call edwline(iixs,iiys,iix,iiy)
+        is=ie
+      enddo
+        
+C Front face.
+C For comments see lower face above.
+  71  continue
+      ax(1)=bx(1); ay(1)=by(1); az(1)=bz(1)
+      ax(2)=bx(2); ay(2)=by(2); az(2)=bz(2)
+      ax(3)=bx(6); ay(3)=by(6); az(3)=bz(6)
+      ax(4)=bx(5); ay(4)=by(5); az(4)=bz(5)
+      ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=1
+      CALL CLIPSUR(nap,ax,ay,az,iclp)
+      iapnt=1
+      IF (iclp.EQ.1) THEN
+        goto 72
+      ELSEIF (iclp.EQ.-1) THEN
+        CALL CUTSUR(na,nap,iapnt,ax,ay,az,ianxt,ier)
+      ENDIF
+      is=iapnt
+      do i=1,nap
+        ie=ianxt(is)
+        call u2pixel(ax(is),ay(is),iixs,iiys)
+        call u2pixel(ax(ie),ay(ie),iix,iiy)
+        call edwline(iixs,iiys,iix,iiy)
+        is=ie
+      enddo
+        
+C Left face.
+C For comments see lower face above.
+  72  continue
+      ax(1)=bx(1); ay(1)=by(1); az(1)=bz(1)
+      ax(2)=bx(4); ay(2)=by(4); az(2)=bz(4)
+      ax(3)=bx(8); ay(3)=by(8); az(3)=bz(8)
+      ax(4)=bx(5); ay(4)=by(5); az(4)=bz(5)
+      ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=1
+      CALL CLIPSUR(nap,ax,ay,az,iclp)
+      iapnt=1
+      IF (iclp.EQ.1) THEN
+        goto 73
+      ELSEIF (iclp.EQ.-1) THEN
+        CALL CUTSUR(na,nap,iapnt,ax,ay,az,ianxt,ier)
+      ENDIF
+      is=iapnt
+      do i=1,nap
+        ie=ianxt(is)
+        call u2pixel(ax(is),ay(is),iixs,iiys)
+        call u2pixel(ax(ie),ay(ie),iix,iiy)
+        call edwline(iixs,iiys,iix,iiy)
+        is=ie
+      enddo
+        
+C Back face.
+C For comments see lower face above.
+  73  continue
+      ax(1)=bx(3); ay(1)=by(3); az(1)=bz(3)
+      ax(2)=bx(4); ay(2)=by(4); az(2)=bz(4)
+      ax(3)=bx(8); ay(3)=by(8); az(3)=bz(8)
+      ax(4)=bx(7); ay(4)=by(7); az(4)=bz(7)
+      ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=1
+      CALL CLIPSUR(nap,ax,ay,az,iclp)
+      iapnt=1
+      IF (iclp.EQ.1) THEN
+        goto 74
+      ELSEIF (iclp.EQ.-1) THEN
+        CALL CUTSUR(na,nap,iapnt,ax,ay,az,ianxt,ier)
+      ENDIF
+      is=iapnt
+      do i=1,nap
+        ie=ianxt(is)
+        call u2pixel(ax(is),ay(is),iixs,iiys)
+        call u2pixel(ax(ie),ay(ie),iix,iiy)
+        call edwline(iixs,iiys,iix,iiy)
+        is=ie
+      enddo
 
-C Lower back left hand corner of blockage.
-      CALL CFDTRANS(1,XU(i),YV(j+1),ZW(k),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixv(4)=iix; iiyv(4)=iiy
+C Right face.
+C For comments see lower face above.
+  74  continue
+      ax(1)=bx(2); ay(1)=by(2); az(1)=bz(2)
+      ax(2)=bx(3); ay(2)=by(3); az(2)=bz(3)
+      ax(3)=bx(7); ay(3)=by(7); az(3)=bz(7)
+      ax(4)=bx(6); ay(4)=by(6); az(4)=bz(6)
+      ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=1
+      CALL CLIPSUR(nap,ax,ay,az,iclp)
+      iapnt=1
+      IF (iclp.EQ.1) THEN
+        goto 75
+      ELSEIF (iclp.EQ.-1) THEN
+        CALL CUTSUR(na,nap,iapnt,ax,ay,az,ianxt,ier)
+      ENDIF
+      is=iapnt
+      do i=1,nap
+        ie=ianxt(is)
+        call u2pixel(ax(is),ay(is),iixs,iiys)
+        call u2pixel(ax(ie),ay(ie),iix,iiy)
+        call edwline(iixs,iiys,iix,iiy)
+        is=ie
+      enddo
 
-C Upper back left corner of blockage.
-      CALL CFDTRANS(1,XU(i),YV(j+1),ZW(k+1),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixv(5)=iix; iiyv(5)=iiy
-
-C Upper front left corner of blockage
-      CALL CFDTRANS(1,XU(i),YV(j),ZW(k+1),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixv(6)=iix; iiyv(6)=iiy
-
-C Upper front right corner of blockage.
-      CALL CFDTRANS(1,XU(i+1),YV(j),ZW(k+1),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixv(7)=iix; iiyv(7)=iiy
-
-C Upper back right corner of blockage.
-      CALL CFDTRANS(1,XU(i+1),YV(j+1),ZW(k+1),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixv(8)=iix; iiyv(8)=iiy
-
-C Draw around cell in double lines in the usual order.
-      call edwline(iixv(1),iiyv(1),iixv(2),iiyv(2))
-      call edwline(iixv(2),iiyv(2),iixv(3),iiyv(3))
-      call edwline(iixv(3),iiyv(3),iixv(4),iiyv(4))
-      call edwline(iixv(4),iiyv(4),iixv(1),iiyv(1))
-      call edwline(iixv(5),iiyv(5),iixv(6),iiyv(6))
-      call edwline(iixv(6),iiyv(6),iixv(7),iiyv(7))
-      call edwline(iixv(7),iiyv(7),iixv(8),iiyv(8))
-      call edwline(iixv(8),iiyv(8),iixv(5),iiyv(5))
-      call edwline(iixv(1),iiyv(1),iixv(6),iiyv(6))
-      call edwline(iixv(2),iiyv(2),iixv(7),iiyv(7))
-      call edwline(iixv(3),iiyv(3),iixv(8),iiyv(8))
-      call edwline(iixv(4),iiyv(4),iixv(5),iiyv(5))
-      call forceflush()
+C Top face.
+C For comments see lower face above.
+  75  continue
+      ax(1)=bx(5); ay(1)=by(5); az(1)=bz(5)
+      ax(2)=bx(6); ay(2)=by(6); az(2)=bz(6)
+      ax(3)=bx(7); ay(3)=by(7); az(3)=bz(7)
+      ax(4)=bx(8); ay(4)=by(8); az(4)=bz(8)
+      ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=1
+      CALL CLIPSUR(nap,ax,ay,az,iclp)
+      iapnt=1
+      IF (iclp.EQ.1) THEN
+        goto 76
+      ELSEIF (iclp.EQ.-1) THEN
+        CALL CUTSUR(na,nap,iapnt,ax,ay,az,ianxt,ier)
+      ENDIF
+      is=iapnt
+      do i=1,nap
+        ie=ianxt(is)
+        call u2pixel(ax(is),ay(is),iixs,iiys)
+        call u2pixel(ax(ie),ay(ie),iix,iiy)
+        call edwline(iixs,iiys,iix,iiy)
+        is=ie
+      enddo
 
 C Projection on west face.
-      CALL CFDTRANS(1,XU(2),YV(j),ZW(k),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixw(1)=iix; iiyw(1)=iiy
+C First clip and draw polygon on the west boundary.
+  76  continue
+      ax(1)=bx(9); ay(1)=by(9); az(1)=bz(9)
+      ax(2)=bx(10); ay(2)=by(10); az(2)=bz(10)
+      ax(3)=bx(11); ay(3)=by(11); az(3)=bz(11)
+      ax(4)=bx(12); ay(4)=by(12); az(4)=bz(12)
+      ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=1
 
-      CALL CFDTRANS(1,XU(2),YV(j+1),ZW(k),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixw(2)=iix; iiyw(2)=iiy
+C Check clipping.
+      CALL CLIPSUR(nap,ax,ay,az,iclp)
+      iapnt=1
+      IF (iclp.EQ.1) THEN
+        goto 77
+      ELSEIF (iclp.EQ.-1) THEN
+        CALL CUTSUR(na,nap,iapnt,ax,ay,az,ianxt,ier)
+      ENDIF
 
-      CALL CFDTRANS(1,XU(2),YV(j+1),ZW(k+1),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixw(3)=iix; iiyw(3)=iiy
+C Draw polygon.
+      is=iapnt
+      do i=1,nap
+        ie=ianxt(is)
+        call u2pixel(ax(is),ay(is),iixs,iiys)
+        call u2pixel(ax(ie),ay(ie),iix,iiy)
+        call eswline(iixs,iiys,iix,iiy)
+        is=ie
+      enddo
 
-      CALL CFDTRANS(1,XU(2),YV(j),ZW(k+1),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixw(4)=iix; iiyw(4)=iiy
-
-      call eswline(iixw(1),iiyw(1),iixw(2),iiyw(2))
-      call eswline(iixw(2),iiyw(2),iixw(3),iiyw(3))
-      call eswline(iixw(3),iiyw(3),iixw(4),iiyw(4))
-      call eswline(iixw(4),iiyw(4),iixw(1),iiyw(1))
-      call eswline(iixw(1),iiyw(1),iixv(1),iiyv(1))
-      call eswline(iixw(2),iiyw(2),iixv(4),iiyv(4))
-      call eswline(iixw(3),iiyw(3),iixv(5),iiyv(5))
-      call eswline(iixw(4),iiyw(4),iixv(6),iiyv(6))
-      call forceflush()
+C Clip and draw lines from cell to projection.
+      cx(1)=bx(1); cy(1)=by(1); cz(1)=bz(1)
+      cx(2)=bx(9); cy(2)=by(9); cz(2)=bz(9)
+      call CLIPLIN(cx,cy,cz,iclp)
+      if (iclp.eq.1) then
+        goto 761
+      elseif (iclp.eq.-1) then
+        call CUTLIN(cx,cy,cz,iclp)
+        if (iclp.eq.-1) goto 761        
+      endif
+      call u2pixel(cx(1),cy(1),iixs,iiys)
+      call u2pixel(cx(2),cy(2),iix,iiy)
+      call eswline(iixs,iiys,iix,iiy)
+      
+  761 continue
+      cx(1)=bx(4); cy(1)=by(4); cz(1)=bz(4)
+      cx(2)=bx(10); cy(2)=by(10); cz(2)=bz(10)
+      call CLIPLIN(cx,cy,cz,iclp)
+      if (iclp.eq.1) then
+        goto 762
+      elseif (iclp.eq.-1) then
+        call CUTLIN(cx,cy,cz,iclp)
+        if (iclp.eq.-1) goto 762
+      endif
+      call u2pixel(cx(1),cy(1),iixs,iiys)
+      call u2pixel(cx(2),cy(2),iix,iiy)
+      call eswline(iixs,iiys,iix,iiy)
+      
+  762 continue
+      cx(1)=bx(8); cy(1)=by(8); cz(1)=bz(8)
+      cx(2)=bx(11); cy(2)=by(11); cz(2)=bz(11)
+      call CLIPLIN(cx,cy,cz,iclp)
+      if (iclp.eq.1) then
+        goto 763
+      elseif (iclp.eq.-1) then
+        call CUTLIN(cx,cy,cz,iclp)
+        if (iclp.eq.-1) goto 763
+      endif
+      call u2pixel(cx(1),cy(1),iixs,iiys)
+      call u2pixel(cx(2),cy(2),iix,iiy)
+      call eswline(iixs,iiys,iix,iiy)
+      
+  763 continue
+      cx(1)=bx(5); cy(1)=by(5); cz(1)=bz(5)
+      cx(2)=bx(12); cy(2)=by(12); cz(2)=bz(12)
+      call CLIPLIN(cx,cy,cz,iclp)
+      if (iclp.eq.1) then
+        goto 77
+      elseif (iclp.eq.-1) then
+        call CUTLIN(cx,cy,cz,iclp)
+        if (iclp.eq.-1) goto 77
+      endif
+      call u2pixel(cx(1),cy(1),iixs,iiys)
+      call u2pixel(cx(2),cy(2),iix,iiy)
+      call eswline(iixs,iiys,iix,iiy)
 
 C Projection on east face.
-      CALL CFDTRANS(1,XU(NI),YV(j),ZW(k),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixe(1)=iix; iiye(1)=iiy
-
-      CALL CFDTRANS(1,XU(NI),YV(j+1),ZW(k),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixe(2)=iix; iiye(2)=iiy
-
-      CALL CFDTRANS(1,XU(NI),YV(j+1),ZW(k+1),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixe(3)=iix; iiye(3)=iiy
-
-      CALL CFDTRANS(1,XU(NI),YV(j),ZW(k+1),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixe(4)=iix; iiye(4)=iiy
-
-      call eswline(iixe(1),iiye(1),iixe(2),iiye(2))
-      call eswline(iixe(2),iiye(2),iixe(3),iiye(3))
-      call eswline(iixe(3),iiye(3),iixe(4),iiye(4))
-      call eswline(iixe(4),iiye(4),iixe(1),iiye(1))
-      call eswline(iixe(1),iiye(1),iixv(2),iiyv(2))
-      call eswline(iixe(2),iiye(2),iixv(3),iiyv(3))
-      call eswline(iixe(3),iiye(3),iixv(8),iiyv(8))
-      call eswline(iixe(4),iiye(4),iixv(7),iiyv(7))
-      call forceflush()
-
+C For comments see west projection above.
+  77  continue
+      ax(1)=bx(13); ay(1)=by(13); az(1)=bz(13)
+      ax(2)=bx(14); ay(2)=by(14); az(2)=bz(14)
+      ax(3)=bx(15); ay(3)=by(15); az(3)=bz(15)
+      ax(4)=bx(16); ay(4)=by(16); az(4)=bz(16)
+      ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=1
+      CALL CLIPSUR(nap,ax,ay,az,iclp)
+      iapnt=1
+      IF (iclp.EQ.1) THEN
+        goto 78
+      ELSEIF (iclp.EQ.-1) THEN
+        CALL CUTSUR(na,nap,iapnt,ax,ay,az,ianxt,ier)
+      ENDIF
+      is=iapnt
+      do i=1,nap
+        ie=ianxt(is)
+        call u2pixel(ax(is),ay(is),iixs,iiys)
+        call u2pixel(ax(ie),ay(ie),iix,iiy)
+        call eswline(iixs,iiys,iix,iiy)
+        is=ie
+      enddo
+      cx(1)=bx(2); cy(1)=by(2); cz(1)=bz(2)
+      cx(2)=bx(13); cy(2)=by(13); cz(2)=bz(13)
+      call CLIPLIN(cx,cy,cz,iclp)
+      if (iclp.eq.1) then
+        goto 771
+      elseif (iclp.eq.-1) then
+        call CUTLIN(cx,cy,cz,iclp)
+        if (iclp.eq.-1) goto 771
+      endif
+      call u2pixel(cx(1),cy(1),iixs,iiys)
+      call u2pixel(cx(2),cy(2),iix,iiy)
+      call eswline(iixs,iiys,iix,iiy)
+  771 continue
+      cx(1)=bx(3); cy(1)=by(3); cz(1)=bz(3)
+      cx(2)=bx(14); cy(2)=by(14); cz(2)=bz(14)
+      call CLIPLIN(cx,cy,cz,iclp)
+      if (iclp.eq.1) then
+        goto 772
+      elseif (iclp.eq.-1) then
+        call CUTLIN(cx,cy,cz,iclp)
+        if (iclp.eq.-1) goto 772
+      endif
+      call u2pixel(cx(1),cy(1),iixs,iiys)
+      call u2pixel(cx(2),cy(2),iix,iiy)
+      call eswline(iixs,iiys,iix,iiy)
+  772 continue
+      cx(1)=bx(7); cy(1)=by(7); cz(1)=bz(7)
+      cx(2)=bx(15); cy(2)=by(15); cz(2)=bz(15)
+      call CLIPLIN(cx,cy,cz,iclp)
+      if (iclp.eq.1) then
+        goto 773
+      elseif (iclp.eq.-1) then
+        call CUTLIN(cx,cy,cz,iclp)
+        if (iclp.eq.-1) goto 773
+      endif
+      call u2pixel(cx(1),cy(1),iixs,iiys)
+      call u2pixel(cx(2),cy(2),iix,iiy)
+      call eswline(iixs,iiys,iix,iiy)
+  773 continue
+      cx(1)=bx(6); cy(1)=by(6); cz(1)=bz(6)
+      cx(2)=bx(16); cy(2)=by(16); cz(2)=bz(16)
+      call CLIPLIN(cx,cy,cz,iclp)
+      if (iclp.eq.1) then
+        goto 78
+      elseif (iclp.eq.-1) then
+        call CUTLIN(cx,cy,cz,iclp)
+        if (iclp.eq.-1) goto 78
+      endif
+      call u2pixel(cx(1),cy(1),iixs,iiys)
+      call u2pixel(cx(2),cy(2),iix,iiy)
+      call eswline(iixs,iiys,iix,iiy)
+      
 C Projection on south face.
-      CALL CFDTRANS(1,XU(i),YV(2),ZW(k),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixs(1)=iix; iiys(1)=iiy
-
-      CALL CFDTRANS(1,XU(i+1),YV(2),ZW(k),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixs(2)=iix; iiys(2)=iiy
-
-      CALL CFDTRANS(1,XU(i+1),YV(2),ZW(k+1),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixs(3)=iix; iiys(3)=iiy
-
-      CALL CFDTRANS(1,XU(i),YV(2),ZW(k+1),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixs(4)=iix; iiys(4)=iiy
-
-      call eswline(iixs(1),iiys(1),iixs(2),iiys(2))
-      call eswline(iixs(2),iiys(2),iixs(3),iiys(3))
-      call eswline(iixs(3),iiys(3),iixs(4),iiys(4))
-      call eswline(iixs(4),iiys(4),iixs(1),iiys(1))
-      call eswline(iixs(1),iiys(1),iixv(1),iiyv(1))
-      call eswline(iixs(2),iiys(2),iixv(2),iiyv(2))
-      call eswline(iixs(3),iiys(3),iixv(7),iiyv(7))
-      call eswline(iixs(4),iiys(4),iixv(6),iiyv(6))
-      call forceflush()
-
+C For comments see west projection above.
+  78  continue
+      ax(1)=bx(17); ay(1)=by(17); az(1)=bz(17)
+      ax(2)=bx(18); ay(2)=by(18); az(2)=bz(18)
+      ax(3)=bx(19); ay(3)=by(19); az(3)=bz(19)
+      ax(4)=bx(20); ay(4)=by(20); az(4)=bz(20)
+      ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=1
+      CALL CLIPSUR(nap,ax,ay,az,iclp)
+      iapnt=1
+      IF (iclp.EQ.1) THEN
+        goto 79
+      ELSEIF (iclp.EQ.-1) THEN
+        CALL CUTSUR(na,nap,iapnt,ax,ay,az,ianxt,ier)
+      ENDIF
+      is=iapnt
+      do i=1,nap
+        ie=ianxt(is)
+        call u2pixel(ax(is),ay(is),iixs,iiys)
+        call u2pixel(ax(ie),ay(ie),iix,iiy)
+        call eswline(iixs,iiys,iix,iiy)
+        is=ie
+      enddo
+      cx(1)=bx(1); cy(1)=by(1); cz(1)=bz(1)
+      cx(2)=bx(17); cy(2)=by(17); cz(2)=bz(17)
+      call CLIPLIN(cx,cy,cz,iclp)
+      if (iclp.eq.1) then
+        goto 781
+      elseif (iclp.eq.-1) then
+        call CUTLIN(cx,cy,cz,iclp)
+        if (iclp.eq.-1) goto 781
+      endif
+      call u2pixel(cx(1),cy(1),iixs,iiys)
+      call u2pixel(cx(2),cy(2),iix,iiy)
+      call eswline(iixs,iiys,iix,iiy)
+  781 continue
+      cx(1)=bx(2); cy(1)=by(2); cz(1)=bz(2)
+      cx(2)=bx(18); cy(2)=by(18); cz(2)=bz(18)
+      call CLIPLIN(cx,cy,cz,iclp)
+      if (iclp.eq.1) then
+        goto 782
+      elseif (iclp.eq.-1) then
+        call CUTLIN(cx,cy,cz,iclp)
+        if (iclp.eq.-1) goto 782
+      endif
+      call u2pixel(cx(1),cy(1),iixs,iiys)
+      call u2pixel(cx(2),cy(2),iix,iiy)
+      call eswline(iixs,iiys,iix,iiy)
+  782 continue
+      cx(1)=bx(6); cy(1)=by(6); cz(1)=bz(6)
+      cx(2)=bx(19); cy(2)=by(19); cz(2)=bz(19)
+      call CLIPLIN(cx,cy,cz,iclp)
+      if (iclp.eq.1) then
+        goto 783
+      elseif (iclp.eq.-1) then
+        call CUTLIN(cx,cy,cz,iclp)
+        if (iclp.eq.-1) goto 783
+      endif
+      call u2pixel(cx(1),cy(1),iixs,iiys)
+      call u2pixel(cx(2),cy(2),iix,iiy)
+      call eswline(iixs,iiys,iix,iiy)
+  783 continue
+      cx(1)=bx(5); cy(1)=by(5); cz(1)=bz(5)
+      cx(2)=bx(20); cy(2)=by(20); cz(2)=bz(20)
+      call CLIPLIN(cx,cy,cz,iclp)
+      if (iclp.eq.1) then
+        goto 79
+      elseif (iclp.eq.-1) then
+        call CUTLIN(cx,cy,cz,iclp)
+        if (iclp.eq.-1) goto 79
+      endif
+      call u2pixel(cx(1),cy(1),iixs,iiys)
+      call u2pixel(cx(2),cy(2),iix,iiy)
+      call eswline(iixs,iiys,iix,iiy)
+      
 C Projection on north face.
-      CALL CFDTRANS(1,XU(i),YV(NJ),ZW(k),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixn(1)=iix; iiyn(1)=iiy
-
-      CALL CFDTRANS(1,XU(i+1),YV(NJ),ZW(k),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixn(2)=iix; iiyn(2)=iiy
-
-      CALL CFDTRANS(1,XU(i+1),YV(NJ),ZW(k+1),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixn(3)=iix; iiyn(3)=iiy
-
-      CALL CFDTRANS(1,XU(i),YV(NJ),ZW(k+1),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixn(4)=iix; iiyn(4)=iiy
-
-      call eswline(iixn(1),iiyn(1),iixn(2),iiyn(2))
-      call eswline(iixn(2),iiyn(2),iixn(3),iiyn(3))
-      call eswline(iixn(3),iiyn(3),iixn(4),iiyn(4))
-      call eswline(iixn(4),iiyn(4),iixn(1),iiyn(1))
-      call eswline(iixn(1),iiyn(1),iixv(4),iiyv(4))
-      call eswline(iixn(2),iiyn(2),iixv(3),iiyv(3))
-      call eswline(iixn(3),iiyn(3),iixv(8),iiyv(8))
-      call eswline(iixn(4),iiyn(4),iixv(5),iiyv(5))
-      call forceflush()
-
+C For comments see west projection above.
+  79  continue
+      ax(1)=bx(21); ay(1)=by(21); az(1)=bz(21)
+      ax(2)=bx(22); ay(2)=by(22); az(2)=bz(22)
+      ax(3)=bx(23); ay(3)=by(23); az(3)=bz(23)
+      ax(4)=bx(24); ay(4)=by(24); az(4)=bz(24)
+      ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=1
+      CALL CLIPSUR(nap,ax,ay,az,iclp)
+      iapnt=1
+      IF (iclp.EQ.1) THEN
+        goto 80
+      ELSEIF (iclp.EQ.-1) THEN
+        CALL CUTSUR(na,nap,iapnt,ax,ay,az,ianxt,ier)
+      ENDIF
+      is=iapnt
+      do i=1,nap
+        ie=ianxt(is)
+        call u2pixel(ax(is),ay(is),iixs,iiys)
+        call u2pixel(ax(ie),ay(ie),iix,iiy)
+        call eswline(iixs,iiys,iix,iiy)
+        is=ie
+      enddo
+      cx(1)=bx(4); cy(1)=by(4); cz(1)=bz(4)
+      cx(2)=bx(21); cy(2)=by(21); cz(2)=bz(21)
+      call CLIPLIN(cx,cy,cz,iclp)
+      if (iclp.eq.1) then
+        goto 791
+      elseif (iclp.eq.-1) then
+        call CUTLIN(cx,cy,cz,iclp)
+        if (iclp.eq.-1) goto 791
+      endif
+      call u2pixel(cx(1),cy(1),iixs,iiys)
+      call u2pixel(cx(2),cy(2),iix,iiy)
+      call eswline(iixs,iiys,iix,iiy)
+  791 continue
+      cx(1)=bx(3); cy(1)=by(3); cz(1)=bz(3)
+      cx(2)=bx(22); cy(2)=by(22); cz(2)=bz(22)
+      call CLIPLIN(cx,cy,cz,iclp)
+      if (iclp.eq.1) then
+        goto 792
+      elseif (iclp.eq.-1) then
+        call CUTLIN(cx,cy,cz,iclp)
+        if (iclp.eq.-1) goto 792
+      endif
+      call u2pixel(cx(1),cy(1),iixs,iiys)
+      call u2pixel(cx(2),cy(2),iix,iiy)
+      call eswline(iixs,iiys,iix,iiy)
+  792 continue
+      cx(1)=bx(7); cy(1)=by(7); cz(1)=bz(7)
+      cx(2)=bx(23); cy(2)=by(23); cz(2)=bz(23)
+      call CLIPLIN(cx,cy,cz,iclp)
+      if (iclp.eq.1) then
+        goto 793
+      elseif (iclp.eq.-1) then
+        call CUTLIN(cx,cy,cz,iclp)
+        if (iclp.eq.-1) goto 793
+      endif
+      call u2pixel(cx(1),cy(1),iixs,iiys)
+      call u2pixel(cx(2),cy(2),iix,iiy)
+      call eswline(iixs,iiys,iix,iiy)
+  793 continue
+      cx(1)=bx(8); cy(1)=by(8); cz(1)=bz(8)
+      cx(2)=bx(24); cy(2)=by(24); cz(2)=bz(24)
+      call CLIPLIN(cx,cy,cz,iclp)
+      if (iclp.eq.1) then
+        goto 80
+      elseif (iclp.eq.-1) then
+        call CUTLIN(cx,cy,cz,iclp)
+        if (iclp.eq.-1) goto 80
+      endif
+      call u2pixel(cx(1),cy(1),iixs,iiys)
+      call u2pixel(cx(2),cy(2),iix,iiy)
+      call eswline(iixs,iiys,iix,iiy)
+      
 C Projection on low face.
-      CALL CFDTRANS(1,XU(i),YV(j),ZW(2),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixl(1)=iix; iiyl(1)=iiy
-
-      CALL CFDTRANS(1,XU(i+1),YV(j),ZW(2),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixl(2)=iix; iiyl(2)=iiy
-
-      CALL CFDTRANS(1,XU(i+1),YV(j+1),ZW(2),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixl(3)=iix; iiyl(3)=iiy
-
-      CALL CFDTRANS(1,XU(i),YV(j+1),ZW(2),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixl(4)=iix; iiyl(4)=iiy
-
-      call eswline(iixl(1),iiyl(1),iixl(2),iiyl(2))
-      call eswline(iixl(2),iiyl(2),iixl(3),iiyl(3))
-      call eswline(iixl(3),iiyl(3),iixl(4),iiyl(4))
-      call eswline(iixl(4),iiyl(4),iixl(1),iiyl(1))
-      call eswline(iixl(1),iiyl(1),iixv(1),iiyv(1))
-      call eswline(iixl(2),iiyl(2),iixv(2),iiyv(2))
-      call eswline(iixl(3),iiyl(3),iixv(3),iiyv(3))
-      call eswline(iixl(4),iiyl(4),iixv(4),iiyv(4))
-      call forceflush()
-
+C For comments see west projection above.
+  80  continue
+      ax(1)=bx(25); ay(1)=by(25); az(1)=bz(25)
+      ax(2)=bx(26); ay(2)=by(26); az(2)=bz(26)
+      ax(3)=bx(27); ay(3)=by(27); az(3)=bz(27)
+      ax(4)=bx(28); ay(4)=by(28); az(4)=bz(28)
+      ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=1
+      CALL CLIPSUR(nap,ax,ay,az,iclp)
+      iapnt=1
+      IF (iclp.EQ.1) THEN
+        goto 81
+      ELSEIF (iclp.EQ.-1) THEN
+        CALL CUTSUR(na,nap,iapnt,ax,ay,az,ianxt,ier)
+      ENDIF
+      is=iapnt
+      do i=1,nap
+        ie=ianxt(is)
+        call u2pixel(ax(is),ay(is),iixs,iiys)
+        call u2pixel(ax(ie),ay(ie),iix,iiy)
+        call eswline(iixs,iiys,iix,iiy)
+        is=ie
+      enddo
+      cx(1)=bx(1); cy(1)=by(1); cz(1)=bz(1)
+      cx(2)=bx(25); cy(2)=by(25); cz(2)=bz(25)
+      call CLIPLIN(cx,cy,cz,iclp)
+      if (iclp.eq.1) then
+        goto 801
+      elseif (iclp.eq.-1) then
+        call CUTLIN(cx,cy,cz,iclp)
+        if (iclp.eq.-1) goto 801
+      endif
+      call u2pixel(cx(1),cy(1),iixs,iiys)
+      call u2pixel(cx(2),cy(2),iix,iiy)
+      call eswline(iixs,iiys,iix,iiy)
+  801 continue
+      cx(1)=bx(2); cy(1)=by(2); cz(1)=bz(2)
+      cx(2)=bx(26); cy(2)=by(26); cz(2)=bz(26)
+      call CLIPLIN(cx,cy,cz,iclp)
+      if (iclp.eq.1) then
+        goto 802
+      elseif (iclp.eq.-1) then
+        call CUTLIN(cx,cy,cz,iclp)
+        if (iclp.eq.-1) goto 802
+      endif
+      call u2pixel(cx(1),cy(1),iixs,iiys)
+      call u2pixel(cx(2),cy(2),iix,iiy)
+      call eswline(iixs,iiys,iix,iiy)
+  802 continue
+      cx(1)=bx(3); cy(1)=by(3); cz(1)=bz(3)
+      cx(2)=bx(27); cy(2)=by(27); cz(2)=bz(27)
+      call CLIPLIN(cx,cy,cz,iclp)
+      if (iclp.eq.1) then
+        goto 803
+      elseif (iclp.eq.-1) then
+        call CUTLIN(cx,cy,cz,iclp)
+        if (iclp.eq.-1) goto 803
+      endif
+      call u2pixel(cx(1),cy(1),iixs,iiys)
+      call u2pixel(cx(2),cy(2),iix,iiy)
+      call eswline(iixs,iiys,iix,iiy)
+  803 continue
+      cx(1)=bx(4); cy(1)=by(4); cz(1)=bz(4)
+      cx(2)=bx(28); cy(2)=by(28); cz(2)=bz(28)
+      call CLIPLIN(cx,cy,cz,iclp)
+      if (iclp.eq.1) then
+        goto 81
+      elseif (iclp.eq.-1) then
+        call CUTLIN(cx,cy,cz,iclp)
+        if (iclp.eq.-1) goto 81
+      endif
+      call u2pixel(cx(1),cy(1),iixs,iiys)
+      call u2pixel(cx(2),cy(2),iix,iiy)
+      call eswline(iixs,iiys,iix,iiy)
+      
 C Projection on high face.
-      CALL CFDTRANS(1,XU(i),YV(j),ZW(NK),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixh(1)=iix; iiyh(1)=iiy
+C For comments see west projection above.
+  81  continue
+      ax(1)=bx(29); ay(1)=by(29); az(1)=bz(29)
+      ax(2)=bx(30); ay(2)=by(30); az(2)=bz(30)
+      ax(3)=bx(31); ay(3)=by(31); az(3)=bz(31)
+      ax(4)=bx(32); ay(4)=by(32); az(4)=bz(32)
+      ianxt(1)=2; ianxt(2)=3; ianxt(3)=4; ianxt(4)=1
+      CALL CLIPSUR(nap,ax,ay,az,iclp)
+      iapnt=1
+      IF (iclp.EQ.1) THEN
+        goto 82
+      ELSEIF (iclp.EQ.-1) THEN
+        CALL CUTSUR(na,nap,iapnt,ax,ay,az,ianxt,ier)
+      ENDIF
+      is=iapnt
+      do i=1,nap
+        ie=ianxt(is)
+        call u2pixel(ax(is),ay(is),iixs,iiys)
+        call u2pixel(ax(ie),ay(ie),iix,iiy)
+        call eswline(iixs,iiys,iix,iiy)
+        is=ie
+      enddo
+      cx(1)=bx(5); cy(1)=by(5); cz(1)=bz(5)
+      cx(2)=bx(29); cy(2)=by(29); cz(2)=bz(29)
+      call CLIPLIN(cx,cy,cz,iclp)
+      if (iclp.eq.1) then
+        goto 811
+      elseif (iclp.eq.-1) then
+        call CUTLIN(cx,cy,cz,iclp)
+        if (iclp.eq.-1) goto 811
+      endif
+      call u2pixel(cx(1),cy(1),iixs,iiys)
+      call u2pixel(cx(2),cy(2),iix,iiy)
+      call eswline(iixs,iiys,iix,iiy)
+  811 continue
+      cx(1)=bx(6); cy(1)=by(6); cz(1)=bz(6)
+      cx(2)=bx(30); cy(2)=by(30); cz(2)=bz(30)
+      call CLIPLIN(cx,cy,cz,iclp)
+      if (iclp.eq.1) then
+        goto 812
+      elseif (iclp.eq.-1) then
+        call CUTLIN(cx,cy,cz,iclp)
+        if (iclp.eq.-1) goto 812
+      endif
+      call u2pixel(cx(1),cy(1),iixs,iiys)
+      call u2pixel(cx(2),cy(2),iix,iiy)
+      call eswline(iixs,iiys,iix,iiy)
+  812 continue
+      cx(1)=bx(7); cy(1)=by(7); cz(1)=bz(7)
+      cx(2)=bx(31); cy(2)=by(31); cz(2)=bz(31)
+      call CLIPLIN(cx,cy,cz,iclp)
+      if (iclp.eq.1) then
+        goto 813
+      elseif (iclp.eq.-1) then
+        call CUTLIN(cx,cy,cz,iclp)
+        if (iclp.eq.-1) goto 813
+      endif
+      call u2pixel(cx(1),cy(1),iixs,iiys)
+      call u2pixel(cx(2),cy(2),iix,iiy)
+      call eswline(iixs,iiys,iix,iiy)
+  813 continue
+      cx(1)=bx(8); cy(1)=by(8); cz(1)=bz(8)
+      cx(2)=bx(32); cy(2)=by(32); cz(2)=bz(32)
+      call CLIPLIN(cx,cy,cz,iclp)
+      if (iclp.eq.1) then
+        goto 82
+      elseif (iclp.eq.-1) then
+        call CUTLIN(cx,cy,cz,iclp)
+        if (iclp.eq.-1) goto 82
+      endif
+      call u2pixel(cx(1),cy(1),iixs,iiys)
+      call u2pixel(cx(2),cy(2),iix,iiy)
+      call eswline(iixs,iiys,iix,iiy)
 
-      CALL CFDTRANS(1,XU(i+1),YV(j),ZW(NK),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixh(2)=iix; iiyh(2)=iiy
-
-      CALL CFDTRANS(1,XU(i+1),YV(j+1),ZW(NK),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixh(3)=iix; iiyh(3)=iiy
-
-      CALL CFDTRANS(1,XU(i),YV(j+1),ZW(NK),XPP,YPP,ZPP,IER)
-      CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
-      CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      call u2pixel(X1,Y1,iix,iiy)
-      iixh(4)=iix; iiyh(4)=iiy
-
-      call eswline(iixh(1),iiyh(1),iixh(2),iiyh(2))
-      call eswline(iixh(2),iiyh(2),iixh(3),iiyh(3))
-      call eswline(iixh(3),iiyh(3),iixh(4),iiyh(4))
-      call eswline(iixh(4),iiyh(4),iixh(1),iiyh(1))
-      call eswline(iixh(1),iiyh(1),iixv(6),iiyv(6))
-      call eswline(iixh(2),iiyh(2),iixv(7),iiyv(7))
-      call eswline(iixh(3),iiyh(3),iixv(8),iiyv(8))
-      call eswline(iixh(4),iiyh(4),iixv(5),iiyv(5))
-      call forceflush()
+  82  call forceflush()
 
       return
       END
 
-      SUBROUTINE CFDVIEW(IER)
+C ------- CFDVIEW
+C Essentially the equivalent of ADJVIEW in common3dv.F for CFD
+C visualisation.
 
-C CFDVIEW is essentially the equivalent of ADJVIEW in common3dv.F
-C for CFD visualisation.
+      SUBROUTINE CFDVIEW(IER)
 
 #include "building.h"
 #include "cfd.h"

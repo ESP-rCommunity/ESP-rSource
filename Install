@@ -18,13 +18,13 @@ SRCdir="${HOMEdir}/src"         # Source code directory.
 COSIMdir=" "		        # Harmonizer installation directory.
 
 # Compilation settings.
-mode="interactive"         # Provide feedback during installation. 
+mode="interactive"         # Feedback during installation. 
 xml_support="yes"          # Support for XML output.
 SQLite_support="no"        # Support for SQLite output.
 FMI_support="no"           # Support for FMI connectivity.
 debugging="no"             # Support for debugging symbols.
 EXE=""                     # Executable file extension.
-opt="-O1"                  # optimization to be applied
+opt="-O1"                  # Optimisation to be applied
 FFLAGS="-I../include "     # Fortran compiler flags.
 CFLAGS="-I../include "     # C compiler flags.
 LD_FLAGS=" "               # Link-loader flags.
@@ -1903,8 +1903,6 @@ if [ "$install_training" = "yes" ]; then
   echo "    - installing training and validation models:"
 # Special case.
   rm -rf ${ESPdir}/training ${ESPdir}/validation
-  cd ${MODdir}/training/cg_ctl/daylit_coef/cfg
-  $CLM -mode text -file dec94_clm -act asci2bin silent dec94_clm.a >/dev/null
   cd ${MODdir}/training/Temporal_Clm
   $CLM -mode text -file 15265.climate -act asci2bin 15265.climate.a >/dev/null
 # Update weather databases in validation models.

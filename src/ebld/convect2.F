@@ -949,8 +949,10 @@ C Trace output ?
       dotrace=.false.
       IF(ITC.LE.0.OR.NSINC.LT.ITC)goto 9999
       IF(ITRACE(6).EQ.0.OR.NSINC.GT.ITCF)goto  9999
-      write(outs,'(A,I4)')
-     &  ' Subroutine HTCEXT  Trace output',ICNT
+      write(outs,'(A,I5,2a,i4,2a,i3)')
+     &  ' Subroutine HTCEXT  Trace output',ICNT,
+     &    ' for ',zname(icomp)(1:lnzname(icomp)),icomp,' & surface ',
+     &    sname(icomp,isur)(1:lnsname(icomp,isur)),isur
       call edisp(itu,outs)
       CALL DAYCLK(idynow,BTIMEF,ITU)
       dotrace=.true.

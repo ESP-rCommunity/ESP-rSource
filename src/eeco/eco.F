@@ -1085,10 +1085,6 @@ C Dummy subroutine needed to compile (called from library code).
       return
       end
 
-      subroutine Find_season_parameters()
-      return
-      end
-
       SUBROUTINE BASESIMP_INPUTS(ICOMP,IER)
       integer icomp,ier
       return

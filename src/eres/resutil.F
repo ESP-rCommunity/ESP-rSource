@@ -153,6 +153,7 @@ C Determine the 2D coords of the site extremes.
           CALL axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
      &      Xadd,Yadd)
           call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
+          call INICLP(ier)
 
 C Read 3D flow network, report contents and draw the network.
           IUM=IFIL+6

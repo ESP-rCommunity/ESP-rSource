@@ -1759,7 +1759,7 @@ C *********************************************************************
       integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
-C If viewpoint or bounds different then initialise viewing paramters.
+C If viewpoint or bounds different then initialise viewing parameters.
       IF(MODLEN)THEN
         HANG=ANG/2.0
         DIS = (VIEWM(1)-EYEM(1))**2 + (VIEWM(2)-EYEM(2))**2 +
@@ -1815,8 +1815,8 @@ C If viewpoint or bounds different then initialise viewing paramters.
 
 C Find 2D extremes coordinates.
       DO 40 I=1,8
-        CALL ORTTRN(XGND(I),YGND(I),ZGND(I),TEMAT,AX,AY,AZ,IERR)
-        CALL ORTTRN(AX,AY,AZ,ETSMAT,XS(I),YS(I),ZS(I),IERR)
+        CALL ORTTRN(XGND(I),YGND(I),ZGND(I),TSMAT,XS(I),YS(I),ZS(I),
+     &    IERR)
    40 CONTINUE
       XMN2=AMIN1(XS(1),XS(2),XS(3),XS(4),XS(5),XS(6),XS(7),XS(8))
       YMN2=AMIN1(YS(1),YS(2),YS(3),YS(4),YS(5),YS(6),YS(7),YS(8))
@@ -1842,28 +1842,28 @@ C Setup and pass in parameters to win3d.
 C Locate and label the vertices.
       CALL U2PIXEL(XS(1),YS(1),iix,iiy)
       CALL ECIRC(iix,iiy,3,1)
-      CALL VERTLBL(iix,iiy,1,IER)
+      CALL VERTLBLNOCLP(iix,iiy,1,IER)
       CALL U2PIXEL(XS(2),YS(2),iix,iiy)
       CALL ECIRC(iix,iiy,3,1)
-      CALL VERTLBL(iix,iiy,2,IER)
+      CALL VERTLBLNOCLP(iix,iiy,2,IER)
       CALL U2PIXEL(XS(3),YS(3),iix,iiy)
       CALL ECIRC(iix,iiy,3,1)
-      CALL VERTLBL(iix,iiy,3,IER)
+      CALL VERTLBLNOCLP(iix,iiy,3,IER)
       CALL U2PIXEL(XS(4),YS(4),iix,iiy)
       CALL ECIRC(iix,iiy,3,1)
-      CALL VERTLBL(iix,iiy,4,IER)
+      CALL VERTLBLNOCLP(iix,iiy,4,IER)
       CALL U2PIXEL(XS(5),YS(5),iix,iiy)
       CALL ECIRC(iix,iiy,3,1)
-      CALL VERTLBL(iix,iiy,5,IER)
+      CALL VERTLBLNOCLP(iix,iiy,5,IER)
       CALL U2PIXEL(XS(6),YS(6),iix,iiy)
       CALL ECIRC(iix,iiy,3,1)
-      CALL VERTLBL(iix,iiy,6,IER)
+      CALL VERTLBLNOCLP(iix,iiy,6,IER)
       CALL U2PIXEL(XS(7),YS(7),iix,iiy)
       CALL ECIRC(iix,iiy,3,1)
-      CALL VERTLBL(iix,iiy,7,IER)
+      CALL VERTLBLNOCLP(iix,iiy,7,IER)
       CALL U2PIXEL(XS(8),YS(8),iix,iiy)
       CALL ECIRC(iix,iiy,3,1)
-      CALL VERTLBL(iix,iiy,8,IER)
+      CALL VERTLBLNOCLP(iix,iiy,8,IER)
 
 C Draw the ground.
       iupdown=0

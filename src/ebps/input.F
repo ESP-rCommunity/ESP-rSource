@@ -231,7 +231,6 @@ C Simulator parameter.
       common/SPFLN/spsname
       COMMON/Vld30/Tinitial
       REAL :: Tinitial
-      common/dllerr/dllsubr,dllmesg
 
 C Flag indicating presence of HVAC models:
 C ihvacflag=1 indicates HVAC models are active; 0 indicates no HVAC models.
@@ -256,13 +255,13 @@ C Toggle for extreme silent running (endless) mode.
       CHARACTER outs*124,louts*248,spsname*30,L144*144
       CHARACTER outs248*248,LCMDFL*144
       character*72 laprob,path
-      character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
+      character bidirfile*72,bidirname*12
 
 C HVAC AIM-2
       character hvacfile*72
 
       LOGICAL OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST,CFCDBOK
-      logical dll,closemat1,closemat2,unixok,concat
+      logical closemat1,closemat2,unixok,concat
       logical closecfc1,closecfc2
 
 C GSHP
@@ -304,9 +303,7 @@ C Atmospheric pressure and density.
 
       helpinsub='input'  ! set for cfiles
 
-C Reset error indicator and check if running as a dll.
       ier1=0
-      call isadll(dll)
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -383,37 +380,19 @@ C          call usrmsg(' ','Scanning model description ... done.','-')
 
 C Building and plant description now complete.
         if(ier.ne.0)then
-          if(dll)then
-            if(ier.eq.2)then
-              return
-            else
-              dllsubr='mzinput'
-              dllmesg='Configuration file read problem!'
-              ier=2
-              return
-            endif
-          else
-            helptopic='model_cfg_warning'
-            call gethelptext(helpinsub,helptopic,nbhelp)
-            ! Don't ask to rescan model if running in HOT3000 mode
-            if ( .not. bH3KExtentionsActive() )then
-              CALL EASKOK('Model load problem!',
+          helptopic='model_cfg_warning'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          ! Don't ask to rescan model if running in HOT3000 mode
+          if ( .not. bH3KExtentionsActive() )then
+            CALL EASKOK('Model load problem!',
      &        'rescan?',OK,nbhelp)
-              if(OK)goto 42
-            endif
+            if(OK)goto 42
           endif
         endif
       else
-        if(dll)then
-          dllsubr='mzinput'
-          dllmesg='Model configuration file does not exist!'
-          ier=2
-          return
-        else
-          call usrmsg('Model configuration file does not exist!',
-     &     'Please retry. ','W')
-          goto 42
-        endif
+        call usrmsg('Model configuration file does not exist!',
+     &    'Please retry. ','W')
+        goto 42
       endif
       CFGOK=.TRUE.
 
@@ -578,14 +557,8 @@ C << this logic could be updated to use MATFROMBIN as in ascii_mat.F >>
 
         if(ier.ne.0)then
 C Database was not found, or file could not be read.
-          if(dll)then
-            dllsubr='mzinpt'
-            dllmesg='Problem opening materials database!'
-            ier=2
-            return
-
 C In interactive mode, prompt user for new database.
-          elseif ( .not. autook ) then
+          if ( .not. autook ) then
 
             IER=0
             helptopic='materials_db_not_found'
@@ -642,15 +615,8 @@ C code from esruprj/eddb.F subroutine opendb.
             endif
 
             if(ier.ne.0)then
-              if(dll)then
-                dllsubr='mzinpt'
-                dllmesg='Problem opening materials database!'
-                ier=2
-                return
-              else
-                call usrmsg('Materials database not',
-     &            'found or file was corrupt!','W')
-              endif
+              call usrmsg('Materials database not',
+     &          'found or file was corrupt!','W')
             else
               call eclose(matver,1.1,0.001,closemat1)
               call eclose(matver,1.2,0.001,closemat2)
@@ -679,15 +645,10 @@ C code from esruprj/eddb.F subroutine opendb.
         endif
 
         if(ier.ne.0)then
-C Database was not found, or file could not be read.
-          if(dll)then
-            dllsubr='mzinpt'
-            dllmesg='Problem opening CFClayers database!'
-            ier=2
-            return
 
+C Database was not found, or file could not be read.
 C In interactive mode, prompt user for new database.
-          elseif ( .not. autook ) then
+          if ( .not. autook ) then
 
             IER=0
             helptopic='CFClayers_db_not_found'
@@ -745,15 +706,7 @@ C Use file unit IAPROB to read db.
       if(.NOT.XST)then
         write(outs248,'(2A)') 'Could not find construction database!',
      &    LFMUL(1:lnblnk(LFMUL))
-        call isadll(dll)
-        if(dll)then
-          dllsubr='mzinpt'
-          dllmesg=outs
-          ier=2
-          return
-        else
-          call lusrmsg(outs248,' ','W')
-        endif
+        call lusrmsg(outs248,' ','W')
       else
         write(currentfile,'(a)') lfmul(1:lnblnk(lfmul))
         CALL ERMLDB(0,iuout,IER)
@@ -770,18 +723,11 @@ C       critical error --- warn user and clear error flag
           endif
         ELSEIF(IER.EQ.1.or.IER.eq.2.or.IER.eq.3)THEN
           outs='Problem reading construction database!'
-          if(dll)then
-            dllsubr='mzinpt'
-            dllmesg=outs
-            ier=2
-            return
-          else
 
 C Note: the databases are not actually referenced by bps. This is a non-
 C       critical error --- warn user and clear error flag
-            call usrmsg(outs,' ','W')
-            ier = 0 
-          endif
+          call usrmsg(outs,' ','W')
+          ier = 0 
         else
           MLDBOK=.TRUE.
         endif
@@ -794,17 +740,10 @@ C simulation and filling the TDFFLG2 commons.
         call supplyandcheck(ltdfa,'S',ier)
         if(IER.NE.0)then
           outs='Problem opening temporal file, aborting!'
-          if(dll)then
-            dllsubr='mzinpt'
-            dllmesg=outs
-            ier=2
-            return
-          else
-            call edisp(iuout,' ')
-            call edisp(iuout,outs)
-            ier=2
-            return
-          endif
+          call edisp(iuout,' ')
+          call edisp(iuout,outs)
+          ier=2
+          return
         endif
 
 C Set iknowrec array to signal temporal has not been scanned.
@@ -834,34 +773,25 @@ C the global model definition as it can be specified separately.
 
 C Set weather definition flag to false .
             bSY_climate_defined = .false.
-            if(dll)then
-
-C Kill simulation if in DLL mode.           
-               dllsubr='mzinpt'
-               dllmesg='Problem opening weather file!'
-               ier=2
-               return
-            else
 
 C Warn the user that the weather file definition has failed. 
-               write(louts,'(A,A,A)')
-     &           'Warning: specified weather file (',
-     &           LCLIM(1:LNBLNK(LCLIM)), ') not found!'   
-               call edisp248 (iuout,louts,100)
-               if ( autook ) then
+             write(louts,'(A,A,A)')
+     &         'Warning: specified weather file (',
+     &         LCLIM(1:LNBLNK(LCLIM)), ') not found!'   
+             call edisp248 (iuout,louts,100)
+             if ( autook ) then
 
 C If running silently, stop.
-                  call edisp248(iuout,louts,100)               
-                  close(ieout)
-                  CALL ERPFREE(ieout,ISTAT)
-                  call pauses(3)   ! pause for 3 seconds then abort program.
-                  call epagend
-                  stop
-               else
+                call edisp248(iuout,louts,100)               
+                close(ieout)
+                CALL ERPFREE(ieout,ISTAT)
+                call pauses(3)   ! pause for 3 seconds then abort program.
+                call epagend
+                stop
+             else
 C If running interactively, warn user and free file channel.
-                  call usrmsg(outs,' ','W')
-               endif
-            endif
+                call usrmsg(outs,' ','W')
+             endif
          ENDIF
 
 C Close & free file (it will be opened again before the start
@@ -917,48 +847,30 @@ C This will be recalculated as needed at prevailing conditions.
       return
 
 C Error.
-  103 if(dll)then
-        dllsubr='mzinpt'
-        dllmesg='Problem opening weather file.'
-        ier=2
-        return
-      else
-        helptopic='problem_opening_climate'
-        call gethelptext(helpinsub,helptopic,nbhelp)
-        CALL EASKOK('Problem opening weather file!',
-     &              'retry?',OK,nbhelp)
-        IF(OK)THEN
-          goto 35
-        ELSE
-          call pauses(2)   ! pause for 2 seconds then abort program
-          close(ieout)
-          CALL ERPFREE(ieout,ISTAT)
-          CALL ERPFREE(ICLIM,ISTAT)
-          CALL EPAGEND
-          call epagend
-          STOP
-        ENDIF
-      endif
-
-    7 if(dll)then
-        dllsubr='mzinpt'
-        dllmesg='Problem at first record of ground connections file.'
-        ier=2
-        return
-      else
-        CALL USRMSG('Error occured at the first record ',
-     &              'in the ground connections file.','W')
+  103 helptopic='problem_opening_climate'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL EASKOK('Problem opening weather file!',
+     &            'retry?',OK,nbhelp)
+      IF(OK)THEN
+        goto 35
+      ELSE
+        call pauses(2)   ! pause for 2 seconds then abort program
         close(ieout)
         CALL ERPFREE(ieout,ISTAT)
-        call pauses(2)   ! pause for 2 seconds then abort program
+        CALL ERPFREE(ICLIM,ISTAT)
         CALL EPAGEND
+        call epagend
         STOP
       endif
 
-      write(outs,'(A,I3)') ' mzinpt: climate file error @ rec ',irec
-      call edisp(iuout,outs)
-      call epwait
-      return
+    7 CALL USRMSG('Error occured at the first record ',
+     &            'in the ground connections file.','W')
+      close(ieout)
+      CALL ERPFREE(ieout,ISTAT)
+      call pauses(2)   ! pause for 2 seconds then abort program
+      CALL EPAGEND
+      STOP
+
       end
 
 C ******************** mzprec ********************
@@ -1022,9 +934,6 @@ C Thermal bridge common block is described in esruprj/edgeo.F.
      &               thbrpercent,uavtotal(MCOM)
       real uavtotal   
 
-C Dll mode error subroutine and error details.
-      common/dllerr/dllsubr,dllmesg
-
 C Simulator parameters.
       COMMON/SPFL/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
      &  startupok
@@ -1054,15 +963,13 @@ C Logical flag for uncertainty header has been printed.
 
       CHARACTER*72 LMOIST,LMSTR
       character outs*124,CXSTR*78,spflnam*72
-      character dllsubr*12,dllmesg*124
       LOGICAL BLDG3D,ZONE3D
       LOGICAL ILTHPS,ILTHPZ,CLOSE
-      logical dll,prob
+      logical prob
       dimension igarray(mgrdp),iguarray(12)
 
       if (.not.startupok) ITCNST=0
       IWARN=0
-      call isadll(dll)
 
 C Zone-by-zone. Use IUNIT for geometry file.
       IUNIT=IFIL+1
@@ -1093,19 +1000,12 @@ C Read contents of the I'th zone data files.
         if(ier.eq.1)then
           write(outs,'(a,i2,a)') 
      &        'Error reading operation file for zone ',IZ,'.'
-          if(dll)then
-            dllsubr='MZPREC'
-            dllmesg=outs
-            ier=2
-            return
-          else
-            call edisp(iuout,outs)
-            close(ieout)
-            CALL ERPFREE(ieout,ISTAT)
-            call pauses(3)   ! pause for 3 seconds then abort program
-            CALL EPAGEND
-            STOP
-          endif
+          call edisp(iuout,outs)
+          close(ieout)
+          CALL ERPFREE(ieout,ISTAT)
+          call pauses(3)   ! pause for 3 seconds then abort program
+          CALL EPAGEND
+          STOP
         endif
 
 C If a non-sorted operations file has been read warn user and
@@ -1124,45 +1024,28 @@ C Zeroise thermal bridge heat loss before (possibly) reading from geometry file.
         if(ier.eq.1)then
           write(outs,'(a,i2,a)') 
      &        'Error reading geometry file for zone ',IZ,'.'
-          if(dll)then
-            dllsubr='MZPREC'
-            dllmesg=outs
-            ier=2
-            return
-          else
-            call edisp(iuout,outs)
-            close(ieout)
-            CALL ERPFREE(ieout,ISTAT)
-            call pauses(3)   ! pause for 3 seconds then abort program
-            CALL EPAGEND
-            STOP
-          endif
+          call edisp(iuout,outs)
+          close(ieout)
+          CALL ERPFREE(ieout,ISTAT)
+          call pauses(3)   ! pause for 3 seconds then abort program
+          CALL EPAGEND
+          STOP
         endif
 
         CALL ECONST(LTHRM(IZ),IUNIT,IZ,ITRC,ITU,IER)
         if(ier.eq.1)then
           write(outs,'(a,i2,a)') 
      &        'Error reading construction file for zone ',IZ,'.'
-          if(dll)then
-            dllsubr='MZPREC'
-            dllmesg=outs
-            ier=2
-            return
-          else
-            call edisp(iuout,outs)
-            close(ieout)
-            CALL ERPFREE(ieout,ISTAT)
-            call pauses(3)   ! pause for 3 seconds then abort program.
-            CALL EPAGEND
-            STOP
-          endif
+          call edisp(iuout,outs)
+          close(ieout)
+          CALL ERPFREE(ieout,ISTAT)
+          call pauses(3)   ! pause for 3 seconds then abort program.
+          CALL EPAGEND
+          STOP
         endif
 
 C Open any timestep based utility files.
         CALL MZUTIL(IZ,IER)
-        if(ier.eq.2.and.dll)then
-          return
-        endif
         IF(ZONE3D(IZ))BLDG3D=.TRUE.
 
 C Alter properties for uncertainty analysis. 
@@ -1243,15 +1126,8 @@ C        call usrmsg(' ','Checking model topology.','-')
       call ckcurmatch(prob,iprob)
       if(prob.and.iprob.gt.1)then
         outs='More than one problem with model contiguity.'
-        if(dll)then
-          dllsubr='MZPREC'
-          dllmesg=outs
-          ier=2
-          return
-        else
-          call edisp(iuout,outs)
-          IWARN=IWARN+iprob
-        endif
+        call edisp(iuout,outs)
+        IWARN=IWARN+iprob
       endif
       DO 20 I=1,NCON
         NZ1=IC1(I)
@@ -1278,19 +1154,12 @@ C Make sure the other side is an allowable surface.
      &      ' (',NZ1,') surface',NS1,
      &      ' connected to non-existent zone (',
      &      NZ2,') or surface (',NS2,').'
-          if(dll)then
-            dllsubr='MZPREC'
-            dllmesg=outs
-            ier=2
-            return
-          else
-            call edisp(iuout,outs)
-            close(ieout)
-            CALL ERPFREE(ieout,ISTAT)
-            call pauses(3)   ! pause for 3 seconds then abort program.
-            CALL EPAGEND
-            STOP
-          endif
+          call edisp(iuout,outs)
+          close(ieout)
+          CALL ERPFREE(ieout,ISTAT)
+          call pauses(3)   ! pause for 3 seconds then abort program.
+          CALL EPAGEND
+          STOP
         endif
 
 C Label for the connection being checked.
@@ -1302,19 +1171,12 @@ C has reciprocal information.
         if(ioc.eq.0)then
           write(outs,'(3a,I3,A,i3,A)')' Zone ',zname(NZ2),
      &      ' (',NZ2,') surface',NS2,' connection cannot be resolved.'
-          if(dll)then
-            dllsubr='MZPREC'
-            dllmesg=outs
-            ier=2
-            return
-          else
-            call edisp(iuout,outs)
-            close(ieout)
-            CALL ERPFREE(ieout,ISTAT)
-            call pauses(3)   ! pause for 3 seconds then abort program.
-            CALL EPAGEND
-            STOP
-          endif
+          call edisp(iuout,outs)
+          close(ieout)
+          CALL ERPFREE(ieout,ISTAT)
+          call pauses(3)   ! pause for 3 seconds then abort program.
+          CALL EPAGEND
+          STOP
         endif
 
 C Check back to see if the other side is also a type 3 connection.
@@ -1575,12 +1437,9 @@ C input file information.
       CHARACTER*72 lfil,CFTRFL,TITLE,LPHI
       CHARACTER*72 LBSIMP
 
-      logical dll
-
-C Reset warning flag and check and see if running in dll mode.
+C Reset warning flag.
       IER1=0
       IUNIT=IFIL+1
-      call isadll(dll)
       
 C Open zone viewfactor, pre-calculated S/I and convection files.
 C Report the contents of the S/I file if the user has requested 
@@ -1592,9 +1451,6 @@ C a trace and then re-scan the model.
 C If BASESIMP foundation defined, read it in.
       if(iBSIMP(icomp).eq.1)then
         call BASEREAD(icomp,ier)
-        if(dll.and.ier.eq.2)then
-          return
-        endif
       endif
 
 C Residential hydrogen cogeneration control file. Experimental,
@@ -1612,25 +1468,16 @@ C use with caution.
 C Read zone TMC file.
       IF(ITW(ICOMP).EQ.1)then
         CALL ERTWIN(itrc,itu,iunit,LTWIN(ICOMP),icomp,ier)
-        if(dll.and.ier.eq.2)then
-          return
-        endif
       endif
 
 C Read zone CFC file.
       if (icfc(icomp).eq.1)then
         call read_in_cfc_file(itrc,itu,iunit,lcfcin(icomp),icomp,ier)
-        if(dll.and.ier.eq.2)then
-          return
-        end if
       end if
 
 C Read zone casual gain control file.
       IF(ICGC(ICOMP).EQ.1)then
         CALL ercgcf(itrc,itu,LCGCIN(ICOMP),ICOMP,ier)
-        if(dll.and.ier.eq.2)then
-          return
-        endif
         if (ier.eq.-101) call usrmsg(' ',
      &           'Daylight coefficients not yet calculated!','F')
       endif
@@ -1782,7 +1629,6 @@ C lafres  - fluid flow network results file.
      &  CFRESF*72
       COMMON/ENETRES/ERESLIB
       character ERESLIB*72
-      common/dllerr/dllsubr,dllmesg
 
       COMMON/SPFL/spfileok,perok,cfdperok,tstepok,saveok,autook,exitok,
      &  startupok
@@ -1801,14 +1647,11 @@ C lafres  - fluid flow network results file.
       COMMON/CFSEUP/CFTIMS,CFTIMF,ICFDYS,ICFDYF,ICFAUX(MCOM),ICFVIEW,
      &  ICFVIEWMINT,ICFVIEWMAXT,DFVinvoked
 
-      logical dll,match
+      logical match
 
       character outs*124, outs2*124
       character spfdescr*30,name*30
-      character dllsubr*12,dllmesg*124
 
-C Check if running in dll mode.
-      call isadll(dll)
       IER=0
 
 C Assign global data.
@@ -1996,19 +1839,12 @@ C Check that there is enough information to proceed.
           write(outs,'(2a)') 
      &      'insufficient parameter information for automatic use ',
      &      'of the simulator (e.g. missing periods, save level etc.).'
-          if(dll)then
-            dllsubr='mzinpt'
-            dllmesg=outs
-            ier=2
-            return
-          else
-            call usrmsg(outs,' ','W')
-            close(ieout)
-            CALL ERPFREE(ieout,ISTAT)
-            call pauses(3)   ! pause for 3 seconds then abort program
-            CALL EPAGEND
-            STOP
-          endif
+          call usrmsg(outs,' ','W')
+          close(ieout)
+          CALL ERPFREE(ieout,ISTAT)
+          call pauses(3)   ! pause for 3 seconds then abort program
+          CALL EPAGEND
+          STOP
         endif
       else
         spfileok=.true.

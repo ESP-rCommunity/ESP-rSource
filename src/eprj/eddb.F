@@ -4367,7 +4367,7 @@ C Create a blank climate file (code similar to clm.F).
         ID1=1; IM1=1; IT1=1
         ID2=31; IM2=12; IT2=24
         IDS=1; IDF=365
-        IYEAR=2021
+        IYEAR=2022
         CLAT=50.0; CLONG=0.
         IDNGH=0
         IER=0

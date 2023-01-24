@@ -254,7 +254,7 @@ C should calculate pressure coefficients.
       CHARACTER OUTSTR*124,RSTR*124
       CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16,t28*28
 
-      DIMENSION COG1(3),COG2(3),COG3(3)
+      DIMENSION COG1(3),COG2(3)
       DIMENSION XX(MV),YY(MV),ZZ(MV)
       DIMENSION VP(3),EP(3),EQN(4),TMAT(4,4),RMAT(4,4)
       real DX1,DZ1  ! to avoid name clash in geometry.h
@@ -524,9 +524,8 @@ C Transform all points in surface and find lower left corner.
           COG1(1)=XXDP
           COG1(2)=YYDP
           COG1(3)=ZZDP
-          CALL VECTRN(COG1,TEMAT,COG2,IER)           
-          CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),iix,iiy)
+          CALL VECTRN(COG1,TSMAT,COG2,IER) 
+          call u2pixel(COG2(1),COG2(2),iix,iiy)
           CALL ecirc(iix,iiy,3,1)
           call forceflush()
           write(t28,'(3(a,F6.2))')'x=',XXDP,', y=',YYDP,', z=',ZZDP
@@ -606,9 +605,8 @@ C Draw the point.
                 COG1(1)=xpc
                 COG1(2)=ypc
                 COG1(3)=zpc
-                CALL VECTRN(COG1,TEMAT,COG2,IER)
-                CALL VECTRN(COG2,ETSMAT,COG3,IER)
-                call u2pixel(COG3(1),COG3(2),iix,iiy)
+                CALL VECTRN(COG1,TSMAT,COG2,IER)
+                call u2pixel(COG2(1),COG2(2),iix,iiy)
                 CALL ecirc(iix,iiy,3,1)
                 call forceflush()
 

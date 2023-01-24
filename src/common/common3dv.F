@@ -47,11 +47,17 @@ C then it represents the zone which is currently being edited.
 C Passed parameters.
       integer ier
       
-      COMMON/OUTIN/IUOUT,IUIN,IEOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
       INTEGER :: initvt
+      integer menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+
+C Common HOLDVW remembers linescale parameters, so that we can display
+C something else (say a graph) and then return to static view bounds in
+C the same position as we left it.
+      COMMON/HOLDVW/iglhld,igbhld,Xaddhld,Yaddhld,scahld
 
       character ETEXT*82
 #ifdef OSI
@@ -59,13 +65,19 @@ C Passed parameters.
       integer numberofzones
       integer JITZNM,JITSNM,JITVNO,JITOBS,JITVIS,JITVOBJ,JITSNR,JITGRD
       integer JITORG,JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
-      integer jizgfoc,jnzg,jnznog,jnznogv      
+      integer jizgfoc,jnzg,jnznog,jnznogv
+      integer igwid,igheight          ! for use with axiscale
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 numberofzones
       integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITVIS,JITVOBJ,JITSNR
       integer*8 JITGRD,JITORG,JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
       integer*8 jizgfoc,jnzg,jnznog,jnznogv
+      integer*8 igwid,igheight          ! for use with axiscale
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       real EVX,EVY,EVZ,VX,VY,VZ,EAN,GDIS
@@ -121,23 +133,60 @@ C If static views ITBND=0 then do not update VIEWM when calling BNDOBJ.
           MODLEN=.TRUE.
         ENDIF
 
-C If viewpoint or bounds different then initialise viewing paramters.
+C If viewpoint or bounds changed then recalculate viewing parameters.
         IF(MODLEN)THEN
           DIS = (VIEWM(1)-EYEM(1))**2 + (VIEWM(2)-EYEM(2))**2 +
      &          (VIEWM(3)-EYEM(3))**2
           IF(DIS.GE.SMALL)THEN
-            HITH=1.0
-            YON=1300.0
+            HITH=1.0; YON=1300.0
           ELSE
+            ier=1
             CALL USRMSG(' ',
-     &       ' The eye position and viewed position are too close!','W')
+     &       'The eye position and viewed position are too close!','W')
             RETURN
           ENDIF
           CALL LENS(IER)
         ENDIF
+        
+C Clear current viewing box.
+        if(mmod.eq.8)CALL startbuffer()
+
+C Setup and pass in parameters to win3d.
+C Add small margins on all sides of the graphic window.
+        iiw1=4; iiw2=4; iiw3=2; iiw4=1; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        if(mmod.eq.8)then
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+        else
+          CALL win3dwwc(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+        endif
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
+        igwid=igw; igheight=igwh
+
+C If optimal view bounds, reset scaling ratios.
+        IF(ITBND.EQ.1)THEN
+          CALL SITE2D(SXMX,SXMN,SYMX,SYMN,ier)
+          CALL axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
+     &      Xadd,Yadd)
+          call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
+          iglhld=igl; Xaddhld=Xadd; igbhld=igb; Yaddhld=Yadd; scahld=sca ! remember values
+
+C If static bounds, reset linescale in case we have returned from
+C something else that changed it.
+        ELSE
+          iigl=igl; iigb=igb
+          call linescale(iigl,Xaddhld,scahld,iigb,Yaddhld,scahld)
+        ENDIF
+
+C If view or scaling has changed, reset clipping planes.
+        if (MODLEN .or. ITBND.EQ.1) call INICLP(ier)
 
 C Draw the selected bodies.
         CALL DRAWESP(IER)
+        if (ier.ne.0) return
 
 C Show feature buttons.
         if(mmod.eq.8) call redrawbuttons()
@@ -195,16 +244,18 @@ C Passed paremter.
       MODIFYVIEW=.TRUE.
       MODLEN=.TRUE.
 
-C If we are in a freelook, turn off grid, site origin and names.
+C If we are in a freelook, do minimal rendering to save lag.
       if (ifrlk.eq.1) then
         ITZNMP=ITZNM
-        ITZNM=1
+        ITZNM=1  ! turn off zone names
         ITSNMP=ITSNM
-        ITSNM=1
+        ITSNM=1  ! turn off surface names
         ITORGP=ITORG
-        ITORG=1
+        ITORG=1  ! turn off site origin
         ITGRDP=ITGRD
-        ITGRD=1
+        ITGRD=1  ! turn off grid
+        ITDSPP=ITDSP
+        ITDSP=1  ! surfaces only
       endif
 
       call redraw(IER)
@@ -214,6 +265,7 @@ C If we are in a freelook, turn off grid, site origin and names.
         ITSNM=ITSNMP
         ITORG=ITORGP
         ITGRD=ITGRDP
+        ITDSP=ITDSPP
       endif
 
       return
@@ -226,7 +278,7 @@ C decrement to the viewing elevation (icelev). If not needed then provide a dumm
 #include "building.h"
 #include "prj3dv.h"
 
-C Passed paramter.
+C Passed parameter.
       integer icelev
       
       PI = 4.0 * ATAN(1.0)
@@ -253,16 +305,18 @@ C Passed paramter.
       MODIFYVIEW=.TRUE.
       MODLEN=.TRUE.
 
-C If we are in a freelook, turn off grid, site origin and names.
+C If we are in a freelook, do minimal rendering to save lag.
       if (ifrlk.eq.1) then
         ITZNMP=ITZNM
-        ITZNM=1
+        ITZNM=1  ! turn off zone names
         ITSNMP=ITSNM
-        ITSNM=1
+        ITSNM=1  ! turn off surface names
         ITORGP=ITORG
-        ITORG=1
+        ITORG=1  ! turn off site origin
         ITGRDP=ITGRD
-        ITGRD=1
+        ITGRD=1  ! turn off grid
+        ITDSPP=ITDSP
+        ITDSP=1  ! surfaces only
       endif
 
       call redraw(IER)
@@ -272,6 +326,7 @@ C If we are in a freelook, turn off grid, site origin and names.
         ITSNM=ITSNMP
         ITORG=ITORGP
         ITGRD=ITGRDP
+        ITDSP=ITDSPP
       endif
 
       return
@@ -281,7 +336,7 @@ C ********* chgpan
 C CHGPAN is called from C code in esp-r.c or esru_x.c with x and y
 C increments to the viewed point. This effectivley implements mouse
 C panning. If not needed then provide a dummy. 
-      subroutine chgpan(ix,iy)
+      subroutine chgpan(ix,iy,ifrlk)
 #include "building.h"
 #include "prj3dv.h"
 
@@ -304,15 +359,34 @@ C Convert back to model coordinates and save.
       CALL VECTRN(vec,STMMAT,VIEWM,IER)
 
 C Make sure view bounds are static, and grid and origin are off.
-      if (ITBND.ne.0) ITBND=0 
-      if (ITORG.ne.1) ITORG=1 
-      if (ITGRD.ne.1) ITGRD=1
-      if (ITZNM.ne.1) ITZNM=1
-      if (ITSNM.ne.1) ITSNM=1
+      if (ITBND.ne.0) ITBND=0
 
       MODIFYVIEW=.TRUE.
       MODLEN=.TRUE.
+      
+C If we are in a freelook, do minimal rendering to save lag.
+      if (ifrlk.eq.1) then
+        ITZNMP=ITZNM
+        ITZNM=1  ! turn off zone names
+        ITSNMP=ITSNM
+        ITSNM=1  ! turn off surface names
+        ITORGP=ITORG
+        ITORG=1  ! turn off site origin
+        ITGRDP=ITGRD
+        ITGRD=1  ! turn off grid
+        ITDSPP=ITDSP
+        ITDSP=1  ! surfaces only
+      endif
+
       call redraw(IER)
+
+      if (ifrlk.eq.1) then
+        ITZNM=ITZNMP
+        ITSNM=ITSNMP
+        ITORG=ITORGP
+        ITGRD=ITGRDP
+        ITDSP=ITDSPP
+      endif
 
       return
       end
@@ -335,11 +409,7 @@ C Increment view angle by 5 percent.
       endif
       
 C Make sure view bounds are static.
-      if (ITBND.ne.0) ITBND=0  
-      if (ITORG.ne.1) ITORG=1 
-      if (ITGRD.ne.1) ITGRD=1
-      if (ITZNM.ne.1) ITZNM=1
-      if (ITSNM.ne.1) ITSNM=1
+      if (ITBND.ne.0) ITBND=0
 
       MODIFYVIEW=.TRUE.
       MODLEN=.TRUE.
@@ -377,7 +447,7 @@ C image_ c structures.  Integers are specially treated based on ifdef.
 #include "building.h"
 #include "prj3dv.h"
 
-C Passed paramters.
+C Passed parameters.
       real EVX,EVY,EVZ,VX,VY,VZ,EAN,GDIS
 
 C Depending on computer type set integer size of passed parameters.
@@ -472,7 +542,7 @@ C step to next hour. If isunhour two then present an animation.
 #include "building.h"
 #include "prj3dv.h"
 
-C Passed paramter.
+C Passed parameter.
       integer isunhour
 
       COMMON/OUTIN/IUOUT,IUIN,IEOUT
@@ -796,28 +866,25 @@ C Passed parameters.
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
 
 C Local arrays.
-      real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2,COG3
+      real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2
       integer IANXT,IBNXT
       DIMENSION  AX(MV),AY(MV),AZ(MV),IANXT(MV)
       DIMENSION  BX(MV),BY(MV),BZ(MV),IBNXT(MV)
-      DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
-      logical greyok
+      DIMENSION  SBBOX(3,2),COG1(3),COG2(3)
 
       CHARACTER btemp*12
       logical newgeo  ! to use for testing if new/old geometry file.
 #ifdef OSI
       integer iix,iiy,iixlast,iiylast
-      integer iicol,ibsize         ! passed to textsizeatxy
+      integer iicol        ! passed to textsizeatxy
 #else
       integer*8 iix,iiy,iixlast,iiylast
-      integer*8 iicol,ibsize       ! passed to textsizeatxy
+      integer*8 iicol       ! passed to textsizeatxy
 #endif     
 
 C If libraries and monitor support greyscale remember this.
-      greyok=.false.
       if(nifgrey.gt.4)then
         iicol=nifgrey-3
-        greyok=.true.
       endif
 
 C Set font for displaying block names.
@@ -868,16 +935,20 @@ C Transform the location into eyepoint and then screen coords.
           COG1(1)=XB(1)
           COG1(2)=YB(1)
           COG1(3)=ZB(1)
-          CALL VECTRN(COG1,TEMAT,COG2,IER)
-          CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),iix,iiy)
+          CALL VECTRN(COG1,TSMAT,COG2,IER)
+          call u2pixel(COG2(1),COG2(2),iix,iiy)
           btemp='           '
           write(btemp,'(a)') 
      &      BLOCKNAME(IFOC,IB)(1:lnblnk(BLOCKNAME(IFOC,IB)))
           if(mmod.eq.8)then
-            call textsizeatxy(iix,iiy,btemp,ibsize,'-',iicol)
-            iicol=0
-            call winscl('-',iicol)
+            call winfnt(ibsize)
+            call CLIPST(btemp,iix,iiy,COG2(3),iclp)
+            if (iclp.eq.0) then
+              call textatxy(iix,iiy,btemp,'-',iicol)
+              iicol=0
+              call winscl('-',iicol)
+            endif
+            call winfnt(IFS)
           else
             call textsizeatxywwc(iix,iiy,btemp,ibsize,'-',iicol)
           endif
@@ -912,19 +983,21 @@ C There are 4 initial vertices per block side and 6 sides.
 
 C Transform block polygon to EYE co-ordinates where
 C TEMAT = Model to Eye Matrix
-          CALL MATPOLS(NAP,AX,AY,AZ,IANXT,TEMAT,SBBOX,
+          CALL MATPOLS(NAP,AX,AY,AZ,IANXT,TSMAT,SBBOX,
      &                 NBP,BX,BY,BZ,IBNXT,IERR)
 
 C Generate clipping flags and clip geometry in eye coords.
 C If ISTAT =  0 : totally inside frustrum
 C If ISTAT =  1 : totally outside frustrum
 C If ISTAT = -1 : straddles frustrum
+          IBPNT=1
           call CLIPSUR(NBP,BX,BY,BZ,ISTAT)
           IF (ISTAT .EQ. 1) THEN
             GOTO  1000
           ELSEIF (ISTAT .EQ. -1) THEN
-            IBPNT=1
             CALL CUTSUR(NB1,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+          else
+            NB1=1
           ENDIF
             
 C If there are no edges to draw then jump.
@@ -933,8 +1006,7 @@ C If there are no edges to draw then jump.
 C Multiply each vertex by ETSMAT (Eye to Screen Matrix) to transform
 C to screen coords. First move to the beginning point (as passed from CUTSUR).
           IP = IABS(IBPNT)
-          CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(BX(IP),BY(IP),iix,iiy)
           iixlast=iix   ! cast for edline call
           iiylast=iiy
 
@@ -944,8 +1016,7 @@ C If IP1 is ever negative then jump to a later point.
           if(IP1.lt.1)IP1 = IBNXT(IP+2)
 
  351      CONTINUE
-          CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(BX(IP1),BY(IP1),iix,iiy)
           if(mmod.eq.8)then
             if(IPEN.eq.1)then
               call eswline(iixlast,iiylast,iix,iiy)
@@ -976,8 +1047,7 @@ C past -1 values of IBNXT, save IP1 as IPT for testing.
           IF(IP1 .NE. IP) GOTO 351
 
 C Complete the polygon.
-          CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(BX(IP),BY(IP),iix,iiy)
           if(mmod.eq.8)then
             if(IPEN.eq.1)then
               call eswline(iixlast,iiylast,iix,iiy)
@@ -1031,11 +1101,11 @@ C Passed parameters.
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
 
 C Local arrays.
-      real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2,COG3
+      real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2
       integer IANXT,IBNXT
       DIMENSION  AX(MV),AY(MV),AZ(MV),IANXT(MV)
       DIMENSION  BX(MV),BY(MV),BZ(MV),IBNXT(MV)
-      DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
+      DIMENSION  SBBOX(3,2),COG1(3),COG2(3)
       integer ihighlight(MB)
 
       CHARACTER btemp*12
@@ -1044,9 +1114,9 @@ C Local arrays.
       logical greyok
 
 #ifdef OSI
-      integer iix,iiy,iixlast,iiylast,iicol,ibsize 
+      integer iix,iiy,iixlast,iiylast,iicol
 #else
-      integer*8 iix,iiy,iixlast,iiylast,iicol,ibsize 
+      integer*8 iix,iiy,iixlast,iiylast,iicol
 #endif     
 
 C If libraries and monitor support greyscale then reset forground
@@ -1129,14 +1199,18 @@ C Transform the location into eyepoint and then screen coords.
           COG1(1)=XB(1)
           COG1(2)=YB(1)
           COG1(3)=ZB(1)
-          CALL VECTRN(COG1,TEMAT,COG2,IER)
-          CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),iix,iiy)
+          CALL VECTRN(COG1,TSMAT,COG2,IER)
+          call u2pixel(COG2(1),COG2(2),iix,iiy)
           btemp='           '
           write(btemp,'(a)') 
      &      VISNAME(IFOC,IB)(1:lnblnk(VISNAME(IFOC,IB)))
           if(mmod.eq.8)then
-            call textsizeatxy(iix,iiy,btemp,ibsize,'-',iicol)
+            call winfnt(ibsize)
+            call CLIPST(btemp,iix,iiy,COG2(3),iclp)
+            if (iclp.eq.0) then
+              call textatxy(iix,iiy,btemp,'-',iicol)
+            endif
+            call winfnt(IFS)
           else
             call textsizeatxywwc(iix,iiy,btemp,ibsize,'-',iicol)
           endif
@@ -1173,7 +1247,7 @@ C There are 4 initial vertices per block side and 6 sides.
 
 C Transform block polygon to EYE co-ordinates where
 C TEMAT = Model to Eye Matrix
-          CALL MATPOLS(NAP,AX,AY,AZ,IANXT,TEMAT,SBBOX,
+          CALL MATPOLS(NAP,AX,AY,AZ,IANXT,TSMAT,SBBOX,
      &                 NBP,BX,BY,BZ,IBNXT,IERR)
 
 C Generate clipping flags and clip geometry in eye coords.
@@ -1181,11 +1255,13 @@ C If ISTAT =  0 : totally inside frustrum
 C If ISTAT =  1 : totally outside frustrum
 C If ISTAT = -1 : straddles frustrum
           call CLIPSUR(NBP,BX,BY,BZ,ISTAT)
+          IBPNT=1
           IF (ISTAT .EQ. 1) THEN
             GOTO  1000
           ELSEIF (ISTAT .EQ. -1) THEN
-            IBPNT=1
             CALL CUTSUR(NB1,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+          else
+            NB1=1
           ENDIF
             
 C If there are no edges to draw then jump.
@@ -1194,8 +1270,7 @@ C If there are no edges to draw then jump.
 C Multiply each vertex by ETSMAT (Eye to Screen Matrix) to transform
 C to screen coords. First move to the beginning point (as passed from CUTSUR).
           IP = IABS(IBPNT)
-          CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(BX(IP),BY(IP),iix,iiy)
           iixlast=iix   ! cast for edline call
           iiylast=iiy
 
@@ -1205,8 +1280,7 @@ C If IP1 is ever negative then jump to a later point.
           if(IP1.lt.1)IP1 = IBNXT(IP+2)
 
  351      CONTINUE
-          CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(BX(IP1),BY(IP1),iix,iiy)
 
           if(mmod.eq.8)then
             if(IPEN.eq.1)then
@@ -1238,8 +1312,7 @@ C past -1 values of IBNXT, save IP1 as IPT for testing.
           IF(IP1 .NE. IP) GOTO 351
 
 C Complete the polygon.
-          CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(BX(IP),BY(IP),iix,iiy)
 
           if(mmod.eq.8)then
             if(IPEN.eq.1)then
@@ -1293,18 +1366,18 @@ C Passed parameter.
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
 
 C Local arrays.
-      real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2,COG3
+      real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2
       integer IANXT,IBNXT
       DIMENSION  AX(MV),AY(MV),AZ(MV),IANXT(MV)
       DIMENSION  BX(MV),BY(MV),BZ(MV),IBNXT(MV)
-      DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
+      DIMENSION  SBBOX(3,2),COG1(3),COG2(3)
       logical greyok
 #ifdef OSI
-      integer iix,iiy,iixlast,iiylast,iid2
-      integer iicol,ibsize         ! passed to textsizeatxy
+      integer iix,iiy,iixlast,iiylast
+      integer iicol        ! passed to textsizeatxy
 #else
-      integer*8 iix,iiy,iixlast,iiylast,iid2
-      integer*8 iicol,ibsize       ! passed to textsizeatxy
+      integer*8 iix,iiy,iixlast,iiylast
+      integer*8 iicol      ! passed to textsizeatxy
 #endif     
 
       CHARACTER temp*7
@@ -1314,10 +1387,8 @@ C If not in graphic mode return.
       if(MMOD.lt.8)return
 
 C If libraries and monitor support greyscale remember this.
-      greyok=.false.
       if(nifgrey.gt.4)then
         iicol=nifgrey-3
-        greyok=.true.
       endif
 
 C Set font for displaying block names.
@@ -1338,13 +1409,16 @@ C Transform the location into eyepoint and then screen coords.
         COG1(1)=XB(1)
         COG1(2)=YB(1)
         COG1(3)=ZB(1)
-        CALL VECTRN(COG1,TEMAT,COG2,IER)
-        CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),iix,iiy)
+        CALL VECTRN(COG1,TSMAT,COG2,IER)
+        call u2pixel(COG2(1),COG2(2),iix,iiy)
         write(temp,'(A)')CUBN(IB)
-        iid2=iiy+8
         if(mmod.eq.8)then
-          call textsizeatxy(iix,iiy,temp,ibsize,'-',iicol)
+          call winfnt(ibsize)
+          call CLIPST(temp,iix,iiy,COG2(3),iclp)
+          if (iclp.eq.0) then
+            call textatxy(iix,iiy,temp,'-',iicol)
+          endif
+          call winfnt(IFS)
         else
           call textsizeatxywwc(iix,iiy,temp,ibsize,'-',iicol)
         endif
@@ -1381,7 +1455,7 @@ C sensor points (for the purposes of radiance viewpoints).
           IANXT(4) = 1
 
 C Transform block polygon to EYE co-ordinates.
-          CALL MATPOLS(NAP,AX,AY,AZ,IANXT,TEMAT,SBBOX,
+          CALL MATPOLS(NAP,AX,AY,AZ,IANXT,TSMAT,SBBOX,
      &                 NBP,BX,BY,BZ,IBNXT,IERR)
 
 C Generate clipping flags and clip geometry in eye coords.
@@ -1389,11 +1463,13 @@ C If ISTAT =  0 : totally inside frustrum
 C If ISTAT =  1 : totally outside frustrum
 C If ISTAT = -1 : straddles frustrum
           call CLIPSUR(NBP,BX,BY,BZ,ISTAT)
+          IBPNT=1
           IF (ISTAT .EQ. 1) THEN
             GOTO  1000
           ELSEIF (ISTAT .EQ. -1) THEN
-            IBPNT=1
             CALL CUTSUR(NB1,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+          else
+            NB1=1
           ENDIF
 
 C If there are no edges to draw then jump.
@@ -1402,8 +1478,7 @@ C If there are no edges to draw then jump.
 C Multiply each vertex by ETSMAT (Eye to Screen Matrix).
 C First move to the beginning (as passed back from CUTSUR).
           IP = IABS(IBPNT)
-          CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(BX(IP),BY(IP),iix,iiy)
           iixlast=iix   ! cast for edline call
           iiylast=iiy
 
@@ -1413,8 +1488,7 @@ C If IP1 is ever negative then jump to a later point.
           if(IP1.lt.1)IP1 = IBNXT(IP+2)
 
  351      CONTINUE
-          CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(BX(IP1),BY(IP1),iix,iiy)
           if (isfront) then
             if(mmod.eq.8)then
               call edwline(iixlast,iiylast,iix,iiy)
@@ -1441,8 +1515,7 @@ C past any -1 values of IBNXT, save IP1 as IPT for testing.
           IF(IP1 .NE. IP) GOTO 351
 
 C Complete the polygon.
-          CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(BX(IP),BY(IP),iix,iiy)
           if (isfront) then
             if(mmod.eq.8)then
               call edwline(iixlast,iiylast,iix,iiy)
@@ -1485,18 +1558,17 @@ C Passed parameter.
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
 
 C Local arrays.
-      real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2,COG3
+      real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2
       integer IANXT,IBNXT
       DIMENSION  AX(MV),AY(MV),AZ(MV),IANXT(MV)
       DIMENSION  BX(MV),BY(MV),BZ(MV),IBNXT(MV)
-      DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
-      logical greyok
+      DIMENSION  SBBOX(3,2),COG1(3),COG2(3)
 #ifdef OSI
-      integer iix,iiy,iixlast,iiylast,iid2
-      integer iicol,ibsize         ! passed to textsizeatxy
+      integer iix,iiy,iixlast,iiylast
+      integer iicol         ! passed to textsizeatxy
 #else
-      integer*8 iix,iiy,iixlast,iiylast,iid2
-      integer*8 iicol,ibsize       ! passed to textsizeatxy
+      integer*8 iix,iiy,iixlast,iiylast
+      integer*8 iicol       ! passed to textsizeatxy
 #endif     
 
       CHARACTER temp*13
@@ -1505,10 +1577,8 @@ C If not in graphic mode return.
       if(MMOD.lt.8)return
 
 C If libraries and monitor support greyscale remember this.
-      greyok=.false.
       if(nifgrey.gt.4)then
         iicol=nifgrey-3
-        greyok=.true.
       endif
 
 C Set font for displaying bb names.
@@ -1524,13 +1594,16 @@ C Transform the location into eyepoint and then screen coords.
       COG1(1)=XB(1)
       COG1(2)=YB(1)
       COG1(3)=ZB(1)
-      CALL VECTRN(COG1,TEMAT,COG2,IER)
-      CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),iix,iiy)
+      CALL VECTRN(COG1,TSMAT,COG2,IER)
+      call u2pixel(COG2(1),COG2(2),iix,iiy)
       write(temp,'(A)')bbname
-      iid2=iiy+8
       if(mmod.eq.8)then
-        call textsizeatxy(iix,iiy,temp,ibsize,'-',iicol)
+        call winfnt(ibsize)
+        call CLIPST(temp,iix,iiy,COG2(3),iclp)
+        if (iclp.eq.0) then
+          call textatxy(iix,iiy,temp,'-',iicol)
+        endif
+        call winfnt(IFS)
       else
         call textsizeatxywwc(iix,iiy,temp,ibsize,'-',iicol)
       endif
@@ -1558,19 +1631,21 @@ C There are 4 initial vertices per block side and 6 sides.
         IANXT(4) = 1
 
 C Transform block polygon to EYE co-ordinates.
-        CALL MATPOLS(NAP,AX,AY,AZ,IANXT,TEMAT,SBBOX,
+        CALL MATPOLS(NAP,AX,AY,AZ,IANXT,TSMAT,SBBOX,
      &               NBP,BX,BY,BZ,IBNXT,IERR)
 
 C Generate clipping flags and clip geometry in eye coords.
 C If ISTAT =  0 : totally inside frustrum
 C If ISTAT =  1 : totally outside frustrum
 C If ISTAT = -1 : straddles frustrum
+        IBPNT=1
         call CLIPSUR(NBP,BX,BY,BZ,ISTAT)
         IF (ISTAT .EQ. 1) THEN
           GOTO  1000
         ELSEIF (ISTAT .EQ. -1) THEN
-          IBPNT=1
           CALL CUTSUR(NB1,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+        else
+          NB1=1
         ENDIF
 
 C If there are no edges to draw then jump.
@@ -1579,8 +1654,7 @@ C If there are no edges to draw then jump.
 C Multiply each vertex by ETSMAT (Eye to Screen Matrix).
 C First move to the beginning (as passed back from CUTSUR).
         IP = IABS(IBPNT)
-        CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-        call u2pixel(AAX,AAY,iix,iiy)
+        call u2pixel(BX(IP),BY(IP),iix,iiy)
         iixlast=iix   ! cast for edline call
         iiylast=iiy
 
@@ -1590,8 +1664,7 @@ C If IP1 is ever negative then jump to a later point.
         if(IP1.lt.1)IP1 = IBNXT(IP+2)
 
  351    CONTINUE
-        CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-        call u2pixel(AAX,AAY,iix,iiy)
+        call u2pixel(BX(IP1),BY(IP1),iix,iiy)
         if(mmod.eq.8)then
           call eswline(iixlast,iiylast,iix,iiy)
           call forceflush()
@@ -1610,8 +1683,7 @@ C past any -1 values of IBNXT, save IP1 as IPT for testing.
         IF(IP1 .NE. IP) GOTO 351
 
 C Complete the polygon.
-        CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-        call u2pixel(AAX,AAY,iix,iiy)
+        call u2pixel(BX(IP),BY(IP),iix,iiy)
         if(mmod.eq.8)then
           call eswline(iixlast,iiylast,iix,iiy)
           call forceflush()
@@ -1639,31 +1711,19 @@ C Passed parameter.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
 C Local arrays.
-      real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2,COG3
+      real AX,AY,AZ,BX,BY,BZ,SBBOX
       integer IANXT,IBNXT
       DIMENSION  AX(MV),AY(MV),AZ(MV),IANXT(MV)
       DIMENSION  BX(MV),BY(MV),BZ(MV),IBNXT(MV)
-      DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
-#ifdef OSI
-      integer iix,iiy,iixlast,iiylast,iid2
-#else
-      integer*8 iix,iiy,iixlast,iiylast,iid2
-#endif     
+      DIMENSION  SBBOX(3,2)
 
 C If not in graphic mode return.
       if(MMOD.lt.8)return
       cansee=.false.  ! assume we cannot see.
 
-C Transform the location into eyepoint and then screen coords.
       tx2=tx+0.3; tx3=tx-0.3
       ty2=ty; ty3=ty
       tz2=tz+0.3; tz3=tz+0.3
-      COG1(1)=tx
-      COG1(2)=ty
-      COG1(3)=tz
-      CALL VECTRN(COG1,TEMAT,COG2,IER)
-      CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),iix,iiy)
 
 C Continue with small triangle offset from tx ty tz.
 C Copy polygon for sensor surface I into structure AX AY AZ
@@ -1681,7 +1741,7 @@ C There are 3 initial vertices in polygon.
       IANXT(1) = 2; IANXT(2) = 3;IANXT(3) = 1
 
 C Transform polygon to EYE co-ordinates.
-      CALL MATPOLS(NAP,AX,AY,AZ,IANXT,TEMAT,SBBOX,
+      CALL MATPOLS(NAP,AX,AY,AZ,IANXT,TSMAT,SBBOX,
      &             NBP,BX,BY,BZ,IBNXT,IERR)
 
 C Generate clipping flags and clip geometry in eye coords.
@@ -1698,8 +1758,6 @@ C If ISTAT = -1 : straddles frustrum
       ENDIF
       ier=IERR
 
-C      write(6,'(a,3f7.2,L,4i5)') 'withinview ',tx,ty,tz,cansee,
-C     &  ISTAT,iix,iiy,ierr
       RETURN
       END  ! of withinview
 
@@ -1722,11 +1780,11 @@ C Passed parameter.
       COMMON/RAY6G/LINSTYG(MGRT)
 
 C Local arrays.
-      real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2,COG3
+      real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2
       integer IANXT,IBNXT
       DIMENSION  AX(MPL),AY(MPL),AZ(MPL),IANXT(MPL)
       DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
-      DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
+      DIMENSION  SBBOX(3,2),COG1(3),COG2(3)
 
       CHARACTER GMLCN*32, GSNAME*6,stemp*7
 
@@ -1748,11 +1806,13 @@ C surface names etc. Ixc,iyc keep track of surface/pixel COG.
           COG1(1)=XGT(IV)
           COG1(2)=YGT(IV)
           COG1(3)=ZGT(IV)
-          CALL VECTRN(COG1,TEMAT,COG2,IER)
-          CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),iix,iiy)
-          CALL ecirc(iix,iiy,2,1)
-          CALL VERTLBL(iix,iiy,IV,ier)
+          CALL VECTRN(COG1,TSMAT,COG2,IER)
+          call CLIPPT(COG2(1),COG2(2),COG2(3),iclp)
+          if (iclp.eq.0) then
+            call u2pixel(COG2(1),COG2(2),iix,iiy)
+            CALL ecirc(iix,iiy,2,1)
+            CALL VERTLBL(iix,iiy,COG2(3),IV,ier)
+          endif
   42    continue
       endif
       if(ngt.eq.0)return
@@ -1778,21 +1838,22 @@ C IAPNT = Pointer to first vertex of polygon
 
 C-----------------------------------------------------------------------
 C Transform surface polygon as above.
-        CALL MATPOL(NAP,IAPNT,AX,AY,AZ,IANXT,TEMAT,
+        CALL MATPOL(NAP,IAPNT,AX,AY,AZ,IANXT,TSMAT,
      &             SBBOX,NBP,IBPNT,BX,BY,BZ,IBNXT, IERR)
         CALL CLIPFL(NBP,BX,BY,BZ,ISTAT)
         IF (ISTAT .EQ. 1) THEN
           GOTO  43
         ELSEIF (ISTAT .EQ.-1) THEN
           CALL  CUTPOL(NB,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+        else
+          NB=1
         ENDIF
 
         DO 302 JB = 1,NB
 
 C Move to first point.
           IP = IABS(IBPNT)
-          CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(BX(IP),BY(IP),iix,iiy)
           iixlast=iix   ! cast for edline call
           iiylast=iiy
           iixc=iixc+iix
@@ -1801,8 +1862,7 @@ C Move to first point.
 C Draw succeeding points until last vertex.
           IP1 = IBNXT(IP)
  451      CONTINUE
-          CALL  ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(BX(IP1),BY(IP1),iix,iiy)
           if(linstyg(igs).eq.3)then
             if(mmod.eq.8)then
               call edline(iixlast,iiylast,iix,iiy,2)
@@ -1837,8 +1897,7 @@ C Draw succeeding points until last vertex.
           IF(IP1 .NE. IP) GOTO 451
 
 C Complete ground surface.
-          CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(BX(IP),BY(IP),iix,iiy)
           if(linstyg(igs).eq.3)then
             if(mmod.eq.8)then
               call edline(iixlast,iiylast,iix,iiy,2)
@@ -1872,18 +1931,21 @@ C the next smaller font for the surface name and then restore font
 C to normal size.
           IF(ITSNM.EQ.0)THEN
             IF(iixc.GT.0.AND.iiyc.GT.0.AND.(NAP.EQ.NBP))THEN
-              if(mmod.eq.8) CALL winfnt(issize)
               write(stemp,'(A)')GSNAME(igs)
               iixc=iixc/NBP
               iiyc=iiyc/NBP
               iid2=iiyc+3
-              iicol=0
-              if(mmod.eq.8)then
-                call textatxy(iixc,iid2,stemp,'-',iicol)
-                CALL winfnt(IMFS)
-              else
-                call textatxywwc(iixc,iid2,stemp,'-',iicol)
+              CALL winfnt(issize)
+              call CLIPST(stemp,iixc,iid2,BZ(IP1),iclp)
+              if (iclp.eq.0) then
+                iicol=0
+                if(mmod.eq.8)then
+                  call textatxy(iixc,iid2,stemp,'-',iicol)
+                else
+                  call textatxywwc(iixc,iid2,stemp,'-',iicol)
+                endif
               endif
+              CALL winfnt(IFS)
             endif
           endif
   302   CONTINUE
@@ -1910,8 +1972,9 @@ C Passed parameters.
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
 C Explicit local variables
-      real COG1,COG2,COG3
-      dimension COG1(3),COG2(3),X(2),Y(2),Z(2),NNXT(2)
+      real COG1,COG2
+      dimension COG1(3),COG2(3)
+      DIMENSION  X(2),Y(2),Z(2)
       real GRIDD,XD,DD
       real GXMN,GYMN,XINC,YINC
       logical close,greyok
@@ -1970,26 +2033,29 @@ C Transform one end of line.
         COG1(1)=XINC
         COG1(2)=YMN-GRIDD
         COG1(3)=RH
-        CALL VECTRN(COG1,TEMAT,COG2,IER)
+        CALL VECTRN(COG1,TSMAT,COG2,IER)
         X(1)=COG2(1); Y(1)=COG2(2); Z(1)=COG2(3)
 
 C Transform other end of line.
         COG1(1)=XINC
         COG1(2)=YMX+GRIDD
         COG1(3)=RH
-        CALL VECTRN(COG1,TEMAT,COG2,IER)
+        CALL VECTRN(COG1,TSMAT,COG2,IER)
         X(2)=COG2(1); Y(2)=COG2(2); Z(2)=COG2(3)
+
+C Clip the line.
+        CALL CLIPLIN(X,Y,Z,ISTAT)
+        if (ISTAT.eq.1) GOTO 101
+        if (ISTAT.eq.-1) then
+          CALL CUTLIN(X,Y,Z,ISTAT)
+          if (ISTAT.eq.-1) goto 101
+        endif
 
 C Draw the dotted line, first take calculated pixels and
 C cast to local variable to pass to edline. Only do this if
 C the length of the line is more than one pixel.
-        COG1(1)=X(1); COG1(2)=Y(1); COG1(3)=Z(1)
-        CALL VECTRN(COG1,ETSMAT,COG2,IER)
-        call u2pixel(COG2(1),COG2(2),iix,iiy)
-
-        COG1(1)=X(2); COG1(2)=Y(2); COG1(3)=Z(2)
-        CALL VECTRN(COG1,ETSMAT,COG2,IER)
-        call u2pixel(COG2(1),COG2(2),iix1,iiy1)
+        call u2pixel(X(1),Y(1),iix,iiy)
+        call u2pixel(X(2),Y(2),iix1,iiy1)
 
         if(iix.eq.iix1.and.iiy.eq.iiy1)then
           continue
@@ -2002,7 +2068,7 @@ C the length of the line is more than one pixel.
         endif
 
 C Move to next grid position.
-        XINC=XINC+GRIDD
+  101   XINC=XINC+GRIDD
         GOTO 100
       ENDIF
       if(mmod.eq.8) call forceflush()
@@ -2019,23 +2085,26 @@ C Transform one end of line.
         COG1(1)=XMN-GRIDD
         COG1(2)=YINC
         COG1(3)=RH
-        CALL VECTRN(COG1,TEMAT,COG2,IER)
+        CALL VECTRN(COG1,TSMAT,COG2,IER)
         X(1)=COG2(1); Y(1)=COG2(2); Z(1)=COG2(3)
 
 C Transform other end of line.
         COG1(1)=XMX+GRIDD
         COG1(2)=YINC
         COG1(3)=RH
-        CALL VECTRN(COG1,TEMAT,COG2,IER)
+        CALL VECTRN(COG1,TSMAT,COG2,IER)
         X(2)=COG2(1); Y(2)=COG2(2); Z(2)=COG2(3)
 
-        COG1(1)=X(1); COG1(2)=Y(1); COG1(3)=Z(1)
-        CALL VECTRN(COG1,ETSMAT,COG2,IER)
-        call u2pixel(COG2(1),COG2(2),iix,iiy)
+C Clip the line.
+        CALL CLIPLIN(X,Y,Z,ISTAT)
+        if (ISTAT.eq.1) GOTO 111
+        if (ISTAT.eq.-1) then
+          CALL CUTLIN(X,Y,Z,ISTAT)
+          if (ISTAT.eq.-1) GOTO 111
+        endif
 
-        COG1(1)=X(2); COG1(2)=Y(2); COG1(3)=Z(2)
-        CALL VECTRN(COG1,ETSMAT,COG2,IER)
-        call u2pixel(COG2(1),COG2(2),iix1,iiy1)
+        call u2pixel(X(1),Y(1),iix,iiy)
+        call u2pixel(X(2),Y(2),iix1,iiy1)
 
 C Draw the dotted line after casting to local variable.
         if(iix.eq.iix1.and.iiy.eq.iiy1)then
@@ -2049,7 +2118,7 @@ C Draw the dotted line after casting to local variable.
         endif
 
 C Move to next grid position.
-        YINC=YINC+GRIDD
+  111   YINC=YINC+GRIDD
         GOTO 110
       ENDIF
       if(greyok)then
@@ -2269,7 +2338,6 @@ C Notice passing of isymbol=32 or 33 and instead
 C use symbol 8 with size 0 or 2.
       subroutine wiresymbol(xcord,ycord,zcord,icolour,isymbol)
 #include "building.h"
-#include "geometry.h"
 #include "prj3dv.h"
 
 C Parameters
@@ -2281,14 +2349,14 @@ C Parameters
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
-      real COG1,COG2,COG3
-      dimension COG1(3),COG2(3),COG3(3)
+      real COG1,COG2
+      dimension COG1(3),COG2(3)
       logical greyok
 
 #ifdef OSI
-      integer isym,iix,iiy,iicol    ! passed to c code
+      integer iix,iiy,iicol    ! passed to c code
 #else
-      integer*8 isym,iix,iiy,iicol  ! passed to c code
+      integer*8 iix,iiy,iicol  ! passed to c code
 #endif
 
       greyok=.false.      ! see if colour available
@@ -2299,10 +2367,10 @@ C Parameters
       COG1(1)=xcord   ! setup for translation into viewing coords
       COG1(2)=ycord
       COG1(3)=zcord
-      CALL VECTRN(COG1,TEMAT,COG2,IER)
-      CALL VECTRN(COG2,ETSMAT,COG3,IER)
-
-      call u2pixel(COG3(1),COG3(2),iix,iiy)  ! convert to screen coords
+      CALL VECTRN(COG1,TSMAT,COG2,IER)  ! convert to screen coords
+      call CLIPPT(COG2(1),COG2(2),COG2(3),iclp)  ! check clipping
+      if (iclp.ne.0) return
+      call u2pixel(COG2(1),COG2(2),iix,iiy)  
       iicol=icolour                    ! set user color
       if(mmod.eq.8)then
         if(greyok)call winscl('z',iicol)
@@ -2342,7 +2410,6 @@ C 3 = 3-D gridding (grd module)
 
       subroutine redraw(IER)
 
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/C6/INDCFG
       COMMON/MODVIS/IVISMOD
 

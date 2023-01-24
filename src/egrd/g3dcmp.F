@@ -347,7 +347,7 @@ C Draw a scale vertical axis.
         CALL U2PIXEL(X1,Z1,iix,iiy)
         CALL ECIRC(iix,iiy,3,1)
         IVRT1=ILINB(IS,IL,1)
-        CALL VERTLBL(iix,iiy,IVRT1,IER)
+        CALL VERTLBLNOCLP(iix,iiy,IVRT1,IER)
    20 CONTINUE
       IF(INDXS(IS).EQ.3)THEN
         DO 30 IL=NLINB(IS)+1,NLINA(IS)
@@ -1260,10 +1260,10 @@ C Setup and pass in parameters to win3d.
 C Locate and label the two extreme vertices.
       CALL U2PIXEL(XS(1),YS(1),iix,iiy)
       CALL ECIRC(iix,iiy,3,1)
-      CALL VERTLBL(iix,iiy,IVRT1,IER)
+      CALL VERTLBLNOCLP(iix,iiy,IVRT1,IER)
       CALL U2PIXEL(XS(5),YS(5),iix,iiy)
       CALL ECIRC(iix,iiy,3,1)
-      CALL VERTLBL(iix,iiy,IVRT2,IER)
+      CALL VERTLBLNOCLP(iix,iiy,IVRT2,IER)
 
 C Draw the edge.
       iupdown=0
@@ -2306,7 +2306,7 @@ C Setup and pass in parameters to win3d.
 C Locate and label the vertex.
       CALL U2PIXEL(XS(1),YS(1),iix,iiy)
       CALL ECIRC(iix,iiy,3,1)
-      CALL VERTLBL(iix,iiy,IVRX,IER)
+      CALL VERTLBLNOCLP(iix,iiy,IVRX,IER)
 
 C Draw the corner.
       iupdown=0

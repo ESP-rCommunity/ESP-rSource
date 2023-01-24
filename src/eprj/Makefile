@@ -46,7 +46,7 @@ OBJECTS = prj.o agtprj.o agtcom.o anlytc.o arrow.o ascii_mat.o basesimp.o \
 	  predef3dv.o prjdmds.o prjfmk.o prjqa.o psychro.o rcdblist.o read3dv.o readTrnsys.o \
 	  rwipv.o rwroam.o rwsbem.o sendd.o sendflt.o senrwl.o sensa.o \
 	  setup.o sort.o spmisc.o stndrds.o tdfedit.o tdfile.o tdgraph.o \
-	  hvacinput.o qrun.o matpol.o inside.o \
+	  hvacinput.o matpol.o inside.o \
 	  PltDummy.o
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod aim2_inputs.mod \
@@ -287,9 +287,6 @@ readTrnsys.F:
 h3kmodule.f90:
 	rm -f h3kmodule.f90
 	ln -s $(CETCdir)/h3kmodule.f90 .
-qrun.F:
-	rm -f qrun.F
-	ln -s $(COMdir)/qrun.F .
 FMIcom.F:
 	rm -f FMIcom.F
 	ln -s $(COMdir)/FMIcom.F .
@@ -324,7 +321,7 @@ clean:
 	hvacinput.F item.F mcdbscn.F mfcdat.F mfelst.F mfnmsc.F mfrlst.F MultiYear_climate.F mvalid.F \
 	net2pdf.F newnet.F nwkrewr.F plelevvc.F pltcfg.F psychro.F rcdblist.F rwipv.F rwroam.F \
 	rwsbem.F senrwl.F sort.F spmisc.F stndrds.F startup.F tdfile.F matpol.F inside.F \
-	readTrnsys.F PltDummy.F qrun.F h3kmodule.f90 FMIcom.F CFC_Module.f90 cfc_module.mod \
+	readTrnsys.F PltDummy.F h3kmodule.f90 FMIcom.F CFC_Module.f90 cfc_module.mod \
 	cadio_module.mod
 
 distclean: clean

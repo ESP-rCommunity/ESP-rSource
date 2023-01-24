@@ -81,7 +81,7 @@ C Check default view point.
       if(defview)then
         ITEMS1(1)='a view parameters: default'
       else
-        ITEMS1(1)='a view paramters: user defined'
+        ITEMS1(1)='a view parameters: user defined'
       endif
       IF(IFDAY.EQ.0)THEN
         ITEMS1(2)='b date format: DOY 10'

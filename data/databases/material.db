@@ -53,7 +53,7 @@ Category ( 1) Brick includes a range of brick types. Most are inorganic-porous. 
 *item,thermoplan_425_blk, 15, 1,thermoplan_425_blk version a 425mm extruded thin bed block 17kg each 425x247x249mm
 0.1100,649.000,2760.000,0.900,0.900,0.700,0.700,35.000,425.0,-
 # class index |nb items|description (32 char)
-*class, 2,22,Concrete
+*class, 2,23,Concrete
 Category ( 2) Concrete includes a mix of concrete types from heavy weight to lightweight insulating types. Mostly inorganic porous. Based on data traditionally distributed with ESP-r.
 *item,aerated conc block, 22, 2,Aerated concrete block (inorganic-porous)
 0.2400,750.000,1000.000,0.900,0.900,0.650,0.650,10.000,100.0,-
@@ -99,6 +99,8 @@ Category ( 2) Concrete includes a mix of concrete types from heavy weight to lig
 0.1800,730.000,1000.000,0.900,0.900,0.650,0.650,13.000,100.0,-
 *item,white ptd concrete, 34, 2,White painted heavy mix concrete
 1.4000,2100.000,653.000,0.900,0.900,0.210,0.210,19.000,100.0,-
+*item,Cast_concrete_dense_reinfor, 57, 2,Cast_concrete_dense_reinforced BEPAC 1991 Stichting Bowresearch
+2.3000,2500.000,840.000,0.900,0.900,0.700,0.700,13.000,150.0,-
 # class index |nb items|description (32 char)
 *class, 3,14,Metal
 Category ( 3) Metal has a range of metals, some are the same but are painted differently. Based on data traditionally distributed with ESP-r.
@@ -240,7 +242,7 @@ Category ( 6) Plaster includes both tranditional plaster and gypsum plaster boar
 *item,white gypboard,108, 6,White painted Gypboard (inorganic-porous)
 0.1900,950.000,840.000,0.910,0.910,0.220,0.220,11.000,12.5,-
 # class index |nb items|description (32 char)
-*class, 7,12,Screeds and renders
+*class, 7,14,Screeds and renders
 Category ( 7) Screeds are products typically used horizontally and renders are used on walls. Most are inorganic-porous. Based on data traditionally distributed with ESP-r.
 *item,aged rendering,128, 7,Aged Rendering (inorganic-porous)
 0.7900,1329.000,1000.000,0.910,0.910,0.740,0.740,19.000,50.0,-
@@ -266,6 +268,10 @@ Category ( 7) Screeds are products typically used horizontally and renders are u
 0.4100,1200.000,1000.000,0.910,0.910,0.700,0.700,19.000,50.0,-
 *item,white dry render,125, 7,White (coloured) dry render (inorganic-porous)
 0.5000,1300.000,1000.000,0.910,0.910,0.500,0.500,19.000,50.0,-
+*item,mortar_bridge,133, 7,mortar_bridge for use between block some values from Materials de Consr Vol 70 Issue 339 Shafigh et al
+0.8800,2020.000,1000.000,0.910,0.910,0.500,0.500,19.000,50.0,-
+*item,cement_sand_mortar,134, 7,cement_sand_mortar mix 1:7 BEPAC 1991 from Leeds Univ data
+0.8800,1844.000,840.000,0.910,0.910,0.500,0.500,19.000,50.0,-
 # class index |nb items|description (32 char)
 *class, 8,18,Tiles
 Category ( 8) Tiles includes both floor tiles, ceiling tiles and roof tile. Some are impermeable, somre are inorganic-porous. Based on data traditionally distributed with ESP-r.
@@ -322,7 +328,7 @@ Category ( 9) Asphalt and bitumen also includes impermeable materials which use 
 0.5000,1700.000,1000.000,0.900,0.900,0.900,0.900,1000.000,6.0,-
 *item,bitumen paper,166, 9,Bitumen impregnated paper (organic hygroscopic)
 0.0600,1090.000,1000.000,0.900,0.900,0.900,0.900,3000.000,6.0,-
-*item,dark_abs_case,176, 9,dark_abs_case dark grey ABS (Acrylonitrile Butadiene Styrene www.matweb. .com
+*item,dark_abs_case,176, 9,dark_abs_case dark grey ABS (Acrylonitrile Butadiene Styrene www.matweb.com
 0.2500,1020.000,1400.000,0.900,0.900,0.900,0.900,19200.000,2.0,-
 *item,EDPM membrane,174, 9,EDPM membrane roofing or foundations data from Aquaflex aqua-flex.com (impermeable)
 0.1700,1180.000,1470.000,0.900,0.900,0.920,0.920,19200.000,2.0,-
@@ -352,7 +358,7 @@ Category (10) Asbestos is included for historic reasons, some regions still use 
 *item,cement sheet,182,10,Cement sheet (inorganic-porous)
 0.3600,700.000,1050.000,0.960,0.960,0.600,0.600,150.000,6.0,-
 # class index |nb items|description (32 char)
-*class,11,55,Insulation materials
+*class,11,59,Insulation materials
 Category (11) Insulation materials (1) is an initial tranche of loose, batt and foam insulating materials. Based on data traditionally distributed with ESP-r.
 *item,aerogel,235,11,aerogel is a synthetic porous ultralight material typically silica based data from greenspec.co.uk and NASA fact sheet
 0.0140,15.000,1000.000,0.900,0.900,0.500,0.500,3.000,50.0,-
@@ -416,7 +422,7 @@ Category (11) Insulation materials (1) is an initial tranche of loose, batt and 
 0.1400,185.460,1200.000,0.200,0.200,0.200,0.200,30.000,100.0,-
 *item,Kingspan_kooltherm_k,314,11,Kingspan_kooltherm_k103 floorboard
 0.0180,40.000,1181.000,0.900,0.900,0.650,0.650,300.000,100.0,-
-*item,Kingspan_OPTIM_R vacuum,315,11,Kingspan_OPTIM_R vacuum insulation board - approximate specific heat &d density.
+*item,Kingspan_OPTIM_R vacuum,315,11,Kingspan_OPTIM_R vacuum insulation board - approximate specific heat & density.
 0.0070,256.000,837.000,0.600,0.600,0.650,0.650,1000.000,20.0,-
 *item,Min wool quilt k 0.04,291,11,Insulation (Min wool quilt k=0.04) (non-hygroscopic)
 0.0400,12.000,1000.000,0.900,0.900,0.700,0.700,30.000,250.0,-
@@ -444,7 +450,7 @@ Category (11) Insulation materials (1) is an initial tranche of loose, batt and 
 0.1800,700.000,1004.000,0.900,0.900,0.600,0.600,10.000,100.0,-
 *item,Siporex,206,11,Siporex block (autoclaved aerated concrete) lccsiporex.com (inorganic-porous)
 0.1440,550.000,1004.000,0.900,0.900,0.400,0.400,60.000,100.0,-
-*item,straw_bales,234,11,straw_bales are an agricultural by-product properties from greenspec.co .uk
+*item,straw_bales,234,11,straw_bales are an agricultural by-product properties from greenspec.co.uk
 0.0800,120.000,180.000,0.900,0.900,0.500,0.500,3.000,400.0,-
 *item,straw thatch,218,11,Straw thatch (organic-hygroscopic)
 0.0700,240.000,180.000,0.900,0.900,0.500,0.500,3.000,100.0,-
@@ -464,6 +470,14 @@ Category (11) Insulation materials (1) is an initial tranche of loose, batt and 
 0.0210,32.000,1181.000,0.800,0.800,0.650,0.650,300.000,75.0,-
 *item,EPS_wetherby HD EPS,320,11,EPS_wetherby HD EPS (copy of EPS k 0.04)
 0.0360,15.000,1450.000,0.900,0.900,0.700,0.700,30.000,80.0,-
+*item,mineral_wool_k0.032,322,11,mineral_wool_k0.032 as assumed by UK PartL guidance
+0.0320,70.000,1800.000,0.900,0.900,0.700,0.700,6.000,100.0,-
+*item,mineral wool k=0.044,333,11,mineral wool k=0.044 for use with 2436 PartLGuide
+0.0440,12.000,1000.000,0.900,0.900,0.700,0.700,30.000,250.0,-
+*item,mineral_wool_k0.036,334,11,mineral_wool_k0.036 as assumed by UK PartL guidance
+0.0360,70.000,1800.000,0.900,0.900,0.700,0.700,6.000,100.0,-
+*item,XPS+k0.036,236,11,XPS+k0.036 (copy of XPS CO2 foamed)
+0.0360,38.000,1450.000,0.900,0.900,0.300,0.300,350.000,100.0,-
 # class index |nb items|description (32 char)
 *class,12,12,Carpet
 Category (12) Carpet includes both natural and synthetic carpets, some differ only in colour. Based on data traditionally distributed with ESP-r.
@@ -554,7 +568,7 @@ Category (14) Earth includes loose materials. Also check the stone category for 
 Category (15) Board and Sheathing includes a range of plaster and wood products many from the IBO PassivHaus book.
 *item,book_paper,309,15,book_paper .72 g/cc from paperonweb.com engineering toolbox other attributes approximate
 0.1000,720.000,1300.000,0.900,0.900,0.650,0.650,12.000,105.0,-
-*item,corian,330,15,corian is a solid homogeneous non-porous surfacing of natural minerals and acrylic resin. Data from CBERD and MNRE India Thermo-Physical-c Optical Preperty DB March 2014
+*item,corian,330,15,corian is a solid homogeneous non-porous surfacing of natural minerals and acrylic resin. From CBERD and MNRE India Thermo-Physical-c Optical Preperty DB March 2014
 1.0120,1750.000,771.400,0.800,0.800,0.400,0.400,1920.000,20.0,-
 *item,fibreboard 250kg,303,15,Porous wood fiberboard 250 kg/m3 from IBO PassivHaus (diffusion is a guess) (organic-hygroscopic)
 0.0500,250.000,2000.000,0.900,0.900,0.650,0.650,5.000,25.0,-
@@ -581,28 +595,38 @@ Category (15) Board and Sheathing includes a range of plaster and wood products 
 *item,rockpanel_extreme,332,15,rockpanel_extreme is compressed mineral wool board from Rockwool. No info on specific heat used mineral wool value
 0.5100,1200.000,105.000,0.900,0.900,0.750,0.750,400.000,8.0,-
 # class index |nb items|description (32 char)
-*class,16,10,Non-homogeneous
+*class,16,15,Non-homogeneous
 Category (16) Non-homogeneous layers combine two existing materials properties to represent non-homogeneous constructions. Documentation should state percentage and base materials.
 *item,block_beam_conc_thermalite,331,16,block_beam_conc_thermalite derived from heavy mix concrete & thermalite_aircrete_HS_7 ( 0.150 0.850)
 0.3630,935.500,947.950,0.900,0.900,0.650,0.650,13.900,100.0,-
-*item,cellulose+OSB_9.5mm,326,16,cellulose+OSB_9.5mm derived from OSB & celulose fiber flakes ( 0.016 0.984) assuming 600mm centres of web of I beam
+*item,cellulose+OSB_9.5mm,326,16,cellulose+OSB_9.5mm derived from OSB & celulose fiber flakes (0.016 0.984) assuming 600mm centres of web of I beam
 0.0410,44.717,1896.840,0.900,0.900,0.306,0.306,28.802,9.0,-
-*item,cellulose+fir7.5pc,324,16,cellulose+fir7.5pc derived from fir & celulose fiber flakes ( 0.075 0.925) assuming 600mm centres for 45mm studs
+*item,cellulose+fir7.5pc,324,16,cellulose+fir7.5pc derived from fir & celulose fiber flakes (0.075 0.925) assuming 600mm centres for 45mm studs
 0.0470,63.800,1961.500,0.900,0.900,0.326,0.326,10.150,100.0,-
-*item,conc_block+lime_mortar,328,16,conc_block+lime_mortar derived from concrete block & lime cement mortar ( 0.890 0.110) assuming 435 x 210 x 150 block 10-20mm hor and 10-15mm vertical joints
+*item,conc_block+lime_mortar,328,16,conc_block+lime_mortar derived from concrete block & lime cement mortar (0.890 0.110) assuming 435x210x150 block 10-20mm hor and 10-15mm vertical joints
 1.0310,1933.500,1013.200,0.900,0.900,0.422,0.422,24.270,100.0,-
-*item,outer_brick+lime_mortar,327,16,outer_brick+lime_mortar derived from outer leaf brick & lime cement mortar ( 0.800 0.200) based on 210 x 100 x 64mm brick and 10-15mm mortar
+*item,outer_brick+lime_mortar,327,16,outer_brick+lime_mortar derived from outer leaf brick & lime cement mortar (0.800 0.200) based on 210x100x64mm brick & 10-15mm mortar
 0.9280,1960.000,744.000,0.900,0.900,0.864,0.864,35.000,100.0,-
-*item,plaster_dabs_in_12mmair_gap,329,16,plaster_dabs_in_12mmair_gap derived from dense plaster & Air (k) 12mm glz ( 0.200 0.800)  as in mounting of plasterboard on structure via dabs
+*item,plaster_dabs_in_12mmair_gap,329,16,plaster_dabs_in_12mmair_gap derived from dense plaster & Air (k) 12mm glz (0.200 0.800) plasterboard on structure via dabs
 0.1560,260.963,1004.800,0.974,0.974,0.892,0.892,3.000,12.5,-
-*item,wool+fir_4.16pc,325,16,wool+fir_4.16pc derived from fir & lambswool felt insulation ( 0.042 0.958) assuming 600mm centres for 25mm battens
+*item,wool+fir_4.16pc,325,16,wool+fir_4.16pc derived from fir & lambswool felt insulation (0.042 0.958) assuming 600mm centres for 25mm battens
 0.0440,46.182,1550.752,0.900,0.900,0.698,0.698,10.083,25.0,-
-*item,joist_7pc_air_93pc_100mm,335,16,joist_7pc_air_93pc derived from air (k) 100mm HF & fir ( 0.930 0.070) 100mm thickness assumed.
+*item,joist_7pc_air_93pc_100mm,335,16,joist_7pc_air_93pc derived from air (k) 100mm HF & fir (0.930 0.070) 100mm thickness assumed.
 0.5120,30.450,1125.980,0.900,0.900,0.966,0.966,1.770,100.0,-
-*item,air_void_80pc_stud_20pc,336,16,air_void_80pc_stud_20pc derived from fir & air (k) 50mm upwards ( 0.200 0.800)  assumed 5m thick gap
+*item,air_void_80pc_stud_20pc,336,16,air_void_80pc_stud_20pc derived from fir & air (k) 50mm upwards (0.200 0.800) assumed 5m thick gap
 0.2760,84.763,1348.800,0.900,0.900,0.922,0.922,3.200,25.0,-
-*item,stud_acoustic_batt,337,16,stud_acoustic_batt derived from fir & Mineral wool batt ( 0.070 0.930) for use in partition walls
+*item,stud_acoustic_batt,337,16,stud_acoustic_batt derived from fir & Mineral wool batt (0.070 0.930) for use in partition walls
 0.0470,52.580,1120.400,0.900,0.900,0.697,0.697,28.740,25.0,-
+*item,15pc_frame_in_mineral_wool0.32,338,16,15pc_frame_in_mineral_wool0.32 derived from mineral_wool_k0.032 & fir (0.850 0.150)
+0.0482,122.350,1938.000,0.900,0.900,0.692,0.692,6.900,100.0,-
+*item,aerated_block_with_mortar,339,16,aerated_block_with_mortar derived from aerated concrete & mortar bridge (0.933 0.067)
+0.2082,601.840,850.720,0.901,0.901,0.640,0.640,13.402,100.0,-
+*item,mineral_wool_9pc_joist,356,16,mineral_wool_9pc_joist derived from mineral wool k=0.044 & fir (0.910 0.090)
+0.0526,48.630,1154.800,0.900,0.900,0.695,0.695,28.380,250.0,-
+*item,med_block_with_6pc_mortar,357,16,med_block_with_6pc_mortar derived from block inner & mortar bridge (0.933 0.067)
+0.5348,1441.540,1000.000,0.901,0.901,0.640,0.640,10.603,100.0,-
+*item,aeratd_block_6.7pc_mortar,358,16,aeratd_block_6.7pc_mortar derived from aerated concrete & cement_sand_mortar (0.933 0.067)
+0.2082,590.048,840.000,0.901,0.901,0.640,0.640,13.402,100.0,-
 # class index |nb items|description (32 char)
 *class,17,17,GAPS
 Category (17) holds the implied air material (legacy index of zero), several gaps with default air gap resistances and air expressed as k value for a thickness to use in non-homogeneous layers.

@@ -801,8 +801,9 @@ C results will be averaged.
 
 C Default surface convective heat transfer coefficient model.
 C ihct (for internal convenction) icorexhct (for external).
-      ihct=1
-      icorexhct=1
+C These are overwritten by directives in cfg file.
+      ihct=1        ! assume A&H
+      icorexhct=1   ! assume McAdams
 
 C No input achieved as yet.
       INPOK=.FALSE.

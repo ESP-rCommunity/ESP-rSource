@@ -40,6 +40,7 @@ C Radiance processor cores.
       character item*30,HOLD*24
       character fil*80,fs*1
       character ltmp*72,ltmp60*60
+      character rifwave*72
       logical unixok
       integer lnrif   ! length of rif file
 
@@ -268,7 +269,9 @@ C Specify PIC root file name.
      &    '  ',72,'xxx.rif','rif file name',IER,nbhelp)
         if(ltmp.eq.' ')goto 642
         RIFNAME(ISCENE) = ltmp
-        call mkrif(ita2,RIFNAME(ISCENE),4,0,ier)
+        call mkrif(ita2,RIFNAME(ISCENE),4,0,'-',ier)
+        rifwave='obj.rif'
+        call mkrif(ITA2,rifwave,IFC,0,'w',IER)
 C        call edisp(iuout,' ') 
 C        call edisp(iuout,'The current contents of the rif file: ') 
 C        call LISTAS(ITA2,RIFNAME(ISCENE),IER)

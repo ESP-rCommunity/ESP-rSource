@@ -202,6 +202,7 @@ C          write(6,*) SXMX,SXMN,SYMX,SYMN
      &        sca,Xadd,Yadd)
 C          write(6,*) SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,Xadd,Yadd
             call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
+            call INICLP(ier)
           endif
 
 C Read 3D flow network, report contents and draw the network.
@@ -344,6 +345,8 @@ C act='m' called from ipv metric with parameters already set.
       integer lnb    ! length of buffer to write to
       integer K,K4   ! counters
       integer KE,KE4 ! current end points
+      double precision atime
+      logical nextday
 
 C If output to file alter the edisp unit number.
       itru = icout
@@ -698,14 +701,21 @@ C Recover results for day.
         call GOGET(IDAY)
 
 C Loop through day's timesteps.
-        DO 421 J = 1,NDTS,NOUT
+C Omit last time step on 31st Dec as the timestamp for this is into next
+C year.
+        if (IDAY.eq.365) then
+          xndts=NDTS-1
+        else
+          xndts=NDTS
+        endif
+        DO 421 J = 1,xndts,NOUT
 
 C Compute current time.
 C IHRD - number of days since start of plotting period in hours.
 C TIME - time in hours since start of first day plotted.
           IHRD=(IDAY-IODS)*24
-          call DATIME(J,ATIME)
-          TIME=float(IHRD)+ATIME
+          call DDTIME(J,ATIME)
+          TIME=real(dble(IHRD)+ATIME)
 
 C Within requested output period.
           IF(TIME.LT.(TSTART-1.0).or.TIME.GT.TFINSH)goto 421
@@ -719,15 +729,19 @@ C Display data. Create both data strings for this timestep.
             write (outs800,'(a5)') LTIME
             K=6
           elseif (IHFLAG.eq.1) then
-            RDOTY=REAL(IDAY)+(ATIME/24.)
+            RDOTY=real(dble(IDAY)+(ATIME/24d0))
             write (outs248,'(f11.6)') RDOTY
             write (outs800,'(f11.6)') RDOTY
             K=11
           elseif (IHFLAG.eq.2) then
 
 C Write in format that spreadsheets understand as time.
-            call edayr(IDAY,ID,IM)
-            call SJTIME(J,LJTIME)
+            call SJTIME(J,LJTIME,nextday)
+            if (nextday) then
+              call edayr(IDAY+1,ID,IM)
+            else
+              call edayr(IDAY,ID,IM)
+            endif
             write (outs248,'(i4,a,i2.2,a,i2.2,2a)') 
      &        IYEAR,'-',IM,'-',ID,' ',LJTIME
             write (outs800,'(i4,a,i2.2,a,i2.2,2a)') 
@@ -744,7 +758,7 @@ C First write data to the 248 char string buffer.
 
 C If there is occupancy filter and occupancy then include in check.
 C Assume fully occupied.
-              ih=int(ATIME+1.)
+              ih=int(ATIME+1d0)
               ioc=1
               if(iocupf.eq.1) call getocup(IZONE,IDAY,J,ioc,ier)
               if(ioc.ne.0) then
@@ -778,7 +792,7 @@ C If writing to file then write data to the 800 char string buffer.
 
 C If there is occupancy filter and occupancy then include in check.
 C Assume fully occupied.
-                ih=int(ATIME+1.)
+                ih=int(ATIME+1d0)
                 ioc=1
                 if(iocupf.eq.1) call getocup(IZONE,IDAY,J,ioc,ier)
                 if(ioc.ne.0) then
@@ -903,6 +917,7 @@ C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
 C Markdown flag.
       logical markdown
       common/markdownflag/markdown
+      COMMON/GRTOOL/IHFLAG,IDHFLG,ilflag
 
       logical libheading ! have we printed report heading (library name etc).
       logical headingcontext ! has set or period changed so heading needs reprint
@@ -943,6 +958,8 @@ C User preferences for Monthly table.
       dimension ZPER(4),SHTR(4),TCAS(4),TAIV(4),TCTL(4),TSOL(4)
       character TDMD*10
       dimension TDMD(4)
+      character SLPER*12,SLHTR*72,SLCAS*36,SLAIV*26,SLCTL*16,SLSOL*30
+      character SLDMD*18
 
       DATA NDYMTH/31,59,90,120,151,181,212,243,273,304,334,365/
       DATA NMTHNM/'Jan','Feb','Mar','Apr','May','Jun','Jul',
@@ -998,11 +1015,16 @@ C Call the menu of choices (this also sets some default options).
         ZPER(3)='                   '
         ZPER(4)='                   '
       else
-        imzperl=18
-        ZPER(1)=' Zone      Period|'
-        ZPER(2)='           in    |'
-        ZPER(3)='           month |'
-        ZPER(4)='                 |'
+        if(ilflag.eq.0)then
+          imzperl=18
+          ZPER(1)=' Zone      Period|'
+          ZPER(2)='           in    |'
+          ZPER(3)='           month |'
+          ZPER(4)='                 |'
+        else
+          imzperl=11
+          SLPER='Zone Month '
+        endif
       endif
       if(imshtr.eq.1)then  ! Surface heat transfer
         if(markdown)then
@@ -1012,11 +1034,18 @@ C Call the menu of choices (this also sets some default options).
           SHTR(3)='  glazing    glazing    opaque     opaque    '
           SHTR(4)='  facade     other      facade     other     '
         else
-          imshtrl=32
-          SHTR(1)=' Surface convection at face of |'
-          SHTR(2)='   transparent |    opaque     |'
-          SHTR(3)='facade |other  |facade |other  |'
-          SHTR(4)='facing |facing |facing |facing |'
+          if(ilflag.eq.0)then
+            imshtrl=32
+            SHTR(1)=' Surface convection at face of |'
+            SHTR(2)='   transparent |    opaque     |'
+            SHTR(3)='facade |other  |facade |other  |'
+            SHTR(4)='facing |facing |facing |facing |'
+          else
+            imshtrl=70
+            write(SLHTR,'(2a)')
+     &        'Conv-glazing-facade Conv-glazing-other ',
+     &        'Conv-opq-facade Conv-opq-other '
+          endif
         endif
       elseif(imshtr.eq.2)then
         if(markdown)then
@@ -1026,11 +1055,16 @@ C Call the menu of choices (this also sets some default options).
           SHTR(3)='  glazing    opaque    '
           SHTR(4)='  facade     facade    '
         else
-          imshtrl=19
-          SHTR(1)='Surface convection|'
-          SHTR(2)='    at facade     |'
-          SHTR(3)='glazing |opaque   |'
-          SHTR(4)='        |         |' 
+          if(ilflag.eq.0)then
+            imshtrl=19
+            SHTR(1)='Surface convection|'
+            SHTR(2)='    at facade     |'
+            SHTR(3)='glazing |opaque   |'
+            SHTR(4)='        |         |' 
+          else
+            imshtrl=36
+            SLHTR='Conv-glazing-facade Conv-opq-facade '
+          endif
         endif
       endif
       if(imtcas.eq.1)then
@@ -1041,11 +1075,16 @@ C Call the menu of choices (this also sets some default options).
           TCAS(3)='                   power             '
           TCAS(4)='                                     '
         else
-          imtcasl=32
-          TCAS(1)=' Casual Gains (Radiant+Conv)   |'
-          TCAS(2)='Occu-  |Lights |Small  |Other  |'
-          TCAS(3)='pant   |       |Power  |       |'
-          TCAS(4)='       |       |       |       |'
+          if(ilflag.eq.0)then
+            imtcasl=32
+            TCAS(1)=' Casual Gains (Radiant+Conv)   |'
+            TCAS(2)='Occu-  |Lights |Small  |Other  |'
+            TCAS(3)='pant   |       |Power  |       |'
+            TCAS(4)='       |       |       |       |'
+          else
+            imtcasl=35
+            SLCAS='Occupants Lights Small-power Other '
+          endif
         endif
       elseif(imtcas.eq.2)then
         if(markdown)then
@@ -1055,11 +1094,16 @@ C Call the menu of choices (this also sets some default options).
           TCAS(3)=' Gains   '
           TCAS(4)=' R+C     '
         else
-          imtcasl=9
-          TCAS(1)=' Casual |'
-          TCAS(2)=' Gains  |'
-          TCAS(3)=' R+C    |'
-          TCAS(4)='        |'
+          if(ilflag.eq.0)then
+            imtcasl=9
+            TCAS(1)=' Casual |'
+            TCAS(2)=' Gains  |'
+            TCAS(3)=' R+C    |'
+            TCAS(4)='        |'
+          else
+            imtcasl=17
+            SLCAS='Casual-gains-R+C '
+          endif
         endif
       endif
       if(imtaiv.eq.1)then
@@ -1070,11 +1114,16 @@ C Call the menu of choices (this also sets some default options).
           TAIV(3)='                          '
           TAIV(4)='                          '
         else
-          imtaivl=16
-          TAIV(1)='Air movement   |'
-          TAIV(2)='Infil- |Venti- |'
-          TAIV(3)='tration|lation |'
-          TAIV(4)='       |       |'
+          if(ilflag.eq.0)then
+            imtaivl=16
+            TAIV(1)='Air movement   |'
+            TAIV(2)='Infil- |Venti- |'
+            TAIV(3)='tration|lation |'
+            TAIV(4)='       |       |'
+          else
+            imtaivl=25
+            SLAIV='Infiltration Ventilation '
+          endif
         endif
       elseif(imtaiv.eq.2)then
         if(markdown)then
@@ -1084,11 +1133,16 @@ C Call the menu of choices (this also sets some default options).
           TAIV(3)='              '
           TAIV(4)='              '
         else
-          imtaivl=9
-          TAIV(1)='Infil-  |'
-          TAIV(2)='tration |'
-          TAIV(3)='        |'
-          TAIV(4)='        |'
+          if(ilflag.eq.0)then
+            imtaivl=9
+            TAIV(1)='Infil-  |'
+            TAIV(2)='tration |'
+            TAIV(3)='        |'
+            TAIV(4)='        |'
+          else
+            imtaivl=13
+            SLAIV='Infiltration '
+          endif
         endif
       elseif(imtaiv.eq.3)then
         if(markdown)then
@@ -1098,11 +1152,16 @@ C Call the menu of choices (this also sets some default options).
           TAIV(3)='             '
           TAIV(4)='             '
         else
-          imtaivl=9
-          TAIV(1)='Venti-  |'
-          TAIV(2)='lation  |'
-          TAIV(3)='        |'
-          TAIV(4)='        |'
+          if(ilflag.eq.0)then
+            imtaivl=9
+            TAIV(1)='Venti-  |'
+            TAIV(2)='lation  |'
+            TAIV(3)='        |'
+            TAIV(4)='        |'
+          else
+            imtaivl=12
+            SLAIV='Ventilation '
+          endif
         endif
       endif
       if(imtctl.eq.1)then
@@ -1113,11 +1172,16 @@ C Call the menu of choices (this also sets some default options).
           TCTL(3)='                  '
           TCTL(4)='                  '
         else
-          imtctll=16
-          TCTL(1)=' Environmental |'
-          TCTL(2)='   controls    |'
-          TCTL(3)='Heating|Cooling|'
-          TCTL(4)='       |       |'
+          if(ilflag.eq.0)then
+            imtctll=16
+            TCTL(1)=' Environmental |'
+            TCTL(2)='   controls    |'
+            TCTL(3)='Heating|Cooling|'
+            TCTL(4)='       |       |'
+          else
+            imtctll=16
+            SLCTL='Heating Cooling '
+          endif
         endif
       elseif(imtctl.eq.2)then
         if(markdown)then
@@ -1127,11 +1191,16 @@ C Call the menu of choices (this also sets some default options).
           TCTL(3)='         '
           TCTL(4)='         '
         else
-          imtctll=8
-          TCTL(1)='Heating|'
-          TCTL(2)='       |'
-          TCTL(3)='       |'
-          TCTL(4)='       |'
+          if(ilflag.eq.0)then
+            imtctll=8
+            TCTL(1)='Heating|'
+            TCTL(2)='       |'
+            TCTL(3)='       |'
+            TCTL(4)='       |'
+          else
+            imtctll=8
+            SLCTL='Heating '
+          endif
         endif
       elseif(imtctl.eq.3)then
         if(markdown)then
@@ -1141,11 +1210,16 @@ C Call the menu of choices (this also sets some default options).
           TCTL(3)='         '
           TCTL(4)='         '
         else
-          imtctll=8
-          TCTL(1)='Cooling|'
-          TCTL(2)='       |'
-          TCTL(3)='       |'
-          TCTL(4)='       |'
+          if(ilflag.eq.0)then
+            imtctll=8
+            TCTL(1)='Cooling|'
+            TCTL(2)='       |'
+            TCTL(3)='       |'
+            TCTL(4)='       |'
+          else
+            imtctll=8
+            SLCTL='Cooling '
+          endif
         endif
       endif
       if(imtsol.eq.1)then
@@ -1156,11 +1230,16 @@ C Call the menu of choices (this also sets some default options).
           TSOL(3)='  absorbd entering'
           TSOL(4)='  in zone zone    '
         else
-          imtsoll=17
-          TSOL(1)='Solar radiation |'
-          TSOL(2)='absorbd|entering|'
-          TSOL(3)='within |the     |'
-          TSOL(4)='zone   |zone    |'
+          if(ilflag.eq.0)then
+            imtsoll=17
+            TSOL(1)='Solar radiation |'
+            TSOL(2)='absorbd|entering|'
+            TSOL(3)='within |the     |'
+            TSOL(4)='zone   |zone    |'
+          else
+            imtsoll=29
+            SLSOL='Solar-absorbed Solar-entring '
+          endif
         endif
       elseif(imtsol.eq.2)then
         if(markdown)then
@@ -1170,11 +1249,16 @@ C Call the menu of choices (this also sets some default options).
           TSOL(3)='  absorbd'
           TSOL(4)='  in zone'
         else
-          imtsoll=8
-          TSOL(1)='Solar  |'
-          TSOL(2)='absorbd|'
-          TSOL(3)='within |'
-          TSOL(4)='zone   |'
+          if(ilflag.eq.0)then
+            imtsoll=8
+            TSOL(1)='Solar  |'
+            TSOL(2)='absorbd|'
+            TSOL(3)='within |'
+            TSOL(4)='zone   |'
+          else
+            imtsoll=15
+            SLSOL='Solar-absorbed '
+          endif
         endif
       elseif(imtsol.eq.3)then
         if(markdown)then
@@ -1184,11 +1268,16 @@ C Call the menu of choices (this also sets some default options).
           TSOL(3)='  entering'
           TSOL(4)='  zone    '
         else
-          imtsoll=9
-          TSOL(1)='Solar   |'
-          TSOL(2)='entering|'
-          TSOL(3)='the     |'
-          TSOL(4)='zone    |'
+          if(ilflag.eq.0)then
+            imtsoll=9
+            TSOL(1)='Solar   |'
+            TSOL(2)='entering|'
+            TSOL(3)='the     |'
+            TSOL(4)='zone    |'
+          else
+            imtsoll=15
+            SLSOL='Solar-entering '
+          endif
         endif
       endif
       if(dmdsok)then
@@ -1199,11 +1288,16 @@ C Call the menu of choices (this also sets some default options).
           TDMD(3)=' demands  '
           TDMD(4)=' for model'
         else
-          imdmdsl=9
-          TDMD(1)='dispersed'
-          TDMD(2)='demands  '
-          TDMD(3)='for model'
-          TDMD(4)='         '
+          if(ilflag.eq.0)then
+            imdmdsl=9
+            TDMD(1)='dispersed'
+            TDMD(2)='demands  '
+            TDMD(3)='for model'
+            TDMD(4)='         '
+          else
+            imdmdsl=18
+            SLDMD='Dispersed-demands '
+          endif
         endif
       else      ! if no dispersed just a single blank
         imdmdsl=1
@@ -1211,6 +1305,7 @@ C Call the menu of choices (this also sets some default options).
         TDMD(2)=' '
         TDMD(3)=' '
         TDMD(4)=' '
+        SLDMD=' '
       endif
 
 C Set header text and write it out if this has not yet been done.
@@ -1301,22 +1396,29 @@ C If current version, display monthly summary.
       if(izver.ge.4)then
 
 C Monthly statistics of energy gains and losses.
-        write(outsl,'(7a)') ZPER(1)(1:imzperl),SHTR(1)(1:imshtrl),
-     &    TCAS(1)(1:imtcasl),TAIV(1)(1:imtaivl),
-     &    TCTL(1)(1:imtctll),TSOL(1)(1:imtsoll),TDMD(1)(1:imdmdsl)
-        call edisp(itru,outsl)
-        write(outsl,'(7a)') ZPER(2)(1:imzperl),SHTR(2)(1:imshtrl),
-     &    TCAS(2)(1:imtcasl),TAIV(2)(1:imtaivl),
-     &    TCTL(2)(1:imtctll),TSOL(2)(1:imtsoll),TDMD(2)(1:imdmdsl)
-        call edisp(itru,outsl)
-        write(outsl,'(7a)') ZPER(3)(1:imzperl),SHTR(3)(1:imshtrl),
-     &    TCAS(3)(1:imtcasl),TAIV(3)(1:imtaivl),
-     &    TCTL(3)(1:imtctll),TSOL(3)(1:imtsoll),TDMD(3)(1:imdmdsl)
-        call edisp(itru,outsl)
-        write(outsl,'(7a)') ZPER(4)(1:imzperl),SHTR(4)(1:imshtrl),
-     &    TCAS(4)(1:imtcasl),TAIV(4)(1:imtaivl),
-     &    TCTL(4)(1:imtctll),TSOL(4)(1:imtsoll),TDMD(4)(1:imdmdsl)
-        call edisp(itru,outsl)
+        if(ilflag.eq.0)then
+          write(outsl,'(7a)') ZPER(1)(1:imzperl),SHTR(1)(1:imshtrl),
+     &      TCAS(1)(1:imtcasl),TAIV(1)(1:imtaivl),
+     &      TCTL(1)(1:imtctll),TSOL(1)(1:imtsoll),TDMD(1)(1:imdmdsl)
+          call edisp(itru,outsl)
+          write(outsl,'(7a)') ZPER(2)(1:imzperl),SHTR(2)(1:imshtrl),
+     &      TCAS(2)(1:imtcasl),TAIV(2)(1:imtaivl),
+     &      TCTL(2)(1:imtctll),TSOL(2)(1:imtsoll),TDMD(2)(1:imdmdsl)
+          call edisp(itru,outsl)
+          write(outsl,'(7a)') ZPER(3)(1:imzperl),SHTR(3)(1:imshtrl),
+     &      TCAS(3)(1:imtcasl),TAIV(3)(1:imtaivl),
+     &      TCTL(3)(1:imtctll),TSOL(3)(1:imtsoll),TDMD(3)(1:imdmdsl)
+          call edisp(itru,outsl)
+          write(outsl,'(7a)') ZPER(4)(1:imzperl),SHTR(4)(1:imshtrl),
+     &      TCAS(4)(1:imtcasl),TAIV(4)(1:imtaivl),
+     &      TCTL(4)(1:imtctll),TSOL(4)(1:imtsoll),TDMD(4)(1:imdmdsl)
+          call edisp(itru,outsl)
+        else
+          write(outsl,'(7a)') SLPER(1:imzperl),SLHTR(1:imshtrl),
+     &      SLCAS(1:imtcasl),SLAIV(1:imtaivl),
+     &      SLCTL(1:imtctll),SLSOL(1:imtsoll),SLDMD(1:imdmdsl)
+          call eddisp(itru,outsl)
+        endif
 
 C Markdown -> docx does not accept intermediate horizontal rule in this
 C format. Explore alternatives.
@@ -1532,7 +1634,11 @@ C Take topics in order to build the outsl string.
               write(outsl,'(14X,a,2x)') NMTHNM(IMNTH)
               K=lnblnk(outsl)+3      ! Initial value for next tranche.
             else
-              write(outsl,'(14X,a3,1x)') NMTHNM(IMNTH)
+              if(ilflag.eq.0)then
+                write(outsl,'(14X,a3,1x)') NMTHNM(IMNTH)
+              else
+                write(outsl,'(a,a3,1x)') '-- ',NMTHNM(IMNTH)
+              endif
               K=lnblnk(outsl)+2      ! Initial value for next tranche.
             endif
           endif
@@ -1798,14 +1904,16 @@ C Take topics in order to build the outsl string.
 C Dump 'all-zone' statistics if more than one zone.
       DO 681 IMNTH=IOM1,IOM2
         if (NZ.GT.1) then
-          IF(IMNTH.EQ.IOM1)THEN   ! Include zone name.
+          if(IMNTH.EQ.IOM1)then   ! Include zone name.
             if(markdown)then
-              write(outsl,'(2a,2x)') ' All zones    ',
-     &          NMTHNM(IMNTH)
-              K=lnblnk(outsl)+3      ! initial value for next tranche
+              write(outsl,'(2a,2x)') ' All zones    ',NMTHNM(IMNTH)
+              K=lnblnk(outsl)+2      ! initial value for next tranche
             else
-              write(outsl,'(2a,1x)') ' All zones    ',
-     &          NMTHNM(IMNTH)
+              if(ilflag.eq.0)then
+                write(outsl,'(2a,1x)') ' All zones    ',NMTHNM(IMNTH)
+              else
+                write(outsl,'(2a,1x)') ' All ',NMTHNM(IMNTH)
+              endif
               K=lnblnk(outsl)+2      ! initial value for next tranche
             endif
           else
@@ -1813,7 +1921,11 @@ C Dump 'all-zone' statistics if more than one zone.
               write(outsl,'(2a,2x)') '              ',NMTHNM(IMNTH)
               K=lnblnk(outsl)+3      ! initial value for next tranche
             else
-              write(outsl,'(14X,a3,1x)') NMTHNM(IMNTH)
+              if(ilflag.eq.0)then
+                write(outsl,'(14X,a3,1x)') NMTHNM(IMNTH)
+              else
+                write(outsl,'(a,a3,1x)') '-- ',NMTHNM(IMNTH)
+              endif
               K=lnblnk(outsl)+2      ! initial value for next tranche
             endif
           endif
@@ -1967,8 +2079,13 @@ C Dump the annual totals if run was for more than one month.
           write(outsl,'(a,2x)') ' Annual             '
           K=20      ! initial value for next tranche
         else
-          write(outsl,'(a,1x)') ' Annual            '
-          K=19      ! initial value for next tranche
+          if(ilflag.eq.0)then
+            write(outsl,'(a,1x)') ' Annual            '
+            K=19      ! initial value for next tranche
+          else
+            write(outsl,'(a,1x)') '-- Annual '
+            K=10      ! initial value for next tranche
+          endif
         endif
 
         if(biggest.gt.999999.0)then

@@ -66,7 +66,7 @@ C TMC common block:
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
 
       DIMENSION ITMC2DF(30),KSTR(MDTY)
-      DIMENSION  COG1(3),COG2(3),COG3(3),tip(3),ipoints(6,2)
+      DIMENSION  COG1(3),COG2(3),tip(3),ipoints(6,2)
       LOGICAL XST,lcouple,ldcoef,modcfg,unixok
 
       character outs*124,DTMP*64
@@ -304,14 +304,18 @@ C For each sensor for methods 1,2,4.
           COG1(1)=CGX(ICOMP,N,J)
           COG1(2)=CGY(ICOMP,N,J)
           COG1(3)=CGH(ICOMP,N,J)
-          CALL VECTRN(COG1,TEMAT,COG2,IER)
-          CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),iix,iiy)
-          CALL ecirc(iix,iiy,2,1)
+          CALL VECTRN(COG1,TSMAT,COG2,IER)
+          call CLIPPT(COG2(1),COG2(2),COG2(3),iclp1)
+          call u2pixel(COG2(1),COG2(2),iix,iiy)
           tip(1)=CGX(ICOMP,N,J)+UX(ICOMP,N,J)
           tip(2)=CGY(ICOMP,N,J)+UY(ICOMP,N,J)
           tip(3)=CGH(ICOMP,N,J)+UH(ICOMP,N,J)
-          call arrow(COG1,tip,0.3,0.1,ipoints,'a',1)
+          CALL VECTRN(tip,TSMAT,COG2,IER)
+          call CLIPPT(COG2(1),COG2(2),COG2(3),iclp2)
+          if (iclp1.eq.0 .and. iclp2.eq.0) then
+            CALL ecirc(iix,iiy,2,1)
+            call arrow(COG1,tip,0.3,0.1,ipoints,'a',1)
+          endif
   42    continue
         call forceflush()
       elseif(IDFST(ICOMP,N).EQ.3)then
@@ -339,14 +343,18 @@ C Daylight coef method (5).
           COG1(1)=CGX(ICOMP,N,J)
           COG1(2)=CGY(ICOMP,N,J)
           COG1(3)=CGH(ICOMP,N,J)
-          CALL VECTRN(COG1,TEMAT,COG2,IER)
-          CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),iix,iiy)
-          CALL ecirc(iix,iiy,2,1)
+          CALL VECTRN(COG1,TSMAT,COG2,IER)
+          call u2pixel(COG2(1),COG2(2),iix,iiy)
+          call CLIPPT(COG2(1),COG2(2),COG2(3),iclp1)
           tip(1)=CGX(ICOMP,N,J)+UX(ICOMP,N,J)
           tip(2)=CGY(ICOMP,N,J)+UY(ICOMP,N,J)
           tip(3)=CGH(ICOMP,N,J)+UH(ICOMP,N,J)
-          call arrow(COG1,tip,0.3,0.1,ipoints,'a',1)
+          CALL VECTRN(tip,TSMAT,COG2,IER)
+          call CLIPPT(COG2(1),COG2(2),COG2(3),iclp2)
+          if (iclp1.eq.0 .and. iclp2.eq.0) then
+            CALL ecirc(iix,iiy,2,1)
+            call arrow(COG1,tip,0.3,0.1,ipoints,'a',1)
+          endif
   43    continue
         call forceflush()
       endif

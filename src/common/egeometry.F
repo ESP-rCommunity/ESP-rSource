@@ -133,17 +133,13 @@ C Save total transparent surface area for surfaces connected to external BC.
 
       COMMON/GR3D07/Y0S(MS),Y0SS(MSSZ),Y0SE(MSEZ)
 
-C Error subroutine and error details for dll mode.
-      common/dllerr/dllsubr,dllmesg
-
       DIMENSION XX(MS),YY(MS),IVA(MS)
 
       CHARACTER LGEOMF*72,WORD*20,loutstr*248,lkoutstr*1000
       CHARACTER tmpvfc*4,tmpsot*32,tother*15
       character ZN*12,phrase*64,outs*124,outs2*124
-      character dllsubr*12,dllmesg*124
       character OPT*32 ! for use with surface attributes
-      logical dll,checkbase
+      logical checkbase
       logical havec24
       real XO1,YO1,ZO1,DX1,DY1,DZ1 ! to prevent name clash with geometry.h
       integer lsn   ! length of currentfile
@@ -168,25 +164,15 @@ C Variables used in parsing of space-separated geo files
       checkbase=.false.
       havec24=.false.
 
-C Check if running in dll mode.
-      call isadll(dll)
-
 C Initialise geometry data file. and set currentfile.
       CALL EFOPSEQ(IUNIT,LGEOMF,1,IER)
       IF(IER.LT.0)THEN
         write(outs,'(3a)') 'Geometry file ',LGEOMF(1:lnblnk(LGEOMF)),
      &      ' could not be opened.'
-        if(dll)then
-          dllsubr='EGOMIN'
-          dllmesg=outs
-          ier=2
-          return
-        else
-          call edisp(itru,outs)
-          IER=1
-          RETURN
-        endif
-      ENDIF
+        call edisp(itru,outs)
+        IER=1
+        RETURN
+      endif
       write(currentfile,'(a)') LGEOMF(1:lnblnk(LGEOMF))
 
 C Check that the zone index is within complexity limits.
@@ -194,19 +180,11 @@ C Check that the zone index is within complexity limits.
         write(outs,'(a)') 'EGOMIN: zone index beyond range...'
         lsn=MIN0(lnblnk(currentfile),110)
         write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
-        if(dll)then
-          dllsubr='EGOMIN'
-          dllmesg=outs
-          ier=3
-          CALL ERPFREE(IUNIT,ios)
-          return
-        else
-          call edisp(iuout,outs)
-          call edisp(iuout,outs2)
-          IER=3
-          CALL ERPFREE(IUNIT,ios)
-          RETURN
-        endif
+        call edisp(iuout,outs)
+        call edisp(iuout,outs2)
+        IER=3
+        CALL ERPFREE(IUNIT,ios)
+        RETURN
       endif
 
 C Read lines from file, if one item then assumed to
@@ -229,17 +207,9 @@ C ier as a 3.
         CALL ERPFREE(IUNIT,ios)
         write(outs,'(3a)') 'Geometry file ',LGEOMF(1:lnblnk(LGEOMF)),
      &      ' was newer format than egeomin can read.'
-        if(dll)then
-          dllsubr='EGOMIN'
-          dllmesg=outs
-          ier=2
-          return
-        else
-          call edisp(itru,outs)
-          IER=2
-          RETURN
-        endif
-
+        call edisp(itru,outs)
+        IER=2
+        RETURN
       else
 
 C We can deal with this format.
@@ -386,19 +356,11 @@ C Check that the number of surfaces is within complexity limits.
      &    loutstr(1:50),'...'
           lsn=MIN0(lnblnk(currentfile),110)
           write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
-          if(dll)then
-            dllsubr='EGOMIN'
-            dllmesg=outs
-            ier=4
-            CALL ERPFREE(IUNIT,ios)
-            return
-          else
-            call edisp(iuout,outs)
-            call edisp(iuout,outs2)
-            IER=4
-            CALL ERPFREE(IUNIT,ios)
-            RETURN
-          endif
+          call edisp(iuout,outs)
+          call edisp(iuout,outs2)
+          IER=4
+          CALL ERPFREE(IUNIT,ios)
+          RETURN
         endif
 
         nbwalls(ICOMP)=NSUR   ! remember so can work with META
@@ -477,19 +439,11 @@ C Rotate if required.
 C Unrecognised keyword.
         write(outs,'(2a)') ' Geometry shape type illegal in ',
      &    LGEOMF(1:lnblnk(LGEOMF))
-        if(dll)then
-          dllsubr='EGOMIN'
-          dllmesg=outs
-          ier=2
-          CALL ERPFREE(IUNIT,ios)
-          return
-        else
-          call edisp(itru,outs)
-          IER=1
-          CALL ERPFREE(IUNIT,ios)
-          RETURN
-        endif
-      ENDIF
+        call edisp(itru,outs)
+        IER=1
+        CALL ERPFREE(IUNIT,ios)
+        RETURN
+      endif
 
 C Read line of unused indices (one per surface) if any index is
 C non zero then it represents a depreciated default window.
@@ -975,6 +929,8 @@ C Get surface areas via call to zinfo.
           if(SVFC(ICOMP,ijj)(1:4).eq.'FLOR')then
             if(SUSE(ICOMP,ijj,1)(1:5).eq.'FURNI')then
               continue  ! ignore horizontal surfaces marked as furniture.
+            elseif(SUSE(ICOMP,ijj,1)(1:6).eq.'REVEAL')then
+              continue  ! ignore horizontal surfaces marked as reveal.
             else
 
 C If surface `flor` not included in the list add it.
@@ -1013,19 +969,11 @@ C Close geometry data file before exiting.
      &  loutstr(1:50),'...'
       lsn=MIN0(lnblnk(currentfile),110)
       write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
-      if(dll)then
-        dllsubr='EGOMIN'
-        dllmesg=outs
-        ier=2
-        CALL ERPFREE(IUNIT,ios)
-        return
-      else
-        call edisp(iuout,outs)
-        call edisp(iuout,outs2)
-        IER=1
-        CALL ERPFREE(IUNIT,ios)
-        RETURN
-      endif
+      call edisp(iuout,outs)
+      call edisp(iuout,outs2)
+      IER=1
+      CALL ERPFREE(IUNIT,ios)
+      RETURN
 
       END
 
@@ -1344,6 +1292,12 @@ C    The 2nd array index for the case of doors indicates the users
 C    preference for treating air movement and the allowed tags are:
 C    CLOSED UNDERCUT  OPEN  BIDIR
 
+C    Surfaces marked 'REVEAL' helps to resolve whether a thermal
+C    bridge may or may not apply.
+
+C    Surfaces marked 'BALCONY' indicates a thermal bridge may need
+C    to be defined.
+
 C    Thie first array index for a frame associated with a door or window:
 C    `FRAME` marks a frame associated with an inside door or glazing,
 C    'F-FRAME' marks a frame within the facade which might need to be
@@ -1411,9 +1365,6 @@ C << do we need transparent surface area facing different orientations? >>
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-C Error subroutine and error details for dll mode.
-      common/dllerr/dllsubr,dllmesg
-
 C Thermal bridge common block is described in esruprj/edgeo.F
       integer nbrdg, ibrdg
       real psi,lngth,losspercent,totheatloss,thbrpercent
@@ -1433,11 +1384,10 @@ C GS7/GS8 are defined in geometry.h
       CHARACTER LGEOMF*72,WORD*32
       CHARACTER tmpvfc*4,tother*15,tother1*15,tother2*15
       character ZN*12,phrase*64,outs*124,outs2*124
-      character dllsubr*12,dllmesg*124
       character loutstr*248,lkout*1000 ! longer line for vertex list
       character dstmp*24
       character OPT*32 ! for use with optical attributes
-      logical dll,checkbase
+      logical checkbase
       logical havec24
       logical optcorrected      ! set to true if optics corrected
       integer nbo               ! local value of nbobs
@@ -1475,25 +1425,15 @@ C in a subsequent call and that will be updating nbobs.
         nbobs(icomp)=0    ! reset obstructions
       endif
 
-C Check if running in dll mode.
-      call isadll(dll)
-
 C Initialise geometry data file. and set currentfile.
       CALL EFOPSEQ(IUNIT,LGEOMF,1,IER)
       IF(IER.LT.0)THEN
         write(outs,'(3a)') 'Geometry file ',LGEOMF(1:lnblnk(LGEOMF)),
      &      ' could not be opened.'
-        if(dll)then
-          dllsubr='GEOREAD'
-          dllmesg=outs
-          ier=2
-          return
-        else
-          call edisp(itru,outs)
-          IER=1
-          RETURN
-        endif
-      ENDIF
+        call edisp(itru,outs)
+        IER=1
+        RETURN
+      endif
       write(currentfile,'(a)') LGEOMF(1:lnblnk(LGEOMF))
 
 C Check that the zone index is within complexity limits.
@@ -1502,19 +1442,11 @@ C Check that the zone index is within complexity limits.
 
         lsn=MIN0(lnblnk(currentfile),110)
         write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
-        if(dll)then
-          dllsubr='GEOREAD'
-          dllmesg=outs
-          ier=3
-          CALL ERPFREE(IUNIT,ios)
-          return
-        else
-          call edisp(iuout,outs)
-          call edisp(iuout,outs2)
-          IER=3
-          CALL ERPFREE(IUNIT,ios)
-          RETURN
-        endif
+        call edisp(iuout,outs)
+        call edisp(iuout,outs2)
+        IER=3
+        CALL ERPFREE(IUNIT,ios)
+        RETURN
       endif
 
 C Read header lines from file, the 1.1 version looks like:
@@ -1584,31 +1516,17 @@ C file that seems to be readable so close the file and call egomin.
 C Zone is of type REC, subroutine EGOMIN should have been used.
         write(outs,'(3a)') 'Geometry file ',LGEOMF(1:lnblnk(LGEOMF)),
      &      ' has REC format so it must be a legacy file.'
-        if(dll)then
-          dllsubr='GEOREAD'
-          dllmesg=outs
-          ier=2
-          return
-        else
-          call edisp(itru,outs)
-          IER=1
-          RETURN
-        endif
+        call edisp(itru,outs)
+        IER=1
+        RETURN
       ELSEIF(CTYPE(icomp)(1:3).EQ.'REG')THEN
 
 C Zone is of type REG, subroutine EGOMIN should have been used.
         write(outs,'(3a)') 'Geometry file ',LGEOMF(1:lnblnk(LGEOMF)),
      &      ' has REG format so it must be a legacy file.'
-        if(dll)then
-          dllsubr='GEOREAD'
-          dllmesg=outs
-          ier=2
-          return
-        else
-          call edisp(itru,outs)
-          IER=1
-          RETURN
-        endif
+        call edisp(itru,outs)
+        IER=1
+        RETURN
       ELSEIF(CTYPE(icomp)(1:3).EQ.'GEN')THEN
 
 C Zone is of type GEN. First read the date stamp line followed
@@ -1694,19 +1612,11 @@ C Check that the number of surfaces is within complexity limits.
      &      lkout(1:50),'...'
             lsn=MIN0(lnblnk(currentfile),110)
             write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
-            if(dll)then
-              dllsubr='GEOREAD'
-              dllmesg=outs
-              ier=4
-              CALL ERPFREE(IUNIT,ios)
-              return
-            else
-              call edisp(iuout,outs)
-              call edisp(iuout,outs2)
-              IER=4
-              CALL ERPFREE(IUNIT,ios)
-              RETURN
-            endif
+            call edisp(iuout,outs)
+            call edisp(iuout,outs2)
+            IER=4
+            CALL ERPFREE(IUNIT,ios)
+            RETURN
           endif
           if(NEDGE.le.MS)then
             CALL EGETWI(lkout,K,J,3,MV,'F','nb assoc vertices',IERV)
@@ -2077,28 +1987,27 @@ C based on exact match of characters in phrase.
             ibrdg(icomp,nbrdg(icomp))=1
           elseif(phrase(1:18).eq.'wall-ground floor ')then
             ibrdg(icomp,nbrdg(icomp))=2
-          elseif(phrase(1:25).eq.'wall-wall (convex corner) ')then
+          elseif(phrase(1:25).eq.'wall-wall (convex corner)')then
             ibrdg(icomp,nbrdg(icomp))=3
-          elseif(phrase(1:26).eq.'wall-wall (concave corner) ')then
+          elseif(phrase(1:26).eq.'wall-wall (concave corner)')then
             ibrdg(icomp,nbrdg(icomp))=4
-          elseif(phrase(1:30).eq.'wall-floor (not ground floor) ')then
+          elseif(phrase(1:26).eq.'wall-floor (exposed floor)')then
             ibrdg(icomp,nbrdg(icomp))=5
-          elseif(phrase(1:28).eq.'lintel above window or door ')then
+          elseif(phrase(1:28).eq.'lintel above window or door')then
             ibrdg(icomp,nbrdg(icomp))=6
           elseif(phrase(1:18).eq.'Sill below window ')then
             ibrdg(icomp,nbrdg(icomp))=7
           elseif(phrase(1:23).eq.'jamb at window or door ')then
             ibrdg(icomp,nbrdg(icomp))=8
-          elseif(phrase(1:12).eq.'roof-wall-mc')then
+          elseif(phrase(1:11).eq.'wall-gable ')then
             ibrdg(icomp,nbrdg(icomp))=9
-          elseif(phrase(1:20).eq.'wall-ground floor-mc')then
+          elseif(phrase(1:13).eq.'wall-parapet ')then
             ibrdg(icomp,nbrdg(icomp))=10
-          elseif(phrase(1:21).eq.'wall-wall (corner)-mc')then
+          elseif(phrase(1:24).eq.'wall-intermediate-floor ')then
             ibrdg(icomp,nbrdg(icomp))=11
-          elseif(phrase(1:32).eq.
-     &      'wall-floor (not ground floor)-mc')then
+          elseif(phrase(1:15).eq.'wall-partition ')then
             ibrdg(icomp,nbrdg(icomp))=12
-          elseif(phrase(1:30).eq.'lintel above window or door-mc')then
+          elseif(phrase(1:12).eq.'glass-frame ')then
             ibrdg(icomp,nbrdg(icomp))=13
           elseif(phrase(1:20).eq.'Sill below window-mc')then
             ibrdg(icomp,nbrdg(icomp))=14
@@ -2572,19 +2481,11 @@ C Fall through position. Warn and loop back to see if more.
       ELSE
         write(outs,'(2a)') ' Geometry shape type illegal in ',
      &    LGEOMF(1:lnblnk(LGEOMF))
-        if(dll)then
-          dllsubr='EGOMIN'
-          dllmesg=outs
-          ier=2
-          CALL ERPFREE(IUNIT,ios)
-          return
-        else
-          call edisp(itru,outs)
-          IER=1
-          CALL ERPFREE(IUNIT,ios)
-          RETURN
-        endif
-      ENDIF
+        call edisp(itru,outs)
+        IER=1
+        CALL ERPFREE(IUNIT,ios)
+        RETURN
+      endif
 
 C << to this point in the logic... >>
 
@@ -2603,6 +2504,8 @@ C Get surface areas via call to zinfo.
           if(SVFC(ICOMP,ijj)(1:4).eq.'FLOR')then
             if(SUSE(ICOMP,ijj,1)(1:5).eq.'FURNI')then
               continue  ! ignore horizontal surfaces marked as furniture.
+            elseif(SUSE(ICOMP,ijj,1)(1:6).eq.'REVEAL')then
+              continue  ! ignore horizontal surfaces marked as reveal.
             else
 
 C If surface `flor` not included in the list add it.
@@ -2647,19 +2550,11 @@ C Errors for lkout reads.
      &  lkout(1:50),'...'
       lsn=MIN0(lnblnk(currentfile),110)
       write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
-      if(dll)then
-        dllsubr='EGOMIN'
-        dllmesg=outs
-        ier=2
-        CALL ERPFREE(IUNIT,ios)
-        return
-      else
-        call edisp(iuout,outs)
-        call edisp(iuout,outs2)
-        IER=1
-        CALL ERPFREE(IUNIT,ios)
-        RETURN
-      endif
+      call edisp(iuout,outs)
+      call edisp(iuout,outs2)
+      IER=1
+      CALL ERPFREE(IUNIT,ios)
+      RETURN
 
       END
 
@@ -2715,10 +2610,6 @@ C Thermal bridge common block is described in esruprj/edgeo.F
 
 C MRT sensors via geometry.h.
 
-C Error subroutine and error details for dll mode.
-      character dllsubr*12,dllmesg*124
-      common/dllerr/dllsubr,dllmesg
-
 C Obstruction blocks common GS5/GS6 is found in geometry.h.
 
       CHARACTER GENFIL*72
@@ -2728,7 +2619,6 @@ C Obstruction blocks common GS5/GS6 is found in geometry.h.
       character tab*1    ! separator
       character dstmp*24
       character phrase*36 ! for thermal bridge tag
-      logical dll
       integer  lso,lso2,lso3  ! string lengths of sother()
       integer  lsml           ! string length of SMLCN()
       integer  lspa           ! string length of sparent()
@@ -2745,8 +2635,6 @@ C Obstruction blocks common GS5/GS6 is found in geometry.h.
       havebrdge=.false.
       hasobstr=.false.
 
-C Check if running in dll mode and get current time stamp.
-      call isadll(dll)
       call dstamp(dstmp)
 
 C Open any existing file by this name (ask user for confirmation to
@@ -2759,16 +2647,9 @@ C over-write) or create a new file.
       IF(IER.LT.0)THEN
         write(outs,'(3a)') 'Geometry file ',GENFIL(1:lnblnk(GENFIL)),
      &      ' could not be written.'
-        if(dll)then
-          dllsubr='GEOWRITE'
-          write(dllmesg,'(a)') outs(1:124)
-          ier=2
-          return
-        else
-          call edisp(itru,outs)
-          IER=1
-          RETURN
-        endif
+        call edisp(itru,outs)
+        IER=1
+        RETURN
       ENDIF
       write(currentfile,'(a)') GENFIL(1:lnblnk(GENFIL))
 
@@ -2999,7 +2880,7 @@ C or the losspercent is non-zero.
             elseif(ibrdg(icomp,itb).eq.4)then
               phrase='wall-wall (concave corner) '
             elseif(ibrdg(icomp,itb).eq.5)then
-              phrase='wall-floor (not ground floor) '
+              phrase='wall-floor (exposed floor) '
             elseif(ibrdg(icomp,itb).eq.6)then
               phrase='lintel above window or door '
             elseif(ibrdg(icomp,itb).eq.7)then
@@ -3007,15 +2888,15 @@ C or the losspercent is non-zero.
             elseif(ibrdg(icomp,itb).eq.8)then
               phrase='jamb at window or door '
             elseif(ibrdg(icomp,itb).eq.9)then
-              phrase='roof-wall-mc'
+              phrase='wall-gable '
             elseif(ibrdg(icomp,itb).eq.10)then
-              phrase='wall-ground floor-mc'
+              phrase='wall-parapet '
             elseif(ibrdg(icomp,itb).eq.11)then
-              phrase='wall-wall (corner)-mc'
+              phrase='wall-intermediate-floor '
             elseif(ibrdg(icomp,itb).eq.12)then
-              phrase='wall-floor (not ground floor)-mc'
+              phrase='wall-partition '
             elseif(ibrdg(icomp,itb).eq.13)then
-              phrase='lintel above window or door-mc'
+              phrase='glass-frame '
             elseif(ibrdg(icomp,itb).eq.14)then
               phrase='Sill below window-mc'
             elseif(ibrdg(icomp,itb).eq.15)then
@@ -4096,7 +3977,7 @@ C Topic variables: surfcolumns modifies what is reported.
       logical context
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      CHARACTER OUTSTR*124,OTHSTR*30,outstr2*180
+      CHARACTER OUTSTR*124,OTHSTR*30,outstr2*180,susecomb*17
       CHARACTER SIGSTR*12
 C      character SO*15  ! buffer to use for sother() info.
       integer lzn      ! length of zone name
@@ -4121,43 +4002,43 @@ C Surface summary: print header, followed by surface information.
 C Write header based on current version number.
       if(newgeo)then
         if(markdown)then
-          if(surfcolumns.eq.3)then
+          if(surfcolumns.eq.3)then    ! All items
             write(outstr2,'(3a)')
      &      'ID   Area (m^2^)  Azimuth   Elevation  Name          ',
-     &      'Optics        Location  Use primary  Use detail  ',
+     &      'Optics        Location  Use primary:detail  ',
      &      'Construction name          Environment other side'
             call edisp(ITRU,OUTSTR2)
             write(outstr2,'(3a)')
      &      '---  -----------  --------  ---------  ------------  ',
-     &      '------------  --------  -----------  ----------  ',
+     &      '------------  --------  ------------------  ',
      &      '-------------------------  ------------------------'
             call edisp(ITRU,OUTSTR2)
           elseif(surfcolumns.eq.2)then
             write(outstr2,'(3a)')
      &      'ID   Area (m^2^)  Azimuth   Elevation  Name          ',
-     &      'Optics        Use primary  Use detail  ',
+     &      'Optics        Use primary:detail  ',
      &      'Construction name          Environment other side'
             call edisp(ITRU,OUTSTR2)
             write(outstr2,'(3a)')
      &      '---  -----------  --------  ---------  ------------  ',
-     &      '------------  -----------  ----------  ',
+     &      '------------  ------------------  ',
      &      '-------------------------  ------------------------'
             call edisp(ITRU,OUTSTR2)
           elseif(surfcolumns.eq.1)then
             write(outstr2,'(3a)')
      &      'ID   Area (m^2^)  Azimuth   Elevation  Name          ',
-     &      'Use primary  Use detail  ',
+     &      'Use primary:detail  ',
      &      'Construction name          Environment other side'
             call edisp(ITRU,OUTSTR2)
             write(outstr2,'(3a)')
      &      '---  -----------  --------  ---------  ------------  ',
-     &      '-----------  ----------  ',
+     &      '------------------  ',
      &      '-------------------------  ------------------------'
             call edisp(ITRU,OUTSTR2)
           elseif(surfcolumns.eq.0)then
             write(outstr2,'(3a)')
      &      'ID   Area (m^2^)  Azimuth   Elevation  Name          ',
-     &      'Use primary  ',
+     &      'Use          ',
      &      'Construction name          Environment other side'
             call edisp(ITRU,OUTSTR2)
             write(outstr2,'(3a)')
@@ -4167,7 +4048,7 @@ C Write header based on current version number.
             call edisp(ITRU,OUTSTR2)
           endif
         else
-          if(surfcolumns.eq.3)then
+          if(surfcolumns.eq.3)then      ! All items
             write(outstr,'(2a)')
      &   ' Sur| Area  |Azim|Elev|          Surface                    ',
      &   '       | construction             |environment'
@@ -4176,7 +4057,7 @@ C Write header based on current version number.
      &   '    | m^2   |deg |deg | name       |optical|locat| use      ',
      &   '       | name                     |other side '
             call edisp(ITRU,OUTSTR)
-          elseif(surfcolumns.eq.2)then
+          elseif(surfcolumns.eq.2)then  ! Subset B
             write(outstr,'(2a)')
      &   ' Sur| Area  |Azim|Elev|          Surface               ',
      &   '       | Construction            |Environment'
@@ -4185,7 +4066,7 @@ C Write header based on current version number.
      &   '    | m^2   |deg |deg | name       |optical| use       ',
      &   '       | name                    |other side '
             call edisp(ITRU,OUTSTR)
-          elseif(surfcolumns.eq.1)then
+          elseif(surfcolumns.eq.1)then  ! Subset A
             write(outstr,'(2a)')
      &   ' Sur| Area  |Azim|Elev|        Surface        ',
      &   '       | Construction            |Environment'
@@ -4221,28 +4102,28 @@ C Write header based on current version number.
           lnsmlcn=lnblnk(SMLCN(icomp,i))
           if(lnsmlcn.lt.19) lnsmlcn=19  ! at least 19 char for MLC
           if(newgeo)then
+            lnsuse=lnblnk(SUSE(icomp,i,1))
+            write(susecomb,'(3a)') SUSE(icomp,i,1)(1:lnsuse),':',
+     &        SUSE(icomp,i,2)(1:8)          ! combined USE tokens
             if(markdown)then
               if(lnsmlcn.lt.25) lnsmlcn=25  ! at least 25 char for MLC
               if(lnsmlcn.gt.25) lnsmlcn=25  ! no more than 25 char for MLC
               if(surfcolumns.eq.3)then
                 WRITE(OUTSTR2,895)I,SIGSTR(1:7),SPAZI(icomp,i),
      &           SPELV(icomp,i),SNAME(icomp,i),SOTF(icomp,i)(1:10),
-     &           SVFC(icomp,i)(1:4),SUSE(icomp,i,1)(1:8),
-     &           SUSE(icomp,i,2)(1:8),SMLCN(icomp,i)(1:lnsmlcn),
+     &           SVFC(icomp,i)(1:4),susecomb,SMLCN(icomp,i)(1:lnsmlcn),
      &           SOTHER(icomp,i,1)(1:15)
                 call edisp(ITRU,OUTSTR2)
               elseif(surfcolumns.eq.2)then
                 WRITE(OUTSTR2,8955)I,SIGSTR(1:7),SPAZI(icomp,i),
      &           SPELV(icomp,i),SNAME(icomp,i),SOTF(icomp,i)(1:10),
-     &           SUSE(icomp,i,1)(1:8),
-     &           SUSE(icomp,i,2)(1:8),SMLCN(icomp,i)(1:lnsmlcn),
+     &           susecomb,SMLCN(icomp,i)(1:lnsmlcn),
      &           SOTHER(icomp,i,1)(1:15)
                 call edisp(ITRU,OUTSTR2)
               elseif(surfcolumns.eq.1)then
                 WRITE(OUTSTR2,8956)I,SIGSTR(1:7),SPAZI(icomp,i),
      &           SPELV(icomp,i),SNAME(icomp,i),
-     &           SUSE(icomp,i,1)(1:8),
-     &           SUSE(icomp,i,2)(1:8),SMLCN(icomp,i)(1:lnsmlcn),
+     &           susecomb,SMLCN(icomp,i)(1:lnsmlcn),
      &           SOTHER(icomp,i,1)(1:15)
                 call edisp(ITRU,OUTSTR2)
               elseif(surfcolumns.eq.0)then
@@ -4252,9 +4133,9 @@ C Write header based on current version number.
      &           SOTHER(icomp,i,1)(1:15)
                 call edisp(ITRU,OUTSTR2)
               endif
- 895      FORMAT(I3,2X,A,F10.0,F11.0,6X,A,2X,A,5X,A,8X,A,4X,A,4X,A,2X,A)
- 8955     FORMAT(I3,2X,A,F10.0,F11.0,6X,A,2X,A,4X,A,4X,A,3X,A,2X,A)
- 8956     FORMAT(I3,2X,A,F10.0,F11.0,6X,A,2X,A,4X,A,3X,A,2X,A)
+ 895      FORMAT(I3,2X,A,F10.0,F11.0,6X,A,2X,A,5X,A,8X,A,4X,A,2X,A)
+ 8955     FORMAT(I3,2X,A,F10.0,F11.0,6X,A,2X,A,4X,A,4X,A,2X,A)
+ 8956     FORMAT(I3,2X,A,F10.0,F11.0,6X,A,2X,A,4X,A,2X,A)
  8957     FORMAT(I3,2X,A,F10.0,F11.0,6X,A,2X,A,4X,A,2X,A)
             else
               if(lnsmlcn.lt.24) lnsmlcn=24  ! at least 24 char for MLC
@@ -4262,20 +4143,17 @@ C Write header based on current version number.
               if(surfcolumns.eq.3)then
                 WRITE(OUTSTR,8951)I,SIGSTR(1:7),SPAZI(icomp,i),
      &           SPELV(icomp,i),SNAME(icomp,i),SOTF(icomp,i)(1:8),
-     &           SVFC(icomp,i)(1:4),SUSE(icomp,i,1)(1:8),
-     &           SUSE(icomp,i,2)(1:8),SMLCN(icomp,i)(1:lnsmlcn),
-     &           SOTHER(icomp,i,1)(1:15)
+     &           SVFC(icomp,i)(1:4),susecomb,
+     &           SMLCN(icomp,i)(1:lnsmlcn),SOTHER(icomp,i,1)(1:15)
               elseif(surfcolumns.eq.2)then
                 WRITE(OUTSTR,8952)I,SIGSTR(1:7),SPAZI(icomp,i),
      &           SPELV(icomp,i),SNAME(icomp,i),SOTF(icomp,i)(1:8),
-     &           SUSE(icomp,i,1)(1:8),
-     &           SUSE(icomp,i,2)(1:8),SMLCN(icomp,i)(1:lnsmlcn),
+     &           susecomb,SMLCN(icomp,i)(1:lnsmlcn),
      &           SOTHER(icomp,i,1)(1:15)
               elseif(surfcolumns.eq.1)then
                 WRITE(OUTSTR,8953)I,SIGSTR(1:7),SPAZI(icomp,i),
      &           SPELV(icomp,i),SNAME(icomp,i),
-     &           SUSE(icomp,i,1)(1:8),
-     &           SUSE(icomp,i,2)(1:8),SMLCN(icomp,i)(1:lnsmlcn),
+     &           susecomb,SMLCN(icomp,i)(1:lnsmlcn),
      &           SOTHER(icomp,i,1)(1:15)
               elseif(surfcolumns.eq.0)then
                 WRITE(OUTSTR,8954)I,SIGSTR(1:7),SPAZI(icomp,i),
@@ -4284,9 +4162,9 @@ C Write header based on current version number.
      &           SOTHER(icomp,i,1)(1:15)
               endif
               call edisp(ITRU,OUTSTR)
- 8951     FORMAT(I3,2X,A,F5.0,F5.0,1X,A,1X,A,1X,A,1X,A,1X,A,1X,A,2X,A)
- 8952     FORMAT(I3,2X,A,F5.0,F5.0,1X,A,1X,A,1X,A,1X,A,1X,A,2X,A)
- 8953     FORMAT(I3,2X,A,F5.0,F5.0,1X,A,1X,A,1X,A,1X,A,2X,A)
+ 8951     FORMAT(I3,2X,A,F5.0,F5.0,1X,A,1X,A,1X,A,1X,A,1X,A,2X,A)
+ 8952     FORMAT(I3,2X,A,F5.0,F5.0,1X,A,1X,A,1X,A,1X,A,2X,A)
+ 8953     FORMAT(I3,2X,A,F5.0,F5.0,1X,A,1X,A,1X,A,2X,A)
  8954     FORMAT(I3,2X,A,F5.0,F5.0,1X,A,1X,A,1X,A,2X,A)
             endif
           else
@@ -4306,28 +4184,27 @@ C Write header based on current version number.
           call SIGFIG(SNA(icomp,i),NSIGFIG,RNO,SIGSTR,LSTR)
           if(newgeo)then
             if(markdown)then
+              lnsuse=lnblnk(SUSE(icomp,i,1))
+              write(susecomb,'(3a)') SUSE(icomp,i,1)(1:lnsuse),':',
+     &          SUSE(icomp,i,2)(1:8)          ! combined USE tokens
               if(lnsmlcn.lt.25) lnsmlcn=25  ! at least 25 char for MLC
               if(lnsmlcn.gt.25) lnsmlcn=25  ! no more than 25 char for MLC
               if(surfcolumns.eq.3)then
                 WRITE(OUTSTR2,7951)I,SIGSTR(1:7),SPAZI(icomp,i),
      &           SPELV(icomp,i),SNAME(icomp,i),SOTF(icomp,i)(1:10),
-     &           SVFC(icomp,i)(1:4),SUSE(icomp,i,1)(1:9),
-     &           SUSE(icomp,i,2)(1:8),SMLCN(icomp,i)(1:lnsmlcn),
+     &           SVFC(icomp,i)(1:4),susecomb,SMLCN(icomp,i)(1:lnsmlcn),
      &           OTHSTR(4:lnblnk(OTHSTR))  ! skip the ||< characters
                 call edisp(ITRU,OUTSTR2)
               elseif(surfcolumns.eq.2)then
                 WRITE(OUTSTR2,7955)I,SIGSTR(1:7),SPAZI(icomp,i),
      &           SPELV(icomp,i),SNAME(icomp,i),SOTF(icomp,i)(1:10),
-     &           SUSE(icomp,i,1)(1:9),
-     &           SUSE(icomp,i,2)(1:9),SMLCN(icomp,i)(1:lnsmlcn),
+     &           susecomb,SMLCN(icomp,i)(1:lnsmlcn),
      &           OTHSTR(4:lnblnk(OTHSTR))  ! skip the ||< characters
                 call edisp(ITRU,OUTSTR2)
               elseif(surfcolumns.eq.1)then
                 WRITE(OUTSTR2,7956)I,SIGSTR(1:7),SPAZI(icomp,i),
-     &           SPELV(icomp,i),SNAME(icomp,i),
-     &           SUSE(icomp,i,1)(1:9),
-     &           SUSE(icomp,i,2)(1:9),SMLCN(icomp,i)(1:lnsmlcn),
-     &           OTHSTR(4:lnblnk(OTHSTR))  ! skip the ||< characters
+     &           SPELV(icomp,i),SNAME(icomp,i),susecomb,
+     &           SMLCN(icomp,i)(1:lnsmlcn),OTHSTR(4:lnblnk(OTHSTR))  ! skip the ||< characters
                 call edisp(ITRU,OUTSTR2)
               elseif(surfcolumns.eq.0)then
                 WRITE(OUTSTR2,7957)I,SIGSTR(1:7),SPAZI(icomp,i),
@@ -4336,31 +4213,30 @@ C Write header based on current version number.
      &           OTHSTR(4:lnblnk(OTHSTR))  ! skip the ||< characters
                 call edisp(ITRU,OUTSTR2)
               endif
- 7951     FORMAT(I3,2X,A,F10.0,F10.0,7X,A,2X,A,4X,A,6X,A,4X,A,4X,A,2X,A)
- 7955     FORMAT(I3,2X,A,F10.0,F10.0,7X,A,2X,A,4X,A,4X,A,3X,A,2X,A)
- 7956     FORMAT(I3,2X,A,F10.0,F10.0,7X,A,2X,A,4X,A,3X,A,2X,A)
+ 7951     FORMAT(I3,2X,A,F10.0,F10.0,7X,A,2X,A,4X,A,6X,A,4X,A,2X,A)
+ 7955     FORMAT(I3,2X,A,F10.0,F10.0,7X,A,2X,A,4X,A,3X,A,2X,A)
+ 7956     FORMAT(I3,2X,A,F10.0,F10.0,7X,A,2X,A,3X,A,2X,A)
  7957     FORMAT(I3,2X,A,F10.0,F10.0,7X,A,2X,A,4X,A,2X,A)
             else
+              lnsuse=lnblnk(SUSE(icomp,i,1))
+              write(susecomb,'(3a)') SUSE(icomp,i,1)(1:lnsuse),':',
+     &          SUSE(icomp,i,2)(1:8)          ! combined USE tokens
               if(lnsmlcn.lt.24) lnsmlcn=24  ! at least 24 char for MLC
               if(lnsmlcn.gt.24) lnsmlcn=24  ! no more than 24 char for MLC
               if(surfcolumns.eq.3)then
                 WRITE(OUTSTR,795)I,SIGSTR(1:7),SPAZI(icomp,i),
      &           SPELV(icomp,i),SNAME(icomp,i),SOTF(icomp,i)(1:8),
-     &           SVFC(icomp,i)(1:4),SUSE(icomp,i,1)(1:8),
-     &           SUSE(icomp,i,2)(1:8),SMLCN(icomp,i)(1:lnsmlcn),
+     &           SVFC(icomp,i)(1:4),susecomb,SMLCN(icomp,i)(1:lnsmlcn),
      &           OTHSTR(1:lnblnk(OTHSTR))
               elseif(surfcolumns.eq.2)then
                 WRITE(OUTSTR,7952)I,SIGSTR(1:7),SPAZI(icomp,i),
      &           SPELV(icomp,i),SNAME(icomp,i),SOTF(icomp,i)(1:8),
-     &           SUSE(icomp,i,1)(1:8),
-     &           SUSE(icomp,i,2)(1:8),SMLCN(icomp,i)(1:lnsmlcn),
+     &           susecomb,SMLCN(icomp,i)(1:lnsmlcn),
      &           OTHSTR(1:lnblnk(OTHSTR))
               elseif(surfcolumns.eq.1)then
                 WRITE(OUTSTR,7953)I,SIGSTR(1:7),SPAZI(icomp,i),
-     &           SPELV(icomp,i),SNAME(icomp,i),
-     &           SUSE(icomp,i,1)(1:8),
-     &           SUSE(icomp,i,2)(1:8),SMLCN(icomp,i)(1:lnsmlcn),
-     &           OTHSTR(1:lnblnk(OTHSTR))
+     &           SPELV(icomp,i),SNAME(icomp,i),susecomb,
+     &           SMLCN(icomp,i)(1:lnsmlcn),OTHSTR(1:lnblnk(OTHSTR))
               elseif(surfcolumns.eq.0)then
                 WRITE(OUTSTR,7954)I,SIGSTR(1:7),SPAZI(icomp,i),
      &           SPELV(icomp,i),SNAME(icomp,i),
@@ -4369,9 +4245,9 @@ C Write header based on current version number.
               endif
               call edisp(ITRU,OUTSTR)
             endif
- 795      FORMAT(I3,2X,A,F5.0,F5.0,1X,A,1X,A,1X,A,1X,A,1X,A,1X,A,1X,A)
- 7952     FORMAT(I3,2X,A,F5.0,F5.0,1X,A,1X,A,1X,A,1X,A,1X,A,1X,A)
- 7953     FORMAT(I3,2X,A,F5.0,F5.0,1X,A,1X,A,1X,A,1X,A,1X,A)
+ 795      FORMAT(I3,2X,A,F5.0,F5.0,1X,A,1X,A,1X,A,1X,A,1X,A,1X,A)
+ 7952     FORMAT(I3,2X,A,F5.0,F5.0,1X,A,1X,A,1X,A,1X,A,1X,A)
+ 7953     FORMAT(I3,2X,A,F5.0,F5.0,1X,A,1X,A,1X,A,1X,A)
  7954     FORMAT(I3,2X,A,F5.0,F5.0,1X,A,1X,A,1X,A,1X,A)
           else
             if(lnsmlcn.gt.24) lnsmlcn=24  ! no more than 24 char for MLC
@@ -4384,10 +4260,6 @@ C Write header based on current version number.
  793    CONTINUE
       endif
       call edisp(ITRU,' ')
-
-C << if newgeo is true then this might be the place to write
-C << out the obstruction information (after data structure has
-C << been updated so the zone does not need to be scanned.
 
       RETURN
       END
@@ -5129,13 +5001,17 @@ C     &  YY(urpos),ZZ(urpos)
 
 C*******************************************************************
 C ZSURLEHI Determines the overall length and height of a
-C surface (bounding box) and passes the vaules back as XYMAX and ZMAX.
+C surface (bounding box) and passes the vaules back as XYMAX and ZMAX
+C And the Z delta between the surface lower left and the zone minimum
+C Z value.
 C This variant does not use G1 common block.
 C Uses a temporary transform into 2D to get this data.
 
-      SUBROUTINE ZSURLEHI(IZ,IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)
+      SUBROUTINE ZSURLEHI(IZ,IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos,
+     &  DZLLFF)
 #include "building.h"
 #include "geometry.h"
+#include "prj3dv.h"
 
       DIMENSION  XX(MV),YY(MV),ZZ(MV)
       DIMENSION  VP(3),EP(3),EQN(4)
@@ -5144,6 +5020,7 @@ C Uses a temporary transform into 2D to get this data.
       real XYMAX,ZMAX
       real XMIN,YMIN,XMAX,YMAX
       real shortest,shortestlr,shortestul,shortestur
+      real DZLLFF                         ! Delta Z between lower left and zone minimum.
       integer llpos,lrpos,ulpos,urpos     ! closest to BB corners for parent
 
 C Set maximum values to zero.
@@ -5261,6 +5138,9 @@ C     & 'upper left at ',ulpos,shortestul,
 C     &  XX(ulpos),YY(ulpos),ZZ(ulpos),
 C     &  ' ur',urpos,shortestur,XX(urpos),
 C     &  YY(urpos),ZZ(urpos)
+      DZLLFF=ZZ(llpos)-ZZMN(IZ)
+C      write(6,'(a,4F8.2)') 'Delta Z over zone base to lower left ',
+C     & ZZ(llpos),ZZMN(IZ),(ZZ(llpos)-ZZMN(IZ)),DZLLFF
 
       return
       END
@@ -5272,16 +5152,13 @@ C Used to assist in drawing wireframe and for determining parent and child
 c relationships. Fills common block G8. Assumes that the surface is
 C in the current zones common blocks.
 C act is '-' derive geometric data or 'c' also determine parent
+C act is 't' also determine thermal bridges.
       subroutine suredgeadj(itrc,act,izone,ier)
 #include "building.h"
 #include "geometry.h"
 #include "help.h"
 
       common/OUTIN/IUOUT,IUIN,IEOUT
-
-      real bridgelen ! Length (m) of potential thermal bridges in each zone.
-                    ! See code below for what each means.
-      common/gbridge/bridgelen(MCOM,10)
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -5294,12 +5171,7 @@ C act is '-' derive geometric data or 'c' also determine parent
 
 C iwhich is local variable to sort most often referenced adjacent surf.
       dimension iwhich(MV),iwhichs(MV)
-      real va,vb,pa,pb
-      dimension va(3),vb(3),pa(3),pb(3),vaa(3),vbb(3)
-      real ux,uy,uz  ! unit vector along the edge
-      real dista,distc
 C      real distb ! currently not used
-      logical closeux,closeuy,closeuz
 
 C There is a file unit clash between gethelptext and file units
 C in ish. Bypass call to gethelptext and set h() manually.
@@ -5320,11 +5192,6 @@ C Do test call to surrel to see if it picks up any parent child
 C relationships. Use edge checking logic in surrel2.
           call SURREL2('s',izone,ier)
         endif
-
-C Zero the lengths of various thermal bridge type lengths.
-        do 644 ij=1,10
-          bridgelen(izone,ij)=0.0
- 644    continue
 
         do 43 isurf=1,NZSUR(izone)
           icc=izstocn(izone,isurf)
@@ -5359,22 +5226,13 @@ C duplicate edge is found also remember it.
               endif
               kee=JVN(isurf,n)
 
-              if(itrc.gt.1)then
-              endif
-
               if(jes.EQ.kes.AND.jee.EQ.kee)then
                 nbedgdup(icc)=nbedgdup(icc)+2
                 iedgdup(icc,m)=1
                 iedgdup(icc,n)=1
-
-                if(itrc.gt.1)then
-                endif
               endif
   41        continue   ! inner loop vertices in surf
   40      continue     ! outer loop vertices in surf
-
-          if(itrc.gt.1)then
-          endif
 
 C Step through the vertices of each edge in turn and check to see
 C what other surfaces and materials are associated with edge. j & k
@@ -5418,165 +5276,6 @@ C If an edge matches, test if other surface is facing the same way.
                   continue   ! skip past zero indices
                 elseif(j.eq.kk.and.k.eq.jj)then
 
-                  if(itrc.gt.1)then
-                  endif
-
-C Find length of the current edge.
-                  edgelen= crowxyz(X(j),Y(j),Z(j),X(k),Y(k),Z(k))
-
-C Tests for ibridgeshr (edges that might represent thermal bridges.
-C The first filter is that both surfaces are facing outside
-                  if(ICT(icc).eq.0.and.ICT(icco).eq.0)then
-
-                    if(SVFC(izone,isurf)(1:4).eq.'VERT'.and.(
-     &                 SVFC(izone,iosurf)(1:4).eq.'CEIL'.or.
-     &                 SVFC(izone,iosurf)(1:4).eq.'SLOP'))then
-
-C One is roof-wall so both surfaces must face the outside, first must
-C be roughly vertical and the other flat (up) or sloped.
-                      ibridgeshr(icc,i)=1
-                      bridgelen(izone,1)= bridgelen(izone,1)+edgelen
-
-                    elseif(SVFC(izone,isurf)(1:4).eq.'VERT'.and.
-     &                     SVFC(izone,iosurf)(1:4).eq.'VERT')then
-
-C Test if azimuth are within two degrees. For the special case of the
-C difference between the two being ~360deg call it closeazi
-                      call eclose(SPAZI(izone,isurf),
-     &                            SPAZI(izone,iosurf),2.0,closeazi)
-                      if(.NOT.closeazi)then
-                        zazi = abs(SPAZI(izone,isurf)-
-     &                             SPAZI(izone,iosurf))
-                        call eclose(zazi,360.0,2.0,closeazi)
-                      endif
-                      if(closeazi)then
-
-C Find which of the unit vector components (ux uy uz) are near zero
-C in order to see if edge if vertical or horizontal.
-                        call uvxyz(X(j),Y(j),Z(j),X(k),Y(k),Z(k),
-     &                    ux,uy,uz)
-                        call eclose(ux,0.00,0.002,closeux)
-                        call eclose(uy,0.00,0.002,closeuy)
-                        call eclose(uz,0.00,0.002,closeuz)
-
-C Six is lintel above window or door so both surfaces must face
-C the outside and face the same direction and one must be the
-C parent and the edge must be roughly horizontal and above the
-C centre of the surface (and marked as a door or window)
-                        if(closeuz)then
-                          if(Z(j).gt.SURCOG(izone,isurf,3))then
-                            if(sparent(izone,isurf)(1:2).eq.'-')then
-                              continue
-                            else
-                              ibridgeshr(icc,i)=6
-                              bridgelen(izone,6)= bridgelen(izone,6)+
-     &                          edgelen
-                            endif
-
-C Seven is Sill below window so both surfaces must face
-C the outside and face the same direction and one must be the
-C parent and the edge must be roughly horizontal and below the
-C centre of the surface (and marked as a door or window)
-                          else
-                            if(sparent(izone,isurf)(1:2).eq.'-')then
-                              continue
-                            else
-                              ibridgeshr(icc,i)=7
-                              bridgelen(izone,7)= bridgelen(izone,7)+
-     &                          edgelen
-                            endif
-                          endif
-                        endif
-
-C Eight is jamb at window or door so both surfaces must face
-C the outside and face the same direction and one must be the
-C parent and the edge must be roughly vertical (and marked as
-C a door or window)
-                        if(closeux.and.closeuy)then
-                          if(sparent(izone,isurf)(1:2).eq.'-')then
-                            continue
-                          else
-                            ibridgeshr(icc,i)=8  ! is vertical
-                            bridgelen(izone,8)= bridgelen(izone,8)+
-     &                        edgelen
-                          endif
-                        endif
-                      else
-
-C Determin concave or convex between the two surfaces based on the distance
-C between points on the two surfaces and points a slight distance
-C away from the two surraces.
-                        PA(1)=SURCOG(izone,isurf,1)  ! point on plane
-                        PA(2)=SURCOG(izone,isurf,2)
-                        PA(3)=SURCOG(izone,isurf,3)
-                        VA(1)=SURVN(izone,isurf,1)   ! point 1m away
-                        VA(2)=SURVN(izone,isurf,2)
-                        VA(3)=SURVN(izone,isurf,3)
-
-C Use ratio calculation to get point 100mm away.
-                        r2 = 1.0 - 0.1
-                        r1 = 0.1
-                        vaa(1) = ((r2 * PA(1)) + (r1 * VA(1)))/1.0
-                        vaa(2) = ((r2 * PA(2)) + (r1 * VA(2)))/1.0
-                        vaa(3) = ((r2 * PA(3)) + (r1 * VA(3)))/1.0
-
-                        PB(1)=SURCOG(izone,iosurf,1)  ! point on plane
-                        PB(2)=SURCOG(izone,iosurf,2)
-                        PB(3)=SURCOG(izone,iosurf,3)
-                        VB(1)=SURVN(izone,iosurf,1)   ! point 1m away
-                        VB(2)=SURVN(izone,iosurf,2)
-                        VB(3)=SURVN(izone,iosurf,3)
-                        vbb(1) = ((r2 * PB(1)) + (r1 * VB(1)))/1.0
-                        vbb(2) = ((r2 * PB(2)) + (r1 * VB(2)))/1.0
-                        vbb(3) = ((r2 * PB(3)) + (r1 * VB(3)))/1.0
-                        dista = crow(PA,PB)  ! dist cog-to-cog
-C                        distb = crow(VA,VB)  ! dist offset-to-offset
-                        distc = crow(VAA,VBB)! dist slight offset-to-offset
-
-
-C If dista is greater than distc then concave.
-                        if(dista.lt.distc)then
-
-C Three is wall-wall (convex corner) so both must face the outside
-C and the angle between the surface normals is greater than zero.
-                          ibridgeshr(icc,i)=3
-                          bridgelen(izone,3)= bridgelen(izone,3)+
-     &                      edgelen
-                        else
-
-C Four is wall-wall (concave corner) so both must face the outside
-C and the angle between the surface normals less than zero
-                          ibridgeshr(icc,i)=4
-                          bridgelen(izone,4)= bridgelen(izone,4)+
-     &                      edgelen
-                        endif
-                      endif
-
-                    elseif(SVFC(izone,isurf)(1:4).eq.'VERT'.and.
-     &                     SVFC(izone,iosurf)(1:4).eq.'FLOR')then
-
-C Five is wall-floor (not ground) so both surfaces must face the
-C outside one roughly vertical and the other flat (down).
-                      ibridgeshr(icc,i)=5
-                      bridgelen(izone,5)= bridgelen(izone,5)+
-     &                  edgelen
-                    endif
-
-                  elseif(ICT(icc).eq.4.and.ICT(icco).eq.0)then
-
-C Two is wall-ground floor so one surface must face outside and the
-C other must face the ground.
-                    if(SVFC(izone,isurf)(1:4).eq.'FLOR'.and.
-     &                 SVFC(izone,iosurf)(1:4).eq.'VERT')then
-                      ibridgeshr(icc,i)=2
-                      bridgelen(izone,2)= bridgelen(izone,2)+
-     &                  edgelen
-                    endif
-                  endif
-
-C                  if(itrc.gt.1)then
-C                  endif
-
 C Test if azimuth are within two degrees. For the special case of the
 C difference between the two being ~360deg call it closeazi
                   call eclose(SPAZI(izone,isurf),
@@ -5611,9 +5310,6 @@ C increment nbedgshr once even if other surface shares several edges).
                 endif
   45          continue
   44        continue     ! loop surfaces in zone
-
-            if(itrc.gt.1)then
-            endif
   42      continue  ! loop vertices in surface
 
           if(itrc.gt.1)then
@@ -5698,20 +5394,6 @@ C bother the user. If ibinval was set to zero then clear SPARENT.
             endif
           endif
  43     continue    ! outer loop of surfaces in the zone
-
-C Report on likely thermal bridge lengths. Reduce the concave and
-C convex bridge lengths because they will have been counted from
-C the edges going in both directions.
-        bridgelen(izone,3)=bridgelen(izone,3)*0.5
-        bridgelen(izone,4)=bridgelen(izone,4)*0.5
-        if(itrc.ge.1)then
-          write(outs,'(a,9f7.2)') 'bridge len ',bridgelen(izone,1),
-     &      bridgelen(izone,2),bridgelen(izone,3),
-     &      bridgelen(izone,4),bridgelen(izone,5),
-     &      bridgelen(izone,6),bridgelen(izone,7),
-     &      bridgelen(izone,8),bridgelen(izone,9)
-          call edisp(iuout,outs)
-        endif
       endif
       return
       end
@@ -6010,6 +5692,7 @@ C           parent-child relationships.
       CHARACTER outs*496
       integer llposa,lrposa,ulposa,urposa
       integer llposb,lrposb,ulposb,urposb
+      real DZLLFF
 
 C Clear arrays.
       ip=0
@@ -6186,9 +5869,9 @@ C Looser definition e.g. at a door or glazing with shared edge.
 C Do a bounding box test of both surfaces. If loop smaller then it
 C is probably a frame child. << TESTING >>
                 CALL ZSURLEHI(icomp,loop,XYMAXa,ZMAXa,llposa,lrposa,
-     &            ulposa,urposa)
+     &            ulposa,urposa,DZLLFF)
                 CALL ZSURLEHI(icomp,loop2,XYMAXb,ZMAXa,llposb,lrposb,
-     &            ulposb,urposb)
+     &            ulposb,urposb,DZLLFF)
                 if(XYMAXa.lt.XYMAXb)then
                   write(outs,'(3a,2i3,2f7.3)') sname(icomp,loop),
      &              'frame child of ',sname(icomp,loop2),loop,loop2,
@@ -6210,7 +5893,7 @@ C is probably a frame child. << TESTING >>
 C Report on what was found.
       DO loop=1,NZSUR(ICOMP)
         icc=IZSTOCN(icomp,loop)
-        if(act(1:1).eq.'s')then
+        if(act(1:1).eq.'s' .or. act(1:1).eq.'u')then
           continue
         else
           write(outs,'(2a,4i4)') sname(icomp,loop),
@@ -6697,7 +6380,7 @@ C Surfaces with associated vertices.
           WRITE(LOUTSTR,9990)SNAME(icomp,I),NV,(JVN(I,J),J=1,100)
           call edisp248(ITRU,LOUTSTR,100)
         endif
- 9990   FORMAT(A,I5,1x,102(',',I3))
+ 9990   FORMAT(A,I5,1x,124(',',I3))
  9991 CONTINUE
       RETURN
       END
@@ -6873,7 +6556,7 @@ C Find out overall length and build 1D array iva.
       do 42 i=1,nbsur
         icc=izstocn(icomp,lstsf(icomp,i))
         if(icc.eq.0)then
-          write(msg,'(a,i2,a,i2,a)') 'Base surface list item ',i,
+          write(msg,'(a,i2,a,i2,a)') 'Surface list item ',i,
      &      ' in zone ',icomp,' not found.'
           call usrmsg(msg,'Check your model.','W')
           ierr=1

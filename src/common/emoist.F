@@ -30,13 +30,8 @@ C Reads a zone moisture data file.
       COMMON/MOIST06/ISORP(MCOM,MS,ME),SORP(MCOM,MS,ME,3)
       COMMON/MOIST07/ITVAPD(MCOM,MS,ME),TVAPD(MCOM,MS,ME)
 
-      logical dll
-      character dllsubr*12,dllmesg*124
       CHARACTER LMSTR*72,OUTSTR*124,outs*124
       IER=0
-
-C Check if running in dll mode.
-      call isadll(dll)
 
 C Open existing ASCII moisture data file.
       CALL EFOPSEQ(IUNIT,LMSTR,1,IER)
@@ -234,18 +229,10 @@ C Error messages.
       return
 
 C File rewind errors.
-  999 if(dll)then
-        dllsubr='ersys'
-        WRITE(dllmesg,'(2a)') 
-     &  ' Error rewinding moisture definition file ',LMSTR(1:32)
-        ier=2
-        return
-      else
-        CALL USRMSG('Error rewinding moisture definition file:',
-     &    LMSTR,'W')
-        IER=1
-        GOTO 6
-      endif 
+  999 CALL USRMSG('Error rewinding moisture definition file:',
+     &  LMSTR,'W')
+      IER=1
+      GOTO 6
 
       END
 

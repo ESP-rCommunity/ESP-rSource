@@ -16,6 +16,7 @@ C details.
 
 C This file comprises the following subroutines.
 C exportcad - model export facility.
+C exportwavefront - exports ESP-r to wavefront obj and mtl files.
 C cadin     - conversion of CAD model to ESP-r model.
 C rexmpl    - scan the exemplars file and offers a list of models.
 C wtarentry - write entry in tar names file summarising ../
@@ -774,7 +775,7 @@ C Error.
 
 
 C ******************** exportwavefront ********************
-C Logic exproting ESP-r data model to wavefront obj and mtl files.
+C Logic exporting ESP-r data model to wavefront obj and mtl files.
       subroutine exportwavefront(itrc,IER)
       use Cadio_Module
 #include "building.h"
@@ -793,6 +794,7 @@ C Logic exproting ESP-r data model to wavefront obj and mtl files.
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/rpath/path
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
+      common/gzonpik/izgfoc,nzg,nznog(mcom)
 
       common/SFIG/NSIGFIG
       character SIGSTR*12
@@ -821,9 +823,11 @@ C Logic exproting ESP-r data model to wavefront obj and mtl files.
       character ZSDES*28,ZSDESC*20,ZSDESS*16,zsn*28,ObsMatName*32
       character louts*400
       character face*24,faced*24
+      character mlc_name*32,tmlcname*32
 
       logical objglazing,objhash  ! Toggles for inclusion in obj files.
-      logical objmm,objusecl      ! Scale to mm and use CL if co-planer.
+      logical objmm,objuseclp     ! Scale to mm and use CL if co-planer walls.
+      logical objuseclf,objuseclc ! if co-planer floors & ceilings.
       logical objlayer            ! Create as separate MLC layers.
       logical coplaner            ! True if within a few mm between GOC.
       logical objinclout          ! User confirm each surface inside/cent line/outside
@@ -883,6 +887,11 @@ C .mtl file generation.
       ioout=2
       open(ioout,file=lltmpmtl,status='UNKNOWN',err=901)
       ftr=0.92        ! Fictitious transmission threshhold.
+      nzg=ncomp       ! Set to scan all zones in model for materials.
+      do mz=1,nzg
+        nznog(mz)=1
+      enddo
+
       call mkmtlfil(ioout,ftr,IER)
       close(ioout)
       write(outs248,'(3a)')'The file ',lltmpmtl(1:lnblnk(lltmpmtl)),
@@ -891,14 +900,22 @@ C .mtl file generation.
 
 C Get user directives for metre or mm and internal documentation.
       objglazing=.true.; objhash=.true.; objmm=.false.
-      objusecl=.false.; objlayer=.true.; objinclout=.false.
+      objuseclp=.false.; objuseclf=.false.; objuseclc=.false.;
+      objlayer=.true.; objinclout=.false.
       CALL EASKOK(' ','Represent separate construction layers?',
      &  objlayer,nbhelp)
       CALL EASKOK(' ','Include glazing as bodies?',objglazing,nbhelp)
       CALL EASKOK(' ','Include # comments?',objhash,nbhelp)
       CALL EASKOK(' ','Use mm dimensions?',objmm,nbhelp)
+      
       CALL EASKOK(' ','Use centre line if co-planer partitions?',
-     &  objusecl,nbhelp)
+     &  objuseclp,nbhelp)
+      CALL EASKOK(' ','Use centre line if co-planer floors?',
+     &  objuseclf,nbhelp)
+      CALL EASKOK(' ','Use centre line if co-planer ceilings?',
+     &  objuseclc,nbhelp)
+     
+     
       CALL EASKOK(' ',
      &  'Confirm each @ inside face-centre line-outside face?',
      &  objinclout,nbhelp)
@@ -1004,10 +1021,14 @@ C to inside work from the inside face (i.e. LAYERS(isel).
         endif
         name=zsn
         ii=smlcindex(newfoc,is)
+
+C In case there are blanks filter mlcname via st2name.
         if(ii.gt.0)then
           mname=mlcname(ii)
+          call st2name(mlcname(ii),tmlcname)
         else
           mname='UNKNOWN'
+          tmlcname='UNKNOWN'
         endif
 
         coplaner=.false.; toller=0.005
@@ -1019,6 +1040,7 @@ C If a partition find other face and determine the distance between COG.
 C If within 5mm then treat as co-planer and if user has requested use CL.
 C Shift the base polygon by half the thickness of the MLC.  Fill the XOr,
 C YOr and ZOr arrays with shifted points for use in subsequent polytoobj calls.
+C Also Check orientation if treating walls differently from floors/ceilings. 
           cog(1)=surcog(newfoc,is,1)
           cog(2)=surcog(newfoc,is,2)
           cog(3)=surcog(newfoc,is,3)
@@ -1050,13 +1072,49 @@ C YOr and ZOr arrays with shifted points for use in subsequent polytoobj calls.
               endif
             enddo
             itrc=0
-            if(objinclout)then
-              write(outs,'(2a)') 'Alignment options for partition',
+            if(objinclout)then   ! User wants to confirm each.
+              if(SVFC(newfoc,is)(1:4).eq.'VERT')then
+                write(outs,'(2a)') 'Alignment options for partition',
      &          zsn(1:lnblnk(zsn))
+              elseif(SVFC(newfoc,is)(1:4).eq.'CEIL')then
+                write(outs,'(2a)') 'Alignment options for ceiling',
+     &          zsn(1:lnblnk(zsn))
+              elseif(SVFC(newfoc,is)(1:4).EQ.'FLOR')THEN
+                write(outs,'(2a)') 'Alignment options for floor',
+     &          zsn(1:lnblnk(zsn))
+              else
+                write(outs,'(2a)') 'Alignment options for ',
+     &          zsn(1:lnblnk(zsn))
+              endif
               CALL EASKABC(outs,':','inside face',
      &          'centre line','outside face',ico,nbhelp)
             else
-              ico=0  ! its coplaner so do that
+              write(outs,'(2a)') 'Alignment options for ',
+     &          zsn(1:lnblnk(zsn))
+              if(SVFC(newfoc,is)(1:4).eq.'VERT')then
+                if(objuseclp)then
+                 ico=0  ! its coplaner so do that
+                else
+                  CALL EASKABC(outs,':','inside face',
+     &              'centre line','outside face',ico,nbhelp)
+                endif
+              elseif(SVFC(newfoc,is)(1:4).eq.'CEIL')then
+                if(objuseclc)then
+                 ico=0  ! its coplaner so do that
+                else
+                  CALL EASKABC(outs,':','inside face',
+     &              'centre line','outside face',ico,nbhelp)
+                endif
+              elseif(SVFC(newfoc,is)(1:4).EQ.'FLOR')THEN
+                if(objuseclf)then
+                 ico=0  ! its coplaner so do that
+                else
+                  CALL EASKABC(outs,':','inside face',
+     &              'centre line','outside face',ico,nbhelp)
+                endif
+              else
+               ico=0  ! its coplaner so do that
+              endif
             endif
             if(ico.eq.0.or.ico.eq.2)then
               if(objmm)then
@@ -1072,8 +1130,8 @@ C YOr and ZOr arrays with shifted points for use in subsequent polytoobj calls.
                   vdis=-1.*(0.1*0.5)
                 endif
               endif
-C              write(6,'(2a,i2,f5.2)') zsn(1:lnblnk(zsn)),
-C     &          ' a ico vdis',ico,vdis
+              write(6,'(2a,i2,f5.2)') zsn(1:lnblnk(zsn)),
+     &          ' a ico vdis',ico,vdis
               CALL TRANSUR(ITRC,ITRU,nboredge,XX,YY,ZZ,vdis,
      &          XOr,YOr,ZOr,zsn)
             elseif(ico.eq.1)then
@@ -1092,8 +1150,8 @@ C     &          ' a ico vdis',ico,vdis
                   vdis=-1.*0.1
                 endif
               endif
-C              write(6,'(2a,i2,f5.2)') zsn(1:lnblnk(zsn)),
-C     &          ' b ico vdis',ico,vdis
+              write(6,'(2a,i2,f5.2)') zsn(1:lnblnk(zsn)),
+     &          ' b ico vdis',ico,vdis
               CALL TRANSUR(ITRC,ITRU,nboredge,XX,YY,ZZ,vdis,
      &          XOr,YOr,ZOr,zsn)
             endif
@@ -1260,11 +1318,86 @@ C If not representing separate layers the following logic applies.
               else
                 vdis=THKMLC(isel)
               endif
-              if(objusecl.and.coplaner)then
-                offs=0.0
-                call polytoobj(nboredge,XOr,YOr,Zor,offs,vdis,
-     &            ioout,name,mname,objmm)
-              else
+
+C If current surface is coplaner then test orientation if there
+C are different user directives for walls, ceilings, floors.
+              if(coplaner)then
+                if(SVFC(newfoc,is)(1:4).eq.'VERT')then
+                  if(objuseclp)then
+                    offs=0.0
+                    call polytoobj(nboredge,XOr,YOr,Zor,offs,vdis,
+     &                ioout,name,tmlcname,objmm)
+                  else
+                    if(ico.eq.0)then
+                      call surftoobj(newfoc,is,vdis,ioout,objmm)
+                    elseif(ico.eq.1)then
+                      call surftoobj(newfoc,is,vdis,ioout,objmm)
+                    elseif(ico.eq.2)then
+                      offs=0.0
+                      call polytoobj(nboredge,XOr,YOr,Zor,offs,vdis,
+     &                ioout,name,tmlcname,objmm)
+                    elseif(ico.eq.3)then
+                      offs=0.0
+                      call polytoobj(nboredge,XOr,YOr,Zor,offs,vdis,
+     &                ioout,name,tmlcname,objmm)
+                    endif
+                  endif
+                elseif(SVFC(newfoc,is)(1:4).eq.'CEIL')then
+                  if(objuseclc)then
+                    offs=0.0
+                    call polytoobj(nboredge,XOr,YOr,Zor,offs,vdis,
+     &                ioout,name,tmlcname,objmm)
+                  else
+                    if(ico.eq.0)then
+                      call surftoobj(newfoc,is,vdis,ioout,objmm)
+                    elseif(ico.eq.1)then
+                      call surftoobj(newfoc,is,vdis,ioout,objmm)
+                    elseif(ico.eq.2)then
+                      offs=0.0
+                      call polytoobj(nboredge,XOr,YOr,Zor,offs,vdis,
+     &                ioout,name,tmlcname,objmm)
+                    elseif(ico.eq.3)then
+                      offs=0.0
+                      call polytoobj(nboredge,XOr,YOr,Zor,offs,vdis,
+     &                ioout,name,tmlcname,objmm)
+                    endif
+                  endif
+                elseif(SVFC(newfoc,is)(1:4).EQ.'FLOR')THEN
+                  if(objuseclf)then
+                    offs=0.0
+                    call polytoobj(nboredge,XOr,YOr,Zor,offs,vdis,
+     &                ioout,name,tmlcname,objmm)
+                  else
+                    if(ico.eq.0)then
+                      call surftoobj(newfoc,is,vdis,ioout,objmm)
+                    elseif(ico.eq.1)then
+                      call surftoobj(newfoc,is,vdis,ioout,objmm)
+                    elseif(ico.eq.2)then
+                      offs=0.0
+                      call polytoobj(nboredge,XOr,YOr,Zor,offs,vdis,
+     &                ioout,name,tmlcname,objmm)
+                    elseif(ico.eq.3)then
+                      offs=0.0
+                      call polytoobj(nboredge,XOr,YOr,Zor,offs,vdis,
+     &                ioout,name,tmlcname,objmm)
+                    endif
+                  endif
+                else
+                  if(ico.eq.0)then
+                    call surftoobj(newfoc,is,vdis,ioout,objmm)
+                  elseif(ico.eq.1)then
+                    call surftoobj(newfoc,is,vdis,ioout,objmm)
+                  elseif(ico.eq.2)then
+                    offs=0.0
+                    call polytoobj(nboredge,XOr,YOr,Zor,offs,vdis,
+     &                ioout,name,tmlcname,objmm)
+                  elseif(ico.eq.3)then
+                    offs=0.0
+                    call polytoobj(nboredge,XOr,YOr,Zor,offs,vdis,
+     &                ioout,name,tmlcname,objmm)
+                  endif
+                endif
+              else        ! Dealing with non-coplaner
                 if(objinclout)then
                   if(ico.eq.0)then
                     call surftoobj(newfoc,is,vdis,ioout,objmm)
@@ -1273,11 +1406,11 @@ C If not representing separate layers the following logic applies.
                   elseif(ico.eq.2)then
                     offs=0.0
                     call polytoobj(nboredge,XOr,YOr,Zor,offs,vdis,
-     &                ioout,name,mname,objmm)
+     &                ioout,name,tmlcname,objmm)
                   elseif(ico.eq.3)then
                     offs=0.0
                     call polytoobj(nboredge,XOr,YOr,Zor,offs,vdis,
-     &                ioout,name,mname,objmm)
+     &                ioout,name,tmlcname,objmm)
                   endif
                 else
                   call surftoobj(newfoc,is,vdis,ioout,objmm)
@@ -1290,27 +1423,29 @@ C If not representing separate layers the following logic applies.
                 else
                   vdis=THKMLC(isel)
                 endif
-                if(objusecl.and.coplaner)then
-                  offs=0.0
-                  call polytoobj(nboredge,XOr,YOr,Zor,offs,vdis,
-     &              ioout,name,mname,objmm)
-                else
-                  if(objinclout)then
-                    if(ico.eq.0)then
-                      call surftoobj(newfoc,is,vdis,ioout,objmm)
-                    elseif(ico.eq.1)then
-                      call surftoobj(newfoc,is,vdis,ioout,objmm)
-                    elseif(ico.eq.2)then
-                      offs=0.0
-                      call polytoobj(nboredge,XOr,YOr,Zor,offs,vdis,
-     &                  ioout,name,mname,objmm)
-                    elseif(ico.eq.3)then
-                      offs=0.0
-                      call polytoobj(nboredge,XOr,YOr,Zor,offs,vdis,
-     &                  ioout,name,mname,objmm)
-                    endif
+                if(coplaner)then
+                  if(objuseclp)then
+                    offs=0.0
+                    call polytoobj(nboredge,XOr,YOr,Zor,offs,vdis,
+     &                ioout,name,tmlcname,objmm)
                   else
-                    call surftoobj(newfoc,is,vdis,ioout,objmm)
+                    if(objinclout)then
+                      if(ico.eq.0)then
+                        call surftoobj(newfoc,is,vdis,ioout,objmm)
+                      elseif(ico.eq.1)then
+                        call surftoobj(newfoc,is,vdis,ioout,objmm)
+                      elseif(ico.eq.2)then
+                        offs=0.0
+                        call polytoobj(nboredge,XOr,YOr,Zor,offs,vdis,
+     &                    ioout,name,tmlcname,objmm)
+                      elseif(ico.eq.3)then
+                        offs=0.0
+                        call polytoobj(nboredge,XOr,YOr,Zor,offs,vdis,
+     &                    ioout,name,tmlcname,objmm)
+                      endif
+                    else
+                      call surftoobj(newfoc,is,vdis,ioout,objmm)
+                    endif
                   endif
                 endif
               else
@@ -1323,6 +1458,7 @@ C If not representing separate layers the following logic applies.
               matarrayindex=IPRMAT(isel,IL)   ! which materials array index
               if(matarrayindex.eq.0) cycle
               mname=matname(matarrayindex)    ! set reference for layer
+              call st2name(matname(matarrayindex),tmlcname)    ! filter for spaces
               if(objmm)then
                 vdis=DTHK(isel,il)*1000.
               else
@@ -1338,17 +1474,18 @@ C Ignore air layers as well as glazing if the user has excluded.
                 offs=offset(il)
                 name=zsn
                 ii=smlcindex(newfoc,is)
-                mname=matname(matarrayindex)    ! set reference for layer
+                mname=matname(matarrayindex)                     ! set reference for layer
+                call st2name(matname(matarrayindex),tmlcname)    ! filter for spaces
 
 C Debug.
-                write(6,*) nboredge,offs,vdis,name,mname
+                write(6,*) nboredge,offs,vdis,name,tmlcname
                 if(SOTF(newfoc,is)(1:4).eq.'OPAQ')then
                   call polytoobj(nboredge,XOr,YOr,Zor,offs,vdis,
-     &              ioout,name,mname,objmm)
+     &              ioout,name,tmlcname,objmm)
                 else
                   if(objglazing)then
                     call polytoobj(nboredge,XOr,YOr,Zor,offs,vdis,
-     &                ioout,name,mname,objmm)
+     &                ioout,name,tmlcname,objmm)
                   else
                     continue
                   endif
@@ -1362,10 +1499,12 @@ C Debug.
           else
             vdis=0.1
           endif
-          if(objusecl.and.coplaner)then
+
+C << More logic needed here.
+          if(objuseclp.and.coplaner)then
             offs=0.0
             call polytoobj(nboredge,XOr,YOr,Zor,offs,vdis,
-     &        ioout,name,mname,objmm)
+     &        ioout,name,tmlcname,objmm)
           else
             call surftoobj(newfoc,is,vdis,ioout,objmm)
           endif
@@ -1716,6 +1855,8 @@ C If iverb passed as non-zero then change directive.
 
 C Figure out where the new model cfg is going to be placed.
 C          call usrdir(pwdinitial)
+          write(6,*) 'the pwd command is ',
+     &      pwdinitial(1:lnblnk(pwdinitial))
           thecfgis='  '
           write(thecfgis,'(2a)') metaroot(1:lnblnk(metaroot)),'.cfg'
           cfgpath='  '
@@ -1811,6 +1952,8 @@ C is a DXF file.
           call edisp(iuout,'Based on 1st line of file:')
           call edisp(iuout,outstr)
           call edisp(iuout,'this file is assumed to be a gbXML file.')
+          call edisp(iuout,'An example of [full path to model folder]:')
+          call edisp(iuout,'/home/fred/Models/office')
           cadfmt='gbXML'
           CALL EASKS(placemodelin,'Folder for model (full path):',
      &      ' ',96,' ','model folder',IER,nbhelp)
@@ -2320,11 +2463,20 @@ C Open the related configuration file (if it exists), find its log file.
       if(XST)then
         call fdroot(cfg,cfg_path,cfg_root)
         call FPOPEN(iexfil+1,ISTAT,1,0,cfg)
-  242   CALL STRIPC(iexfil+1,OUTSTR,0,ND,0,'cfg scan',IER)
+  242   CALL STRIPC(iexfil+1,OUTSTR,99,ND,0,'cfg scan',IER)
         if(ier.ne.0)goto 902
-        if(OUTSTR(1:10).eq.'* PROJ LOG')then
+        if(OUTSTR(1:10).eq.'* PROJ LOG')then  ! For configuration < 4.2.
           CALL STRIPC(iexfil+1,OUTSTR,0,ND,1,'log file',IER)
           doc=OUTSTR(1:LNBLNK(OUTSTR))
+          write(doc_file,'(a,a)')cfg_path(1:lnblnk(cfg_path)),
+     &      doc(1:lnblnk(doc))
+          CALL ERPFREE(iexfil+1,ISTAT)
+          call tstamp('>','PRJ: list exemplar documentation')
+          call edisp(iuout,' ')
+          CALL LISTAS(iexfil+1,doc_file,IER)
+        elseif(OUTSTR(1:6).eq.'*notes')then  ! For configuration V4.2.
+          k=7
+          CALL EGETRM(OUTSTR,K,doc,'W','notes file',IER)
           write(doc_file,'(a,a)')cfg_path(1:lnblnk(cfg_path)),
      &      doc(1:lnblnk(doc))
           CALL ERPFREE(iexfil+1,ISTAT)
@@ -3066,7 +3218,7 @@ C Assumes that the export file is already opened.
       common/OUTIN/IUOUT,IUIN,IEOUT
 
       character ZSDES*28,ZSDESC*20,ZSDESS*16
-      CHARACTER SNAME1*28,SNAMED*28
+      CHARACTER SNAME1*28,SNAMED*28,tmlcname*32
       CHARACTER zsn*28
       character louts*400
 C      character loutsd*400           ! Uncomment if debug needed.
@@ -3209,7 +3361,8 @@ C Write the base face.
       write(ioout,'(2a)') 'g ',SNAMED(1:lnblnk(SNAMED))
       ii=smlcindex(iz,is)
       if(ii.gt.0)then
-        write(ioout,'(2a)') 'usemtl in_',mlcname(ii)(1:lnmlcname(ii))
+        call st2name(mlcname(ii),tmlcname)
+        write(ioout,'(2a)') 'usemtl in_',tmlcname(1:lnblnk(tmlcname))
       endif
       iwnbface=iwnbface+1
       write(ioout,'(a,3f8.4)') 'vn ',vnb(1),vnb(2),vnb(3)
@@ -3241,7 +3394,8 @@ C include vector normal line and build the face line to include
 C references to the vector normal.
       write(ioout,'(2a)') 'g ',SNAME1(1:lnblnk(SNAME1))
       if(ii.gt.0)then
-        write(ioout,'(2a)') 'usemtl ex_',mlcname(ii)(1:lnmlcname(ii))
+        call st2name(mlcname(ii),tmlcname)
+        write(ioout,'(2a)') 'usemtl ex_',tmlcname(1:lnblnk(tmlcname))
       endif
       iwnbface=iwnbface+1
 
@@ -3364,7 +3518,7 @@ C Assumes that the export file is already opened.
       real offset        ! transform along origin of original polygon
       real vdis          ! layer thickness
       character*28 name  ! base name of the entity
-      character*32 mname ! MLC name of the entity
+      character*32 mname ! MLC name of the entity (stripped of blanks)
       logical objmm      ! If true write as mm.
 
       common/OUTIN/IUOUT,IUIN,IEOUT
@@ -3628,7 +3782,7 @@ C ********************* mkmtlfil *********************
 C mkriofil: Write inside/outside materials and composition files.
       SUBROUTINE mkmtlfil(ioout,ftr,IER)
 #include "building.h"
-C #include "model.h"
+#include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
@@ -3637,7 +3791,10 @@ C #include "model.h"
       integer lnblnk  ! function definition
 
       integer matarrayindex ! the indes within matdatarray
-      logical closemat1,closemat2
+      logical closemat1,closemat2,found
+      character mlc_name*32,tmlcname*32
+      dimension areamlc(MCOM),areamlcamb(MCOM),areamlcoth(MCOM)
+      dimension areamlcb2b(MCOM),areamlcgrnd(MCOM),areamlcsimil(MCOM)
 
       IER=0
 
@@ -3680,8 +3837,17 @@ C Always include a colour for internal and external UNKNOWN mlc.
       WRITE(ioout,'(a)') 'illum 1'
       WRITE(ioout,'(a)') '  '
 
-C List database.
+C List database and if used in the model include in the .mtl file.
       do IM=1,NMLC
+        found=.false.
+        write(mlc_name,'(a)') mlcname(im)(1:lnmlcname(im))
+        call st2name(mlcname(im),tmlcname)  ! Filtered MLC name
+        call mlcrefs(mlc_name,areamlc,areamlcamb,areamlcoth,
+     &    areamlcb2b,areamlcgrnd,areamlcsimil,tareamlc,found)
+        if(.NOT.found) CYCLE
+
+C << TODO keep track of the materials actually used in the referenced MLC.
+C << This can allow for the later materials entries to be concise.
 
 C For the inside and outside layer get surface properties.
         matarrayindex=IPRMAT(IM,1)   ! which materials array index
@@ -3707,24 +3873,24 @@ C For the inside and outside layer get surface properties.
         if(mlctype(IM)(1:4).EQ.'OPAQ')then
            srefl=1.0-AE
            WRITE(ioout,'(a)') '  '
-           WRITE(ioout,'(2a)') 'newmtl ',mlcname(IM)(1:lnmlcname(IM))
+           WRITE(ioout,'(2a)') 'newmtl ',tmlcname(1:lnblnk(tmlcname))
            WRITE(ioout,'(a)') 'Ka 1.0000 1.0000 1.0000'
            WRITE(ioout,'(a,3F5.2)') 'Kd ',srefl,srefl,srefl
            WRITE(ioout,'(a)') 'illum 1'
            WRITE(ioout,'(a)') '  '
-           WRITE(ioout,'(2a)') 'newmtl ex_',mlcname(IM)(1:lnmlcname(IM))
+           WRITE(ioout,'(2a)') 'newmtl ex_',tmlcname(1:lnblnk(tmlcname))
            WRITE(ioout,'(a)') 'Ka 1.0000 1.0000 1.0000'
            WRITE(ioout,'(a,3F5.2)') 'Kd ',srefl,srefl,srefl
            WRITE(ioout,'(a)') 'illum 1'
            srefl=1.0-AI
            WRITE(ioout,'(a)') '  '
-           WRITE(ioout,'(2a)') 'newmtl in_',mlcname(IM)(1:lnmlcname(IM))
+           WRITE(ioout,'(2a)') 'newmtl in_',tmlcname(1:lnblnk(tmlcname))
            WRITE(ioout,'(a)') 'Ka 1.0000 1.0000 1.0000'
            WRITE(ioout,'(a,3F5.2)') 'Kd ',srefl,srefl,srefl
            WRITE(ioout,'(a)') 'illum 1'
          else
            WRITE(ioout,'(a)') '  '
-           WRITE(ioout,'(2a)') 'newmtl ',mlcname(IM)(1:lnmlcname(IM))
+           WRITE(ioout,'(2a)') 'newmtl ',tmlcname(1:lnblnk(tmlcname))
            WRITE(ioout,'(a)') 'Ka 1.0000 1.0000 1.0000'
            WRITE(ioout,'(a)') 'Kd 0.87    0.87    0.87'
            WRITE(ioout,'(a)') 'Ks 1.0000 1.0000 1.0000  '

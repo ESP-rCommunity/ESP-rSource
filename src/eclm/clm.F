@@ -157,8 +157,8 @@ C Initial assumptions. Pass module name to C code structure.
       IDF=365
       KDS=1
       KDF=24
-      IYEAR=2021
-      ICYEAR=2021
+      IYEAR=2022
+      ICYEAR=2022
       cfgroot='  '
       LCFGF='  '
       AUTOVR=.false.  ! by default, ask to overwrite files
@@ -1554,7 +1554,7 @@ C calls in esru_lib.F
      &   JITOBS,JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,JITHLZ,
      &   JITPPSW)
 
-C Passed paramters.
+C Passed parameters.
       real EVX,EVY,EVZ,VX,VY,VZ,EAN,DIS
 
 C Depending on computer type set integer size of passed parameters.

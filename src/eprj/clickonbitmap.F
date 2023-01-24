@@ -4100,7 +4100,7 @@ C inserting the new vertex index.
                   call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,itru,3,IER)
 
 C Debug.
-C                   write(6,'(a,102i4)') 'now jvn is ',
+C                   write(6,'(a,124i4)') 'now jvn is ',
 C     &               (JVN(ivj,ii),ii=1,NVER(ivj))
 
 C Surface (ivj) vertex list has been updated. Go on to next surface.
@@ -4224,7 +4224,7 @@ C inserting the new vertex index.
               JVN(ivj,ivjj+1)=iwhich3
 
 C Debug.
-C                write(6,'(a,102i4)') 'now jvn is ',
+C                write(6,'(a,124i4)') 'now jvn is ',
 C     &            (JVN(ivj,ii),ii=1,NVER(ivj))
 
 C Surface (ivj) vertex list has been updated. Go on to next surface.

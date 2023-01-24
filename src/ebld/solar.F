@@ -1022,7 +1022,6 @@ C Calculate linear property change ratio for varying other
 C properties i.e. transmittance, absorptance and reflectance.
                   ECRAT(ICOMP,I) = (TVT - TVTR2(ICOMP,ITMC))/
      &                      (TVTR(ICOMP,ITMC)-TVTR2(ICOMP,ITMC))
-                  write(6,*) 'tmc ctl daylight coef used',TVT,icomp
                 ELSEIF(NBCTT(ICOMP,ITMC).EQ.4
      &                 .AND.IBLND(ICOMP,I).GT.0) THEN
 
@@ -4457,15 +4456,12 @@ C Check if any diffuse irradiance and if sun is up - if not do not
 C calculate and set to zero:
                    call eclose(QDIF,0.00,0.01,closea)
                    if(closea.OR.(SALT.LT.0.))then
-                     esky  = 0.
-                     esun  = 0.
-                     ELLUM = 0.
+                     esky  = 0.; esun  = 0.; ELLUM = 0.
                    else
 
 C Direct normal and diffuse horizontal illuminance:
                      call LUMEFF(QDIF,QDIR,SALT,IDYP,skyeff,suneff)
-                     esky=QDIF*skyeff
-                     esun=QDIR*suneff
+                     esky=QDIF*skyeff; esun=QDIR*suneff
 
 C Calculate reference horizontal illuminance:
                      call REFILL(QDIF,QDIR,SALT,SAZI,IDYP,refell)
@@ -4486,8 +4482,7 @@ C Find sky element with minimum angle between sun position and element.
 C This identifies number of sky element for calculation of direct
 C illuminance contribution:
                        if(ang.lt.ang0)then
-                         nelem = npatch
-                         ang0 = ang
+                         nelem = npatch; ang0 = ang
                        endif
 
 C Calculate luminance (cd/m^2) for given sky patch:

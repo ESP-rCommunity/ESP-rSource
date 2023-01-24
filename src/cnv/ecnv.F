@@ -82,6 +82,24 @@ C Session log file (for errors etc.).
       character iefile*72
       common/logs/iefile
 
+C Simulation parameter presets.
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh      
+      common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
+     &  smstres(MSPS),selres(MSPS),scfdres(MSPS),sipvres
+      character sblres*72,sflres*72,splres*72,smstres*72,
+     &  selres*72,scfdres*72,sipvres*72
+
+C Extended simulation parameters for each set.
+      common/spfldats/isstupex(MSPS),isbnstepex(MSPS),ispnstepex(MSPS),
+     &  issaveex(MSPS),isavghex(MSPS),iscfdactivate(MSPS),
+     &  isicfdys(MSPS),isicfdyf(MSPS),
+     &  scftims(MSPS),scftimf(MSPS)
+      INTEGER :: isstupex,isbnstepex,ispnstepex,issaveex,isavghex
+      INTEGER :: iscfdactivate      ! 0, ignore domains
+      INTEGER :: isicfdys,isicfdyf  ! CFD simulation start & finish days
+      REAL :: scftims,scftimf       ! CFD simulation start & finish time
+
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       LOGICAL XST
 
@@ -424,6 +442,8 @@ C channel IFIL.
           lmodelqa='UNKNOWN'
           bidirfile='UNKNOWN'
           LUALF='UNKNOWN'
+          iscfdactivate(1)=-1  ! make sure CFD results are not included by mistake.
+          scfdres(1)='UNKNOWN'
 
 C If iverb passed as non-zero then change directive.
           if(iverb.eq.0)then
@@ -1440,7 +1460,7 @@ C calls in esru_lib.F
      &   JITOBS,JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,JITHLZ,
      &   JITPPSW)
 
-C Passed paramters.
+C Passed parameters.
       real EVX,EVY,EVZ,VX,VY,VZ,EAN,DIS
 
 C Depending on computer type set integer size of passed parameters.
@@ -1501,17 +1521,13 @@ C Dummy subroutine needed to compile (called from library code).
       return
       end
 
-      subroutine Find_season_parameters()
-      return
-      end
-
       SUBROUTINE BASESIMP_INPUTS(ICOMP,IER)
       integer icomp,ier
       return
       end
 
 C Local variant of command line parsing.
-C parcnv parse command line paramters for ecnv.
+C parcnv parse command line parameters for ecnv.
       subroutine parecnv(iverb,conv,iobs,ichop,itmprm,iform,oform,
      &                   inf,ouf,ucfg)
       
@@ -1679,7 +1695,6 @@ C Tolerance for surface matching.
       integer IACC ! number of matching corners outside dist tolerance
       common/matching/ANGCC,CACC,DACC,COGCC,SNACC,IACC
 
-      DIMENSION COG1(3),COG2(3),COG3(3)
       DIMENSION itv1(MS*MV) ! 1st of every edge in every surface
       DIMENSION itv2(MS*MV) ! 2nd of every edge in every surface
       DIMENSION irelsur(MS*MV) ! which surface assoc with every edge
@@ -3713,20 +3728,10 @@ C Silent continue, there is nothing to do (currently).
       elseif(act(1:2).eq.'sn')then
 
 C Silent new within the pre-registration process.
-
-C Debug.
-C        write(6,*)  ' pregist ',root
-C        write(6,*)  ' pregist ',mpath
-
         write(LCFTMP,'(a)') root(1:lnblnk(root))
       elseif(act(1:2).eq.'sw')then
 
 C Silent within the pre-registration process.
-
-C Debug.
-C        write(6,*)  ' pregist ',root
-C        write(6,*)  ' pregist ',mpath
-
         write(LCFTMP,'(a)') root(1:lnblnk(root))
 
       elseif(act(1:1).eq.'i')then
@@ -3751,8 +3756,8 @@ C which should not be cleared.
       endif
 
 C User did not cancel so instantiate data for new model.
-C Current default version is v4.
-      icfgv=4   ! alter this to 5 when working correctly
+C Current default version is v5.
+      icfgv=5
       INDCFG=0
       if(act(1:2).eq.'sn'.or.act(1:2).eq.'sw')then
         continue  ! META or gbXML file will already have set sitelat etc.

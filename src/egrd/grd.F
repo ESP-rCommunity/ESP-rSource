@@ -645,11 +645,6 @@ C ***** Dummy display of images.
 C Dummy subroutine needed to compile (called from library code).
       SUBROUTINE PLELEV(direc)
       CHARACTER direc*1
-
-      return
-      end
-
-      subroutine Find_season_parameters()
       return
       end
 

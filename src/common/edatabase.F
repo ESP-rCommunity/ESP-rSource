@@ -1921,20 +1921,20 @@ C MLC Reporting based on report level.
           write(OUTSTR2,'(3a)')
      &    'Layer  Thickness (mm)  Conductivity (W/(mK))  ',
      &    'Density (kg/m^3^)  Specific heat (J/(kgK))  Emissivity  ',
-     &    'Absorption  Diffusivity  Description'
+     &    'Absorption  Description'
           CALL EDISP(ITRU,OUTSTR2)
           write(OUTSTR2,'(4a)')
      &    '-----  --------------  ---------------------  ',
      &    '-----------------  -----------------------  ----------  ',
-     &    '----------  -----------  ------------------------'
+     &    '----------  ------------------------'
           CALL EDISP(ITRU,OUTSTR2)
         else
           write(OUTSTR,'(2a)')
-     &    ' Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu|',
+     &    ' Layer|Thick |Conduc-|Density|Specif|IR  |Solar|',
      &    'Description'
           CALL EDISP(ITRU,OUTSTR)
           write(OUTSTR,'(a)')
-     &    '      |(mm)  |tivity |       |heat  |emis|abs  |resis|'
+     &    '      |(mm)  |tivity |       |heat  |emis|abs  |'
           CALL EDISP(ITRU,OUTSTR)
         endif
       ELSEIF(IVERB.EQ.0)THEN
@@ -1968,7 +1968,8 @@ C          RT=1.0   ! to prevent divide by zero later
           E=0.99; A=0.99; DRV=1.0
           kgpm2(il)=1.225*DTHK(IFOC,IL)
           tkgpm2=tkgpm2+kgpm2(il)
-          WRITE(PNAM(IL),'(A,3F5.2)')'air ',(DRAIR(IFOC,IL,IY),IY=1,3)
+          WRITE(PNAM(IL),'(A,3F5.2)')'air gap resistance ',
+     &      (DRAIR(IFOC,IL,IY),IY=1,3)
           RT=RT+DRAIR(IFOC,IL,1)
           RSI=DRAIR(IFOC,IL,1)
         elseif(matarrayindex.lt.0)then
@@ -2028,26 +2029,52 @@ C Reporting.
           elseif(LAYERS(IFOC).ge.2.and.IL.eq.1)then 
             if(markdown)then
               WRITE(OUTSTR2,251)'Ext  ',DTHK(IFOC,IL)*1000.0,
-     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
+     &          DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),
+     &          PNAM(IL)(1:lnlist)
             else
               WRITE(OUTSTR,25)' Ext ',DTHK(IFOC,IL)*1000.0,
-     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
+     &          DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),
+     &          PNAM(IL)(1:lnlist)
             endif
           elseif(LAYERS(IFOC).ge.2.and.IL.eq.LAYERS(IFOC))then 
             if(markdown)then
               WRITE(OUTSTR2,251)'Int  ',DTHK(IFOC,IL)*1000.0,
-     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
+     &          DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),
+     &          PNAM(IL)(1:lnlist)
             else
               WRITE(OUTSTR,25)' Int ',DTHK(IFOC,IL)*1000.0,
-     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
+     &          DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),
+     &          PNAM(IL)(1:lnlist)
             endif
           else 
             if(markdown)then
-              WRITE(OUTSTR2,241)IL,DTHK(IFOC,IL)*1000.0,
-     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
+              matarrayindex=IPRMAT(IFOC,IL)   ! which array index
+              if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &           matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &           matarrayindex.eq.0)then
+                write(outstr2,'(I5,F7.1,4a)') IL,DTHK(IFOC,IL)*1000.0,
+     &          '            -                       -                ',
+     &          '-                         -           -          ',
+     &          '-              -              -     ',
+     &          PNAM(IL)(1:lnlist)
+              else
+                WRITE(OUTSTR2,241)IL,DTHK(IFOC,IL)*1000.0,
+     &            DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),
+     &            PNAM(IL)(1:lnlist)
+              endif
             else
-              WRITE(OUTSTR,24)IL,DTHK(IFOC,IL)*1000.0,
-     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
+              matarrayindex=IPRMAT(IFOC,IL)   ! which array index
+              if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &           matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &           matarrayindex.eq.0)then
+                write(outstr,'(I5,F7.1,3a)') IL,DTHK(IFOC,IL)*1000.0,
+     &        '     -         -      -  -    -         -   -      -   ',
+     &            PNAM(IL)(1:lnlist)
+              else
+                WRITE(OUTSTR,24)IL,DTHK(IFOC,IL)*1000.0,
+     &            DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),
+     &            PNAM(IL)(1:lnlist)
+              endif
             endif
           endif
  241      FORMAT(I5,F7.1,7x,F10.3,16x,F7.0,11x,F7.0,20x,F5.2,7x,F5.2,
@@ -2070,42 +2097,61 @@ C Reporting.
           if(LAYERS(IFOC).eq.1)then 
             if(markdown)then
               WRITE(OUTSTR2,2411)IL,DTHK(IFOC,IL)*1000.0,
-     &        DBCON,DBDEN,DBSHT,E,A,DRV,PNAM(IL)(1:lnlist)
+     &        DBCON,DBDEN,DBSHT,E,A,PNAM(IL)(1:lnlist)
             else
               WRITE(OUTSTR,2412)IL,DTHK(IFOC,IL)*1000.0,
-     &        DBCON,DBDEN,DBSHT,E,A,DRV,PNAM(IL)(1:lnlist)
+     &        DBCON,DBDEN,DBSHT,E,A,PNAM(IL)(1:lnlist)
             endif
           elseif(LAYERS(IFOC).ge.2.and.IL.eq.1)then 
             if(markdown)then
               WRITE(OUTSTR2,2511)'Ext  ',DTHK(IFOC,IL)*1000.0,
-     &        DBCON,DBDEN,DBSHT,E,A,DRV,PNAM(IL)(1:lnlist)
+     &        DBCON,DBDEN,DBSHT,E,A,PNAM(IL)(1:lnlist)
             else
               WRITE(OUTSTR,2512)' Ext ',DTHK(IFOC,IL)*1000.0,
-     &        DBCON,DBDEN,DBSHT,E,A,DRV,PNAM(IL)(1:lnlist)
+     &        DBCON,DBDEN,DBSHT,E,A,PNAM(IL)(1:lnlist)
             endif
           elseif(LAYERS(IFOC).ge.2.and.IL.eq.LAYERS(IFOC))then 
             if(markdown)then
               WRITE(OUTSTR2,2511)'Int  ',DTHK(IFOC,IL)*1000.0,
-     &        DBCON,DBDEN,DBSHT,E,A,DRV,PNAM(IL)(1:lnlist)
+     &        DBCON,DBDEN,DBSHT,E,A,PNAM(IL)(1:lnlist)
             else
               WRITE(OUTSTR,2512)' Int ',DTHK(IFOC,IL)*1000.0,
-     &        DBCON,DBDEN,DBSHT,E,A,DRV,PNAM(IL)(1:lnlist)
+     &        DBCON,DBDEN,DBSHT,E,A,PNAM(IL)(1:lnlist)
             endif
           else 
             if(markdown)then
-              WRITE(OUTSTR2,2411)IL,DTHK(IFOC,IL)*1000.0,
-     &        DBCON,DBDEN,DBSHT,E,A,DRV,PNAM(IL)(1:lnlist)
+              matarrayindex=IPRMAT(IFOC,IL)   ! which array index
+              if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &           matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &           matarrayindex.eq.0)then
+                write(outstr2,'(I5,F7.1,3a)') IL,DTHK(IFOC,IL)*1000.0,
+     &          '            -                       -                ',
+     &          '-                         -           -          ',
+     &          PNAM(IL)(1:lnlist)
+              else
+                WRITE(OUTSTR2,2411)IL,DTHK(IFOC,IL)*1000.0,
+     &            DBCON,DBDEN,DBSHT,E,A,PNAM(IL)(1:lnlist)
+              endif
             else
-              WRITE(OUTSTR,2412)IL,DTHK(IFOC,IL)*1000.0,
-     &        DBCON,DBDEN,DBSHT,E,A,DRV,PNAM(IL)(1:lnlist)
+              matarrayindex=IPRMAT(IFOC,IL)   ! which array index
+              if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &           matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &           matarrayindex.eq.0)then
+                write(outstr,'(I5,F7.1,2a)') IL,DTHK(IFOC,IL)*1000.0,
+     &          '     -         -      -  -    -    ',
+     &          PNAM(IL)(1:lnlist)
+              else
+                WRITE(OUTSTR,2412)IL,DTHK(IFOC,IL)*1000.0,
+     &            DBCON,DBDEN,DBSHT,E,A,PNAM(IL)(1:lnlist)
+              endif
             endif
           endif
  2411     FORMAT(I5,F7.1,7x,F10.3,16x,F7.0,11x,F7.0,20x,F5.2,7x,F5.2,
-     &      10x,F7.0,3X,A)
- 2412     FORMAT(I5,F7.1,F10.3,F7.0,F7.0,F5.2,F5.2,F7.0,1X,A)
+     &      7x,A)
+ 2412     FORMAT(I5,F7.1,F10.3,F7.0,F7.0,F5.2,F5.2,1X,A)
  2511     FORMAT(A5,F7.1,7x,F10.3,16x,F7.0,11x,F7.0,20x,F5.2,7x,F5.2,
-     &      10x,F7.0,3X,A)
- 2512     FORMAT(A5,F7.1,F10.3,F7.0,F7.0,F5.2,F5.2,F7.0,1X,A)
+     &      7x,A)
+ 2512     FORMAT(A5,F7.1,F10.3,F7.0,F7.0,F5.2,F5.2,1X,A)
           if(markdown)then
             CALL EDISP(ITRU,OUTSTR2)
           else
@@ -2140,11 +2186,26 @@ C Compact report has more room for material description.
             endif
           else
             if(markdown)then
-              WRITE(OUTSTR,296)IL,DTHK(IFOC,IL)*1000.0,
-     &        PNAM(IL)(1:lnblnk(PNAM(IL)))
+              if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &           matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &           matarrayindex.eq.0)then
+                write(outstr2,'(I5,F7.1,a)') IL,DTHK(IFOC,IL)*1000.0,
+     &            PNAM(IL)(1:lnlist)
+              else
+                WRITE(OUTSTR,296)IL,DTHK(IFOC,IL)*1000.0,
+     &            PNAM(IL)(1:lnblnk(PNAM(IL)))
+              endif
             else
-              WRITE(OUTSTR,29)IL,DTHK(IFOC,IL)*1000.0,
-     &        PNAM(IL)(1:lnblnk(PNAM(IL)))
+              matarrayindex=IPRMAT(IFOC,IL)   ! which array index
+              if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &           matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &           matarrayindex.eq.0)then
+                write(outstr,'(I5,F7.1,a)') IL,DTHK(IFOC,IL)*1000.0,
+     &            PNAM(IL)(1:lnlist)
+              else
+                WRITE(OUTSTR,29)IL,DTHK(IFOC,IL)*1000.0,
+     &            PNAM(IL)(1:lnblnk(PNAM(IL)))
+              endif
             endif
           endif
   29      FORMAT(I5,F9.1,2X,a)
@@ -2186,11 +2247,11 @@ C If in verbose mode, otherwise ignore. Also report kg/m^2 for the construction.
 C << NOTE this code needs further debugging.
         if(IVERB.gt.1)then
           if(markdown)then
-            write(OUTSTR,'(A,F7.2)') 
+            write(OUTSTR,'(A,F8.2)') 
      &      'Weight per m^2 of this construction',tkgpm2
             call edisp2tr(itru,OUTSTR)
           else
-            write(OUTSTR,'(A,F7.2)') 
+            write(OUTSTR,'(A,F8.2)') 
      &      ' Weight per m^2 of this construction',tkgpm2
             call edisp(itru,OUTSTR)
           endif
@@ -2198,6 +2259,7 @@ C << NOTE this code needs further debugging.
           Rso=0.06
           if(IVERB.gt.2)call ADMIT(ITRU,IFOC,Rsi,Rso)
         endif
+        call KAPPA(ITRU,IFOC,Rsi,Rso)
       endif
 
 C Also list optical properties for this construction (if it is
@@ -2293,10 +2355,11 @@ C is zero then avoid divide by zero.
 C Calculate and (optionally) report.
   15  CONTINUE
 
-C ISO 6946 surface resistance assumptions are 0.04 external, 0.13 inside horizontal,
-C 0.10 inside upward flow and 0.17 inside downward flow as well as
-C an inside wall to inside wall hc 0.13 both sides. For the case
-C of a foundation only the inside surface resistance is used.
+C ISO 6946 surface resistance assumptions [m^2K/W] are 0.04 external,
+C 0.13 inside horizontal, 0.10 inside upward flow and 0.17 inside 
+C downward flow as well as an inside wall to inside wall hc 0.13 
+C both sides. For the case of a foundation only the inside surface 
+C resistance is used.
       RTH=RT+0.04+0.13; UVH=1.0/RTH
       RTU=RT+0.04+0.10; UVU=1.0/RTU
       RTD=RT+0.04+0.17; UVD=1.0/RTD
@@ -3286,6 +3349,7 @@ C      write (ITRU,*) 'Layer  thick  k  rho  Cp'
       layer=LAYERS(IFOC)+1
       call eclose(matver,1.1,0.01,closemat1)
       call eclose(matver,1.2,0.01,closemat2)
+      overallthick=0.0   ! overall thickness mm
       do 5 IL=1,LAYERS(IFOC)
         matarrayindex=IPRMAT(IFOC,IL)   ! which array index
         if(matarrayindex.ge.0)then
@@ -3303,6 +3367,7 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht.
         endif
         layer=layer-1
         thick(layer)=DTHK(IFOC,IL)
+        overallthick=overallthick+(thick(layer)*1000.0)
 
 C If an air gap set cond(IL) to negative of air gap res.
         if(matopaq(matarrayindex)(1:1).eq.'g'.or.
@@ -3318,7 +3383,7 @@ C If an air gap set cond(IL) to negative of air gap res.
         endif
 
 C Debug
-C        write (ITRU,'(2i3,2f6.3,2f6.0)') layer,
+C        write (ITRU,'(2i3,2f6.3,2f6.0)') matarrayindex,layer,
 C     &    thick(layer),cond(layer),rho(layer),Cp(layer)
  5    continue
       
@@ -3440,6 +3505,152 @@ C Report values for partitions.
       write (outs,'(4(a,f6.2))') ' Partition admittance Y=',Y,
      &  '  w=',omega,' surface factor f=',f,'  phi=',phi
       if(markdown)then
+        call edisp2tr(itru,outs)
+      else
+        call edisp(itru,outs)
+      endif
+      return
+      end
+      
+C ******************* Kappa *******************
+C Calculate thermal mass value as used in compliance tools.
+C Use logic defined in http://builddesk.co.uk/software/builddesk-u/thermal-mass.
+      subroutine KAPPA(ITRU,IFOC,Rsi,Rso)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
+
+C Markdown flag.
+      logical markdown
+      common/markdownflag/markdown
+
+      integer matarrayindex ! the indes within matdatarray
+      logical closemat1,closemat2,doanother
+      
+      dimension thick(ME),rho(ME),Cp(ME),cond(ME)
+      character outs*124
+      real ksum,kappamlc
+
+C Establish if material data arrays have been filled. If not return.
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('The materials arrays are incomplete so kappa',
+     &    ' attributes cannot be calculated.','W')
+        return
+      endif
+
+C ESP-r defines layers from outside to inside. The code in
+C subroutine admit works from inside to outside.
+C Debug layer info.
+C      write (ITRU,*) 'Layer  thick  k  rho  Cp'
+
+      layer=LAYERS(IFOC)+1
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      overallthick=0.0   ! overall thickness mm
+      do 5 IL=1,LAYERS(IFOC)
+        matarrayindex=IPRMAT(IFOC,IL)   ! which array index
+        if(matarrayindex.ge.0)then
+ 
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
+          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &       matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &       matarrayindex.eq.0)then
+            DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+          else
+            DBCON=matdbcon(matarrayindex)
+            DBDEN=matdbden(matarrayindex)
+            DBSHT=matdbsht(matarrayindex)
+          endif
+        endif
+        layer=layer-1
+        thick(layer)=DTHK(IFOC,IL)
+        overallthick=overallthick+(thick(layer)*1000.0)
+
+C If an air gap set cond(IL) to negative of air gap res.
+        if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &     matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &     matarrayindex.eq.0)then
+          cond(layer) = (-1.0) * DRAIR(IFOC,IL,1)
+          rho(layer)=1.0
+          Cp(layer)=1.0
+        else
+          cond(layer)=DBCON
+          rho(layer)=DBDEN
+          Cp(layer)=DBSHT
+        endif
+
+C Debug
+C        write (ITRU,'(2i3,2f6.3,2f6.0)') matarrayindex,layer,
+C     &    thick(layer),cond(layer),rho(layer),Cp(layer)
+ 5    continue
+      
+C Start calculation of U-value.
+      Uvalue=Rsi
+      
+C Loop through layers (inside to outside).
+      cum_thick=0.0; ksum=0.0; kappamlc=0.0
+      halfthick=overallthick*0.5
+      write(6,*) 'half= ',halfthick,'mm'
+      doanother=.true.    ! loop until a truncation
+      do 10 I=1,LAYERS(IFOC)
+        if (cond(I).gt.0.0) then
+
+C Sum the cumulative thickness for use with kappa calculation.
+C If layer thickness takes it past half the MLC thickness then
+C reset.
+          thickmm=thick(I)*1000.
+          if(cond(I).gt.0.08)then
+            if(.NOT.doanother)then
+              continue
+            elseif(cum_thick.gt.100.0)then
+              continue
+            elseif(cum_thick+thickmm.le.100.0.and.
+     &        cum_thick+thickmm.le.halfthick)then
+                ksum=ksum+(thickmm*rho(I)*Cp(I))
+              cum_thick=cum_thick+thickmm
+              write(6,'(i3,a,4f8.1,2f12.1)') i,'a thick rho cp ksum=',
+     &          cum_thick,thickmm,rho(I),Cp(I),thickmm*rho(I)*Cp(I),ksum
+            else
+              if(cum_thick+thickmm.gt.100.0)then
+                to_prior=cum_thick
+                to_subtract=100.0-to_prior
+                ksum=ksum+(to_subtract*rho(I)*Cp(I))
+                cum_thick=cum_thick+to_subtract
+                doanother=.false.    ! a truncation
+                write(6,'(i3,a,6f8.1,2f12.1)') i,'b thick rho cp ksum=',
+     &            cum_thick,to_prior,to_subtract,thickmm,
+     &            rho(I),Cp(I),to_subtract*rho(I)*Cp(I),ksum
+              elseif(cum_thick+thickmm.gt.halfthick)then
+                to_prior=cum_thick
+                to_subtract=halfthick-to_prior
+                ksum=ksum+(to_subtract*rho(I)*Cp(I))
+                cum_thick=cum_thick+to_subtract
+                write(6,'(i3,a,6f8.1,2f12.1)') i,'c thick rho cp ksum=',
+     &            cum_thick,to_prior,to_subtract,thickmm,
+     &            rho(I),Cp(I),to_subtract*rho(I)*Cp(I),ksum
+              endif
+            endif
+          endif
+            
+          Uvalue=Uvalue+(thick(I)/cond(I))
+        else
+        
+C Air gap
+          Uvalue=Uvalue+abs(cond(I))
+        endif
+ 10   continue
+
+      kappamlc=1.0E-6 *ksum
+      write(6,*) 'kappa (thermal mass value) ',kappamlc
+      write(outs,'(a,f7.1)') 'Kappa (thermal mass value) ',kappamlc
+
+
+C Report values for partitions.
+       if(markdown)then
         call edisp2tr(itru,outs)
       else
         call edisp(itru,outs)

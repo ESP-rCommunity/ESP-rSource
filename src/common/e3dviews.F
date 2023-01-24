@@ -24,14 +24,29 @@ C Functions and Subroutines and also making use of C code in
 C the lib source folder.
 
 C e3dviews.f contains the following:
-C LENS:   Initialises viewing parameters.
-C MATPOL: Transforms polygon described in 3dv format.
-C CLIPFL: Takes a polygon description and returns clipping flags based
-C         on viewing frustrum.
-C PLNBX:  Checks a polygon against a clipping plane.
-C CUTPOL: Cuts a polygon within a viewing frustrum.
+C LENS:    Initialises viewing parameters.
+C INICLP:  Defines clipping planes.
+C MATPOL:  Transforms polygon described in 3dv format.
+C MATPOLS: Transforms surface described in 3dv format.
+C CLIPFL:  Takes a polygon description and returns clipping flags based
+C          on viewing frustrum.
+C CLIPSUR: Takes a surface description and returns clipping flags based
+C          on viewing frustrum.
+C CLIPLIN: Takes a line description and returns clipping flags based
+C          on viewing frustrum.
+C CLIPPT:  Takes point coordinates and returns clipping flags based
+C          on viewing frustrum.
+C CLIPST:  Takes a string description and returns clipping flags based
+C          on viewing frustrum.
+C PLNBX:   Checks a polygon against a clipping plane.
+C PLNOFSUR: Checks a surface against a clipping plane.
+C CUTPOL:  Cuts a polygon within a viewing frustrum.
+C CUTSUR:  Cuts a surface within a viewing frustrum.
+C CUTLIN:  Cuts a line within a viewing frustrum.
 C VERTLBL: Displays a vertex label based on the coordinates passed and
 C          the vertex number.
+C VERTLBLNOCLP: Variant of above without clipping.
+C VERTLBLRED: Variant of above that draws in red instead of black.
 C ORIGESP: Draws arrows indicating the site origin.
 C SITE2D:  Returns the 2D viewing coords of the current site extremes
 C          found in common block RAY5.
@@ -45,14 +60,21 @@ C     LENS - initialise viewing parameters
 #include "prj3dv.h"
 C prj3dv.h provides common blocks drwmat clip and image
 
-C Viewing transformation matrices TEMAT is:
+C Transformation matrices are referenced as:
+C matrix(column,row)
+C Elements are generally used for:
+C x_scale       x_rotation    x_rotation    x_transform
+C y_rotation    y_scale       y_rotation    y_transform
+C z_rotation    z_rotation    z_scale       z_transform
+C x_perspective y_perspective z_perspective all_scale
+
       COMMON/OUTIN/IUOUT,IUIN,IEOUT
 
 C Local variables
       real T1MAT,T2MAT,R1MAT
       DIMENSION T1MAT(4,4),T2MAT(4,4),R1MAT(4,4)
       DIMENSION X(8),Y(8),Z(8),aixmn(1),aiymn(1),aixmx(1),aiymx(1)
-      real SKALE,PI,T,SH,CH
+      real SKALE,PI,T,SH,CH     
 
       SKALE = 1000.0        ! we are looking from 1km
       PI = 4.0 * ATAN(1.0)
@@ -81,7 +103,6 @@ C T2MAT is a 4 x 4 transform matrix
       T2MAT(4,4) = 1.0
 
       CALL HMATMUL(T1MAT,T2MAT,TEMAT)
-
       CALL HREVMAT(TEMAT,ETMMAT,IERR)
 
       IF (IERR .LT. 0) GOTO  999
@@ -102,7 +123,7 @@ C Convert site extremes to eye space coordinates.
 
 C Find minimum x and y coordinates.
         aixmn=MINLOC(X); aiymn=MINLOC(Y)
-        ixmn=aixmn(1); iymn=aiymn(1)
+        ixmn=int(aixmn(1)); iymn=int(aiymn(1))
 
 C Find maximum x and y coordinates.
         aixmx=MAXLOC(X); aiymx=MAXLOC(Y)
@@ -152,59 +173,62 @@ C Now compute ETSMAT eye to screen matrix
       ETSMAT(4,4) = HITH*T
 
       CALL HMATMUL(TEMAT,ETSMAT,TSMAT)
-
       CALL HREVMAT(TSMAT,STMMAT,IERR)
-
-C Define test point TPCLIP and equations CLIPLN to the 6 clipping
-C planes in eye space.
-      TPCLIP(1) = 0.0
-      TPCLIP(2) = 0.0
-      TPCLIP(3) = (YON-HITH)/2.0   ! at half distance
-
-      CLIPLN(1,1) = CH
-      CLIPLN(1,2) = 0.0
-      CLIPLN(1,3) = SH
-      CLIPLN(1,4) = -HITH*SH
-
-      CLIPLN(2,1) = -CH
-      CLIPLN(2,2) = 0.0
-      CLIPLN(2,3) = SH
-      CLIPLN(2,4) = -HITH*SH
-
-      CLIPLN(3,1) = 0.0
-      CLIPLN(3,2) = CH
-      CLIPLN(3,3) = SH
-      CLIPLN(3,4) = -HITH*SH
-
-      CLIPLN(4,1) = 0.0
-      CLIPLN(4,2) = -CH
-      CLIPLN(4,3) = SH
-      CLIPLN(4,4) = -HITH*SH
-
-      CLIPLN(5,1) = 0.0
-      CLIPLN(5,2) = 0.0
-      CLIPLN(5,3) = -1.0
-      CLIPLN(5,4) = 0.0
-
-      CLIPLN(6,1) = 0.0
-      CLIPLN(6,2) = 0.0
-      CLIPLN(6,3) = -1.0
-      CLIPLN(6,4) = HITH-YON
-
-C Debug
-C      write(6,*) 'sh ch t hith yon hang ',sh,ch,t,hith,yon,hang
-C      do 41 ij=1,4
-C        write(6,*) 'clipln ',ij,(clipln(ij,k),k=1,4)
-C  41  continue
-C      do 42 ij=1,4
-C        write(6,*) 'etsmat ',ij,(etsmat(ij,k),k=1,4)
-C  42  continue
 
       RETURN
 
   999 CONTINUE
       call edisp(iuout,' Failure to invert matrix in lens ')
       ier=1
+      return
+
+      END
+
+C ------ INICLP
+C Computes clipping planes and test point in screen space.
+C Requires transformation matrices computed by LENS, and scaling
+C parameters set by axiscale and stored by linescale.
+      SUBROUTINE INICLP(IER)
+#include "building.h"
+#include "prj3dv.h"
+
+#ifdef OSI
+      integer iix,iiy
+#else
+      integer*8 iix,iiy
+#endif
+
+      integer menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+
+C Test point is at the centre of the view half way between HITH and
+C YON, in eye space.
+      CALL ORTTRN(0.0,0.0,(YON-HITH)/2.0,ETSMAT,
+     &  TPCLIP(1),TPCLIP(2),TPCLIP(3),IER)
+      if (IER.ne.0) goto 666
+
+C Side clipping planes are computed from extents of the viewing window.
+      iix=igl; iiy=igb
+      call pixel2u(iix,iiy,CLIPLN(1,4),CLIPLN(3,4))
+      iix=igr; iiy=igt
+      call pixel2u(iix,iiy,CLIPLN(2,4),CLIPLN(4,4))      
+      CLIPLN(1,1) = 1.0; CLIPLN(1,2) = 0.0; CLIPLN(1,3) = 0.0
+      CLIPLN(2,1) = 1.0; CLIPLN(2,2) = 0.0; CLIPLN(2,3) = 0.0
+      CLIPLN(3,1) = 0.0; CLIPLN(3,2) = 1.0; CLIPLN(3,3) = 0.0
+      CLIPLN(4,1) = 0.0; CLIPLN(4,2) = 1.0; CLIPLN(4,3) = 0.0
+
+C Near and far clipping planes are computed from HITH and YON in eye
+C space.
+      CALL ORTTRN(0.0,0.0,HITH-YON,ETSMAT,x,y,CLIPLN(6,4),IER) ! x and y are not required
+      if (IER.ne.0) goto 666
+      CLIPLN(5,1) = 0.0; CLIPLN(5,2) = 0.0; CLIPLN(5,3) = -1.0
+      CLIPLN(5,4) = 0.0
+      CLIPLN(6,1) = 0.0; CLIPLN(6,2) = 0.0; CLIPLN(6,3) = -1.0
+
+      RETURN
+
+  666 CONTINUE
+      call edisp(iuout,'INICLP: transform failed')
       return
 
       END
@@ -353,7 +377,8 @@ C prj3dv.h provides common block clip.
       DIMENSION  AX(MPL),AY(MPL),AZ(MPL)
       DIMENSION  EQN(4)
 
-      ISTAT=-1
+C Assume we are inside view frustrum unless we find otherwise.
+      ISTAT=0
 
 C Consider each clipping plant in turn.
       DO 100 J=1,6
@@ -370,8 +395,11 @@ C Find the distance of the test point to the current clipping plane.
 C Find the status (ifbox) of the polygon represented by AX AY AZ to
 C the clipping plane equation.
         CALL PLNBX(NAP,AX,AY,AZ,EQN,IFBOX)
-
-        IF (IFBOX) 30,50,30
+        IF (IFBOX.eq.0) then 
+          goto 50
+        else
+          goto 30
+        endif
 
    30   IF ((IFBOX*TDIS).GE.0) GOTO 40
 
@@ -391,6 +419,7 @@ C VERTEX POINTS ARE ON EITHER SIDE OF THE CLIPPING PLANE EQN
 C SO THE OBJECT MUST BE CLIPPED TO THIS PLANE
    50   CONTINUE
         IFCLIP(J)=1
+        ISTAT=-1
 
   100 CONTINUE
 
@@ -410,8 +439,10 @@ C     ISTAT = -1 THE POLYGON STRADDLES THE VIEW FRUSTRUM
 
       DIMENSION  AX(MV),AY(MV),AZ(MV),EQN(4)
 
+C Assume we are inside view frustrum unless we find otherwise.
+      ISTAT=0
+
 C Consider each clipping plane in turn.
-      ISTAT=-1
       DO 100 J=1,6
         EQN(1)=CLIPLN(J,1)
         EQN(2)=CLIPLN(J,2)
@@ -424,7 +455,12 @@ C Find the distance of the test point to the clipping plane.
 
 C Find the status of the polygon to the clipping plan equation.
       CALL PLNOFSUR(NAP,AX,AY,AZ,EQN,IFBOX)
-      IF (IFBOX) 30,50,30
+      IF (IFBOX.eq.0) then 
+        goto 50
+      else
+        goto 30
+      endif
+
    30 IF ((IFBOX*TDIS).GE.0) GOTO 40
 
 C ALL VERTEX POINTS ARE ON THE OPPOSITE SIDE OF THE CLIPPING PLANE
@@ -443,16 +479,171 @@ C VERTEX POINTS ARE ON EITHER SIDE OF THE CLIPPING PLANE EQN
 C SO THE OBJECT MUST BE CLIPPED TO THIS PLANE
    50 CONTINUE
       IFCLIP(J)=1
+      ISTAT=-1
 
   100 CONTINUE
       RETURN
       END
 
+C-----------CLIPLIN -----------------------------------------------------
+C CLIPLIN takes a line description (arrays of size 2) and returns
+C clipping flags based on viewing frustrum where ISTAT:
+C     ISTAT =  0 all of the line is within the view frustrum
+C     ISTAT =  1 all the line is outside the view frustrum
+C     ISTAT = -1 the line straddles the view frustrum
+
+      SUBROUTINE CLIPLIN(AX,AY,AZ,ISTAT)
+#include "building.h"
+#include "prj3dv.h"
+C prj3dv.h provides common block clip.
+
+      DIMENSION  AX(2),AY(2),AZ(2)
+      DIMENSION  EQN(4)
+
+      ISTAT=0
+
+C Consider each clipping plant in turn.
+      DO 100 J=1,6
+
+        EQN(1)=CLIPLN(J,1)
+        EQN(2)=CLIPLN(J,2)
+        EQN(3)=CLIPLN(J,3)
+        EQN(4)=CLIPLN(J,4)
+
+C Find the distance of the test point to the current clipping plane.
+        TDIS = EQN(1)*TPCLIP(1) + EQN(2)*TPCLIP(2) +
+     &         EQN(3)*TPCLIP(3) - EQN(4)
+
+C Find the distance of both ends of the line to the current clipping
+C plane.
+        DIST1 = EQN(1)*AX(1) + EQN(2)*AY(1) + EQN(3)*AZ(1) - EQN(4)
+        DIST2 = EQN(1)*AX(2) + EQN(2)*AY(2) + EQN(3)*AZ(2) - EQN(4)
+
+C Vertex points are on either side of the clipping plane so the line
+C must be clipped to this plane.
+        if (DIST1*DIST2.lt.0) then
+          IFCLIP(J)=1
+          ISTAT=-1
+
+C Both vertex points are on the opposite side of the clipping plane to
+C the test point. Hence no part of the line is within the view frustrum.
+        elseif (DIST1*TDIS.lt.0 .and. DIST2*TDIS.lt.0) then
+          ISTAT=1
+          RETURN
+
+C Both vertex points are on the same side as the test point.
+C Hence the line need not be clipped by this plane.
+        else
+          IFCLIP(J)=0
+        endif
+  100 CONTINUE
+
+      RETURN
+      END
+
+C-----------CLIPPT --------
+C CLIPPT takes point coordinates AX AY AZ in screen space and returns
+C clipping flags based on viewing frustrum where ISTAT:
+C   ISTAT = 0: point is within the view frustrum
+C   ISTAT = 1: point is outside view frustrum
+
+      SUBROUTINE CLIPPT(AX,AY,AZ,ISTAT)
+#include "building.h"
+#include "prj3dv.h"
+
+      real AX,AY,AZ
+      dimension EQN(4)
+
+C Consider each clipping plane in turn.
+      ISTAT=0
+      DO 100 J=1,6
+        EQN(1)=CLIPLN(J,1)
+        EQN(2)=CLIPLN(J,2)
+        EQN(3)=CLIPLN(J,3)
+        EQN(4)=CLIPLN(J,4)
+
+C Find the distance of the test point to the clipping plane.
+        TDIS = EQN(1)*TPCLIP(1) + EQN(2)*TPCLIP(2) +
+     &         EQN(3)*TPCLIP(3) - EQN(4)
+
+C Find the distance of the point under consideration to the clipping
+C plane.
+        DIS = EQN(1)*AX + EQN(2)*AY + EQN(3)*AZ - EQN(4)
+        if (TDIS*DIS.GE.0) then
+          IFCLIP(J)=0
+          GOTO 100
+        endif
+
+C Point is on the opposite side of the clipping plane to the test point.
+        ISTAT=1
+        IFCLIP(J)=1
+
+  100 CONTINUE
+      RETURN
+      END
+
+C-----------CLIPST --------
+C CLIPPT takes a string lstr to be placed at pixel coords ipx,ipy and
+C screen depth sz, and returns clipping flags based on viewing frustrum
+C where ISTAT:
+C   ISTAT = 0: string is within the view frustrum
+C   ISTAT = 1: string is entirely outside view frustrum
+C   ISTAT =-1: string straddles view frustrum
+
+C Note that ipx and ipy must be compatible with c code
+C (see ifdef below).
+
+      SUBROUTINE CLIPST(lstr,ipx,ipy,sz,istat)
+#include "building.h"
+#include "prj3dv.h"
+
+      character*(*) lstr
+      character lstrtmp*124  ! maximum length of string
+      dimension IFCLIPtmp(6)
+#ifdef OSI
+      integer ipixw,ipixh,ipx,ipy
+#else
+      integer*8 ipixw,ipixh,ipx,ipy
+#endif
+
+C Get length and height of string in pixels. Note that textpixwidth
+C corrupts the string, so we need to store and re-assign after the call.
+      l=lnblnk(lstr)
+      lstrtmp=lstr(1:l)
+      call textpixwidth(lstr,ipixw,ipixh)
+      lstr=lstrtmp(1:l)
+
+C Check lower left corner.
+      call pixel2u(ipx,ipy,xx,xy)
+      call CLIPPT(xx,xy,sz,iclp1)
+      do i=1,6
+        IFCLIPtmp(i)=IFCLIP(i)
+      enddo
+
+C Get coordinates of upper right and check.
+      call pixel2u(ipx+ipixw,ipy-ipixh,xx,xy)
+      call CLIPPT(xx,xy,sz,iclp2)
+
+      if (iclp1.eq.0 .and. iclp2.eq.0) then
+        istat=0
+      elseif (iclp1.eq.0) then
+        istat=-1
+      elseif (iclp2.eq.0) then
+        istat=-1
+        do i=1,6
+          IFCLIP(i)=IFCLIPtmp(i)
+        enddo        
+      else
+        istat=1
+      endif
+
+      RETURN
+      END
+
 C-------- PLNBX --------------------------------------------------------
       SUBROUTINE  PLNBX(NA,AX,AY,AZ,EQN,IFBOX)
-
-C MPL =  Max. number of vertices in polygon structure
-      PARAMETER  (MPL = 200 )
+#include "building.h"
+#include "prj3dv.h"
 
       DIMENSION  AX(MPL),AY(MPL),AZ(MPL),EQN(4)
 
@@ -533,6 +724,8 @@ C CUTPOL: cuts a polygon within a viewing frustrum.
       DIMENSION  EQNP(4),ADST(100)
       LOGICAL CLOSE
 
+      ISTAT=0
+
 C For each of the 6 clipping planes.
       DO 300 J = 1,6
         IF (IFCLIP(J) .NE. 1)  GOTO  300
@@ -545,26 +738,27 @@ C For each of the 6 clipping planes.
         DIST = EQNP(1)*TPCLIP(1) + EQNP(2)*TPCLIP(2) +
      &         EQNP(3)*TPCLIP(3) - EQNP(4)
 
-C On entry assume that first vertex is at AX(1),AY(1),AZ(1). 
         K = IAPNT
 
+C Populate ADST, distance from points to plane.
   400   CONTINUE
         ADST(K) = EQNP(1)*AX(K) + EQNP(2)*AY(K) +
      &            EQNP(3)*AZ(K) - EQNP(4)
         K = IANXT(K)
         IF (K .NE. IAPNT)  GOTO  400
 
-C Add points which lie on the plane.
+C Check each side of polygon.
         K = IAPNT
   500   CONTINUE
 
         K1 = IANXT(K)
         CALL ECLOSE(ADST(K),0.0,0.001,CLOSE)
-        IF(CLOSE)GOTO 550   ! distance close to zero do not call vecpln
+        IF(CLOSE)GOTO 550   ! point very close to plane, no need to consider
         CALL ECLOSE(ADST(K1),0.0,0.001,CLOSE)
         IF(CLOSE)GOTO 550
-        IF (ADST(K)*ADST(K1) .GE. 0.0)  GOTO  550
+        IF (ADST(K)*ADST(K1) .GE. 0.0)  GOTO  550  ! doesn't cross plane, no need to cut this line
 
+C Add point where line crosses plane.
         NAP = NAP + 1
         CALL  VECPLN(AX(K),AY(K),AZ(K), AX(K1),AY(K1),AZ(K1),
      &               EQNP, AX(NAP),AY(NAP),AZ(NAP), IERR)
@@ -616,6 +810,8 @@ C as a different index.
       DIMENSION  AX(MV),AY(MV),AZ(MV),IANXT(MV)
       DIMENSION  EQNP(4),ADST(MV)
       LOGICAL CLOSE
+      
+      ISTAT=0
 
       DO 300 J = 1,6
         IF (IFCLIP(J) .NE. 1)  GOTO  300
@@ -628,26 +824,27 @@ C as a different index.
         DIST = EQNP(1)*TPCLIP(1) + EQNP(2)*TPCLIP(2) +
      &         EQNP(3)*TPCLIP(3) - EQNP(4)
 
-C On entry assume that first vertex is at AX(1),AY(1),AZ(1). 
         K = IAPNT
 
-  400   CONTINUE
+C Populate ADST, distance from points to plane.
+  400   CONTINUE  ! 
         ADST(K) = EQNP(1)*AX(K) + EQNP(2)*AY(K) +
      &            EQNP(3)*AZ(K) - EQNP(4)
         K = IANXT(K)
         IF (K .NE. IAPNT)  GOTO  400
 
-C Add points which lie on the plane.
+C Check each side of polygon.
         K = IAPNT
   500   CONTINUE
 
         K1 = IANXT(K)
-        CALL ECLOSE(ADST(K),0.0,0.001,CLOSE)
-        IF(CLOSE)GOTO 550
+        CALL ECLOSE(ADST(K),0.0,0.001,CLOSE)  
+        IF(CLOSE)GOTO 550  ! point very close to plane, no need to consider
         CALL ECLOSE(ADST(K1),0.0,0.001,CLOSE)
         IF(CLOSE)GOTO 550
-        IF (ADST(K)*ADST(K1) .GE. 0.0)  GOTO  550
+        IF (ADST(K)*ADST(K1) .GE. 0.0)  GOTO  550  ! doesn't cross plane, no need to cut this line
 
+C Add point where line crosses plane.
         NAP = NAP + 1
         CALL  VECPLN(AX(K),AY(K),AZ(K), AX(K1),AY(K1),AZ(K1),
      &             EQNP, AX(NAP),AY(NAP),AZ(NAP), IERR)
@@ -689,10 +886,90 @@ C No polygons to draw.
 
       END
 
+C------- CUTLIN ------------------------------------------------------
+C CUTLIN: cuts a line within a viewing frustrum.
+C There are some edge cases where CLIPLIN will identify the line should
+C be clipped, when in fact none of the line is inside the view frustrum.
+C These are caught here. If this subroutine returns ISTAT=-1, the line
+C should not be drawn.
+      SUBROUTINE  CUTLIN(AX,AY,AZ,ISTAT)
+#include "building.h"
+#include "prj3dv.h"
+
+      DIMENSION  AX(2),AY(2),AZ(2)
+      DIMENSION  EQNP(4),ADST(2)
+      LOGICAL CLOSE
+
+      ISTAT=0
+
+C For each of the 6 clipping planes.
+      DO 300 J = 1,6
+        IF (IFCLIP(J) .NE. 1)  GOTO  300
+
+        EQNP(1) = CLIPLN(J,1)
+        EQNP(2) = CLIPLN(J,2)
+        EQNP(3) = CLIPLN(J,3)
+        EQNP(4) = CLIPLN(J,4)
+
+        DIST = EQNP(1)*TPCLIP(1) + EQNP(2)*TPCLIP(2) +
+     &         EQNP(3)*TPCLIP(3) - EQNP(4)
+
+        ADST(1) = EQNP(1)*AX(1) + EQNP(2)*AY(1) +
+     &            EQNP(3)*AZ(1) - EQNP(4)
+        ADST(2) = EQNP(1)*AX(2) + EQNP(2)*AY(2) +
+     &            EQNP(3)*AZ(2) - EQNP(4)
+
+C Check position of line ends.
+        IF (ADST(1)*ADST(2) .GE. 0.0) then  ! both on same side of plane
+          if (DIST*ADST(1).lt.0.0 .and. DIST*ADST(1).lt.0.0) then  ! line is entirely outside, don't draw
+            ISTAT=-1
+            return
+          else  ! no need to clip
+            goto 300
+          endif
+        endif
+        CALL ECLOSE(ADST(1),0.0,0.001,CLOSE)
+        if (CLOSE) then   ! end very near plane
+          if (DIST*ADST(1).ge.0.0) then  ! this is the inside end, don't draw
+            ISTAT=-1
+            return
+          else  ! this is the outside end, no need to clip
+            goto 300
+          endif  
+        endif        
+        CALL ECLOSE(ADST(2),0.0,0.001,CLOSE)
+        if (CLOSE) then   ! end very near plane
+          if (DIST*ADST(2).ge.0.0) then  ! this is the inside end, don't draw
+            ISTAT=-1
+            return
+          else  ! this is the outside end, no need to clip
+            goto 300
+          endif  
+        endif    
+
+C Find point which lies on the plane.
+        CALL  VECPLN(AX(1),AY(1),AZ(1),AX(2),AY(2),AZ(2),
+     &               EQNP,bx,by,bz,IERR)
+        if (IERR.ne.0) goto 300
+
+C Replace vertex which is outside view frustrum.
+        IF (DIST*ADST(1) .lt. 0.0) then        
+          AX(1)=bx; AY(1)=by; AZ(1)=bz
+        ELSEIF (DIST*ADST(2) .lt. 0.0) then    
+          AX(2)=bx; AY(2)=by; AZ(2)=bz
+        endif
+  300 continue
+      RETURN
+
+      END
+
 C-----VERTLBL ----------------------------------------------------------
 C VERTLBL writes out a vertex label based on the coordinates passed
 C and the vertex number.
-      SUBROUTINE VERTLBL(iix,iiy,IP,ier)
+C iix: pixel x coordinate
+C iiy: pixel y coordinate
+C sz: screen space z coordinate
+      SUBROUTINE VERTLBL(iix,iiy,sz,IP,ier)
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
@@ -702,10 +979,10 @@ C and the vertex number.
       logical colok
 #ifdef OSI
       integer iix,iiy,iix1,iiy1
-      integer iicol,isize
+      integer iicol
 #else
       integer*8 iix,iiy,iix1,iiy1
-      integer*8 iicol,isize
+      integer*8 iicol
 #endif
 
       IER=0
@@ -731,8 +1008,68 @@ C If vertices are to be labeled do it in the smallest font.
       iix1=iix+1; iiy1=iiy-1;
       lastbuttonfont=IFS
       if(mmod.eq.8)then
+        call winfnt(isize)
+        call CLIPST(VTEXT,iix1,iiy1,sz,iclp)
+        if (iclp.eq.0) then
+          call textatxy(iix1,iiy1,VTEXT,'-',iicol)
+          call forceflush()
+        endif
+        IF(IFS.ne.lastbuttonfont)then
+          CALL winfnt(lastbuttonfont)
+        endif
+        iicol=0
+        call winscl('-',iicol)
+      else
+        call textsizeatxywwc(iix1,iiy1,VTEXT,isize,'-',iicol)
+      endif
+
+      RETURN
+      END
+
+
+C-----VERTLBLNOCLP ----------------------------------------------------------
+C VERTLBLNOCLP writes out a vertex label based on the coordinates passed
+C and the vertex number. This variant does not check clipping.
+C iix: pixel x coordinate
+C iiy: pixel y coordinate
+C sz: screen space z coordinate
+      SUBROUTINE VERTLBLNOCLP(iix,iiy,IP,ier)
+      integer ifs,itfs,imfs
+      common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
+      common/SPAD/MMOD,LIMIT,LIMTTY
+      CHARACTER VTEXT*4,VT*4
+      logical colok
+#ifdef OSI
+      integer iix,iiy,iix1,iiy1
+      integer iicol
+#else
+      integer*8 iix,iiy,iix1,iiy1
+      integer*8 iicol
+#endif
+
+      IER=0
+
+C Check if can draw in colour and if so set black.
+      colok=.false.
+      if(nzonec.ge.6)colok=.true.
+      isize=0
+      if(colok)then
+        iicol=0
+        if(mmod.eq.8) call winscl('-',iicol)
+      endif
+
+C If vertices are to be labeled do it in the smallest font.
+      IF(IP.LE.9)THEN
+        WRITE(VT,'(a,i1)')'v',IP
+      ELSEIF(IP.GT.9.and.IP.le.99)THEN
+        WRITE(VT,'(a,i2)')'v',IP
+      ELSEIF(IP.GT.99)THEN
+        WRITE(VT,'(a,i3)')'v',IP
+      ENDIF
+      VTEXT=VT
+      iix1=iix+1; iiy1=iiy-1;
+      if(mmod.eq.8)then
         call textsizeatxy(iix1,iiy1,VTEXT,isize,'-',iicol)
-        IF(IFS.ne.lastbuttonfont)CALL winfnt(lastbuttonfont)
         call forceflush()
         iicol=0
         call winscl('-',iicol)
@@ -747,7 +1084,10 @@ C If vertices are to be labeled do it in the smallest font.
 C-----VERTLBLRED ----------------------------------------------------------
 C VERTLBLRED writes out a red vertex label based on the coordinates passed
 C and the vertex number.
-      SUBROUTINE VERTLBLRED(iix,iiy,IP,ier)
+C iix: pixel x coordinate
+C iiy: pixel y coordinate
+C sz: screen space z coordinate
+      SUBROUTINE VERTLBLRED(iix,iiy,sz,IP,ier)
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
@@ -757,10 +1097,10 @@ C and the vertex number.
       logical colok
 #ifdef OSI
       integer iix,iiy,iix1,iiy1
-      integer iicol,isize
+      integer iicol
 #else
       integer*8 iix,iiy,iix1,iiy1
-      integer*8 iicol,isize
+      integer*8 iicol
 #endif
 
       IER=0
@@ -786,13 +1126,19 @@ C If vertices are to be labeled do it in the smallest font.
       iix1=iix+1; iiy1=iiy-1;
       lastbuttonfont=IFS
       if(mmod.eq.8)then
-        call textsizeatxy(iix1,iiy1,VTEXT,isize,'z',iicol)
-        IF(IFS.ne.lastbuttonfont)CALL winfnt(lastbuttonfont)
-        call forceflush()
+        call winfnt(isize)
+        call CLIPST(VTEXT,iix1,iiy1,sz,iclp)
+        if (iclp.eq.0) then
+          call textatxy(iix1,iiy1,VTEXT,'z',iicol)
+          call forceflush()
+        endif
+        IF(IFS.ne.lastbuttonfont)then
+          CALL winfnt(lastbuttonfont)
+        endif
         iicol=0
         call winscl('-',iicol)
       else
-        call textsizeatxy(iix1,iiy1,VTEXT,isize,'z',iicol)
+        call textsizeatxywwc(iix1,iiy1,VTEXT,isize,'z',iicol)
       endif
 
       RETURN
@@ -861,6 +1207,7 @@ C Make up coordinate for arrow along Z axis.
       Q(1)=-0.1; Q(2)=-0.1; Q(3)=shaft
       call arrow(P,Q,al,aw,ipoints,'a',2)
       call forceflush()
+
       if(greyok)then
         iicol=0
         call winscl('-',iicol)
@@ -887,22 +1234,15 @@ C Parameters
 
       SXMX=-1.E+7; SYMX=-1.E+7; SXMN=1.E+7; SYMN=1.E+7
 
-      CALL  ORTTRN(XMN,YMN,ZMN,TEMAT,X0,Y0,Z0,IERR)
-      CALL  ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-      CALL  ORTTRN(XMX,YMN,ZMN,TEMAT,X0,Y0,Z0,IERR)
-      CALL  ORTTRN(X0,Y0,Z0,ETSMAT,X2,Y2,Z2,IERR)
-      CALL  ORTTRN(XMN,YMX,ZMN,TEMAT,X0,Y0,Z0,IERR)
-      CALL  ORTTRN(X0,Y0,Z0,ETSMAT,X3,Y3,Z3,IERR)
-      CALL  ORTTRN(XMX,YMX,ZMN,TEMAT,X0,Y0,Z0,IERR)
-      CALL  ORTTRN(X0,Y0,Z0,ETSMAT,X4,Y4,Z4,IERR)
-      CALL  ORTTRN(XMN,YMN,ZMX,TEMAT,X0,Y0,Z0,IERR)
-      CALL  ORTTRN(X0,Y0,Z0,ETSMAT,X5,Y5,Z5,IERR)
-      CALL  ORTTRN(XMX,YMN,ZMX,TEMAT,X0,Y0,Z0,IERR)
-      CALL  ORTTRN(X0,Y0,Z0,ETSMAT,X6,Y6,Z6,IERR)
-      CALL  ORTTRN(XMN,YMX,ZMX,TEMAT,X0,Y0,Z0,IERR)
-      CALL  ORTTRN(X0,Y0,Z0,ETSMAT,X7,Y7,Z7,IERR)
-      CALL  ORTTRN(XMX,YMX,ZMX,TEMAT,X0,Y0,Z0,IERR)
-      CALL  ORTTRN(X0,Y0,Z0,ETSMAT,X8,Y8,Z8,IERR)
+C Translate model to screen space coords.
+      CALL  ORTTRN(XMN,YMN,ZMN,TSMAT,X1,Y1,Z1,IERR)
+      CALL  ORTTRN(XMX,YMN,ZMN,TSMAT,X2,Y2,Z2,IERR)
+      CALL  ORTTRN(XMN,YMX,ZMN,TSMAT,X3,Y3,Z3,IERR)
+      CALL  ORTTRN(XMX,YMX,ZMN,TSMAT,X4,Y4,Z4,IERR)
+      CALL  ORTTRN(XMN,YMN,ZMX,TSMAT,X5,Y5,Z5,IERR)
+      CALL  ORTTRN(XMX,YMN,ZMX,TSMAT,X6,Y6,Z6,IERR)
+      CALL  ORTTRN(XMN,YMX,ZMX,TSMAT,X7,Y7,Z7,IERR)
+      CALL  ORTTRN(XMX,YMX,ZMX,TSMAT,X8,Y8,Z8,IERR)
       IER=IERR
 
 C Find minimal 2D x coordinate.

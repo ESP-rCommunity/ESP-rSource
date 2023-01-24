@@ -28,7 +28,8 @@ C  Zsurfprm: returns the number of edges and total length of
 C           the perimiter of the polygon via global variables.
 C  EZIPIN:  Reads zip format geometry data into esp-r geometry common
 C           blocks.
-C LINTHBRDG: defines linear thermal bridges for zone psi and lengths.
+C LINTHBRDG: Manages linear thermal bridges for zone psi and lengths.
+C scan_bridges: Detects polygon edge associations related to thermal bridges.
 
 
 C ******************** EDZONE ********************
@@ -100,6 +101,14 @@ C Hc coefficients
      &            CVdata(MDTY,MBP,MS,8)
       common/HCFPHI/hcfpdescr(MDTY,MBP)
       character hcfpdescr*72
+
+C Thermal bridges.
+      integer nbrdg, ibrdg
+      real psi,lngth,losspercent,totheatloss,thbrpercent
+      real uavtotal  ! estimated UA for exposed parts of building
+      common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
+     &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
+     &               thbrpercent,uavtotal(MCOM)
 
       LOGICAL context
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
@@ -340,17 +349,21 @@ C non-`FURNI` surfaces.
           if (FOUND) then
             ZBASEA(ICOMP)=ZBASEA(ICOMP)+SNA(icomp,i)
           else
-            if(SVFC(ICOMP,I).eq.'FLOR'.and.
-     &         .not.SUSE(icomp,i,1)(1:5).eq.'FURNI')then
-              lastlist=lastlist+1
-              if(lastlist.le.MBL)then
-                IBASES(ICOMP,lastlist)=I
-                ZBASEA(ICOMP)=ZBASEA(ICOMP)+SNA(icomp,i)
+            if(SVFC(ICOMP,I).eq.'FLOR')then
+              if(SUSE(icomp,i,1)(1:5).eq.'FURNI'.or.
+     &           SUSE(icomp,i,1)(1:6).eq.'REVEAL')then
+                 continue
               else
-                write(outs,'(a,I2,a)')
+                if(lastlist.le.MBL)then
+                  lastlist=lastlist+1
+                  IBASES(ICOMP,lastlist)=I
+                  ZBASEA(ICOMP)=ZBASEA(ICOMP)+SNA(icomp,i)
+                else
+                  write(outs,'(a,I2,a)')
      &   'Warning: number of floor surfaces detected exceeds maximum (',
-     &            MBL,')'
-                call edisp(iuout,outs)
+     &              MBL,')'
+                  call edisp(iuout,outs)
+                endif
               endif
             endif
           endif
@@ -2305,10 +2318,36 @@ C Ensure that the zone is redrawn and boundaries are checked.
 
       ELSEIF(INO.EQ.ITEMC+13)THEN
 
-C Check the file version, if new then allow thermal bridges.
+C Check the file version, if new then allow thermal bridges. If
+C there are existing bridges then do not scan until within
         call eclose(gversion(icomp),1.1,0.01,newgeo)
         if(newgeo)then
-          CALL LINTHBRDG(ICOMP,'-',0.0)
+          helptopic='scan_bridge_choice'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('bridge rescan',nbhelp,'-',0,0,IER)
+          if(nbrdg(icomp).gt.0)then
+            call easkabc(' ',
+     &        'Zone has existing thermal bridge definitions',
+     &        'use them','rescan geometry','cancel',IW,nbhelp)
+            if(IW.eq.1)then
+              continue
+            elseif(IW.eq.2)then
+              act = '-'
+              call edisp(iuout,' ')
+              call edisp(iuout,'Scanning the surface edges...')
+              call scan_bridges(itrc,act,icomp,ier) ! Determine bridge relationships.
+            else
+              goto 3
+            endif
+          else
+            act = '-'
+            call edisp(iuout,' ')
+            call edisp(iuout,'Scanning the surface edges...')
+            call scan_bridges(itrc,act,icomp,ier) ! Determine bridge relationships.
+          endif
+          call edisp(iuout,' ')
+          call edisp(iuout,'Options to manage thermal bridges...')
+          CALL LINTHBRDG(ICOMP,'-',0.0)      ! Manage thermal bridges.
         else
           call usrmsg('Simple thermal bridges not suppored in older',
      &                'format geometry files.','W')
@@ -3607,7 +3646,7 @@ C Passed parameters.
       logical goforit            ! create a default flow component
 
       DIMENSION SALT(14),IVAL(MCOM)  ! ,bl(144)
-      DIMENSION COG1(3),COG2(3),COG3(3)
+      DIMENSION COG1(3),COG2(3)
       DIMENSION CG(3)            ! for warp checks
       DIMENSION VN(3),ipoints(6,2)
       dimension sperim(MS)       ! perimeter for each surface in zone
@@ -3707,7 +3746,7 @@ C statement should be kept up to date with MV changes.
       write(SN,'(a12)') SNAME(ICOMP,IS)
       write(message,'(2a)') ' Vertices associated with ',SN
       call edisp(iuout,message)
-      WRITE(t248,'(102I4)')(JVN(is,j),J=1,numv)
+      WRITE(t248,'(124I4)')(JVN(is,j),J=1,numv)
       call edisp248(iuout,t248,100)
 
 C Force redraw of zone on entry to highlight focus surface.
@@ -3865,8 +3904,6 @@ C The USE might suggest creating a link to an existing flow
 C component or creating a new component.
           if(SUSE(icomp,iss,1)(1:4).eq.'DOOR'.or.
      &       SUSE(icomp,iss,1)(1:6).eq.'P-DOOR'.or.
-     &       SUSE(icomp,iss,1)(1:6).eq.'H-DOOR'.or.
-     &       SUSE(icomp,iss,1)(1:6).eq.'V-DOOR'.or.
      &       SUSE(icomp,iss,1)(1:5).eq.'FRAME'.or.
      &       SUSE(icomp,iss,1)(1:7).eq.'F-FRAME'.or.
      &       SUSE(icomp,iss,1)(1:5).eq.'GRILL'.or.
@@ -4067,16 +4104,18 @@ C If in graphic mode draw the points on top of standard drawing.
           iwhich=jvn(is,iloop)
           if(iwhich.gt.0.and.iwhich.le.MTV)then
             COG1(1)=X(iwhich); COG1(2)=Y(iwhich); COG1(3)=Z(iwhich)
-            CALL VECTRN(COG1,TEMAT,COG2,IER)
-            CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),iix,iiy)
-            iicol=0
-            if(greyok)call winscl('z',iicol)
-            call esymbol(iix,iiy,24,1)
-            call VERTLBLRED(iix,iiy,iwhich,ier)
-            iicol=0
-            if(greyok)call winscl('-',iicol)
-            call forceflush()
+            CALL VECTRN(COG1,TSMAT,COG2,IER)
+            call CLIPPT(COG2(1),COG2(2),COG2(3),iclp)
+            if (iclp.eq.0) then
+              call u2pixel(COG2(1),COG2(2),iix,iiy)
+              iicol=0
+              if(greyok)call winscl('z',iicol)
+              call esymbol(iix,iiy,24,1)
+              call VERTLBLRED(iix,iiy,COG2(3),iwhich,ier)
+              iicol=0
+              if(greyok)call winscl('-',iicol)
+              call forceflush()
+            endif
           endif
         enddo  ! of while loop
 
@@ -4087,9 +4126,8 @@ C Highlight the arrow of the focus surface. Set size of text.
           CG(3)=SURCOG(icomp,is,3)
           VN(1)=SURVN(icomp,is,1); VN(2)=SURVN(icomp,is,2)
           VN(3)=SURVN(icomp,is,3)
-          CALL VECTRN(VN,TEMAT,COG2,IER)
-          CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),iixc,iiyc)
+          CALL VECTRN(VN,TSMAT,COG2,IER)
+          call u2pixel(COG2(1),COG2(2),iixc,iiyc)
           CALL winfnt(issize)
           iicol=0
           if(greyok)call winscl('z',iicol)
@@ -4105,17 +4143,21 @@ C Offset the surface name depending on orientation.
           ELSE
             iixc=iixc+5
           ENDIF
-          call textatxy(iixc,iiyc,stemp,'-',iicol)
-          iicol=0
-          if(greyok)call winscl('-',iicol)
-          call forceflush()
+          call CLIPST(stemp,iixc,iiyc,COG2(3),iclp)
+          if (iclp.eq.0) then
+            call textatxy(iixc,iiyc,stemp,'-',iicol)
+            iicol=0
+            if(greyok)call winscl('-',iicol)
+            call forceflush()
+          endif
           CALL winfnt(IMFS)  ! set back to menu font
         else
           CG(1)=SURCOG(icomp,is,1); CG(2)=SURCOG(icomp,is,2)
           CG(3)=SURCOG(icomp,is,3)
-          CALL VECTRN(CG,TEMAT,COG2,IER)
-          CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),iixc,iiyc)
+          CALL VECTRN(CG,TSMAT,COG2,IER)
+          call CLIPPT(COG2(1),COG2(2),COG2(3),iclp)
+          if (iclp.ne.0) goto 42
+          call u2pixel(COG2(1),COG2(2),iixc,iiyc)
           CALL winfnt(issize)
           iicol=0
           if(greyok)call winscl('z',iicol)
@@ -4155,21 +4197,24 @@ C Draw arrow to surface then down and horizontal to the text.
             iiyc=iiyc+5; iixc=iixc+7
           ENDIF
           iid4=iiyc+3
-          call textatxy(iixc,iid4,stemp,'z',iicol)
-          iicol=0
-          if(greyok)call winscl('-',iicol)
-          call draw_surf_flow_symbol(ic,'v')
-          call forceflush()
+          call CLIPST(stemp,iixc,iid4,COG2(3),iclp)
+          if (iclp.eq.0) then
+            call textatxy(iixc,iid4,stemp,'z',iicol)
+            iicol=0
+            if(greyok)call winscl('-',iicol)
+            call draw_surf_flow_symbol(ic,'v')
+            call forceflush()
+          endif
           CALL winfnt(IMFS)
         endif
       endif
 
 C Help text for the menu.
-      helptopic='surface_attrib_menu'
+  42  helptopic='surface_attrib_menu'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Menu control.
- 42   CALL EMENU('Surface attributes',ISD,ISDN,INODA)
+      CALL EMENU('Surface attributes',ISD,ISDN,INODA)
       IF(INODA.EQ.ISDN)THEN
 
 C If an attribute has changed save the geometry file.
@@ -4645,6 +4690,7 @@ C Cases to ignore.
             if(SUSE(ICOMP,iss,1)(1:4).eq.'WALL'.or.
      &         SUSE(ICOMP,iss,1)(1:5).eq.'FLOOR'.or.
      &         SUSE(ICOMP,iss,1)(1:5).eq.'FURNI'.or.
+     &         SUSE(ICOMP,iss,1)(1:6).eq.'REVEAL'.or.
      &         SUSE(ICOMP,iss,1)(1:7).eq.'ITEQUIP'.or.
      &         SUSE(ICOMP,iss,1)(1:5).eq.'PARTN'.or.
      &         SUSE(ICOMP,iss,1)(1:4).eq.'ROOF'.or.
@@ -4661,8 +4707,6 @@ C If SUSE implies a flow component then....
               ic=IZSTOCN(ICOMP,iss)  ! the current connection
               if(SUSE(ICOMP,iss,1)(1:4).eq.'DOOR'.or.
      &           SUSE(ICOMP,iss,1)(1:6).eq.'P-DOOR'.or.
-     &           SUSE(ICOMP,iss,1)(1:6).eq.'H-DOOR'.or.
-     &           SUSE(ICOMP,iss,1)(1:6).eq.'V-DOOR'.or.
      &           SUSE(ICOMP,iss,1)(1:5).eq.'FRAME'.or.
      &           SUSE(ICOMP,iss,1)(1:7).eq.'F-FRAME'.or.
      &           SUSE(ICOMP,iss,1)(1:5).eq.'GRILL'.or.
@@ -5747,8 +5791,8 @@ C Help for the various choices.
 C Setup array of menu strings.
         useopt(1) ='DOOR NORMAL (not code compliant)'
         useopt(2) ='DOOR PERSONEL (code compliant)  '
-        useopt(3) ='DOOR ENTRANCE (high useage)     '
-        useopt(4) ='DOOR VEHICLE (large access)     '
+        useopt(3) ='BALCONY                         '
+        useopt(4) ='REVEAL (at window or door)      '
         useopt(5) ='FICTitious (low mass & transp)  '
         useopt(6) ='FLOOR EXTGRND (extern or ground)'
         useopt(7) ='FLOOR OTHER (not code compliant)'
@@ -5783,9 +5827,9 @@ C Setup array of menu strings.
         elseif(IOS.eq.2)then
           iuopt=2  ! DOOR PERSONEL
         elseif(IOS.eq.3)then
-          iuopt=3  ! DOOR ENTRANCE
+          iuopt=3  ! BALCONY
         elseif(IOS.eq.4)then
-          iuopt=4  ! DOOR VEHICLE
+          iuopt=4  ! REVEAL
         elseif(IOS.eq.5)then
           iuopt=5  ! FICTitious
         elseif(IOS.eq.6)then
@@ -5834,8 +5878,8 @@ C Setup array of menu strings.
 
 C Setup array of menu strings.
         useopt(1) ='DOOR PERSONEL'
-        useopt(2) ='DOOR ENTRANCE'
-        useopt(3) ='DOOR VEHICLE'
+        useopt(2) ='BALCONY'
+        useopt(3) ='REVEAL'
         useopt(4) ='ROOF PITCHED (>20deg slope)     '
         useopt(5) ='ROOF FLAT (0deg-20deg slope)    '
         useopt(6) ='WALL'
@@ -5856,9 +5900,9 @@ C Setup array of menu strings.
         if(IOS.eq.1)then
           iuopt=2  ! DOOR PERSONEL
         elseif(IOS.eq.2)then
-          iuopt=3  ! DOOR ENTRANCE
+          iuopt=3  ! BALCONY
         elseif(IOS.eq.3)then
-          iuopt=4  ! DOOR VEHICLE
+          iuopt=4  ! REVEAL
         elseif(IOS.eq.4)then
           iuopt=14 ! ROOF PITCHED
         elseif(IOS.eq.5)then
@@ -5889,8 +5933,8 @@ C Setup array of menu strings.
         useopt(5) ='WINDOW (facade code compliant)  '
         useopt(6) ='WINDOW DISPLAY (code compliant) '
         useopt(7) ='WINDOW skylight (code compliant)'
-        useopt(8) ='WINDOW OTHER (not code complnt) '
-        useopt(9)='-   -  (something else)         '
+        useopt(8) ='WINDOW reveal                   '
+        useopt(9) ='-   -  (something else)         '
 
         IX=1
         CALL EPICKS(IX,iuseopt,' ','Surface USAGE attributes:',
@@ -5915,7 +5959,7 @@ C Setup array of menu strings.
         elseif(IOS.eq.7)then
           iuopt=21 ! WINDOW skylight
         elseif(IOS.eq.8)then
-          iuopt=22 ! WINDOW OTHER
+          iuopt=4  ! REVEAL
         elseif(IOS.eq.9)then
           iuopt=25 ! somthing else
         endif
@@ -5925,8 +5969,8 @@ C Setup array of menu strings.
 C Setup array of menu strings.
         useopt(1) ='DOOR NORMAL (not code compliant)'
         useopt(2) ='DOOR PERSONEL (code compliant)  '
-        useopt(3) ='DOOR ENTRANCE (high useage)     '
-        useopt(4) ='DOOR VEHICLE (large access)     '
+        useopt(3) ='BALCONY                         '
+        useopt(4) ='REVEAL                          '
         useopt(5) ='FICTitious (not code compliant) '
         useopt(6) ='FRAME FACADE (code compliant)   '
         useopt(7) ='FRAME OTHER (not code compliant)'
@@ -5950,9 +5994,9 @@ C Setup array of menu strings.
         elseif(IOS.eq.2)then
           iuopt=2  ! DOOR PERSONEL
         elseif(IOS.eq.3)then
-          iuopt=3  ! DOOR ENTRANCE
+          iuopt=3  ! BALCONY
         elseif(IOS.eq.4)then
-          iuopt=4  ! DOOR VEHICLE
+          iuopt=4  ! REVEAL
         elseif(IOS.eq.5)then
           iuopt=5  ! FICTitious
         elseif(IOS.eq.6)then
@@ -5977,8 +6021,8 @@ C Setup array of menu strings.
 
         useopt(1) ='DOOR NORMAL (not code compliant)'
         useopt(2) ='DOOR PERSONEL (code compliant)  '
-        useopt(3) ='DOOR ENTRANCE (high useage)     '
-        useopt(4) ='DOOR VEHICLE (large access)     '
+        useopt(3) ='BALCONY                         '
+        useopt(4) ='REVEAL (at window or door)      '
         useopt(5) ='FICTitious (not code compliant) '
         useopt(6) ='FURNI - (mass within zone)      '
         useopt(7) ='PARTN - (inside wall/ceil/floor)'
@@ -5999,9 +6043,9 @@ C Setup array of menu strings.
         elseif(IOS.eq.2)then
           iuopt=2  ! DOOR PERSONEL
         elseif(IOS.eq.3)then
-          iuopt=3  ! DOOR ENTRANCE
+          iuopt=3  ! BALCONY
         elseif(IOS.eq.4)then
-          iuopt=4  ! DOOR VEHICLE
+          iuopt=4  ! REVEAL
         elseif(IOS.eq.5)then
           iuopt=5  ! FICTitious
         elseif(IOS.eq.6)then
@@ -6022,9 +6066,10 @@ C Setup array of menu strings.
         useopt(2) ='FLOOR EXTGRND (extr or ground)  '
         useopt(3) ='FLOOR OTHER (not code compliant)'
         useopt(4) ='FURNI - (mass within zone)      '
-        useopt(5)='PARTN - (inside wall/ceil/floor)'
-        useopt(6)='STRUCture - (mass within zone)  '
-        useopt(7)='-   -  (something else)         '
+        useopt(5) ='PARTN - (inside wall/ceil/floor)'
+        useopt(6) ='STRUCture - (mass within zone)  '
+        useopt(7) ='REVEAL                          '
+        useopt(8) ='-   -  (something else)         '
 
         IX=1
         CALL EPICKS(IX,iuseopt,' ','Surface USAGE attributes:',
@@ -6047,6 +6092,8 @@ C Setup array of menu strings.
         elseif(IOS.eq.6)then
           iuopt=17 ! STRUCture
         elseif(IOS.eq.7)then
+          iuopt=4  ! REVEAL
+        elseif(IOS.eq.8)then
           iuopt=25 ! somthing else
         endif
 
@@ -6067,19 +6114,19 @@ C If a partition then update the other surface use attribute.
           TOUSE1=SUSE(IC2(icon),IE2(icon),1)
         endif
       elseif(iuopt.eq.3)then
-        SUSE(iz,IS,1)='H-DOOR'
+        SUSE(iz,IS,1)='BALCONY'
         if(showother)then
-          SUSE(IC2(icon),IE2(icon),1)='H-DOOR'
+          SUSE(IC2(icon),IE2(icon),1)='BALCONY'
           TOUSE1=SUSE(IC2(icon),IE2(icon),1)
         endif
       elseif(iuopt.eq.4)then
-        SUSE(iz,IS,1)='V-DOOR'
+        SUSE(iz,IS,1)='REVEAL'
         if(showother)then
-          SUSE(IC2(icon),IE2(icon),1)='V-DOOR'
+          SUSE(IC2(icon),IE2(icon),1)='REVEAL'
           TOUSE1=SUSE(IC2(icon),IE2(icon),1)
         endif
       endif
-      if(iuopt.eq.1.or.iuopt.eq.2.or.iuopt.eq.3.or.iuopt.eq.4)then
+      if(iuopt.eq.1.or.iuopt.eq.2)then
         helptopic='door_use_open_closed'
         call gethelptext(helpinsub,helptopic,nbhelp)
         IRT=1
@@ -6550,8 +6597,8 @@ C Help for the various choices.
 C Setup array of menu strings.
         useopt(1) ='DOOR NORMAL (not code compliant)'
         useopt(2) ='DOOR PERSONEL (code compliant)  '
-        useopt(3) ='DOOR ENTRANCE (high useage)     '
-        useopt(4) ='DOOR VEHICLE (large access)     '
+        useopt(3) ='BALCONY                         '
+        useopt(4) ='REVEAL (at window or door)      '
         useopt(5) ='FICTitious (low mass & transp)  '
         useopt(6) ='FLOOR EXTGRND (extern or ground)'
         useopt(7) ='FLOOR OTHER (not code compliant)'
@@ -6586,9 +6633,9 @@ C Setup array of menu strings.
         elseif(IOS.eq.2)then
           iuopt=2  ! DOOR PERSONEL
         elseif(IOS.eq.3)then
-          iuopt=3  ! DOOR ENTRANCE
+          iuopt=3  ! BALCONY
         elseif(IOS.eq.4)then
-          iuopt=4  ! DOOR VEHICLE
+          iuopt=4  ! REVEAL
         elseif(IOS.eq.5)then
           iuopt=5  ! FICTitious
         elseif(IOS.eq.6)then
@@ -6637,8 +6684,8 @@ C Setup array of menu strings.
 
 C Setup array of menu strings.
         useopt(1) ='DOOR PERSONEL'
-        useopt(2) ='DOOR ENTRANCE'
-        useopt(3) ='DOOR VEHICLE'
+        useopt(2) ='BALCONY'
+        useopt(3) ='REVEAL'
         useopt(4) ='ROOF PITCHED (>20deg slope)     '
         useopt(5) ='ROOF FLAT (0deg-20deg slope)    '
         useopt(6) ='WALL'
@@ -6657,9 +6704,9 @@ C Setup array of menu strings.
         if(IOS.eq.1)then
           iuopt=2  ! DOOR PERSONEL
         elseif(IOS.eq.2)then
-          iuopt=3  ! DOOR ENTRANCE
+          iuopt=3  ! BALCONY
         elseif(IOS.eq.3)then
-          iuopt=4  ! DOOR VEHICLE
+          iuopt=4  ! REVEAL
         elseif(IOS.eq.4)then
           iuopt=14 ! ROOF PITCHED
         elseif(IOS.eq.5)then
@@ -6680,21 +6727,20 @@ C Setup array of menu strings.
 
       endif
 
-C Edit door variants.
       if(iuopt.eq.1)then
         USE1='DOOR'
       elseif(iuopt.eq.2)then
         USE1='P-DOOR'
       elseif(iuopt.eq.3)then
-        USE1='H-DOOR'
+        USE1='BALCONY'
       elseif(iuopt.eq.4)then
-        USE1='V-DOOR'
+        USE1='REVEAL'
       endif
 
 C Do not need second tag if generating notional model.
 C Add USE2 'PERIM-CR'
       if(guesstype(1:8).eq.'notional')goto 55
-      if(iuopt.eq.1.or.iuopt.eq.2.or.iuopt.eq.3.or.iuopt.eq.4)then
+      if(iuopt.eq.1.or.iuopt.eq.2)then
         helptopic='door_use_open_closed'
         call gethelptext(helpinsub,helptopic,nbhelp)
         IRT=1
@@ -6909,8 +6955,6 @@ C and the other is in the following list then make it the same.
               elseif(SUSE(ICOMP,is,1)(1:1).eq.'-'.and.    ! Use non-flow attributes.
      &               SUSE(IZ,iso,1)(1:4).eq.'DOOR'.or.    ! Flow attributes on other side.
      &               SUSE(IZ,iso,1)(1:6).eq.'P-DOOR'.or.
-     &               SUSE(IZ,iso,1)(1:6).eq.'H-DOOR'.or.
-     &               SUSE(IZ,iso,1)(1:6).eq.'V-DOOR'.or.
      &               SUSE(IZ,iso,1)(1:5).eq.'FRAME'.or.
      &               SUSE(IZ,iso,1)(1:7).eq.'F-FRAME'.or.
      &               SUSE(IZ,iso,1)(1:5).eq.'GRILL'.or.
@@ -6957,8 +7001,6 @@ C is flow, relate then reasign current also as flow related.
                   SUSE(IZ,iso,2)=SUSE(ICOMP,is,2)
                 elseif(SUSE(IZ,iso,1)(1:4).eq.'DOOR'.or.    ! Flow attributes on other side.
      &             SUSE(IZ,iso,1)(1:6).eq.'P-DOOR'.or.
-     &             SUSE(IZ,iso,1)(1:6).eq.'H-DOOR'.or.
-     &             SUSE(IZ,iso,1)(1:6).eq.'V-DOOR'.or.
      &             SUSE(IZ,iso,1)(1:5).eq.'FRAME'.or.
      &             SUSE(IZ,iso,1)(1:7).eq.'F-FRAME'.or.
      &             SUSE(IZ,iso,1)(1:5).eq.'GRILL'.or.
@@ -6994,8 +7036,6 @@ C If current surface SUSE is related to flow set the other face SUSE first
 C attribute.
               elseif(SUSE(ICOMP,is,1)(1:4).eq.'DOOR'.or.
      &               SUSE(ICOMP,is,1)(1:6).eq.'P-DOOR'.or.
-     &               SUSE(ICOMP,is,1)(1:6).eq.'H-DOOR'.or.
-     &               SUSE(ICOMP,is,1)(1:6).eq.'V-DOOR'.or.
      &               SUSE(ICOMP,is,1)(1:5).eq.'FRAME'.or.
      &               SUSE(ICOMP,is,1)(1:7).eq.'F-FRAME'.or.
      &               SUSE(ICOMP,is,1)(1:5).eq.'GRILL'.or.
@@ -7193,6 +7233,7 @@ C Tollerance for surface matching.
       anotherone=.false.; MODGEO=.false.
       iwhich=0; iwhich1=0; iwhich2=0
       lastv1=0; lastv2=0
+      MODIFYVIEW=.true.
 
 C Detect the version of the current file.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
@@ -7714,7 +7755,7 @@ C Update the geometry file.
      &                  3,IER)
 
 C Debug...
-C                      write(6,'(a,102i4)') 'now jvn is ',
+C                      write(6,'(a,124i4)') 'now jvn is ',
 C     &                  (JVN(jivj,ii),ii=1,NVER(jivj))
 
 C Surface (ivj) vertex list has been updated. Go on to next surface.
@@ -8012,7 +8053,8 @@ C Set initial offset values for rectangle within surface.
           CALL EPMENRC
 
 C Report parent surface length and height (bounding box).
-          CALL ZSURLEHI(ICOMP,IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)
+          CALL ZSURLEHI(ICOMP,IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos,
+     &      DZLLFF)
           Write(outs,'(a,i3.3,1x,i3.3,f6.3,a,f6.3,a)')'Surface width=',
      &      ICOMP,IS,XYMAX,' m, surface height = ',ZMAX,
      &      ' m (bounding box).'
@@ -8229,7 +8271,7 @@ C inserting the new vertex index.
                       iszjvn(icomp,ivj,jivjj+1)=jwhich3
 
 C Debug...
-C                     write(6,'(a,102i4)') 'now jvn is ',
+C                     write(6,'(a,124i4)') 'now jvn is ',
 C     &                 (JVN(ivj,ii),ii=1,NVER(ivj))
 
 C Surface (ivj) vertex list has been updated. Go on to next surface.
@@ -8719,7 +8761,7 @@ C Tollerance for surface matching.
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
-      DIMENSION  COG1(3),COG2(3),COG3(3)
+      DIMENSION  COG1(3),COG2(3)
 
       LOGICAL OK,bound,nameok
       logical newgeo            ! to use for testing if new/old geometry file.
@@ -9366,14 +9408,16 @@ C Show these points as small circles...
             continue
           else
             COG1(1)=XX(J); COG1(2)=YY(J); COG1(3)=ZZ(J)
-            CALL VECTRN(COG1,TEMAT,COG2,IER)
-            CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),iix,iiy)
-            iicol=0
-            if(greyok)call winscl('z',iicol)
-            call esymbol(iix,iiy,24,1)
-            iicol=0
-            if(greyok)call winscl('-',iicol)
+            CALL VECTRN(COG1,TSMAT,COG2,IER)
+            call CLIPPT(COG2(1),COG2(2),COG2(3),iclp)
+            if (iclp.eq.0) then
+              call u2pixel(COG2(1),COG2(2),iix,iiy)
+              iicol=0
+              if(greyok)call winscl('z',iicol)
+              call esymbol(iix,iiy,24,1)
+              iicol=0
+              if(greyok)call winscl('-',iicol)
+            endif
           endif
         ENDDO
         call forceflush()
@@ -10044,7 +10088,7 @@ C Parameters
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
-      DIMENSION  COG1(3),COG2(3),COG3(3)
+      DIMENSION  COG1(3),COG2(3)
 
       CHARACTER DESCRC*25
       integer ifoc    ! local variable for current surface index
@@ -10102,18 +10146,20 @@ C If in graphic mode draw the points.
           iwhich=jvn(ifoc,i)
           if(iwhich.gt.0)then
             COG1(1)=X(iwhich); COG1(2)=Y(iwhich); COG1(3)=Z(iwhich)
-            CALL VECTRN(COG1,TEMAT,COG2,IER)
-            CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            CALL VECTRN(COG1,TSMAT,COG2,IER)
+            call CLIPPT(COG2(1),COG2(2),COG2(3),iclp)
+            if (iclp.eq.0) then
+              call u2pixel(COG2(1),COG2(2),iix,iiy)
 
 C Draw vertex symbol and index in red.
-            iicol=0
-            if(greyok)call winscl('z',iicol)
-            call esymbol(iix,iiy,24,1)
-            call VERTLBLRED(iix,iiy,iwhich,ier)
-            iicol=0
-            if(greyok)call winscl('-',iicol)
-            call forceflush()
+              iicol=0
+              if(greyok)call winscl('z',iicol)
+              call esymbol(iix,iiy,24,1)
+              call VERTLBLRED(iix,iiy,COG2(3),iwhich,ier)
+              iicol=0
+              if(greyok)call winscl('-',iicol)
+              call forceflush()
+            endif
           endif
   961   continue
 
@@ -10124,9 +10170,10 @@ C Highlight the arrow of the focus surface.
           CG(3)=SURCOG(icomp,isurf,3)
           VN(1)=SURVN(icomp,isurf,1); VN(2)=SURVN(icomp,isurf,2)
           VN(3)=SURVN(icomp,isurf,3)
-          CALL VECTRN(VN,TEMAT,COG2,IER)
-          CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),iixc,iiyc)
+          CALL VECTRN(VN,TSMAT,COG2,IER)
+          call CLIPPT(COG2(1),COG2(2),COG2(3),iclp)
+          if (iclp.ne.0) goto 52
+          call u2pixel(COG2(1),COG2(2),iixc,iiyc)
           CALL winfnt(issize)
           iicol=0
           if(greyok)call winscl('z',iicol)
@@ -10142,18 +10189,21 @@ C Offset the surface name depending on orientation.
           ELSE
             iixc=iixc+5
           ENDIF
-
-          call textatxy(iixc,iiyc,stemp,'z',iicol)
-          iicol=0
-          if(greyok)call winscl('-',iicol)
-          call forceflush()
+          call CLIPST(stemp,iixc,iiyc,COG2(3),iclp)
+          if (iclp.eq.0) then
+            call textatxy(iixc,iiyc,stemp,'z',iicol)
+            iicol=0
+            if(greyok)call winscl('-',iicol)
+            call forceflush()
+          endif
           CALL winfnt(IMFS)
         else
           CG(1)=SURCOG(icomp,isurf,1); CG(2)=SURCOG(icomp,isurf,2)
           CG(3)=SURCOG(icomp,isurf,3)
-          CALL VECTRN(CG,TEMAT,COG2,IER)
-          CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),iixc,iiyc)
+          CALL VECTRN(CG,TSMAT,COG2,IER)
+          call CLIPPT(COG2(1),COG2(2),COG2(3),iclp)
+          if (iclp.ne.0) goto 52
+          call u2pixel(COG2(1),COG2(2),iixc,iiyc)
           CALL winfnt(issize)
           iicol=0
           if(greyok)call winscl('z',iicol)
@@ -10194,10 +10244,13 @@ C Draw arrow to surface then down and horizontal to the text.
           ENDIF
 
           iid4=iiyc+3
-          call textatxy(iixc,iid4,stemp,'z',iicol)
-          iicol=0
-          if(greyok)call winscl('-',iicol)
-          call forceflush()
+          call CLIPST(stemp,iixc,iid4,COG2(3),iclp)
+          if (iclp.eq.0) then
+            call textatxy(iixc,iid4,stemp,'z',iicol)
+            iicol=0
+            if(greyok)call winscl('-',iicol)
+            call forceflush()
+          endif
           CALL winfnt(IMFS)
         endif
       endif
@@ -10206,7 +10259,7 @@ C List out the vertices associated with this surface. To save
 C space, use double column as in the emenu code in
 C esru_libNonGTK.F and also for use in the model contents report.
 
-      write(message,'(2a)') 'Vertices (X Y Z) used by ',
+  52  write(message,'(2a)') 'Vertices (X Y Z) used by ',
      &  SNAME(ICOMP,IFOC)
       call edisp(iuout,message)
 
@@ -10251,7 +10304,7 @@ C surface. Include surface name in the dialog. This write statement
 C should be kept up to date with MV changes. t248 is actually 496 char
       hold64='                                                      '
       write(t248,'(4a)') hold64,hold64,hold64,'                     '
-      WRITE(t248,'(102I4)')(JVN(IFOC,j),J=1,nv)
+      WRITE(t248,'(124I4)')(JVN(IFOC,j),J=1,nv)
       write(message,'(2a)') 'Vertices associated with ',
      &  SNAME(ICOMP,IFOC)
       istrw=72
@@ -10332,8 +10385,8 @@ C Parameters passed.
       COMMON/GFONT/IFS,ITFS,IMFS
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       DIMENSION  item(36)
-      real COG1,COG2,COG3  ! position to check against
-      DIMENSION  COG1(3),COG2(3),COG3(3),IVLST(MTV)
+      real COG1,COG2  ! position to check against
+      DIMENSION  COG1(3),COG2(3),IVLST(MTV)
       CHARACTER item*33,outs*124,KEY*1
       logical greyok,found
       integer MVERT,IVERT ! max items and current menu item
@@ -10459,9 +10512,8 @@ C In this code block trackview is correctly using iixx and iiyy.
           found=.false.
           do 45 i=1,NTV
             COG1(1)=X(I); COG1(2)=Y(I); COG1(3)=Z(I)
-            CALL VECTRN(COG1,TEMAT,COG2,IER)
-            CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            CALL VECTRN(COG1,TSMAT,COG2,IER)
+            call u2pixel(COG2(1),COG2(2),iix,iiy)
             ixd=iix-iixx
             iyd=iiy-iiyy
 C Debug
@@ -10643,8 +10695,6 @@ C ZDESC (64 char) - zone notes from geometry.h.
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      common/dllerr/dllsubr,dllmesg
-
       DIMENSION XX(MS),YY(MS),IVA(MS)
 
 C For each possible default window and default door the relevant data.
@@ -10657,9 +10707,9 @@ C be inserted.
       CHARACTER OUTSTR*124,WORD*20
       character lzip*72,dfile*72
       character phrasea*64,phraseb*64,outs*124
-      character dllsubr*12,dllmesg*124,act*2
+      character act*2
       character guesstype*24     ! pass back context of surface
-      logical dll,checkbase
+      logical checkbase
       logical newgeo  ! to use for testing if new/old geometry file.
 
 C Strings for surface attributes to pass to insrec.
@@ -10673,9 +10723,6 @@ C Strings for surface attributes to pass to insrec.
       phraseb=' '
       checkbase=.false.
       newgeo=.false.  ! assume older format geometry.
-
-C Check if running in dll mode.
-      call isadll(dll)
 
 C Initialise geometry data file. and set currentfile.
       CALL EFOPSEQ(IUNIT,LZIP,1,IER)
@@ -11277,31 +11324,16 @@ C Close zip data file as the end of the file has been reached
 C 1001 write(outs,'(3a)') 'EZIPIN: conversion error in...',
 C     &  OUTSTR(1:50),'...'
  1001 continue
-      if(dll)then
-        dllsubr='EZIPIN'
-        dllmesg=outs
-        ier=2
-        CALL ERPFREE(IUNIT,ios)
-        return
-      else
-        call edisp(iuout,outs)
-        call edisp(iuout,OUTSTR)
-        IER=1
-        CALL ERPFREE(IUNIT,ios)
-        RETURN
-      endif
+      call edisp(iuout,outs)
+      call edisp(iuout,OUTSTR)
+      IER=1
+      CALL ERPFREE(IUNIT,ios)
+      RETURN
 
 C Found unexpected item.
- 1002 if(dll)then
-        dllsubr='EZIPIN'
-        dllmesg=outs
-        ier=2
-        return
-      else
-        call edisp(itru,outs)
-        IER=1
-        RETURN
-      endif
+ 1002 call edisp(itru,outs)
+      IER=1
+      RETURN
 
       END
 
@@ -11334,24 +11366,22 @@ C #include "material.h"
 
 C bridgelen was calculated in subroutine suredgeadj
       real bridgelen ! Length of potential thermal bridges in each zone.
-      common/gbridge/bridgelen(MCOM,10)
+      common/gbridge/bridgelen(MCOM,16)
 
 C Thermal bridge common block:
 C nbrdg is the number of thermal bridge types in the zone
 C psi is the linear thermal transmittance value,
 C lngth is the length of the thermal bridge and
 C ibrdg is an index defining the type of thermal bridge as follows:
-C   1 to 8 (NOT metal cladding)
 C   1 is "roof-wall", 2 is "wall-ground floor"
 C   3 is "wall-wall (convex corner)", 4 is "wall-wall (concave corner)"
-C   5 is "wall-floor (not ground floor)", 6 is "lintel above window or door"
+C   5 is "wall-floor (exposed)", 6 is "lintel above window or door"
 C   7 is "Sill below window", 8 is "jamb at window or door"
-C   9 to 15 (metal cladding)
-C   9 is "roof-wall-mc", 10 is "wall-ground floor-mc"
-C  11 is "wall-wall (corner)-mc", 12 is "wall-floor (not ground floor)-mc"
-C  13 is "lintel above window or door-mc", 14 is "Sill below window-mc"
-C  15 is "jamb at window or door-mc"
-C  16 is for any other categories of thermal bridges
+C   9 is "roof-wall-gable", 10 is "wall-parapet"
+C  11 is "wall-interm-floor", 12 is "wall-partition"
+C  13 is "glass-frame", 14 is "Sill below window-mc"
+C  15 is "user-defined-a"
+C  16 is "user-defined-b"
 
 C losspercent is W/K for an alternative method  where the calculated heat flow
 C   is augmented by a fixed percentage of the UA (fabric loss)
@@ -11378,12 +11408,12 @@ C   losspercent and is assumed to apply to all zones in the model.
 
       real THPER
 
-      DIMENSION COG1(3),COG2(3),COG3(3)
+      DIMENSION xx(2),xy(2),xz(2)
       integer lnb
       real psiv,lenv  ! local variables for psi and length.
       integer ISDN,INODA ! max items and current menu item
       real defpsi     ! default value for psi
-      dimension defpsi(16)
+      dimension defpsi(16,4)
       real lenpsi     ! default value for length based on bridgelen.
       dimension lenpsi(16)
       real zerolen,zeropsi  ! for bridge types that have yet to be used.
@@ -11416,75 +11446,159 @@ C Do call to FINDUA for this zone in order to get derived areas.
 
 C Report on estimated lengths of thermal bridges from suredgeadj
       if(act(1:1).eq.'-')then
+        call edisp(iuout,' ')
         call edisp(iuout,'Based on surface form & boundary condition:')
-        if(MMOD.lt.8)then
-          write(outs,'(a,f7.2)')'bridge length roof-wall:',
-     &      bridgelen(icomp,1)
-        else
-          write(outs,'(a,f7.2,a)')'bridge length roof-wall:',
-     &      bridgelen(icomp,1),' (midnight blue)'
+        if(bridgelen(icomp,1).gt.0.0)then
+          if(MMOD.lt.8)then
+            write(outs,'(a,f7.2)')'bridge length roof-wall:',
+     &        bridgelen(icomp,1)
+          else
+            write(outs,'(a,f7.2,a)')'bridge length roof-wall:',
+     &        bridgelen(icomp,1),' (midnight blue)'
+          endif
+          call edisp(iuout,outs)
         endif
-        call edisp(iuout,outs)
-        if(MMOD.lt.8)then
-          write(outs,'(a,f7.2)')'bridge length wall-ground:',
-     &      bridgelen(icomp,2)
-        else
-          write(outs,'(a,f7.2,a)')'bridge length wall-ground:',
-     &      bridgelen(icomp,2),' (lt brown)'
+        if(bridgelen(icomp,2).gt.0.0)then
+          if(MMOD.lt.8)then
+            write(outs,'(a,f7.2)')'bridge length wall-ground:',
+     &        bridgelen(icomp,2)
+          else
+            write(outs,'(a,f7.2,a)')'bridge length wall-ground:',
+     &        bridgelen(icomp,2),' (lt brown)'
+          endif
+          call edisp(iuout,outs)
         endif
-        call edisp(iuout,outs)
-        if(MMOD.lt.8)then
-          write(outs,'(a,f7.2)')'bridge length wall-wall convex:',
-     &      bridgelen(icomp,3)
-        else
-          write(outs,'(a,f7.2,a)')'bridge length wall-wall convex:',
-     &      bridgelen(icomp,3),' (forest green)'
+        if(bridgelen(icomp,3).gt.0.0)then
+          if(MMOD.lt.8)then
+            write(outs,'(a,f7.2)')'bridge length wall-wall convex:',
+     &        bridgelen(icomp,3)
+          else
+            write(outs,'(a,f7.2,a)')'bridge length wall-wall convex:',
+     &        bridgelen(icomp,3),' (forest green)'
+          endif
+          call edisp(iuout,outs)
         endif
-        call edisp(iuout,outs)
-        if(MMOD.lt.8)then
-          write(outs,'(a,f7.2)')'bridge length wall-wall concave:',
-     &      bridgelen(icomp,4)
-        else
-          write(outs,'(a,f7.2,a)')'bridge length wall-wall concave:',
-     &      bridgelen(icomp,4),' (khaki)'
+        if(bridgelen(icomp,4).gt.0.0)then
+          if(MMOD.lt.8)then
+            write(outs,'(a,f7.2)')'bridge length wall-wall concave:',
+     &        bridgelen(icomp,4)
+          else
+            write(outs,'(a,f7.2,a)')'bridge length wall-wall concave:',
+     &        bridgelen(icomp,4),' (khaki)'
+          endif
+          call edisp(iuout,outs)
         endif
-        call edisp(iuout,outs)
-        if(MMOD.lt.8)then
-          write(outs,'(a,f7.2)')'bridge length ext floor down facing:',
-     &      bridgelen(icomp,5)
-        else
-          write(outs,'(a,f7.2,a)')
-     &      'bridge length ext floor down facing:',
-     &      bridgelen(icomp,5),' (turquoise)'
+        if(bridgelen(icomp,5).gt.0.0)then
+          if(MMOD.lt.8)then
+            write(outs,'(a,f7.2)')'bridge length exposed floor:',
+     &        bridgelen(icomp,5)
+          else
+            write(outs,'(a,f7.2,a)')'bridge length exposed floor:',
+     &        bridgelen(icomp,5),' (turquoise)'
+          endif
+          call edisp(iuout,outs)
         endif
-        call edisp(iuout,outs)
-        if(MMOD.lt.8)then
-          write(outs,'(a,f7.2)')'bridge length door & window lintels ',
-     &      bridgelen(icomp,6)
-        else
-          write(outs,'(a,f7.2,a)')
-     &      'bridge length door & window lintels ',
-     &      bridgelen(icomp,6),' (magenta)'
+        if(bridgelen(icomp,6).gt.0.0)then
+          if(MMOD.lt.8)then
+           write(outs,'(a,f7.2)')'bridge length door & window lintels ',
+     &        bridgelen(icomp,6)
+          else
+            write(outs,'(a,f7.2,a)')
+     &        'bridge length door & window lintels ',
+     &        bridgelen(icomp,6),' (magenta)'
+          endif
+          call edisp(iuout,outs)
         endif
-        call edisp(iuout,outs)
-        if(MMOD.lt.8)then
-          write(outs,'(a,f7.2)')'bridge length door & window sills ',
-     &      bridgelen(icomp,7)
-        else
-          write(outs,'(a,f7.2,a)')'bridge length door & window sills ',
-     &      bridgelen(icomp,7),' (firebrick)'
+        if(bridgelen(icomp,7).gt.0.0)then
+          if(MMOD.lt.8)then
+            write(outs,'(a,f7.2)')'bridge length door & window sills ',
+     &        bridgelen(icomp,7)
+          else
+           write(outs,'(a,f7.2,a)')'bridge length door & window sills ',
+     &        bridgelen(icomp,7),' (firebrick)'
+          endif
+          call edisp(iuout,outs)
         endif
-        call edisp(iuout,outs)
-        if(MMOD.lt.8)then
-          write(outs,'(a,f7.2)')'bridge length door & window jambs ',
-     &      bridgelen(icomp,8)
-        else
-          write(outs,'(a,f7.2,a)')'bridge length door & window jambs ',
-     &      bridgelen(icomp,8),' (cyan)'
+        if(bridgelen(icomp,8).gt.0.0)then
+          if(MMOD.lt.8)then
+            write(outs,'(a,f7.2)')'bridge length door & window jambs ',
+     &        bridgelen(icomp,8)
+          else
+           write(outs,'(a,f7.2,a)')'bridge length door & window jambs ',
+     &        bridgelen(icomp,8),' (cyan)'
+          endif
+          call edisp(iuout,outs)
         endif
-        call edisp(iuout,outs)
-        call edisp(iuout,
-     &    'Use these suggested lengths. You can also add more types.')
+        if(bridgelen(icomp,9).gt.0.0)then
+          if(MMOD.lt.8)then
+            write(outs,'(a,f7.2)')'bridge length wall-gable ',
+     &        bridgelen(icomp,9)
+          else
+            write(outs,'(a,f7.2,a)')'bridge length wall-gable ',
+     &        bridgelen(icomp,9),' (khaki)'
+          endif
+          call edisp(iuout,outs)
+        endif
+        if(bridgelen(icomp,10).gt.0.0)then
+          if(MMOD.lt.8)then
+            write(outs,'(a,f7.2)')'bridge length wall-parapet ',
+     &        bridgelen(icomp,10)
+          else
+            write(outs,'(a,f7.2,a)')'bridge length wall-parapet ',
+     &        bridgelen(icomp,10),' (grey)'
+          endif
+          call edisp(iuout,outs)
+        endif
+        if(bridgelen(icomp,11).gt.0.0)then
+          if(MMOD.lt.8)then
+            write(outs,'(a,f7.2)')'bridge length wall-interm-floor ',
+     &        bridgelen(icomp,11)
+          else
+            write(outs,'(a,f7.2,a)')'bridge length wall-interm-floor ',
+     &        bridgelen(icomp,11),' (royal blue)'
+          endif
+          call edisp(iuout,outs)
+        endif
+        if(bridgelen(icomp,12).gt.0.0)then
+          if(MMOD.lt.8)then
+            write(outs,'(a,f7.2)')'bridge length wall-partition ',
+     &        bridgelen(icomp,12)
+          else
+            write(outs,'(a,f7.2,a)')'bridge length wall-partition ',
+     &        bridgelen(icomp,12),' (tomato)'
+          endif
+          call edisp(iuout,outs)
+        endif
+        if(bridgelen(icomp,13).gt.0.0)then
+          if(MMOD.lt.8)then
+            write(outs,'(a,f7.2)')'bridge length glass-frame ',
+     &        bridgelen(icomp,13)
+          else
+            write(outs,'(a,f7.2,a)')'bridge length glass-frame ',
+     &        bridgelen(icomp,13),' (grey)'
+          endif
+          call edisp(iuout,outs)
+        endif
+        if(bridgelen(icomp,15).gt.0.0)then
+          if(MMOD.lt.8)then
+            write(outs,'(a,f7.2)')'bridge length user-defined-a ',
+     &        bridgelen(icomp,15)
+          else
+            write(outs,'(a,f7.2,a)')'bridge length user-defined-a',
+     &        bridgelen(icomp,15),' (pale green)'
+          endif
+          call edisp(iuout,outs)
+        endif
+        if(bridgelen(icomp,16).gt.0.0)then
+          if(MMOD.lt.8)then
+            write(outs,'(a,f7.2)')'bridge length user-defined-b ',
+     &        bridgelen(icomp,16)
+          else
+            write(outs,'(a,f7.2,a)')'bridge length user-defined-b',
+     &        bridgelen(icomp,16),' (orange)'
+          endif
+          call edisp(iuout,outs)
+        endif
       endif
 
 C If in graphic mode draw the edges with thermal bridge attributes
@@ -11506,18 +11620,21 @@ C in a different colour for each type (to match colours listed above).
               if(ibridgeshr(ioc,iyy).ne.0)then
                 izva=JVN(i,iyy)
                 izvb=JVN(i,iyy+1)
-                COG1(1)=szcoords(icomp,izva,1)
-                COG1(2)=szcoords(icomp,izva,2)
-                COG1(3)=szcoords(icomp,izva,3)
-                CALL VECTRN(COG1,TEMAT,COG2,IER)
-                CALL VECTRN(COG2,ETSMAT,COG3,IER)
-                call u2pixel(COG3(1),COG3(2),iix,iiy)
-                COG1(1)=szcoords(icomp,izvb,1)
-                COG1(2)=szcoords(icomp,izvb,2)
-                COG1(3)=szcoords(icomp,izvb,3)
-                CALL VECTRN(COG1,TEMAT,COG2,IER)
-                CALL VECTRN(COG2,ETSMAT,COG3,IER)
-                call u2pixel(COG3(1),COG3(2),iix2,iiy2)
+                call ORTTRN(szcoords(icomp,izva,1),
+     &            szcoords(icomp,izva,2),szcoords(icomp,izva,3),
+     &            TSMAT,xx(1),xy(1),xz(1),ier)
+                call ORTTRN(szcoords(icomp,izvb,1),
+     &            szcoords(icomp,izvb,2),szcoords(icomp,izvb,3),
+     &            TSMAT,xx(2),xy(2),xz(2),ier)
+                call CLIPLIN(xx,xy,xz,iclp)
+                if (iclp.eq.1) then
+                  goto 779
+                elseif (iclp.eq.-1) then
+                  call CUTLIN(xx,xy,xz,iclp)
+                  if (iclp.eq.-1) goto 779
+                endif
+                call u2pixel(xx(1),xy(1),iix,iiy)
+                call u2pixel(xx(2),xy(2),iix2,iiy2)
                 iicol=ibridgeshr(ioc,iyy)
                 if(greyok)call winscl('z',iicol)
                 call edwline(iix,iiy,iix2,iiy2)
@@ -11531,18 +11648,21 @@ C Complete the polygon by going back to the origin.
             if(ibridgeshr(ioc,NVER(i)).ne.0)then
               izva=JVN(i,NVER(i))
               izvb=JVN(i,1)
-              COG1(1)=szcoords(icomp,izva,1)
-              COG1(2)=szcoords(icomp,izva,2)
-              COG1(3)=szcoords(icomp,izva,3)
-              CALL VECTRN(COG1,TEMAT,COG2,IER)
-              CALL VECTRN(COG2,ETSMAT,COG3,IER)
-              call u2pixel(COG3(1),COG3(2),iix,iiy)
-              COG1(1)=szcoords(icomp,izvb,1)
-              COG1(2)=szcoords(icomp,izvb,2)
-              COG1(3)=szcoords(icomp,izvb,3)
-              CALL VECTRN(COG1,TEMAT,COG2,IER)
-              CALL VECTRN(COG2,ETSMAT,COG3,IER)
-              call u2pixel(COG3(1),COG3(2),iix2,iiy2)
+              call ORTTRN(szcoords(icomp,izva,1),
+     &          szcoords(icomp,izva,2),szcoords(icomp,izva,3),
+     &          TSMAT,xx(1),xy(1),xz(1),ier)
+              call ORTTRN(szcoords(icomp,izvb,1),
+     &          szcoords(icomp,izvb,2),szcoords(icomp,izvb,3),
+     &          TSMAT,xx(2),xy(2),xz(2),ier)
+              call CLIPLIN(xx,xy,xz,iclp)
+              if (iclp.eq.1) then
+                goto 778
+              elseif (iclp.eq.-1) then
+                call CUTLIN(xx,xy,xz,iclp)
+                if (iclp.eq.-1) goto 778
+              endif
+              call u2pixel(xx(1),xy(1),iix,iiy)
+              call u2pixel(xx(2),xy(2),iix2,iiy2)
               iicol=ibridgeshr(ioc,NVER(i))
               if(greyok)call winscl('z',iicol)
               call edwline(iix,iiy,iix2,iiy2)
@@ -11555,246 +11675,236 @@ C Complete the polygon by going back to the origin.
       endif
 
 C Setup phrases for the menu and for editing length and psi values.
-C The exact spelling of phraselen and phrasepsi is important.
-      phrasemenu(1) ='a roof-wall                    :'
+C The exact spelling of phraselen and phrasepsi is important. The
+C psi values have been taken from Accredited Construction Details 
+C used in UK building regulations. Default values are VERY conservative.
+      phrasemenu(1) ='a roof-wall (eave)             :'
       phraselen(1)  ='roof-wall '
       phrasepsi(1)  ='roof-wall '
-      defpsi(1)=0.12
+      defpsi(1,1)=0.12; defpsi(1,2)=0.06; defpsi(1,3)=0.097
+      defpsi(1,4)=0.069
       lenpsi(1)=bridgelen(icomp,1)
       phrasemenu(2) ='b wall-ground floor            :'
       phraselen(2)  ='wall-ground floor '
       phrasepsi(2)  ='wall-ground floor '
-      defpsi(2)=0.16
+      defpsi(2,1)=0.32; defpsi(2,2)=0.16; defpsi(2,3)=0.059
+      defpsi(2,4)=0.06
       lenpsi(2)=bridgelen(icomp,2)
       phrasemenu(3) ='c wall-wall (convex corner)    :'
       phraselen(3)  ='wall-wall (convex corner) '
       phrasepsi(3)  ='wall-wall (convex corner) '
-      defpsi(3)=0.09
+      defpsi(3,1)=0.18; defpsi(3,2)=0.09; defpsi(3,3)=0.046
+      defpsi(3,4)=0.059
       lenpsi(3)=bridgelen(icomp,3)
       phrasemenu(4) ='d wall-wall (concave corner)   :'
       phraselen(4)  ='wall-wall (concave corner) '
       phrasepsi(4)  ='wall-wall (concave corner) '
-      defpsi(4)= -0.09
+      defpsi(4,1)= 0.0; defpsi(4,2)= -0.09; defpsi(4,3)= -0.082 
+      defpsi(4,4)= -0.013
       lenpsi(4)=bridgelen(icomp,4)
-      phrasemenu(5) ='e wall-floor (not ground floor):'
-      phraselen(5)  ='wall-floor (not ground floor) '
-      phrasepsi(5)  ='wall-floor (not ground floor) '
-      defpsi(5)=0.07
+      phrasemenu(5) ='e wall-floor (exposed)         :'
+      phraselen(5)  ='wall-floor (exposed) '
+      phrasepsi(5)  ='wall-floor (exposed) '
+      defpsi(5,1)=0.32; defpsi(5,2)=0.16; defpsi(5,3)=0.1 ! only default specified
+      defpsi(5,4)=0.1
       lenpsi(5)=bridgelen(icomp,5)
       phrasemenu(6) ='f lintel above window or door  :'
       phraselen(6)  ='lintel above window or door '
       phrasepsi(6)  ='lintel above window or door '
-      defpsi(6)=0.3
+      defpsi(6,1)=1.0; defpsi(6,2)=0.5; defpsi(6,3)=0.17; 
+      defpsi(6,4)=0.1
       lenpsi(6)=bridgelen(icomp,6)
       phrasemenu(7) ='g Sill below window            :'
       phraselen(7)  ='Sill below window '
       phrasepsi(7)  ='Sill below window '
-      defpsi(7)=0.04
+      defpsi(7,1)=0.08; defpsi(7,2)=0.04; defpsi(7,3)=0.038
+      defpsi(7,4)=0.032
       lenpsi(7)=bridgelen(icomp,7)
       phrasemenu(8) ='h jamb at window or door       :'
       phraselen(8)  ='jamb at window or door '
       phrasepsi(8)  ='jamb at window or door '
-      defpsi(8)=0.05
+      defpsi(8,1)=0.10; defpsi(8,2)=0.05; defpsi(8,3)=0.041 
+      defpsi(8,4)=0.045
       lenpsi(8)=bridgelen(icomp,8)
-      phrasemenu(9) ='i roof-wall                    :'
-      phraselen(9)  ='roof-wall-mc'
-      phrasepsi(9)  ='roof-wall-mc'
-      defpsi(9)=0.28
-      lenpsi(9)=bridgelen(icomp,1)
-      phrasemenu(10)='j wall-ground floor            :'
-      phraselen(10) ='wall-ground floor-mc'
-      phrasepsi(10) ='wall-ground floor-mc'
-      defpsi(10)=1.15
-      lenpsi(10)=bridgelen(icomp,2)
-      phrasemenu(11)='k wall-wall (corner)-          :'
-      phraselen(11) ='wall-wall (corner)-mc'
-      phrasepsi(11) ='wall-wall (corner)-mc'
-      defpsi(11)=0.25
-      lenpsi(11)=bridgelen(icomp,3)+bridgelen(icomp,4)
-      phrasemenu(12)='l wall-floor (not ground floor):'
-      phraselen(12) ='wall-floor (not ground floor)-mc'
-      phrasepsi(12) ='wall-floor (not ground floor)-mc'
-      defpsi(12)=0.07
-      lenpsi(12)=bridgelen(icomp,5)
-      phrasemenu(13)='m lintel above window or door  :'
-      phraselen(13) ='lintel above window or door-mc'
-      phrasepsi(13) ='lintel above window or door-mc'
-      defpsi(13)=1.27
-      lenpsi(13)=bridgelen(icomp,6)
-      phrasemenu(14)='n Sill below window            :'
-      phraselen(14) ='Sill below window-mc'
-      phrasepsi(14) ='Sill below window-mc'
-      defpsi(14)=1.27
-      lenpsi(14)=bridgelen(icomp,7)
-      phrasemenu(15)='o jamb at window or door       :'
-      phraselen(15) ='jamb at window or door-mc'
-      phrasepsi(15) ='jamb at window or door-mc'
-      defpsi(15)=1.27
-      lenpsi(15)=bridgelen(icomp,8)
-      phrasemenu(16)='p user-defined                 :'
-      phraselen(16) ='user-defined'
-      phrasepsi(16) ='user-defined'
-      defpsi(16)=0.00
+      phrasemenu(9) ='i wall-gable                   :'
+      phraselen(9)  ='wall-gable'
+      phrasepsi(9)  ='wall-gable'
+      defpsi(9,1)=0.48; defpsi(9,2)=0.24; defpsi(9,3)=0.059 
+      defpsi(9,4)=0.069
+      lenpsi(9)=bridgelen(icomp,9)
+      phrasemenu(10)='j wall-parapet                 :'
+      phraselen(10) ='wall-parapet'
+      phrasepsi(10) ='wall-parapet'
+      defpsi(10,1)=0.56; defpsi(10,2)=0.28; defpsi(10,3)=0.16 
+      defpsi(10,4)=0.16
+      lenpsi(10)=bridgelen(icomp,10)
+      phrasemenu(11)='k wall-intermediate-floor      :'
+      phraselen(11) ='wall-intermediate-floor'
+      phrasepsi(11) ='wall-intermediate-floor'
+      defpsi(11,1)=0.14; defpsi(11,2)=0.07; defpsi(11,3)=0.01 
+      defpsi(11,4)=0.01
+      lenpsi(11)=bridgelen(icomp,11)
+      phrasemenu(12)='l wall-partition               :'
+      phraselen(12) ='wall-partition'
+      phrasepsi(12) ='wall-partition'
+      defpsi(12,1)=0.12; defpsi(12,2)=0.06; defpsi(12,3)=0.002 
+      defpsi(12,4)=0.08
+      lenpsi(12)=bridgelen(icomp,12)
+      phrasemenu(13)='m glass-frame                  :'
+      phraselen(13) ='glass-frame'
+      phrasepsi(13) ='glass-frame'
+      defpsi(13,1)=0.1; defpsi(13,2)=0.07; defpsi(13,3)=.04 
+      defpsi(13,4)=0.04
+      lenpsi(13)=bridgelen(icomp,13)
+      phrasemenu(14)='n balcony                      :'
+      phraselen(14) ='balcony'
+      phrasepsi(14) ='balcony'
+      defpsi(14,1)=1.0; defpsi(14,2)=0.5; defpsi(14,3)=0.4 
+      defpsi(14,4)=0.4
+      lenpsi(14)=bridgelen(icomp,14)
+      phrasemenu(15)='o user-defined a               :'
+      phraselen(15) ='user-defined-a'
+      phrasepsi(15) ='user-defined-a'
+      defpsi(15,1)=1.0; defpsi(15,2)=1.0; defpsi(15,3)=1.0
+      defpsi(15,4)=1.0
+      lenpsi(15)=bridgelen(icomp,15)
+      phrasemenu(16)='p user-defined b               :'
+      phraselen(16) ='user-defined-b'
+      phrasepsi(16) ='user-defined-b'
+      defpsi(16,1)=0.00; defpsi(16,2)=0.00; defpsi(16,3)=0.00 
+      defpsi(16,4)=0.0
       lenpsi(16)=1.0
 
-C If the UK NCM facility is active ask the user whether facade
-C has metal cladding or not and then set the relevant lengths.
-C If in silent model for the so-called stripped model then do
-C not involve the user, jump straight to the 10%.
+C Initial questions about initial psi values.
+      helptopic='psi-value-groups'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL EASKATOG('Initial thermal bridge (psi) values:','  ',
+     &  'k1 default','general accredited','2021 PartL masonry',
+     &  '2021 PartL timber','exit',' ',' ',INVT,nbhelp)
       helptopic='linear_thermal_bridge'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      if(act(1:1).eq.'-')then
-        if(nbrdg(icomp).eq.0)then
-          if(ISBEM.EQ.2)then
-            CALL EASKABCD(
-     &        'The thermal bridge approach needs to know about metal',
-     &        'in the facade. This zone uses:',
-     &        'metal cladding','no metal cladding','fixed %',
-     &        'exit',INVT,nbhelp)
-            if(INVT.eq.1)then
-              continue
-            elseif(INVT.eq.2)then
-              continue
-            elseif(INVT.eq.3)then
-              continue
-            elseif(INVT.eq.4)then
-              return
-            endif
-          else
-            CALL EASKABCD(
-     &        'The thermal bridge approach needs to know about metal',
-     &        'in the facade. This zone uses:',
-     &        'metal cladding','no metal cladding','fixed %',
-     &        'exit',INVT,nbhelp)
-            if(INVT.eq.1)then
-              continue
-            elseif(INVT.eq.2)then
-              continue
-            elseif(INVT.eq.3)then
-              continue
-            elseif(INVT.eq.4)then
-              return
-            endif
-          endif
+ 
+      if(nbrdg(icomp).eq.0)then
+        if(INVT.eq.1)then
+          continue
+        elseif(INVT.eq.2)then
+          continue
+        elseif(INVT.eq.3)then
+          continue
+        elseif(INVT.eq.4)then
+          continue
+        elseif(INVT.eq.5)then
+          return
+        endif
 
-C Fill in the initial values for metal clad constructions.
-          if(INVT.eq.1)then
-            if(bridgelen(icomp,1).gt.0.1)then
-              nbrdg(icomp)=nbrdg(icomp)+1
-              ibrdg(ICOMP,nbrdg(icomp))=9
-              psi(ICOMP,nbrdg(icomp))=defpsi(9)
-              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,1)
-            endif
-            if(bridgelen(icomp,2).gt.0.1)then
-              nbrdg(icomp)=nbrdg(icomp)+1
-              ibrdg(ICOMP,nbrdg(icomp))=10
-              psi(ICOMP,nbrdg(icomp))=defpsi(10)
-               lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,2)
-            endif
-            if((bridgelen(icomp,3)+bridgelen(icomp,4)).gt.0.1)then
-              nbrdg(icomp)=nbrdg(icomp)+1
-              ibrdg(ICOMP,nbrdg(icomp))=11
-              psi(ICOMP,nbrdg(icomp))=defpsi(11)
-              lngth(ICOMP,nbrdg(icomp))=
-     &          bridgelen(icomp,3)+bridgelen(icomp,4)
-            endif
-            if(bridgelen(icomp,5).gt.0.1)then
-              nbrdg(icomp)=nbrdg(icomp)+1
-              ibrdg(ICOMP,nbrdg(icomp))=12
-              psi(ICOMP,nbrdg(icomp))=defpsi(12)
-              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,5)
-            endif
-            if(bridgelen(icomp,6).gt.0.1)then
-              nbrdg(icomp)=nbrdg(icomp)+1
-              ibrdg(ICOMP,nbrdg(icomp))=13
-              psi(ICOMP,nbrdg(icomp))=defpsi(13)
-              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,6)
-            endif
-            if(bridgelen(icomp,7).gt.0.1)then
-              nbrdg(icomp)=nbrdg(icomp)+1
-              ibrdg(ICOMP,nbrdg(icomp))=14
-              psi(ICOMP,nbrdg(icomp))=defpsi(14)
-              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,7)
-            endif
-            if(bridgelen(icomp,8).gt.0.1)then
-              nbrdg(icomp)=nbrdg(icomp)+1
-              ibrdg(ICOMP,nbrdg(icomp))=15
-              psi(ICOMP,nbrdg(icomp))=defpsi(15)
-              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,8)
-            endif
-          elseif(INVT.eq.2)then
-
-C Values for constructions without metal cladding.
-            if(bridgelen(icomp,1).gt.0.1)then
-              nbrdg(icomp)=nbrdg(icomp)+1
-              ibrdg(ICOMP,nbrdg(icomp))=1
-              psi(ICOMP,nbrdg(icomp))=defpsi(1)
-              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,1)
-            endif
-            if(bridgelen(icomp,2).gt.0.1)then
-              nbrdg(icomp)=nbrdg(icomp)+1
-              ibrdg(ICOMP,nbrdg(icomp))=2
-              psi(ICOMP,nbrdg(icomp))=defpsi(2)
-              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,2)
-            endif
-            if(bridgelen(icomp,3).gt.0.1)then
-              nbrdg(icomp)=nbrdg(icomp)+1
-              ibrdg(ICOMP,nbrdg(icomp))=3
-              psi(ICOMP,nbrdg(icomp))=defpsi(3)
-              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,3)
-            endif
-            if(bridgelen(icomp,4).gt.0.1)then
-              nbrdg(icomp)=nbrdg(icomp)+1
-              ibrdg(ICOMP,nbrdg(icomp))=4
-              psi(ICOMP,nbrdg(icomp))=defpsi(4)
-              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,4)
-            endif
-            if(bridgelen(icomp,5).gt.0.1)then
-              nbrdg(icomp)=nbrdg(icomp)+1
-              ibrdg(ICOMP,nbrdg(icomp))=5
-              psi(ICOMP,nbrdg(icomp))=defpsi(5)
-              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,5)
-            endif
-            if(bridgelen(icomp,6).gt.0.1)then
-              nbrdg(icomp)=nbrdg(icomp)+1
-              ibrdg(ICOMP,nbrdg(icomp))=6
-              psi(ICOMP,nbrdg(icomp))=defpsi(6)
-              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,6)
-            endif
-            if(bridgelen(icomp,7).gt.0.1)then
-              nbrdg(icomp)=nbrdg(icomp)+1
-              ibrdg(ICOMP,nbrdg(icomp))=7
-              psi(ICOMP,nbrdg(icomp))=defpsi(7)
-              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,7)
-            endif
-            if(bridgelen(icomp,8).gt.0.1)then
-              nbrdg(icomp)=nbrdg(icomp)+1
-              ibrdg(ICOMP,nbrdg(icomp))=8
-              psi(ICOMP,nbrdg(icomp))=defpsi(8)
-              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,8)
-            endif
+C Values for constructions depending on user choice above.
+        call edisp(iuout,' ')
+        call edisp(iuout,'Applying iniitial psi values...')
+        do itbmenu=1,16
+          if(bridgelen(icomp,itbmenu).gt.0.1)then
+            nbrdg(icomp)=nbrdg(icomp)+1
+            ibrdg(ICOMP,nbrdg(icomp))=itbmenu
+            if(INVT.eq.1) psi(ICOMP,nbrdg(icomp))=defpsi(itbmenu,1)
+            if(INVT.eq.2) psi(ICOMP,nbrdg(icomp))=defpsi(itbmenu,2)
+            if(INVT.eq.3) psi(ICOMP,nbrdg(icomp))=defpsi(itbmenu,3)
+            if(INVT.eq.4) psi(ICOMP,nbrdg(icomp))=defpsi(itbmenu,4)
+            lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,itbmenu)
+C Debug.
+C            write(6,*) icomp,itbmenu,nbrdg(icomp),
+C     &        ibrdg(ICOMP,nbrdg(icomp)),psi(ICOMP,nbrdg(icomp))
           endif
+        enddo
+      else
+
+C There were existing thermal bridge values. As user if menu display should
+C reflect the recently scanned values.
+        helptopic='psi-length-update'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL EASKABC('Zone has existing psi values & lengths.',' ',
+     &    'update lengths','update lengths & psi','continue',IV,nbhelp)
+        if(IV.eq.1)then
+          act = '-'
+          call edisp(iuout,' ')
+          call edisp(iuout,'Scanning the surface edges...')
+          call scan_bridges(itrc,act,icomp,ier) ! Determine bridge relationships.
+          call edisp(iuout,' ')
+          call edisp(iuout,'Applying scanned lengths...')
+          do itbmenu=1,16
+            foundit=.false.
+            do itb=1,nbrdg(icomp)
+              if(itbmenu.eq.ibrdg(icomp,itb))then
+                lngth(ICOMP,itb)=bridgelen(icomp,itbmenu)
+                WRITE(TBRIDGE(itbmenu+1),'(a,2F10.4)')
+     &            phrasemenu(itbmenu),
+     &            psi(icomp,itb),lngth(icomp,itb)
+                foundit=.true.
+                cycle
+              endif
+            enddo
+            if(.NOT.foundit.and.bridgelen(icomp,itbmenu).gt.0.0)then  ! A bridge type not yet included.
+              nbrdg(icomp)=nbrdg(icomp)+1
+              ibrdg(ICOMP,nbrdg(icomp))=itbmenu
+              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,itbmenu)
+              psi(ICOMP,nbrdg(icomp))=defpsi(itbmenu,1)               ! Assign default psi
+            endif
+          enddo
+        elseif(IV.eq.2)then     ! Reset all engths as well as the psi values.
+          nbrdg(icomp)=0
+          act = '-'
+          call edisp(iuout,' ')
+          call edisp(iuout,'Scanning the surface edges...')
+          call scan_bridges(itrc,act,icomp,ier) ! Determine bridge relationships.
+          call edisp(iuout,' ')
+          call edisp(iuout,'Applying scanned lengths...')
+          do itbmenu=1,16
+            if(bridgelen(icomp,itbmenu).gt.0.1)then
+              nbrdg(icomp)=nbrdg(icomp)+1
+              ibrdg(ICOMP,nbrdg(icomp))=itbmenu
+              if(INVT.eq.1) psi(ICOMP,nbrdg(icomp))=defpsi(itbmenu,1)
+              if(INVT.eq.2) psi(ICOMP,nbrdg(icomp))=defpsi(itbmenu,2)
+              if(INVT.eq.3) psi(ICOMP,nbrdg(icomp))=defpsi(itbmenu,3)
+              if(INVT.eq.4) psi(ICOMP,nbrdg(icomp))=defpsi(itbmenu,4)
+              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,itbmenu)
+C Debug.
+C              write(6,*) 'x ',icomp,itbmenu,nbrdg(icomp),
+C     &          ibrdg(ICOMP,nbrdg(icomp)),psi(ICOMP,nbrdg(icomp))
+            endif
+          enddo
+        elseif(IV.eq.3)then
+          do itbmenu=1,16
+            if(bridgelen(icomp,itbmenu).gt.0.1)then
+              nbrdg(icomp)=nbrdg(icomp)+1
+              ibrdg(ICOMP,nbrdg(icomp))=itbmenu
+              if(INVT.eq.1) psi(ICOMP,nbrdg(icomp))=defpsi(itbmenu,1)
+              if(INVT.eq.2) psi(ICOMP,nbrdg(icomp))=defpsi(itbmenu,2)
+              if(INVT.eq.3) psi(ICOMP,nbrdg(icomp))=defpsi(itbmenu,3)
+              if(INVT.eq.4) psi(ICOMP,nbrdg(icomp))=defpsi(itbmenu,4)
+              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,itbmenu)
+C Debug.
+C              write(6,*) 'x ',icomp,itbmenu,nbrdg(icomp),
+C     &          ibrdg(ICOMP,nbrdg(icomp)),psi(ICOMP,nbrdg(icomp))
+            endif
+          enddo
         endif
       endif
 
 C Setup the editing phrases.
-   33 TBRIDGE(1)=
-     &'Junctions without metal cladding   psi (W/mK) length (m)'
+   33 TBRIDGE(1)='Junctions . . . . . . . . psi (W/mK) length (m)'
 
-C Loop through the first 8 variants seeing if any of the currentlist
+C Loop through the variants seeing if any of the currentlist
 C matches the type in each menu position. If not write text and place
 C holder, otherwise write actual values.
-      do 89 itbmenu=1,8
+      do itbmenu=1,16
         if(nbrdg(icomp).gt.0)then
           foundit=.false.
-          do 90 itb=1,nbrdg(icomp)
+          do itb=1,nbrdg(icomp)
             if(itbmenu.eq.ibrdg(icomp,itb))then
               WRITE(TBRIDGE(itbmenu+1),'(a,2F10.4)')
      &          phrasemenu(itbmenu),
      &          psi(icomp,itb),lngth(icomp,itb)
               foundit=.true.
             endif
-  90      continue
+          enddo
           if(.NOT.foundit)then
             WRITE(TBRIDGE(itbmenu+1),'(a,2F10.4)') phrasemenu(itbmenu),
      &        zeropsi,zerolen
@@ -11803,39 +11913,16 @@ C holder, otherwise write actual values.
           WRITE(TBRIDGE(itbmenu+1),'(a,2F10.4)') phrasemenu(itbmenu),
      &      zeropsi,zerolen
         endif
-  89  continue
-      TBRIDGE(10)=
+      enddo
+      TBRIDGE(18)=
      & '      _________________________________________________ '
-      TBRIDGE(11)=
-     &'Junctions with metal cladding      psi (W/mK) length (m)'
 
-      do 189 itbmenu=9,16
-        if(nbrdg(icomp).gt.0)then
-          foundit=.false.
-          do 190 itb=1,nbrdg(icomp)
-            if(itbmenu.eq.ibrdg(icomp,itb))then
-              WRITE(TBRIDGE(itbmenu+3),'(a,2F10.4)')
-     &          phrasemenu(itbmenu),
-     &          psi(icomp,itb),lngth(icomp,itb)
-              foundit=.true.
-            endif
- 190      continue
-          if(.NOT.foundit)then
-            WRITE(TBRIDGE(itbmenu+3),'(a,2F10.4)') phrasemenu(itbmenu),
-     &        zeropsi,zerolen
-          endif
-        else
-          WRITE(TBRIDGE(itbmenu+3),'(a,2F10.4)') phrasemenu(itbmenu),
-     &      zeropsi,zerolen
-        endif
- 189  continue
 
-      TBRIDGE(20)=
-     &'     __________________________________________________ '
-      TBRIDGE(21)='q include % of thermal bridges'
-      TBRIDGE(22)='? help                         '
-      TBRIDGE(23)='- exit to zone description     '
-      ISDN=23
+      TBRIDGE(19)='q include % of thermal bridges'
+      TBRIDGE(20)='r update summation of psi*lenth'
+      TBRIDGE(21)='? help                         '
+      TBRIDGE(22)='- exit to zone description     '
+      ISDN=22
 
       INODA=-4
 
@@ -11851,14 +11938,14 @@ C Menu control.
         CALL EMENU('Thermal bridges',TBRIDGE,ISDN,INODA)
       ENDIF
 
-      IF(INODA.EQ.ISDN)THEN
+      IF(INODA.EQ.ISDN.or.INODA.eq.20)THEN
         totheatloss(icomp) = 0.0
-        do 1221 i=1,nbrdg(icomp)
+        do i=1,nbrdg(icomp)
 
 C totheatloss is the total heat loss when all linear thermal bridges are added
           totheatloss(icomp) = totheatloss(icomp) +
      &                         (psi(ICOMP,i) * lngth(ICOMP,i))
- 1221   continue
+        enddo
         totheatloss(icomp) = totheatloss(icomp) + losspercent(ICOMP)
         write(outs,*) 'total losses: ',totheatloss(icomp),' W/K'
         call edisp(iuout,outs)
@@ -11866,8 +11953,8 @@ C totheatloss is the total heat loss when all linear thermal bridges are added
         call edisp(iuout,
      &    'And remember SAVE this zone to record the t bridge data.')
 
-C jump back to the main geometry menu
-        return
+C Jump back to the main geometry menu.
+        if(INODA.EQ.ISDN) return
       ELSEIF(INODA.EQ.ISDN-1)THEN
 
 C Produce help text for the menu.
@@ -11875,86 +11962,134 @@ C Produce help text for the menu.
 
       ELSEIF(INODA.EQ.2)THEN
 
-C Is any one of the current thermal bridges type 1?
+C Is any one of the current thermal bridges type 1 "roof-wall (eave)"
+        write(outs,'(a,4f6.3)') 'Psi value range is ',defpsi(1,1),
+     &    defpsi(1,2),defpsi(1,3),defpsi(1,4)
+        call edisp(iuout,outs)
         lookfor=1
         goto 42
       ELSEIF(INODA.EQ.3)THEN
 
-C Is any one of the current thermal bridges type 2?
+C Is any one of the current thermal bridges type 2 "wall-ground floor"
+        write(outs,'(a,4f6.3)') 'Psi value range is ',defpsi(2,1),
+     &    defpsi(2,2),defpsi(2,3),defpsi(2,4)
+        call edisp(iuout,outs)
         lookfor=2
         goto 42
       ELSEIF(INODA.EQ.4)THEN
 
-C Is any one of the current thermal bridges type 3?
+C Is any one of the current thermal bridges type 3 "wall-wall (convex corner)"
+        write(outs,'(a,4f6.3)') 'Psi value range is ',defpsi(3,1),
+     &    defpsi(3,2),defpsi(3,3),defpsi(3,4)
+        call edisp(iuout,outs)
         lookfor=3
         goto 42
       ELSEIF(INODA.EQ.5)THEN
 
-C Is any one of the current thermal bridges type 4?
+C Is any one of the current thermal bridges type 4 "wall-wall (concave corner)"
+        write(outs,'(a,4f6.3)') 'Psi value range is ',defpsi(4,1),
+     &    defpsi(4,2),defpsi(4,3),defpsi(4,4)
+        call edisp(iuout,outs)
         lookfor=4
         goto 42
       ELSEIF(INODA.EQ.6)THEN
 
-C Is any one of the current thermal bridges type 5?
+C Is any one of the current thermal bridges type 5 "wall-floor (exposed)"
+        write(outs,'(a,4f6.3)') 'Psi value range is ',defpsi(5,1),
+     &    defpsi(5,2),defpsi(5,3),defpsi(5,4)
+        call edisp(iuout,outs)
         lookfor=5
         goto 42
       ELSEIF(INODA.EQ.7)THEN
 
-C Is any one of the current thermal bridges type 6?
+C Is any one of the current thermal bridges type 6 "lintel above window or door"
+        write(outs,'(a,4f6.3)') 'Psi value range is ',defpsi(6,1),
+     &    defpsi(6,2),defpsi(6,3),defpsi(6,4)
+        call edisp(iuout,outs)
         lookfor=6
         goto 42
       ELSEIF(INODA.EQ.8)THEN
 
-C Is any one of the current thermal bridges type 7?
+C Is any one of the current thermal bridges type 7 "Sill below window"
+        write(outs,'(a,4f6.3)') 'Psi value range is ',defpsi(7,1),
+     &    defpsi(7,2),defpsi(7,3),defpsi(7,4)
+        call edisp(iuout,outs)
         lookfor=7
         goto 42
       ELSEIF(INODA.EQ.9)THEN
 
-C Is any one of the current thermal bridges type 8?
+C Is any one of the current thermal bridges type 8 "jamb at window or door"
+        write(outs,'(a,4f6.3)') 'Psi value range is ',defpsi(8,1),
+     &    defpsi(8,2),defpsi(8,3),defpsi(8,4)
+        call edisp(iuout,outs)
         lookfor=8
+        goto 42
+      ELSEIF(INODA.EQ.10)THEN
+
+C Is any one of the current thermal bridges type 9 "roof-wall-gable"
+        write(outs,'(a,4f6.3)') 'Psi value range is ',defpsi(9,1),
+     &    defpsi(9,2),defpsi(9,3),defpsi(9,4)
+        call edisp(iuout,outs)
+        lookfor=9
+        goto 42
+      ELSEIF(INODA.EQ.11)THEN
+
+C Is any one of the current thermal bridges type 10 "wall-parapet"
+        write(outs,'(a,4f6.3)') 'Psi value range is ',defpsi(10,1),
+     &    defpsi(10,2),defpsi(10,3),defpsi(10,4)
+        call edisp(iuout,outs)
+        lookfor=10
         goto 42
       ELSEIF(INODA.EQ.12)THEN
 
-C Is any one of the current thermal bridges type 9?
-        lookfor=9
+C Is any one of the current thermal bridges type 11 "wall-interm-floor"
+        write(outs,'(a,4f6.3)') 'Psi value range is ',defpsi(11,1),
+     &    defpsi(11,2),defpsi(11,3),defpsi(11,4)
+        call edisp(iuout,outs)
+        lookfor=11
         goto 42
       ELSEIF(INODA.EQ.13)THEN
 
-C Is any one of the current thermal bridges type 10?
-        lookfor=10
+C Is any one of the current thermal bridges type 12 "wall-partition"
+        write(outs,'(a,4f6.3)') 'Psi value range is ',defpsi(12,1),
+     &    defpsi(12,2),defpsi(12,3),defpsi(12,4)
+        call edisp(iuout,outs)
+        lookfor=12
         goto 42
       ELSEIF(INODA.EQ.14)THEN
 
-C Is any one of the current thermal bridges type 11?
-        lookfor=11
+C Is any one of the current thermal bridges type 13 "glass-frame"
+        write(outs,'(a,4f6.3)') 'Psi value range is ',defpsi(13,1),
+     &    defpsi(13,2),defpsi(13,3),defpsi(13,4)
+        call edisp(iuout,outs)
+        lookfor=13
         goto 42
       ELSEIF(INODA.EQ.15)THEN
 
-C Is any one of the current thermal bridges type 12?
-        lookfor=12
+C Is any one of the current thermal bridges type 14 'balcony'
+        write(outs,'(a,4f6.3)') 'Psi value range is ',defpsi(14,1),
+     &    defpsi(14,2),defpsi(14,3),defpsi(14,4)
+        call edisp(iuout,outs)
+        lookfor=14
         goto 42
       ELSEIF(INODA.EQ.16)THEN
 
-C Is any one of the current thermal bridges type 13?
-        lookfor=13
+C Is any one of the current thermal bridges type 15 "user-defned-a"
+        write(outs,'(a,4f6.3)') 'Psi value range is ',defpsi(15,1),
+     &    defpsi(15,2),defpsi(15,3),defpsi(15,4)
+        call edisp(iuout,outs)
+        lookfor=15
         goto 42
       ELSEIF(INODA.EQ.17)THEN
 
-C Is any one of the current thermal bridges type 14?
-        lookfor=14
-        goto 42
-      ELSEIF(INODA.EQ.18)THEN
-
-C Is any one of the current thermal bridges type 15?
-        lookfor=15
-        goto 42
-      ELSEIF(INODA.EQ.19)THEN
-
-C Is any one of the current thermal bridges type 16 (other type)?
+C Is any one of the current thermal bridges type 16 "user-defined-b"
+        write(outs,'(a,4f6.3)') 'Psi value range is ',defpsi(16,1),
+     &    defpsi(16,2),defpsi(16,3),defpsi(16,4)
+        call edisp(iuout,outs)
         lookfor=16
         goto 42
 
-      ELSEIF(INODA.EQ.ISDN-2)THEN
+      ELSEIF(INODA.EQ.ISDN-3)THEN
         IF(ACT.EQ.'s')THEN
           THBRPERCENT=THPER
         ELSE
@@ -11995,26 +12130,22 @@ C nbrdg and edit.
             foundit=.true.
             psiv=psi(ICOMP,ibj)
             write(msg,'(a,F7.4,a)')'(accredited default psi:',
-     &        defpsi(lookfor),' W/mK)'
+     &        defpsi(lookfor,1),' W/mK)'
 
             CALL EASKR(psiv,phrasepsi(lookfor),msg,
-     &        -2.0,'W',2.0,'W',defpsi(lookfor),'psi',IER,nbhelp)
+     &        -2.0,'W',2.0,'W',defpsi(lookfor,1),'psi',IER,nbhelp)
             psi(ICOMP,ibj)=psiv
 
-            if(ISBEM.EQ.2)then
-              continue  ! Do not allow editing of length if UK NCM
+            write(msg,'(a,F7.4,a)')'(suggested length:',
+     &        lenpsi(lookfor),' m)'
+            if(lngth(ICOMP,ibj).lt.0.01)then
+              lenv=lenpsi(lookfor)
             else
-              write(msg,'(a,F7.4,a)')'(suggested length:',
-     &          lenpsi(lookfor),' m)'
-              if(lngth(ICOMP,ibj).lt.0.01)then
-                lenv=lenpsi(lookfor)
-              else
-                lenv=lngth(ICOMP,ibj)
-              endif
-              CALL EASKR(lenv,phraselen(lookfor),msg,
-     &          -0.1,'W',200.0,'W',0.0,'length',IER,nbhelp)
-              lngth(ICOMP,ibj)=lenv
+              lenv=lngth(ICOMP,ibj)
             endif
+            CALL EASKR(lenv,phraselen(lookfor),msg,
+     &        -0.1,'W',200.0,'W',0.0,'length',IER,nbhelp)
+            lngth(ICOMP,ibj)=lenv
           endif
   31    continue
         if(.NOT.foundit)then
@@ -12022,9 +12153,9 @@ C nbrdg and edit.
           ibrdg(ICOMP,nbrdg(icomp))=lookfor
           psiv=0.0
           write(msg,'(a,F7.4,a)')'(accredited default psi:',
-     &      defpsi(lookfor),' W/mK)'
+     &      defpsi(lookfor,1),' W/mK)'
           CALL EASKR(psiv,phrasepsi(lookfor),msg,
-     &      -2.0,'W',2.0,'W',defpsi(lookfor),'psi',IER,nbhelp)
+     &      -2.0,'W',2.0,'W',defpsi(lookfor,1),'psi',IER,nbhelp)
           psi(ICOMP,nbrdg(icomp))=psiv
 
           write(msg,'(a,F7.4,a)')'(suggested length:',
@@ -12040,9 +12171,9 @@ C nbrdg and edit.
         ibrdg(ICOMP,nbrdg(icomp))=lookfor
         psiv=0.0
         write(msg,'(a,F7.4,a)')'(accredited default psi:',
-     &    defpsi(lookfor),' W/mK)'
+     &    defpsi(lookfor,1),' W/mK)'
         CALL EASKR(psiv,phrasepsi(lookfor),msg,
-     &    -2.0,'W',2.0,'W',defpsi(lookfor),'psi',IER,nbhelp)
+     &    -2.0,'W',2.0,'W',defpsi(lookfor,1),'psi',IER,nbhelp)
         psi(ICOMP,nbrdg(icomp))=psiv
 
         lenv=0.0
@@ -12098,6 +12229,8 @@ C USE attribute is furniture then do not include in base surface count.
               MODGEO=.TRUE.
               if(SUSE(icomp,I,1)(1:5).eq.'FURNI')then
                 continue           ! do not include in ceiling list
+              elseif(SUSE(icomp,I,1)(1:6).eq.'REVEAL')then
+                continue           ! do not include in ceiling list
               else
                 izsceil(icomp)=I   ! identify as a ceiling
               endif
@@ -12108,6 +12241,8 @@ C USE attribute is furniture then do not include in base surface count.
               SVFC(icomp,i)='FLOR'
               MODGEO=.TRUE.
               if(SUSE(icomp,I,1)(1:5).eq.'FURNI')then
+                continue           ! do not include in floor list
+              elseif(SUSE(icomp,I,1)(1:6).eq.'REVEAL')then
                 continue           ! do not include in floor list
               else
                 izsfloor(icomp)=I  ! identify as a floor
@@ -12487,6 +12622,7 @@ C Parameters
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN,IEOUT
       integer IZSTOCN
+      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       INTEGER :: iairn,icaas
@@ -12663,11 +12799,19 @@ C ask them about its use and composition.
       SOTHER(ICOMP,NSUR,2)='0'
       SOTHER(ICOMP,NSUR,3)='0'
       SPARENT(ICOMP,NSUR)='-'
-      SUSE(ICOMP,NSUR,1)='-'
+      SUSE(ICOMP,NSUR,1)='REVEAL'
       SUSE(ICOMP,NSUR,2)='-'
 
 C Add surface to the connection list (icont) assuming an unknown boundary.
       call addedsurf(icomp,icont,1,ier)
+
+C If original surface faces the outside then set this for the
+C reveals that have been created.
+      icorig=IZSTOCN(ICOMP,IRS)
+      if(ICT(icorig).eq.0)then
+        ICT(icont)=0      
+        SOTHER(ICOMP,NSUR,1)='EXTERIOR'
+      endif
 
 C If icount is less than iwcount loop back other wise jump to point
 C where geometry and configuration is saved and re-display managed.
@@ -12718,3 +12862,859 @@ C Normal shift of any associated flow node will need a similar transform.
       END   ! of ESURREVEAL
 
 
+C ******* scan_bridges
+C Detects polygon edge associations related to thermal bridges.
+c Assumes that the surface is in the current zones common blocks.
+C act is '-' derive thermal bridgege data.
+C Assumes that suredgeadj has been recently called.
+
+      subroutine scan_bridges(itrc,act,izon,ier)
+#include "building.h"
+#include "geometry.h"
+#include "prj3dv.h"
+#include "help.h"
+
+      common/OUTIN/IUOUT,IUIN,IEOUT
+
+      real bridgelen ! Length (m) of potential thermal bridges in each zone.
+                     ! See code below for what each means.
+      common/gbridge/bridgelen(MCOM,16)
+
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
+      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+
+      CHARACTER outs*148,act*1
+      character ZSDESC*20,ZSDESCO*20,ZSDESS*16,ZSDESSO*20
+      character zsn*28,zsno*28
+      logical closeazi,ok
+
+C iwhich is local variable to sort most often referenced adjacent surf.
+      dimension idedge(MV*MV,3)
+      DIMENSION xx(2),xy(2),xz(2)
+      real va,vb,pa,pb
+      dimension va(3),vb(3),pa(3),pb(3),vaa(3),vbb(3)
+      real ux,uy,uz  ! unit vector along the edge
+      real dista,distc
+      logical closeux,closeuy,closeuz
+      logical greyok
+
+#ifdef OSI
+      integer iix,iiy,iix2,iiy2,iicol
+#else
+      integer*8 iix,iiy,iix2,iiy2,iicol
+#endif
+
+      h(1)='Logic looks at edges & constructions & use to determine'
+      h(2)='likely categories of thermal bridges.'
+      h(3)=' '
+      h(4)='You are asked to supply opinions for ambigious cases.'
+      h(5)='in the current zone.'
+      nbhelp=5
+
+      if(izon.eq.0.or.izon.gt.NCOMP)then
+        ier=1
+        return
+      endif
+
+C Zero the lengths of various thermal bridge type lengths.
+      do ij=1,16
+          bridgelen(izon,ij)=0.0
+      enddo
+
+C Rest the bookkeepping for whether edges have been dealt with.
+      icuredge=0
+      do ijj=1,MV*MV  ! clear idoneedge
+        idedge(ijj,1)=0
+        idedge(ijj,2)=0
+        idedge(ijj,3)=0
+      enddo
+
+C If in graphic mode draw the edges with thermal bridge attributes
+C in a different colour for each type (to match colours listed above).
+      if(MMOD.lt.8)then
+        continue
+      else
+
+        greyok=.false.      ! see if colour available
+        if(nifgrey.gt.4)then
+          greyok=.true.
+        endif
+        CALL INLNST(1)
+        itsnm=0
+        nzg=1; nznog(1)=izon; izgfoc=izon
+        CALL redraw(IER)
+      endif
+
+      do 43 isurf=1,NZSUR(izon)
+        icc=izstocn(izon,isurf)
+        if(icc.eq.0)then
+          write(outs,'(a,i2,a,i3,a)') ' Zone ',izon,' surface ',
+     &      isurf,' is an unknown connection, skipping scan_bridges.'
+          call edisp(iuout,outs)
+          ier=1
+          return
+        endif
+
+C Step through the vertices of each edge in turn and check to see
+C what other surfaces are associated with edge. j & k
+C are the vertices at the ends of the edge being tested. 
+        list=NVER(isurf)
+        do 42 i=1,list      ! loop through each vertex
+          ibridgeshr(icc,i)=0 ! begin by assuming no bridge locations
+          j=JVN(isurf,i)
+          if(i.lt.NVER(isurf))then
+            k=JVN(isurf,i+1)
+          else
+            k=JVN(isurf,1)
+          endif
+
+C Find screen location of the current edge.
+          izva=j; izvb=k
+          call ORTTRN(szcoords(izon,izva,1),
+     &      szcoords(izon,izva,2),szcoords(izon,izva,3),
+     &      TSMAT,xx(1),xy(1),xz(1),ier)
+          call ORTTRN(szcoords(izon,izvb,1),
+     &      szcoords(izon,izvb,2),szcoords(izon,izvb,3),
+     &      TSMAT,xx(2),xy(2),xz(2),ier)
+          call CLIPLIN(xx,xy,xz,iclp)
+
+          do 44 iosurf=1,NZSUR(izon)
+            icco=izstocn(izon,iosurf)
+            if(icco.eq.0) goto 44
+            if(iosurf.eq.isurf) goto 44
+
+C For other surface, loop through each edge and check if they match.
+C (by definition, they will be in reversed order so test jj against k).
+C If an edge matches, test if other surface is facing the same way.
+            listo=NVER(iosurf)
+            do 45 mm=1,listo
+              jj=JVN(iosurf,mm)
+              if(mm.lt.NVER(iosurf))then
+                kk=JVN(iosurf,mm+1)
+              else
+                kk=JVN(iosurf,1)
+              endif
+              if(j.eq.0.or.k.eq.0)then
+                continue   ! skip past zero indices
+              elseif(j.eq.kk.and.k.eq.jj)then
+
+C Find length of the current edge. And remember which vertices.
+                edgelen= crowxyz(X(j),Y(j),Z(j),X(k),Y(k),Z(k))
+                icuredge=icuredge+1
+                idedge(icuredge,1)=j
+                idedge(icuredge,2)=k
+                idedge(icuredge,3)=0
+
+C Has this edge already been referenced?
+                do iq=1,icuredge
+                  if(idedge(iq,1).gt.0.and.idedge(iq,2).gt.0)then
+                    if(idedge(iq,1).eq.k.and.idedge(iq,2).eq.j)then
+                      if(idedge(iq,3).eq.1)then
+C                       write(6,*) 'edge at v v ',j,k,' matches prior'
+                        goto 45  ! skip to the next edge.
+                      elseif(idedge(iq,3).eq.-1)then
+C                        write(6,*) 'edge at v v ',j,k,' user declined'
+                        goto 45  ! skip to the next edge.
+                      endif
+                    endif
+                  endif
+                enddo
+
+C Tests for ibridgeshr (edges that might represent thermal bridges.
+C The first filter is that both surfaces are facing outside
+                if(ICT(icc).eq.0.and.ICT(icco).eq.0)then
+                  call ZSID(izon,isurf,zsn,ZSDESC,ZSDESS)
+                  call ZSID(izon,iosurf,zsno,ZSDESCO,ZSDESSO)
+                  if(itrc.ge.1)then
+                    write(outs,'(14a,4i4)') 'facade ',
+     &                zsn(1:lnblnk(zsn)),
+     &                ' edge w ',zsno(1:lnblnk(zsno)),' p ',
+     &                sparent(izon,isurf),' ',SMLCN(izon,isurf)(1:12),
+     &                ' ',SMLCN(izon,iosurf)(1:12),' ',
+     &                suse(izon,isurf,1),' ',suse(izon,iosurf,1),
+     &                icuredge,idedge(icuredge,1),idedge(icuredge,2),
+     &                idedge(icuredge,3)
+                    call edisp(iuout,outs)
+                  endif
+
+                  if(SVFC(izon,isurf)(1:4).eq.'VERT'.and.(
+     &               SVFC(izon,iosurf)(1:4).eq.'CEIL'.or.
+     &               SVFC(izon,iosurf)(1:4).eq.'SLOP'))then
+
+C ibridgeshr =1 is roof-wall (at eave), ibridgeshr =9 is wall-gable 
+C ibridgeshr = 10 wall-parapet so both surfaces must face the outside, first must
+C be roughly vertical and the other flat (up) or sloped.
+                    if(MMOD.eq.8)then  ! highlight in red
+                      call edge_redblack(xx,xy,iix,iiy,iix2,iiy2,'r')
+                    endif
+                    call ZSID(izon,isurf,zsn,ZSDESC,ZSDESS)
+                    call ZSID(izon,iosurf,zsno,ZSDESCO,ZSDESSO)
+                    write(outs,'(3a)') zsn,' edge with ',zsno
+                    CALL EASKATOG(outs,'  ','wall-eave','wall-gable',
+     &                'wall-parapet or wall-flat roof','lintel',
+     &                'balcony','not a bridge',' ',IV,nbhelp)
+                    if(iv.eq.1)then
+                      ibridgeshr(icc,i)=1
+                      bridgelen(izon,1)= bridgelen(izon,1)+edgelen
+                      if(itrc.ge.1)then
+C                        write(6,*) 'add ',edgelen,' to wall-eave'
+                      endif
+                      idedge(icuredge,3)=1
+                    elseif(iv.eq.2)then
+                      ibridgeshr(icc,i)=9
+                      bridgelen(izon,9)= bridgelen(izon,9)+edgelen
+                      if(itrc.ge.1)then
+C                        write(6,*) 'add ',edgelen,' to wall-gable'
+                      endif
+                      idedge(icuredge,3)=1
+                    elseif(iv.eq.3)then
+                      ibridgeshr(icc,i)=10
+                      bridgelen(izon,10)= bridgelen(izon,10)+edgelen
+                      if(itrc.ge.1)then
+C                        write(6,*) 'add ',edgelen,' to wall-parapett'
+                      endif
+                    elseif(iv.eq.4)then  ! A lintel.
+                      ibridgeshr(icc,i)=6   ! lintel
+                      bridgelen(izon,6)= bridgelen(izon,6)+
+     &                  edgelen
+                      if(itrc.ge.1)then
+C                        write(6,*) 'add ',edgelen,' to lintel'
+                      endif
+                    elseif(iv.eq.5)then  ! A balcony
+                      idedge(icuredge,3)=14
+                      bridgelen(izon,14)= bridgelen(izon,14)+edgelen
+                      if(itrc.ge.1)then
+C                        write(6,*) 'add ',edgelen,' to balcony'
+                      endif
+                    elseif(iv.eq.6)then  ! User says not a bridge.
+                      if(MMOD.eq.8)then  ! redraw in black
+                      call edge_redblack(xx,xy,iix,iiy,iix2,iiy2,'b')
+                      endif
+                      idedge(icuredge,3)=-1  ! Mark declined.
+                      goto 45  ! skip to the next edge.
+                    endif
+                    if(ibridgeshr(icc,i).ne.0.and.MMOD.eq.8)then
+                      call u2pixel(xx(1),xy(1),iix,iiy)
+                      call u2pixel(xx(2),xy(2),iix2,iiy2)
+                      iicol=ibridgeshr(icc,i)
+                      if(greyok)call winscl('z',iicol)
+                      call edwline(iix,iiy,iix2,iiy2)
+                      iicol=0
+                      if(greyok)call winscl('-',iicol)
+                      call forceflush()
+                    endif
+                  elseif(SVFC(izon,isurf)(1:4).eq.'VERT'.and.
+     &                   SVFC(izon,iosurf)(1:4).eq.'VERT')then
+
+C Test if azimuth are within two degrees. For the special case of the
+C difference between the two being ~360deg call it closeazi
+                    call eclose(SPAZI(izon,isurf),
+     &                          SPAZI(izon,iosurf),2.0,closeazi)
+                    if(.NOT.closeazi)then
+                      zazi = abs(SPAZI(izon,isurf)-
+     &                           SPAZI(izon,iosurf))
+                      call eclose(zazi,360.0,2.0,closeazi)
+                    endif
+                    if(closeazi)then
+
+C Find which of the unit vector components (ux uy uz) are near zero
+C in order to see if edge if vertical or horizontal.
+                      call uvxyz(X(j),Y(j),Z(j),X(k),Y(k),Z(k),
+     &                  ux,uy,uz)
+                      call eclose(ux,0.00,0.002,closeux)
+                      call eclose(uy,0.00,0.002,closeuy)
+                      call eclose(uz,0.00,0.002,closeuz)
+
+C ibridgeshr =6 is lintel above window or door so both surfaces must face
+C the outside and face the same direction and one must be the
+C parent and the edge must be roughly horizontal and above the
+C centre of the surface (and marked as a door or window)
+C << ALSO check if parent is of FRAME type >>
+                      if(closeuz)then
+                        if(Z(j).gt.SURCOG(izon,isurf,3))then
+                          if(sparent(izon,isurf)(1:2).eq.'-')then
+                            goto 45
+                          elseif(SMLCN(izon,isurf)(1:12).eq.
+     &                           SMLCN(izon,iosurf)(1:12))then
+                            goto 45  ! same MLC so cannot be a TB
+                          else
+
+C Check if either surface is a REVEAL.
+                            if(SUSE(izon,isurf,1)(1:6).eq.'REVEAL'.or.
+     &                         SUSE(izon,iosurf,1)(1:6).eq.'REVEAL')then
+                              if(MMOD.eq.8)then  ! highlight in red
+                                call edge_redblack(xx,xy,iix,iiy,
+     &                            iix2,iiy2,'r')
+                              endif
+                            call ZSID(izon,isurf,zsn,ZSDESC,ZSDESS)
+                            call ZSID(izon,iosurf,zsno,ZSDESCO,ZSDESSO)
+                            write(outs,'(3a)') zsn,' edge with ',zsno
+                              CALL EASKAB(outs,
+     &                          'One surface is a reveal:',
+     &                          'corner thermal bridge','not a bridge',
+     &                          IV,nbhelp)
+                              if(IV.eq.2)then
+                               if(MMOD.eq.8)then  ! Redraw as black line.
+                                 call edge_redblack(xx,xy,iix,iiy,
+     &                             iix2,iiy2,'b')
+                                endif
+                                idedge(icuredge,3)=-1  ! Mark declined.
+                                goto 45
+                              endif
+                            endif
+
+C Check various combinations. 1st opaque & 2nd opaque then lintel
+C if 1st opaque & 2nd tran or 1st tran & 2nd opaque then glass-fame.
+                            if(SOTF(izon,isurf)(1:6).eq.'OPAQUE'.and.
+     &                         SOTF(izon,iosurf)(1:6).eq.'OPAQUE')then
+                              ibridgeshr(icc,i)=6   ! lintel
+                              bridgelen(izon,6)= bridgelen(izon,6)+
+     &                          edgelen
+                              if(itrc.ge.1)then
+C                                write(6,*) 'add ',edgelen,' to lintel'
+                              endif
+                              idedge(icuredge,3)=1
+                            elseif(
+     &                        SOTF(izon,isurf)(1:6).eq.'OPAQUE'.and.
+     &                        SOTF(izon,iosurf)(1:6).ne.'OPAQUE')then
+                              ibridgeshr(icc,i)=13  ! glass-frame
+                              bridgelen(izon,13)= bridgelen(izon,13)+
+     &                          edgelen
+                              if(itrc.ge.1)then
+C                                write(6,*) 'add ',edgelen,' glass frame'
+                              endif
+                              idedge(icuredge,3)=1
+                            elseif(
+     &                        SOTF(izon,isurf)(1:6).ne.'OPAQUE'.and.
+     &                        SOTF(izon,iosurf)(1:6).eq.'OPAQUE')then
+                              ibridgeshr(icc,i)=13  ! glass-frame
+                              bridgelen(izon,13)= bridgelen(izon,13)+
+     &                          edgelen
+                            elseif(
+     &                        SOTF(izon,isurf)(1:6).ne.'OPAQUE'.and.
+     &                        SOTF(izon,iosurf)(1:6).ne.'OPAQUE')then
+                              if(MMOD.eq.8)then  ! redraw in black
+                                call edge_redblack(xx,xy,iix,iiy,
+     &                            iix2,iiy2,'b')
+                              endif
+                              goto 45  ! skip to the next edge.
+                            endif
+                            if(ibridgeshr(icc,i).ne.0.and.MMOD.eq.8)then
+                              call u2pixel(xx(1),xy(1),iix,iiy)
+                              call u2pixel(xx(2),xy(2),iix2,iiy2)
+                              iicol=ibridgeshr(icc,i)
+                              if(greyok)call winscl('z',iicol)
+                              call edwline(iix,iiy,iix2,iiy2)
+                              iicol=0
+                              if(greyok)call winscl('-',iicol)
+                              call forceflush()
+                            endif
+                          endif
+
+C ibridgeshr =7 is Sill below window so both surfaces must face
+C the outside and face the same direction and one must be the
+C parent and the edge must be roughly horizontal and below the
+C centre of the surface (and marked as a door or window)
+                        else
+                          if(sparent(izon,isurf)(1:2).eq.'-')then
+                            goto 45
+                          elseif(SMLCN(izon,isurf)(1:12).eq.
+     &                           SMLCN(izon,iosurf)(1:12))then
+                            goto 45  ! same MLC so cannot be a TB
+                          else
+
+C Check various combinations. 1st opaque & 2nd opaque then sill.
+C if 1st opaque & 2nd tran or 1st tran & 2nd opaque then glass-fame.
+                            if(SOTF(izon,isurf)(1:6).eq.'OPAQUE'.and.
+     &                         SOTF(izon,iosurf)(1:6).eq.'OPAQUE')then
+                              ibridgeshr(icc,i)=7   ! sill
+                              bridgelen(izon,7)= bridgelen(izon,7)+
+     &                          edgelen
+                              if(itrc.ge.1)then
+C                                write(6,*) 'add ',edgelen,' to sill'
+                              endif
+                              idedge(icuredge,3)=1
+                            elseif(
+     &                        SOTF(izon,isurf)(1:6).eq.'OPAQUE'.and.
+     &                        SOTF(izon,iosurf)(1:6).ne.'OPAQUE')then
+                              ibridgeshr(icc,i)=13  ! glass-frame
+                              bridgelen(izon,13)= bridgelen(izon,13)+
+     &                          edgelen
+                              if(itrc.ge.1)then
+C                                write(6,*) 'add ',edgelen,' glass frame'
+                              endif
+                              idedge(icuredge,3)=1
+                            elseif(
+     &                        SOTF(izon,isurf)(1:6).ne.'OPAQUE'.and.
+     &                        SOTF(izon,iosurf)(1:6).eq.'OPAQUE')then
+                              ibridgeshr(icc,i)=13  ! glass-frame
+                              bridgelen(izon,13)= bridgelen(izon,13)+
+     &                          edgelen
+                              if(itrc.ge.1)then
+C                                write(6,*) 'add ',edgelen,' glass frame'
+                              endif
+                              idedge(icuredge,3)=1
+                            elseif(
+     &                        SOTF(izon,isurf)(1:6).ne.'OPAQUE'.and.
+     &                        SOTF(izon,iosurf)(1:6).ne.'OPAQUE')then
+                              continue
+                            endif
+                            if(ibridgeshr(icc,i).ne.0.and.MMOD.eq.8)then
+                              call u2pixel(xx(1),xy(1),iix,iiy)
+                              call u2pixel(xx(2),xy(2),iix2,iiy2)
+                              iicol=ibridgeshr(icc,i)
+                              if(greyok)call winscl('z',iicol)
+                              call edwline(iix,iiy,iix2,iiy2)
+                              iicol=0
+                              if(greyok)call winscl('-',iicol)
+                              call forceflush()
+                            endif
+                          endif
+                        endif
+                      endif
+
+C ibridgeshr =8 is jamb at window or door so both surfaces must face
+C the outside and face the same direction and one must be the
+C parent and the edge must be roughly vertical (and marked as
+C a door or window)
+C << ALSO check if parent is of FRAME type >>
+                     if(closeux.and.closeuy)then
+                       if(sparent(izon,isurf)(1:2).eq.'-')then
+                          goto 45
+                       elseif(SMLCN(izon,isurf)(1:12).eq.
+     &                         SMLCN(izon,iosurf)(1:12))then
+                          goto 45  ! same MLC so cannot be a TB
+                       else
+                         if(SOTF(izon,isurf)(1:6).eq.'OPAQUE'.and.
+     &                       SOTF(izon,iosurf)(1:6).eq.'OPAQUE')then
+                            ibridgeshr(icc,i)=8  ! is vertical
+                            bridgelen(izon,8)= bridgelen(izon,8)+
+     &                        edgelen
+                            if(itrc.ge.1)then
+C                              write(6,*) 'add ',edgelen,' to jamb'
+                            endif
+                            idedge(icuredge,3)=1
+                          elseif(SOTF(izon,isurf)(1:6).eq.'OPAQUE'.and.
+     &                      SOTF(izon,iosurf)(1:6).ne.'OPAQUE')then
+                            ibridgeshr(icc,i)=13  ! glass-frame
+                            bridgelen(izon,13)= bridgelen(izon,13)+
+     &                        edgelen
+                            if(itrc.ge.1)then
+C                              write(6,*) 'add ',edgelen,' to gass frame'
+                            endif
+                            idedge(icuredge,3)=1
+                          elseif(SOTF(izon,isurf)(1:6).ne.'OPAQUE'.and.
+     &                           SOTF(izon,iosurf)(1:6).eq.'OPAQUE')then
+                            ibridgeshr(icc,i)=13  ! glass-frame
+                            bridgelen(izon,13)= bridgelen(izon,13)+
+     &                         edgelen
+                            if(itrc.ge.1)then
+C                              write(6,*) 'add ',edgelen,' to gass frame'
+                            endif
+                            idedge(icuredge,3)=1
+                          elseif(SOTF(izon,isurf)(1:6).ne.'OPAQUE'.and.
+     &                           SOTF(izon,iosurf)(1:6).ne.'OPAQUE')then
+                            continue
+                          endif
+                          if(ibridgeshr(icc,i).ne.0.and.MMOD.eq.8)then
+                            call u2pixel(xx(1),xy(1),iix,iiy)
+                            call u2pixel(xx(2),xy(2),iix2,iiy2)
+                            iicol=ibridgeshr(icc,i)
+                            if(greyok)call winscl('z',iicol)
+                            call edwline(iix,iiy,iix2,iiy2)
+                            iicol=0
+                            if(greyok)call winscl('-',iicol)
+                            call forceflush()
+                          endif
+                        endif
+                      endif
+                    else
+
+C Determin concave or convex between the two surfaces based on the distance
+C between points on the two surfaces and points a slight distance
+C away from the two surraces.
+                      PA(1)=SURCOG(izon,isurf,1)  ! point on plane
+                      PA(2)=SURCOG(izon,isurf,2)
+                      PA(3)=SURCOG(izon,isurf,3)
+                      VA(1)=SURVN(izon,isurf,1)   ! point 1m away
+                      VA(2)=SURVN(izon,isurf,2)
+                      VA(3)=SURVN(izon,isurf,3)
+
+C Use ratio calculation to get point 100mm away.
+                      r2 = 1.0 - 0.1
+                      r1 = 0.1
+                      vaa(1) = ((r2 * PA(1)) + (r1 * VA(1)))/1.0
+                      vaa(2) = ((r2 * PA(2)) + (r1 * VA(2)))/1.0
+                      vaa(3) = ((r2 * PA(3)) + (r1 * VA(3)))/1.0
+
+                      PB(1)=SURCOG(izon,iosurf,1)  ! point on plane
+                      PB(2)=SURCOG(izon,iosurf,2)
+                      PB(3)=SURCOG(izon,iosurf,3)
+                      VB(1)=SURVN(izon,iosurf,1)   ! point 1m away
+                      VB(2)=SURVN(izon,iosurf,2)
+                      VB(3)=SURVN(izon,iosurf,3)
+                      vbb(1) = ((r2 * PB(1)) + (r1 * VB(1)))/1.0
+                      vbb(2) = ((r2 * PB(2)) + (r1 * VB(2)))/1.0
+                      vbb(3) = ((r2 * PB(3)) + (r1 * VB(3)))/1.0
+                      dista = crow(PA,PB)  ! dist cog-to-cog
+C                      distb = crow(VA,VB)  ! dist offset-to-offset
+                      distc = crow(VAA,VBB)! dist slight offset-to-offset
+
+C Check if REVEAL << and FRAME >>
+                      IV=1     ! Assume corner.
+                      if(SUSE(izon,isurf,1)(1:6).eq.'REVEAL'.or.
+     &                   SUSE(izon,iosurf,1)(1:6).eq.'REVEAL')then
+                        if(MMOD.eq.8)then  ! highlight in red
+                          call edge_redblack(xx,xy,iix,iiy,
+     &                      iix2,iiy2,'r')
+                        endif
+                        call ZSID(izon,isurf,zsn,ZSDESC,ZSDESS)
+                        call ZSID(izon,iosurf,zsno,ZSDESCO,ZSDESSO)
+                        write(outs,'(3a)') zsn,' edge with ',zsno
+                        CALL EASKABC(outs,'One surface is a reveal',
+     &                    'corner thermal bridge','jamb',
+     &                    'not a bridge',IV,nbhelp)
+                        if(IV.eq.3)then
+                          if(MMOD.eq.8)then  ! Redraw as black line.
+                            call edge_redblack(xx,xy,iix,iiy,
+     &                        iix2,iiy2,'b')
+                          endif
+                          idedge(icuredge,3)=-1  ! Mark declined.
+                          goto 45
+                        endif
+                      endif
+
+C If dista is greater than distc then concave.
+                      if(IV.eq.1)then
+                        if(dista.lt.distc)then
+
+C ibridgeshr =3 is wall-wall (convex corner) so both must face the outside
+C and the angle between the surface normals is greater than zero.
+                          ibridgeshr(icc,i)=3
+                          bridgelen(izon,3)= bridgelen(izon,3)+
+     &                      edgelen
+                          if(itrc.ge.1)then
+C                            write(6,*) 'add ',edgelen,' to corner conv'
+                          endif
+                          idedge(icuredge,3)=1
+                        else
+
+C ibridgeshr =4 is wall-wall (concave corner) so both must face the outside
+C and the angle between the surface normals less than zero
+                          ibridgeshr(icc,i)=4
+                          bridgelen(izon,4)= bridgelen(izon,4)+
+     &                      edgelen
+                          if(itrc.ge.1)then
+C                            write(6,*) 'add ',edgelen,' to corner concv'
+                          endif
+                          idedge(icuredge,3)=1
+                        endif
+                      elseif(IV.eq.2)then
+                        ibridgeshr(icc,i)=8  ! is vertical
+                        bridgelen(izon,8)= bridgelen(izon,8)+
+     &                    edgelen
+                        if(itrc.ge.1)then
+C                          write(6,*) 'add ',edgelen,' to jamb'
+                        endif
+                        idedge(icuredge,3)=1
+                      endif
+                      if(ibridgeshr(icc,i).ne.0.and.MMOD.eq.8)then
+                        call u2pixel(xx(1),xy(1),iix,iiy)
+                        call u2pixel(xx(2),xy(2),iix2,iiy2)
+                        iicol=ibridgeshr(icc,i)
+                        if(greyok)call winscl('z',iicol)
+                        call edwline(iix,iiy,iix2,iiy2)
+                        iicol=0
+                        if(greyok)call winscl('-',iicol)
+                        call forceflush()
+                      endif
+                    endif
+
+                  elseif(SVFC(izon,isurf)(1:4).eq.'VERT'.and.
+     &                   SVFC(izon,iosurf)(1:4).eq.'FLOR')then
+
+C Check if either surface is a REVEAL.
+                    IV=1       ! assume it will be wall-floor exposed.
+                    if(SUSE(izon,isurf,1)(1:6).eq.'REVEAL'.or.
+     &                 SUSE(izon,iosurf,1)(1:6).eq.'REVEAL')then
+                      if(MMOD.eq.8)then  ! highlight in red
+                        call edge_redblack(xx,xy,iix,iiy,iix2,iiy2,'r')
+                      endif
+                      call ZSID(izon,isurf,zsn,ZSDESC,ZSDESS)
+                      call ZSID(izon,iosurf,zsno,ZSDESCO,ZSDESSO)
+                      write(outs,'(3a)') zsn,' edge with ',zsno
+                      CALL EASKABC(outs,'One surface is a reveal',
+     &                  'wall-floor exposed','sill','not a bridge',
+     &                  IV,nbhelp)
+                      if(IV.eq.3)then
+                        if(MMOD.eq.8)then  ! Redraw as black line.
+                          call edge_redblack(xx,xy,iix,iiy,
+     &                      iix2,iiy2,'b')
+                        endif
+                        idedge(icuredge,3)=-1  ! Mark declined.
+                        goto 45
+                      endif
+                    endif
+
+C ibridgeshr =5 is wall-floor (exposed) so both surfaces must face the
+C outside one roughly vertical and the other flat (down).
+                    if(IV.eq.1)then  ! Wall-floor exposed.
+                      call ZSID(izon,isurf,zsn,ZSDESC,ZSDESS)
+                      call ZSID(izon,iosurf,zsno,ZSDESCO,ZSDESSO)
+C Debug.
+C                      write(6,'(14a,4i4)') 'wall-floor-exposed ',
+C     &                  zsn(1:lnblnk(zsn)),' edge with ',
+C     &                  zsno(1:lnblnk(zsno)),' p ',
+C     &                  sparent(izon,isurf),' ',
+C     &                  SMLCN(izon,isurf)(1:12),
+C     &                  ' ',SMLCN(izon,iosurf)(1:12),' ',
+C     &                  suse(izon,isurf,1),' ',suse(izon,iosurf,1),
+C     &                  icuredge,idedge(icuredge,1),idedge(icuredge,2),
+C     &                  idedge(icuredge,3)
+                        ibridgeshr(icc,i)=5
+                        bridgelen(izon,5)= bridgelen(izon,5)+
+     &                    edgelen
+                      if(itrc.ge.1)then
+C                        write(6,*) 'add ',edgelen,' to exposed floor'
+                      endif
+                      idedge(icuredge,3)=1
+                    elseif(IV.eq.2)then
+                      ibridgeshr(icc,i)=7   ! sill
+                      bridgelen(izon,7)= bridgelen(izon,7)+edgelen
+                      if(itrc.ge.1)then
+C                        write(6,*) 'add ',edgelen,' to sill'
+                      endif
+                      idedge(icuredge,3)=1
+                    endif
+                    if(ibridgeshr(icc,i).ne.0.and.MMOD.eq.8)then
+                      call u2pixel(xx(1),xy(1),iix,iiy)
+                      call u2pixel(xx(2),xy(2),iix2,iiy2)
+                      iicol=ibridgeshr(icc,i)
+                      if(greyok)call winscl('z',iicol)
+                      call edwline(iix,iiy,iix2,iiy2)
+                      iicol=0
+                      if(greyok)call winscl('-',iicol)
+                      call forceflush()
+                    endif
+                  endif
+
+                elseif(ICT(icc).eq.0.and.ICT(icco).eq.3.or.
+     &                 ICT(icc).eq.0.and.ICT(icco).eq.1)then
+
+C Edge between external and an internal surface or a surface to
+C a similar condition. 
+C ibridgeshr =11 if 2nd surface is flat
+                  call ZSID(izon,isurf,zsn,ZSDESC,ZSDESS)
+                  call ZSID(izon,iosurf,zsno,ZSDESCO,ZSDESSO)
+C Debug.
+C                  write(6,'(14a,4i4)') 'wall ptn ',zsn(1:lnblnk(zsn)),
+C     &              ' edge with ',zsno(1:lnblnk(zsno)),' p ',
+C     &              sparent(izon,isurf),' ',
+C     &              SMLCN(izon,isurf)(1:12),
+C     &              ' ',SMLCN(izon,iosurf)(1:12),' ',
+C     &              suse(izon,isurf,1),' ',suse(izon,iosurf,1),
+C     &              icuredge,idedge(icuredge,1),idedge(icuredge,2),
+C     &              idedge(icuredge,3)
+                  if(SVFC(izon,isurf)(1:4).eq.'VERT'.and.
+     &               SVFC(izon,iosurf)(1:4).eq.'FLOR')then
+                    ibridgeshr(icc,i)=11
+                    bridgelen(izon,11)= bridgelen(izon,11)+
+     &                edgelen
+                    if(itrc.ge.1)then
+C                      write(6,*) 'add ',edgelen,' to intermed floor'
+                    endif
+                    idedge(icuredge,3)=1
+                  elseif(SVFC(izon,isurf)(1:4).eq.'VERT'.and.
+     &                   SVFC(izon,iosurf)(1:4).eq.'CEIL')then
+                    if(MMOD.eq.8)then  ! highlight in red
+                      call edge_redblack(xx,xy,iix,iiy,iix2,iiy2,'r')
+                    endif
+                    call ZSID(izon,isurf,zsn,ZSDESC,ZSDESS)
+                    call ZSID(izon,iosurf,zsno,ZSDESCO,ZSDESSO)
+                    write(outs,'(3a)') zsn,' edge with ',zsno
+                    CALL EASKATOG(outs,'  ','wall-eave','wall-gable',
+     &                'wall-parapet or wall-flat roof',
+     &                'intermediate floor','balcony','lintel',
+     &                'not a bridge',IV,nbhelp)
+                    if(iv.eq.1)then
+                      ibridgeshr(icc,i)=1
+                      bridgelen(izon,1)= bridgelen(izon,1)+edgelen
+                      if(itrc.ge.1)then
+C                        write(6,*) 'add ',edgelen,' to wall-eave'
+                      endif
+                      idedge(icuredge,3)=1
+                    elseif(iv.eq.2)then
+                      ibridgeshr(icc,i)=9
+                      bridgelen(izon,9)= bridgelen(izon,9)+edgelen
+                      if(itrc.ge.1)then
+C                        write(6,*) 'add ',edgelen,' to wall-gable'
+                      endif
+                      idedge(icuredge,3)=1
+                    elseif(iv.eq.3)then
+                      ibridgeshr(icc,i)=10
+                      bridgelen(izon,10)= bridgelen(izon,10)+edgelen
+                      if(itrc.ge.1)then
+C                        write(6,*) 'add ',edgelen,' to wall-parapet'
+                      endif
+                      idedge(icuredge,3)=1
+                    elseif(iv.eq.4)then
+                      ibridgeshr(icc,i)=11
+                      bridgelen(izon,11)= bridgelen(izon,11)+
+     &                  edgelen
+                      if(itrc.ge.1)then
+C                        write(6,*) 'add ',edgelen,' to intermed floor'
+                      endif
+                      idedge(icuredge,3)=1
+                    elseif(iv.eq.5)then  ! A balcony
+                      ibridgeshr(icc,i)=14
+                      bridgelen(izon,14)= bridgelen(izon,14)+edgelen
+                      if(itrc.ge.1)then
+C                        write(6,*) 'add ',edgelen,' to balcony'
+                      endif
+                      idedge(icuredge,3)=1
+                    elseif(iv.eq.6)then  ! A lintel
+                      ibridgeshr(icc,i)=6   ! lintel
+                      bridgelen(izon,6)= bridgelen(izon,6)+edgelen
+                      if(itrc.ge.1)then
+C                        write(6,*) 'add ',edgelen,' to lintel'
+                      endif
+                      idedge(icuredge,3)=1
+                    elseif(iv.eq.7)then  ! User says not a bridge.
+                      if(MMOD.eq.8)then  ! Redraw as black line.
+                        call edge_redblack(xx,xy,iix,iiy,
+     &                    iix2,iiy2,'b')
+                      endif
+                      idedge(icuredge,3)=-1  ! Mark declined.
+                    endif
+                  elseif(SVFC(izon,isurf)(1:4).eq.'VERT'.and.
+     &                   SVFC(izon,iosurf)(1:4).eq.'VERT')then
+
+C ibridgeshr =12 if 2nd (interior) surface is vertical.
+                    ibridgeshr(icc,i)=12
+                    bridgelen(izon,12)= bridgelen(izon,12)+
+     &                edgelen
+                    if(itrc.ge.1)then
+C                      write(6,*) 'add ',edgelen,' to wall-ptn'
+                    endif
+                    idedge(icuredge,3)=1
+                  elseif(SVFC(izon,isurf)(1:4).eq.'SLOP'.and.  ! Sloped roof to flat ceiling.
+     &                   SVFC(izon,iosurf)(1:4).eq.'FLOR')then
+                    ibridgeshr(icc,i)=9
+                    bridgelen(izon,9)= bridgelen(izon,9)+edgelen
+                    if(itrc.ge.1)then
+C                      write(6,*) 'add ',edgelen,' to wall-gable'
+                    endif
+                    idedge(icuredge,3)=1
+                  endif
+                  if(ibridgeshr(icc,i).ne.0.and.MMOD.eq.8)then
+                    call u2pixel(xx(1),xy(1),iix,iiy)
+                    call u2pixel(xx(2),xy(2),iix2,iiy2)
+                    iicol=ibridgeshr(icc,i)
+                    if(greyok)call winscl('z',iicol)
+                    call edwline(iix,iiy,iix2,iiy2)
+                    iicol=0
+                    if(greyok)call winscl('-',iicol)
+                    call forceflush()
+                  endif
+ 
+                elseif(ICT(icc).eq.4.and.ICT(icco).eq.0)then
+
+C ibridgeshr =2 is wall-ground floor so one surface must face outside and the
+C other must face the ground.
+                  if(SVFC(izon,isurf)(1:4).eq.'FLOR'.and.
+     &                SVFC(izon,iosurf)(1:4).eq.'VERT')then
+                    ibridgeshr(icc,i)=2
+                    bridgelen(izon,2)= bridgelen(izon,2)+
+     &                edgelen
+                    if(itrc.ge.1)then
+C                      write(6,*) 'add ',edgelen,' to wall-grnd'
+                    endif
+                    idedge(icuredge,3)=1
+                    if(ibridgeshr(icc,i).ne.0.and.MMOD.eq.8)then
+                      call u2pixel(xx(1),xy(1),iix,iiy)
+                      call u2pixel(xx(2),xy(2),iix2,iiy2)
+                      iicol=ibridgeshr(icc,i)
+                      if(greyok)call winscl('z',iicol)
+                      call edwline(iix,iiy,iix2,iiy2)
+                      iicol=0
+                      if(greyok)call winscl('-',iicol)
+                      call forceflush()
+                    endif
+                  endif
+                endif
+              endif
+  45        continue
+  44      continue     ! loop surfaces in zone
+  42    continue  ! loop vertices in surface
+  43  continue    ! outer loop of surfaces in the zone
+
+C Report on likely thermal bridge lengths. Reduce the concave and
+C convex bridge lengths because they will have been counted from
+C the edges going in both directions.
+C       bridgelen(izon,3)=bridgelen(izon,3)*0.5
+C       bridgelen(izon,4)=bridgelen(izon,4)*0.5
+      if(itrc.ge.1)then
+        write(outs,'(a,9f7.2)') 'bridge len ',bridgelen(izon,1),
+     &    bridgelen(izon,2),bridgelen(izon,3),
+     &    bridgelen(izon,4),bridgelen(izon,5),
+     &    bridgelen(izon,6),bridgelen(izon,7),
+     &    bridgelen(izon,8),bridgelen(izon,9)
+        call edisp(iuout,' ')
+        call edisp(iuout,outs)
+        write(outs,'(a,7f7.2)') 'bridge len ',bridgelen(izon,10),
+     &    bridgelen(izon,11),bridgelen(izon,12),
+     &    bridgelen(izon,13),bridgelen(izon,14),
+     &    bridgelen(izon,15),bridgelen(izon,16)
+        call edisp(iuout,outs)
+      endif
+      return
+      end
+
+C ****************** edge_redblack *******************
+C Draw a polygon edge in either red or black.
+
+      subroutine edge_redblack(xx,xy,iix,iiy,iix2,iiy2,act)
+C #include "building.h"
+
+      common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
+      dimension xx(2),xy(2)
+      character*1 act
+      logical greyok
+
+#ifdef OSI
+      integer iix,iiy,iix2,iiy2,iicol
+#else
+      integer*8 iix,iiy,iix2,iiy2,iicol
+#endif
+
+C Check if we have colour.
+      greyok=.false.
+      if(nifgrey.gt.4)then
+        greyok=.true.
+      endif
+
+      if(act.eq.'b')then
+        call u2pixel(xx(1),xy(1),iix,iiy)
+        call u2pixel(xx(2),xy(2),iix2,iiy2)
+        iicol=0
+        if(greyok)call winscl('-',iicol)
+        call edwline(iix,iiy,iix2,iiy2)
+        call forceflush()
+      else
+        call u2pixel(xx(1),xy(1),iix,iiy)
+        call u2pixel(xx(2),xy(2),iix2,iiy2)
+        iicol=0
+        if(greyok)call winscl('z',iicol)
+        call edwline(iix,iiy,iix2,iiy2)
+        iicol=0
+        if(greyok)call winscl('-',iicol)
+        call forceflush()
+      endif
+      return
+      end

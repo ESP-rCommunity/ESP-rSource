@@ -103,6 +103,7 @@ C Ask to overwrite flag.
       character smode*1 ! simscene mode 'i' interactive '-' silent
       character dstmp*24,uname*24,tfile2*72
       character hold32*32     ! for helper applications
+      character rifwave*72
 
       character cVnum*38      ! returned from ESPrVersionNum
       character pagestitle*68 ! for banner title via epages call
@@ -150,6 +151,7 @@ C is fom IFIL+9 and ASCII viewing and geometry file reading on IFILE+1.
 C The current outside description file is irofil = IFIL+3.
 C The current room description file is IRRFIL = IFIL+4.
 C Glazing (contains defaults and illums) iglzfil = IFIL+16.
+C Wavefront materials iwmatfil = IFIL+19
 C Materials file imatfil = IFIL+11, any xforms of IES data
 C are in iiesfil.
 C Scene configuration file IRCFG = IFIL+17.
@@ -159,6 +161,7 @@ C Scene configuration file IRCFG = IFIL+17.
       iglzfil = IFIL+16
       IRCFG = IFIL+17
       iiesfil = IFIL+18
+      iwmatfil = IFIL+19
 
 C Primitives on IFIL+13, mlc on IFIL+14, optics on IFIL+15,
 C check for root journal file on iuj.
@@ -288,34 +291,39 @@ C General image option flags.
 
 C Initialise output device, assume minimal trace.
       MMOD=MODL
+
       if(iappw.eq.0.and.iappx.eq.0.and.iappy.eq.0)then
-        iappw=600
-        iappx=60
-        iappy=10
+        iappw=690  ! default height
+        iappx=40
+        iappy=40
+        iappwpc=100   ! remember %
       else
-        if(iappx.le.0)iappx=60
-        if(iappy.le.0)iappy=10
+        if(iappx.lt.0)iappx=40
+        if(iappy.lt.0)iappy=40
         if(iappw.le.200)then
-          iappwi=int(600*iappw*0.01)
+          iappwpc=iappw    ! remember %
+          iappwi=int(690*iappw*0.01)
           iappw=iappwi
         elseif(iappw.gt.200)then
+          iappwpc=nint(100.0*(real(iappw)/690.0))  ! reconstitute %
           continue
         endif
       endif
 
 C Set pixels high to iappw and pixels wide to factor in monitor size.
       iapphi=iappw
-      iappwi=int(real(iappw)*(1024.0/725.0))
+      iappwi=int(real(iappw)*(1024.0/700.0))
 
-      if(iappw.gt.0.and.iappw.lt.100)then
-        menuchw = MAX0(int(32*iappw*0.01),12)
-        LIMTTY=7
-        LIMIT =7
+      if(iappwpc.gt.0.and.iappwpc.lt.100)then
+        menuchw = MAX0(int(36*iappwpc*0.01),20)
+        LIMTTY= MAX0(int(10*iappwpc*0.01),6)
+        LIMIT = MAX0(int(10*iappwpc*0.01),6)
       else
-        menuchw = 32
-        LIMTTY=7
-        LIMIT =7
+        menuchw = 36
+        LIMTTY=10
+        LIMIT =10
       endif
+
       IF(MMOD.EQ.8)THEN
 
 C Set initial font sizes (IMFS is for menus, IFS is for dialog & ITFS text feedback).
@@ -352,7 +360,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
 
 C Setup and pass in parameters to win3d.
-        iiw1=2; iiw2=2; iiw3=2; iiw4=3; iimenu=menuchw
+        iiw1=4; iiw2=4; iiw3=2; iiw4=3; iimenu=menuchw
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
@@ -831,9 +839,11 @@ C Sky type.
         call SKYFORM(IER)
         call edisp(iuout,' updating RIF file to account for zones.')
         IFC=3
-        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,'-',IER)
+        rifwave='obj.rif'
+        call mkrif(ITA2,rifwave,IFC,0,'w',IER)
         if (NBSRIF(ISCENE).eq.1) then
-          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,'-',ier)
         endif
 
       elseif(INO.EQ.11)then
@@ -842,9 +852,11 @@ C Zone and outside composition, updating rif file upon return.
         call E2RFORM('i',IER)
         call edisp(iuout,' updating RIF file to account for zones.')
         IFC=3
-        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,'-',IER)
+        rifwave='obj.rif'
+        call mkrif(ITA2,rifwave,IFC,0,'w',IER)
         if (NBSRIF(ISCENE).eq.1) then
-          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,'-',ier)
         endif
 
       elseif(INO.EQ.12)then
@@ -920,9 +932,11 @@ C Edit view points.  Save off current views.
           call VEWFORM(IER)
           call edisp(iuout,' updating RIF file to account for views.')
           IFC=3
-          call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+          call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,'-',IER)
+          rifwave='obj.rif'
+          call mkrif(ITA2,rifwave,IFC,0,'w',IER)
           if (NBSRIF(ISCENE).eq.1) then
-            call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+            call mkrif(ita2,LBSRIF(ISCENE),IFC,1,'-',ier)
           endif
 
 C Because of the site plan, recalculate perspective view.
@@ -1187,9 +1201,11 @@ C Get glare info file name (if necessary) and display image.
 
 C Save scene information.
         IFC=3
-        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,'-',IER)
+        rifwave='obj.rif'
+        call mkrif(ITA2,rifwave,IFC,0,'w',IER)
         if (NBSRIF(ISCENE).eq.1) then
-          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,'-',ier)
         endif
 
       ELSE
@@ -1547,10 +1563,6 @@ C Dummy routine (needed for call back from c).
 
       subroutine imgdisp(iforce,focus,ier)
       character focus*4
-      return
-      end
-
-      subroutine Find_season_parameters()
       return
       end
 

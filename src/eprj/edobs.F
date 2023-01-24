@@ -48,10 +48,13 @@ C Use file unit IPRODB temporarily.
       common/SPAD/MMOD,LIMIT,LIMTTY
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
 
-      dimension IVALB(MB),ITEMP(MB)
+      dimension IVALB(MB),IVALBO(MB),ITEMP(MB)
+      dimension IVALS(MCOM)
       CHARACTER*33 VERT(35)
-      character*32 PICK(MB)
+      character*32 PICK(MB),PICKO(MB)
       CHARACTER KEY*1,HOLD*24
       character blkroot*8,mat*12,tbn*12
       character holds*36
@@ -448,7 +451,8 @@ C time for copy use zeros, otherwise re-present the previous values.
 C +- Obstruction.
         IW=1
         CALL EASKATOG(' ','Modify obstruction list:',
-     &    'add','delete','copy','cancel',' ',' ',' ',IW,nbhelp)
+     &    'add','delete','copy','copy from another zone','cancel',
+     &    ' ',' ',IW,nbhelp)
         IF(IW.EQ.2)THEN
 
 C Build up text strings for the delete menu. 
@@ -511,7 +515,7 @@ C To delete the last obstruction, dereference the file and exit.
           endif
           MODIFYVIEW=.TRUE.
           call warnmod(ICOMP,'ob-')
-        ELSEIF(IW.EQ.1)THEN
+        ELSEIF(IW.EQ.1)THEN   ! Add an obstruction.
           IF(nbobs(icomp)+1.LE.MB)THEN
             nbobs(icomp)=nbobs(icomp)+1
             nbo=nbobs(icomp)
@@ -558,11 +562,9 @@ C If user asked for next or prior obstruction reset nbo and call again.
             nbo=nbo+1; ITOBS = nbo; MODIFYVIEW=.TRUE.
             goto 77
           endif
-          CALL EPMENRC  ! recover state of calling menue
-          GOTO 92       ! re-display the menu
-        elseif(IW.EQ.3)THEN
-
-C Copy obstruction.
+          CALL EPMENRC       ! recover state of calling menue
+          GOTO 92            ! re-display the menu
+        elseif(IW.EQ.3)THEN  ! Copy obstruction.
           nbo=nbobs(icomp)
           CALL EPMENSV
           INPIC=1
@@ -614,11 +616,11 @@ C time for copy use zeros, otherwise re-present the previous values.
             BLOCKMAT(icomp,nbo)=BLOCKMAT(icomp,IFOC)
             LNBLOCKMAT(icomp,nbo)=LNBLOCKMAT(icomp,IFOC)
             BLOCKTYP(icomp,nbo)=BLOCKTYP(icomp,IFOC)
-            do 245 ibe=1,8
+            do ibe=1,8
               XBP(icomp,nbo,ibe)=XBP(icomp,IFOC,ibe)+VALX
               YBP(icomp,nbo,ibe)=YBP(icomp,IFOC,ibe)+VALY
               ZBP(icomp,nbo,ibe)=ZBP(icomp,IFOC,ibe)+VALZ
-  245       continue
+            enddo
             MODIFYVIEW=.TRUE.
             call warnmod(ICOMP,'ob+')
             if(.NOT.anothercopy) anothercopy=.true.  ! something copied
@@ -648,10 +650,108 @@ C If user asked for next or prior obstruction reset nbo and call again.
               nbo=nbo+1; ITOBS = nbo; MODIFYVIEW=.TRUE.
               goto 78
             endif
-            CALL EPMENRC   ! recover the calling menu layout
+            CALL EPMENRC     ! Recover the calling menu layout.
             GOTO 91
           endif
-        elseif(IW.EQ.4)THEN
+        elseif(IW.EQ.4)THEN  ! Copy obstruction from another zone.
+          CALL EPMENSV
+          INPIC=1
+          CALL EPICKS(INPIC,IVALS,' ',' Source zone:',
+     &      12,NCOMP,zname,' zone list',IER,nbhelp)
+          CALL EPMENRC
+          IF(INPIC.EQ.0) goto 92
+          IZ=IVALS(1)  ! assign source zone index
+          if(IZ.EQ.0)goto 92
+          nbo=nbobs(iz)
+          do LO=1,nbo
+            llbm=LNBLOCKMAT(IZ,LO)
+            if(llbm.gt.14) llbm=14
+            llbn=LNBLOCKNAME(IZ,LO)
+            WRITE(PICKO(LO),304)L,BLOCKNAME(IZ,LO)(1:llbn),
+     &        BLOCKMAT(IZ,LO)(1:llbm)
+          enddo
+          CALL EPMENSV
+          INPIC=1
+          CALL EPICKS(INPIC,IVALBO,' ','Copy which obstruction:',
+     &      30,nbo,PICKO,' copy options',IER,nbhelp)
+          CALL EPMENRC
+          IFOC=IVALBO(1)
+          if(nbo+1.LE.MB.and.IFOC.ne.0)then
+            nbobs(icomp)=nbobs(icomp)+1  ! increment count nbobs and reset nbo
+            nbo=nbobs(icomp)
+            write(tbn,'(a)') BLOCKNAME(IZ,IFOC)
+            CALL EASKS(tbn,' Re-name the copied obstruction:',
+     &        ' ',12,'block','obs block name',IER,nbhelp)
+            write(BLOCKNAME(ICOMP,nbo),'(a)') tbn
+            LNBLOCKNAME(ICOMP,nbo)=lnblnk(tbn)
+
+C Ask for transform distance for obstruction and then apply. If first
+C time for copy use zeros, otherwise re-present the previous values.
+            if(anothercopy)then
+              write(holds,'(3f10.4)') VALX,VALY,VALZ
+            else
+              holds = ' 0.00  0.00  0.00 '
+            endif
+ 241        CALL EASKS(HOLDS,'Transform obstruction (X Y Z metres):',
+     &        ' ',36,' 0.0 0.0 0.0','transforms XYZ',IER,nbhelp)
+            K=0
+            CALL EGETWR(HOLDS,K,VALX,-99.,99.,'W','X tr',IER)
+            CALL EGETWR(HOLDS,K,VALY,-99.,99.,'W','Y tr',IER)
+            CALL EGETWR(HOLDS,K,VALZ,-99.,99.,'W','Z tr',IER)
+            if(ier.ne.0)goto 241
+            nbo=nbobs(icomp)
+            XOB(icomp,nbo)=XOB(iz,IFOC)+VALX
+            YOB(icomp,nbo)=YOB(iz,IFOC)+VALY
+            ZOB(icomp,nbo)=ZOB(iz,IFOC)+VALZ
+            DXOB(icomp,nbo)=DXOB(iz,IFOC)
+            DYOB(icomp,nbo)=DYOB(iz,IFOC)
+            DZOB(icomp,nbo)=DZOB(iz,IFOC)
+            BANGOB(icomp,nbo,1)=BANGOB(iz,IFOC,1)
+            BANGOB(icomp,nbo,2)=BANGOB(iz,IFOC,2)
+            BANGOB(icomp,nbo,3)=BANGOB(iz,IFOC,3)
+            OPOB(icomp,nbo)=OPOB(iz,IFOC)
+            BLOCKMAT(icomp,nbo)=BLOCKMAT(iz,IFOC)
+            LNBLOCKMAT(icomp,nbo)=LNBLOCKMAT(iz,IFOC)
+            BLOCKTYP(icomp,nbo)=BLOCKTYP(iz,IFOC)
+            do ibe=1,8
+              XBP(icomp,nbo,ibe)=XBP(iz,IFOC,ibe)+VALX
+              YBP(icomp,nbo,ibe)=YBP(iz,IFOC,ibe)+VALY
+              ZBP(icomp,nbo,ibe)=ZBP(iz,IFOC,ibe)+VALZ
+            enddo
+            MODIFYVIEW=.TRUE.
+            call warnmod(ICOMP,'ob+')
+            if(.NOT.anothercopy) anothercopy=.true.  ! something copied
+
+            if(newgeo)then
+              call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+            else
+              CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
+            endif
+            nbo=nbobs(icomp)
+            ITOBS = nbo
+            CALL EPMENSV       ! save the calling menu layout
+  76        CALL redraw(IER)  ! redraw wireframe
+            if(MMOD.EQ.8) call redrawbuttons()
+
+C Edit the copied block.
+            CALL EDOBSB(ITRU,IUF,ICOMP,nbo,ianother,IER)
+            MODIFYVIEW=.TRUE.
+
+C If user asked for next or prior obstruction reset nbo and call again.
+            if(ianother.eq.0)then
+              continue
+            elseif(ianother.lt.0.and.nbo.gt.1)then
+              nbo=nbo-1; ITOBS = nbo; MODIFYVIEW=.TRUE.
+              goto 76
+            elseif(ianother.gt.0.and.nbo.lt.nbobs(icomp))then
+              nbo=nbo+1; ITOBS = nbo; MODIFYVIEW=.TRUE.
+              goto 76
+            endif
+            CALL EPMENRC     ! Recover the calling menu layout.
+            GOTO 91
+          endif
+
+        elseif(IW.EQ.5)THEN  ! User cancelled.
           GOTO 92
         ENDIF
 
@@ -1060,6 +1160,7 @@ C Parameters
       logical havesaved  ! to signal zone file written
       logical modmlc  ! to pick MLC
       logical ok
+      logical listcor ! true lists corner coordinates
       integer llbm    ! length for material
       real top        ! for the highest point of the block
       integer NITMS,IVERT ! max items and current menu item
@@ -1070,6 +1171,7 @@ C Initial values for point at angle facility.
       V1=1.0; AZ=0.0; EL=0.0; top=0.0
 
       havesaved=.false.
+      listcor = .true.
       newgeo=.false.  ! assume older format geometry.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
 
@@ -1155,9 +1257,9 @@ C for these types and which includes an option to convert to general.
         WRITE(VERT(15),'(A,F8.3,A)')'  top @       :',top,' (Z)'
         VERT(16)                  = '  ____________________________  '
         VERT(17)                  = '  zone bounds  X    Y     Z     '
-        WRITE(VERT(18),'(A,3F8.3)') '  max: ',ZXMX(iz),ZYMX(iz),
+        WRITE(VERT(18),'(A,3F8.2)') '  max: ',ZXMX(iz),ZYMX(iz),
      &    ZZMX(iz)
-        WRITE(VERT(19),'(A,3F8.3)') '  min: ',ZXMN(iz),ZYMN(iz),
+        WRITE(VERT(19),'(A,3F8.2)') '  min: ',ZXMN(iz),ZYMN(iz),
      &    ZZMN(iz)
         VERT(20)                  = '  ____________________________  '
         if(ib.gt.1.and.ib.lt.nbobs(iz))then
@@ -1207,9 +1309,9 @@ C General polygon based obstruction.
         WRITE(VERT(13),'(A,F6.2)')   'k opacity   : ',OPOB(ICOMP,IB)
         VERT(14)                  = '  ____________________________ '
         VERT(15)                  = '  zone bounds  X    Y     Z     '
-        WRITE(VERT(16),'(A,3F8.3)') '  max: ',ZXMX(iz),ZYMX(iz),
+        WRITE(VERT(16),'(A,3F8.2)') '  max: ',ZXMX(iz),ZYMX(iz),
      &    ZZMX(iz)
-        WRITE(VERT(17),'(A,3F8.3)') '  min: ',ZXMN(iz),ZYMN(iz),
+        WRITE(VERT(17),'(A,3F8.2)') '  min: ',ZXMN(iz),ZYMN(iz),
      &    ZZMN(iz)
         VERT(18)                  = '  ____________________________  '
         if(ib.gt.1.and.ib.lt.nbobs(iz))then
@@ -1225,7 +1327,6 @@ C General polygon based obstruction.
         VERT(21)                  = '* transform position            '
         VERT(22)                  = '? help                          '
         VERT(23)                  = '- exit                          '
-
       endif
       
 C Display the zone.
@@ -1241,6 +1342,17 @@ C then we can unset MODIFYVIEW.
 C Help text for this menu.
       helptopic='obstruction_prism'
       call gethelptext(helpinsub,helptopic,nbhelp)
+
+C List the 8 coordinates.
+      if(listcor)then
+        call edisp(iuout,'  ')
+        call edisp(iuout,'Corner  X     Y     Z')
+        do I=1,8
+          write(msg,'(i4,3F9.3)') I,XB(I),YB(I),ZB(I)
+          call edisp(iuout,msg)
+        enddo
+        listcor=.false.
+      endif
 
 C Now display the menu.
       if(BLOCKTYP(ICOMP,IB)(1:4).eq.'obs '.or.
@@ -1268,6 +1380,7 @@ C One set of interface actions if type 'obs' or 'obs3'.
             WRITE(HOLD,'(1x,3f9.4)')XOB(ICOMP,IB),YOB(ICOMP,IB),
      &        ZOB(ICOMP,IB)
             MODIFYVIEW=.TRUE.
+            listcor=.true.
           elseif(IBOPT.eq.2)then
 
 C Use current zone G1 common blocks to present list of points
@@ -1282,6 +1395,7 @@ C via epkvert.
               HOLD=' '
               WRITE(HOLD,'(1x,3f9.4)')X(iwhich1),Y(iwhich1),Z(iwhich1)
               MODIFYVIEW=.TRUE.
+              listcor=.true.
             else
               goto 92
             endif
@@ -1325,6 +1439,7 @@ C via epkvert.
               HOLD=' '
               WRITE(HOLD,'(1x,3f9.4)')x3,y3,z3
               MODIFYVIEW=.TRUE.
+              listcor=.true.
             else
               goto 92
             endif
@@ -1342,6 +1457,7 @@ C via epkvert.
           XOB(ICOMP,IB)=VX; YOB(ICOMP,IB)=VY; ZOB(ICOMP,IB)=VZ
           if(ier.ne.0)goto 42
           MODIFYVIEW=.TRUE.; MODBND=.TRUE.; MODLEN=.TRUE.
+          listcor=.true.
           call warnmod(ICOMP,'ob+')
         ELSEIF(IVERT.EQ.2)THEN
   43      HOLD=' '
@@ -1357,6 +1473,7 @@ C via epkvert.
           if(ier.ne.0)goto 43
           DXOB(ICOMP,IB)=VX; DYOB(ICOMP,IB)=VY; DZOB(ICOMP,IB)=VZ
           MODIFYVIEW=.TRUE.; MODBND=.TRUE.; MODLEN=.TRUE.
+          listcor=.true.
           call warnmod(ICOMP,'ob+')
         ELSEIF(IVERT.EQ.3)THEN
  44       VX=BANGOB(ICOMP,IB,1)
@@ -1365,6 +1482,7 @@ C via epkvert.
           if(ier.ne.0)goto 44
           BANGOB(ICOMP,IB,1)=VX
           MODIFYVIEW=.TRUE.;MODBND=.TRUE.; MODLEN=.TRUE.
+          listcor=.true.
           call warnmod(ICOMP,'ob+')
         ELSEIF(IVERT.EQ.4)THEN
 
@@ -1384,6 +1502,7 @@ C If newer geometry file offer a 2nd axis of rotation.
           call eclose(VX,0.0,0.1,close)
           BANGOB(ICOMP,IB,2)=VX
           MODIFYVIEW=.TRUE.; MODBND=.TRUE.; MODLEN=.TRUE.
+          listcor=.true.
           call warnmod(ICOMP,'ob+')
           if(.NOT.close) BLOCKTYP(ICOMP,IB)='obs3'   ! alter the type if non-zero
         ELSEIF(IVERT.EQ.5)THEN
@@ -1469,6 +1588,7 @@ C Convert current obstruction block into general polygon obstruction.
           BANGOB(ICOMP,IB,3)=0.0
           OPOB(ICOMP,IB)=0.0
           MODIFYVIEW=.TRUE.
+          listcor=.true.
           call warnmod(ICOMP,'ob+')
           GOTO 92
   
@@ -1692,6 +1812,7 @@ C Transforms of polygon obstructions.
             endif
             CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
             MODIFYVIEW=.TRUE.
+            listcor=.true.
             call warnmod(ICOMP,'ob+')
           elseif(iobs(icomp).eq.2)then
 
@@ -1713,6 +1834,7 @@ C so now apply the transform to the obstructions (only).
               endif
               call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
               MODIFYVIEW=.TRUE.
+              listcor=.true.
               call warnmod(ICOMP,'ob+')
             endif
           endif
@@ -2006,10 +2128,13 @@ C Use file unit IPRODB temporarily.
       common/SPAD/MMOD,LIMIT,LIMTTY
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
 
-      dimension IVALB(MB),ITEMP(MB)
+      dimension IVALB(MB),IVALBO(MB),ITEMP(MB)
+      dimension IVALS(MCOM)
       CHARACTER*33 VERT(35)
-      character*32 PICKV(MB),PICKO(MB)
+      character*32 PICKV(MB),PICKO(MB),PICKVO(MB)
       CHARACTER KEY*1
       character pre*1,newname*12,s12*12,s32*32
       character tbn*12
@@ -2492,7 +2617,7 @@ C Now compact the list of compound objects.
             NBVOBJ(icomp)=NBVOBJ(icomp)-1
             MODIFYVIEW=.TRUE.
             goto 92
-          ELSEIF(IW.EQ.3)THEN
+          ELSEIF(IW.EQ.3)THEN  ! Copy a compound object.
             nbobj=NBVOBJ(icomp)
             if(nbobj+1.gt.12)then
               call edisp(iuout,'Cannot add more objects.')
@@ -2599,7 +2724,7 @@ C Present editing facilitiy for this copied compound object.
             CALL EPMENRC
             goto 92
 
-          ELSEIF(IW.EQ.3)THEN
+          ELSEIF(IW.EQ.4)THEN
             goto 92
           ENDIF
         else
@@ -2607,7 +2732,8 @@ C Present editing facilitiy for this copied compound object.
 C +- Visual.
           IW=1
           CALL EASKATOG(' ','Modify visuals list:',
-     &      'add','delete','copy','cancel',' ',' ',' ',IW,nbhelp)
+     &      'add','delete','copy','copy from another zone','cancel',
+     &      ' ',' ',IW,nbhelp)
           IF(IW.EQ.2)THEN
 
 C Build up text strings for the delete menu. Constrain how many can be
@@ -2649,7 +2775,7 @@ C deleted at one time.
               enddo      ! of ijb
             endif
             MODIFYVIEW=.TRUE.
-          ELSEIF(IW.EQ.1)THEN
+          ELSEIF(IW.EQ.1)THEN   ! Add a visual.
             IF(nbvis(icomp)+1.LE.MB)THEN
               nbvis(icomp)=nbvis(icomp)+1
               nbo=nbvis(icomp)
@@ -2686,16 +2812,14 @@ C If user asked for next or prior visual reset nbo and call again.
               continue
             elseif(ianother.lt.0.and.nbo.gt.1)then
               nbo=nbo-1; ITVIS = nbo; MODIFYVIEW=.TRUE.
-              goto 77  ! jump and edit prior item
+              goto 77          ! jump and edit prior item
             elseif(ianother.gt.0.and.nbo.lt.nbvis(icomp))then
               nbo=nbo+1; ITVIS = nbo; MODIFYVIEW=.TRUE.
-              goto 77  ! jump and edit next item
+              goto 77          ! jump and edit next item
             endif
-            CALL EPMENRC  ! recover state of calling menue
-            GOTO 92       ! re-display the menu
-          elseif(IW.EQ.3)THEN
-
-C Copy visual.
+            CALL EPMENRC       ! Recover state of calling menue.
+            GOTO 92            ! Re-display the menu.
+          elseif(IW.EQ.3)THEN  ! Copy visual.
             nbo=nbvis(icomp)
             CALL EPMENSV
             INPIC=1
@@ -2776,10 +2900,104 @@ C If user asked for next or prior visual reset nbo and call again.
                 nbo=nbo+1; ITOBS = nbo; MODIFYVIEW=.TRUE.
                 goto 78
               endif
-              CALL EPMENRC   ! recover the calling menu layout
+              CALL EPMENRC     ! Recover the calling menu layout.
               GOTO 91
             endif
-          elseif(IW.EQ.4)THEN
+          elseif(IW.EQ.4)THEN  ! Copy visual from another zone.
+            CALL EPMENSV
+            INPIC=1
+            CALL EPICKS(INPIC,IVALS,' ',' Source zone:',
+     &        12,NCOMP,zname,' zone list',IER,nbhelp)
+            CALL EPMENRC
+            IF(INPIC.EQ.0) goto 91
+            IZ=IVALS(1)  ! assign source zone index
+            if(IZ.EQ.0)goto 91
+            nbo=nbvis(iz)
+            do LO=1,nbo
+              llbm=LNVISMAT(IZ,LO)
+              if(llbm.gt.14) llbm=14
+              llbn=LNVISNAME(IZ,LO)
+              WRITE(PICKVO(LO),'(I3,2X,A,1x,A)')LO,
+     &          VISNAME(IZ,LO)(1:llbn),VISMAT(IZ,LO)(1:llbm)
+            enddo
+            CALL EPMENSV
+            INPIC=1
+            CALL EPICKS(INPIC,IVALBO,' ','Copy which visual:',
+     &        30,nbo,PICKVO,' copy options',IER,nbhelp)
+            CALL EPMENRC
+            IFOC=IVALBO(1)
+            if(nbo+1.LE.MB.and.IFOC.ne.0)then
+              nbvis(icomp)=nbvis(icomp)+1  ! increment count nbvis and nbo
+              nbo=nbo+1
+              write(tbn,'(a)') VISNAME(IZ,IFOC)
+              CALL EASKS(tbn,' Re-name the visual copy:',
+     &          ' ',12,'block','visual block name',IER,nbhelp)
+              nbo=nbvis(icomp)   ! Reset counter to recipient zone.
+              VISNAME(ICOMP,nbo) = tbn
+              LNVISNAME(ICOMP,nbo)=lnblnk(tbn)
+              write(6,*) ICOMP,nbo,VISNAME(ICOMP,nbo)
+
+C Ask for transform distance for visual and then apply. If first
+C time for copy use zeros, otherwise re-present the previous values.
+              if(anothercopy)then
+                write(holds,'(3f10.4)') VALX,VALY,VALZ
+              else
+                holds = ' 0.00  0.00  0.00 '
+              endif
+ 241          CALL EASKS(HOLDS,'Transform visual (X Y Z metres):',
+     &          ' ',36,' 0.0 0.0 0.0','transforms XYZ',IER,nbhelp)
+              K=0
+              CALL EGETWR(HOLDS,K,VALX,-99.,99.,'W','X tr',IER)
+              CALL EGETWR(HOLDS,K,VALY,-99.,99.,'W','Y tr',IER)
+              CALL EGETWR(HOLDS,K,VALZ,-99.,99.,'W','Z tr',IER)
+              if(ier.ne.0)goto 241
+              nbo=nbvis(icomp)
+              XOV(icomp,nbo)=XOV(iz,IFOC)+VALX
+              YOV(icomp,nbo)=YOV(iz,IFOC)+VALY
+              ZOV(icomp,nbo)=ZOV(iz,IFOC)+VALZ
+              DXOV(icomp,nbo)=DXOV(iz,IFOC)
+              DYOV(icomp,nbo)=DYOV(iz,IFOC)
+              DZOV(icomp,nbo)=DZOV(iz,IFOC)
+              BANGOV(icomp,nbo,1)=BANGOV(iz,IFOC,1)
+              BANGOV(icomp,nbo,2)=BANGOV(iz,IFOC,2)
+              BANGOV(icomp,nbo,3)=BANGOV(iz,IFOC,3)
+              OPOV(icomp,nbo)=OPOV(iz,IFOC)
+              VISMAT(icomp,nbo)=VISMAT(iz,IFOC)
+              LNVISMAT(icomp,nbo)=LNVISMAT(iz,IFOC)
+              VISTYP(icomp,nbo)=VISTYP(iz,IFOC)
+              do ibe=1,8
+                XVP(icomp,nbo,ibe)=XVP(iz,IFOC,ibe)+VALX
+                YVP(icomp,nbo,ibe)=YVP(iz,IFOC,ibe)+VALY
+                ZVP(icomp,nbo,ibe)=ZVP(iz,IFOC,ibe)+VALZ
+              enddo  ! of ibe
+              MODIFYVIEW=.TRUE.
+              if(.NOT.anothercopy) anothercopy=.true.  ! something copied
+
+              call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+              nbo=nbvis(icomp)
+              ITOBS = nbo
+              CALL EPMENSV       ! save the calling menu layout
+  76          CALL redraw(IER)  ! redraw wireframe
+              if(MMOD.EQ.8) call redrawbuttons()
+
+C Edit the copied visual entity.
+              CALL EDVISB(ITRU,IUF,ICOMP,nbo,ianother,IER)
+              MODIFYVIEW=.TRUE.
+
+C If user asked for next or prior visual reset nbo and call again.
+              if(ianother.eq.0)then
+                continue
+              elseif(ianother.lt.0.and.nbo.gt.1)then
+                nbo=nbo-1; ITOBS = nbo; MODIFYVIEW=.TRUE.
+                goto 76
+              elseif(ianother.gt.0.and.nbo.lt.nbobs(icomp))then
+                nbo=nbo+1; ITOBS = nbo; MODIFYVIEW=.TRUE.
+                goto 76
+              endif
+              CALL EPMENRC     ! Recover the calling menu layout.
+              GOTO 91
+            endif
+          elseif(IW.EQ.5)THEN  ! User cancelled.
             GOTO 92
           endif
         ENDIF
@@ -2872,6 +3090,7 @@ C Parameters
       logical close   ! to see if non-zero elevation.
       logical havesaved  ! to signal zone file written
       logical modmlc  ! to select MLC
+      logical listcor ! true lists corner coordinates
       integer llbm    ! length for material
       real top        ! for the highest point of the visual entity
       integer NITMS,IVERT ! max items and current menu item
@@ -2882,6 +3101,7 @@ C Initial values for point at angle facility.
       V1=1.0; AZ=0.0; EL=0.0; top=0.0
 
       havesaved=.false.
+      listcor = .true.
       newgeo=.false.  ! assume older format geometry.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
 
@@ -3014,7 +3234,6 @@ C Set menu header text.
         endif
         VERT(21)                  = '? help                          '
         VERT(22)                  = '- exit                          '
-
       endif
       
 C Display the zone with the current visual entity highlighted.
@@ -3031,6 +3250,17 @@ C then we can unset MODIFYVIEW.
 C Help text for this menu.
       helptopic='visual_prism'
       call gethelptext(helpinsub,helptopic,nbhelp)
+
+C List the 8 coordinates.
+      if(listcor)then
+        call edisp(iuout,'  ')
+        call edisp(iuout,'Corner  X     Y     Z')
+        do I=1,8
+          write(msg,'(i4,3F9.3)') I,XB(I),YB(I),ZB(I)
+          call edisp(iuout,msg)
+        enddo
+        listcor=.false.
+      endif
 
 C Now display the menu.
       if(VISTYP(ICOMP,IB)(1:4).eq.'vis '.or.
@@ -3058,6 +3288,7 @@ C One set of interface actions if type 'vis' or 'vis3'.
             WRITE(HOLD,'(1x,3f9.4)')XOV(ICOMP,IB),YOV(ICOMP,IB),
      &        ZOV(ICOMP,IB)
             MODIFYVIEW=.TRUE.
+            listcor = .true.
           elseif(IBOPT.eq.2)then
 
 C Use current zone G1 common blocks to present list of points
@@ -3072,6 +3303,7 @@ C via epkvert.
               HOLD=' '
               WRITE(HOLD,'(1x,3f9.4)')X(iwhich1),Y(iwhich1),Z(iwhich1)
               MODIFYVIEW=.TRUE.
+              listcor = .true.
             else
               goto 92
             endif
@@ -3115,6 +3347,7 @@ C via epkvert.
               HOLD=' '
               WRITE(HOLD,'(1x,3f9.4)')x3,y3,z3
               MODIFYVIEW=.TRUE.
+              listcor = .true.
             else
               goto 92
             endif
@@ -3132,6 +3365,7 @@ C via epkvert.
           XOV(ICOMP,IB)=VX; YOV(ICOMP,IB)=VY; ZOV(ICOMP,IB)=VZ
           if(ier.ne.0)goto 42
           MODIFYVIEW=.TRUE.; MODBND=.TRUE.; MODLEN=.TRUE.
+          listcor = .true.
         ELSEIF(IVERT.EQ.2)THEN
   43      HOLD=' '
           WRITE(HOLD,'(1x,3f8.3)')DXOV(ICOMP,IB),DYOV(ICOMP,IB),
@@ -3146,6 +3380,7 @@ C via epkvert.
           if(ier.ne.0)goto 43
           DXOV(ICOMP,IB)=VX; DYOV(ICOMP,IB)=VY; DZOV(ICOMP,IB)=VZ
           MODIFYVIEW=.TRUE.; MODBND=.TRUE.; MODLEN=.TRUE.
+          listcor = .true.
         ELSEIF(IVERT.EQ.3)THEN
  44       VX=BANGOV(ICOMP,IB,1)
           CALL EASKR(VX,MSG,' Visual item rotation around Z axis? ',
@@ -3153,6 +3388,7 @@ C via epkvert.
           if(ier.ne.0)goto 44
           BANGOV(ICOMP,IB,1)=VX
           MODIFYVIEW=.TRUE.;MODBND=.TRUE.; MODLEN=.TRUE.
+          listcor = .true.
         ELSEIF(IVERT.EQ.4)THEN
 
  45       VX=BANGOV(ICOMP,IB,2)
@@ -3164,6 +3400,7 @@ C via epkvert.
           call eclose(VX,0.0,0.1,close)
           if(.NOT.close) VISTYP(ICOMP,IB)='vis3'   ! alter the type if non-zero
           MODIFYVIEW=.TRUE.; MODBND=.TRUE.; MODLEN=.TRUE.
+          listcor = .true.
         ELSEIF(IVERT.EQ.5)THEN
           call edisp(iuout,'Tilting visual is not yet supported.')
           goto 92

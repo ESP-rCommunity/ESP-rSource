@@ -1072,7 +1072,7 @@ C      COMMON/OUTIN/IUOUT,IUIN,IEOUT
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
-      DIMENSION  COG1(3),COG2(3),COG3(3)
+      DIMENSION  COG1(3),COG2(3)
 
       CHARACTER VT*6
       character OUTSTR*124,tfile*72
@@ -1149,9 +1149,8 @@ C Loop through grid points.
         COG1(1)=DFPTS(I,1)
         COG1(2)=DFPTS(I,2)
         COG1(3)=DFPTS(I,3)
-        CALL VECTRN(COG1,TEMAT,COG2,IER)
-        CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),iix,iiy)
+        CALL VECTRN(COG1,TSMAT,COG2,IER)
+        call u2pixel(COG2(1),COG2(2),iix,iiy)
         CALL ecirc(iix,iiy,3,1)
         if(act.eq.'g'.or.act.eq.'G')then
           IF(I.le.9)THEN
@@ -1279,6 +1278,7 @@ C If filexst is 'o' then old file, 'n' then create a new file.
 
       character filexst*1
       character pfile*72
+      character rifwave*72
 
       LOGICAL modscene
 
@@ -1353,9 +1353,11 @@ C files and save to rif file and lastly the esp-r rcf file.
         cmdact='Create'
         call autorad
         IFC=3
-        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+        call mkrif(ITA2,RIFNAME(ISCENE),IFC,0,'-',IER)
+        rifwave='obj.rif'
+        call mkrif(ITA2,rifwave,IFC,0,'w',IER)
         if (NBSRIF(ISCENE).eq.1) then
-          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,'-',ier)
         endif
 
 C Update rcf file.

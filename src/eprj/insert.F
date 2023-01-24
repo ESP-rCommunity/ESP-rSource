@@ -100,7 +100,7 @@ C Tollerance for surface matching.
 
       dimension X1(MV),Y1(MV),Z1(MV),jvn1(MV),XT(MV),YT(MV),ZT(MV)
       dimension jvn2(MV)  ! dummy array for sorti call
-      DIMENSION COG1(3),COG2(3),COG3(3),JJVN(MV),ispk(MS)
+      DIMENSION COG1(3),COG2(3),JJVN(MV),ispk(MS)
 
       CHARACTER SNAME1*12,SMLCN1*32,SVFC1*4,SOTF1*32,SNAMED*12
       character SUSE11*12,SUSE12*12
@@ -1232,9 +1232,8 @@ C User has specified clicking from mouse so just do that.
               found=.false.
               do 45 i=1,NTV
                 COG1(1)=X(I); COG1(2)=Y(I); COG1(3)=Z(I)
-                CALL VECTRN(COG1,TEMAT,COG2,IER)
-                CALL VECTRN(COG2,ETSMAT,COG3,IER)
-                call u2pixel(COG3(1),COG3(2),iix,iiy)
+                CALL VECTRN(COG1,TSMAT,COG2,IER)
+                call u2pixel(COG2(1),COG2(2),iix,iiy)
                 ixd=iix-iixx
                 iyd=iiy-iiyy
 C Debug
@@ -1275,7 +1274,7 @@ C some vertices and thus be beyond the normal limit of edges. If MV is
 C updated reflect this in the write(t248 statement).
               hold64='                                                '
               write(t248,'(3a)') hold64,hold64,hold64
-              WRITE(t248,'(102I4)')(JJVN(J),J=1,ijvn)
+              WRITE(t248,'(124I4)')(JJVN(J),J=1,ijvn)
               write(message,'(a)')'Vertices associated with new surface'
               ISTRW=72
               CALL EASKS248(t248,message,' ',
@@ -1468,38 +1467,37 @@ C Display the new vertical (irt=6) or horizontal (irt=7) rectangle.
             IANXT(J) = J + 1
   350     CONTINUE
           IANXT(4) = IAPNT
-          CALL MATPOL(4,IAPNT,AX,AY,AZ,IANXT,TEMAT,
+          CALL MATPOL(4,IAPNT,AX,AY,AZ,IANXT,TSMAT,
      &              SBBOX,NBP,IBPNT,BX,BY,BZ,IBNXT,IERR)
           CALL CLIPFL(NBP,BX,BY,BZ,ISTAT)
           IF(ISTAT .EQ. 1)goto 32
           if(ISTAT .EQ.-1)then
             CALL CUTPOL(NB,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+          else
+            NB=1
           endif
 
 C Draw the (perhaps clipped) rectangle.
           DO 302 JB = 1,NB
             IP = IABS(IBPNT)
-            CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
             iupdown=0
             isym=0
-            call etplot(AAX,AAY,iupdown,isym)
+            call etplot(BX(IP),BY(IP),iupdown,isym)
 
 C Draw succeeding points until last vertex.
             IP1 = IBNXT(IP)
  451        CONTINUE
-            CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
             iupdown=1
             isym=0
-            call etplot(AAX,AAY,iupdown,isym)
+            call etplot(BX(IP1),BY(IP1),iupdown,isym)
 
             IP1 = IBNXT(IP1)
             IF(IP1 .NE. IP) GOTO 451
 
 C Complete rec.
-            CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
             iupdown=1
             isym=0
-            call etplot(AAX,AAY,iupdown,isym)
+            call etplot(BX(IP),BY(IP),iupdown,isym)
   302     CONTINUE
         endif   ! graphic mode test
 
@@ -1993,7 +1991,7 @@ C Tollerance for surface matching.
       integer IACC ! number of matching corners outside dist tolerance
       common/matching/ANGCC,CACC,DACC,COGCC,SNACC,IACC
 
-      DIMENSION COG1(3),COG2(3),COG3(3)
+      DIMENSION COG1(3),COG2(3)
       DIMENSION itv1(MS*MV) ! 1st of every edge in every surface
       DIMENSION itv2(MS*MV) ! 2nd of every edge in every surface
       DIMENSION irelsur(MS*MV) ! which surface assoc with every edge
@@ -2148,7 +2146,7 @@ C list for itv1(ip) so insertion can come just after this point.
                       endif
                     enddo
                     ivtoadd=iwhich1  ! remember it
-                    write(louts,'(a,102i4)') 'cur list: ',
+                    write(louts,'(a,124i4)') 'cur list: ',
      &                (JVN(icursur,ii),ii=1,NVER(icursur))
                     if(ivb.ne.0) call edisp248(iuout,louts,100)
 
@@ -2194,7 +2192,7 @@ C If its location in the list is actually the last in the list?
                         iszjvn(icomp,icursur,itsposition+1)=ivtoadd
                       endif
 C Debug.
-                      write(louts,'(a,102i4)') 'adj list: ',
+                      write(louts,'(a,124i4)') 'adj list: ',
      &                  (JVN(icursur,ii),ii=1,NVER(icursur))
                       if(ivb.ne.0) call edisp248(iuout,louts,100)
                       iub=iub-1   ! decrement counter of unbounded
@@ -2214,35 +2212,38 @@ C if we are not running in graphic mode.
               ILT= -305
               COG1(1)=X(itv1(ip)); COG1(2)=Y(itv1(ip))
               COG1(3)=Z(itv1(ip))
-              CALL VECTRN(COG1,TEMAT,COG2,IER)
-              CALL VECTRN(COG2,ETSMAT,COG3,IER)
-              call u2pixel(COG3(1),COG3(2),iix,iiy)
-              iicol=0
-              if(greyok)call winscl('z',iicol)
-              call esymbol(iix,iiy,24,1)
-              call VERTLBL(iix,iiy,itv1(ip),ier)
-              iicol=0
-              if(greyok)call winscl('-',iicol)
-              call forceflush()
+              CALL VECTRN(COG1,TSMAT,COG2,IER)
+              call CLIPPT(COG2(1),COG2(2),COG2(3),icp)
+              if (iclp.eq.0) then
+                call u2pixel(COG2(1),COG2(2),iix,iiy)
+                iicol=0
+                if(greyok)call winscl('z',iicol)
+                call esymbol(iix,iiy,24,1)
+                call VERTLBL(iix,iiy,COG2(3),itv1(ip),ier)
+                iicol=0
+                if(greyok)call winscl('-',iicol)
+                call forceflush()
+              endif
 
               iupdown=0
               isym=0
-              call etplot(COG3(1),COG3(2),iupdown,isym)
+              call etplot(COG2(1),COG2(2),iupdown,isym)
               COG1(1)=X(itv2(ip)); COG1(2)=Y(itv2(ip))
               COG1(3)=Z(itv2(ip))
-              CALL VECTRN(COG1,TEMAT,COG2,IER)
-              CALL VECTRN(COG2,ETSMAT,COG3,IER)
+              CALL VECTRN(COG1,TSMAT,COG2,IER)
               iupdown=ILT
-              call etplot(COG3(1),COG3(2),iupdown,isym)
-
-              call u2pixel(COG3(1),COG3(2),iix,iiy)
-              iicol=0
-              if(greyok)call winscl('z',iicol)
-              call esymbol(iix,iiy,24,1)
-              call VERTLBL(iix,iiy,itv2(ip),ier)
-              iicol=0
-              if(greyok)call winscl('-',iicol)
-              call forceflush()
+              call etplot(COG2(1),COG2(2),iupdown,isym)
+              call CLIPPT(COG2(1),COG2(2),COG2(3),iclp)
+              if (iclp.eq.0) then
+                call u2pixel(COG2(1),COG2(2),iix,iiy)
+                iicol=0
+                if(greyok)call winscl('z',iicol)
+                call esymbol(iix,iiy,24,1)
+                call VERTLBL(iix,iiy,COG2(3),itv2(ip),ier)
+                iicol=0
+                if(greyok)call winscl('-',iicol)
+                call forceflush()
+              endif
               hilight=.false.
             endif
           endif
@@ -2257,7 +2258,7 @@ C        write(6,*) 'reversed hits per surface ',invesur
 C        write(6,*) 'edges per surface ',NVER
         DO IS=1,NSUR
           if(NVER(IS).gt.0.and.(invesur(IS).eq.NVER(IS)))then
-            write(louts,'(a,102i4)') 'current list: ',
+            write(louts,'(a,124i4)') 'current list: ',
      &        (JVN(is,ii),ii=1,NVER(is))
             call edisp248(iuout,louts,100)
             write(outs,'(3a)')
@@ -2278,7 +2279,7 @@ C        write(6,*) 'edges per surface ',NVER
                 JVN(is,iyy)=jvn1(izz)
                 iszjvn(icomp,is,iyy)=jvn1(izz)
   147         CONTINUE
-              write(louts,'(a,102i4)') 'inverted list is ',
+              write(louts,'(a,124i4)') 'inverted list is ',
      &          (JVN(is,ii),ii=1,NVER(is))
               call edisp248(iuout,louts,100)
             endif
@@ -2439,7 +2440,8 @@ C Insert percentage silently.
         PERC = XO1
 
 C Determine opening width, height, X offset and z offset.
-C        CALL ZSURLEHI(ICOMP,IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)
+C        CALL ZSURLEHI(ICOMP,IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos,
+C     &    DZLLFF)
         CALL SURLEHI(IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)
         XW=(XYMAX*SQRT(PERC))/10
         ZH=(ZMAX*SQRT(PERC))/10
@@ -2526,7 +2528,8 @@ C edited to a thick line if currently in graphics mode.
       endif
 
 C Report parent surface length and height (bounding box).
-C      CALL ZSURLEHI(ICOMP,IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)
+C      CALL ZSURLEHI(ICOMP,IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos,
+C    &   DZLLFF)
       CALL SURLEHI(IS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)
       Write(outs,'(a,f6.3,a,f6.3,a)') 'Parent surface width = ',
      &  XYMAX,' m, surface height = ',ZMAX,' m (bounding box).'
@@ -2666,33 +2669,35 @@ C If in graphics mode figure out where to draw the new surface.
           endif
   350   CONTINUE
         IANXT(loop) = IAPNT
-        CALL MATPOL(loop,IAPNT,AX,AY,AZ,IANXT,TEMAT,
+        CALL MATPOL(loop,IAPNT,AX,AY,AZ,IANXT,TSMAT,
      &    SBBOX,NBP,IBPNT,BX,BY,BZ,IBNXT,IERR)
         CALL CLIPFL(NBP,BX,BY,BZ,ISTAT)
-        IF (ISTAT .EQ. 1) goto 32
-        IF (ISTAT .EQ.-1)CALL CUTPOL(NB,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+        IF (ISTAT .EQ. 1) then
+          goto 32
+        ELSEIF (ISTAT .EQ.-1)then
+          CALL CUTPOL(NB,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+        ELSE
+          NB=1
+        ENDIF
 
 C Draw the (perhaps clipped) rectangle.
         DO 302 JB = 1,NB
           IP = IABS(IBPNT)
-          CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           iupdown=0; isym=0
-          call etplot(AAX,AAY,iupdown,isym)
+          call etplot(BX(IP),BY(IP),iupdown,isym)
 
 C Draw succeeding points until last vertex.
           IP1 = IBNXT(IP)
  451      CONTINUE
-          CALL  ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
           iupdown=1; isym=0
-          call etplot(AAX,AAY,iupdown,isym)
+          call etplot(BX(IP1),BY(IP1),iupdown,isym)
 
           IP1 = IBNXT(IP1)
           IF(IP1 .NE. IP) GOTO 451
 
 C Complete rec.
-          CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           iupdown=1; isym=0
-          call etplot(AAX,AAY,iupdown,isym)
+          call etplot(BX(IP),BY(IP),iupdown,isym)
   302   CONTINUE    ! loop for NB
    32   CONTINUE
 
@@ -2736,7 +2741,7 @@ C surface in the zone`. ICONO is the connection for the parent surface.
         endif
   151 CONTINUE
 C Debug
-C      write(6,'(a,2i3,102i4)') '151 jvn ',
+C      write(6,'(a,2i3,124i4)') '151 jvn ',
 C     &  nsur,NVER(nsur),(jvn(nsur,j),J=1,NVER(nsur))
       if(act(1:2).eq.'sw'.or.act(1:2).eq.'sd'.or.act(1:2).eq.'sp')then
         write(SN,'(a)') rsname(1:12)
@@ -2821,7 +2826,7 @@ C Process holes within a surface types.
         call mergechildinparent(1,icomp,IPS,ICS,IRT,ier)
 
 C Feedback.
-        write(louts,'(a,102i4)') 'parent surf after ',
+        write(louts,'(a,124i4)') 'parent surf after ',
      &    (jvn(IPS,j),J=1,NVER(IPS))
         call edisp248(iuout,louts,100)
 
@@ -2994,7 +2999,7 @@ C inserting the new vertex index.
                   iszjvn(icomp,ivj,ivjj+1)=iwhich3
 
 C Debug.
-C                  write(6,'(a,102i4)') 'now jvn is ',
+C                  write(6,'(a,124i4)') 'now jvn is ',
 C     &              (JVN(ivj,ii),ii=1,NVER(ivj))
 
 C Surface (ivj) vertex list has been updated. Go on to next surface.
@@ -3280,7 +3285,7 @@ C Feedback.
         return
       endif
       if(NVER(ICS).gt.0)then
-        write(louts,'(a,2i3,102i4)') 'door surf jvn ',
+        write(louts,'(a,2i3,124i4)') 'door surf jvn ',
      &    ICS,NVER(ICS),(jvn(ICS,j),J=1,NVER(ICS))
         if(itrc.gt.0)call edisp248(iuout,louts,100)
       else
@@ -3289,7 +3294,7 @@ C Feedback.
         return
       endif
       if(NVER(IPS).gt.0)then
-        write(louts,'(a,2i3,102i4)') 'parent surf jvn ',
+        write(louts,'(a,2i3,124i4)') 'parent surf jvn ',
      &    IPS,NVER(IPS),(jvn(IPS,j),J=1,NVER(IPS))
         if(itrc.gt.0)call edisp248(iuout,louts,100)
       else
@@ -3338,7 +3343,7 @@ C     &  icwhich1,icvwhich1,icwhich2,icvwhich2,ipwhich1a,ipvwhich1a,
 C     &  ipwhich1b,ipvwhich1b,ipwhich2a,ipvwhich2a,ipwhich2b,ipvwhich2b
       ivll=ipvwhich1a  ! remember it
 C Debug.
-C      write(6,'(a,i3,102i4)') 'ivll parent surf jvn ',
+C      write(6,'(a,i3,124i4)') 'ivll parent surf jvn ',
 C     &  ivll,(jvn(IPS,j),J=1,NVER(IPS))
 
 C Start at end of list and work backwards. Shift existing
@@ -3370,7 +3375,7 @@ C need to insert icwhich1. Use icstart logic for this.
       enddo
 
 C Feedback.
-      write(louts,'(a,i3,102i4)') 'parent surf after ',iyy,
+      write(louts,'(a,i3,124i4)') 'parent surf after ',iyy,
      &  (jvn(IPS,j),J=1,NVER(IPS))
       if(itrc.gt.0)call edisp248(iuout,louts,100)
       return
@@ -3407,10 +3412,10 @@ C Logic for merging vertices into the parent surface
 C based on what is closest.
 C Debug.
       isur=ICS
-      write(louts,'(a,i3,102i4)') 'parent surf jvn ',IPS,
+      write(louts,'(a,i3,124i4)') 'parent surf jvn ',IPS,
      &  (jvn(IPS,j),J=1,NVER(IPS))
       if(itrc.gt.0)call edisp248(iuout,louts,100)
-      write(louts,'(a,2i3,102i4)') 'child surf jvn ',
+      write(louts,'(a,2i3,124i4)') 'child surf jvn ',
      &  isur,NVER(isur),(jvn(isur,j),J=1,NVER(isur))
       if(itrc.gt.0)call edisp248(iuout,louts,100)
       CALL SURLEHI(IPS,XYMAX,ZMAX,llpos,lrpos,ulpos,urpos)
@@ -3534,7 +3539,7 @@ C icvert and then looping down each of the vertices in
 C the child followed by jvn(IPS,ipwhich).
         ivll=ipwhich  ! remember it
 C Debug.
-C        write(6,'(a,i3,102i4)') 'ivll parent surf jvn ',
+C        write(6,'(a,i3,124i4)') 'ivll parent surf jvn ',
 C     &    ivll,(jvn(IPS,j),J=1,NVER(IPS))
 
 C Expand the list by looping down (from one more than the current
@@ -3570,7 +3575,7 @@ C Add jvn(IPS,ipwhich) so as to rejoin the parent.
           iszjvn(IZ,IPS,n)=jvn(IPS,n)
 
 C Feedback.
-          write(louts,'(a,102i4)') 'parent surf after ',
+          write(louts,'(a,124i4)') 'parent surf after ',
      &      (jvn(IPS,j),J=1,NVER(IPS))
           if(itrc.gt.0)call edisp248(iuout,louts,100)
         else
@@ -3609,12 +3614,12 @@ C we reach iyy=0 then insert jvn(IPS,ipwhich).
               endif
             endif
 C Debug.
-C            write(6,'(a,102i4)') 'parent surf adj ',
+C            write(6,'(a,124i4)') 'parent surf adj ',
 C     &        (jvn(IPS,j),J=1,NVER(IPS))
           enddo
 
 C Feedback.
-          write(louts,'(a,102i4)') 'parent surf after ',
+          write(louts,'(a,124i4)') 'parent surf after ',
      &      (jvn(IPS,j),J=1,NVER(IPS))
           if(itrc.gt.0)call edisp248(iuout,louts,100)
         endif

@@ -966,37 +966,23 @@ C Calendar commons.
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER :: icalender,nbcaldays,nbdaytype
 
-C Error subroutine and error details for dll mode.
-      common/dllerr/dllsubr,dllmesg
-
       CHARACTER outstr*124,loutstr*248
-      character dllsubr*12,dllmesg*124,WORD*20,outs*124,outs2*124
+      character WORD*20,outs*124,outs2*124
       character calename*32,calentag*12,calendayname*32
       character dstmp*24
       integer idt  ! local counter of day type.
       integer lsn  ! length of currentfile
-      logical dll
 
       IER=0
-
-C Check if running in dll mode.
-      call isadll(dll)
 
 C Initialise project data file.
       CALL EFOPSEQ(IUO,bdmds,1,IER)
       IF(IER.NE.0)THEN
         write(outs,'(3a)') 'Dispersed demands file ',
      &    bdmds(1:lnblnk(bdmds)),' could not be opened.'
-        if(dll)then
-          dllsubr='ERBDMD'
-          dllmesg=outs
-          ier=2
-          return
-        else
-          call edisp(iuout,outs)
-          IER=1
-          RETURN
-        endif
+        call edisp(iuout,outs)
+        IER=1
+        RETURN
       ENDIF
       write(currentfile,'(a)') bdmds(1:lnblnk(bdmds))
       
@@ -1064,18 +1050,10 @@ C Set related IPV inclusion index to 1.
 C If periods are out of sync then return with a warning.
             write(outs,'(3a)') ' Period start-end mismatch in...',
      &        OUTSTR(1:50),'...'
-            if(dll)then
-              dllsubr='ERBDMD'
-              dllmesg=outs
-              ier=2
-              CALL ERPFREE(IUO,ISTAT)
-              return
-            else
-              call edisp(iuout,outs)
-              IER=1
-              CALL ERPFREE(IUO,ISTAT)
-              RETURN
-            endif
+            call edisp(iuout,outs)
+            IER=1
+            CALL ERPFREE(IUO,ISTAT)
+            RETURN
           endif
 
           X=BRADC(idt,I)+BCONC(idt,I)
@@ -1084,18 +1062,10 @@ C If periods are out of sync then return with a warning.
 C If radiant plus convective is over unity warn.
             write(outs,'(3a)') ' Radiant & convec frc>1.02 in...',
      &        OUTSTR(1:50),'...'
-            if(dll)then
-              dllsubr='ERBDMD'
-              dllmesg=outs
-              ier=2
-              CALL ERPFREE(IUO,ISTAT)
-              return
-            else
-              call edisp(iuout,outs)
-              IER=1
-              CALL ERPFREE(IUO,ISTAT)
-              RETURN
-            endif
+            call edisp(iuout,outs)
+            IER=1
+            CALL ERPFREE(IUO,ISTAT)
+            RETURN
           endif
           IF(X.LT.0.95.AND.ITRC.GT.1)call edisp(iuout,
      &                            ' Demand rad:con sum < 1.0')
@@ -1154,19 +1124,11 @@ C Error messages.
      &  OUTSTR(1:50),'...'
       lsn=MIN0(lnblnk(currentfile),110)
       write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
-      if(dll)then
-        dllsubr='ERBDMD'
-        dllmesg=outs
-        ier=2
-        CALL ERPFREE(IUO,ISTAT)
-        return
-      else
-        call edisp(iuout,outs)
-        call edisp(iuout,outs2)
-        IER=1
-        CALL ERPFREE(IUO,ISTAT)
-        RETURN
-      endif
+      call edisp(iuout,outs)
+      call edisp(iuout,outs2)
+      IER=1
+      CALL ERPFREE(IUO,ISTAT)
+      RETURN
 
       END
 

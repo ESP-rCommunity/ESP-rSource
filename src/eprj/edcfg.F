@@ -872,9 +872,7 @@ C or bi-directional windows or doors at the outside.
                     CYCLE
                   endif
                   if(SUSE(iz,is,1)(1:4).eq.'DOOR'.or.
-     &               SUSE(iz,is,1)(1:6).eq.'P-DOOR'.or.
-     &               SUSE(iz,is,1)(1:6).eq.'H-DOOR'.or.
-     &               SUSE(iz,is,1)(1:6).eq.'V-DOOR')then      ! For DOOR variants.
+     &               SUSE(iz,is,1)(1:6).eq.'P-DOOR')then      ! For DOOR variants.
                      if(SUSE(iz,is,2)(1:4).eq.'OPEN')then
                        isopen=.true.
                      elseif(SUSE(iz,is,2)(1:5).eq.'BIDIR'.or.

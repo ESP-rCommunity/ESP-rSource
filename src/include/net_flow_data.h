@@ -29,12 +29,14 @@ C  3=boundary; wind induced pressure; implies NDFLD=1)
 
       integer IVALCM ! array of mass flow component type numbers
       COMMON/MFLOW6/IVALCM(MCMV)
-      character LVALCM*60 ! short description of each flow component type
-      COMMON/MFLOW7/LVALCM(MCMV)
+      character LVALCM*60  ! short description of each flow component type
+      character LTVALCM*32 ! terse description of each flow component
+      COMMON/MFLOW7/LVALCM(MCMV),LTVALCM(MCMV)
 
       character CMNAM*12  ! - flow component identifier/name
       character LTPCMP*60 ! - short description of that component type
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
+      character LTTCMP*32 ! - terse description of component tpe
+      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP),LTTCMP(MCMP)
       character CMPASSOC*12  ! associated zone & surface names
       COMMON/MFLOW8A/CMPASSOC(MCMP,2)
 

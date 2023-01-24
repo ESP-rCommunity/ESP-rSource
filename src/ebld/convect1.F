@@ -376,6 +376,7 @@ C Logical variables for close to floor, ceiling, wall, other for CEN tests.
       logical isfloor,isceiling,iswall,isother
       logical dotrace
       character outs*124
+      character orien*8
 
 C Check which day type is applicable.
       if(NCHDT(ICOMP).eq.1.or.NCHDT(ICOMP).eq.0)then
@@ -417,11 +418,12 @@ C Check the direction of heat flow for the typical ceiling surface.
       DTC=TFS(ICOMP,iceil)-TFA(ICOMP)
       if(dotrace)then
         write(outs,'(a,i3,a,F7.3,a,i3,a,F7.3)') 
-     &    ' CEN base surface is ',ifloor,' with DTF',DTF,
+     &    ' CEN HC imposed base surface is ',ifloor,
+     &    ' with DTF',DTF,
      &    ' and top surface is ',iceil,' with DTC',DTC
         call edisp(itu,outs)
-        call edisp(itu,' Surface convection coefficients')
-        call edisp(itu,' Surface    Inside      `Outside`')
+        call edisp(itu,' Surface convection coefficients W/m^2K')
+        call edisp(itu,' Surface    Inside      `Outside`  Delta T')
         call edisp(itu,'            Future       Future')
       endif
 
@@ -432,6 +434,7 @@ C CEN standards are based on surface orientation as well
 C as the direction of heat flow. First determine if the surface
 C is a floor or ceiling. A 30 degree tollerence assumed e.g. a 
 C sloped surface within 30deg of a ceiling is counted as a ceiling.
+C CENLOC values are in W/m^2K.
         isfloor=.false.
         isceiling=.false.
         iswall=.false.
@@ -452,8 +455,12 @@ C sloped surface within 30deg of a ceiling is counted as a ceiling.
 C Get the Delta T for the current surface.
         DT=TFS(ICOMP,isur)-TFA(ICOMP)
         if(dotrace)then
-          write(itu,*) 'CEN isur,isfloor,isceiling,iswall,isother',
-     &      isur,isfloor,isceiling,iswall,isother,' current DT is ',DT
+          if(isfloor) orien='floor'
+          if(isceiling) orien='ceiling'
+          if(iswall) orien='wall'
+          if(isother) orien='other'
+C          write(itu,*) 'CEN isur,isfloor,isceiling,iswall,isother',
+C     &      isur,isfloor,isceiling,iswall,isother,' current DT is ',DT
         endif
 
         if(isfloor)then
@@ -488,15 +495,24 @@ C In case sloped then DT > zero is downwards flow.
         endif
 
 C Reset "outside" surface coefficents depending on the topology.
+C If CENLOC is -1 then do not reset the HCOF.
         if( IE(ICOMP,ISUR).eq.0 )then
           if(isfloor)then
-            HCOF(ICOMP,ISUR)=CENLOC(ICOMP,L,IP,5)
+            if(CENLOC(ICOMP,L,IP,5).gt.0.0)then
+              HCOF(ICOMP,ISUR)=CENLOC(ICOMP,L,IP,5)
+            endif
           elseif(isceiling)then
-            HCOF(ICOMP,ISUR)=CENLOC(ICOMP,L,IP,8)
+            if(CENLOC(ICOMP,L,IP,8).gt.0.0)then
+              HCOF(ICOMP,ISUR)=CENLOC(ICOMP,L,IP,8)
+            endif
           elseif(iswall)then
-            HCOF(ICOMP,ISUR)=CENLOC(ICOMP,L,IP,14)
+            if(CENLOC(ICOMP,L,IP,14).gt.0.0)then
+              HCOF(ICOMP,ISUR)=CENLOC(ICOMP,L,IP,14)
+            endif
           elseif(isother)then
-            HCOF(ICOMP,ISUR)=CENLOC(ICOMP,L,IP,11)
+            if(CENLOC(ICOMP,L,IP,11).gt.0.0)then
+              HCOF(ICOMP,ISUR)=CENLOC(ICOMP,L,IP,11)
+            endif
           endif
         else
 
@@ -534,8 +550,8 @@ C a wall is treated as a ceiling.
         endif
         if(dotrace)then
           write(outs,9991)SNAME(ICOMP,ISUR),
-     &      HCIF(ICOMP,ISUR),HCOF(ICOMP,ISUR)
- 9991     format(1x,a12,F8.2,F8.2)
+     &      HCIF(ICOMP,ISUR),HCOF(ICOMP,ISUR),DT,orien
+ 9991     format(1x,a12,F8.2,F8.2,F8.2,2x,a)
           call edisp(itu,outs)
         endif
    40 CONTINUE

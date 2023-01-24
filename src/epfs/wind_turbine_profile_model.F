@@ -95,20 +95,12 @@ C-------------------------------------------------------------------------------
      & iDataPoints
 
 C---------------------------------------------------------------------------------
-C Common for passing error messages to calling routine (only used when running
-C in dll mode).
-C---------------------------------------------------------------------------------
-      common/dllerr/dllsubr, dllmesg
-
-
-C---------------------------------------------------------------------------------
 C Declarations for common block variables.
 C---------------------------------------------------------------------------------
       INTEGER      IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS,idynow
       REAL         btimep, btimef, ptimep, ptimef
       CHARACTER    LWndSupp*72
       INTEGER      iWndSupp
-      character    dllsubr*12,dllmesg*124
       REAL         QElecT, QTotalWindSupply, QFarmG
       REAL         GetWTPower
 
@@ -120,7 +112,7 @@ C-------------------------------------------------------------------------------
 C---------------------------------------------------------------------------------
 C Declarations for local variables.
 C---------------------------------------------------------------------------------
-      LOGICAL   XST,dll
+      LOGICAL   XST
       CHARACTER OUTS*124
 
       REAL      fWindSpeedProfile(100),fWindPowerProfile(100)
@@ -206,12 +198,6 @@ C-------------------------------------------------------------------------------
      & fWindPowerProfile,
      & iDataPoints
 
-C---------------------------------------------------------------------------------
-C Common for passing error messages to calling routine (only used when running
-C in dll mode).
-C---------------------------------------------------------------------------------
-      common/dllerr/dllsubr, dllmesg
-
       COMMON/FILEP/IFIL
       COMMON/ER/IER
       COMMON/OUTIN/IUOUT,IUIN,IEOUT
@@ -223,7 +209,6 @@ C-------------------------------------------------------------------------------
       REAL         btimep, btimef, ptimep, ptimef
       CHARACTER    LWndSupp*72
       INTEGER      iWndSupp
-      character    dllsubr*12,dllmesg*124
       REAL         QElecT, QTotalWindSupply, QFarmG
       REAL         fWindSpeedProfile(100),fWindPowerProfile(100)
 
@@ -235,7 +220,7 @@ C-------------------------------------------------------------------------------
 C---------------------------------------------------------------------------------
 C Declarations for local variables.
 C---------------------------------------------------------------------------------
-      LOGICAL   XST,dll
+      LOGICAL   XST
       CHARACTER OUTS*124
 
       CHARACTER OUTSTR*124,word*124
@@ -282,16 +267,8 @@ C         write(outs,*),LWndSupp
          else
            write(outs,'(3a)') 'Wind Turbine Profile File ',LWndSupp
      &       (1:lnblnk(LWndSupp)),' was referenced but not found.'
-            call isadll(dll)  ! Move this to within loop below.
-            if(dll)then
-               dllsubr='ersys'
-               dllmesg=outs
-               ier=2
-               return
-            else
-               call edisp(iuout,outs)
-               STOP ' Need wind profile data: unresolvable error.'
-            endif
+           call edisp(iuout,outs)
+           STOP ' Need wind profile data: unresolvable error.'
          endif
 C Get profile into array.
 C Determine number of data points in profile.
@@ -453,12 +430,6 @@ C-------------------------------------------------------------------------------
      & fWindPowerProfile,
      & iDataPoints
 
-C---------------------------------------------------------------------------------
-C Common for passing error messages to calling routine (only used when running
-C in dll mode).
-C---------------------------------------------------------------------------------
-      common/dllerr/dllsubr, dllmesg
-
       COMMON/FILEP/IFIL
       COMMON/ER/IER
       COMMON/OUTIN/IUOUT,IUIN,IEOUT
@@ -470,7 +441,6 @@ C-------------------------------------------------------------------------------
       REAL         btimep, btimef, ptimep, ptimef
       CHARACTER    LWndSupp*72
       INTEGER      iWndSupp
-      character    dllsubr*12,dllmesg*124
       REAL         QElecT, QTotalWindSupply, QFarmG
       REAL         fWindSpeedProfile(100),fWindPowerProfile(100)
 
@@ -482,7 +452,7 @@ C-------------------------------------------------------------------------------
 C---------------------------------------------------------------------------------
 C Declarations for local variables.
 C---------------------------------------------------------------------------------
-      LOGICAL   XST,dll
+      LOGICAL   XST
 
       CHARACTER OUTSTR*124,word*124
       INTEGER IUNIT,IFIL,k,IER,ND,ival,i,ISTAT,IUOUT,IUIN,IEOUT

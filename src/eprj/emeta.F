@@ -972,9 +972,6 @@ C SNFNAM - *72 Name of the file containing hourly snow depth information
 
 C Obstruction blocks via geometry.h.
 
-      common/dllerr/dllsubr,dllmesg
-      character dllsubr*12,dllmesg*124  ! messages if errors in dll
-
 C Simulation parameter sets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
@@ -1030,7 +1027,7 @@ C For passing to silentmodel.
 C Same as local variable actions which is passed back to calling code.
       character silentreturndirec*8
 
-      logical dll,unixok
+      logical unixok
       real valx,valy,valz      ! local variable for extrude co-ords.
 
 C Paremeters passed to:silentzone
@@ -1171,25 +1168,15 @@ C For each of the META specific arrays, clear values.
       OUTSTR=' '
       metaver =1  ! initial assumption
 
-C Check if running in dll mode.
-      call isadll(dll)
-
 C Initialise meta file. and set currentfile.
       CALL EFOPSEQ(IUNIT,LFILE,1,IER)
       IF(IER.LT.0)THEN
         write(outs,'(3a)') 'Meta file ',LFILE(1:lnblnk(LFILE)),
      &      ' could not be opened.'
-        if(dll)then
-          dllsubr='SILENTREAD'
-          dllmesg=outs
-          ier=2
-          return
-        else
-          call edisp(iuout,outs)
-          IER=1
-          RETURN
-        endif
-      ENDIF
+        call edisp(iuout,outs)
+        IER=1
+        RETURN
+      endif
       write(currentfile,'(a)') LFILE(1:lnblnk(LFILE))
 
 C Read header lines from file, the 1.1 version looks like:
@@ -2270,19 +2257,11 @@ C Update cfg file to know about the control file
      &  OUTSTR(1:50),'...'
       lsn=MIN0(lnblnk(currentfile),110)
       write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
-      if(dll)then
-        dllsubr='SILENTREAD'
-        dllmesg=outs
-        ier=2
-        CALL ERPFREE(IUNIT,ios)
-        return
-      else
-        call edisp(iuout,outs)
-        call edisp(iuout,outs2)
-        IER=1
-        CALL ERPFREE(IUNIT,ios)
-        RETURN
-      endif
+      call edisp(iuout,outs)
+      call edisp(iuout,outs2)
+      IER=1
+      CALL ERPFREE(IUNIT,ios)
+      RETURN
 
       END
 
@@ -2318,9 +2297,6 @@ C Obstruction blocks via geometry.h.
       common/rpath/path
       character path*72    ! where path folders
       character odir*84    ! where current working folder
-
-      common/dllerr/dllsubr,dllmesg
-      character dllsubr*12,dllmesg*124  ! messages if errors in dll
 
 C Simulation parameter sets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
@@ -2370,7 +2346,7 @@ C the contents of the file via model.h.
 C For passing to silentmodel.
       character actions*8,root*32,mpath*72
 
-      logical dll,unixok
+      logical unixok
 
 C Paremeters passed to:silentzone
       character szuse*8,usefile*32  ! usage pattern directives
@@ -2553,25 +2529,15 @@ C we will use them.
 
   42  continue
 
-C Check if running in dll mode.
-      call isadll(dll)
-
 C Initialise geometry data file. and set currentfile.
       CALL EFOPSEQ(ifilg,LFILE,3,IER)
       IF(IER.LT.0)THEN
         write(outs,'(3a)') 'Meta file ',LFILE(1:lnblnk(LFILE)),
      &      ' could not be opened.'
-        if(dll)then
-          dllsubr='SILENTREAD'
-          dllmesg=outs
-          ier=2
-          return
-        else
-          call edisp(iuout,outs)
-          IER=1
-          RETURN
-        endif
-      ENDIF
+        call edisp(iuout,outs)
+        IER=1
+        RETURN
+      endif
       write(currentfile,'(a)') LFILE(1:lnblnk(LFILE))
 
       tab=','    ! make the separator a comma.
@@ -2888,7 +2854,7 @@ C << on a separate line with a tag.
             write(ifilg,'(2a)',IOSTAT=IOS,ERR=13)
      &        outsd(1:lnblnk(outsd)),'  # surface attributes '
 
-            write(louts,'(a,102I4)',IOSTAT=ios,ERR=13) '*list ',
+            write(louts,'(a,124I4)',IOSTAT=ios,ERR=13) '*list ',
      &        isznver(nsz,isu),(iszjvn(nsz,isu,J),J=1,isznver(nsz,isu))
             call SDELIM(louts,loutsd,'C',IW)
             write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13)

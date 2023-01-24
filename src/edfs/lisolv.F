@@ -316,7 +316,8 @@ C Calculate coefficients of recurrence formula.
 C Obtain new PHI.
           DO 402 II=ISTART,IENDM1
             I=IEND+ISTM1-II
-  402       PHI(i,j,K)=A(I)*PHI(I+1,J,K)+C(I)
+            PHI(i,j,K)=A(I)*PHI(I+1,J,K)+C(I)
+  402     CONTINUE
   403   CONTINUE
   400 CONTINUE
       ENDIF

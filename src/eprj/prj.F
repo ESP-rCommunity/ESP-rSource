@@ -321,7 +321,7 @@ C Set folder separator (fs) to \ or / as required.
       write(docpth,'(a1,a1)')'.',fs
       write(dbspth,'(a1,a1)')'.',fs
       write(tmppth,'(a1,a1)')'.',fs
-      IYEAR=2021
+      IYEAR=2022
       IBDOY=1
       IEDOY=365
       cfgroot=' '
@@ -589,7 +589,7 @@ C update document.
         call isinstalled(hold32,found_curl)
         if(found_curl)then
           write(doit,'(4a)') 'curl --connect-timeout 3 -f -s ',
-     &      'http://www.esru.strath.ac.uk/',
+     &      'https://www.esru.strath.ac.uk/',
      &      'Downloads/ESP-r/update_notes.txt -o ',
      &      '/tmp/update_notes.txt'
           call runit(doit,'-')
@@ -1574,7 +1574,7 @@ C Save model (23 without asking for file name & 24 asking for file name).
           goto 3
         endif
 
-C Ask for file name.
+C Ask for file name. If save as and V4.2 then offer to save as V4.0
         if(INO.EQ.24)then
           helptopic='updated_cfg_file_name'
           call gethelptext(helpinsub,helptopic,nbhelp)
@@ -1589,19 +1589,16 @@ C Ask for file name.
             goto 89
           endif
 
-C Give option to alter the root name.
+C Give option to alter the base name of the project files.
           helptopic='model_root_name'
           call gethelptext(helpinsub,helptopic,nbhelp)
           t32=cfgroot
-          CALL EASKS(t32,' ','Root name for the project?',
+          CALL EASKS(t32,' ','Base name for project files?',
      &      32,'project','root name',
      &      IER,nbhelp)
           if(t32(1:2).ne.'  '.and.t32(1:4).ne.'UNKN')cfgroot=t32
         endif
 
-C If configuration file format is version 3 then check to see if there
-C are any utility files. If found then ask is the user wants to save
-C in older format.
         if(icfgv.ge.3)then
 
 C Also check about connections file.
@@ -1626,7 +1623,11 @@ C Also check about connections file.
 
         call tstamp('>','prj: update configuration')
         call tstamp('>',LCFGF)
-        CALL EMKCFG('-',IER)
+        if(INO.EQ.24)then
+          CALL EMKCFG('v',IER)  ! Ask user about version as well.
+        else
+          CALL EMKCFG('-',IER)
+        endif
         IF(IER.EQ.1)THEN
           call usrmsg('Problem creating new file. Check disk',
      &                'space or write permission.','W')

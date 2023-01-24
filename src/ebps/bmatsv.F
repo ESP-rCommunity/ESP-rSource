@@ -45,7 +45,6 @@ C Main controller for the numerical simulation.
 #include "power.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"
-#include "qrun.h"
 #include "h3k_report_data.h"
 #include "hvac_parameters.h"
 #include "FMI.h"
@@ -480,22 +479,10 @@ C of the assumed starting conditions.
       inhs=0
       inhsi=0
 
-C If quick run method is requested, set the start date and end date of the
-C simulation to span all periods of interest (all of the best weeks).
-        if ( iQuick_run .eq. 1 ) then
-          iOldSeasonIndex = 0
-          iss = iFirst_day_num - itcnst
-          isf = iLast_day_num
-          nhs = ( iLast_day_num - iFirst_day_num + 1 + itcnst )*24
-        endif
-
 C Has the start day been converted from a post-new year
 C day to a pre-new year day?
         IF(ISS.LT.1)THEN
           iss=365-itcnst+isds
-        if ( iQuick_run .eq. 1 ) then
-          iss = 365 - itcnst + iFirst_day_num
-        endif
         isf=isf+365
         issny=1
 
@@ -518,14 +505,6 @@ C Start year (result can be less than 1).
 C End year (not used at present).
         iMY_end_yr_index = iMY_end_year - iMY_start_year
 
-      endif
-
-C Set the variable bSimThisDay (introduced for quick run method)
-C if a quick run is not requested.
-      if ( iQuick_run .ne. 1 ) then
-        quickrun_markdays_loop: do iCount = iss, isf
-             bSimThisDay(iCount) = .true.
-        enddo quickrun_markdays_loop
       endif
 
 C H3Kreporting object - save the frequency of building timesteps (simulations with different
@@ -760,20 +739,6 @@ C Initialise ground temperature profile parameters.
 C Start simulation day-loop.
 C (i = curr day, iss = simulation start day, isf = simulation finish day)
       do 10 i=iss,isf
-
-C Get seasonal information.
-        seasonal_run_test: if ( bSimThisDay(i) ) then
-        quick_run_init: if ( iQuick_run == 1 ) then
-          iThisSeason = iSeasonIndex(i)
-          if ( iOldSeasonIndex /= iThisSeason .and.
-     &         iThisSeason /= 0 ) then
-            call ReportNewSeason( iThisSeason,
-     &                           fHtgMultiplier(iThisSeason),
-     &                           fClgMultiplier(iThisSeason),
-     &                           fGenMultiplier(iThisSeason)  )
-            iOldSeasonIndex = iThisSeason
-          endif
-        endif quick_run_init
 
 C For multi-year simulations, determine the current
 C and future time row years, and the indices of these
@@ -1707,13 +1672,14 @@ C Check to see present time is close to midnight
             endif
 
 C Update reports.
-            if ( bInStartup() .or. ( iStart_flag(i) .eq. 1 ) ) then
+            if ( bInStartup() ) then
               iStartupFlag = 1
             else
               iStartupFlag = 0
             endif
 
 C << NOTE: dummy call REP_UPDATE only has 3 parameters >>
+            iQuick_run = 0   ! dummy value
             call ReportNextTimeStep(nsinc,btimep,myday,iStartupFlag,
      &                              iQuick_run)    ! <- store logged data
 
@@ -1823,8 +1789,6 @@ C only once per day.
        if(igshp.eq.1) then
          call GSHPSIM
        endif
-
-       endif seasonal_run_test
 
 C Agent problem check. If a problem is detected stop the simulation here.
         if (agt_problem.eq.1) call AGT_STOP(iday)

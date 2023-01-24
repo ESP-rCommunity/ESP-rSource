@@ -34,38 +34,24 @@ C Calendar commons.
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER :: icalender,nbcaldays,nbdaytype
 
-C Error subroutine and error details for dll mode.
-      common/dllerr/dllsubr,dllmesg
-
       character outstr*124,loutstr*248
-      character dllsubr*12,dllmesg*124,WORD*20,outs*124,outs2*124
+      character WORD*20,outs*124,outs2*124
       character calename*32,calentag*12,calendayname*32
       character dstmp*24
-      logical dll
       integer lsn
 
       IER=0
-
-C Check if running in dll mode.
-      call isadll(dll)
 
 C Initialise project data file.
       CALL EFOPSEQ(IUO,bdmds,1,IER)
       IF(IER.NE.0)THEN
         write(outs,'(3a)') 'Dispersed demands file ',
      &    bdmds(1:lnblnk(bdmds)),' could not be opened!'
-        if(dll)then
-          dllsubr='ERBDMD'
-          dllmesg=outs
-          ier=2
-          return
-        else
-          call edisp(ioout,' ')
-          call edisp(iuout,outs)
-          IER=1
-          RETURN
-        endif
-      ENDIF
+        call edisp(ioout,' ')
+        call edisp(iuout,outs)
+        IER=1
+        RETURN
+      endif
       write(currentfile,'(a)') bdmds(1:lnblnk(bdmds))
 
 C Read lines from file, discarding comments. To allow for operation
@@ -129,19 +115,11 @@ C Loop through all calendar day types. (Limit is 7 day types.)
 C If periods are out of sync then return with a warning.
             write(outs,'(3a)') 'Period start-end mismatch in ',
      &        OUTSTR(1:50),'!'
-            if(dll)then
-              dllsubr='ERBDMD'
-              dllmesg=outs
-              ier=2
-              CALL ERPFREE(IUO,ISTAT)
-              return
-            else
-              call edisp(iuout,' ')
-              call edisp(iuout,outs)
-              IER=1
-              CALL ERPFREE(IUO,ISTAT)
-              RETURN
-            endif
+            call edisp(iuout,' ')
+            call edisp(iuout,outs)
+            IER=1
+            CALL ERPFREE(IUO,ISTAT)
+            RETURN
           endif
           X=BRADC(idt,I)+BCONC(idt,I)
           if(X.GT.1.02)then
@@ -149,19 +127,11 @@ C If periods are out of sync then return with a warning.
 C If radiant plus convective is > 1.0 issue warning..
             write(outs,'(3a)') 'Radiant & convec summation > 1.0 in ',
      &        OUTSTR(1:50),'!'
-            if(dll)then
-              dllsubr='ERBDMD'
-              dllmesg=outs
-              ier=2
-              CALL ERPFREE(IUO,ISTAT)
-              return
-            else
-              call edisp(iuout,' ')
-              call edisp(iuout,outs)
-              IER=1
-              CALL ERPFREE(IUO,ISTAT)
-              RETURN
-            endif
+            call edisp(iuout,' ')
+            call edisp(iuout,outs)
+            IER=1
+            CALL ERPFREE(IUO,ISTAT)
+            RETURN
           endif
           IF(X.LT..95.AND.ITRC.GT.1)call edisp(iuout,
      &                            'Demand rad+con < 1.0!')
@@ -214,20 +184,12 @@ C Error messages.
      &  OUTSTR(1:50),'!'
       lsn=MIN0(lnblnk(currentfile),110)
       write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
-      if(dll)then
-        dllsubr='ERBDMD'
-        dllmesg=outs
-        ier=2
-        CALL ERPFREE(IUO,ISTAT)
-        return
-      else
-        call edisp(iuout,' ')
-        call edisp(iuout,outs)
-        call edisp(iuout,outs2)
-        IER=1
-        CALL ERPFREE(IUO,ISTAT)
-        RETURN
-      endif
+      call edisp(iuout,' ')
+      call edisp(iuout,outs)
+      call edisp(iuout,outs2)
+      IER=1
+      CALL ERPFREE(IUO,ISTAT)
+      RETURN
 
       END
 

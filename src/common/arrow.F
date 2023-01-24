@@ -21,7 +21,7 @@ C Boston, MA 02111-1307 USA.
 C **************** ARROW ****************
 C ARROW draws an arrow between two points with a directional head.
 C The arrow goes from P to Q, and the arrow point is centered round 
-C coordinane A. al is arrow length, aw is arrow width. 
+C coordinate A. al is arrow length, aw is arrow width. 
 C If act = 'r' then arrow size relative to length of line, 
 C if act = 'a' then absolute dimensions. 
 C Returns the corner points of the arrow as pixel locations in 'ipoints'.
@@ -34,9 +34,10 @@ C IDRAW=0 don't draw; =1 shaft single line thickness; =2 shaft double line thick
       COMMON/OUTIN/IUOUT,IUIN,IEOUT
       real P,Q,SNORM,PLANE,CORNER
       DIMENSION P(3),Q(3),SNORM(3),A(3),PLANE(4),CORNER(4,3)
-      real VE,VECC,COG1,COG2,COG3
+      real VE,VECC,COG1,COG2
       integer ipoints
-      DIMENSION VE(3),VECC(3),COG1(3),COG2(3),COG3(3),ipoints(6,2)
+      DIMENSION VE(3),VECC(3),COG1(3),COG2(3),ipoints(6,2)
+      dimension ax(2),ay(2),az(2)
       character act*1
 C      character outs*124
       logical unixok
@@ -161,45 +162,57 @@ C      call edisp(iuout,outs)
 C      write(outs,*) 'Axlen  & dist & SF iaxis ',AXLEN,DIST,SF,IAXIS
 C      call edisp(iuout,outs)
 
-C Draw the damn thing!
-      CALL VECTRN(P,TEMAT,COG2,IER)
-      CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),iixp,iiyp)
-      CALL VECTRN(Q,TEMAT,COG2,IER)
-      CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),iixq,iiyq)
-      CALL VECTRN(A,TEMAT,COG2,IER)
-      CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),iixa,iiya)
+C Check clipping while we work out the coordinates.
+C If any point of the arrow head is outside the viewing area, don't draw.
+C If just the shaft goes outside, clip it.
+      CALL VECTRN(P,TSMAT,COG2,IER)
+      call CLIPPT(COG2(1),COG2(2),COG2(3),iclpp)
+      call u2pixel(COG2(1),COG2(2),iixp,iiyp)
+      CALL VECTRN(Q,TSMAT,COG2,IER)
+      call CLIPPT(COG2(1),COG2(2),COG2(3),iclpq)
+      call u2pixel(COG2(1),COG2(2),iixq,iiyq)
+      CALL VECTRN(A,TSMAT,COG2,IER)
+      call u2pixel(COG2(1),COG2(2),iixa,iiya)
       COG1(1)=corner(1,1)
       COG1(2)=corner(1,2)
       COG1(3)=corner(1,3)
-      CALL VECTRN(COG1,TEMAT,COG2,IER)
-      CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),iixc1,iiyc1)
+      CALL VECTRN(COG1,TSMAT,COG2,IER)
+      call CLIPPT(COG2(1),COG2(2),COG2(3),iclpc1)
+      call u2pixel(COG2(1),COG2(2),iixc1,iiyc1)
       COG1(1)=corner(2,1)
       COG1(2)=corner(2,2)
       COG1(3)=corner(2,3)
-      CALL VECTRN(COG1,TEMAT,COG2,IER)
-      CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),iixc2,iiyc2)
+      CALL VECTRN(COG1,TSMAT,COG2,IER)
+      call CLIPPT(COG2(1),COG2(2),COG2(3),iclpc2)
+      call u2pixel(COG2(1),COG2(2),iixc2,iiyc2)
       COG1(1)=corner(3,1)
       COG1(2)=corner(3,2)
       COG1(3)=corner(3,3)
-      CALL VECTRN(COG1,TEMAT,COG2,IER)
-      CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),iixc3,iiyc3)
+      CALL VECTRN(COG1,TSMAT,COG2,IER)
+      call CLIPPT(COG2(1),COG2(2),COG2(3),iclpc3)
+      call u2pixel(COG2(1),COG2(2),iixc3,iiyc3)
       COG1(1)=corner(4,1)
       COG1(2)=corner(4,2)
       COG1(3)=corner(4,3)
-      CALL VECTRN(COG1,TEMAT,COG2,IER)
-      CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),iixc4,iiyc4)
+      CALL VECTRN(COG1,TSMAT,COG2,IER)
+      call CLIPPT(COG2(1),COG2(2),COG2(3),iclpc4)
+      call u2pixel(COG2(1),COG2(2),iixc4,iiyc4)
+
+      iidraw=IDRAW
+      if (iclpq.ne.0 .or. iclpc1.ne.0 .or. iclpc2.ne.0 .or. 
+     &    iclpc3.ne.0 .or. iclpc4.ne.0) then
+        iidraw=0
+      elseif (iclpp.ne.0) then
+        call ORTTRN(P(1),P(2),P(3),TSMAT,ax(1),ay(1),az(1),ier)
+        call ORTTRN(Q(1),Q(2),Q(3),TSMAT,ax(2),ay(2),az(2),ier)
+        call CUTLIN(ax,ay,az,iclp)
+        call u2pixel(ax(1),ay(2),iixp,iiyp)
+      endif      
 
 C Draw the arrow. (IDRAW determines shaft width).
-      if (IDRAW.gt.0) then
-        if (IDRAW.eq.1) call eswline(iixp,iiyp,iixq,iiyq)
-        if (IDRAW.eq.2) call edwline(iixp,iiyp,iixq,iiyq)
+      if (iidraw.gt.0) then
+        if (iidraw.eq.1) call eswline(iixp,iiyp,iixq,iiyq)
+        if (iidraw.eq.2) call edwline(iixp,iiyp,iixq,iiyq)
         call eswline(iixc1,iiyc1,iixc2,iiyc2)
         call eswline(iixc2,iiyc2,iixc3,iiyc3)
         call eswline(iixc3,iiyc3,iixc4,iiyc4)

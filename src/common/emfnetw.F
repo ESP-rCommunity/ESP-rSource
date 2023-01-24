@@ -71,6 +71,7 @@ C     RHON   - node fluid density (kg/m^3)
 C Components: fixed description data
 C     IVALCM - valid component type numbers
 C     LVALCM - short description of each valid component type
+C     LTVALCM - terse description of component tpe
 C Components: fixed input data
 C     CMNAM  - identifier/name
 C     ITPCMP - type number
@@ -299,6 +300,7 @@ C Find matching component text descriptor and remember it.
         IF(ITPCMP(ICMP).EQ.IVALCM(IC)) GOTO 45
         IF(IC.LT.MCMV) GOTO 31
    45   LTPCMP(ICMP)=LVALCM(IC)
+        LTTCMP(ICMP)=LTVALCM(IC)
 
 C Number of component level supplementary data items. 
         CALL EGETWI(OUTSTR,K,IV,0,0,'-','comp supplem data',IER)
@@ -772,6 +774,7 @@ C Find matching component text descriptor and remember it.
         IF(ITPCMP(NCMP).EQ.IVALCM(IC)) GOTO 45
         IF(IC.LT.MCMV) GOTO 31
    45   LTPCMP(NCMP)=LVALCM(IC)
+        LTTCMP(NCMP)=LTVALCM(IC)
 
 C Number of component level supplementary data items. 
         CALL EGETWI(OUTSTR,K,IV,0,0,'-','comp supplem data',IER)
@@ -1523,7 +1526,8 @@ C Markdown flag.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       CHARACTER LAPROB*72
       CHARACTER outs*124,fldtyp*6,nodtyp*20,dat1*4,dat2*4,tmnam*12
-      logical written
+      character fluidn*6,assocwith*25
+      logical written,isair
 
       CALL EDISP(itru,' ')
       if(markdown)then
@@ -1606,164 +1610,202 @@ C Node data.
 
 C Component data.
       IF(NCMP.gt.0)then
-        CALL EDISP(itru,' ')
-        if(IAIRN.eq.3)then
-          CALL EDISP(itru,
-     &    ' Component    Type C+ L+ X Y Z Position Description')
+        if(markdown)then
+          call edisp(itru,' ')
+          call edisp(itru,
+     &    ': Components (C+ = atributes L+ connection atributes):')
+          call edisp(itru,' ')
         else
-          CALL EDISP(itru,
-     &    ' Component    Type C+ L+ Description')
+          call edisp(itru,' ')
+        endif
+        if(IAIRN.eq.3)then
+          if(markdown)then
+            write(outs,'(3A)') 'Component     Type Fluid C+ L+ ',
+     &      'Associated with            @X     @Y    @Z  ',
+     &      'Description'
+            call edisp(itru,outs)
+            write(outs,'(3A)') '------------- ---- ----- -- -- ',
+     &      '------------------------- ----- ----- ----- ',
+     &      '-------------------------------'
+            call edisp(itru,outs)
+          else
+            call edisp(itru,
+     &' Component    Type Fluid C+ L+ Association @X @Y @Z Description')
+          endif
+        else
+          if(markdown)then
+            write(outs,'(2A)') 'Component     Type Fluid C+ L+  ',
+     &      'Description'
+            call edisp(itru,outs)
+            write(outs,'(2A)') '------------- ---- ----- -- --  ',
+     &      '--------------------------------'
+            call edisp(itru,outs)
+          else
+            call edisp(itru,
+     &        ' Component    Type Fluid C+ L+ Description')
+          endif
         endif
 
         DO 50 ICMP=1,NCMP
-          call edisp(itru,' ')
-          if(IAIRN.eq.3)then
-            WRITE(outs,'(1x,a,i5,i3,i3,3f6.1,1x,a)')
-     &        CMNAM(ICMP),ITPCMP(ICMP),
-     &        ISDCMP(ICMP),ISDCNN(ICMP),HCMP(ICMP,1,1),
-     &        HCMP(ICMP,1,2),HCMP(ICMP,1,3),LTPCMP(ICMP)
+          call eclose(SUPCMP(ICMP,1),1.0,0.1,isair) ! Decode air or water.
+          if(isair)then
+            fluidn = ' air  '
           else
-            WRITE(outs,'(1x,a,i5,i3,i3,1x,a)')CMNAM(ICMP),
-     &        ITPCMP(ICMP),ISDCMP(ICMP),ISDCNN(ICMP),LTPCMP(ICMP)
+            fluidn = ' water'
+          endif
+          if(IAIRN.eq.3)then
+            lnczn=lnblnk(CMPASSOC(ICMP,1))
+            lncsn=lnblnk(CMPASSOC(ICMP,2))
+            write(assocwith,'(3a)')
+     &        CMPASSOC(ICMP,1)(1:lnczn),':',
+     &        CMPASSOC(ICMP,2)(1:lncsn)
+            if(markdown)then
+              WRITE(outs,'(1x,a,i5,a,i3,i3,1x,a,3f6.1,1x,a)')
+     &        CMNAM(ICMP),ITPCMP(ICMP),fluidn,
+     &        ISDCMP(ICMP),ISDCNN(ICMP),assocwith,HCMP(ICMP,1,1),
+     &        HCMP(ICMP,1,2),HCMP(ICMP,1,3),LTTCMP(ICMP)
+            else
+              call edisp(itru,' ')
+              WRITE(outs,'(1x,a,i5,a,i3,i3,1x,a,3f6.1,1x,a)')
+     &        CMNAM(ICMP),ITPCMP(ICMP),fluidn,ISDCMP(ICMP),
+     &        ISDCNN(ICMP),assocwith(1:lnblnk(assocwith)),
+     &        HCMP(ICMP,1,1),HCMP(ICMP,1,2),HCMP(ICMP,1,3),
+     &        LTTCMP(ICMP)
+            endif
+          else
+            if(markdown)then
+              WRITE(outs,'(1x,a,i5,a,i4,i3,1x,a)')CMNAM(ICMP),
+     &        ITPCMP(ICMP),fluidn,ISDCMP(ICMP),ISDCNN(ICMP),
+     &        LTTCMP(ICMP)
+            else
+              call edisp(itru,' ')
+              WRITE(outs,'(1x,a,i5,a,i3,i3,1x,a)')CMNAM(ICMP),
+     &        ITPCMP(ICMP),fluidn,ISDCMP(ICMP),ISDCNN(ICMP),
+     &        LTTCMP(ICMP)
+            endif
           endif
           if(markdown)then
             CALL EDISP(ITRU,OUTS)
           else
             CALL EDISP(ITRU,OUTS)
           endif
-          if(IAIRN.eq.3)then
-            lnczn=lnblnk(CMPASSOC(ICMP,1))
-            lncsn=lnblnk(CMPASSOC(ICMP,2))
-            write(outs,'(4a)') ' Associated with ',
-     &        CMPASSOC(ICMP,1)(1:lnczn),':',
-     &        CMPASSOC(ICMP,2)(1:lncsn)
-            if(markdown)then
-              CALL EDISP(ITRU,OUTS)
-            else
-              CALL EDISP(ITRU,OUTS)
-            endif
-          endif
 
-C Provide a heading string for each different component type.
+C Attributes for each different component type.
           written=.false.
           IF(ITPCMP(ICMP).EQ. 10) THEN
-            WRITE(outs,'(a,F4.1,2(a,G12.5))')' Fluid ',SUPCMP(ICMP,1),
-     &      ' coef a ',SUPCMP(ICMP,2),' exponent b ',SUPCMP(ICMP,3)
+            WRITE(outs,'(a,2(a,G12.5))')' With ',
+     &      'coef a ',SUPCMP(ICMP,2),' exponent b ',SUPCMP(ICMP,3)
             CALL EDISP(itru,outs)
             written=.true.
           ELSE IF(ITPCMP(ICMP).EQ. 11) THEN
-            WRITE(outs,'(a,F4.1,2(a,G12.5))')' Fluid ',SUPCMP(ICMP,1),
-     &      ' Rated flow ',SUPCMP(ICMP,2),' Nb devices ',SUPCMP(ICMP,3)
+            WRITE(outs,'(a,2(a,G12.5))')' With ',
+     &      'rated flow ',SUPCMP(ICMP,2),' nb devices ',SUPCMP(ICMP,3)
             CALL EDISP(itru,outs)
             written=.true.
           ELSE IF(ITPCMP(ICMP).EQ. 12) THEN
-            WRITE(outs,'(a,F4.1,3(a,G12.5),a,F4.1)')
-     &      ' Fluid ',SUPCMP(ICMP,1),
-     &      ' coef a ',SUPCMP(ICMP,2),' exponent b ',SUPCMP(ICMP,3),
+            WRITE(outs,'(a,3(a,G12.5),a,F4.1)')
+     &      ' With ',
+     &      'coef a ',SUPCMP(ICMP,2),' exponent b ',SUPCMP(ICMP,3),
      &      ' max val ',SUPCMP(ICMP,4),' switch val',SUPCMP(ICMP,5)
             CALL EDISP(itru,outs)
             written=.true.
           ELSE IF(ITPCMP(ICMP).EQ. 15) THEN
-            WRITE(outs,'(a,F4.1,2(a,G12.5))')' Fluid ',SUPCMP(ICMP,1),
-     &      ' coef a ',SUPCMP(ICMP,2),' exponent b ',SUPCMP(ICMP,3)
+            WRITE(outs,'(a,2(a,G12.5))')' With ',
+     &      'coef a ',SUPCMP(ICMP,2),' exponent b ',SUPCMP(ICMP,3)
             CALL EDISP(itru,outs)
             written=.true.
           ELSE IF(ITPCMP(ICMP).EQ. 17) THEN
-            WRITE(outs,'(a,F4.1,2(a,G12.5))')' Fluid ',SUPCMP(ICMP,1),
-     &      ' coef a ',SUPCMP(ICMP,2),' exponent b ',SUPCMP(ICMP,3)
+            WRITE(outs,'(a,2(a,G12.5))')' With ',
+     &      'coef a ',SUPCMP(ICMP,2),' exponent b ',SUPCMP(ICMP,3)
             CALL EDISP(itru,outs)
             written=.true.
           ELSE IF(ITPCMP(ICMP).EQ. 20) THEN
-            WRITE(outs,'(a,F4.1,2(a,G12.5))')' Fluid ',SUPCMP(ICMP,1),
-     &      ' coef a (Pa.s/m^3)',SUPCMP(ICMP,2),
+            WRITE(outs,'(a,2(a,G12.5))')' With ',
+     &      'coef a (Pa.s/m^3)',SUPCMP(ICMP,2),
      &      ' exponent b (Pa.(s/m^3)^2)',SUPCMP(ICMP,3)
             CALL EDISP(itru,outs)
             written=.true.
           ELSE IF(ITPCMP(ICMP).EQ. 25) THEN
-            WRITE(outs,'(a,F4.1,2(a,G12.5))')' Fluid ',SUPCMP(ICMP,1),
-     &      ' coef a (Pa.s/kg)',SUPCMP(ICMP,2),
+            WRITE(outs,'(a,2(a,G12.5))')' With ',
+     &      'coef a (Pa.s/kg)',SUPCMP(ICMP,2),
      &      ' exponent b (Pa.(s/kg)^2)',SUPCMP(ICMP,3)
             CALL EDISP(itru,outs)
             written=.true.
           ELSE IF(ITPCMP(ICMP).EQ. 30) THEN
-            WRITE(outs,'(a,F4.1,a,G12.5)')' Fluid ',SUPCMP(ICMP,1),
-     &      ' flow rate (m^3/s) ',SUPCMP(ICMP,2)
+            WRITE(outs,'(a,a,G12.5)')' With ',
+     &      'flow rate (m^3/s) ',SUPCMP(ICMP,2)
             CALL EDISP(itru,outs)
             written=.true.
           ELSE IF(ITPCMP(ICMP).EQ. 35) THEN
-            WRITE(outs,'(a,F4.1,a,G12.5)')' Fluid ',SUPCMP(ICMP,1),
-     &      ' flow rate (kg/s) ',SUPCMP(ICMP,2)
+            WRITE(outs,'(a,a,G12.5)')' With ',
+     &      'flow rate (kg/s) ',SUPCMP(ICMP,2)
             CALL EDISP(itru,outs)
             written=.true.
           ELSE IF(ITPCMP(ICMP).EQ. 40) THEN
-            WRITE(outs,'(a,F4.1,a,F7.3,a,F6.3)')' Fluid ',
-     &      SUPCMP(ICMP,1),
-     &      ' opening area (m^2)',SUPCMP(ICMP,2),
+            WRITE(outs,'(a,a,F7.3,a,F6.3)')' With ',
+     &      'opening area (m^2)',SUPCMP(ICMP,2),
      &      ' discharge factor (-)',SUPCMP(ICMP,3)
             CALL EDISP(itru,outs)
             written=.true.
           ELSE IF(ITPCMP(ICMP).EQ. 50) THEN
-            WRITE(outs,'(a,F4.1,a,F7.3,a,F7.3)')' Fluid ',
-     &      SUPCMP(ICMP,1),
-     &      ' path length(m)',SUPCMP(ICMP,2),
+            WRITE(outs,'(a,a,F7.3,a,F7.3)')' With ',
+     &      'path length(m)',SUPCMP(ICMP,2),
      &      ' opening radius(m)',SUPCMP(ICMP,3)
             CALL EDISP(itru,outs)
             written=.true.
           ELSE IF(ITPCMP(ICMP).EQ.110) THEN
-            WRITE(outs,'(a,F4.1,a,F7.3)')' Fluid ',SUPCMP(ICMP,1),
-     &      ' opening area(m)',SUPCMP(ICMP,2)
+            WRITE(outs,'(a,a,F7.3)')' With ',
+     &      'opening area(m)',SUPCMP(ICMP,2)
             CALL EDISP(itru,outs)
             written=.true.
           ELSE IF(ITPCMP(ICMP).EQ.120) THEN
-            WRITE(outs,'(a,F4.1,a,F8.4,a,F7.3)')' Fluid ',
-     &      SUPCMP(ICMP,1),
-     &      ' crack width(m)',SUPCMP(ICMP,2),' crack length(m)',
+            WRITE(outs,'(a,a,F8.4,a,F7.3)')' With ',
+     &      'crack width(m)',SUPCMP(ICMP,2),' crack length(m)',
      &      SUPCMP(ICMP,3)
             CALL EDISP(itru,outs)
             written=.true.
           ELSE IF(ITPCMP(ICMP).EQ.130) THEN
-            WRITE(outs,'(a,F4.1,a,F6.3,a,F6.3,a,F6.3,a,F5.3)')
-     &      ' Fluid ',
-     &      SUPCMP(ICMP,1),' width ',SUPCMP(ICMP,2),' height',
+            WRITE(outs,'(a,a,F6.3,a,F6.3,a,F6.3,a,F5.3)')
+     &      ' With ','width ',SUPCMP(ICMP,2),' height',
      &      SUPCMP(ICMP,3),' ref ht ',SUPCMP(ICMP,4),
      &      ' discharge factor ',SUPCMP(ICMP,5)
             CALL EDISP(itru,outs)
             written=.true.
           ELSE IF(ITPCMP(ICMP).EQ.210) THEN
             call edisp(itru,
-     &  '   Fluid, hydr diam, x-sect, conduit ln, roughness, loss fac.')
+     &  '   With hydr diam, x-sect, conduit ln, roughness, loss fac.')
           ELSE IF(ITPCMP(ICMP).EQ.211) THEN
             call edisp(itru,
-     &  '   Fluid, cowl hyd dia, loc loss, coef B coef n, include wind')
+     &  '   With cowl hyd dia, loc loss, coef B coef n, include wind')
           ELSE IF(ITPCMP(ICMP).EQ.220) THEN
             call edisp(itru,
-     &  '   Fluid, hydr diam, x-sect, conduit ln, roughness, loss fac.')
+     &  '   With hydr diam, x-sect, conduit ln, roughness, loss fac.')
             call edisp(itru,' x-sect of junct, Ccp coef a0 - a5.')
           ELSE IF(ITPCMP(ICMP).EQ.230) THEN
             call edisp(itru,
-     &    ' Fluid, hydr diam, x-sect, conduit ln, roughness, loss fac.')
+     &    ' With hydr diam, x-sect, conduit ln, roughness, loss fac.')
             call edisp(itru,' x-sect of junct, Ccp coef a0 - a5.')
           ELSE IF(ITPCMP(ICMP).EQ.240) THEN
             call edisp(itru,
-     &  '   Fluid, hydr diam, x-sect, conduit ln, roughness, loss fac.')
+     &  '   With hydr diam, x-sect, conduit ln, roughness, loss fac.')
             call edisp(itru,'   x-sect of junct, Ccp coef a0 - a9.')
           ELSE IF(ITPCMP(ICMP).EQ.250) THEN
             call edisp(itru,
-     &  '   Fluid, hydr diam, x-sect, conduit ln, roughness, loss fac.')
+     &  '   With hydr diam, x-sect, conduit ln, roughness, loss fac.')
             call edisp(itru,'   x-sect of junct, Ccp coef a0 - a9.')
           ELSE IF(ITPCMP(ICMP).EQ.310) THEN
             call edisp(itru,
-     &  '   Fluid, lower & upper vol rate, flow coef a0 - a3')
+     &  '   With lower & upper vol rate, flow coef a0 - a3')
           ELSE IF(ITPCMP(ICMP).EQ.410) THEN
             call edisp(itru,
-     &  '   Fluid, density, pres dif, lin/log, open & closed vol flow,')
+     &  '   With density, pres dif, lin/log, open & closed vol flow,')
             call edisp(itru,
      &  '   low validity limit')
           ELSE IF(ITPCMP(ICMP).EQ.420) THEN
-            call edisp(itru,'   Fluid, x-sec, coef a0-a3')
+            call edisp(itru,' With x-sec, coef a0-a3')
           ELSE IF(ITPCMP(ICMP).EQ.460) THEN
             call edisp(itru,
-     &  '   Fluid, flow when S < Ssp, flow when S > Ssp.')
+     &  '   With flow when S < Ssp, flow when S > Ssp.')
           ELSE IF(ITPCMP(ICMP).EQ.500) THEN
             call edisp(itru,
      &  '   multi configuration flow component ')
@@ -1845,8 +1887,12 @@ C<< Plant and air flow node mapping to be added
           IF(IHEAD1.NE.1)THEN
             if(markdown)then
               call edisp(itru,' ')
-              CALL EDISP2tr(ITRU,'thermal zone -> air flow node  ')
+              call edisp(itru,': Thermal zone -> flow node mapping:')
+              call edisp(itru,' ')
+              call edisp(itru,'zone        to  node ')
+              call edisp(itru,'----------- --- ----------------- ')
             else
+              call edisp(itru,' ')
               CALL EDISP(ITRU,'thermal zone to air flow node mapping:')
               CALL EDISP(ITRU,'thermal zone -> air flow node')
             endif

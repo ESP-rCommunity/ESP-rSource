@@ -658,10 +658,6 @@ C day and timestep returned via ISIMDAY SIMTIMEF.
       COMMON/CFDPOL/POLCONCp(MCTM,ntcelx,ntcely,ntcelz),
      1              POLCONCf(MCTM,ntcelx,ntcely,ntcelz)
 
-      common/dllerr/dllsubr,dllmesg
-      character dllsubr*12,dllmesg*124
-
-      LOGICAL dll
       character cfd3dascii*72
       character loutstr*1000,WORD*32
       character outs*124
@@ -675,18 +671,10 @@ C Set unit number and initial values of ISIMDAY & SIMTIMEF.
         write(outs,'(3a)') '   cfd3dascii file ../tmp/',
      &    cfd3dascii(1:lnblnk(cfd3dascii)),
      &    ' could not be opened.'
-        call isadll(dll)
-        if(dll)then
-          dllsubr='readcfd3d...'
-          dllmesg=outs
-          ier=2
-          return
-        else
-          call edisp(IUOUT,outs)
-          IER=1
-          RETURN
-        endif
-      ENDIF
+        call edisp(IUOUT,outs)
+        IER=1
+        RETURN
+      endif
       write(currentfile,'(a)') cfd3dascii(1:lnblnk(cfd3dascii))
       
   42  CALL STRIPC1K(iunit,LOUTSTR,0,ND,1,'cfd3dlines',IER)

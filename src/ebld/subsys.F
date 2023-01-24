@@ -582,69 +582,70 @@ C For zero RF set dew point temperature to 293.
          TDP=293.0
       ENDIF
 
-C Here provide the different sky temperature options.
+C Sky temperature calculation options.
+
+C Martin & Berdahl model, 1984 (default) 
       IF(iExt_longwave_flg.EQ.0)THEN
 
-C Use default Martin & Berdahl calculation.
-C Clear sky condition:
+C Clear sky.
         PI = 4.0 * ATAN(1.0)
         TIM=2.0*PI*real(IHRF)/24.0
         E0=0.711+0.56*(TDP/100.0)+0.73*((TDP/100.0)**2)+
      &   0.013*COS(TIM)+(12.0E-05)*(PATMOS-1000.)
 
-C Cloudy condition: assume cloud base is at 3km.
+C Cloudy sky (assume cloud base is at 3km).
         CBH=3.0
         GAMMA=EXP(CBH/(-8.2))
 
 C Radiation from the atmosphere:
         RSKY=SBC*(E0+(1.0-E0)*CLOUDC*GAMMA)*(TF+ZEROK)**4
 
-C If opaque and total cloud data is available from climate file, recalculate using
-C Martin-Berdahl (1984).
-        IF(CMXST(8).AND.CMXST(9))THEN  !total and opaque cloud cover data available
-          COPAQUE=CCOPAQUE*exp(-2.0/8.2)   !assume opaque cloud base is 2000m
-          CTHIN=(CCTOTAL-CCOPAQUE)*0.4*exp(-8.0/8.2) !assume thin cloud base is 8000m
+C Recalculate if opaque and total cloud cover data is available from weather file.
+        IF(CMXST(8).AND.CMXST(9))THEN     ! total and opaque cloud cover data available
+          COPAQUE=CCOPAQUE*exp(-2.0/8.2)  ! assume opaque cloud base is 2km
+          CTHIN=(CCTOTAL-CCOPAQUE)*0.4*exp(-8.0/8.2) ! assume thin cloud base is 8km
           RSKY=SBC*(E0+(1.0-E0)*(COPAQUE+CTHIN))*(TF+ZEROK)**4
-        ELSEIF(.NOT.CMXST(8).AND.CMXST(9))THEN  !only opaque cloud cover data available
-          COPAQUE=CCOPAQUE*exp(-3.0/8.2)   !assume cloud base is 3000m
+        ELSEIF(.NOT.CMXST(8).AND.CMXST(9))THEN  ! only opaque cloud cover data available
+          COPAQUE=CCOPAQUE*exp(-3.0/8.2)  ! assume cloud base is 3km
           CTHIN=0.0
           RSKY=SBC*(E0+(1.0-E0)*(COPAQUE+CTHIN))*(TF+ZEROK)**4
         ENDIF 
 
-C Assume the atmosphere is a black body emitter.
+C Assume atmosphere is a black body emitter.
         TSKY=(RSKY/SBC)**0.25
         TSKYBM=TSKY
+
+C Swinbank model (as in bld #5.4). 
       ELSEIF(iExt_longwave_flg.EQ.1)THEN
 
-C Clear sky temperature as in bld #5.4 (after Swinbank).
+C Clear sky.
         TCSKY=0.05532*((TWBF+ZEROK)**1.5)
 
-C Cloudy sky temperature as JC Book.
+C Cloudy sky (as JC Book).
         TSKYJC=((1.0-CLOUDC)*TCSKY**4+CLOUDC*(1.0-0.84*CLOUDC)*(0.527+
      &  (0.161*(EXP(8.45*(1.0-(273.0/(TWBF+ZEROK))))))+0.84*CLOUDC)*
      &  (TWBF+ZEROK)**4)**0.25
          TJC=TSKYJC-ZEROK 
          TSKY=TSKYJC   
+
+C Cole model.
       ELSEIF(iExt_longwave_flg.EQ.2)THEN
 
-C Use Cole's calculation.
         EAIR=0.527+0.161*(EXP(8.45*(1.0-(273.0/(TWBF+ZEROK)))))
         ECLOUD=0.16*EAIR+0.84
 
 C Assume cloud base temperature equal to wet bulb.
         TCLOUD=TWBF+ZEROK      
 
-C Swinbank model with ambient air temperature.
-        TSKYSW=0.05532*((TF+ZEROK)**1.5)
+        TSKYSW=0.05532*((TF+ZEROK)**1.5)  ! Swinbank model with ambient air temperature.
 
-C Sky temperature after Cole.
         TSKYNEU=
      &  ((1.-CLOUDC)*(TSKYSW**4)+CLOUDC*ECLOUD*(TCLOUD**4))**0.25
         TSNEU=TSKYNEU-ZEROK
         TSKY=TSKYNEU
-      ELSEIF(iExt_longwave_flg.EQ.3)THEN
 
-C Use Czeplak & Kasten calculation.
+C Czeplak & Kasten model.
+      ELSEIF(iExt_longwave_flg.EQ.3)THEN
         ECZ=(9.365E-06)*(TF+ZEROK)**2
         RWOLKE=(ECZ+(1.0-ECZ)*(0.9-0.065*CBH))*SBC*((TF+ZEROK)**4)
         RKLAR=(1.174*SBC*ECZ*(TF+ZEROK)**4)-33.0
@@ -652,29 +653,26 @@ C Use Czeplak & Kasten calculation.
         TSKYCZ=(RGES/SBC)**0.25      
         TSCZ=TSKYCZ-ZEROK
         TSKY=TSKYCZ
-      ELSEIF(iExt_longwave_flg.EQ.4)THEN
 
-C Use Swinbank (clear - uses dry bulb T) calculation.
-C Swinbank model with ambient air temperature.
+C Swinbank model with bry bulb temperature (as bld #5.4).
+      ELSEIF(iExt_longwave_flg.EQ.4)THEN
         TSKYSW=0.05532*((TF+ZEROK)**1.5)       
         TSW=TSKYSW-ZEROK
         TSKY=TSKYSW
-      ELSEIF(iExt_longwave_flg.EQ.5)THEN
 
-C Use Swinbank (clear - uses wet bulb T) calculation.
-C Clear sky temperature as in bld #5.4 (after Swinbank).
+C Swinbank model with wet bulb temperature (as bld #5.4).
+      ELSEIF(iExt_longwave_flg.EQ.5)THEN
         TCSKY=0.05532*((TWBF+ZEROK)**1.5)        
         TCS=TCSKY-ZEROK
         TSKY=TCSKY
       ENDIF
 
-C If sky temperature is to be read from a temporal file then 
-C set it here.
+C Sky temperature given in a temporal definition file.
       IF(ISKYTMP.gt.0)THEN
         itdi=ISKYTMP
         IFOC=itdi
         CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
-        TSKY=VAL(ISD)+273.15   ! convert from C to K
+        TSKY=VAL(ISD)+273.15
         write(outs,'(a,F7.1,a,F7.1,a)')'MZELWE: measured sky temp (',
      &   TSKY,'K has been imposed.'
         call edisp(iuout,outs)

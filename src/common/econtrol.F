@@ -355,8 +355,6 @@ C Markdown flag.
       common/senact/realsn(MNONID,3,7),realac(MNONID,5,7),svctlp,
      &       deltap,ctldrp
 
-C Error subroutine and error details for dll mode.
-      common/dllerr/dllsubr,dllmesg
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -376,10 +374,10 @@ C Pointer from surface to associated optical control.
       CHARACTER HDG*5,ctldoc*248,LCTLF*72,OUTSTR*124,SSTR*96
       CHARACTER PERST1*14,PERST2*44,PERST3*44,NODID*12,
      &          WORD*20,CMPID*12,NDPOS*12,NDNEG*12
-      character dllsubr*12,dllmesg*124,outs*124,t40*40
+      character outs*124,t40*40
       character LOUTSTR*248
       character phrase*24
-      logical close,pbyfil,bfngn,pcfngn,global,glbrwd,dll
+      logical close,pbyfil,bfngn,pcfngn,global,glbrwd
       logical needtowrite     ! set true if dummy daytype added
       logical XST
 
@@ -408,24 +406,14 @@ C Initialization flag for adsorption storage unit controller.
 
       IER=0
 
-C Check if running in dll mode.
-      call isadll(dll)
-
 C Initialise control file if the name is something other than UNKNOWN.
       if(LCTLF(1:7).ne.'UNKNOWN')then
         CALL EFOPSEQ(IUNIT,LCTLF,1,IER)
         IF(IER.LT.0)THEN
           write(outs,'(3a)') 'Control file ',LCTLF(1:lnblnk(LCTLF)),
      &      ' could not be opened.'
-          if(dll)then
-            dllsubr='EZCTLR'
-            dllmesg=outs
-            ier=2
-            return
-          else
-            call edisp(itru,outs)
-            return
-          endif
+          call edisp(itru,outs)
+          return
         endif
       else
         return
@@ -488,18 +476,11 @@ C Particular key words are expected at this point.
         write(outs,'(3a)') 'Control file ',LCTLF(1:lnblnk(LCTLF)),
      &    ' unexpected end of file sensed.'
         outs= 'End of control file sensed'
-        if(dll)then
-          dllsubr='EZCTLR'
-          dllmesg=outs
-          ier=2
-          return
-        else
-          call edisp(itru,outs)
-          CALL EDISP(ITRU,OUTSTR)
-          CALL ERPFREE(IUNIT,ISTAT)
-          ier=1
-          return
-        endif
+        call edisp(itru,outs)
+        CALL EDISP(ITRU,OUTSTR)
+        CALL ERPFREE(IUNIT,ISTAT)
+        ier=1
+        return
       endif
 
 C Set jump logic depending on key word.
@@ -1258,7 +1239,7 @@ C Read m. flow control functions information and perform checks.
         IF(IER.NE.0)GOTO 99
 
 C Range checking.
-        if(ifsn(ii,1).lt.-4) goto 1004
+        if(ifsn(ii,1).lt.-7) goto 1004
         if(ifsn(ii,2).lt.0.or.ifsn(ii,3).lt.0)goto 1062
 
 C Reporting: Get a string describing the current sensor based on common.
@@ -2385,18 +2366,11 @@ C Return.
 C Error messages.
   999 write(outs,'(a,i3,2a)') 'Error reading connection',icnn,
      &  ' from ',WORD(1:lnblnk(WORD))
-      if(dll)then
-        dllsubr='EZCTLR'
-        dllmesg=outs
-        ier=2
-        return
-      else
-        call edisp(iuout,outs)
-        CALL EDISP(ITRU,OUTSTR)
-        CALL ERPFREE(IUNIT,ISTAT)
-        ier=1
-        return
-      endif
+      call edisp(iuout,outs)
+      CALL EDISP(ITRU,OUTSTR)
+      CALL ERPFREE(IUNIT,ISTAT)
+      ier=1
+      return
 
 C Make up specific error messages.
  1002 t40='No of control functions out of range in '
@@ -2433,16 +2407,9 @@ C <<<<<<<error messages for optical controls still to be implemented >>>>>>>>
 
  2000 WRITE(OUTS,'(2a,i3,a,i3,3a)') t40(1:lnblnk(t40)),
      & ' zone control ',ICF,' on day',NBCDT(II),' @ ',outstr(1:40),'...'
-      if(dll)then
-        dllsubr='EZCTLR'
-        dllmesg=outs
-        ier=2
-        return
-      else
-        call edisp(iuout,outs)
-        ier=1
-        return
-      endif
+      call edisp(iuout,outs)
+      ier=1
+      return
 
  3000 WRITE(OUTS,3001)icl,npcdt(ii)
  3001 FORMAT(' Plant control loop',I3,' day type',I3,': the',
@@ -2518,19 +2485,12 @@ C free control file and return.
       CALL FZDATA(IUNIT,IER)
       IF(IER.eq.1)THEN
         write(outs,'(a)') 'Error reading fuzzy data.'
-        if(dll)then
-          dllsubr='FZDATA'
-          dllmesg=outs
-          ier=2
-          return
-        else
-          call edisp(iuout,outs)
-          CALL EDISP(ITRU,OUTSTR)
-          CALL ERPFREE(IUNIT,ISTAT)
-          ier=1
-          return
-        endif
-      ENDIF
+        call edisp(iuout,outs)
+        CALL EDISP(ITRU,OUTSTR)
+        CALL ERPFREE(IUNIT,ISTAT)
+        ier=1
+        return
+      endif
 
 C Set TSC6 data items, if applicable.
       call tscdta
@@ -2543,37 +2503,20 @@ C Low level I/O error. Close file before exiting.
   99  continue
       write(outs,'(3a)') 'low level read/parsing error @',
      &  outstr(1:50),'...'
-      if(dll)then
-        dllsubr='EZCTLR'
-        dllmesg=outs
-        ier=2
-        CALL ERPFREE(IUNIT,ISTAT)
-        return
-      else
-        call edisp(iuout,outs)
-        ier=1
-        CALL ERPFREE(IUNIT,ISTAT)
-        return
-      endif
+      call edisp(iuout,outs)
+      ier=1
+      CALL ERPFREE(IUNIT,ISTAT)
+      return
 
 C Issue with the zone - loop links.
  109  continue
       write(outs,'(2a)') 'Warning reading zone - control loop links! ',
      &  'Number of zones & control links differ.'
-      if(dll)then
-        dllsubr='EZCTLR'
-        dllmesg=outs
-        ier=2
-        CALL ERPFREE(IUNIT,ISTAT)
-        return
-      else
-        call edisp(iuout,outs)
-        ier=1
-        CALL ERPFREE(IUNIT,ISTAT)
-        return
-      endif
+      call edisp(iuout,outs)
+      ier=1
+      CALL ERPFREE(IUNIT,ISTAT)
+      return
 
-      RETURN
       END
 
 c ******************** EZCTLI ********************
@@ -2935,6 +2878,7 @@ C Flow control type.
         IF(IFCTYP(II,JJ,KK).eq.31)SSTR='delt RH > flow    '
         IF(IFCTYP(II,JJ,KK).eq.41)SSTR='contam conc > flow'
         IF(IFSN(II,1).EQ.-3)SSTR='outside ambient > flow  '
+        IF(IFSN(II,1).EQ.-7)SSTR='casual gain > flow      '
       ELSEIF(WHICH.EQ.'L'.OR.WHICH.EQ.'l')THEN
 
 C Control law.

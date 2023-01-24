@@ -5134,14 +5134,15 @@ C EVSET provides a dummy setup environment for wire frame view.
       return
       END
 
-C **************** ASKMULTIZON
-C ASKMULTIZON presents a list of zones to select one or more from.
+C ******************** ASKMULTIZON ********************
+C Presents a list of zones to select one or more from.
 C It is passed a prompt, menu title, and number of allowable items inpic
 C It returns inpick and array IVALS. Variant of standard version in
 C esru_misc.F 
 C MOD display modifier `-` zone names only.
 C If there have been groups-of-zones defined also include these
 C in the list (at the bottom).
+
       SUBROUTINE ASKMULTIZON(INPIC,IVALS,prompt,title,mod,IER)
 #include "building.h"
 #include "model.h"
@@ -5153,7 +5154,7 @@ C in the list (at the bottom).
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN,IEOUT
-
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
@@ -5187,9 +5188,9 @@ C Initialise zone menu variables based on window size.
 C IVERT is the menu position, MVERT the current number of menu lines.
       MHEAD=0
       if(nzgroup.gt.0)then
-        MCTL=5
+        MCTL=6
       else
-        MCTL=4
+        MCTL=5
       endif
       ILEN=NCOMP
       IPACT=CREATE
@@ -5233,17 +5234,27 @@ C If groups defined.
         else
           VERT(M+2)='                      '
         endif
-        VERT(M+3)  ='! via group-of-zones  '
-        VERT(M+4)  ='? help                '
-        VERT(M+5)  ='- exit menu'
+        if(MMOD.EQ.8)then
+          VERT(M+3)='                      '
+        else
+          VERT(M+3)='< index select        '
+        endif
+        VERT(M+4)  ='! via group-of-zones  '
+        VERT(M+5)  ='? help                '
+        VERT(M+6)  ='- exit menu'
       else
         if(maxinpic.eq.NCOMP)then
           VERT(M+2)='* All                 '
         else
           VERT(M+2)='                      '
         endif
-        VERT(M+3)  ='? help                '
-        VERT(M+4)  ='- exit menu'
+        if(MMOD.EQ.8)then
+          VERT(M+3)='                      '
+        else
+          VERT(M+3)='< index select        '
+        endif
+        VERT(M+4)  ='? help                '
+        VERT(M+5)  ='- exit menu'
       endif
       write(prompt2,'(a)') ' select one or more...'
 
@@ -5281,20 +5292,77 @@ C Display a list of groups of associated zones.
           enddo
           return
         endif
+
+C Select by indices if not in graphic mode.
       ELSEIF(IVERT.EQ.(MVERT-3).AND.nzgroup.gt.0)THEN
-        DO I=1,NCOMP  ! Select all zones.
-          IVALS(I)=I
+        if(MMOD.EQ.8)then
+          IVERT=-1
+          goto 92
+        endif
+        INPIC=1
+  93    CALL EASKI(INPIC,' ',' No of items to pick?',
+     &     1,'F',NCOMP,'F',1,'script no of items',IER,nbhelp)
+        if(IER.NE.0)goto 93
+        DO I=1,INPIC
+  94      write(outs,'(A,I2)') ' Index (number) of item ',I
+          CALL EASKI(IV,outs,' ',1,'F',NSTALT,'F',I,'script itm',
+     &      IER,nbhelp)
+          if(IER.NE.0)goto 94
+          IVALS(I)=IV
         ENDDO
-        INPIC=NCOMP
-        call edisp(iuout,'All zones selected')
-        return
+        call usrmsg(' ',' ','-')
+        RETURN        
       ELSEIF(IVERT.EQ.(MVERT-2).AND.nzgroup.eq.0)THEN
+        if(MMOD.EQ.8)then
+          IVERT=-1
+          goto 92
+        endif
+        INPIC=1
+  95    CALL EASKI(INPIC,' ',' No of items to pick?',
+     &     1,'F',NCOMP,'F',1,'script no of items',IER,nbhelp)
+        if(IER.NE.0)goto 95
+        DO I=1,INPIC
+  96      write(outs,'(A,I2)') ' Index (number) of item ',I
+          CALL EASKI(IV,outs,' ',1,'F',NSTALT,'F',I,'script itm',
+     &      IER,nbhelp)
+          if(IER.NE.0)goto 96
+          IVALS(I)=IV
+        ENDDO
+        call usrmsg(' ',' ','-')
+        RETURN
+
+      ELSEIF(IVERT.EQ.(MVERT-4).AND.nzgroup.gt.0)THEN
         DO I=1,NCOMP  ! Select all zones.
           IVALS(I)=I
         ENDDO
         INPIC=NCOMP
         call edisp(iuout,'All zones selected')
         return
+      ELSEIF(IVERT.EQ.(MVERT-3).AND.nzgroup.eq.0)THEN
+        DO I=1,NCOMP  ! Select all zones.
+          IVALS(I)=I
+        ENDDO
+        INPIC=NCOMP
+        call edisp(iuout,'All zones selected')
+        return
+      ELSEIF(IVERT.EQ.(MVERT-5).AND.nzgroup.gt.0)THEN
+
+C If there are enough items allow paging control via EKPAGE.
+        IF(IPFLG.EQ.1)THEN
+          IPACT=EDIT
+          CALL EKPAGE(IPACT)
+          IVERT=-2
+          goto 3
+        ENDIF
+      ELSEIF(IVERT.EQ.(MVERT-4).AND.nzgroup.eq.0)THEN
+
+C If there are enough items allow paging control via EKPAGE.
+        IF(IPFLG.EQ.1)THEN
+          IPACT=EDIT
+          CALL EKPAGE(IPACT)
+          IVERT=-2
+          goto 3
+        ENDIF
       ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
 
 C Look through previous selections and see if IFOC is unique, if
@@ -5333,15 +5401,6 @@ C so update IVALS and loop back for another.
           write(outs,*) 'added ',vert(ivert)(2:lnblnk(vert(ivert)))
           call edisp(iuout,outs)
           goto 3
-        ENDIF
-      endif
-
-      IF(IVERT.EQ.(MVERT-3))THEN
-
-C If there are enough items allow paging control via EKPAGE.
-        IF(IPFLG.EQ.1)THEN
-          IPACT=EDIT
-          CALL EKPAGE(IPACT)
         ENDIF
       else
 

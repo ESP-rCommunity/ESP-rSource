@@ -152,10 +152,6 @@ C If ground needs drawing or updating do it here.
         endif
         izgfoc=0
         CALL redraw(IER)
-        call redrawbuttons()
-        WRITE(ETEXT,'(2A)')'Model: ',modeltitle(1:lnblnk(modeltitle))
-        iside=1; isize=1; ifont=1
-        call viewtext(etext,iside,isize,ifont)
         CALL INLNSTG(3)
         call EGRNDR(IER)
         grmod=.false.
@@ -378,7 +374,7 @@ C IER=0 OK, IER=1 problem.
       COMMON/RAY6G/LINSTYG(MGRT)
       LOGICAL MODGEO,ok,match,matchver
 
-      DIMENSION VERT(35),IVLST(MGTV),ITEMP(MGTV),COG1(3),COG2(3),COG3(3)
+      DIMENSION VERT(35),IVLST(MGTV),ITEMP(MGTV),COG1(3),COG2(3)
       CHARACTER VERT*35,KEY*1,HOLD*32,GTGEOM*72
       character outs*124,headv*48,GMLCN*32,GSNAME*6
       integer IRT  ! for radio button
@@ -544,11 +540,13 @@ C Show the new point on the current wireframe.
               COG1(1)=x3
               COG1(2)=y3
               COG1(3)=z3
-              CALL VECTRN(COG1,TEMAT,COG2,IER)
-              CALL VECTRN(COG2,ETSMAT,COG3,IER)
-              call u2pixel(COG3(1),COG3(2),iix,iiy)
-              call ecirc(iix,iiy,3,1)
-              call forceflush()
+              CALL VECTRN(COG1,TSMAT,COG2,IER)
+              call CLIPPT(COG2(1),COG2(2),COG2(3),iclp)
+              if (iclp.eq.0) then
+                call u2pixel(COG2(1),COG2(2),iix,iiy)
+                call ecirc(iix,iiy,3,1)
+                call forceflush()
+              endif
             endif
             if(NGTV.lt.MGTV)then
               write(outs,'(a,i3,a)') 'Make this (',NGTV+1,') a:'
@@ -717,11 +715,13 @@ C Show the new point on the current wireframe.
               COG1(1)=x3
               COG1(2)=y3
               COG1(3)=z3
-              CALL VECTRN(COG1,TEMAT,COG2,IER)
-              CALL VECTRN(COG2,ETSMAT,COG3,IER)
-              call u2pixel(COG3(1),COG3(2),iix,iiy)
-              call ecirc(iix,iiy,3,1)
-              call forceflush()
+              CALL VECTRN(COG1,TSMAT,COG2,IER)
+              call CLIPPT(COG2(1),COG2(2),COG2(3),iclp)
+              if (iclp.eq.0) then
+                call u2pixel(COG2(1),COG2(2),iix,iiy)
+                call ecirc(iix,iiy,3,1)
+                call forceflush()
+              endif
             endif
             if(NGTV.lt.MGTV)then
               write(outs,'(a,i3,a)') 'Make this (',NGTV+1,') a:'
@@ -878,11 +878,13 @@ C Use ratio calculation to make an aligned point vdislsp along the line.
               COG1(1)=x3
               COG1(2)=y3
               COG1(3)=z3
-              CALL VECTRN(COG1,TEMAT,COG2,IER)
-              CALL VECTRN(COG2,ETSMAT,COG3,IER)
-              call u2pixel(COG3(1),COG3(2),iix,iiy)
-              call ecirc(iix,iiy,3,1)
-              call forceflush()
+              CALL VECTRN(COG1,TSMAT,COG2,IER)
+              call CLIPPT(COG2(1),COG2(2),COG2(3),iclp)
+              if (iclp.eq.0) then
+                call u2pixel(COG2(1),COG2(2),iix,iiy)
+                call ecirc(iix,iiy,3,1)
+                call forceflush()
+              endif
             endif
             call easkok(' ','Is this aligned vertex OK?',ok,nbhelp)
             if(ok)then
@@ -1031,11 +1033,13 @@ C Show the new point on the current wireframe.
               COG1(1)=x3
               COG1(2)=y3
               COG1(3)=z3
-              CALL VECTRN(COG1,TEMAT,COG2,IER)
-              CALL VECTRN(COG2,ETSMAT,COG3,IER)
-              call u2pixel(COG3(1),COG3(2),iix,iiy)
-              call ecirc(iix,iiy,3,1)
-              call forceflush()
+              CALL VECTRN(COG1,TSMAT,COG2,IER)
+              call CLIPPT(COG2(1),COG2(2),COG2(3),iclp)
+              if (iclp.eq.0) then
+                call u2pixel(COG2(1),COG2(2),iix,iiy)
+                call ecirc(iix,iiy,3,1)
+                call forceflush()
+              endif
             endif
             call easkok(' ','Apply this move?',OK,nbhelp)
             if(OK)then
@@ -1282,7 +1286,7 @@ C IER=0 OK, IER=1 problem.
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       DIMENSION  item(36)
-      DIMENSION  COG1(3),COG2(3),COG3(3),IVLST(MGTV)
+      DIMENSION  COG1(3),COG2(3),IVLST(MGTV)
       CHARACTER*(*) TITLE,PROMPT1,PROMPT2
       CHARACTER item*33,outs*124,KEY*1
       logical found
@@ -1378,25 +1382,30 @@ C Use mouse to select existing vertices.
         if(MMOD.eq.8)then
           ijvn=0
           if(inpick.ne.2)then
-            call edisp(iuout,
-     &        'Select points via cursor...type `e` to finish.')
+            write(outs,'(2a)')'Select points via cursor...',
+     &        'type `e` to finish, `v` to reposition view'
+            call edisp(iuout,outs)
           else
-            call edisp(iuout,
-     &        'Select points or edge via cursor...type `e` to finish.')
+            write(outs,'(2a)')'Select points or edge via cursor...',
+     &        'type `e` to finish, `v` to reposition view'
+            call edisp(iuout,outs)
           endif
 
 C Return pixel position of mouse click, check if key `e` or `E` was
 C hit and then loop through each of the vertices for something close.
   46      CALL trackview(iik,iixx,iiyy)
           if(iik.eq.69.or.iik.eq.101)goto 47
+          if (iik.eq.86 .or. iik.eq.118) then
+            call TMPMENU()
+            goto 46
+          endif
           found=.false.
           do 45 i=1,NGTV
             COG1(1)=XGT(I)
             COG1(2)=YGT(I)
             COG1(3)=ZGT(I)
-            CALL VECTRN(COG1,TEMAT,COG2,IER)
-            CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            CALL VECTRN(COG1,TSMAT,COG2,IER)
+            call u2pixel(COG2(1),COG2(2),iix,iiy)
             ixd=iix-iixx
             iyd=iiy-iiyy
             if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
@@ -1944,7 +1953,7 @@ C Method checks for minimally linked vertices.
       logical clkok,found,matchver
 
       dimension X1(8),Y1(8),Z1(8),jvn1(8),XT(8),YT(8),ZT(8)
-      DIMENSION COG1(3),COG2(3),COG3(3),JJVN(8)
+      DIMENSION COG1(3),COG2(3),JJVN(8)
 
       CHARACTER GMLCN*32,GSNAME*6
       CHARACTER ACTION*1,HOLD*72,outs*124,SN*6,SN2*6
@@ -2254,18 +2263,22 @@ C the individual vertex numbers from the list.
      &      clkok,ISTRW,' 1 2 3','assoc vert+mouse',IER,nbhelp)
           if(clkok)then
             ijvn=0
-            call edisp(iuout,
-     &        'Select points via cursor...type `e` to finish.')
+            write(outs,'(2a)')'Select points via cursor... ',
+     &        'type `e` to finish, `v` to reposition view'
+            call edisp(iuout,outs)
   46        CALL trackview(iik,iixx,iiyy)
             if(iik.eq.69.or.iik.eq.101)goto 47
+            if (iik.eq.86 .or. iik.eq.118) then
+              call TMPMENU()
+              goto 46
+            endif
             found=.false.
             do 45 i=1,NGTV
               COG1(1)=XGT(I)
               COG1(2)=YGT(I)
               COG1(3)=ZGT(I)
-              CALL VECTRN(COG1,TEMAT,COG2,IER)
-              CALL VECTRN(COG2,ETSMAT,COG3,IER)
-              call u2pixel(COG3(1),COG3(2),iix,iiy)
+              CALL VECTRN(COG1,TSMAT,COG2,IER)
+              call u2pixel(COG2(1),COG2(2),iix,iiy)
               ixd=iix-iixx
               iyd=iiy-iiyy
               if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
@@ -2341,7 +2354,7 @@ C IER=1 problem.
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY6G/LINSTYG(MGRT)
-      DIMENSION  COG1(3),COG2(3),COG3(3)
+      DIMENSION  COG1(3),COG2(3)
       DIMENSION  XXW(4),YYW(4),ZZW(4)
       DIMENSION  AX(MPL),AY(MPL),AZ(MPL),IANXT(MPL)
       DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
@@ -2582,11 +2595,13 @@ C Show these points as small circles...
             COG1(1)=XX(J)
             COG1(2)=YY(J)
             COG1(3)=ZZ(J)
-            CALL VECTRN(COG1,TEMAT,COG2,IER)
-            CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),iix,iiy)
-            CALL ecirc(iix,iiy,3,1)
-            call forceflush()
+            CALL VECTRN(COG1,TSMAT,COG2,IER)
+            call CLIPPT(COG2(1),COG2(2),COG2(3),iclp)
+            if (iclp.eq.0) then
+              call u2pixel(COG2(1),COG2(2),iix,iiy)
+              CALL ecirc(iix,iiy,3,1)
+              call forceflush()
+            endif
   154     CONTINUE
         endif
 
@@ -2791,35 +2806,37 @@ C Display the new rectangle.
             IANXT(J) = J + 1
   350     CONTINUE
           IANXT(4) = IAPNT
-          CALL MATPOL(4,IAPNT,AX,AY,AZ,IANXT,TEMAT,
+          CALL MATPOL(4,IAPNT,AX,AY,AZ,IANXT,TSMAT,
      &                SBBOX,NBP,IBPNT,BX,BY,BZ,IBNXT,IERR)
           CALL CLIPFL(NBP,BX,BY,BZ,ISTAT)
-          IF(ISTAT .EQ. 1)goto 32
-          IF(ISTAT .EQ.-1)CALL CUTPOL(NB,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+          if(ISTAT .EQ. 1)then
+            goto 32
+          elseif(ISTAT .EQ.-1)then
+            CALL CUTPOL(NB,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+          else
+            NB=1
+          endif
 
 C Draw the (perhaps clipped) rectangle.
           DO 302 JB = 1,NB
             IP = IABS(IBPNT)
-            CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
             iupdown=0
             isym=0
-            call etplot(AAX,AAY,iupdown,isym)
+            call etplot(BX(IP),BY(IP),iupdown,isym)
 
 C Draw succeeding points until last vertex.
             IP1 = IBNXT(IP)
  451        CONTINUE
-            CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
             iupdown=1
             isym=0
-            call etplot(AAX,AAY,iupdown,isym)
+            call etplot(BX(IP1),BY(IP1),iupdown,isym)
 
             IP1 = IBNXT(IP1)
             IF(IP1 .NE. IP) GOTO 451
 
 C Complete rec.
-            CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
             iupdown=1
-            call etplot(AAX,AAY,iupdown,isym)
+            call etplot(BX(IP),BY(IP),iupdown,isym)
   302     CONTINUE
    32     CONTINUE
           call forceflush()
@@ -3052,7 +3069,7 @@ C ****** Routine to update-draw ground during triangulation.
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      DIMENSION  COG1(3),COG2(3),COG3(3)
+      DIMENSION  COG1(3),COG2(3)
 
       character*(*) msg
       character outs*72
@@ -3064,7 +3081,6 @@ C ****** Routine to update-draw ground during triangulation.
       integer*8 iupdown,isym,iix,iiy    ! passed to etplot
 #endif
 
-      CALL startbuffer()
       izgfoc=0
       CALL redraw(IER)
       WRITE(outs,'(A,i3,A,i3)')' Verts: ',IVV,' surfs ',NGTG
@@ -3078,12 +3094,14 @@ C ****** Routine to update-draw ground during triangulation.
         COG1(1)=XGT(IV)
         COG1(2)=YGT(IV)
         COG1(3)=ZGT(IV)
-        CALL VECTRN(COG1,TEMAT,COG2,IER)
-        CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),iix,iiy)
-        CALL ecirc(iix,iiy,2,1)
-        CALL VERTLBL(iix,iiy,IV,ier)
-        call forceflush()
+        CALL VECTRN(COG1,TSMAT,COG2,IER)
+        call CLIPPT(COG2(1),COG2(2),COG2(3),iclp)
+        if (iclp.eq.0) then
+          call u2pixel(COG2(1),COG2(2),iix,iiy)
+          CALL ecirc(iix,iiy,2,1)
+          CALL VERTLBL(iix,iiy,COG2(3),IV,ier)
+          call forceflush()
+        endif
   42  continue
       if(NGTG.eq.0)return
       do 43 igs = 1, NGTG
@@ -3091,16 +3109,18 @@ C ****** Routine to update-draw ground during triangulation.
           COG1(1)=XGT(JGVN(igs,J))
           COG1(2)=YGT(JGVN(igs,J))
           COG1(3)=ZGT(JGVN(igs,J))
-          CALL VECTRN(COG1,TEMAT,COG2,IER)
-          CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          if(J.eq.1)then
-            iupdown=0
-            isym=0
-            call etplot(COG3(1),COG3(2),iupdown,isym)
-          else
-            iupdown=1
-            isym=0
-            call etplot(COG3(1),COG3(2),iupdown,isym)
+          CALL VECTRN(COG1,TSMAT,COG2,IER)
+          call CLIPPT(COG2(1),COG2(2),COG2(3),iclp)
+          if (iclp.eq.0) then
+            if(J.eq.1)then
+              iupdown=0
+              isym=0
+              call etplot(COG2(1),COG2(2),iupdown,isym)
+            else
+              iupdown=1
+              isym=0
+              call etplot(COG2(1),COG2(2),iupdown,isym)
+            endif
           endif
  1100   CONTINUE
 
@@ -3108,11 +3128,13 @@ C Finish off the surface.
         COG1(1)=XGT(JGVN(igs,1))
         COG1(2)=YGT(JGVN(igs,1))
         COG1(3)=ZGT(JGVN(igs,1))
-        CALL VECTRN(COG1,TEMAT,COG2,IER)
-        CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        iupdown=1
-        isym=0
-        call etplot(COG3(1),COG3(2),iupdown,isym)
+        CALL VECTRN(COG1,TSMAT,COG2,IER)
+        call CLIPPT(COG2(1),COG2(2),COG2(3),iclp)
+        if (iclp.eq.0) then
+          iupdown=1
+          isym=0
+          call etplot(COG2(1),COG2(2),iupdown,isym)
+        endif
   43  continue
       call forceflush()
       call pauses(1)
@@ -3244,7 +3266,7 @@ C Divide by the number of vertices to get C of G, set view point.
         MODIFYVIEW=.TRUE.
         MODBND=.TRUE.
 
-C If viewpoint or bounds different then initialise viewing paramters.
+C If viewpoint or bounds different then initialise viewing parameters.
         IF(MODLEN)THEN
           HANG=ANG/2.0
           CALL LENS(IER)
@@ -3258,6 +3280,7 @@ C Clear current viewing box.
         call axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
      &                Xadd,Yadd)
         call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
+        call INICLP(ier)
 
         OK=.FALSE.
         helptopic='ground_include_indices'

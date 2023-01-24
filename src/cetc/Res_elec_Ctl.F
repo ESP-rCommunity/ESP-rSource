@@ -1631,8 +1631,8 @@ C-------------------------------------------------------------------------------
       INTEGER record,incbin,after_midnight
       REAL elecloadb(12),frac_hr,frac_min,tenth
       REAL q_nonHVAC_elec
-      LOGICAL CLOSE,dll,XST
-      character    dllsubr*12,dllmesg*124,outs*124
+      LOGICAL CLOSE,XST
+      character    outs*124
       integer ISTAT,itu
       REAL fFuture_Time           ! time on future time row.
 
@@ -1656,15 +1656,8 @@ C-------------------------------------------------------------------------------
            write(outs,'(3a)')
      &       'Data file ',fnamBDFlds(iBDF)(1:lnblnk(fnamBDFlds(iBDF))),
      &                       ' was referenced but not found.'
-           call isadll(dll)
-           if(dll)then
-             dllsubr='ersys'
-             dllmesg=outs
-             return
-           else
-             call edisp(iuout,outs)
-             STOP ' RES (elec) read data file: unresolvable error.'
-           endif
+           call edisp(iuout,outs)
+           STOP ' RES (elec) read data file: unresolvable error.'
          endif
          CALL CreateBinaryDataFile(iBDF)
       END IF

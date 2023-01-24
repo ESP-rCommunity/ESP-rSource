@@ -255,15 +255,15 @@ C type='bw' boundary wind, 'bk' boundary known
 
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
-      real COG1,COG2,COG3
-      DIMENSION  COG1(3),COG2(3),COG3(3)
+      real COG1,COG2
+      DIMENSION  COG1(3),COG2(3)
       character t13*13
       logical doname
       
 #ifdef OSI
-      integer iix,iiy,iid4,iicol,ibsize
+      integer iix,iiy,iid4,iicol
 #else
-      integer*8 iix,iiy,iid4,iicol,ibsize
+      integer*8 iix,iiy,iid4,iicol
 #endif
 
       if(MMOD.lt.8) return  ! in text mode do not draw
@@ -274,9 +274,10 @@ C type='bw' boundary wind, 'bk' boundary known
 
 C Get pixel position to draw at.
       COG1(1)=xw; COG1(2)=yw; COG1(3)=zw
-      CALL VECTRN(COG1,TEMAT,COG2,IER)
-      CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),iix,iiy)
+      CALL VECTRN(COG1,TSMAT,COG2,IER)
+      call CLIPPT(COG2(1),COG2(2),COG2(3),iclp)
+      if (iclp.ne.0) return
+      call u2pixel(COG2(1),COG2(2),iix,iiy)
 
 C Draw circles depending on type. (powderblue is 27) (navy blue is 34)
       if(col.eq.'r') iicol=0   ! red
@@ -298,21 +299,30 @@ C Draw circles depending on type. (powderblue is 27) (navy blue is 34)
       endif
 
 C Write name for other than 'iu'.
-      if(type.eq.'iu')then
-        iid4 = iix +8  ! offset to right of circle
-        if(col.eq.'r') iicol=0   ! red
-        if(col.eq.'g') iicol=32  ! grey50
+      if(doname)then
         ibsize=0
-        if(doname)call textsizeatxy(iid4,iiy+8,t13,ibsize,'z',iicol)
-        call forceflush()
-      else
-        iid4 = iix +8  ! offset to right of circle
-        if(col.eq.'r') iicol=0   ! red
-        if(col.eq.'g') iicol=32  ! grey50
-        ibsize=0
-        if(doname)call textsizeatxy(iid4,iiy+5,t13,ibsize,'z',iicol)
-        call forceflush()
+        call winfnt(ibsize)
+        if(type.eq.'iu')then
+          iid4 = iix +8  ! offset to right of circle
+          call CLIPST(t13,iid4,iiy+8,COG2(3),iclp)
+          if (iclp.eq.0) then
+            if(col.eq.'r') iicol=0   ! red
+            if(col.eq.'g') iicol=32  ! grey50
+            call textatxy(iid4,iiy+8,t13,'z',iicol)
+          endif
+        else
+          iid4 = iix +8  ! offset to right of circle
+          call CLIPST(t13,iid4,iiy+5,COG2(3),iclp)
+          if (iclp.eq.0) then
+            if(col.eq.'r') iicol=0   ! red
+            if(col.eq.'g') iicol=32  ! grey50
+            call textatxy(iid4,iiy+5,t13,'z',iicol)
+          endif
+        endif
+        ibsize=IMFS
+        call winfnt(ibsize)
       endif
+      call forceflush()
       iicol=0
       call winscl('-',iicol)
       
@@ -334,15 +344,15 @@ C col is 'r' red  'g' grey
 
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
-      real COG1,COG2,COG3
-      DIMENSION  COG1(3),COG2(3),COG3(3)
+      real COG1,COG2
+      DIMENSION  COG1(3),COG2(3)
       character t13*13
       logical doname
       
 #ifdef OSI
-      integer iix,iiy,iid4,iicol,ibsize
+      integer iix,iiy,iid4,iicol
 #else
-      integer*8 iix,iiy,iid4,iicol,ibsize
+      integer*8 iix,iiy,iid4,iicol
 #endif
 
       if(MMOD.lt.8) return  ! in text mode do not draw
@@ -353,9 +363,10 @@ C col is 'r' red  'g' grey
 
 C Get pixel position to draw at.
       COG1(1)=xw; COG1(2)=yw; COG1(3)=zw
-      CALL VECTRN(COG1,TEMAT,COG2,IER)
-      CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),iix,iiy)
+      CALL VECTRN(COG1,TSMAT,COG2,IER)
+      call CLIPPT(COG2(1),COG2(2),COG2(3),iclp)
+      if (iclp.ne.0) return
+      call u2pixel(COG2(1),COG2(2),iix,iiy)
 
 C Draw symbol depending on type.
       if(col.eq.'r') iicol=0   ! red
@@ -375,43 +386,59 @@ C Draw symbol depending on type.
       endif
 
 C Write name to the right of the symbol.
-      ibsize=0
-      if(type.eq.'bx')then
-        iid4 = iix +8
-        if(col.eq.'r') iicol=0   ! red
-        if(col.eq.'b') iicol=13  ! royal blue
-        if(col.eq.'g') iicol=32  ! grey50
-        if(doname)call textsizeatxy(iid4,iiy+5,t13,ibsize,'z',iicol)
-        call forceflush()
-      elseif(type.eq.'cr')then
-        iid4 = iix +10
-        if(col.eq.'r') iicol=0   ! red
-        if(col.eq.'b') iicol=13  ! royal blue
-        if(col.eq.'g') iicol=32  ! grey50
-        if(doname)call textsizeatxy(iid4,iiy+5,t13,ibsize,'z',iicol)
-        call forceflush()
-      elseif(type.eq.'cd')then
-        iid4 = iix +10
-        if(col.eq.'r') iicol=0   ! red
-        if(col.eq.'b') iicol=13  ! royal blue
-        if(col.eq.'g') iicol=32  ! grey50
-        if(doname)call textsizeatxy(iid4,iiy+5,t13,ibsize,'z',iicol)
-        call forceflush()
-      elseif(type.eq.'or')then
-        iid4 = iix +8
-        if(col.eq.'r') iicol=0   ! red
-        if(col.eq.'b') iicol=13  ! royal blue
-        if(col.eq.'g') iicol=32  ! grey50
-        if(doname)call textsizeatxy(iid4,iiy+5,t13,ibsize,'z',iicol)
-        call forceflush()
-      elseif(type.eq.'bi')then
-        iid4 = iix +8
-        if(col.eq.'r') iicol=0   ! red
-        if(col.eq.'b') iicol=13  ! royal blue
-        if(col.eq.'g') iicol=32  ! grey50
-        if(doname)call textsizeatxy(iid4,iiy+5,t13,ibsize,'z',iicol)
-        call forceflush()
+      if (doname) then
+        ibsize=0
+        call winfnt(ibzise)
+        if(type.eq.'bx')then
+          iid4 = iix +8
+          call CLIPST(t13,iid4,iiy+5,COG2(3),iclp)
+          if (iclp.eq.0) then
+            if(col.eq.'r') iicol=0   ! red
+            if(col.eq.'b') iicol=13  ! royal blue
+            if(col.eq.'g') iicol=32  ! grey50
+            call textatxy(iid4,iiy+5,t13,'z',iicol)
+          endif
+        elseif(type.eq.'cr')then
+          iid4 = iix +10
+          call CLIPST(t13,iid4,iiy+5,COG2(3),iclp)
+          if (iclp.eq.0) then
+            if(col.eq.'r') iicol=0   ! red
+            if(col.eq.'b') iicol=13  ! royal blue
+            if(col.eq.'g') iicol=32  ! grey50
+            call textatxy(iid4,iiy+5,t13,'z',iicol)
+          endif
+        elseif(type.eq.'cd')then
+          iid4 = iix +10
+          call CLIPST(t13,iid4,iiy+5,COG2(3),iclp)
+          if (iclp.eq.0) then
+            if(col.eq.'r') iicol=0   ! red
+            if(col.eq.'b') iicol=13  ! royal blue
+            if(col.eq.'g') iicol=32  ! grey50
+            call textatxy(iid4,iiy+5,t13,'z',iicol)
+          endif
+        elseif(type.eq.'or')then
+          iid4 = iix +8
+          call CLIPST(t13,iid4,iiy+5,COG2(3),iclp)
+          if (iclp.eq.0) then
+            if(col.eq.'r') iicol=0   ! red
+            if(col.eq.'b') iicol=13  ! royal blue
+            if(col.eq.'g') iicol=32  ! grey50
+            call textatxy(iid4,iiy+5,t13,'z',iicol)
+          endif
+        elseif(type.eq.'bi')then
+          iid4 = iix +8
+          call CLIPST(t13,iid4,iiy+5,COG2(3),iclp)
+          if (iclp.eq.0) then
+            if(col.eq.'r') iicol=0   ! red
+            if(col.eq.'b') iicol=13  ! royal blue
+            if(col.eq.'g') iicol=32  ! grey50
+            call textatxy(iid4,iiy+5,t13,'z',iicol)
+          endif
+        endif
+        ibsize=IMFS
+        call winfnt(ibsize)
       endif
+      call forceflush()
       iicol=0
       call winscl('-',iicol)
       
@@ -431,8 +458,7 @@ C      COMMON/OUTIN/IUOUT,IUIN,IEOUT
       character col*1
       real tdis
 C      character outs*124
-      real COG1,COG2,COG3
-      DIMENSION COG1(3),COG2(3),COG3(3)
+      dimension ax(2),ay(2),az(2)
 #ifdef OSI
       integer iix1,iiy1,iix2,iiy2,iicol
 #else
@@ -458,10 +484,7 @@ C Use ratio calculation.
       x3 = ((r2 * xs) + (r1 * xe))/tdis
       y3 = ((r2 * ys) + (r1 * ye))/tdis
       z3 = ((r2 * zs) + (r1 * ze))/tdis
-      COG1(1)=x3; COG1(2)=y3; COG1(3)=z3
-      CALL VECTRN(COG1,TEMAT,COG2,IER)
-      CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),iix1,iiy1)
+      call ORTTRN(x3,y3,z3,TSMAT,ax(1),ay(1),az(1),ier)
 
 C Now do the other end.
       r2 = tdis - vdis
@@ -469,10 +492,18 @@ C Now do the other end.
       x3 = ((r2 * xe) + (r1 * xs))/tdis
       y3 = ((r2 * ye) + (r1 * ys))/tdis
       z3 = ((r2 * ze) + (r1 * zs))/tdis
-      COG1(1)=x3; COG1(2)=y3; COG1(3)=z3
-      CALL VECTRN(COG1,TEMAT,COG2,IER)
-      CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),iix2,iiy2)
+      call ORTTRN(x3,y3,z3,TSMAT,ax(2),ay(2),az(2),ier)
+      
+      call CLIPLIN(ax,ay,az,iclp)
+      if (iclp.eq.1) then
+        return
+      elseif (iclp.eq.-1) then
+        call CUTLIN(ax,ay,az,iclp)
+        if (iclp.eq.-1) return
+      endif
+      
+      call u2pixel(ax(1),ay(1),iix1,iiy1)
+      call u2pixel(ax(2),ay(2),iix2,iiy2)
 
 C Draw a dotted line (in red=0) (powderblue 27) (navy blue 34) (midnight blue 1).
       if(col.eq.'r') iicol=0   ! red
@@ -726,12 +757,13 @@ C      COMMON/OUTIN/IUOUT,IUIN,IEOUT
       real tdis,hdis
 C      character outs*124
       character t13*13
-      real COG1,COG2,COG3
-      DIMENSION COG1(3),COG2(3),COG3(3)
+      real COG1,COG2
+      DIMENSION COG1(3),COG2(3)
+      dimension ax(2),ay(2),az(2)
 #ifdef OSI
-      integer iix1,iiy1,iix2,iiy2,iicol,iid4,ibsize,ipixw,ipixh
+      integer iix1,iiy1,iix2,iiy2,iicol,iid4,ipixw,ipixh
 #else
-      integer*8 iix1,iiy1,iix2,iiy2,iicol,iid4,ibsize,ipixw,ipixh
+      integer*8 iix1,iiy1,iix2,iiy2,iicol,iid4,ipixw,ipixh
 #endif
 
       if(MMOD.lt.8) return  ! in text mode do not draw
@@ -756,10 +788,7 @@ C Use ratio calculation.
       x3 = ((r2 * xs) + (r1 * xe))/tdis
       y3 = ((r2 * ys) + (r1 * ye))/tdis
       z3 = ((r2 * zs) + (r1 * ze))/tdis
-      COG1(1)=x3; COG1(2)=y3; COG1(3)=z3
-      CALL VECTRN(COG1,TEMAT,COG2,IER)
-      CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),iix1,iiy1)
+      call ORTTRN(x3,y3,z3,TSMAT,ax(1),ay(1),az(1),ier)
 
 C Now do the other end.
       r2 = tdis - vdis
@@ -767,10 +796,19 @@ C Now do the other end.
       x3 = ((r2 * xe) + (r1 * xs))/tdis
       y3 = ((r2 * ye) + (r1 * ys))/tdis
       z3 = ((r2 * ze) + (r1 * zs))/tdis
-      COG1(1)=x3; COG1(2)=y3; COG1(3)=z3
-      CALL VECTRN(COG1,TEMAT,COG2,IER)
-      CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),iix2,iiy2)
+      call ORTTRN(x3,y3,z3,TSMAT,ax(2),ay(2),az(2),ier)
+
+C Check clipping.
+      call CLIPLIN(ax,ay,az,iclp)
+      if (iclp.eq.1) then
+        return
+      elseif (iclp.eq.-1) then
+        call CUTLIN(ax,ay,az,iclp)
+        if (iclp.eq.-1) return
+      endif
+      
+      call u2pixel(ax(1),ay(1),iix1,iiy1)
+      call u2pixel(ax(2),ay(2),iix2,iiy2)
 
 C Draw a thick line (in red=0) (powderblue 27) (navy blue 34) (midnight blue 1).
       iicol=0  ! red
@@ -781,21 +819,18 @@ C Draw a thick line (in red=0) (powderblue 27) (navy blue 34) (midnight blue 1).
       call winscl('-',iicol)
 
 C Draw the value word at half-way point.
-      r2 = tdis - hdis
-      r1 = hdis
-      x3 = ((r2 * xs) + (r1 * xe))/tdis
-      y3 = ((r2 * ys) + (r1 * ye))/tdis
-      z3 = ((r2 * zs) + (r1 * ze))/tdis
-      COG1(1)=x3; COG1(2)=y3; COG1(3)=z3
-      CALL VECTRN(COG1,TEMAT,COG2,IER)
-      CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),iix1,iiy1)
+      call u2pixel((ax(1)+ax(2))/2.,(ay(1)+ay(2))/2.,iix1,iiy1)
       write(t13,'(A)')word(1:lnblnk(word))
+      ibsize=0
+      call winfnt(ibsize)
       call textpixwidth(t13,ipixw,ipixh)
       iid4 = iix1-(ipixw/2)
-      iicol=0   ! red
-      ibsize=0
-      call textsizeatxy(iid4,iiy1-5,t13,ibsize,'z',iicol)
+      call CLIPST(t13,iid4,iiy1-5,(az(1)+az(2))/2.,iclp)
+      if (iclp.eq.0) then
+        iicol=0   ! red
+        call textatxy(iid4,iiy1-5,t13,'z',iicol)
+      endif
+      call winfnt(IFS)
       call forceflush()
 
       return

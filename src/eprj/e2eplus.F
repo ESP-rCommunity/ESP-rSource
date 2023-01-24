@@ -122,7 +122,8 @@ C << logic ?? for multiple layers of the same thing ?? >>
 C Each construction needs to remember, for each layer the index
 C of the material that was created or found for it.
       dimension iconmatpointer(MMLC,8)
-      dimension areamlc(MCOM)
+      dimension areamlc(MCOM),areamlcamb(MCOM),areamlcoth(MCOM)
+      dimension areamlcb2b(MCOM),areamlcgrnd(MCOM),areamlcsimil(MCOM)
 
 C To hold coordinates at the corners of surfaces (in case a complex
 C surface can be resolved into a quad).
@@ -669,7 +670,8 @@ C Scan for materials.
 C Loop through each construction in the database, check if it
 C is used in the model and if so proceed to check. Currently ...
         mlc_name=mlcname(ino)
-        call mlcrefs(mlc_name,areamlc,tareamlc,foundmlc)
+        call mlcrefs(mlc_name,areamlc,areamlcamb,areamlcoth,
+     &    areamlcb2b,areamlcgrnd,areamlcsimil,tareamlc,foundmlc)
         if(.NOT.foundmlc) goto 20
 
 C If the construction is transparent then the materials need
@@ -941,7 +943,8 @@ C and assign iconmatpointer for each layer.
 C Loop through each construction in the database, check if it
 C is used in the model and if so proceed to check.
         mlc_name=mlcname(ino)
-        call mlcrefs(mlc_name,areamlc,tareamlc,foundmlc)
+        call mlcrefs(mlc_name,areamlc,areamlcamb,areamlcoth,
+     &    areamlcb2b,areamlcgrnd,areamlcsimil,tareamlc,foundmlc)
         if(.NOT.foundmlc) goto 200
 
         WRITE(OPT,'(A)') mlcoptical(INO)(1:12)
@@ -1004,7 +1007,8 @@ C Now for each construction.
         cxm=0.0
         mlckg=0.0
         mlc_name=mlcname(ino)
-        call mlcrefs(mlc_name,areamlc,tareamlc,foundmlc)
+        call mlcrefs(mlc_name,areamlc,areamlcamb,areamlcoth,
+     &    areamlcb2b,areamlcgrnd,areamlcsimil,tareamlc,foundmlc)
         if(.NOT.foundmlc) goto 36
 
         WRITE(ioout,'(a)',iostat=ios,err=4) ' '

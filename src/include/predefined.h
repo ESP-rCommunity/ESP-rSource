@@ -16,7 +16,7 @@ C vertices in an object.
       PARAMETER (MOTV=96)       !- Vertices/obj. -> 96
       PARAMETER (MOMB=32)       !- Simple visual shapes
       PARAMETER (MOMVB=14)      !- Compound visual shapes
-      PARAMETER (MITM=60)       !- Items in the database
+      PARAMETER (MITM=63)       !- Items in the database
       PARAMETER (MCATS=10)      !- Categories
 
 C Commons for simple visual objects within a predefined object:
