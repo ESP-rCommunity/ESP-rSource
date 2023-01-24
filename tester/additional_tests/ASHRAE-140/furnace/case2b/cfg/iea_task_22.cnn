@@ -1,9 +1,0 @@
-*connections for iea_test_house
-*Date Tue Jan 14 17:37:20 2014
-      6   # number of connections
-   1   1   0   0   0  #    1 wall-1 in zone1 is External
-   1   2   0   0   0  #    2 wall-2 in zone1 is External
-   1   3   0   0   0  #    3 wall-3 in zone1 is External
-   1   4   0   0   0  #    4 wall-4 in zone1 is External
-   1   5   0   0   0  #    5 roof in zone1 is External
-   1   6   0   0   0  #    6 floor in zone1 is External

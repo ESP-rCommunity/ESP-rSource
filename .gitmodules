@@ -1,9 +1,0 @@
-[submodule "doc"]
-	path = doc
-	url = https://github.com/ESP-rCommunity/ESP-rDoc.git
-[submodule "data"]
-	path = data
-	url = https://github.com/ESP-rCommunity/ESP-rDatabases.git
-[submodule "models"]
-	path = models
-	url = https://github.com/ESP-rCommunity/ESP-rModels.git

@@ -1,1 +1,0 @@
-This directory contains the model of SDHW system with a NCHE.
